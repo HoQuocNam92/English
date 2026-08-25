@@ -1,0 +1,299 @@
+import { useState } from 'react';
+import { useRouter } from 'expo-router';
+import { StatusBar } from 'expo-status-bar';
+import { StyleSheet, Text, View, TouchableOpacity } from 'react-native';
+import { MaterialIcons } from '@expo/vector-icons';
+import { colors, spacing } from '@techenglish/design-tokens';
+
+const flashcards = [
+  {
+    id: 1,
+    term: 'Idempotency',
+    phonetic: '/ˌaɪ.dəmˈpoʊ.tən.si/',
+    type: 'noun',
+    defVi: 'Tính lũy thừa / Tính bất biến qua nhiều lần thực thi',
+    defEn: 'The property of certain operations in mathematics and computer science whereby that operation can be applied multiple times without changing the result beyond the initial application.',
+    example: 'HTTP GET, PUT, and DELETE are idempotent methods by specification.'
+  },
+  {
+    id: 2,
+    term: 'Payload',
+    phonetic: '/ˈpeɪ.loʊd/',
+    type: 'noun',
+    defVi: 'Dữ liệu tải trọng / Thân gói tin HTTP',
+    defEn: 'The essential data that is carried within a transmission packet, excluding headers and metadata.',
+    example: 'The JSON payload exceeds the maximum request limit of 10MB.'
+  },
+  {
+    id: 3,
+    term: 'Stateless',
+    phonetic: '/ˈsteɪt.ləs/',
+    type: 'adjective',
+    defVi: 'Phi trạng thái (mỗi request độc lập)',
+    defEn: 'Communications protocol in which the server treats each request as an independent transaction unrelated to previous requests.',
+    example: 'REST APIs should be stateless, storing session information on the client.'
+  }
+];
+
+export default function MobileVocabularyLessonScreen() {
+  const router = useRouter();
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const [isFlipped, setIsFlipped] = useState(false);
+
+  const currentCard = flashcards[currentIndex];
+  const total = flashcards.length;
+
+  const handleNextCard = () => {
+    setIsFlipped(false);
+    if (currentIndex < total - 1) {
+      setCurrentIndex(currentIndex + 1);
+    } else {
+      alert('Tuyệt vời! Bạn đã hoàn thành toàn bộ thẻ từ vựng của bài này!');
+      router.back();
+    }
+  };
+
+  return (
+    <View style={styles.container}>
+      <StatusBar style="dark" />
+      {/* Header */}
+      <View style={styles.header}>
+        <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
+          <MaterialIcons name="close" size={24} color={colors.text} />
+        </TouchableOpacity>
+        <Text style={styles.headerTitle}>Thẻ từ vựng ({currentIndex + 1}/{total})</Text>
+        <View style={{ width: 40 }} />
+      </View>
+
+      {/* Progress */}
+      <View style={styles.progressBar}>
+        <View style={[styles.progressFill, { width: `${((currentIndex + 1) / total) * 100}%` }]} />
+      </View>
+
+      {/* Card Body */}
+      <View style={styles.cardContainer}>
+        <TouchableOpacity
+          style={styles.flashcard}
+          activeOpacity={0.9}
+          onPress={() => setIsFlipped(!isFlipped)}
+        >
+          <View style={styles.cardTop}>
+            <View style={styles.typeBadge}>
+              <Text style={styles.typeBadgeText}>{currentCard.type}</Text>
+            </View>
+            <TouchableOpacity style={styles.soundButton}>
+              <MaterialIcons name="volume-up" size={24} color={colors.primary} />
+            </TouchableOpacity>
+          </View>
+
+          <View style={styles.cardMain}>
+            <Text style={styles.termText}>{currentCard.term}</Text>
+            <Text style={styles.phoneticText}>{currentCard.phonetic}</Text>
+
+            {isFlipped ? (
+              <View style={styles.flippedContent}>
+                <View style={styles.divider} />
+                <Text style={styles.defViText}>{currentCard.defVi}</Text>
+                <Text style={styles.defEnText}>{currentCard.defEn}</Text>
+                <View style={styles.exampleBox}>
+                  <Text style={styles.exampleText}>💬 {currentCard.example}</Text>
+                </View>
+              </View>
+            ) : (
+              <View style={styles.tapPrompt}>
+                <MaterialIcons name="touch-app" size={20} color={colors.outline} />
+                <Text style={styles.tapPromptText}>Chạm vào thẻ để xem nghĩa & ví dụ</Text>
+              </View>
+            )}
+          </View>
+        </TouchableOpacity>
+      </View>
+
+      {/* Bottom Rating Buttons */}
+      <View style={styles.bottomBar}>
+        <TouchableOpacity
+          style={[styles.ratingBtn, styles.btnAgain]}
+          onPress={handleNextCard}
+        >
+          <Text style={styles.btnAgainText}>Chưa nhớ</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          style={[styles.ratingBtn, styles.btnGood]}
+          onPress={handleNextCard}
+        >
+          <Text style={styles.btnGoodText}>Đã thuộc (Dễ)</Text>
+        </TouchableOpacity>
+      </View>
+    </View>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: '#f8fafc'
+  },
+  header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: spacing.lg,
+    paddingTop: 50,
+    paddingBottom: spacing.sm,
+    backgroundColor: '#ffffff'
+  },
+  backButton: {
+    width: 40,
+    height: 40,
+    borderRadius: 10,
+    alignItems: 'center',
+    justifyContent: 'center'
+  },
+  headerTitle: {
+    fontSize: 15,
+    fontWeight: '800',
+    color: colors.text
+  },
+  progressBar: {
+    height: 4,
+    backgroundColor: '#e2e8f0'
+  },
+  progressFill: {
+    height: '100%',
+    backgroundColor: colors.primary
+  },
+  cardContainer: {
+    flex: 1,
+    padding: spacing.lg,
+    justifyContent: 'center'
+  },
+  flashcard: {
+    backgroundColor: '#ffffff',
+    borderRadius: 20,
+    padding: spacing.xl,
+    minHeight: 380,
+    borderWidth: 1.5,
+    borderColor: '#e2e8f0',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.08,
+    shadowRadius: 12,
+    elevation: 4,
+    justifyContent: 'space-between'
+  },
+  cardTop: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center'
+  },
+  typeBadge: {
+    backgroundColor: '#ede9fe',
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+    borderRadius: 6
+  },
+  typeBadgeText: {
+    fontSize: 11,
+    fontWeight: '700',
+    color: colors.primary
+  },
+  soundButton: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: '#f5f3ff',
+    alignItems: 'center',
+    justifyContent: 'center'
+  },
+  cardMain: {
+    alignItems: 'center',
+    marginVertical: spacing.lg
+  },
+  termText: {
+    fontSize: 26,
+    fontWeight: '800',
+    color: colors.text,
+    textAlign: 'center'
+  },
+  phoneticText: {
+    fontSize: 14,
+    color: colors.mutedText,
+    marginTop: 4,
+    fontFamily: 'monospace'
+  },
+  tapPrompt: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    marginTop: 40
+  },
+  tapPromptText: {
+    fontSize: 12,
+    color: colors.outline
+  },
+  flippedContent: {
+    width: '100%',
+    marginTop: spacing.md,
+    gap: spacing.sm
+  },
+  divider: {
+    height: 1,
+    backgroundColor: '#f1f5f9',
+    marginVertical: spacing.xs
+  },
+  defViText: {
+    fontSize: 15,
+    fontWeight: '700',
+    color: colors.primary,
+    textAlign: 'center'
+  },
+  defEnText: {
+    fontSize: 13,
+    color: colors.text,
+    lineHeight: 18,
+    textAlign: 'center'
+  },
+  exampleBox: {
+    backgroundColor: '#f8fafc',
+    borderRadius: 8,
+    padding: spacing.sm,
+    marginTop: spacing.xs
+  },
+  exampleText: {
+    fontSize: 12,
+    color: colors.mutedText,
+    fontStyle: 'italic'
+  },
+  bottomBar: {
+    padding: spacing.lg,
+    backgroundColor: '#ffffff',
+    borderTopWidth: 1,
+    borderTopColor: '#e2e8f0',
+    flexDirection: 'row',
+    gap: spacing.md
+  },
+  ratingBtn: {
+    flex: 1,
+    height: 50,
+    borderRadius: 12,
+    alignItems: 'center',
+    justifyContent: 'center'
+  },
+  btnAgain: {
+    backgroundColor: '#fee2e2'
+  },
+  btnAgainText: {
+    color: '#991b1b',
+    fontSize: 14,
+    fontWeight: '700'
+  },
+  btnGood: {
+    backgroundColor: colors.primary
+  },
+  btnGoodText: {
+    color: '#ffffff',
+    fontSize: 14,
+    fontWeight: '700'
+  }
+});

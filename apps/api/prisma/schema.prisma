@@ -1,0 +1,11 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// Đây chỉ là skeleton.
+// Claude phải thiết kế model dựa trên domain docs trước khi triển khai thật.

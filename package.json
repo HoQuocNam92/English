@@ -1,0 +1,13 @@
+{
+  "name": "techenglish-pro",
+  "private": true,
+  "packageManager": "pnpm@11.9.0",
+  "scripts": {
+    "typecheck": "pnpm run typecheck:packages",
+    "typecheck:packages": "pnpm -r --filter \"@techenglish/*\" run typecheck"
+  },
+  "devDependencies": {
+    "@babel/runtime": "^7.29.7",
+    "typescript": "^5.9.2"
+  }
+}

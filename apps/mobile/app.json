@@ -1,0 +1,19 @@
+{
+  "expo": {
+    "name": "TechEnglish Pro",
+    "slug": "techenglish-pro",
+    "scheme": "techenglish-pro",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "light",
+    "assetBundlePatterns": [
+      "**/*"
+    ],
+    "experiments": {
+      "typedRoutes": true
+    },
+    "plugins": [
+      "expo-router"
+    ]
+  }
+}
