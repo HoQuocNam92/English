@@ -52,7 +52,7 @@ export default function MobileHomeScreen() {
         <View style={styles.aiContent}>
           <Text style={styles.aiTitle}>AI Gợi ý ôn tập</Text>
           <Text style={styles.aiDesc}>
-            Dựa trên 3 bài test gần đây, bạn cần củng cố thuật ngữ phần <strong>VPC & IAM Policies</strong> để cải thiện tỷ lệ đúng.
+            Dựa trên 3 bài test gần đây, bạn cần củng cố thuật ngữ phần <Text style={styles.boldText}>VPC & IAM Policies</Text> để cải thiện tỷ lệ đúng.
           </Text>
           <TouchableOpacity
             style={styles.aiAction}
@@ -364,5 +364,9 @@ const styles = StyleSheet.create({
     height: '100%',
     backgroundColor: colors.primary,
     borderRadius: 2
+  },
+  boldText: {
+    fontWeight: '700',
+    color: colors.text
   }
 });

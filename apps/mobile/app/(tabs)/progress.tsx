@@ -50,7 +50,7 @@ export default function MobileProgressScreen() {
           <View style={[styles.progressFill, { width: '80%' }]} />
         </View>
         <Text style={styles.certAdvice}>
-          💡 Điểm trung bình thi thử của bạn là <strong>82%</strong> (vượt chuẩn đỗ 70%). Bạn đã sẵn sàng đăng ký thi thật!
+          💡 Điểm trung bình thi thử của bạn là <Text style={styles.boldText}>82%</Text> (vượt chuẩn đỗ 70%). Bạn đã sẵn sàng đăng ký thi thật!
         </Text>
       </View>
 
@@ -311,5 +311,9 @@ const styles = StyleSheet.create({
     fontSize: 11,
     fontWeight: '800',
     color: '#15803d'
+  },
+  boldText: {
+    fontWeight: '700',
+    color: colors.text
   }
 });

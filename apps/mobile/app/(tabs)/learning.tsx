@@ -67,10 +67,10 @@ export default function MobileLearningScreen() {
 
       {/* Header */}
       <View style={styles.header}>
-        <div>
+        <View>
           <Text style={styles.title}>Lộ trình học tập</Text>
           <Text style={styles.subtitle}>AWS Cloud Practitioner Pathway</Text>
-        </div>
+        </View>
         <View style={styles.overallBadge}>
           <Text style={styles.overallBadgeText}>68% Hoàn thành</Text>
         </View>
