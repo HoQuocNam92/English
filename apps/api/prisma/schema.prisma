@@ -1,11 +1,13 @@
 // =============================================================================
 // TechEnglish Pro (KLCN028) — Prisma Schema
-// Dựa trên: domain model, OpenAPI contract v1, functional requirements.
 // Quy ước:
 //   - ID: UUID v4 (@db.Uuid)
 //   - Timestamps: TIMESTAMPTZ
 //   - Table names: snake_case (@@map)
-//   - Enum: PascalCase (Prisma) → snake_case (PostgreSQL enum)
+//   - Enum: PascalCase (Prisma) → snake_case (PostgreSQL)
+// RBAC: users (auth only) + user_details (profile) + roles + permissions
+//       + role_permissions (N:N) + user_roles (N:N, multi-role per user)
+// Total: 37 tables
 // =============================================================================
 
 generator client {
@@ -20,14 +22,6 @@ datasource db {
 // =============================================================================
 // ENUMS
 // =============================================================================
-
-enum UserRole {
-  admin
-  teacher
-  learner
-
-  @@map("user_role")
-}
 
 enum UserStatus {
   active
@@ -140,54 +134,147 @@ enum LevelCode {
 }
 
 // =============================================================================
-// MASTER DATA — Users, Auth
+// AUTH & USERS — Enterprise RBAC
 // =============================================================================
 
-/// Tài khoản hệ thống. Role quyết định phạm vi truy cập toàn bộ ứng dụng.
+/// Tài khoản xác thực. Chỉ chứa thông tin đăng nhập.
+/// Thông tin cá nhân → user_details. Phân quyền → user_roles → roles → permissions.
 model User {
-  id          String     @id @default(uuid()) @db.Uuid
-  email       String     @unique @db.VarChar(254)
-  displayName String     @map("display_name") @db.VarChar(100)
-  passwordHash String   @map("password_hash") @db.VarChar(255)
-  avatarUrl   String?    @map("avatar_url") @db.VarChar(2048)
-  role        UserRole   @default(learner)
-  status      UserStatus @default(active)
-  lastLoginAt DateTime?  @map("last_login_at") @db.Timestamptz(6)
-  createdAt   DateTime   @default(now()) @map("created_at") @db.Timestamptz(6)
-  updatedAt   DateTime   @updatedAt @map("updated_at") @db.Timestamptz(6)
+  id           String     @id @default(uuid()) @db.Uuid
+  email        String     @unique @db.VarChar(254)
+  passwordHash String     @map("password_hash") @db.VarChar(255)
+  status       UserStatus @default(active)
+  createdAt    DateTime   @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt    DateTime   @updatedAt @map("updated_at") @db.Timestamptz(6)
 
   // Auth relations
-  refreshTokens    RefreshToken[]
+  refreshTokens RefreshToken[]
+  userDetail    UserDetail?
+  userRoles     UserRole[]
 
-  // Profile & content
-  learnerProfile   LearnerProfile?
-  createdLessons   Lesson[]         @relation("LessonCreatedBy")
-  createdExams     Exam[]           @relation("ExamCreatedBy")
-  examAttempts     ExamAttempt[]
-  learnerProgress  LearningProgress[]
-  recommendations  Recommendation[]
+  // Content & learning
+  learnerProfile          LearnerProfile?
+  createdLessons          Lesson[]                 @relation("LessonCreatedBy")
+  createdExams            Exam[]                   @relation("ExamCreatedBy")
+  examAttempts            ExamAttempt[]
+  learnerProgress         LearningProgress[]
+  recommendations         Recommendation[]
   recommendationFeedbacks RecommendationFeedback[]
 
   // Group management
-  managedGroups    LearnerGroup[]   @relation("GroupTeacher")
+  managedGroups    LearnerGroup[]       @relation("GroupTeacher")
   groupMemberships LearnerGroupMember[]
 
+  // Roles granted by this user
+  grantedRoles UserRole[] @relation("RoleGrantedBy")
+
   @@index([email])
-  @@index([role])
   @@index([status])
   @@map("users")
 }
 
+/// Thông tin cá nhân / hồ sơ công khai của user (tất cả vai trò).
+/// Bio ở đây là bio chung; learner_profiles.bio là bio học tập riêng.
+model UserDetail {
+  id          String    @id @default(uuid()) @db.Uuid
+  userId      String    @unique @map("user_id") @db.Uuid
+  displayName String    @map("display_name") @db.VarChar(150)
+  avatarUrl   String?   @map("avatar_url") @db.VarChar(2048)
+  phoneNumber String?   @map("phone_number") @db.VarChar(20)
+  dateOfBirth DateTime? @map("date_of_birth") @db.Date
+  gender      String?   @db.VarChar(20)
+  bio         String?   @db.VarChar(500)
+  timezone    String?   @default("Asia/Ho_Chi_Minh") @db.VarChar(50)
+  locale      String?   @default("vi") @db.VarChar(10)
+  lastLoginAt DateTime? @map("last_login_at") @db.Timestamptz(6)
+  createdAt   DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt   DateTime  @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("user_details")
+}
+
+/// Role master — admin, teacher, learner + custom extensible roles.
+model Role {
+  id          String   @id @default(uuid()) @db.Uuid
+  code        String   @unique @db.VarChar(40)
+  name        String   @db.VarChar(100)
+  description String?  @db.VarChar(500)
+  /// System roles cannot be deleted (admin, teacher, learner)
+  isSystem    Boolean  @default(false) @map("is_system")
+  isActive    Boolean  @default(true) @map("is_active")
+  createdAt   DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt   DateTime @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  userRoles       UserRole[]
+  rolePermissions RolePermission[]
+
+  @@index([code])
+  @@map("roles")
+}
+
+/// Permission master — granular resource:action pairs.
+/// Format code: "resource:action" — e.g. "lessons:publish", "users:suspend", "exams:grade"
+model Permission {
+  id          String   @id @default(uuid()) @db.Uuid
+  /// Unique code — format: "resource:action"
+  code        String   @unique @db.VarChar(80)
+  name        String   @db.VarChar(150)
+  description String?  @db.VarChar(500)
+  /// Resource category: users, lessons, exams, vocabulary, questions, reports, recommendations
+  resource    String   @db.VarChar(50)
+  /// Action: create, read, update, delete, publish, archive, grade, manage
+  action      String   @db.VarChar(50)
+  createdAt   DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  rolePermissions RolePermission[]
+
+  @@index([resource])
+  @@index([resource, action])
+  @@map("permissions")
+}
+
+/// N:N — Role ↔ Permission.
+model RolePermission {
+  roleId       String @map("role_id") @db.Uuid
+  permissionId String @map("permission_id") @db.Uuid
+
+  role       Role       @relation(fields: [roleId], references: [id], onDelete: Cascade)
+  permission Permission @relation(fields: [permissionId], references: [id], onDelete: Cascade)
+
+  @@id([roleId, permissionId])
+  @@map("role_permissions")
+}
+
+/// N:N — User ↔ Role. Một user có thể có nhiều role cùng lúc.
+model UserRole {
+  userId      String    @map("user_id") @db.Uuid
+  roleId      String    @map("role_id") @db.Uuid
+  grantedAt   DateTime  @default(now()) @map("granted_at") @db.Timestamptz(6)
+  expiresAt   DateTime? @map("expires_at") @db.Timestamptz(6)
+  grantedById String?   @map("granted_by_id") @db.Uuid
+
+  user      User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  role      Role  @relation(fields: [roleId], references: [id], onDelete: Cascade)
+  grantedBy User? @relation("RoleGrantedBy", fields: [grantedById], references: [id], onDelete: SetNull)
+
+  @@id([userId, roleId])
+  @@index([userId])
+  @@index([roleId])
+  @@map("user_roles")
+}
+
 /// Refresh token để cấp lại access token (JWT strategy).
 model RefreshToken {
-  id        String   @id @default(uuid()) @db.Uuid
-  userId    String   @map("user_id") @db.Uuid
-  tokenHash String   @unique @map("token_hash") @db.VarChar(255)
-  expiresAt DateTime @map("expires_at") @db.Timestamptz(6)
+  id        String    @id @default(uuid()) @db.Uuid
+  userId    String    @map("user_id") @db.Uuid
+  tokenHash String    @unique @map("token_hash") @db.VarChar(255)
+  expiresAt DateTime  @map("expires_at") @db.Timestamptz(6)
   revokedAt DateTime? @map("revoked_at") @db.Timestamptz(6)
-  userAgent String?  @map("user_agent") @db.VarChar(500)
-  ipAddress String?  @map("ip_address") @db.VarChar(45)
-  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  userAgent String?   @map("user_agent") @db.VarChar(500)
+  ipAddress String?   @map("ip_address") @db.VarChar(45)
+  createdAt DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
@@ -202,24 +289,23 @@ model RefreshToken {
 
 /// Lĩnh vực CNTT (Cloud Computing, DevOps, Security, …).
 model Domain {
-  id          String  @id @default(uuid()) @db.Uuid
-  code        String  @unique @db.VarChar(30)
-  name        String  @db.VarChar(100)
-  description String  @db.VarChar(500)
-  icon        String? @db.VarChar(100)
-  isActive    Boolean @default(true) @map("is_active")
+  id          String   @id @default(uuid()) @db.Uuid
+  code        String   @unique @db.VarChar(30)
+  name        String   @db.VarChar(100)
+  description String   @db.VarChar(500)
+  icon        String?  @db.VarChar(100)
+  isActive    Boolean  @default(true) @map("is_active")
   createdAt   DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
   updatedAt   DateTime @updatedAt @map("updated_at") @db.Timestamptz(6)
 
-  // Relations
-  profileDomains      LearnerProfileDomain[]
-  certificateDomains  CertificateDomain[]
-  vocabularies        Vocabulary[]
-  lessons             Lesson[]
-  questions           Question[]
-  exams               Exam[]
-  learnerGroups       LearnerGroup[]
-  learningProgress    LearningProgress[]
+  profileDomains     LearnerProfileDomain[]
+  certificateDomains CertificateDomain[]
+  vocabularies       Vocabulary[]
+  lessons            Lesson[]
+  questions          Question[]
+  exams              Exam[]
+  learnerGroups      LearnerGroup[]
+  learningProgress   LearningProgress[]
 
   @@index([code])
   @@index([isActive])
@@ -237,7 +323,6 @@ model Level {
   createdAt   DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
   updatedAt   DateTime  @updatedAt @map("updated_at") @db.Timestamptz(6)
 
-  // Relations
   learnerProfiles LearnerProfile[]
   vocabularies    Vocabulary[]
   lessons         Lesson[]
@@ -249,11 +334,11 @@ model Level {
 
 /// Mục tiêu nghề nghiệp (Backend Engineer, DevOps Engineer, …).
 model CareerGoal {
-  id          String  @id @default(uuid()) @db.Uuid
-  code        String  @unique @db.VarChar(40)
-  name        String  @db.VarChar(100)
-  description String  @db.VarChar(500)
-  isActive    Boolean @default(true) @map("is_active")
+  id          String   @id @default(uuid()) @db.Uuid
+  code        String   @unique @db.VarChar(40)
+  name        String   @db.VarChar(100)
+  description String   @db.VarChar(500)
+  isActive    Boolean  @default(true) @map("is_active")
   createdAt   DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
   updatedAt   DateTime @updatedAt @map("updated_at") @db.Timestamptz(6)
 
@@ -275,7 +360,6 @@ model Certificate {
   createdAt   DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
   updatedAt   DateTime @updatedAt @map("updated_at") @db.Timestamptz(6)
 
-  // Relations
   domains          CertificateDomain[]
   profileGoals     LearnerCertificateGoal[]
   lessonCerts      LessonCertificate[]
@@ -305,7 +389,8 @@ model CertificateDomain {
 // LEARNER PROFILE & GOALS
 // =============================================================================
 
-/// Hồ sơ học viên: trình độ, lĩnh vực quan tâm, mục tiêu nghề nghiệp & chứng chỉ.
+/// Hồ sơ học viên: trình độ, lĩnh vực, mục tiêu nghề nghiệp & chứng chỉ.
+/// bio ở đây là bio học tập riêng, khác với user_details.bio (bio chung).
 model LearnerProfile {
   id                       String   @id @default(uuid()) @db.Uuid
   userId                   String   @unique @map("user_id") @db.Uuid
@@ -316,18 +401,18 @@ model LearnerProfile {
   createdAt                DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
   updatedAt                DateTime @updatedAt @map("updated_at") @db.Timestamptz(6)
 
-  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  level       Level    @relation(fields: [levelId], references: [id])
+  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  level Level @relation(fields: [levelId], references: [id])
 
-  domains      LearnerProfileDomain[]
-  careerGoals  LearnerProfileCareerGoal[]
-  certGoals    LearnerCertificateGoal[]
+  domains     LearnerProfileDomain[]
+  careerGoals LearnerProfileCareerGoal[]
+  certGoals   LearnerCertificateGoal[]
 
   @@index([levelId])
   @@map("learner_profiles")
 }
 
-/// N:N — LearnerProfile ↔ Domain (lĩnh vực CNTT quan tâm).
+/// N:N — LearnerProfile ↔ Domain.
 model LearnerProfileDomain {
   profileId String @map("profile_id") @db.Uuid
   domainId  String @map("domain_id") @db.Uuid
@@ -351,7 +436,7 @@ model LearnerProfileCareerGoal {
   @@map("learner_profile_career_goals")
 }
 
-/// Mục tiêu chứng chỉ của học viên, có thêm target date.
+/// Mục tiêu chứng chỉ của học viên.
 model LearnerCertificateGoal {
   id            String    @id @default(uuid()) @db.Uuid
   profileId     String    @map("profile_id") @db.Uuid
@@ -399,9 +484,9 @@ model LearnerGroup {
 
 /// Bảng nối thành viên nhóm học viên.
 model LearnerGroupMember {
-  groupId    String   @map("group_id") @db.Uuid
-  learnerId  String   @map("learner_id") @db.Uuid
-  joinedAt   DateTime @default(now()) @map("joined_at") @db.Timestamptz(6)
+  groupId   String   @map("group_id") @db.Uuid
+  learnerId String   @map("learner_id") @db.Uuid
+  joinedAt  DateTime @default(now()) @map("joined_at") @db.Timestamptz(6)
 
   group   LearnerGroup @relation(fields: [groupId], references: [id], onDelete: Cascade)
   learner User         @relation(fields: [learnerId], references: [id], onDelete: Cascade)
@@ -423,7 +508,6 @@ model Vocabulary {
   partOfSpeech     String?       @map("part_of_speech") @db.VarChar(50)
   definitionEn     String        @map("definition_en") @db.VarChar(1000)
   definitionVi     String        @map("definition_vi") @db.VarChar(1000)
-  /// Tags lưu dạng text array PostgreSQL
   tags             String[]      @default([])
   domainId         String        @map("domain_id") @db.Uuid
   levelId          String        @map("level_id") @db.Uuid
@@ -431,8 +515,8 @@ model Vocabulary {
   createdAt        DateTime      @default(now()) @map("created_at") @db.Timestamptz(6)
   updatedAt        DateTime      @updatedAt @map("updated_at") @db.Timestamptz(6)
 
-  domain   Domain @relation(fields: [domainId], references: [id])
-  level    Level  @relation(fields: [levelId], references: [id])
+  domain Domain @relation(fields: [domainId], references: [id])
+  level  Level  @relation(fields: [levelId], references: [id])
 
   examples     VocabularyExample[]
   lessonVocabs LessonVocabulary[]
@@ -462,7 +546,7 @@ model VocabularyExample {
 // CONTENT — Lessons
 // =============================================================================
 
-/// Bài học kỹ thuật (Technical Reading, API Docs, Case Study, …).
+/// Bài học kỹ thuật.
 model Lesson {
   id               String        @id @default(uuid()) @db.Uuid
   title            String        @db.VarChar(200)
@@ -503,7 +587,6 @@ model LessonSection {
   type     LessonSectionType
   order    Int
   title    String?           @db.VarChar(200)
-  /// JSONB: nội dung linh hoạt theo type (text, imageUrl, codeContent, …)
   content  Json
 
   lesson Lesson @relation(fields: [lessonId], references: [id], onDelete: Cascade)
@@ -537,7 +620,7 @@ model LessonCertificate {
 }
 
 // =============================================================================
-// CONTENT — Certification Content (nội dung ôn chứng chỉ)
+// CONTENT — Certification Content
 // =============================================================================
 
 /// Nội dung ôn tập dành riêng cho từng chứng chỉ.
@@ -545,7 +628,7 @@ model CertificationContent {
   id            String        @id @default(uuid()) @db.Uuid
   certificateId String        @map("certificate_id") @db.Uuid
   title         String        @db.VarChar(200)
-  body          String        /// markdown/rich text
+  body          String
   topic         String?       @db.VarChar(100)
   order         Int           @default(0)
   status        ContentStatus @default(draft)
@@ -562,31 +645,29 @@ model CertificationContent {
 // QUESTION BANK
 // =============================================================================
 
-/// Ngân hàng câu hỏi. Hỗ trợ single/multiple choice, true/false, short_answer, scenario.
+/// Ngân hàng câu hỏi.
 model Question {
-  id              String       @id @default(uuid()) @db.Uuid
+  id              String        @id @default(uuid()) @db.Uuid
   type            QuestionType
-  prompt          String       @db.Text
-  context         String?      @db.Text
-  codeSnippet     String?      @map("code_snippet") @db.Text
-  explanation     String       @db.Text
-  domainId        String       @map("domain_id") @db.Uuid
-  levelId         String       @map("level_id") @db.Uuid
-  /// Topics lưu dạng text array
-  topics          String[]     @default([])
-  /// Accepted answers cho short_answer (array)
-  acceptedAnswers String[]     @default([]) @map("accepted_answers")
-  points          Float        @default(1.0)
+  prompt          String        @db.Text
+  context         String?       @db.Text
+  codeSnippet     String?       @map("code_snippet") @db.Text
+  explanation     String        @db.Text
+  domainId        String        @map("domain_id") @db.Uuid
+  levelId         String        @map("level_id") @db.Uuid
+  topics          String[]      @default([])
+  acceptedAnswers String[]      @default([]) @map("accepted_answers")
+  points          Float         @default(1.0)
   status          ContentStatus @default(draft)
-  createdAt       DateTime     @default(now()) @map("created_at") @db.Timestamptz(6)
-  updatedAt       DateTime     @updatedAt @map("updated_at") @db.Timestamptz(6)
+  createdAt       DateTime      @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt       DateTime      @updatedAt @map("updated_at") @db.Timestamptz(6)
 
   domain Domain @relation(fields: [domainId], references: [id])
   level  Level  @relation(fields: [levelId], references: [id])
 
-  options          QuestionOption[]
-  certificates     QuestionCertificate[]
-  examQuestions    ExamQuestion[]
+  options       QuestionOption[]
+  certificates  QuestionCertificate[]
+  examQuestions ExamQuestion[]
 
   @@index([domainId])
   @@index([levelId])
@@ -599,7 +680,7 @@ model Question {
 model QuestionOption {
   id          String  @id @default(uuid()) @db.Uuid
   questionId  String  @map("question_id") @db.Uuid
-  key         String  @db.VarChar(10)   // A, B, C, D…
+  key         String  @db.VarChar(10)
   text        String  @db.Text
   isCorrect   Boolean @map("is_correct")
   explanation String? @db.Text
@@ -626,30 +707,29 @@ model QuestionCertificate {
 }
 
 // =============================================================================
-// EXAMS — Đề thi
+// EXAMS
 // =============================================================================
 
 /// Bài kiểm tra / đề thi.
 model Exam {
-  id                 String        @id @default(uuid()) @db.Uuid
-  title              String        @db.VarChar(200)
-  description        String        @db.VarChar(2000)
-  domainId           String        @map("domain_id") @db.Uuid
-  levelId            String        @map("level_id") @db.Uuid
-  certificateId      String?       @map("certificate_id") @db.Uuid
-  /// Topics filter array
-  topics             String[]      @default([])
-  durationMinutes    Int           @map("duration_minutes")
-  passingScorePercent Float        @map("passing_score_percent") @default(70.0)
-  maxAttempts        Int           @map("max_attempts") @default(1)
-  shuffleQuestions   Boolean       @map("shuffle_questions") @default(false)
-  availableFrom      DateTime?     @map("available_from") @db.Timestamptz(6)
-  availableUntil     DateTime?     @map("available_until") @db.Timestamptz(6)
-  status             ContentStatus @default(draft)
-  publishedAt        DateTime?     @map("published_at") @db.Timestamptz(6)
-  createdById        String        @map("created_by_id") @db.Uuid
-  createdAt          DateTime      @default(now()) @map("created_at") @db.Timestamptz(6)
-  updatedAt          DateTime      @updatedAt @map("updated_at") @db.Timestamptz(6)
+  id                  String        @id @default(uuid()) @db.Uuid
+  title               String        @db.VarChar(200)
+  description         String        @db.VarChar(2000)
+  domainId            String        @map("domain_id") @db.Uuid
+  levelId             String        @map("level_id") @db.Uuid
+  certificateId       String?       @map("certificate_id") @db.Uuid
+  topics              String[]      @default([])
+  durationMinutes     Int           @map("duration_minutes")
+  passingScorePercent Float         @map("passing_score_percent") @default(70.0)
+  maxAttempts         Int           @map("max_attempts") @default(1)
+  shuffleQuestions    Boolean       @map("shuffle_questions") @default(false)
+  availableFrom       DateTime?     @map("available_from") @db.Timestamptz(6)
+  availableUntil      DateTime?     @map("available_until") @db.Timestamptz(6)
+  status              ContentStatus @default(draft)
+  publishedAt         DateTime?     @map("published_at") @db.Timestamptz(6)
+  createdById         String        @map("created_by_id") @db.Uuid
+  createdAt           DateTime      @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt           DateTime      @updatedAt @map("updated_at") @db.Timestamptz(6)
 
   domain      Domain       @relation(fields: [domainId], references: [id])
   level       Level        @relation(fields: [levelId], references: [id])
@@ -682,20 +762,17 @@ model ExamQuestion {
 }
 
 // =============================================================================
-// ATTEMPTS — Lượt làm bài
+// ATTEMPTS
 // =============================================================================
 
 /// Lượt làm bài của học viên.
-/// questions_snapshot lưu toàn bộ đề thi tại thời điểm bắt đầu (JSONB)
-/// để bảo toàn tính lịch sử ngay cả khi đề thi bị sửa về sau.
+/// questions_snapshot lưu toàn bộ đề thi tại thời điểm bắt đầu (JSONB).
 model ExamAttempt {
   id                String        @id @default(uuid()) @db.Uuid
   examId            String        @map("exam_id") @db.Uuid
   learnerId         String        @map("learner_id") @db.Uuid
   status            AttemptStatus @default(in_progress)
-  /// Snapshot toàn bộ câu hỏi (type, prompt, options) tại thời điểm bắt đầu
   questionsSnapshot Json          @map("questions_snapshot")
-  /// Snapshot tiêu đề & meta của exam
   examSnapshot      Json          @map("exam_snapshot")
   score             Float?
   maxScore          Float?        @map("max_score")
@@ -742,8 +819,8 @@ model AttemptAnswer {
 
 /// Các option được chọn trong từng câu trả lời.
 model AttemptAnswerOption {
-  answerId  String @map("answer_id") @db.Uuid
-  optionId  String @map("option_id") @db.Uuid
+  answerId String @map("answer_id") @db.Uuid
+  optionId String @map("option_id") @db.Uuid
 
   answer AttemptAnswer  @relation(fields: [answerId], references: [id], onDelete: Cascade)
   option QuestionOption @relation(fields: [optionId], references: [id], onDelete: Restrict)
@@ -753,7 +830,7 @@ model AttemptAnswerOption {
 }
 
 // =============================================================================
-// PROGRESS — Tiến độ học tập
+// PROGRESS
 // =============================================================================
 
 /// Tiến độ học tập của học viên theo resource (lesson / domain / certificate).
@@ -771,10 +848,9 @@ model LearningProgress {
   completedAt          DateTime?            @map("completed_at") @db.Timestamptz(6)
   updatedAt            DateTime             @updatedAt @map("updated_at") @db.Timestamptz(6)
 
-  learner  User         @relation(fields: [learnerId], references: [id], onDelete: Cascade)
-  // Optional soft FK to resolve lesson title in progress if resourceType = lesson
-  lesson   Lesson?      @relation(fields: [resourceId], references: [id], onUpdate: NoAction, onDelete: NoAction, map: "fk_progress_lesson")
-  domain   Domain?      @relation(fields: [resourceId], references: [id], onUpdate: NoAction, onDelete: NoAction, map: "fk_progress_domain")
+  learner     User         @relation(fields: [learnerId], references: [id], onDelete: Cascade)
+  lesson      Lesson?      @relation(fields: [resourceId], references: [id], onUpdate: NoAction, onDelete: NoAction, map: "fk_progress_lesson")
+  domain      Domain?      @relation(fields: [resourceId], references: [id], onUpdate: NoAction, onDelete: NoAction, map: "fk_progress_domain")
   certificate Certificate? @relation(fields: [resourceId], references: [id], onUpdate: NoAction, onDelete: NoAction, map: "fk_progress_certificate")
 
   @@unique([learnerId, resourceType, resourceId])
@@ -783,19 +859,17 @@ model LearningProgress {
   @@map("learning_progress")
 }
 
-/// Bảng tổng hợp tiến độ cá nhân (cache / materialized view thay thế).
-/// Dùng khi cần đọc nhanh summary mà không tính lại từ raw data.
+/// Bảng tổng hợp tiến độ cá nhân (cache).
 model ProgressSummaryCache {
-  learnerId                String    @id @map("learner_id") @db.Uuid
-  overallCompletionPercent Float     @default(0.0) @map("overall_completion_percent")
-  studyStreakDays           Int       @default(0) @map("study_streak_days")
-  totalStudyMinutes        Int       @default(0) @map("total_study_minutes")
-  completedLessons         Int       @default(0) @map("completed_lessons")
-  totalAttempts            Int       @default(0) @map("total_attempts")
-  averageScorePercent      Float?    @map("average_score_percent")
-  /// JSONB: ["Authentication", "REST APIs", …]
-  weakTopics               Json      @default("[]") @map("weak_topics")
-  calculatedAt             DateTime  @default(now()) @map("calculated_at") @db.Timestamptz(6)
+  learnerId                String   @id @map("learner_id") @db.Uuid
+  overallCompletionPercent Float    @default(0.0) @map("overall_completion_percent")
+  studyStreakDays           Int      @default(0) @map("study_streak_days")
+  totalStudyMinutes        Int      @default(0) @map("total_study_minutes")
+  completedLessons         Int      @default(0) @map("completed_lessons")
+  totalAttempts            Int      @default(0) @map("total_attempts")
+  averageScorePercent      Float?   @map("average_score_percent")
+  weakTopics               Json     @default("[]") @map("weak_topics")
+  calculatedAt             DateTime @default(now()) @map("calculated_at") @db.Timestamptz(6)
 
   @@map("progress_summary_cache")
 }
@@ -813,12 +887,11 @@ model Recommendation {
   title        String                     @db.VarChar(200)
   reason       String                     @db.VarChar(1000)
   priority     Int                        @default(50)
-  /// JSONB: ["profile","level","interest","career_goal", …]
   basedOn      Json                       @default("[]") @map("based_on")
   generatedAt  DateTime                   @default(now()) @map("generated_at") @db.Timestamptz(6)
   expiresAt    DateTime?                  @map("expires_at") @db.Timestamptz(6)
 
-  learner   User @relation(fields: [learnerId], references: [id], onDelete: Cascade)
+  learner   User                     @relation(fields: [learnerId], references: [id], onDelete: Cascade)
   feedbacks RecommendationFeedback[]
 
   @@index([learnerId])
@@ -830,14 +903,14 @@ model Recommendation {
 /// Phản hồi của học viên về một gợi ý (helpful, dismissed, …).
 model RecommendationFeedback {
   id               String                       @id @default(uuid()) @db.Uuid
-  recommendationId String                        @map("recommendation_id") @db.Uuid
-  learnerId        String                        @map("learner_id") @db.Uuid
+  recommendationId String                       @map("recommendation_id") @db.Uuid
+  learnerId        String                       @map("learner_id") @db.Uuid
   action           RecommendationFeedbackAction
-  comment          String?                       @db.VarChar(500)
-  createdAt        DateTime                      @default(now()) @map("created_at") @db.Timestamptz(6)
+  comment          String?                      @db.VarChar(500)
+  createdAt        DateTime                     @default(now()) @map("created_at") @db.Timestamptz(6)
 
   recommendation Recommendation @relation(fields: [recommendationId], references: [id], onDelete: Cascade)
-  learner        User            @relation(fields: [learnerId], references: [id], onDelete: Cascade)
+  learner        User           @relation(fields: [learnerId], references: [id], onDelete: Cascade)
 
   @@index([recommendationId])
   @@index([learnerId])

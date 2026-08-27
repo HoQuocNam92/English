@@ -1,4 +1,4 @@
-import { PrismaClient, UserRole, UserStatus, ContentStatus, LevelCode } from '@prisma/client'
+import { PrismaClient, UserStatus, ContentStatus, LevelCode } from '@prisma/client'
 import * as bcrypt from 'bcrypt'
 
 const prisma = new PrismaClient()
@@ -186,60 +186,137 @@ async function main() {
   console.log(`   ✅ ${Object.keys(certs).length} certificates seeded`)
 
   // ============================================================
-  // 5. DEMO USERS
+  // 5a. ROLES
+  // ============================================================
+  console.log('🔐 Seed Roles...')
+  const roleData = [
+    { code: 'admin',   name: 'Administrator', description: 'Full system access. Manage users, content, and configuration.', isSystem: true },
+    { code: 'teacher', name: 'Teacher',        description: 'Create and manage lessons, questions, and exams. Monitor learner progress.', isSystem: true },
+    { code: 'learner', name: 'Learner',        description: 'Access learning content, take exams, and track personal progress.', isSystem: true },
+  ]
+  const roles: Record<string, { id: string }> = {}
+  for (const r of roleData) {
+    const role = await prisma.role.upsert({
+      where: { code: r.code },
+      update: {},
+      create: r,
+    })
+    roles[r.code] = role
+  }
+  console.log(`   ✅ ${Object.keys(roles).length} roles seeded`)
+
+  // ============================================================
+  // 5b. PERMISSIONS
+  // ============================================================
+  console.log('🛡️  Seed Permissions...')
+  const permissionData = [
+    // Users
+    { code: 'users:read',    name: 'Read Users',    resource: 'users',    action: 'read',    description: 'View user list and profiles' },
+    { code: 'users:manage',  name: 'Manage Users',  resource: 'users',    action: 'manage',  description: 'Create, update, suspend users' },
+    // Roles
+    { code: 'roles:assign',  name: 'Assign Roles',  resource: 'roles',    action: 'assign',  description: 'Grant or revoke roles from users' },
+    // Lessons
+    { code: 'lessons:read',    name: 'Read Lessons',    resource: 'lessons', action: 'read',    description: 'View lesson content' },
+    { code: 'lessons:create',  name: 'Create Lessons',  resource: 'lessons', action: 'create',  description: 'Create new lessons' },
+    { code: 'lessons:update',  name: 'Update Lessons',  resource: 'lessons', action: 'update',  description: 'Edit lesson content' },
+    { code: 'lessons:delete',  name: 'Delete Lessons',  resource: 'lessons', action: 'delete',  description: 'Remove lessons' },
+    { code: 'lessons:publish', name: 'Publish Lessons', resource: 'lessons', action: 'publish', description: 'Publish or archive lessons' },
+    // Vocabulary
+    { code: 'vocabulary:read',   name: 'Read Vocabulary',   resource: 'vocabulary', action: 'read',   description: 'View vocabulary' },
+    { code: 'vocabulary:manage', name: 'Manage Vocabulary', resource: 'vocabulary', action: 'manage', description: 'Create, edit, delete vocabulary' },
+    // Questions
+    { code: 'questions:read',    name: 'Read Questions',    resource: 'questions', action: 'read',    description: 'View question bank' },
+    { code: 'questions:manage',  name: 'Manage Questions',  resource: 'questions', action: 'manage',  description: 'Create, edit, delete questions' },
+    // Exams
+    { code: 'exams:read',    name: 'Read Exams',    resource: 'exams', action: 'read',    description: 'View exams' },
+    { code: 'exams:create',  name: 'Create Exams',  resource: 'exams', action: 'create',  description: 'Create new exams' },
+    { code: 'exams:publish', name: 'Publish Exams', resource: 'exams', action: 'publish', description: 'Publish or archive exams' },
+    { code: 'exams:grade',   name: 'Grade Exams',   resource: 'exams', action: 'grade',   description: 'View and manage exam results' },
+    // Reports
+    { code: 'reports:read', name: 'Read Reports', resource: 'reports', action: 'read', description: 'View progress reports and analytics' },
+    // Groups
+    { code: 'groups:manage', name: 'Manage Groups', resource: 'groups', action: 'manage', description: 'Create and manage learner groups' },
+  ]
+
+  const permissions: Record<string, { id: string }> = {}
+  for (const p of permissionData) {
+    const perm = await prisma.permission.upsert({
+      where: { code: p.code },
+      update: {},
+      create: p,
+    })
+    permissions[p.code] = perm
+  }
+  console.log(`   ✅ ${Object.keys(permissions).length} permissions seeded`)
+
+  // ============================================================
+  // 5c. ROLE PERMISSIONS
+  // ============================================================
+  console.log('🔗 Seed Role Permissions...')
+  const rolePerm = async (roleCode: string, permCodes: string[]) => {
+    for (const permCode of permCodes) {
+      await prisma.rolePermission.upsert({
+        where: { roleId_permissionId: { roleId: roles[roleCode].id, permissionId: permissions[permCode].id } },
+        update: {},
+        create: { roleId: roles[roleCode].id, permissionId: permissions[permCode].id },
+      })
+    }
+  }
+
+  // Admin: all permissions
+  await rolePerm('admin', Object.keys(permissions))
+
+  // Teacher: content + groups + reports (no user management)
+  await rolePerm('teacher', [
+    'lessons:read', 'lessons:create', 'lessons:update', 'lessons:delete', 'lessons:publish',
+    'vocabulary:read', 'vocabulary:manage',
+    'questions:read', 'questions:manage',
+    'exams:read', 'exams:create', 'exams:publish', 'exams:grade',
+    'groups:manage', 'reports:read',
+  ])
+
+  // Learner: read-only content
+  await rolePerm('learner', [
+    'lessons:read', 'vocabulary:read', 'exams:read', 'questions:read',
+  ])
+  console.log('   ✅ Role permissions assigned')
+
+  // ============================================================
+  // 5d. DEMO USERS + USER_DETAILS + USER_ROLES
   // ============================================================
   console.log('👥 Seed Demo Users...')
   const passwordHash = await bcrypt.hash('Demo@123456', 12)
 
-  const adminUser = await prisma.user.upsert({
-    where: { email: 'admin@techenglish.pro' },
-    update: {},
-    create: {
-      email: 'admin@techenglish.pro',
-      displayName: 'Admin TechEnglish',
-      passwordHash,
-      role: UserRole.admin,
-      status: UserStatus.active,
-    },
-  })
+  const createUserWithDetail = async (
+    email: string,
+    displayName: string,
+    roleCode: string,
+    extraDetail: Record<string, unknown> = {},
+  ) => {
+    const user = await prisma.user.upsert({
+      where: { email },
+      update: {},
+      create: { email, passwordHash, status: UserStatus.active },
+    })
+    await prisma.userDetail.upsert({
+      where: { userId: user.id },
+      update: {},
+      create: { userId: user.id, displayName, ...extraDetail },
+    })
+    await prisma.userRole.upsert({
+      where: { userId_roleId: { userId: user.id, roleId: roles[roleCode].id } },
+      update: {},
+      create: { userId: user.id, roleId: roles[roleCode].id },
+    })
+    return user
+  }
 
-  const teacherUser = await prisma.user.upsert({
-    where: { email: 'teacher@techenglish.pro' },
-    update: {},
-    create: {
-      email: 'teacher@techenglish.pro',
-      displayName: 'Giảng viên Demo',
-      passwordHash,
-      role: UserRole.teacher,
-      status: UserStatus.active,
-    },
-  })
+  const adminUser    = await createUserWithDetail('admin@techenglish.pro',    'Admin TechEnglish', 'admin',   { bio: 'System administrator.', locale: 'vi' })
+  const teacherUser  = await createUserWithDetail('teacher@techenglish.pro',  'Giảng viên Demo',   'teacher', { bio: 'Senior IT trainer với 8 năm kinh nghiệm.', locale: 'vi' })
+  const learner1     = await createUserWithDetail('learner1@techenglish.pro', 'Nguyễn Văn Nam',    'learner', { bio: 'Backend developer tại TP.HCM.', phoneNumber: '0901234567' })
+  const learner2     = await createUserWithDetail('learner2@techenglish.pro', 'Trần Thị Lan',      'learner', { bio: 'Sinh viên năm 4 ngành CNTT.', phoneNumber: '0912345678' })
 
-  const learner1 = await prisma.user.upsert({
-    where: { email: 'learner1@techenglish.pro' },
-    update: {},
-    create: {
-      email: 'learner1@techenglish.pro',
-      displayName: 'Nguyễn Văn Nam',
-      passwordHash,
-      role: UserRole.learner,
-      status: UserStatus.active,
-    },
-  })
-
-  const learner2 = await prisma.user.upsert({
-    where: { email: 'learner2@techenglish.pro' },
-    update: {},
-    create: {
-      email: 'learner2@techenglish.pro',
-      displayName: 'Trần Thị Lan',
-      passwordHash,
-      role: UserRole.learner,
-      status: UserStatus.active,
-    },
-  })
-
-  console.log('   ✅ 4 demo users seeded (admin, teacher, learner x2)')
+  console.log('   ✅ 4 demo users seeded (admin, teacher, learner x2) with user_details + user_roles')
 
   // ============================================================
   // 6. LEARNER PROFILES
