@@ -1,153 +1,242 @@
 # TechEnglish Pro (KLCN028)
 
-Chào mừng bạn đến với **TechEnglish Pro** — Nền tảng học tiếng Anh chuyên ngành CNTT và ôn luyện chứng chỉ quốc tế dành cho lập trình viên và kỹ sư phần mềm. Dự án được phát triển theo cấu trúc Monorepo hiện đại, sử dụng Clean Architecture để đảm bảo khả năng mở rộng, bảo trì và kiểm thử độc lập.
+TechEnglish Pro là hệ thống học tiếng Anh chuyên ngành Công nghệ thông tin dành cho sinh viên, lập trình viên và kỹ sư phần mềm. Sản phẩm hướng tới ba nhóm người dùng: **Admin**, **Giảng viên** và **Học viên**, với hai giao diện chính là cổng quản trị trên web và ứng dụng học tập trên thiết bị di động.
 
----
+> **Trạng thái hiện tại:** Web và Mobile đã có giao diện cùng dữ liệu demo để kiểm thử luồng sử dụng. Backend, xác thực thật và cơ sở dữ liệu vẫn đang ở giai đoạn khởi tạo, chưa được kết nối vào hai ứng dụng.
 
-## 🗺️ Bản Đồ Kiến Trúc & Công Nghệ
+## Chức năng
 
-Hệ thống được tổ chức dưới dạng **Monorepo** quản lý bởi **PNPM Workspaces**:
+### Cổng quản trị và giảng viên — Web
+
+Ứng dụng web cung cấp giao diện cho Admin và Giảng viên:
+
+- Đăng nhập, đăng xuất và lưu phiên đăng nhập demo.
+- Dashboard tổng quan hoạt động học tập.
+- Quản lý người dùng, học viên và nhóm học viên.
+- Xem hồ sơ, mục tiêu nghề nghiệp và tiến độ của từng học viên.
+- Quản lý cấp độ học: Beginner, Intermediate, Advanced và Professional.
+- Quản lý nội dung học, bài học và nội dung ôn chứng chỉ.
+- Tạo và quản lý ngân hàng câu hỏi.
+- Tạo bài kiểm tra, xem kết quả và lịch sử làm bài.
+- Theo dõi tiến độ và xem báo cáo thống kê.
+
+Các màn hình hiện sử dụng repository mock và dữ liệu mẫu trong trình duyệt; thao tác chưa được lưu vào PostgreSQL.
+
+### Ứng dụng học viên — Mobile
+
+Ứng dụng Expo/React Native hỗ trợ các luồng học tập:
+
+- Đăng ký, đăng nhập, sửa hồ sơ và đổi mật khẩu.
+- Thiết lập lộ trình theo trình độ tiếng Anh, lĩnh vực CNTT, mục tiêu nghề nghiệp và chứng chỉ.
+- Xem trang chủ và lộ trình học cá nhân.
+- Học bài học, thuật ngữ và từ vựng chuyên ngành.
+- Ôn từ bằng flashcard.
+- Làm quiz, bài luyện tập tình huống và bài kiểm tra.
+- Xem điểm, giải thích đáp án và lịch sử làm bài.
+- Theo dõi tiến độ học tập cá nhân.
+
+Mobile hiện chạy ở chế độ demo; đăng nhập và dữ liệu học chưa gọi backend thật.
+
+### Backend và dữ liệu
+
+Kiến trúc mục tiêu của backend là **NestJS + Prisma + PostgreSQL** theo Clean Architecture. Hiện tại `apps/api` mới có:
+
+- Prisma schema khởi tạo.
+- Biến môi trường mẫu cho PostgreSQL.
+- Quy ước vị trí Prisma trong tầng Infrastructure.
+
+Các API cho xác thực, người dùng, nội dung học, bài kiểm tra, tiến độ, báo cáo và gợi ý cá nhân hóa chưa được triển khai.
+
+## Tài khoản Web demo
+
+Tại trang `/login`, có thể dùng một trong hai tài khoản sau với mật khẩu bất kỳ dài ít nhất 6 ký tự:
+
+| Vai trò | Email |
+| --- | --- |
+| Admin | `admin@techenglish.pro` |
+| Giảng viên | `teacher@techenglish.pro` |
+
+Bạn cũng có thể chọn nút đăng nhập nhanh ngay trên giao diện.
+
+## Công nghệ
+
+| Thành phần | Công nghệ |
+| --- | --- |
+| Web | Next.js 15, React 19, TypeScript, Tailwind CSS 4 |
+| Mobile | Expo SDK 54, React Native 0.81, Expo Router 6, TypeScript |
+| Backend mục tiêu | NestJS, TypeScript |
+| Dữ liệu mục tiêu | PostgreSQL, Prisma ORM |
+| Monorepo | pnpm Workspaces |
+| Kiến trúc | Clean Architecture, feature-based modules |
+
+## Kiến trúc tổng thể
 
 ```text
-                        ┌───────────────────┐
-                        │    Next.js Web    │ (Admin/Teacher Portal)
-                        └─────────┬─────────┘
-                                  │ (HTTP REST API)
-                                  ▼
-┌───────────────────┐   ┌───────────────────┐   ┌───────────────────┐
-│   React Native    ├──>│    NestJS API     ├──>│   Prisma ORM &    │
-│    Learner App    │   │ (Clean Architecture)  │    PostgreSQL     │
-└───────────────────┘   └───────────────────┘   └───────────────────┘
+Next.js Web ─────┐
+                 ├── REST API (NestJS) ── Prisma ── PostgreSQL
+Expo Mobile ─────┘
+
+        apps dùng chung kiểu dữ liệu và design tokens
+                           │
+                           ▼
+                 packages/contracts
+                 packages/design-tokens
+                 packages/shared-kernel
 ```
 
-### 1. Phân chia ứng dụng (`apps/`)
-* **`apps/api`**: RESTful API Backend xây dựng trên **NestJS** + **TypeScript**. Sử dụng **Prisma ORM** kết nối tới cơ sở dữ liệu **PostgreSQL**.
-* **`apps/web`**: Giao diện Web xây dựng trên **Next.js (App Router)** dành cho Admin & Giảng viên để soạn giáo trình, bài học, ngân hàng câu hỏi, quản lý học viên và xem báo cáo.
-* **`apps/mobile`**: Ứng dụng di động xây dựng trên **React Native (Expo SDK 51)** dành cho học viên ôn luyện từ vựng, flashcard, làm bài thi thử và theo dõi tiến độ.
+Web và Mobile chỉ giao tiếp với NestJS API, không truy cập trực tiếp PostgreSQL. Backend được định hướng chia thành bốn lớp:
 
-### 2. Các gói dùng chung (`packages/`)
-* **`packages/contracts`**: Định nghĩa các API Contracts, kiểu dữ liệu Pure TypeScript được chia sẻ giữa Backend, Web và Mobile.
-* **`packages/design-tokens`**: Các định nghĩa về màu sắc, khoảng cách, font chữ dùng chung giữa Web và Mobile.
-* **`packages/shared-kernel`**: Chứa các hàm tiện ích, cấu trúc dữ liệu cơ bản dùng chung, độc lập hoàn toàn với framework.
+1. **Domain:** entity, value object và quy tắc nghiệp vụ thuần TypeScript.
+2. **Application:** use case và interface giao tiếp với dữ liệu/dịch vụ.
+3. **Infrastructure:** Prisma, PostgreSQL và các adapter bên ngoài.
+4. **Presentation:** REST controller và DTO của NestJS.
 
----
+## Cấu trúc thư mục
 
-## 🏗️ Kiến Trúc Sạch (Clean Architecture)
+```text
+English/
+├── apps/
+│   ├── api/                 # Backend skeleton và Prisma schema
+│   ├── web/                 # Cổng Admin/Giảng viên và giao diện learner trên web
+│   └── mobile/              # Ứng dụng học viên Expo/React Native
+├── packages/
+│   ├── contracts/           # API contracts và kiểu dữ liệu dùng chung
+│   ├── design-tokens/       # Màu sắc, typography, spacing và radius
+│   └── shared-kernel/       # Result, pagination và tiện ích thuần TypeScript
+├── docs/                    # Yêu cầu, domain, kiến trúc và roadmap
+├── pnpm-workspace.yaml
+└── package.json
+```
 
-Hệ thống tuân thủ nghiêm ngặt nguyên lý **Clean Architecture** với hướng đi của Dependency từ ngoài vào trong:
+## Yêu cầu môi trường
 
-$$\text{Presentation} \longrightarrow \text{Application} \longrightarrow \text{Domain}$$
+- **Node.js `>= 20.19.4`** — yêu cầu của React Native 0.81.
+- **pnpm `11.9.0`** — phiên bản được khai báo trong repository.
+- **Expo Go** tương thích SDK 54 hoặc Android/iOS emulator để chạy Mobile.
+- PostgreSQL chỉ cần thiết khi bắt đầu triển khai backend và persistence thật.
 
-* **Domain Layer (Core)**: Chứa các Entity, Value Object độc lập hoàn toàn với framework (không chứa NestJS, Next.js, React Native hay Prisma decorator).
-* **Application Layer**: Chứa các Use Case (nghiệp vụ hệ thống) và các Port (Interface) cho Repository.
-* **Infrastructure Layer**: Hiện thực hóa (Implementation) các Port của Application. Chứa Prisma Client, cấu hình database PostgreSQL, kết nối các dịch vụ thứ ba.
-* **Presentation Layer**: Điểm giao tiếp với người dùng gồm NestJS Controller, Next.js Pages, React Native Screens.
+Kiểm tra phiên bản đang dùng:
 
----
-
-## ⚙️ Yêu Cầu Hệ Thống (Prerequisites)
-
-Trước khi bắt đầu cài đặt, hãy đảm bảo máy tính của bạn đã cài đặt các công cụ sau:
-* **Node.js**: Phiên bản `>= 18.x` (Khuyến nghị sử dụng bản LTS mới nhất).
-* **PNPM**: Trình quản lý gói chính của dự án (phiên bản `>= 9.x`).
-  * Cài đặt qua npm: `npm install -g pnpm`
-* **PostgreSQL**: Cơ sở dữ liệu chính (có thể chạy local hoặc qua Docker).
-* **Expo Go / Emulator**:
-  * Thiết bị iOS/Android chạy app **Expo Go** (để test trên máy thật).
-  * Hoặc Android Studio (Android Emulator) / Xcode (iOS Simulator) trên máy tính.
-
----
-
-## 🚀 Hướng Dẫn Cài Đặt (Installation)
-
-### Bước 1: Clone mã nguồn dự án
 ```bash
-git clone <repository_url>
+node --version
+pnpm --version
+```
+
+## Cài đặt
+
+```bash
+git clone <repository-url>
 cd English
-```
-
-### Bước 2: Cài đặt Dependencies cho toàn bộ Monorepo
-Chạy duy nhất một lệnh tại thư mục gốc để pnpm tự động phân tích và cài đặt thư viện cho tất cả các app và package con:
-```bash
 pnpm install
 ```
 
----
+## Chạy dự án
 
-## 💻 Hướng Dẫn Chạy Ứng Dụng (Running the Apps)
+### Web
 
-Tất cả lệnh chạy dự án đều có thể thực hiện trực tiếp từ thư mục gốc thông qua lệnh lọc (`--filter`) của pnpm:
-
-### 1. Khởi chạy Web Portal (Next.js)
 ```bash
-pnpm --filter "web" run dev
+pnpm --filter web dev
 ```
-* Ứng dụng Web sẽ hoạt động tại địa chỉ: 👉 [**http://localhost:3000**](http://localhost:3000)
 
-### 2. Khởi chạy Mobile App (Expo / React Native)
-Để khởi động môi trường Expo:
+Mở [http://localhost:3000](http://localhost:3000). Trang đăng nhập nằm tại [http://localhost:3000/login](http://localhost:3000/login).
+
+### Mobile
+
 ```bash
-pnpm --filter "mobile" run dev
+pnpm --filter mobile dev
 ```
-* **Lưu ý**: Nếu gặp lỗi bộ nhớ đệm hoặc mới cập nhật thư viện, bạn nên chạy lệnh xóa cache:
-  ```bash
-  pnpm --filter "mobile" run dev -c
-  ```
-* **Cách mở app**:
-  * Nhấn phím **`a`** để mở trên máy ảo Android (Pixel/Android Emulator).
-  * Nhấn phím **`i`** để mở trên máy ảo iOS.
-  * Quét mã QR hiển thị trên màn hình bằng ứng dụng **Expo Go** trên điện thoại để test máy thật.
 
-### 3. Khởi chạy Backend API (NestJS)
-*(Sau khi đã thiết lập cơ sở dữ liệu)*
+Sau khi Expo khởi động:
+
+- Quét mã QR bằng Expo Go để chạy trên thiết bị thật.
+- Nhấn `a` để mở Android emulator.
+- Nhấn `i` để mở iOS Simulator trên macOS.
+
+Nếu Metro giữ cache cũ sau khi cập nhật dependency:
+
 ```bash
-pnpm --filter "api" run dev
+pnpm -C apps/mobile exec expo start --clear
 ```
-* API của bạn sẽ chạy tại địa chỉ mặc định: 👉 `http://localhost:3080/api` (hoặc cấu hình trong `.env`).
 
----
+### Backend
 
-## 🗄️ Thiết Lập Cơ Sở Dữ Liệu (PostgreSQL & Prisma)
+Backend chưa có NestJS application để khởi chạy. `apps/api` hiện chỉ là skeleton cho Prisma; cần triển khai API trước khi kết nối Web và Mobile.
 
-### 1. Thiết lập biến môi trường
-Tạo file `.env` trong thư mục `apps/api/` dựa trên file `.env.example`:
+### Swagger / OpenAPI
+
+Đặc tả API nguồn nằm tại [`apps/api/openapi.yaml`](apps/api/openapi.yaml). File sử dụng OpenAPI 3.0.3 và có thể import trực tiếp vào [Swagger Editor](https://editor.swagger.io/) để xem tài liệu tương tác hoặc dùng làm contract khi triển khai NestJS.
+
+Contract hiện bao phủ 16 nhóm tài nguyên, gồm xác thực, người dùng, hồ sơ và nhóm học viên, danh mục, nội dung học, câu hỏi, bài thi, lượt làm bài, tiến độ, báo cáo và gợi ý cá nhân hóa. Mỗi endpoint định nghĩa rõ:
+
+- Quyền truy cập và JWT Bearer authentication.
+- Path/query parameters, request body và response body.
+- Kiểu dữ liệu, trường bắt buộc, giới hạn độ dài, enum và ví dụ.
+- Phân trang, tìm kiếm, lọc và sắp xếp.
+- Mã lỗi xác thực, phân quyền, validation, not found và conflict.
+- Quy tắc server tự chấm bài và giữ snapshot kết quả lịch sử.
+
+## Kiểm tra mã nguồn
+
+Kiểm tra các package dùng chung:
+
+```bash
+pnpm typecheck
+```
+
+Kiểm tra riêng từng giao diện:
+
+```bash
+pnpm --filter web typecheck
+pnpm --filter mobile typecheck
+```
+
+Build bản production của Web:
+
+```bash
+pnpm --filter web build
+```
+
+## Cấu hình PostgreSQL dự kiến
+
+Sao chép `apps/api/.env.example` thành `apps/api/.env` và thay thông tin kết nối:
+
 ```env
-DATABASE_URL="postgresql://<username>:<password>@localhost:5432/<db_name>?schema=public"
+DATABASE_URL="postgresql://postgres:password@localhost:5432/techenglish?schema=public"
 ```
 
-### 2. Đồng bộ Database & Sinh Prisma Client
-Tại thư mục gốc, chạy các lệnh sau để định hình dữ liệu:
-```bash
-# Định dạng lại schema prisma
-pnpm --filter "api" exec prisma format
+Không commit file `.env` hoặc thông tin đăng nhập thật lên repository.
 
-# Kiểm tra tính hợp lệ của schema
-pnpm --filter "api" exec prisma validate
+## Trạng thái triển khai
 
-# Áp dụng migration để tạo bảng trong PostgreSQL
-pnpm --filter "api" exec prisma migrate dev --name init
+| Hạng mục | Trạng thái |
+| --- | --- |
+| Web Admin/Giảng viên | Giao diện và luồng demo bằng mock data |
+| Mobile học viên | Giao diện và điều hướng demo |
+| Shared contracts/design tokens | Đã có nền tảng ban đầu |
+| Swagger/OpenAPI contract | Đã định nghĩa contract v1 |
+| NestJS API | Chưa triển khai |
+| Prisma data model và migrations | Chưa triển khai |
+| PostgreSQL integration | Chưa kết nối |
+| Xác thực và RBAC thật | Chưa triển khai |
+| AI personalization | Mới ở mức yêu cầu sản phẩm |
 
-# Sinh mã nguồn Prisma Client tương ứng
-pnpm --filter "api" exec prisma generate
-```
+## Tài liệu chi tiết
 
----
+- [Project brief](docs/00-project-brief.md)
+- [Yêu cầu chức năng](docs/01-functional-requirements.md)
+- [Domain model](docs/03-domain-model.md)
+- [Cấu trúc dự án](docs/08-project-structure.md)
+- [Tech stack](docs/16-tech-stack.md)
+- [Clean Architecture](docs/17-clean-architecture.md)
+- [Web Next.js](docs/19-web-nextjs.md)
+- [Mobile React Native](docs/20-mobile-react-native.md)
+- [PostgreSQL và Prisma](docs/22-postgresql-prisma.md)
+- [Swagger/OpenAPI contract](apps/api/openapi.yaml)
 
-## 🛠️ Quy Trình & Kế Hoạch Phát Triển Tiếp Theo (Roadmap)
+## Roadmap gần nhất
 
-Dự án hiện tại đang hoàn thiện giao diện Client & Admin. Các bước tiếp theo cần triển khai bao gồm:
-
-### 🚀 1. Phát triển Cơ sở dữ liệu (PostgreSQL + Prisma)
-- [ ] Thiết kế cơ sở dữ liệu chi tiết trong `apps/api/prisma/schema.prisma`.
-- [ ] Xây dựng các Model: `User`, `Role`, `LearnerProfile`, `Level` (CEFR), `Lesson`, `Vocabulary`, `Question` (Trắc nghiệm, Tình huống, Đọc hiểu), `Exam`, `Progress`.
-- [ ] Viết script Seed dữ liệu mẫu (`apps/api/prisma/seed.ts`) cho các vai trò và hệ thống từ vựng chuyên ngành.
-
-### 🔌 2. Phát triển API Backend (NestJS)
-- [ ] Xây dựng mô hình Authentication & Authorization (RBAC: Admin, Teacher, Learner).
-- [ ] Phát triển các Use Cases quản lý nội dung học (Tạo/Sửa bài học, câu hỏi, đề thi).
-- [ ] Phát triển công cụ chấm điểm tự động và lưu lịch sử làm bài thi thử của Học viên.
-
-### 📱 3. Tích hợp & Kiểm thử (Integration)
-- [ ] Kết nối Next.js Web và Expo Mobile tới NestJS API Backend thay cho dữ liệu Mock hiện tại.
-- [ ] Tích hợp tính năng phát âm âm thanh (Audio IPA) và các bài học tương tác.
-- [ ] Thực hiện kiểm thử tích hợp (Integration Tests) bảo đảm tính chính xác của luồng chấm điểm và lưu tiến độ học tập.
+1. Thiết kế Prisma models và migrations theo domain tài liệu.
+2. Khởi tạo NestJS API theo các module nghiệp vụ.
+3. Triển khai authentication và RBAC cho Admin, Giảng viên, Học viên.
+4. Thay repository mock trên Web/Mobile bằng adapter gọi REST API.
+5. Hoàn thiện lưu tiến độ, chấm điểm, báo cáo và gợi ý cá nhân hóa.

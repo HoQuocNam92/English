@@ -1,0 +1,2862 @@
+openapi: 3.0.3
+info:
+  title: TechEnglish Pro API
+  version: 1.0.0
+  description: |
+    REST API contract cho hệ thống TechEnglish Pro (KLCN028).
+
+    ## Quy ước
+    - Base path: `/api/v1`.
+    - ID sử dụng UUID.
+    - Thời gian sử dụng ISO 8601 UTC.
+    - Endpoint có biểu tượng khóa yêu cầu JWT Bearer token.
+    - Danh sách dùng phân trang theo `page` và `limit`.
+    - Client không được gửi điểm khi nộp bài; server là nguồn sự thật cho chấm điểm.
+
+    ## Vai trò
+    - `admin`: quản trị tài khoản, danh mục và toàn bộ dữ liệu.
+    - `teacher`: quản lý nội dung, câu hỏi, bài thi và xem báo cáo được phép.
+    - `learner`: học bài, làm bài thi và xem dữ liệu cá nhân.
+  contact:
+    name: TechEnglish Pro
+  license:
+    name: Proprietary - Academic Project
+servers:
+  - url: /api/v1
+    description: Cùng host với API deployment; local mặc định là http://localhost:3080/api/v1.
+tags:
+  - name: Auth
+    description: Đăng ký, đăng nhập và quản lý phiên.
+  - name: Users
+    description: Quản lý tài khoản và vai trò.
+  - name: Learner Profiles
+    description: Hồ sơ, sở thích và mục tiêu của học viên.
+  - name: Learner Groups
+    description: Lớp học, giảng viên phụ trách và danh sách thành viên.
+  - name: Domains
+    description: Lĩnh vực CNTT.
+  - name: Levels
+    description: Cấp độ học.
+  - name: Career Goals
+    description: Mục tiêu nghề nghiệp.
+  - name: Certificates
+    description: Chứng chỉ và nội dung ôn tập.
+  - name: Vocabularies
+    description: Từ vựng và thuật ngữ chuyên ngành.
+  - name: Lessons
+    description: Bài học và nội dung bài học.
+  - name: Questions
+    description: Ngân hàng câu hỏi.
+  - name: Exams
+    description: Xây dựng và phát hành bài kiểm tra.
+  - name: Attempts
+    description: Làm bài, nộp bài và xem kết quả.
+  - name: Progress
+    description: Tiến độ học tập được tính từ hoạt động thực tế.
+  - name: Reports
+    description: Dữ liệu tổng hợp cho dashboard và báo cáo.
+  - name: Recommendations
+    description: Gợi ý học tập cá nhân hóa.
+
+paths:
+  /auth/register:
+    post:
+      tags: [Auth]
+      summary: Đăng ký tài khoản học viên
+      operationId: registerLearner
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RegisterRequest'
+      responses:
+        '201':
+          description: Đăng ký thành công.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthResponse'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '422':
+          $ref: '#/components/responses/ValidationError'
+
+  /auth/login:
+    post:
+      tags: [Auth]
+      summary: Đăng nhập
+      operationId: login
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginRequest'
+      responses:
+        '200':
+          description: Đăng nhập thành công.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '422':
+          $ref: '#/components/responses/ValidationError'
+
+  /auth/refresh:
+    post:
+      tags: [Auth]
+      summary: Cấp lại access token
+      operationId: refreshToken
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RefreshTokenRequest'
+      responses:
+        '200':
+          description: Token mới.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TokenPairResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  /auth/logout:
+    post:
+      tags: [Auth]
+      summary: Đăng xuất và thu hồi refresh token
+      operationId: logout
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RefreshTokenRequest'
+      responses:
+        '204':
+          description: Đăng xuất thành công.
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  /auth/me:
+    get:
+      tags: [Auth]
+      summary: Lấy phiên người dùng hiện tại
+      operationId: getCurrentUser
+      responses:
+        '200':
+          description: Thông tin người dùng hiện tại.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  /auth/change-password:
+    post:
+      tags: [Auth]
+      summary: Đổi mật khẩu
+      operationId: changePassword
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ChangePasswordRequest'
+      responses:
+        '204':
+          description: Đổi mật khẩu thành công; các phiên cũ có thể bị thu hồi.
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '422':
+          $ref: '#/components/responses/ValidationError'
+
+  /users:
+    get:
+      tags: [Users]
+      summary: Danh sách tài khoản
+      description: Chỉ Admin/Giảng viên có quyền phù hợp.
+      operationId: listUsers
+      parameters:
+        - $ref: '#/components/parameters/Page'
+        - $ref: '#/components/parameters/Limit'
+        - $ref: '#/components/parameters/Search'
+        - $ref: '#/components/parameters/Sort'
+        - name: role
+          in: query
+          schema:
+            $ref: '#/components/schemas/UserRole'
+        - name: status
+          in: query
+          schema:
+            $ref: '#/components/schemas/UserStatus'
+      responses:
+        '200':
+          description: Danh sách tài khoản.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserListResponse'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+    post:
+      tags: [Users]
+      summary: Tạo tài khoản
+      operationId: createUser
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateUserRequest'
+      responses:
+        '201':
+          description: Tài khoản đã tạo.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserResponse'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '422':
+          $ref: '#/components/responses/ValidationError'
+
+  /users/{userId}:
+    parameters:
+      - $ref: '#/components/parameters/UserId'
+    get:
+      tags: [Users]
+      summary: Chi tiết tài khoản
+      operationId: getUser
+      responses:
+        '200':
+          description: Chi tiết tài khoản.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserResponse'
+        '404':
+          $ref: '#/components/responses/NotFound'
+    patch:
+      tags: [Users]
+      summary: Cập nhật tài khoản
+      operationId: updateUser
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateUserRequest'
+      responses:
+        '200':
+          description: Tài khoản sau cập nhật.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserResponse'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '422':
+          $ref: '#/components/responses/ValidationError'
+    delete:
+      tags: [Users]
+      summary: Vô hiệu hóa tài khoản
+      description: Không xóa lịch sử học; chuyển trạng thái tài khoản sang inactive.
+      operationId: deactivateUser
+      responses:
+        '204':
+          description: Tài khoản đã bị vô hiệu hóa.
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /learner-profiles:
+    get:
+      tags: [Learner Profiles]
+      summary: Danh sách hồ sơ học viên
+      operationId: listLearnerProfiles
+      parameters:
+        - $ref: '#/components/parameters/Page'
+        - $ref: '#/components/parameters/Limit'
+        - $ref: '#/components/parameters/Search'
+        - name: levelId
+          in: query
+          schema:
+            type: string
+            format: uuid
+        - name: domainId
+          in: query
+          schema:
+            type: string
+            format: uuid
+        - name: certificateId
+          in: query
+          schema:
+            type: string
+            format: uuid
+        - name: careerGoalId
+          in: query
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Danh sách hồ sơ học viên.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LearnerProfileListResponse'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+
+  /learner-groups:
+    get:
+      tags: [Learner Groups]
+      summary: Danh sách nhóm học viên
+      operationId: listLearnerGroups
+      parameters:
+        - $ref: '#/components/parameters/Page'
+        - $ref: '#/components/parameters/Limit'
+        - $ref: '#/components/parameters/Search'
+        - $ref: '#/components/parameters/DomainFilter'
+        - name: certificateId
+          in: query
+          schema: { type: string, format: uuid }
+        - name: teacherId
+          in: query
+          schema: { type: string, format: uuid }
+        - name: status
+          in: query
+          schema: { $ref: '#/components/schemas/LearnerGroupStatus' }
+      responses:
+        '200':
+          description: Danh sách nhóm học viên và tiến độ tổng hợp.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/LearnerGroupListResponse' }
+        '403':
+          $ref: '#/components/responses/Forbidden'
+    post:
+      tags: [Learner Groups]
+      summary: Tạo nhóm học viên
+      operationId: createLearnerGroup
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/LearnerGroupWriteRequest' }
+      responses:
+        '201':
+          description: Nhóm học viên đã tạo.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/LearnerGroupResponse' }
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '422':
+          $ref: '#/components/responses/ValidationError'
+
+  /learner-groups/{learnerGroupId}:
+    parameters:
+      - $ref: '#/components/parameters/LearnerGroupId'
+    get:
+      tags: [Learner Groups]
+      summary: Chi tiết nhóm và thành viên
+      operationId: getLearnerGroup
+      responses:
+        '200':
+          description: Chi tiết nhóm học viên.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/LearnerGroupResponse' }
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+    patch:
+      tags: [Learner Groups]
+      summary: Cập nhật nhóm học viên
+      operationId: updateLearnerGroup
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/LearnerGroupWriteRequest' }
+      responses:
+        '200':
+          description: Nhóm sau cập nhật.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/LearnerGroupResponse' }
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '422':
+          $ref: '#/components/responses/ValidationError'
+    delete:
+      tags: [Learner Groups]
+      summary: Lưu trữ nhóm học viên
+      operationId: archiveLearnerGroup
+      responses:
+        '204':
+          description: Nhóm học viên đã được lưu trữ.
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /learner-groups/{learnerGroupId}/members:
+    parameters:
+      - $ref: '#/components/parameters/LearnerGroupId'
+    put:
+      tags: [Learner Groups]
+      summary: Thay thế danh sách thành viên nhóm
+      description: Idempotent; learnerIds phải thuộc các tài khoản có vai trò learner.
+      operationId: replaceLearnerGroupMembers
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/ReplaceGroupMembersRequest' }
+      responses:
+        '200':
+          description: Nhóm cùng danh sách thành viên mới.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/LearnerGroupResponse' }
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '422':
+          $ref: '#/components/responses/ValidationError'
+
+  /learner-profiles/me:
+    get:
+      tags: [Learner Profiles]
+      summary: Hồ sơ học viên hiện tại
+      operationId: getMyLearnerProfile
+      responses:
+        '200':
+          description: Hồ sơ hiện tại.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LearnerProfileResponse'
+        '404':
+          $ref: '#/components/responses/NotFound'
+    put:
+      tags: [Learner Profiles]
+      summary: Tạo hoặc cập nhật hồ sơ hiện tại
+      operationId: upsertMyLearnerProfile
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpsertLearnerProfileRequest'
+      responses:
+        '200':
+          description: Hồ sơ sau cập nhật.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LearnerProfileResponse'
+        '422':
+          $ref: '#/components/responses/ValidationError'
+
+  /learner-profiles/{learnerProfileId}:
+    parameters:
+      - $ref: '#/components/parameters/LearnerProfileId'
+    get:
+      tags: [Learner Profiles]
+      summary: Chi tiết hồ sơ học viên
+      operationId: getLearnerProfile
+      responses:
+        '200':
+          description: Chi tiết hồ sơ.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LearnerProfileResponse'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+    patch:
+      tags: [Learner Profiles]
+      summary: Cập nhật hồ sơ học viên
+      operationId: updateLearnerProfile
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpsertLearnerProfileRequest'
+      responses:
+        '200':
+          description: Hồ sơ sau cập nhật.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LearnerProfileResponse'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /domains:
+    get:
+      tags: [Domains]
+      summary: Danh sách lĩnh vực CNTT
+      operationId: listDomains
+      security: []
+      parameters:
+        - $ref: '#/components/parameters/Page'
+        - $ref: '#/components/parameters/Limit'
+        - $ref: '#/components/parameters/Search'
+        - $ref: '#/components/parameters/ActiveOnly'
+      responses:
+        '200':
+          description: Danh sách lĩnh vực.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DomainListResponse'
+        '422':
+          $ref: '#/components/responses/ValidationError'
+    post:
+      tags: [Domains]
+      summary: Tạo lĩnh vực CNTT
+      operationId: createDomain
+      requestBody:
+        $ref: '#/components/requestBodies/DomainWriteBody'
+      responses:
+        '201':
+          description: Lĩnh vực đã tạo.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DomainResponse'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '409':
+          $ref: '#/components/responses/Conflict'
+
+  /domains/{domainId}:
+    parameters:
+      - $ref: '#/components/parameters/DomainId'
+    get:
+      tags: [Domains]
+      summary: Chi tiết lĩnh vực CNTT
+      operationId: getDomain
+      security: []
+      responses:
+        '200':
+          description: Chi tiết lĩnh vực.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DomainResponse'
+        '404':
+          $ref: '#/components/responses/NotFound'
+    patch:
+      tags: [Domains]
+      summary: Cập nhật lĩnh vực CNTT
+      operationId: updateDomain
+      requestBody:
+        $ref: '#/components/requestBodies/DomainWriteBody'
+      responses:
+        '200':
+          description: Lĩnh vực sau cập nhật.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DomainResponse'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+    delete:
+      tags: [Domains]
+      summary: Ngừng sử dụng lĩnh vực CNTT
+      operationId: archiveDomain
+      responses:
+        '204':
+          description: Lĩnh vực đã được lưu trữ.
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /levels:
+    get:
+      tags: [Levels]
+      summary: Danh sách cấp độ học
+      operationId: listLevels
+      security: []
+      responses:
+        '200':
+          description: Danh sách cấp độ theo thứ tự tăng dần.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LevelListResponse'
+        '422':
+          $ref: '#/components/responses/ValidationError'
+    post:
+      tags: [Levels]
+      summary: Tạo cấp độ học
+      operationId: createLevel
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LevelWriteRequest'
+      responses:
+        '201':
+          description: Cấp độ đã tạo.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LevelResponse'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '409':
+          $ref: '#/components/responses/Conflict'
+
+  /levels/{levelId}:
+    parameters:
+      - $ref: '#/components/parameters/LevelId'
+    get:
+      tags: [Levels]
+      summary: Chi tiết cấp độ học
+      operationId: getLevel
+      security: []
+      responses:
+        '200':
+          description: Chi tiết cấp độ.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LevelResponse'
+        '404':
+          $ref: '#/components/responses/NotFound'
+    patch:
+      tags: [Levels]
+      summary: Cập nhật cấp độ học
+      operationId: updateLevel
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LevelWriteRequest'
+      responses:
+        '200':
+          description: Cấp độ sau cập nhật.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LevelResponse'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+    delete:
+      tags: [Levels]
+      summary: Ngừng sử dụng cấp độ học
+      operationId: archiveLevel
+      responses:
+        '204':
+          description: Cấp độ đã được lưu trữ.
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /career-goals:
+    get:
+      tags: [Career Goals]
+      summary: Danh sách mục tiêu nghề nghiệp
+      operationId: listCareerGoals
+      security: []
+      parameters:
+        - $ref: '#/components/parameters/Page'
+        - $ref: '#/components/parameters/Limit'
+        - $ref: '#/components/parameters/Search'
+        - $ref: '#/components/parameters/ActiveOnly'
+      responses:
+        '200':
+          description: Danh sách mục tiêu nghề nghiệp.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CareerGoalListResponse'
+        '422':
+          $ref: '#/components/responses/ValidationError'
+    post:
+      tags: [Career Goals]
+      summary: Tạo mục tiêu nghề nghiệp
+      operationId: createCareerGoal
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CareerGoalWriteRequest'
+      responses:
+        '201':
+          description: Mục tiêu nghề nghiệp đã tạo.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CareerGoalResponse'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '409':
+          $ref: '#/components/responses/Conflict'
+
+  /career-goals/{careerGoalId}:
+    parameters:
+      - $ref: '#/components/parameters/CareerGoalId'
+    get:
+      tags: [Career Goals]
+      summary: Chi tiết mục tiêu nghề nghiệp
+      operationId: getCareerGoal
+      security: []
+      responses:
+        '200':
+          description: Chi tiết mục tiêu.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CareerGoalResponse'
+        '404':
+          $ref: '#/components/responses/NotFound'
+    patch:
+      tags: [Career Goals]
+      summary: Cập nhật mục tiêu nghề nghiệp
+      operationId: updateCareerGoal
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CareerGoalWriteRequest'
+      responses:
+        '200':
+          description: Mục tiêu sau cập nhật.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CareerGoalResponse'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+    delete:
+      tags: [Career Goals]
+      summary: Ngừng sử dụng mục tiêu nghề nghiệp
+      operationId: archiveCareerGoal
+      responses:
+        '204':
+          description: Mục tiêu đã được lưu trữ.
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /certificates:
+    get:
+      tags: [Certificates]
+      summary: Danh sách chứng chỉ
+      operationId: listCertificates
+      security: []
+      parameters:
+        - $ref: '#/components/parameters/Page'
+        - $ref: '#/components/parameters/Limit'
+        - $ref: '#/components/parameters/Search'
+        - name: domainId
+          in: query
+          schema:
+            type: string
+            format: uuid
+        - $ref: '#/components/parameters/ActiveOnly'
+      responses:
+        '200':
+          description: Danh sách chứng chỉ.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CertificateListResponse'
+        '422':
+          $ref: '#/components/responses/ValidationError'
+    post:
+      tags: [Certificates]
+      summary: Tạo chứng chỉ
+      operationId: createCertificate
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CertificateWriteRequest'
+      responses:
+        '201':
+          description: Chứng chỉ đã tạo.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CertificateResponse'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '409':
+          $ref: '#/components/responses/Conflict'
+
+  /certificates/{certificateId}:
+    parameters:
+      - $ref: '#/components/parameters/CertificateId'
+    get:
+      tags: [Certificates]
+      summary: Chi tiết chứng chỉ
+      operationId: getCertificate
+      security: []
+      responses:
+        '200':
+          description: Chi tiết chứng chỉ.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CertificateResponse'
+        '404':
+          $ref: '#/components/responses/NotFound'
+    patch:
+      tags: [Certificates]
+      summary: Cập nhật chứng chỉ
+      operationId: updateCertificate
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CertificateWriteRequest'
+      responses:
+        '200':
+          description: Chứng chỉ sau cập nhật.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CertificateResponse'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+    delete:
+      tags: [Certificates]
+      summary: Ngừng sử dụng chứng chỉ
+      operationId: archiveCertificate
+      responses:
+        '204':
+          description: Chứng chỉ đã được lưu trữ.
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /vocabularies:
+    get:
+      tags: [Vocabularies]
+      summary: Danh sách từ vựng
+      operationId: listVocabularies
+      parameters:
+        - $ref: '#/components/parameters/Page'
+        - $ref: '#/components/parameters/Limit'
+        - $ref: '#/components/parameters/Search'
+        - $ref: '#/components/parameters/Sort'
+        - $ref: '#/components/parameters/DomainFilter'
+        - $ref: '#/components/parameters/LevelFilter'
+        - name: status
+          in: query
+          schema:
+            $ref: '#/components/schemas/ContentStatus'
+      responses:
+        '200':
+          description: Danh sách từ vựng.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VocabularyListResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+    post:
+      tags: [Vocabularies]
+      summary: Tạo từ vựng
+      operationId: createVocabulary
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/VocabularyWriteRequest'
+      responses:
+        '201':
+          description: Từ vựng đã tạo.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VocabularyResponse'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '422':
+          $ref: '#/components/responses/ValidationError'
+
+  /vocabularies/{vocabularyId}:
+    parameters:
+      - $ref: '#/components/parameters/VocabularyId'
+    get:
+      tags: [Vocabularies]
+      summary: Chi tiết từ vựng
+      operationId: getVocabulary
+      responses:
+        '200':
+          description: Chi tiết từ vựng.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VocabularyResponse'
+        '404':
+          $ref: '#/components/responses/NotFound'
+    patch:
+      tags: [Vocabularies]
+      summary: Cập nhật từ vựng
+      operationId: updateVocabulary
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/VocabularyWriteRequest'
+      responses:
+        '200':
+          description: Từ vựng sau cập nhật.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VocabularyResponse'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+    delete:
+      tags: [Vocabularies]
+      summary: Lưu trữ từ vựng
+      operationId: archiveVocabulary
+      responses:
+        '204':
+          description: Từ vựng đã được lưu trữ.
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /lessons:
+    get:
+      tags: [Lessons]
+      summary: Danh sách bài học
+      operationId: listLessons
+      parameters:
+        - $ref: '#/components/parameters/Page'
+        - $ref: '#/components/parameters/Limit'
+        - $ref: '#/components/parameters/Search'
+        - $ref: '#/components/parameters/Sort'
+        - $ref: '#/components/parameters/DomainFilter'
+        - $ref: '#/components/parameters/LevelFilter'
+        - name: type
+          in: query
+          schema:
+            $ref: '#/components/schemas/LessonType'
+        - name: status
+          in: query
+          schema:
+            $ref: '#/components/schemas/ContentStatus'
+        - name: certificateId
+          in: query
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Danh sách bài học.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LessonListResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+    post:
+      tags: [Lessons]
+      summary: Tạo bài học
+      operationId: createLesson
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LessonWriteRequest'
+      responses:
+        '201':
+          description: Bài học đã tạo ở trạng thái draft.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LessonResponse'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '422':
+          $ref: '#/components/responses/ValidationError'
+
+  /lessons/{lessonId}:
+    parameters:
+      - $ref: '#/components/parameters/LessonId'
+    get:
+      tags: [Lessons]
+      summary: Chi tiết bài học
+      operationId: getLesson
+      responses:
+        '200':
+          description: Bài học kèm các section theo thứ tự.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LessonResponse'
+        '404':
+          $ref: '#/components/responses/NotFound'
+    put:
+      tags: [Lessons]
+      summary: Thay thế nội dung bài học
+      operationId: replaceLesson
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LessonWriteRequest'
+      responses:
+        '200':
+          description: Bài học sau cập nhật.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LessonResponse'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '422':
+          $ref: '#/components/responses/ValidationError'
+    delete:
+      tags: [Lessons]
+      summary: Lưu trữ bài học
+      operationId: archiveLesson
+      responses:
+        '204':
+          description: Bài học đã được lưu trữ.
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /lessons/{lessonId}/publish:
+    parameters:
+      - $ref: '#/components/parameters/LessonId'
+    post:
+      tags: [Lessons]
+      summary: Phát hành bài học
+      operationId: publishLesson
+      responses:
+        '200':
+          description: Bài học đã phát hành.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LessonResponse'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+
+  /lessons/{lessonId}/complete:
+    parameters:
+      - $ref: '#/components/parameters/LessonId'
+    post:
+      tags: [Lessons]
+      summary: Đánh dấu hoàn thành bài học
+      description: Chỉ học viên hiện tại; server cập nhật tiến độ dựa trên hoạt động này.
+      operationId: completeLesson
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CompleteLessonRequest'
+      responses:
+        '200':
+          description: Tiến độ bài học sau cập nhật.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LearningProgressResponse'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+
+  /questions:
+    get:
+      tags: [Questions]
+      summary: Danh sách câu hỏi
+      operationId: listQuestions
+      parameters:
+        - $ref: '#/components/parameters/Page'
+        - $ref: '#/components/parameters/Limit'
+        - $ref: '#/components/parameters/Search'
+        - $ref: '#/components/parameters/DomainFilter'
+        - $ref: '#/components/parameters/LevelFilter'
+        - name: type
+          in: query
+          schema:
+            $ref: '#/components/schemas/QuestionType'
+        - name: topic
+          in: query
+          schema:
+            type: string
+        - name: certificateId
+          in: query
+          schema:
+            type: string
+            format: uuid
+        - name: status
+          in: query
+          schema:
+            $ref: '#/components/schemas/ContentStatus'
+      responses:
+        '200':
+          description: Danh sách câu hỏi. Đáp án đúng chỉ trả cho Admin/Giảng viên.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/QuestionListResponse'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+    post:
+      tags: [Questions]
+      summary: Tạo câu hỏi
+      operationId: createQuestion
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/QuestionWriteRequest'
+      responses:
+        '201':
+          description: Câu hỏi đã tạo.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/QuestionResponse'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '422':
+          $ref: '#/components/responses/ValidationError'
+
+  /questions/{questionId}:
+    parameters:
+      - $ref: '#/components/parameters/QuestionId'
+    get:
+      tags: [Questions]
+      summary: Chi tiết câu hỏi
+      operationId: getQuestion
+      responses:
+        '200':
+          description: Chi tiết câu hỏi dành cho quản trị nội dung.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/QuestionResponse'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+    put:
+      tags: [Questions]
+      summary: Thay thế câu hỏi
+      operationId: replaceQuestion
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/QuestionWriteRequest'
+      responses:
+        '200':
+          description: Câu hỏi sau cập nhật.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/QuestionResponse'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '422':
+          $ref: '#/components/responses/ValidationError'
+    delete:
+      tags: [Questions]
+      summary: Lưu trữ câu hỏi
+      operationId: archiveQuestion
+      responses:
+        '204':
+          description: Câu hỏi đã được lưu trữ.
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /exams:
+    get:
+      tags: [Exams]
+      summary: Danh sách bài kiểm tra
+      operationId: listExams
+      parameters:
+        - $ref: '#/components/parameters/Page'
+        - $ref: '#/components/parameters/Limit'
+        - $ref: '#/components/parameters/Search'
+        - $ref: '#/components/parameters/DomainFilter'
+        - $ref: '#/components/parameters/LevelFilter'
+        - name: certificateId
+          in: query
+          schema:
+            type: string
+            format: uuid
+        - name: status
+          in: query
+          schema:
+            $ref: '#/components/schemas/ContentStatus'
+      responses:
+        '200':
+          description: Danh sách bài kiểm tra phù hợp quyền người dùng.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ExamListResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+    post:
+      tags: [Exams]
+      summary: Tạo bài kiểm tra
+      operationId: createExam
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ExamWriteRequest'
+      responses:
+        '201':
+          description: Bài kiểm tra đã tạo ở trạng thái draft.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ExamResponse'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '422':
+          $ref: '#/components/responses/ValidationError'
+
+  /exams/{examId}:
+    parameters:
+      - $ref: '#/components/parameters/ExamId'
+    get:
+      tags: [Exams]
+      summary: Chi tiết bài kiểm tra
+      description: Học viên không nhận đáp án đúng trước khi nộp bài.
+      operationId: getExam
+      responses:
+        '200':
+          description: Chi tiết bài kiểm tra.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ExamResponse'
+        '404':
+          $ref: '#/components/responses/NotFound'
+    put:
+      tags: [Exams]
+      summary: Thay thế cấu hình bài kiểm tra
+      operationId: replaceExam
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ExamWriteRequest'
+      responses:
+        '200':
+          description: Bài kiểm tra sau cập nhật.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ExamResponse'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+    delete:
+      tags: [Exams]
+      summary: Lưu trữ bài kiểm tra
+      operationId: archiveExam
+      responses:
+        '204':
+          description: Bài kiểm tra đã được lưu trữ.
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /exams/{examId}/publish:
+    parameters:
+      - $ref: '#/components/parameters/ExamId'
+    post:
+      tags: [Exams]
+      summary: Phát hành bài kiểm tra
+      operationId: publishExam
+      responses:
+        '200':
+          description: Bài kiểm tra đã phát hành.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ExamResponse'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+
+  /exams/{examId}/attempts:
+    parameters:
+      - $ref: '#/components/parameters/ExamId'
+    post:
+      tags: [Attempts]
+      summary: Bắt đầu lượt làm bài
+      operationId: startExamAttempt
+      responses:
+        '201':
+          description: Lượt làm bài kèm snapshot câu hỏi không chứa đáp án đúng.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AttemptResponse'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+
+  /attempts:
+    get:
+      tags: [Attempts]
+      summary: Lịch sử làm bài
+      operationId: listAttempts
+      parameters:
+        - $ref: '#/components/parameters/Page'
+        - $ref: '#/components/parameters/Limit'
+        - name: learnerId
+          in: query
+          description: Admin/Giảng viên có thể lọc; Learner chỉ xem chính mình.
+          schema:
+            type: string
+            format: uuid
+        - name: examId
+          in: query
+          schema:
+            type: string
+            format: uuid
+        - name: status
+          in: query
+          schema:
+            $ref: '#/components/schemas/AttemptStatus'
+        - $ref: '#/components/parameters/FromDate'
+        - $ref: '#/components/parameters/ToDate'
+      responses:
+        '200':
+          description: Danh sách lượt làm bài.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AttemptListResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  /attempts/{attemptId}:
+    parameters:
+      - $ref: '#/components/parameters/AttemptId'
+    get:
+      tags: [Attempts]
+      summary: Chi tiết lượt làm bài
+      operationId: getAttempt
+      responses:
+        '200':
+          description: Lượt làm bài; explanation chỉ có sau khi đã nộp.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AttemptResponse'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /attempts/{attemptId}/answers:
+    parameters:
+      - $ref: '#/components/parameters/AttemptId'
+    put:
+      tags: [Attempts]
+      summary: Lưu tạm câu trả lời
+      description: Idempotent; chỉ cho phép khi attempt đang `in_progress`.
+      operationId: saveAttemptAnswers
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SaveAnswersRequest'
+      responses:
+        '200':
+          description: Trạng thái lưu câu trả lời.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SaveAnswersResponse'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '422':
+          $ref: '#/components/responses/ValidationError'
+
+  /attempts/{attemptId}/submit:
+    parameters:
+      - $ref: '#/components/parameters/AttemptId'
+    post:
+      tags: [Attempts]
+      summary: Nộp và chấm bài
+      description: |
+        Server kiểm tra quyền sở hữu, thời hạn, tính hợp lệ của đáp án, tự chấm,
+        lưu snapshot kết quả và cập nhật tiến độ trong một transaction. Client không gửi score.
+      operationId: submitAttempt
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SubmitAttemptRequest'
+      responses:
+        '200':
+          description: Kết quả chấm bài và giải thích đáp án.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AttemptResultResponse'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '422':
+          $ref: '#/components/responses/ValidationError'
+
+  /progress/me:
+    get:
+      tags: [Progress]
+      summary: Tiến độ của học viên hiện tại
+      operationId: getMyProgress
+      parameters:
+        - $ref: '#/components/parameters/DomainFilter'
+        - name: certificateId
+          in: query
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Tổng quan và chi tiết tiến độ được server tính toán.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProgressSummaryResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  /progress/learners/{learnerId}:
+    parameters:
+      - $ref: '#/components/parameters/LearnerId'
+    get:
+      tags: [Progress]
+      summary: Tiến độ của một học viên
+      operationId: getLearnerProgress
+      parameters:
+        - $ref: '#/components/parameters/DomainFilter'
+        - name: certificateId
+          in: query
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Tiến độ học viên.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProgressSummaryResponse'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /reports/dashboard:
+    get:
+      tags: [Reports]
+      summary: Số liệu dashboard quản trị
+      operationId: getDashboardReport
+      parameters:
+        - $ref: '#/components/parameters/FromDate'
+        - $ref: '#/components/parameters/ToDate'
+      responses:
+        '200':
+          description: KPI và hoạt động gần đây.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DashboardReportResponse'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+
+  /reports/learner-distribution:
+    get:
+      tags: [Reports]
+      summary: Phân bố học viên
+      operationId: getLearnerDistributionReport
+      parameters:
+        - name: groupBy
+          in: query
+          required: true
+          schema:
+            type: string
+            enum: [domain, level, career_goal, certificate]
+      responses:
+        '200':
+          description: Số học viên theo nhóm.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DistributionReportResponse'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+
+  /reports/certificate-scores:
+    get:
+      tags: [Reports]
+      summary: Điểm theo mục tiêu chứng chỉ
+      operationId: getCertificateScoreReport
+      parameters:
+        - name: certificateId
+          in: query
+          schema:
+            type: string
+            format: uuid
+        - $ref: '#/components/parameters/FromDate'
+        - $ref: '#/components/parameters/ToDate'
+      responses:
+        '200':
+          description: Điểm tổng hợp theo chứng chỉ.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CertificateScoreReportResponse'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+
+  /reports/learning-progress:
+    get:
+      tags: [Reports]
+      summary: Báo cáo tiến độ học tập
+      operationId: getLearningProgressReport
+      parameters:
+        - $ref: '#/components/parameters/Page'
+        - $ref: '#/components/parameters/Limit'
+        - $ref: '#/components/parameters/Search'
+        - $ref: '#/components/parameters/DomainFilter'
+        - $ref: '#/components/parameters/LevelFilter'
+      responses:
+        '200':
+          description: Báo cáo tiến độ theo học viên.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LearningProgressReportResponse'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+
+  /recommendations/me:
+    get:
+      tags: [Recommendations]
+      summary: Gợi ý học tập cá nhân hóa
+      operationId: getMyRecommendations
+      parameters:
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 20
+            default: 5
+      responses:
+        '200':
+          description: Danh sách gợi ý theo ưu tiên cùng lý do giải thích.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RecommendationListResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  /recommendations/{recommendationId}/feedback:
+    parameters:
+      - $ref: '#/components/parameters/RecommendationId'
+    post:
+      tags: [Recommendations]
+      summary: Gửi phản hồi cho gợi ý
+      operationId: submitRecommendationFeedback
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RecommendationFeedbackRequest'
+      responses:
+        '204':
+          description: Đã ghi nhận phản hồi.
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '422':
+          $ref: '#/components/responses/ValidationError'
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  parameters:
+    Page:
+      name: page
+      in: query
+      description: Số trang, bắt đầu từ 1.
+      schema:
+        type: integer
+        minimum: 1
+        default: 1
+    Limit:
+      name: limit
+      in: query
+      description: Số phần tử mỗi trang.
+      schema:
+        type: integer
+        minimum: 1
+        maximum: 100
+        default: 20
+    Search:
+      name: search
+      in: query
+      description: Tìm kiếm không phân biệt hoa thường theo các trường văn bản chính.
+      schema:
+        type: string
+        minLength: 1
+        maxLength: 100
+    Sort:
+      name: sort
+      in: query
+      description: Trường và chiều sắp xếp, ví dụ `createdAt:desc`.
+      schema:
+        type: string
+        pattern: '^[A-Za-z][A-Za-z0-9]*:(asc|desc)$'
+        example: createdAt:desc
+    ActiveOnly:
+      name: activeOnly
+      in: query
+      schema:
+        type: boolean
+        default: true
+    FromDate:
+      name: from
+      in: query
+      description: Thời điểm bắt đầu, bao gồm giá trị này.
+      schema:
+        type: string
+        format: date-time
+    ToDate:
+      name: to
+      in: query
+      description: Thời điểm kết thúc, bao gồm giá trị này.
+      schema:
+        type: string
+        format: date-time
+    DomainFilter:
+      name: domainId
+      in: query
+      schema:
+        type: string
+        format: uuid
+    LevelFilter:
+      name: levelId
+      in: query
+      schema:
+        type: string
+        format: uuid
+    UserId:
+      name: userId
+      in: path
+      required: true
+      schema: { type: string, format: uuid }
+    LearnerId:
+      name: learnerId
+      in: path
+      required: true
+      schema: { type: string, format: uuid }
+    LearnerProfileId:
+      name: learnerProfileId
+      in: path
+      required: true
+      schema: { type: string, format: uuid }
+    LearnerGroupId:
+      name: learnerGroupId
+      in: path
+      required: true
+      schema: { type: string, format: uuid }
+    DomainId:
+      name: domainId
+      in: path
+      required: true
+      schema: { type: string, format: uuid }
+    LevelId:
+      name: levelId
+      in: path
+      required: true
+      schema: { type: string, format: uuid }
+    CareerGoalId:
+      name: careerGoalId
+      in: path
+      required: true
+      schema: { type: string, format: uuid }
+    CertificateId:
+      name: certificateId
+      in: path
+      required: true
+      schema: { type: string, format: uuid }
+    VocabularyId:
+      name: vocabularyId
+      in: path
+      required: true
+      schema: { type: string, format: uuid }
+    LessonId:
+      name: lessonId
+      in: path
+      required: true
+      schema: { type: string, format: uuid }
+    QuestionId:
+      name: questionId
+      in: path
+      required: true
+      schema: { type: string, format: uuid }
+    ExamId:
+      name: examId
+      in: path
+      required: true
+      schema: { type: string, format: uuid }
+    AttemptId:
+      name: attemptId
+      in: path
+      required: true
+      schema: { type: string, format: uuid }
+    RecommendationId:
+      name: recommendationId
+      in: path
+      required: true
+      schema: { type: string, format: uuid }
+
+  requestBodies:
+    DomainWriteBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/DomainWriteRequest'
+
+  responses:
+    Unauthorized:
+      description: Token thiếu, hết hạn hoặc không hợp lệ.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            success: false
+            error: { code: UNAUTHORIZED, message: Authentication is required., requestId: req_01 }
+    Forbidden:
+      description: Người dùng không có quyền thực hiện thao tác.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    NotFound:
+      description: Không tìm thấy tài nguyên.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    Conflict:
+      description: Xung đột trạng thái hoặc dữ liệu đã tồn tại.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    ValidationError:
+      description: Dữ liệu đầu vào không hợp lệ.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ValidationErrorResponse'
+
+  schemas:
+    UserRole:
+      type: string
+      description: Vai trò quyết định phạm vi truy cập.
+      enum: [admin, teacher, learner]
+    UserStatus:
+      type: string
+      enum: [active, inactive, suspended]
+    ContentStatus:
+      type: string
+      enum: [draft, published, archived]
+    LessonType:
+      type: string
+      enum: [vocabulary, terminology, technical_reading, api_documentation, system_design, case_study]
+    QuestionType:
+      type: string
+      enum: [single_choice, multiple_choice, true_false, short_answer, scenario]
+    AttemptStatus:
+      type: string
+      enum: [in_progress, submitted, graded, expired]
+    ProgressStatus:
+      type: string
+      enum: [not_started, in_progress, completed]
+    LearnerGroupStatus:
+      type: string
+      enum: [active, completed, archived]
+
+    PaginationMeta:
+      type: object
+      required: [page, limit, totalItems, totalPages, hasNextPage, hasPreviousPage]
+      properties:
+        page: { type: integer, minimum: 1, example: 1 }
+        limit: { type: integer, minimum: 1, example: 20 }
+        totalItems: { type: integer, minimum: 0, example: 42 }
+        totalPages: { type: integer, minimum: 0, example: 3 }
+        hasNextPage: { type: boolean, example: true }
+        hasPreviousPage: { type: boolean, example: false }
+
+    ErrorDetail:
+      type: object
+      required: [code, message, requestId]
+      properties:
+        code:
+          type: string
+          description: Mã ổn định để client xử lý.
+          example: RESOURCE_NOT_FOUND
+        message:
+          type: string
+          description: Thông báo an toàn cho người dùng hoặc developer.
+          example: The requested resource was not found.
+        requestId:
+          type: string
+          description: ID tương quan để tra log; không chứa dữ liệu nhạy cảm.
+          example: req_01JABCDEF
+    FieldViolation:
+      type: object
+      required: [field, message]
+      properties:
+        field: { type: string, example: email }
+        code: { type: string, example: INVALID_FORMAT }
+        message: { type: string, example: Email must be valid. }
+    ErrorResponse:
+      type: object
+      required: [success, error]
+      properties:
+        success: { type: boolean, enum: [false] }
+        error:
+          $ref: '#/components/schemas/ErrorDetail'
+    ValidationErrorResponse:
+      type: object
+      required: [success, error]
+      properties:
+        success: { type: boolean, enum: [false] }
+        error:
+          allOf:
+            - $ref: '#/components/schemas/ErrorDetail'
+            - type: object
+              required: [details]
+              properties:
+                details:
+                  type: array
+                  items:
+                    $ref: '#/components/schemas/FieldViolation'
+
+    RegisterRequest:
+      type: object
+      additionalProperties: false
+      required: [email, password, displayName]
+      properties:
+        email: { type: string, format: email, maxLength: 254, example: learner@example.com }
+        password:
+          type: string
+          format: password
+          minLength: 8
+          maxLength: 72
+          description: Phải thỏa chính sách mật khẩu phía server; không được ghi log.
+          example: Learner@123
+        displayName: { type: string, minLength: 2, maxLength: 100, example: Nguyễn Văn Nam }
+    LoginRequest:
+      type: object
+      additionalProperties: false
+      required: [email, password]
+      properties:
+        email: { type: string, format: email, maxLength: 254, example: learner@example.com }
+        password: { type: string, format: password, minLength: 1, maxLength: 72, example: Learner@123 }
+    RefreshTokenRequest:
+      type: object
+      additionalProperties: false
+      required: [refreshToken]
+      properties:
+        refreshToken:
+          type: string
+          minLength: 20
+          description: Refresh token bí mật; không lưu trong log.
+    ChangePasswordRequest:
+      type: object
+      additionalProperties: false
+      required: [currentPassword, newPassword]
+      properties:
+        currentPassword: { type: string, format: password, minLength: 1, maxLength: 72 }
+        newPassword: { type: string, format: password, minLength: 8, maxLength: 72 }
+    TokenPair:
+      type: object
+      required: [accessToken, refreshToken, tokenType, expiresIn]
+      properties:
+        accessToken: { type: string, description: JWT truy cập ngắn hạn. }
+        refreshToken: { type: string, description: Token dùng để cấp lại access token. }
+        tokenType: { type: string, enum: [Bearer] }
+        expiresIn: { type: integer, minimum: 1, description: 'Thời gian sống access token, đơn vị giây.', example: 900 }
+    AuthPayload:
+      type: object
+      required: [tokens, user]
+      properties:
+        tokens: { $ref: '#/components/schemas/TokenPair' }
+        user: { $ref: '#/components/schemas/User' }
+    AuthResponse:
+      type: object
+      required: [success, data]
+      properties:
+        success: { type: boolean, enum: [true] }
+        data: { $ref: '#/components/schemas/AuthPayload' }
+    TokenPairResponse:
+      type: object
+      required: [success, data]
+      properties:
+        success: { type: boolean, enum: [true] }
+        data: { $ref: '#/components/schemas/TokenPair' }
+
+    User:
+      type: object
+      required: [id, email, displayName, role, status, createdAt, updatedAt]
+      properties:
+        id: { type: string, format: uuid }
+        email: { type: string, format: email, maxLength: 254 }
+        displayName: { type: string, minLength: 2, maxLength: 100 }
+        avatarUrl: { type: string, format: uri, nullable: true, maxLength: 2048 }
+        role: { $ref: '#/components/schemas/UserRole' }
+        status: { $ref: '#/components/schemas/UserStatus' }
+        lastLoginAt: { type: string, format: date-time, nullable: true }
+        createdAt: { type: string, format: date-time }
+        updatedAt: { type: string, format: date-time }
+    CreateUserRequest:
+      type: object
+      additionalProperties: false
+      required: [email, displayName, role]
+      properties:
+        email: { type: string, format: email, maxLength: 254 }
+        displayName: { type: string, minLength: 2, maxLength: 100 }
+        role: { $ref: '#/components/schemas/UserRole' }
+        temporaryPassword: { type: string, format: password, minLength: 8, maxLength: 72, nullable: true }
+        sendInvitation: { type: boolean, default: true }
+    UpdateUserRequest:
+      type: object
+      additionalProperties: false
+      minProperties: 1
+      properties:
+        displayName: { type: string, minLength: 2, maxLength: 100 }
+        avatarUrl: { type: string, format: uri, nullable: true, maxLength: 2048 }
+        role: { $ref: '#/components/schemas/UserRole' }
+        status: { $ref: '#/components/schemas/UserStatus' }
+    UserResponse:
+      type: object
+      required: [success, data]
+      properties:
+        success: { type: boolean, enum: [true] }
+        data: { $ref: '#/components/schemas/User' }
+    UserListResponse:
+      type: object
+      required: [success, data, meta]
+      properties:
+        success: { type: boolean, enum: [true] }
+        data: { type: array, items: { $ref: '#/components/schemas/User' } }
+        meta: { $ref: '#/components/schemas/PaginationMeta' }
+
+    LearnerProfile:
+      type: object
+      required: [id, user, level, domains, careerGoals, certificateGoals, onboardingCompleted, createdAt, updatedAt]
+      properties:
+        id: { type: string, format: uuid }
+        user: { $ref: '#/components/schemas/User' }
+        level: { $ref: '#/components/schemas/Level' }
+        domains: { type: array, items: { $ref: '#/components/schemas/Domain' } }
+        careerGoals: { type: array, items: { $ref: '#/components/schemas/CareerGoal' } }
+        certificateGoals: { type: array, items: { $ref: '#/components/schemas/CertificateGoal' } }
+        bio: { type: string, nullable: true, maxLength: 500 }
+        weeklyStudyTargetMinutes: { type: integer, minimum: 0, maximum: 10080, example: 180 }
+        onboardingCompleted: { type: boolean }
+        createdAt: { type: string, format: date-time }
+        updatedAt: { type: string, format: date-time }
+    UpsertLearnerProfileRequest:
+      type: object
+      additionalProperties: false
+      required: [levelId, domainIds, careerGoalIds, certificateGoals]
+      properties:
+        levelId: { type: string, format: uuid }
+        domainIds:
+          type: array
+          minItems: 1
+          uniqueItems: true
+          items: { type: string, format: uuid }
+        careerGoalIds:
+          type: array
+          uniqueItems: true
+          items: { type: string, format: uuid }
+        certificateGoals:
+          type: array
+          uniqueItems: true
+          items:
+            $ref: '#/components/schemas/CertificateGoalInput'
+        bio: { type: string, nullable: true, maxLength: 500 }
+        weeklyStudyTargetMinutes: { type: integer, minimum: 0, maximum: 10080, default: 180 }
+    CertificateGoalInput:
+      type: object
+      additionalProperties: false
+      required: [certificateId]
+      properties:
+        certificateId: { type: string, format: uuid }
+        targetDate: { type: string, format: date, nullable: true }
+    CertificateGoal:
+      type: object
+      required: [certificate, progressPercent]
+      properties:
+        certificate: { $ref: '#/components/schemas/Certificate' }
+        targetDate: { type: string, format: date, nullable: true }
+        progressPercent: { type: number, format: float, minimum: 0, maximum: 100, readOnly: true }
+    LearnerProfileResponse:
+      type: object
+      required: [success, data]
+      properties:
+        success: { type: boolean, enum: [true] }
+        data: { $ref: '#/components/schemas/LearnerProfile' }
+    LearnerProfileListResponse:
+      type: object
+      required: [success, data, meta]
+      properties:
+        success: { type: boolean, enum: [true] }
+        data: { type: array, items: { $ref: '#/components/schemas/LearnerProfile' } }
+        meta: { $ref: '#/components/schemas/PaginationMeta' }
+
+    LearnerGroup:
+      type: object
+      required: [id, name, domain, certificate, teacher, status, members, memberCount, progressPercent, averageScorePercent, createdAt, updatedAt]
+      properties:
+        id: { type: string, format: uuid }
+        name: { type: string, minLength: 3, maxLength: 150, example: 'AWS Solutions Architect Fast-Track #01' }
+        description: { type: string, nullable: true, maxLength: 1000 }
+        domain: { $ref: '#/components/schemas/Domain' }
+        certificate: { $ref: '#/components/schemas/Certificate' }
+        teacher: { $ref: '#/components/schemas/User' }
+        status: { $ref: '#/components/schemas/LearnerGroupStatus' }
+        members: { type: array, items: { $ref: '#/components/schemas/User' } }
+        memberCount: { type: integer, minimum: 0, readOnly: true }
+        progressPercent: { type: number, format: float, minimum: 0, maximum: 100, readOnly: true }
+        averageScorePercent: { type: number, format: float, minimum: 0, maximum: 100, nullable: true, readOnly: true }
+        startsAt: { type: string, format: date-time, nullable: true }
+        endsAt: { type: string, format: date-time, nullable: true }
+        createdAt: { type: string, format: date-time }
+        updatedAt: { type: string, format: date-time }
+    LearnerGroupWriteRequest:
+      type: object
+      additionalProperties: false
+      required: [name, domainId, certificateId, teacherId, status]
+      properties:
+        name: { type: string, minLength: 3, maxLength: 150 }
+        description: { type: string, nullable: true, maxLength: 1000 }
+        domainId: { type: string, format: uuid }
+        certificateId: { type: string, format: uuid }
+        teacherId: { type: string, format: uuid, description: Tài khoản phải có vai trò teacher. }
+        status: { $ref: '#/components/schemas/LearnerGroupStatus' }
+        startsAt: { type: string, format: date-time, nullable: true }
+        endsAt: { type: string, format: date-time, nullable: true }
+    ReplaceGroupMembersRequest:
+      type: object
+      additionalProperties: false
+      required: [learnerIds]
+      properties:
+        learnerIds:
+          type: array
+          uniqueItems: true
+          maxItems: 500
+          items: { type: string, format: uuid }
+    LearnerGroupResponse:
+      type: object
+      required: [success, data]
+      properties:
+        success: { type: boolean, enum: [true] }
+        data: { $ref: '#/components/schemas/LearnerGroup' }
+    LearnerGroupListResponse:
+      type: object
+      required: [success, data, meta]
+      properties:
+        success: { type: boolean, enum: [true] }
+        data: { type: array, items: { $ref: '#/components/schemas/LearnerGroup' } }
+        meta: { $ref: '#/components/schemas/PaginationMeta' }
+
+    Domain:
+      type: object
+      required: [id, code, name, description, isActive, createdAt, updatedAt]
+      properties:
+        id: { type: string, format: uuid }
+        code: { type: string, pattern: '^[A-Z0-9_]{2,30}$', example: CLOUD }
+        name: { type: string, minLength: 2, maxLength: 100, example: Cloud Computing }
+        description: { type: string, maxLength: 500 }
+        icon: { type: string, nullable: true, maxLength: 100, example: cloud }
+        isActive: { type: boolean }
+        createdAt: { type: string, format: date-time }
+        updatedAt: { type: string, format: date-time }
+    DomainWriteRequest:
+      type: object
+      additionalProperties: false
+      required: [code, name, description]
+      properties:
+        code: { type: string, pattern: '^[A-Z0-9_]{2,30}$', example: DEVOPS }
+        name: { type: string, minLength: 2, maxLength: 100, example: DevOps }
+        description: { type: string, minLength: 1, maxLength: 500 }
+        icon: { type: string, nullable: true, maxLength: 100 }
+        isActive: { type: boolean, default: true }
+    DomainResponse:
+      type: object
+      required: [success, data]
+      properties:
+        success: { type: boolean, enum: [true] }
+        data: { $ref: '#/components/schemas/Domain' }
+    DomainListResponse:
+      type: object
+      required: [success, data, meta]
+      properties:
+        success: { type: boolean, enum: [true] }
+        data: { type: array, items: { $ref: '#/components/schemas/Domain' } }
+        meta: { $ref: '#/components/schemas/PaginationMeta' }
+
+    Level:
+      type: object
+      required: [id, code, name, order, description, isActive]
+      properties:
+        id: { type: string, format: uuid }
+        code: { type: string, enum: [beginner, intermediate, advanced, professional] }
+        name: { type: string, minLength: 2, maxLength: 50 }
+        order: { type: integer, minimum: 1, maximum: 100 }
+        description: { type: string, maxLength: 500 }
+        isActive: { type: boolean }
+    LevelWriteRequest:
+      type: object
+      additionalProperties: false
+      required: [code, name, order, description]
+      properties:
+        code: { type: string, enum: [beginner, intermediate, advanced, professional] }
+        name: { type: string, minLength: 2, maxLength: 50 }
+        order: { type: integer, minimum: 1, maximum: 100 }
+        description: { type: string, minLength: 1, maxLength: 500 }
+        isActive: { type: boolean, default: true }
+    LevelResponse:
+      type: object
+      required: [success, data]
+      properties:
+        success: { type: boolean, enum: [true] }
+        data: { $ref: '#/components/schemas/Level' }
+    LevelListResponse:
+      type: object
+      required: [success, data]
+      properties:
+        success: { type: boolean, enum: [true] }
+        data: { type: array, items: { $ref: '#/components/schemas/Level' } }
+
+    CareerGoal:
+      type: object
+      required: [id, code, name, description, isActive]
+      properties:
+        id: { type: string, format: uuid }
+        code: { type: string, pattern: '^[A-Z0-9_]{2,40}$', example: BACKEND_ENGINEER }
+        name: { type: string, minLength: 2, maxLength: 100, example: Backend Engineer }
+        description: { type: string, maxLength: 500 }
+        isActive: { type: boolean }
+    CareerGoalWriteRequest:
+      type: object
+      additionalProperties: false
+      required: [code, name, description]
+      properties:
+        code: { type: string, pattern: '^[A-Z0-9_]{2,40}$' }
+        name: { type: string, minLength: 2, maxLength: 100 }
+        description: { type: string, minLength: 1, maxLength: 500 }
+        isActive: { type: boolean, default: true }
+    CareerGoalResponse:
+      type: object
+      required: [success, data]
+      properties:
+        success: { type: boolean, enum: [true] }
+        data: { $ref: '#/components/schemas/CareerGoal' }
+    CareerGoalListResponse:
+      type: object
+      required: [success, data, meta]
+      properties:
+        success: { type: boolean, enum: [true] }
+        data: { type: array, items: { $ref: '#/components/schemas/CareerGoal' } }
+        meta: { $ref: '#/components/schemas/PaginationMeta' }
+
+    Certificate:
+      type: object
+      required: [id, code, name, provider, description, domainIds, isActive, createdAt, updatedAt]
+      properties:
+        id: { type: string, format: uuid }
+        code: { type: string, pattern: '^[A-Z0-9_-]{2,40}$', example: AWS-SAA }
+        name: { type: string, minLength: 2, maxLength: 150, example: AWS Certified Solutions Architect – Associate }
+        provider: { type: string, minLength: 2, maxLength: 100, example: Amazon Web Services }
+        description: { type: string, maxLength: 1000 }
+        examUrl: { type: string, format: uri, nullable: true, maxLength: 2048 }
+        domainIds: { type: array, uniqueItems: true, items: { type: string, format: uuid } }
+        isActive: { type: boolean }
+        createdAt: { type: string, format: date-time }
+        updatedAt: { type: string, format: date-time }
+    CertificateWriteRequest:
+      type: object
+      additionalProperties: false
+      required: [code, name, provider, description, domainIds]
+      properties:
+        code: { type: string, pattern: '^[A-Z0-9_-]{2,40}$' }
+        name: { type: string, minLength: 2, maxLength: 150 }
+        provider: { type: string, minLength: 2, maxLength: 100 }
+        description: { type: string, minLength: 1, maxLength: 1000 }
+        examUrl: { type: string, format: uri, nullable: true, maxLength: 2048 }
+        domainIds: { type: array, minItems: 1, uniqueItems: true, items: { type: string, format: uuid } }
+        isActive: { type: boolean, default: true }
+    CertificateResponse:
+      type: object
+      required: [success, data]
+      properties:
+        success: { type: boolean, enum: [true] }
+        data: { $ref: '#/components/schemas/Certificate' }
+    CertificateListResponse:
+      type: object
+      required: [success, data, meta]
+      properties:
+        success: { type: boolean, enum: [true] }
+        data: { type: array, items: { $ref: '#/components/schemas/Certificate' } }
+        meta: { $ref: '#/components/schemas/PaginationMeta' }
+
+    Vocabulary:
+      type: object
+      required: [id, term, definitionEn, definitionVi, domain, level, examples, status, createdAt, updatedAt]
+      properties:
+        id: { type: string, format: uuid }
+        term: { type: string, minLength: 1, maxLength: 150, example: idempotent }
+        pronunciationIpa: { type: string, nullable: true, maxLength: 100, example: /ˌaɪdəmˈpoʊtənt/ }
+        audioUrl: { type: string, format: uri, nullable: true, maxLength: 2048 }
+        partOfSpeech: { type: string, nullable: true, maxLength: 50, example: adjective }
+        definitionEn: { type: string, minLength: 1, maxLength: 1000 }
+        definitionVi: { type: string, minLength: 1, maxLength: 1000 }
+        examples: { type: array, maxItems: 10, items: { $ref: '#/components/schemas/VocabularyExample' } }
+        domain: { $ref: '#/components/schemas/Domain' }
+        level: { $ref: '#/components/schemas/Level' }
+        tags: { type: array, uniqueItems: true, maxItems: 20, items: { type: string, maxLength: 50 } }
+        status: { $ref: '#/components/schemas/ContentStatus' }
+        createdAt: { type: string, format: date-time }
+        updatedAt: { type: string, format: date-time }
+    VocabularyExample:
+      type: object
+      required: [sentenceEn]
+      properties:
+        sentenceEn: { type: string, minLength: 1, maxLength: 500 }
+        translationVi: { type: string, nullable: true, maxLength: 500 }
+    VocabularyWriteRequest:
+      type: object
+      additionalProperties: false
+      required: [term, definitionEn, definitionVi, domainId, levelId, examples, status]
+      properties:
+        term: { type: string, minLength: 1, maxLength: 150 }
+        pronunciationIpa: { type: string, nullable: true, maxLength: 100 }
+        audioUrl: { type: string, format: uri, nullable: true, maxLength: 2048 }
+        partOfSpeech: { type: string, nullable: true, maxLength: 50 }
+        definitionEn: { type: string, minLength: 1, maxLength: 1000 }
+        definitionVi: { type: string, minLength: 1, maxLength: 1000 }
+        examples: { type: array, maxItems: 10, items: { $ref: '#/components/schemas/VocabularyExample' } }
+        domainId: { type: string, format: uuid }
+        levelId: { type: string, format: uuid }
+        tags: { type: array, uniqueItems: true, maxItems: 20, items: { type: string, maxLength: 50 } }
+        status: { $ref: '#/components/schemas/ContentStatus' }
+    VocabularyResponse:
+      type: object
+      required: [success, data]
+      properties:
+        success: { type: boolean, enum: [true] }
+        data: { $ref: '#/components/schemas/Vocabulary' }
+    VocabularyListResponse:
+      type: object
+      required: [success, data, meta]
+      properties:
+        success: { type: boolean, enum: [true] }
+        data: { type: array, items: { $ref: '#/components/schemas/Vocabulary' } }
+        meta: { $ref: '#/components/schemas/PaginationMeta' }
+
+    LessonSectionType:
+      type: string
+      enum: [heading, rich_text, image, audio, video, code, vocabulary_list, callout, quiz]
+    LessonSection:
+      type: object
+      additionalProperties: false
+      required: [id, type, order, content]
+      properties:
+        id: { type: string, format: uuid }
+        type: { $ref: '#/components/schemas/LessonSectionType' }
+        order: { type: integer, minimum: 1 }
+        title: { type: string, nullable: true, maxLength: 200 }
+        content:
+          type: object
+          description: Nội dung theo `type`; rich text phải được server sanitize trước khi lưu/hiển thị.
+          additionalProperties: true
+          example: { text: An API gateway is a single entry point for clients. }
+    LessonSectionInput:
+      type: object
+      additionalProperties: false
+      required: [type, order, content]
+      properties:
+        type: { $ref: '#/components/schemas/LessonSectionType' }
+        order: { type: integer, minimum: 1 }
+        title: { type: string, nullable: true, maxLength: 200 }
+        content: { type: object, additionalProperties: true }
+    Lesson:
+      type: object
+      required: [id, title, slug, summary, type, domain, level, sections, estimatedMinutes, status, createdBy, createdAt, updatedAt]
+      properties:
+        id: { type: string, format: uuid }
+        title: { type: string, minLength: 3, maxLength: 200 }
+        slug: { type: string, pattern: '^[a-z0-9]+(?:-[a-z0-9]+)*$', maxLength: 220 }
+        summary: { type: string, minLength: 1, maxLength: 1000 }
+        type: { $ref: '#/components/schemas/LessonType' }
+        domain: { $ref: '#/components/schemas/Domain' }
+        level: { $ref: '#/components/schemas/Level' }
+        certificateIds: { type: array, uniqueItems: true, items: { type: string, format: uuid } }
+        vocabularyIds: { type: array, uniqueItems: true, items: { type: string, format: uuid } }
+        sections: { type: array, minItems: 1, items: { $ref: '#/components/schemas/LessonSection' } }
+        estimatedMinutes: { type: integer, minimum: 1, maximum: 1440 }
+        thumbnailUrl: { type: string, format: uri, nullable: true, maxLength: 2048 }
+        status: { $ref: '#/components/schemas/ContentStatus' }
+        publishedAt: { type: string, format: date-time, nullable: true }
+        createdBy: { $ref: '#/components/schemas/User' }
+        createdAt: { type: string, format: date-time }
+        updatedAt: { type: string, format: date-time }
+    LessonWriteRequest:
+      type: object
+      additionalProperties: false
+      required: [title, slug, summary, type, domainId, levelId, sections, estimatedMinutes]
+      properties:
+        title: { type: string, minLength: 3, maxLength: 200 }
+        slug: { type: string, pattern: '^[a-z0-9]+(?:-[a-z0-9]+)*$', maxLength: 220 }
+        summary: { type: string, minLength: 1, maxLength: 1000 }
+        type: { $ref: '#/components/schemas/LessonType' }
+        domainId: { type: string, format: uuid }
+        levelId: { type: string, format: uuid }
+        certificateIds: { type: array, uniqueItems: true, items: { type: string, format: uuid } }
+        vocabularyIds: { type: array, uniqueItems: true, items: { type: string, format: uuid } }
+        sections: { type: array, minItems: 1, items: { $ref: '#/components/schemas/LessonSectionInput' } }
+        estimatedMinutes: { type: integer, minimum: 1, maximum: 1440 }
+        thumbnailUrl: { type: string, format: uri, nullable: true, maxLength: 2048 }
+    LessonResponse:
+      type: object
+      required: [success, data]
+      properties:
+        success: { type: boolean, enum: [true] }
+        data: { $ref: '#/components/schemas/Lesson' }
+    LessonListResponse:
+      type: object
+      required: [success, data, meta]
+      properties:
+        success: { type: boolean, enum: [true] }
+        data: { type: array, items: { $ref: '#/components/schemas/Lesson' } }
+        meta: { $ref: '#/components/schemas/PaginationMeta' }
+    CompleteLessonRequest:
+      type: object
+      additionalProperties: false
+      properties:
+        spentSeconds: { type: integer, minimum: 0, maximum: 86400, description: Thời gian học để phân tích; không quyết định trực tiếp completion. }
+
+    QuestionOptionInput:
+      type: object
+      additionalProperties: false
+      required: [key, text, isCorrect]
+      properties:
+        key: { type: string, pattern: '^[A-Z][A-Z0-9_]{0,9}$', example: A }
+        text: { type: string, minLength: 1, maxLength: 1000 }
+        isCorrect: { type: boolean, description: Chỉ hiện với Admin/Giảng viên hoặc sau khi attempt đã nộp. }
+        explanation: { type: string, nullable: true, maxLength: 2000 }
+    QuestionOption:
+      allOf:
+        - type: object
+          required: [id]
+          properties:
+            id: { type: string, format: uuid }
+        - $ref: '#/components/schemas/QuestionOptionInput'
+    Question:
+      type: object
+      required: [id, type, prompt, options, explanation, domain, level, topics, certificateIds, points, status, createdAt, updatedAt]
+      properties:
+        id: { type: string, format: uuid }
+        type: { $ref: '#/components/schemas/QuestionType' }
+        prompt: { type: string, minLength: 3, maxLength: 5000 }
+        context: { type: string, nullable: true, maxLength: 10000, description: 'Đoạn đọc, tài liệu hoặc tình huống dùng để trả lời.' }
+        codeSnippet: { type: string, nullable: true, maxLength: 10000 }
+        options: { type: array, maxItems: 20, items: { $ref: '#/components/schemas/QuestionOption' } }
+        acceptedAnswers: { type: array, maxItems: 20, items: { type: string, maxLength: 500 }, description: Dùng cho short_answer; chỉ trả khi được phép xem đáp án. }
+        explanation: { type: string, minLength: 1, maxLength: 5000 }
+        domain: { $ref: '#/components/schemas/Domain' }
+        level: { $ref: '#/components/schemas/Level' }
+        topics: { type: array, minItems: 1, uniqueItems: true, items: { type: string, maxLength: 100 } }
+        certificateIds: { type: array, uniqueItems: true, items: { type: string, format: uuid } }
+        points: { type: number, format: float, exclusiveMinimum: true, minimum: 0, maximum: 100 }
+        status: { $ref: '#/components/schemas/ContentStatus' }
+        createdAt: { type: string, format: date-time }
+        updatedAt: { type: string, format: date-time }
+    QuestionWriteRequest:
+      type: object
+      additionalProperties: false
+      required: [type, prompt, options, explanation, domainId, levelId, topics, points, status]
+      properties:
+        type: { $ref: '#/components/schemas/QuestionType' }
+        prompt: { type: string, minLength: 3, maxLength: 5000 }
+        context: { type: string, nullable: true, maxLength: 10000 }
+        codeSnippet: { type: string, nullable: true, maxLength: 10000 }
+        options: { type: array, maxItems: 20, items: { $ref: '#/components/schemas/QuestionOptionInput' } }
+        acceptedAnswers: { type: array, maxItems: 20, items: { type: string, maxLength: 500 } }
+        explanation: { type: string, minLength: 1, maxLength: 5000 }
+        domainId: { type: string, format: uuid }
+        levelId: { type: string, format: uuid }
+        topics: { type: array, minItems: 1, uniqueItems: true, items: { type: string, maxLength: 100 } }
+        certificateIds: { type: array, uniqueItems: true, items: { type: string, format: uuid } }
+        points: { type: number, format: float, exclusiveMinimum: true, minimum: 0, maximum: 100 }
+        status: { $ref: '#/components/schemas/ContentStatus' }
+    QuestionResponse:
+      type: object
+      required: [success, data]
+      properties:
+        success: { type: boolean, enum: [true] }
+        data: { $ref: '#/components/schemas/Question' }
+    QuestionListResponse:
+      type: object
+      required: [success, data, meta]
+      properties:
+        success: { type: boolean, enum: [true] }
+        data: { type: array, items: { $ref: '#/components/schemas/Question' } }
+        meta: { $ref: '#/components/schemas/PaginationMeta' }
+
+    ExamQuestionInput:
+      type: object
+      additionalProperties: false
+      required: [questionId, order, weight]
+      properties:
+        questionId: { type: string, format: uuid }
+        order: { type: integer, minimum: 1 }
+        weight: { type: number, format: float, exclusiveMinimum: true, minimum: 0, maximum: 100 }
+    ExamQuestion:
+      type: object
+      required: [question, order, weight]
+      properties:
+        question: { $ref: '#/components/schemas/Question' }
+        order: { type: integer, minimum: 1 }
+        weight: { type: number, format: float, exclusiveMinimum: true, minimum: 0 }
+    Exam:
+      type: object
+      required: [id, title, description, domain, level, questions, durationMinutes, passingScorePercent, maxAttempts, shuffleQuestions, status, createdBy, createdAt, updatedAt]
+      properties:
+        id: { type: string, format: uuid }
+        title: { type: string, minLength: 3, maxLength: 200 }
+        description: { type: string, minLength: 1, maxLength: 2000 }
+        domain: { $ref: '#/components/schemas/Domain' }
+        level: { $ref: '#/components/schemas/Level' }
+        certificateId: { type: string, format: uuid, nullable: true }
+        topics: { type: array, uniqueItems: true, items: { type: string, maxLength: 100 } }
+        questions: { type: array, minItems: 1, items: { $ref: '#/components/schemas/ExamQuestion' } }
+        durationMinutes: { type: integer, minimum: 1, maximum: 1440 }
+        passingScorePercent: { type: number, format: float, minimum: 0, maximum: 100 }
+        maxAttempts: { type: integer, minimum: 1, maximum: 100 }
+        shuffleQuestions: { type: boolean }
+        availableFrom: { type: string, format: date-time, nullable: true }
+        availableUntil: { type: string, format: date-time, nullable: true }
+        status: { $ref: '#/components/schemas/ContentStatus' }
+        publishedAt: { type: string, format: date-time, nullable: true }
+        createdBy: { $ref: '#/components/schemas/User' }
+        createdAt: { type: string, format: date-time }
+        updatedAt: { type: string, format: date-time }
+    ExamWriteRequest:
+      type: object
+      additionalProperties: false
+      required: [title, description, domainId, levelId, questions, durationMinutes, passingScorePercent, maxAttempts, shuffleQuestions]
+      properties:
+        title: { type: string, minLength: 3, maxLength: 200 }
+        description: { type: string, minLength: 1, maxLength: 2000 }
+        domainId: { type: string, format: uuid }
+        levelId: { type: string, format: uuid }
+        certificateId: { type: string, format: uuid, nullable: true }
+        topics: { type: array, uniqueItems: true, items: { type: string, maxLength: 100 } }
+        questions: { type: array, minItems: 1, maxItems: 500, items: { $ref: '#/components/schemas/ExamQuestionInput' } }
+        durationMinutes: { type: integer, minimum: 1, maximum: 1440 }
+        passingScorePercent: { type: number, format: float, minimum: 0, maximum: 100 }
+        maxAttempts: { type: integer, minimum: 1, maximum: 100, default: 1 }
+        shuffleQuestions: { type: boolean, default: false }
+        availableFrom: { type: string, format: date-time, nullable: true }
+        availableUntil: { type: string, format: date-time, nullable: true }
+    ExamResponse:
+      type: object
+      required: [success, data]
+      properties:
+        success: { type: boolean, enum: [true] }
+        data: { $ref: '#/components/schemas/Exam' }
+    ExamListResponse:
+      type: object
+      required: [success, data, meta]
+      properties:
+        success: { type: boolean, enum: [true] }
+        data: { type: array, items: { $ref: '#/components/schemas/Exam' } }
+        meta: { $ref: '#/components/schemas/PaginationMeta' }
+
+    AttemptQuestion:
+      type: object
+      required: [questionId, order, type, prompt, options, points]
+      description: Snapshot câu hỏi tại thời điểm bắt đầu để bảo toàn lịch sử.
+      properties:
+        questionId: { type: string, format: uuid }
+        order: { type: integer, minimum: 1 }
+        type: { $ref: '#/components/schemas/QuestionType' }
+        prompt: { type: string }
+        context: { type: string, nullable: true }
+        codeSnippet: { type: string, nullable: true }
+        options:
+          type: array
+          items:
+            type: object
+            required: [id, key, text]
+            properties:
+              id: { type: string, format: uuid }
+              key: { type: string }
+              text: { type: string }
+        points: { type: number, format: float, minimum: 0 }
+    AnswerInput:
+      type: object
+      additionalProperties: false
+      required: [questionId]
+      properties:
+        questionId: { type: string, format: uuid }
+        selectedOptionIds:
+          type: array
+          uniqueItems: true
+          items: { type: string, format: uuid }
+          description: Dùng cho choice/true-false/scenario.
+        textAnswer:
+          type: string
+          nullable: true
+          maxLength: 2000
+          description: Dùng cho short_answer.
+    AttemptAnswer:
+      type: object
+      required: [questionId, selectedOptionIds, isCorrect, earnedPoints, maxPoints]
+      properties:
+        questionId: { type: string, format: uuid }
+        selectedOptionIds: { type: array, items: { type: string, format: uuid } }
+        textAnswer: { type: string, nullable: true }
+        isCorrect: { type: boolean, nullable: true, description: null trước khi chấm. }
+        earnedPoints: { type: number, format: float, minimum: 0, nullable: true }
+        maxPoints: { type: number, format: float, minimum: 0 }
+        correctOptionIds: { type: array, readOnly: true, items: { type: string, format: uuid } }
+        explanation: { type: string, nullable: true, readOnly: true }
+    Attempt:
+      type: object
+      required: [id, examId, learnerId, status, questions, answers, startedAt]
+      properties:
+        id: { type: string, format: uuid }
+        examId: { type: string, format: uuid }
+        examTitle: { type: string, maxLength: 200 }
+        learnerId: { type: string, format: uuid }
+        status: { $ref: '#/components/schemas/AttemptStatus' }
+        questions: { type: array, items: { $ref: '#/components/schemas/AttemptQuestion' } }
+        answers: { type: array, items: { $ref: '#/components/schemas/AttemptAnswer' } }
+        score: { type: number, format: float, minimum: 0, nullable: true, readOnly: true }
+        maxScore: { type: number, format: float, minimum: 0, nullable: true, readOnly: true }
+        scorePercent: { type: number, format: float, minimum: 0, maximum: 100, nullable: true, readOnly: true }
+        passed: { type: boolean, nullable: true, readOnly: true }
+        startedAt: { type: string, format: date-time }
+        expiresAt: { type: string, format: date-time, nullable: true }
+        submittedAt: { type: string, format: date-time, nullable: true }
+        gradedAt: { type: string, format: date-time, nullable: true }
+    SaveAnswersRequest:
+      type: object
+      additionalProperties: false
+      required: [answers]
+      properties:
+        answers: { type: array, minItems: 1, maxItems: 500, items: { $ref: '#/components/schemas/AnswerInput' } }
+    SubmitAttemptRequest:
+      type: object
+      additionalProperties: false
+      required: [answers]
+      properties:
+        answers: { type: array, maxItems: 500, items: { $ref: '#/components/schemas/AnswerInput' } }
+    SaveAnswersPayload:
+      type: object
+      required: [attemptId, savedCount, savedAt]
+      properties:
+        attemptId: { type: string, format: uuid }
+        savedCount: { type: integer, minimum: 0 }
+        savedAt: { type: string, format: date-time }
+    SaveAnswersResponse:
+      type: object
+      required: [success, data]
+      properties:
+        success: { type: boolean, enum: [true] }
+        data: { $ref: '#/components/schemas/SaveAnswersPayload' }
+    AttemptResponse:
+      type: object
+      required: [success, data]
+      properties:
+        success: { type: boolean, enum: [true] }
+        data: { $ref: '#/components/schemas/Attempt' }
+    AttemptResultResponse:
+      type: object
+      required: [success, data]
+      properties:
+        success: { type: boolean, enum: [true] }
+        data: { $ref: '#/components/schemas/Attempt' }
+    AttemptListResponse:
+      type: object
+      required: [success, data, meta]
+      properties:
+        success: { type: boolean, enum: [true] }
+        data: { type: array, items: { $ref: '#/components/schemas/Attempt' } }
+        meta: { $ref: '#/components/schemas/PaginationMeta' }
+
+    LearningProgress:
+      type: object
+      required: [learnerId, resourceType, resourceId, status, completionPercent, updatedAt]
+      properties:
+        learnerId: { type: string, format: uuid }
+        resourceType: { type: string, enum: [lesson, domain, certificate] }
+        resourceId: { type: string, format: uuid }
+        resourceTitle: { type: string, maxLength: 200 }
+        status: { $ref: '#/components/schemas/ProgressStatus' }
+        completionPercent: { type: number, format: float, minimum: 0, maximum: 100, readOnly: true }
+        completedLessonCount: { type: integer, minimum: 0, readOnly: true }
+        totalLessonCount: { type: integer, minimum: 0, readOnly: true }
+        averageScorePercent: { type: number, format: float, minimum: 0, maximum: 100, nullable: true, readOnly: true }
+        startedAt: { type: string, format: date-time, nullable: true }
+        completedAt: { type: string, format: date-time, nullable: true }
+        updatedAt: { type: string, format: date-time }
+    ProgressSummary:
+      type: object
+      required: [learnerId, overallCompletionPercent, studyStreakDays, totalStudyMinutes, completedLessons, totalAttempts, averageScorePercent, items]
+      properties:
+        learnerId: { type: string, format: uuid }
+        overallCompletionPercent: { type: number, format: float, minimum: 0, maximum: 100 }
+        studyStreakDays: { type: integer, minimum: 0 }
+        totalStudyMinutes: { type: integer, minimum: 0 }
+        completedLessons: { type: integer, minimum: 0 }
+        totalAttempts: { type: integer, minimum: 0 }
+        averageScorePercent: { type: number, format: float, minimum: 0, maximum: 100, nullable: true }
+        weakTopics: { type: array, items: { type: string } }
+        items: { type: array, items: { $ref: '#/components/schemas/LearningProgress' } }
+        calculatedAt: { type: string, format: date-time }
+    LearningProgressResponse:
+      type: object
+      required: [success, data]
+      properties:
+        success: { type: boolean, enum: [true] }
+        data: { $ref: '#/components/schemas/LearningProgress' }
+    ProgressSummaryResponse:
+      type: object
+      required: [success, data]
+      properties:
+        success: { type: boolean, enum: [true] }
+        data: { $ref: '#/components/schemas/ProgressSummary' }
+
+    DashboardReport:
+      type: object
+      required: [totalLearners, activeLearners, totalLessons, publishedLessons, totalExams, submittedAttempts, averageScorePercent, generatedAt]
+      properties:
+        totalLearners: { type: integer, minimum: 0 }
+        activeLearners: { type: integer, minimum: 0 }
+        totalLessons: { type: integer, minimum: 0 }
+        publishedLessons: { type: integer, minimum: 0 }
+        totalExams: { type: integer, minimum: 0 }
+        submittedAttempts: { type: integer, minimum: 0 }
+        averageScorePercent: { type: number, format: float, minimum: 0, maximum: 100, nullable: true }
+        recentActivities:
+          type: array
+          items:
+            type: object
+            required: [type, occurredAt]
+            properties:
+              type: { type: string, enum: [user_registered, lesson_completed, exam_submitted, content_published] }
+              actorDisplayName: { type: string, nullable: true }
+              resourceTitle: { type: string, nullable: true }
+              occurredAt: { type: string, format: date-time }
+        generatedAt: { type: string, format: date-time }
+    DashboardReportResponse:
+      type: object
+      required: [success, data]
+      properties:
+        success: { type: boolean, enum: [true] }
+        data: { $ref: '#/components/schemas/DashboardReport' }
+    DistributionItem:
+      type: object
+      required: [key, label, learnerCount, percentage]
+      properties:
+        key: { type: string }
+        label: { type: string }
+        learnerCount: { type: integer, minimum: 0 }
+        percentage: { type: number, format: float, minimum: 0, maximum: 100 }
+    DistributionReportResponse:
+      type: object
+      required: [success, data]
+      properties:
+        success: { type: boolean, enum: [true] }
+        data: { type: array, items: { $ref: '#/components/schemas/DistributionItem' } }
+    CertificateScoreItem:
+      type: object
+      required: [certificateId, certificateName, attemptCount, learnerCount, passRatePercent]
+      properties:
+        certificateId: { type: string, format: uuid }
+        certificateName: { type: string }
+        attemptCount: { type: integer, minimum: 0 }
+        learnerCount: { type: integer, minimum: 0 }
+        averageScorePercent: { type: number, format: float, minimum: 0, maximum: 100, nullable: true }
+        passRatePercent: { type: number, format: float, minimum: 0, maximum: 100 }
+    CertificateScoreReportResponse:
+      type: object
+      required: [success, data]
+      properties:
+        success: { type: boolean, enum: [true] }
+        data: { type: array, items: { $ref: '#/components/schemas/CertificateScoreItem' } }
+    LearnerProgressReportItem:
+      type: object
+      required: [learnerId, displayName, email, level, completionPercent, completedLessons, totalAttempts]
+      properties:
+        learnerId: { type: string, format: uuid }
+        displayName: { type: string }
+        email: { type: string, format: email }
+        level: { $ref: '#/components/schemas/Level' }
+        completionPercent: { type: number, format: float, minimum: 0, maximum: 100 }
+        completedLessons: { type: integer, minimum: 0 }
+        totalAttempts: { type: integer, minimum: 0 }
+        averageScorePercent: { type: number, format: float, minimum: 0, maximum: 100, nullable: true }
+        lastActivityAt: { type: string, format: date-time, nullable: true }
+    LearningProgressReportResponse:
+      type: object
+      required: [success, data, meta]
+      properties:
+        success: { type: boolean, enum: [true] }
+        data: { type: array, items: { $ref: '#/components/schemas/LearnerProgressReportItem' } }
+        meta: { $ref: '#/components/schemas/PaginationMeta' }
+
+    Recommendation:
+      type: object
+      required: [id, learnerId, resourceType, resourceId, title, reason, priority, generatedAt]
+      properties:
+        id: { type: string, format: uuid }
+        learnerId: { type: string, format: uuid }
+        resourceType: { type: string, enum: [lesson, practice, exam] }
+        resourceId: { type: string, format: uuid }
+        title: { type: string, maxLength: 200 }
+        reason:
+          type: string
+          maxLength: 1000
+          description: Giải thích dễ hiểu dựa trên hồ sơ, mục tiêu hoặc kết quả; không tiết lộ prompt/model nội bộ.
+        priority: { type: integer, minimum: 1, maximum: 100 }
+        basedOn: { type: array, items: { type: string, enum: [profile, level, interest, career_goal, certificate_goal, progress, weak_topic, recent_score] } }
+        generatedAt: { type: string, format: date-time }
+        expiresAt: { type: string, format: date-time, nullable: true }
+    RecommendationListResponse:
+      type: object
+      required: [success, data]
+      properties:
+        success: { type: boolean, enum: [true] }
+        data: { type: array, items: { $ref: '#/components/schemas/Recommendation' } }
+    RecommendationFeedbackRequest:
+      type: object
+      additionalProperties: false
+      required: [action]
+      properties:
+        action: { type: string, enum: [helpful, not_helpful, dismissed, opened] }
+        comment: { type: string, nullable: true, maxLength: 500 }
+
+security:
+  - bearerAuth: []
