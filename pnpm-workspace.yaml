@@ -1,5 +1,14 @@
 packages:
   - 'apps/*'
   - 'packages/*'
+
+# pnpm 11: allowBuilds thay thế onlyBuiltDependencies
+# Phê duyệt build scripts cho các package cần biên dịch native addons hoặc generate code
 allowBuilds:
-  sharp: true
+  '@nestjs/core': true
+  '@prisma/client': true
+  '@prisma/engines': true
+  'bcrypt': true
+  'prisma': true
+  'esbuild': true
+  'sharp': true
