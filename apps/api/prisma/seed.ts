@@ -213,8 +213,13 @@ async function main() {
     // Users
     { code: 'users:read',    name: 'Read Users',    resource: 'users',    action: 'read',    description: 'View user list and profiles' },
     { code: 'users:manage',  name: 'Manage Users',  resource: 'users',    action: 'manage',  description: 'Create, update, suspend users' },
-    // Roles
-    { code: 'roles:assign',  name: 'Assign Roles',  resource: 'roles',    action: 'assign',  description: 'Grant or revoke roles from users' },
+    // Roles & Permissions management (Admin only)
+    { code: 'roles:read',    name: 'Read Roles',       resource: 'roles', action: 'read',    description: 'View list of roles and their permissions' },
+    { code: 'roles:create',  name: 'Create Roles',     resource: 'roles', action: 'create',  description: 'Create new custom roles' },
+    { code: 'roles:update',  name: 'Update Roles',     resource: 'roles', action: 'update',  description: 'Edit role name, description and permissions' },
+    { code: 'roles:delete',  name: 'Delete Roles',     resource: 'roles', action: 'delete',  description: 'Delete non-system custom roles' },
+    { code: 'roles:assign',  name: 'Assign Roles',     resource: 'roles', action: 'assign',  description: 'Grant or revoke roles from users' },
+    { code: 'permissions:read', name: 'Read Permissions', resource: 'permissions', action: 'read', description: 'View all permissions in the system' },
     // Lessons
     { code: 'lessons:read',    name: 'Read Lessons',    resource: 'lessons', action: 'read',    description: 'View lesson content' },
     { code: 'lessons:create',  name: 'Create Lessons',  resource: 'lessons', action: 'create',  description: 'Create new lessons' },
