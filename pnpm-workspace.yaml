@@ -12,3 +12,4 @@ allowBuilds:
   'prisma': true
   'esbuild': true
   'sharp': true
+  '@scarf/scarf': true
