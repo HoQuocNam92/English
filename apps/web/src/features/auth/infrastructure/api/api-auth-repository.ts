@@ -23,7 +23,7 @@ export class ApiAuthRepository implements AuthRepository {
     const data = await res.json();
 
     // data: { accessToken, refreshToken, user: { id, email, roles[], permissions[] } }
-    const role: string = data.user?.roles?.[0] ?? 'learner';
+    const role = (data.user?.roles?.[0] ?? 'learner') as import('@techenglish/contracts').UserRole;
     const session: Session = {
       accessToken: data.accessToken,
       refreshToken: data.refreshToken,
