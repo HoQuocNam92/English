@@ -4,7 +4,7 @@ import { BrowserStorageAdapter } from '@/shared/storage';
 import { getSession } from '../application/use-cases/get-session';
 import { login } from '../application/use-cases/login';
 import { logout } from '../application/use-cases/logout';
-import { MockAuthRepository } from '../infrastructure/mock/mock-auth-repository';
+import { ApiAuthRepository } from '../infrastructure/api/api-auth-repository';
 
 export interface LoginFormState {
   email: string;
@@ -12,7 +12,7 @@ export interface LoginFormState {
 }
 
 export function useAuth() {
-  const repository = useMemo(() => new MockAuthRepository(new BrowserStorageAdapter()), []);
+  const repository = useMemo(() => new ApiAuthRepository(new BrowserStorageAdapter()), []);
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
