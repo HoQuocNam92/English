@@ -18,8 +18,9 @@ export default function LoginPage() {
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     try {
-      await submitLogin({ email, password });
-      router.push('/dashboard');
+      const result = await submitLogin({ email, password });
+      const role = (result as any)?.user?.role ?? 'admin';
+      router.push(role === 'teacher' ? '/teacher/dashboard' : '/admin/dashboard');
     } catch {
       // Handled by auth state
     }
@@ -27,7 +28,7 @@ export default function LoginPage() {
 
   const handleQuickLogin = (quickEmail: string) => {
     setEmail(quickEmail);
-    setPassword('password123');
+    setPassword('Demo@123456');
   };
 
   return (
@@ -101,7 +102,7 @@ export default function LoginPage() {
               </div>
               <div className="flex gap-3 mt-2">
                 <Link
-                  href="/dashboard"
+                  href={currentRole === 'teacher' ? '/teacher/dashboard' : '/admin/dashboard'}
                   className="flex-1 h-11 bg-primary text-on-primary rounded-lg font-semibold flex items-center justify-center gap-2 hover:bg-primary-container transition-all shadow-sm"
                 >
                   <span>Vào Dashboard</span>

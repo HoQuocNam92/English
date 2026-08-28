@@ -33,6 +33,7 @@ export function useAuth() {
     try {
       const nextSession = await login(repository, state);
       setSession(nextSession);
+      return nextSession;
     } catch (nextError) {
       setError(nextError instanceof Error ? nextError.message : 'Unable to sign in.');
     } finally {
