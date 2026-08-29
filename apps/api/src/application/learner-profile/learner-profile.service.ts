@@ -30,13 +30,17 @@ export class LearnerProfilesService {
   }
 
   async findAll(params: any) {
-    const { page=1, limit=20, levelCode, domainCode } = params; const skip=(page-1)*limit; const where: any = {}
+    const page = Math.max(1, Number(params.page) || 1)
+    const limit = Math.min(Math.max(1, Number(params.limit) || 20), 100)
+    const { levelCode, domainCode } = params
+    const skip = (page - 1) * limit
+    const where: any = {}
     if (levelCode) where.level = { code: levelCode }
     if (domainCode) where.domains = { some: { domain: { code: domainCode } } }
-    const [data,total] = await Promise.all([
+    const [data, total] = await Promise.all([
       this.prisma.learnerProfile.findMany({ where, skip, take: limit, include: { user: { include: { userDetail: true } }, level: true }, orderBy: { createdAt: 'desc' } }),
       this.prisma.learnerProfile.count({ where })
     ])
-    return { data, meta: { total, page, limit, totalPages: Math.ceil(total/limit) } }
+    return { data, meta: { total, page, limit, totalPages: Math.ceil(total / limit) } }
   }
 }

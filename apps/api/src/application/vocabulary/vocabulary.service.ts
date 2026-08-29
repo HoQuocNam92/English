@@ -6,7 +6,9 @@ export class VocabularyService {
   constructor(private prisma: PrismaService) {}
 
   async findAll(params: any) {
-    const { page = 1, limit = 20, search, domainCode, levelCode, status } = params
+    const page = Math.max(1, Number(params.page) || 1)
+    const limit = Math.min(Math.max(1, Number(params.limit) || 20), 100)
+    const { search, domainCode, levelCode, status } = params
     const skip = (page - 1) * limit
     const where: any = {}
     if (search) where.OR = [{ term: { contains: search, mode: 'insensitive' } }, { definitionEn: { contains: search, mode: 'insensitive' } }]

@@ -6,17 +6,20 @@ export class ExamsService {
   constructor(private prisma: PrismaService) {}
 
   async findAll(params: any) {
-    const { page=1, limit=20, search, domainCode, levelCode, status } = params
-    const skip=(page-1)*limit; const where: any = {}
+    const page = Math.max(1, Number(params.page) || 1)
+    const limit = Math.min(Math.max(1, Number(params.limit) || 20), 100)
+    const { search, domainCode, levelCode, status } = params
+    const skip = (page - 1) * limit
+    const where: any = {}
     if (search) where.title = { contains: search, mode: 'insensitive' }
     if (domainCode) where.domain = { code: domainCode }
     if (levelCode) where.level = { code: levelCode }
     if (status) where.status = status
-    const [data,total] = await Promise.all([
+    const [data, total] = await Promise.all([
       this.prisma.exam.findMany({ where, skip, take: limit, include: { domain: true, level: true, certificate: true }, orderBy: { createdAt: 'desc' } }),
       this.prisma.exam.count({ where })
     ])
-    return { data, meta: { total, page, limit, totalPages: Math.ceil(total/limit) } }
+    return { data, meta: { total, page, limit, totalPages: Math.ceil(total / limit) } }
   }
 
   async findOne(id: string) {
