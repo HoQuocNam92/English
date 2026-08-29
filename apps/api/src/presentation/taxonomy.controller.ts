@@ -29,6 +29,12 @@ export class TaxonomyController {
     return this.svc.getCertificates()
   }
 
+  @Get('students')
+  @ApiOperation({ summary: 'List all students/learners (for teachers and admins)' })
+  getStudents(@Query() q: any) {
+    return this.svc.getStudents(q)
+  }
+
   @Get('student-groups')
   @ApiOperation({ summary: 'List student groups' })
   getStudentGroups(@Query() q: any) {
@@ -39,5 +45,17 @@ export class TaxonomyController {
   @ApiOperation({ summary: 'List test results / exam attempts' })
   getTestResults(@Query() q: any) {
     return this.svc.getTestResults(q)
+  }
+
+  @Get('progress-overview')
+  @ApiOperation({ summary: 'List student progress tracking overview' })
+  getStudentProgress(@Query() q: any) {
+    return this.svc.getStudentProgress(q)
+  }
+
+  @Get('analytics/dashboard')
+  @ApiOperation({ summary: 'Get dashboard analytics & chart data' })
+  getDashboardAnalytics() {
+    return this.svc.getDashboardAnalytics()
   }
 }

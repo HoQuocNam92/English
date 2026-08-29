@@ -40,11 +40,10 @@ export default function TeacherStudentsPage() {
       const params = new URLSearchParams({
         page: String(page),
         limit: String(limit),
-        role: 'learner',
         ...(search && { search }),
         ...(status && { status }),
       });
-      const res = await apiClient.get<PaginatedResponse<UserItem>>(`/users?${params}`);
+      const res = await apiClient.get<PaginatedResponse<UserItem>>(`/students?${params}`);
       setStudents(res.data);
       setTotal(res.meta.total);
     } catch (e) {

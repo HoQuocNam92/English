@@ -27,4 +27,5 @@ export class UserQueryDto {
   @ApiPropertyOptional() @IsOptional() limit?: number
   @ApiPropertyOptional() @IsOptional() search?: string
   @ApiPropertyOptional() @IsOptional() role?: string
+  @ApiPropertyOptional({ enum: ['active', 'inactive', 'suspended'] }) @IsOptional() @IsString() status?: string
 }
