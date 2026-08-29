@@ -127,11 +127,13 @@ export function Sidebar() {
             </div>
           </div>
           <button
+            type="button"
             onClick={signOut}
-            title="Đăng xuất"
-            className="p-1.5 rounded text-outline hover:text-error hover:bg-error-container/30 transition-colors"
+            title="Đăng xuất khỏi hệ thống"
+            aria-label="Đăng xuất"
+            className="p-2 rounded-lg text-on-surface-variant hover:text-red-600 hover:bg-red-50 transition-all cursor-pointer shrink-0 active:scale-95"
           >
-            <span className="material-symbols-outlined text-[18px]">logout</span>
+            <span className="material-symbols-outlined text-[20px]">logout</span>
           </button>
         </div>
       </div>

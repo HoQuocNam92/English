@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { useAuth } from '@/features/auth/presentation';
 
 export function Topbar() {
-  const { session } = useAuth();
+  const { session, signOut } = useAuth();
 
   return (
     <header className="h-16 border-b border-outline-variant/40 bg-surface-container-lowest flex justify-between items-center w-full px-6 lg:px-8 z-30 shrink-0 sticky top-0">
@@ -52,6 +52,15 @@ export function Topbar() {
               {session?.user?.role ?? 'Admin'}
             </p>
           </div>
+          <button
+            type="button"
+            onClick={signOut}
+            title="Đăng xuất"
+            aria-label="Đăng xuất"
+            className="p-2 rounded-lg text-on-surface-variant hover:text-red-600 hover:bg-red-50 transition-all cursor-pointer shrink-0 ml-1"
+          >
+            <span className="material-symbols-outlined text-[18px]">logout</span>
+          </button>
         </div>
       </div>
     </header>

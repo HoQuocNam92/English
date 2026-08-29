@@ -42,8 +42,16 @@ export function useAuth() {
   };
 
   const signOut = async () => {
-    await logout(repository);
-    setSession(null);
+    try {
+      await logout(repository);
+    } catch {
+      /* ignore */
+    } finally {
+      setSession(null);
+      if (typeof window !== 'undefined') {
+        window.location.href = '/login';
+      }
+    }
   };
 
   return {
