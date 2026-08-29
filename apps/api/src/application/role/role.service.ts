@@ -95,7 +95,9 @@ export class RolesService {
     })
   }
 
-  async findUsersByRole(roleId: string, page = 1, limit = 20) {
+  async findUsersByRole(roleId: string, pageParam: any = 1, limitParam: any = 20) {
+    const page = Math.max(1, Number(pageParam) || 1)
+    const limit = Math.min(Math.max(1, Number(limitParam) || 20), 100)
     const skip = (page - 1) * limit
     const [userRoles, total] = await Promise.all([
       this.prisma.userRole.findMany({
@@ -111,7 +113,7 @@ export class RolesService {
         displayName: ur.user.userDetail?.displayName,
         grantedAt: ur.grantedAt, expiresAt: ur.expiresAt,
       })),
-      meta: { total, page, limit },
+      meta: { total, page, limit, totalPages: Math.ceil(total / limit) },
     }
   }
 }

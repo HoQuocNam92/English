@@ -1,7 +1,7 @@
 'use client';
 
 import * as React from 'react';
-import { PageHeader } from '@/shared/ui';
+import { PageHeader, SearchInput } from '@/shared/ui';
 import { apiClient, ApiClientError } from '@/shared/api/api-client';
 import type { UserItem, PaginatedResponse } from '@/shared/api/api-client';
 
@@ -102,12 +102,6 @@ export default function AdminUsersPage() {
 
   React.useEffect(() => { void load(); }, [load]);
 
-  const handleSearch = (e: React.FormEvent) => {
-    e.preventDefault();
-    setPage(1);
-    setSearch(searchInput.trim());
-  };
-
   const handleToggleStatus = async (user: UserItem) => {
     const newStatus = user.status === 'active' ? 'suspended' : 'active';
     const validErr = validateStatusChange(user.status, newStatus);
@@ -138,29 +132,27 @@ export default function AdminUsersPage() {
 
       {/* Filters */}
       <div className="mt-6 flex flex-col sm:flex-row gap-3 flex-wrap">
-        <form onSubmit={handleSearch} className="flex gap-2 flex-1 min-w-[200px]">
-          <input
-            type="text"
-            value={searchInput}
-            onChange={(e) => setSearchInput(e.target.value)}
-            placeholder="Tìm theo email hoặc tên..."
-            className="flex-1 rounded-xl border border-outline-variant bg-surface-container-low px-4 py-2 text-sm text-on-surface focus:outline-none focus:ring-2 focus:ring-primary/30"
-          />
-          <button type="submit" className="px-4 py-2 rounded-xl bg-primary text-on-primary text-sm font-medium hover:bg-primary/90 transition-colors">
-            Tìm
-          </button>
-        </form>
+        <SearchInput
+          value={searchInput}
+          onChange={setSearchInput}
+          onSearch={(sanitized) => {
+            setPage(1);
+            setSearch(sanitized);
+          }}
+          placeholder="Tìm theo email hoặc tên người dùng..."
+          maxLength={100}
+        />
         <select
           value={statusFilter}
           onChange={(e) => { setStatusFilter(e.target.value); setPage(1); }}
-          className="rounded-xl border border-outline-variant bg-surface-container-low px-3 py-2 text-sm text-on-surface focus:outline-none"
+          className="rounded-xl border border-outline-variant/60 bg-surface-container-low px-3 py-2 text-sm text-on-surface focus:outline-none"
         >
           {STATUS_OPTS.map((s) => <option key={s.value} value={s.value}>{s.label}</option>)}
         </select>
         <select
           value={roleFilter}
           onChange={(e) => { setRoleFilter(e.target.value); setPage(1); }}
-          className="rounded-xl border border-outline-variant bg-surface-container-low px-3 py-2 text-sm text-on-surface focus:outline-none"
+          className="rounded-xl border border-outline-variant/60 bg-surface-container-low px-3 py-2 text-sm text-on-surface focus:outline-none"
         >
           {ROLE_OPTS.map((r) => <option key={r.value} value={r.value}>{r.label}</option>)}
         </select>

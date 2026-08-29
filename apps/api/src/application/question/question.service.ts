@@ -6,8 +6,10 @@ export class QuestionsService {
   constructor(private prisma: PrismaService) {}
 
   async findAll(params: any) {
-    const { page = 1, limit = 20, search, domainCode, levelCode, status, type } = params
-    const skip = (Number(page) - 1) * Number(limit)
+    const page = Math.max(1, Number(params?.page) || 1)
+    const limit = Math.min(Math.max(1, Number(params?.limit) || 20), 100)
+    const { search, domainCode, levelCode, status, type } = params || {}
+    const skip = (page - 1) * limit
     const where: any = {}
     if (search) where.prompt = { contains: search, mode: 'insensitive' }
     if (domainCode) where.domain = { code: domainCode }
@@ -16,13 +18,13 @@ export class QuestionsService {
     if (type) where.type = type
     const [data, total] = await Promise.all([
       this.prisma.question.findMany({
-        where, skip, take: Number(limit),
+        where, skip, take: limit,
         include: { domain: true, level: true, options: { orderBy: { order: 'asc' } } },
         orderBy: { createdAt: 'desc' },
       }),
       this.prisma.question.count({ where }),
     ])
-    return { data, meta: { total, page: Number(page), limit: Number(limit), totalPages: Math.ceil(total / Number(limit)) } }
+    return { data, meta: { total, page, limit, totalPages: Math.ceil(total / limit) } }
   }
 
   async findOne(id: string) {

@@ -6,6 +6,7 @@ export * from './Input';
 export * from './PageHeader';
 export * from './Pagination';
 export * from './ProgressBar';
+export * from './SearchInput';
 export * from './Select';
 export * from './Skeleton';
 export * from './Table';

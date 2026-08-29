@@ -1,7 +1,7 @@
 'use client';
 
 import * as React from 'react';
-import { PageHeader } from '@/shared/ui';
+import { PageHeader, SearchInput } from '@/shared/ui';
 import { apiClient, ApiClientError } from '@/shared/api/api-client';
 import type { VocabularyItem, PaginatedResponse } from '@/shared/api/api-client';
 
@@ -66,37 +66,26 @@ export default function TeacherVocabularyPage() {
 
   React.useEffect(() => { void load(); }, [load]);
 
-  const handleSearch = (e: React.FormEvent) => {
-    e.preventDefault();
-    setPage(1);
-    setSearch(searchInput.trim());
-  };
-
   return (
     <div>
       <PageHeader title="Nội dung từ vựng" description="Quản lý từ vựng IT" />
 
       {/* Filters */}
       <div className="mt-6 flex flex-col sm:flex-row gap-3">
-        <form onSubmit={handleSearch} className="flex gap-2 flex-1">
-          <input
-            type="text"
-            value={searchInput}
-            onChange={(e) => setSearchInput(e.target.value)}
-            placeholder="Tìm theo từ hoặc định nghĩa..."
-            className="flex-1 rounded-xl border border-outline-variant bg-surface-container-low px-4 py-2 text-sm text-on-surface focus:outline-none focus:ring-2 focus:ring-primary/30"
-          />
-          <button
-            type="submit"
-            className="px-4 py-2 rounded-xl bg-primary text-on-primary text-sm font-medium hover:bg-primary/90 transition-colors"
-          >
-            Tìm
-          </button>
-        </form>
+        <SearchInput
+          value={searchInput}
+          onChange={setSearchInput}
+          onSearch={(sanitized) => {
+            setPage(1);
+            setSearch(sanitized);
+          }}
+          placeholder="Tìm theo từ, định nghĩa, IPA hoặc tag..."
+          maxLength={100}
+        />
         <select
           value={status}
           onChange={(e) => { setStatus(e.target.value); setPage(1); }}
-          className="rounded-xl border border-outline-variant bg-surface-container-low px-3 py-2 text-sm text-on-surface focus:outline-none"
+          className="rounded-xl border border-outline-variant/60 bg-surface-container-low px-3 py-2 text-sm text-on-surface focus:outline-none"
         >
           {STATUSES.map((s) => <option key={s.value} value={s.value}>{s.label}</option>)}
         </select>

@@ -10,6 +10,7 @@ import { QuestionModule } from './modules/question.module'
 import { ExamModule } from './modules/exam.module'
 import { ProgressModule } from './modules/progress.module'
 import { LearnerProfileModule } from './modules/learner-profile.module'
+import { TaxonomyModule } from './modules/taxonomy.module'
 
 @Module({
   imports: [
@@ -24,6 +25,7 @@ import { LearnerProfileModule } from './modules/learner-profile.module'
     ExamModule,
     ProgressModule,
     LearnerProfileModule,
+    TaxonomyModule,
   ],
 })
 export class AppModule {}
