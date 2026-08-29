@@ -5,8 +5,10 @@ import { usePathname } from 'next/navigation';
 import { adminNavigation, teacherNavigation, type NavigationGroup } from './navigation';
 import { useAuth } from '@/features/auth/presentation';
 
-function NavGroup({ group }: { group: NavigationGroup }) {
+function NavGroup({ group, role }: { group: NavigationGroup; role: string }) {
   const pathname = usePathname();
+  const isTeacher = role === 'teacher';
+
   return (
     <div className="mb-1">
       <p className="px-3 mb-1 text-[10px] font-bold uppercase tracking-widest text-on-surface-variant/50">
@@ -22,20 +24,30 @@ function NavGroup({ group }: { group: NavigationGroup }) {
             href={item.href}
             className={`flex items-center gap-3 px-3.5 py-2.5 rounded-lg text-xs font-semibold transition-all ${
               isActive
-                ? 'text-primary bg-primary-fixed/50 font-bold shadow-xs'
+                ? isTeacher
+                  ? 'text-secondary bg-secondary/10 font-bold shadow-xs'
+                  : 'text-primary bg-primary-fixed/50 font-bold shadow-xs'
                 : 'text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface'
             }`}
           >
             <span
               className={`material-symbols-outlined text-[20px] ${
-                isActive ? 'text-primary fill-1' : 'text-outline'
+                isActive
+                  ? isTeacher
+                    ? 'text-secondary fill-1'
+                    : 'text-primary fill-1'
+                  : 'text-outline'
               }`}
             >
               {item.icon}
             </span>
             <span className="truncate">{item.label}</span>
             {item.badge ? (
-              <span className="ml-auto px-1.5 py-0.5 text-[10px] rounded bg-primary text-on-primary font-bold">
+              <span
+                className={`ml-auto px-1.5 py-0.5 text-[10px] rounded text-on-primary font-bold ${
+                  isTeacher ? 'bg-secondary' : 'bg-primary'
+                }`}
+              >
                 {item.badge}
               </span>
             ) : null}
@@ -102,7 +114,7 @@ export function Sidebar() {
       {/* Navigation Groups */}
       <nav className="flex-1 px-3 space-y-3 overflow-y-auto custom-scrollbar">
         {navGroups.map((group) => (
-          <NavGroup key={group.group} group={group} />
+          <NavGroup key={group.group} group={group} role={role} />
         ))}
       </nav>
 
