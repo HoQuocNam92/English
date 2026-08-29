@@ -6,9 +6,9 @@ import * as bcrypt from 'bcrypt'
 export class UsersService {
   constructor(private prisma: PrismaService) {}
 
-  async findAll(params: { page?: number; limit?: number; search?: string; role?: string }) {
-    const { page = 1, limit = 20, search, role } = params
-    const skip = (page - 1) * limit
+  async findAll(params: { page?: number; limit?: number; search?: string; role?: string; status?: string }) {
+    const { page = 1, limit = 20, search, role, status } = params
+    const skip = (Number(page) - 1) * Number(limit)
 
     const where: any = {}
     if (search) {
@@ -19,6 +19,9 @@ export class UsersService {
     }
     if (role) {
       where.userRoles = { some: { role: { code: role } } }
+    }
+    if (status) {
+      where.status = status
     }
 
     const [users, total] = await Promise.all([

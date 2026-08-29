@@ -6,6 +6,7 @@ import { UserModule } from './modules/user.module'
 import { RoleModule } from './modules/role.module'
 import { LessonModule } from './modules/lesson.module'
 import { VocabularyModule } from './modules/vocabulary.module'
+import { QuestionModule } from './modules/question.module'
 import { ExamModule } from './modules/exam.module'
 import { ProgressModule } from './modules/progress.module'
 import { LearnerProfileModule } from './modules/learner-profile.module'
@@ -19,6 +20,7 @@ import { LearnerProfileModule } from './modules/learner-profile.module'
     RoleModule,
     LessonModule,
     VocabularyModule,
+    QuestionModule,
     ExamModule,
     ProgressModule,
     LearnerProfileModule,
