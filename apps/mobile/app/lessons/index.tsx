@@ -1,19 +1,39 @@
+import { useState, useEffect } from 'react';
 import { useRouter } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
-import { StyleSheet, Text, View, TouchableOpacity, ScrollView } from 'react-native';
+import { StyleSheet, Text, View, TouchableOpacity, ScrollView, TextInput, ActivityIndicator } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
 import { colors, spacing } from '@techenglish/design-tokens';
-
-const allLessons = [
-  { id: 'les-1', order: 1, title: 'Understanding REST APIs & HTTP Verbs', domain: 'Software Eng', duration: 20, terms: 12 },
-  { id: 'les-2', order: 2, title: 'AWS Cloud Foundations: Compute & Storage', domain: 'Cloud Computing', duration: 25, terms: 18 },
-  { id: 'les-3', order: 3, title: 'IAM Roles, Policies & Shared Responsibility', domain: 'Cloud Computing', duration: 30, terms: 15 },
-  { id: 'les-4', order: 4, title: 'Docker Containers & Kubernetes Pods', domain: 'DevOps', duration: 35, terms: 20 },
-  { id: 'les-5', order: 5, title: 'Cybersecurity Vectors: XSS, CSRF & SQLi', domain: 'Cybersecurity', duration: 25, terms: 14 }
-];
+import { api } from '../../src/shared/api/api-client';
 
 export default function MobileLessonListScreen() {
   const router = useRouter();
+  const [lessons, setLessons] = useState<any[]>([]);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
+
+  useEffect(() => {
+    fetchData();
+  }, []);
+
+  const fetchData = async () => {
+    try {
+      setLoading(true);
+      setError('');
+      const response = await api.get<any>('/lessons?limit=50');
+      const data = response.data || response;
+      setLessons(Array.isArray(data) ? data : data.items || []);
+    } catch (err: any) {
+      setError(err.message || 'Lỗi tải dữ liệu. Vui lòng thử lại.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const filteredLessons = lessons.filter((lesson) => 
+    lesson.title?.toLowerCase().includes(searchQuery.toLowerCase())
+  );
 
   return (
     <View style={styles.container}>
@@ -27,28 +47,61 @@ export default function MobileLessonListScreen() {
         <View style={{ width: 40 }} />
       </View>
 
-      <ScrollView contentContainerStyle={styles.listContent}>
-        {allLessons.map((item) => (
-          <TouchableOpacity
-            key={item.id}
-            style={styles.card}
-            activeOpacity={0.8}
-            onPress={() => router.push(`/lessons/${item.id}` as any)}
-          >
-            <View style={styles.orderCircle}>
-              <Text style={styles.orderText}>#{item.order}</Text>
-            </View>
-            <View style={styles.cardInfo}>
-              <View style={styles.domainTag}>
-                <Text style={styles.domainTagText}>{item.domain}</Text>
-              </View>
-              <Text style={styles.cardTitle}>{item.title}</Text>
-              <Text style={styles.cardMeta}>⏱ {item.duration} phút · 📖 {item.terms} thuật ngữ</Text>
-            </View>
-            <MaterialIcons name="chevron-right" size={22} color={colors.outline} />
+      <View style={{ paddingHorizontal: spacing.lg, paddingTop: spacing.md }}>
+        <View style={styles.searchContainer}>
+          <MaterialIcons name="search" size={20} color={colors.mutedText} />
+          <TextInput
+            style={styles.searchInput}
+            placeholder="Tìm kiếm bài học..."
+            value={searchQuery}
+            onChangeText={setSearchQuery}
+          />
+          {searchQuery ? (
+            <TouchableOpacity onPress={() => setSearchQuery('')}>
+              <MaterialIcons name="close" size={20} color={colors.mutedText} />
+            </TouchableOpacity>
+          ) : null}
+        </View>
+      </View>
+
+      {loading ? (
+        <View style={[styles.container, { justifyContent: 'center', alignItems: 'center' }]}>
+          <ActivityIndicator size="large" color={colors.primary} />
+        </View>
+      ) : error ? (
+        <View style={[styles.container, { justifyContent: 'center', alignItems: 'center', padding: 20 }]}>
+          <Text style={{ color: 'red', textAlign: 'center', marginBottom: 20 }}>{error}</Text>
+          <TouchableOpacity onPress={fetchData} style={{ padding: 10, backgroundColor: colors.primary, borderRadius: 8 }}>
+            <Text style={{ color: 'white' }}>Thử lại</Text>
           </TouchableOpacity>
-        ))}
-      </ScrollView>
+        </View>
+      ) : (
+        <ScrollView contentContainerStyle={styles.listContent}>
+          {filteredLessons.map((item, index) => (
+            <TouchableOpacity
+              key={item._id || item.id}
+              style={styles.card}
+              activeOpacity={0.8}
+              onPress={() => router.push(`/lessons/${item._id || item.id}` as any)}
+            >
+              <View style={styles.orderCircle}>
+                <Text style={styles.orderText}>#{index + 1}</Text>
+              </View>
+              <View style={styles.cardInfo}>
+                <View style={styles.domainTag}>
+                  <Text style={styles.domainTagText}>{item.domain || 'Lĩnh vực khác'}</Text>
+                </View>
+                <Text style={styles.cardTitle}>{item.title}</Text>
+                <Text style={styles.cardMeta}>⏱ {item.durationMinutes || item.duration || 15} phút · 📖 {item.vocabularyCount || item.termsCount || (item.vocabulary ? item.vocabulary.length : 0) || 0} thuật ngữ</Text>
+              </View>
+              <MaterialIcons name="chevron-right" size={22} color={colors.outline} />
+            </TouchableOpacity>
+          ))}
+          {filteredLessons.length === 0 && (
+            <Text style={{ textAlign: 'center', marginTop: 20, color: colors.mutedText }}>Không tìm thấy bài học phù hợp.</Text>
+          )}
+        </ScrollView>
+      )}
     </View>
   );
 }
@@ -79,6 +132,22 @@ const styles = StyleSheet.create({
   headerTitle: {
     fontSize: 16,
     fontWeight: '800',
+    color: colors.text
+  },
+  searchContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#ffffff',
+    borderRadius: 12,
+    paddingHorizontal: spacing.md,
+    height: 44,
+    borderWidth: 1,
+    borderColor: '#e2e8f0'
+  },
+  searchInput: {
+    flex: 1,
+    marginLeft: 8,
+    fontSize: 14,
     color: colors.text
   },
   listContent: {

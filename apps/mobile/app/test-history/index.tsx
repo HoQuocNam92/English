@@ -1,18 +1,49 @@
+import { useEffect, useState } from 'react';
 import { useRouter } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
-import { StyleSheet, Text, View, TouchableOpacity, ScrollView } from 'react-native';
+import { StyleSheet, Text, View, TouchableOpacity, ScrollView, ActivityIndicator } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
 import { colors, spacing } from '@techenglish/design-tokens';
+import { api } from '../../src/shared/api/api-client';
 
-const mockHistory = [
-  { id: '1', title: 'AWS Cloud Practitioner Mock #1', domain: 'Cloud Computing', score: 88, maxScore: 100, isPass: true, date: '10/08/2026' },
-  { id: '2', title: 'IAM Roles & Policies Quiz', domain: 'Cloud Computing', score: 95, maxScore: 100, isPass: true, date: '08/08/2026' },
-  { id: '3', title: 'Networking Fundamentals & VPC', domain: 'Networking', score: 65, maxScore: 100, isPass: false, date: '05/08/2026' },
-  { id: '4', title: 'REST API Verbs & Status Codes', domain: 'Software Eng', score: 90, maxScore: 100, isPass: true, date: '02/08/2026' }
-];
+interface AttemptHistory {
+  id: string;
+  score: number;
+  isPassed: boolean;
+  createdAt: string;
+  exam: {
+    title: string;
+    domain?: { name: string };
+  };
+}
 
 export default function MobileTestHistoryScreen() {
   const router = useRouter();
+  const [history, setHistory] = useState<AttemptHistory[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchHistory = async () => {
+      try {
+        const data = await api.get<{ data: AttemptHistory[] }>('/exams/attempts/my');
+        setHistory(Array.isArray(data) ? data : (data?.data || []));
+      } catch (error) {
+        console.error('Failed to fetch test history', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchHistory();
+  }, []);
+
+  const formatDate = (dateString: string) => {
+    try {
+      const date = new Date(dateString);
+      return date.toLocaleDateString('vi-VN');
+    } catch {
+      return dateString;
+    }
+  };
 
   return (
     <View style={styles.container}>
@@ -27,33 +58,39 @@ export default function MobileTestHistoryScreen() {
       </View>
 
       <ScrollView contentContainerStyle={styles.listContent}>
-        {mockHistory.map((item) => (
-          <TouchableOpacity
-            key={item.id}
-            style={styles.card}
-            onPress={() => router.push(`/test-result/${item.id}` as any)}
-            activeOpacity={0.8}
-          >
-            <View style={styles.cardLeft}>
-              <View style={styles.domainTag}>
-                <Text style={styles.domainTagText}>{item.domain}</Text>
+        {loading ? (
+          <ActivityIndicator size="large" color={colors.primary} style={{ marginTop: 20 }} />
+        ) : history.length === 0 ? (
+          <Text style={styles.emptyText}>Chưa có lịch sử làm bài</Text>
+        ) : (
+          history.map((item) => (
+            <TouchableOpacity
+              key={item.id}
+              style={styles.card}
+              onPress={() => router.push(`/test-result/${item.id}` as any)}
+              activeOpacity={0.8}
+            >
+              <View style={styles.cardLeft}>
+                <View style={styles.domainTag}>
+                  <Text style={styles.domainTagText}>{item.exam?.domain?.name || 'Tổng hợp'}</Text>
+                </View>
+                <Text style={styles.cardTitle}>{item.exam?.title}</Text>
+                <Text style={styles.cardDate}>Ngày thi: {formatDate(item.createdAt)}</Text>
               </View>
-              <Text style={styles.cardTitle}>{item.title}</Text>
-              <Text style={styles.cardDate}>Ngày thi: {item.date}</Text>
-            </View>
 
-            <View style={styles.cardRight}>
-              <Text style={[styles.scoreText, item.isPass ? styles.scorePass : styles.scoreFail]}>
-                {item.score}%
-              </Text>
-              <View style={[styles.statusBadge, item.isPass ? styles.statusBadgePass : styles.statusBadgeFail]}>
-                <Text style={[styles.statusText, item.isPass ? styles.scorePass : styles.scoreFail]}>
-                  {item.isPass ? 'Đạt' : 'Chưa đạt'}
+              <View style={styles.cardRight}>
+                <Text style={[styles.scoreText, item.isPassed ? styles.scorePass : styles.scoreFail]}>
+                  {item.score?.toFixed(0)}
                 </Text>
+                <View style={[styles.statusBadge, item.isPassed ? styles.statusBadgePass : styles.statusBadgeFail]}>
+                  <Text style={[styles.statusText, item.isPassed ? styles.scorePass : styles.scoreFail]}>
+                    {item.isPassed ? 'Đạt' : 'Chưa đạt'}
+                  </Text>
+                </View>
               </View>
-            </View>
-          </TouchableOpacity>
-        ))}
+            </TouchableOpacity>
+          ))
+        )}
       </ScrollView>
     </View>
   );
@@ -90,6 +127,11 @@ const styles = StyleSheet.create({
   listContent: {
     padding: spacing.lg,
     gap: spacing.md
+  },
+  emptyText: {
+    textAlign: 'center',
+    color: colors.mutedText,
+    marginTop: spacing.xl
   },
   card: {
     backgroundColor: '#ffffff',

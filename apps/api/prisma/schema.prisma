@@ -305,7 +305,6 @@ model Domain {
   questions          Question[]
   exams              Exam[]
   learnerGroups      LearnerGroup[]
-  learningProgress   LearningProgress[]
 
   @@index([code])
   @@index([isActive])
@@ -367,7 +366,6 @@ model Certificate {
   exams            Exam[]
   learnerGroups    LearnerGroup[]
   certContent      CertificationContent[]
-  learningProgress LearningProgress[]
 
   @@index([code])
   @@map("certificates")
@@ -848,10 +846,9 @@ model LearningProgress {
   completedAt          DateTime?            @map("completed_at") @db.Timestamptz(6)
   updatedAt            DateTime             @updatedAt @map("updated_at") @db.Timestamptz(6)
 
-  learner     User         @relation(fields: [learnerId], references: [id], onDelete: Cascade)
-  lesson      Lesson?      @relation(fields: [resourceId], references: [id], onUpdate: NoAction, onDelete: NoAction, map: "fk_progress_lesson")
-  domain      Domain?      @relation(fields: [resourceId], references: [id], onUpdate: NoAction, onDelete: NoAction, map: "fk_progress_domain")
-  certificate Certificate? @relation(fields: [resourceId], references: [id], onUpdate: NoAction, onDelete: NoAction, map: "fk_progress_certificate")
+  learner User    @relation(fields: [learnerId], references: [id], onDelete: Cascade)
+  /// resourceId points to a lesson, domain, or certificate depending on resourceType (no FK enforced for non-lesson types)
+  lesson  Lesson? @relation(fields: [resourceId], references: [id], onUpdate: NoAction, onDelete: NoAction, map: "fk_progress_lesson")
 
   @@unique([learnerId, resourceType, resourceId])
   @@index([learnerId])

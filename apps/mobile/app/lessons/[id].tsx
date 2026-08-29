@@ -1,121 +1,129 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
-import { StyleSheet, Text, View, TouchableOpacity, ScrollView } from 'react-native';
+import { StyleSheet, Text, View, TouchableOpacity, ScrollView, ActivityIndicator } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
 import { colors, spacing } from '@techenglish/design-tokens';
+import { api } from '../../src/shared/api/api-client';
 
 export default function MobileLessonDetailScreen() {
-  const router = useRouter();
   const { id } = useLocalSearchParams();
-  const [activeTab, setActiveTab] = useState<'theory' | 'terms'>('theory');
+  const router = useRouter();
+  const [lesson, setLesson] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
+  const [marking, setMarking] = useState(false);
 
-  const lesson = {
-    id: id || 'les-1',
-    title: 'Understanding REST APIs & HTTP Verbs',
-    domain: 'Software Engineering',
-    level: 'Intermediate',
-    durationMinutes: 20,
-    intro: 'REST (Representational State Transfer) is a software architectural style that defines a set of constraints to be used for creating Web services. In this lesson, you will learn the exact English terminology used in API design.',
-    theoryContent: `1. HTTP Verbs & Idempotency:
-- GET: Retrieve resource without side effects (Safe & Idempotent).
-- POST: Create a subordinate resource (Not idempotent).
-- PUT: Replace resource or create if missing (Idempotent).
-- PATCH: Apply partial modifications (Not necessarily idempotent).
-- DELETE: Remove specified resource (Idempotent).
+  useEffect(() => {
+    if (id) fetchData();
+  }, [id]);
 
-2. Common Status Codes:
-- 200 OK, 201 Created, 204 No Content.
-- 400 Bad Request, 401 Unauthorized, 403 Forbidden, 404 Not Found.
-- 500 Internal Server Error, 502 Bad Gateway, 503 Service Unavailable.`,
-    terms: [
-      { term: 'Endpoint', def: 'A specific URL where an API receives requests.', example: 'GET /v1/users is a read-only endpoint.' },
-      { term: 'Payload', def: 'The actual data transmitted in the body of HTTP message.', example: 'The JSON payload contains user credentials.' },
-      { term: 'Idempotency', def: 'The property of an operation being able to be applied multiple times without changing the result beyond the initial application.', example: 'Payment APIs require an idempotency key to prevent double charging.' }
-    ]
+  const fetchData = async () => {
+    try {
+      setLoading(true);
+      setError('');
+      const response = await api.get<any>(`/lessons/${id}`);
+      setLesson(response.data || response);
+    } catch (err: any) {
+      setError(err.message || 'Lỗi tải bài học. Vui lòng thử lại.');
+    } finally {
+      setLoading(false);
+    }
   };
+
+  const markComplete = async () => {
+    try {
+      setMarking(true);
+      await api.post(`/progress/mark-lesson/${id}`, {});
+      alert('Đã đánh dấu hoàn thành bài học!');
+      router.back();
+    } catch (err: any) {
+      alert(err.message || 'Lỗi khi đánh dấu. Vui lòng thử lại.');
+    } finally {
+      setMarking(false);
+    }
+  };
+
+  if (loading) {
+    return (
+      <View style={[styles.container, { justifyContent: 'center', alignItems: 'center' }]}>
+        <ActivityIndicator size="large" color={colors.primary} />
+      </View>
+    );
+  }
+
+  if (error || !lesson) {
+    return (
+      <View style={[styles.container, { justifyContent: 'center', alignItems: 'center', padding: 20 }]}>
+        <Text style={{ color: 'red', textAlign: 'center', marginBottom: 20 }}>{error || 'Không tìm thấy bài học.'}</Text>
+        <TouchableOpacity onPress={fetchData} style={{ padding: 10, backgroundColor: colors.primary, borderRadius: 8 }}>
+          <Text style={{ color: 'white' }}>Thử lại</Text>
+        </TouchableOpacity>
+        <TouchableOpacity onPress={() => router.back()} style={{ marginTop: 20 }}>
+          <Text style={{ color: colors.primary }}>Quay lại</Text>
+        </TouchableOpacity>
+      </View>
+    );
+  }
 
   return (
     <View style={styles.container}>
       <StatusBar style="dark" />
-      {/* Top Header */}
+      {/* Header */}
       <View style={styles.header}>
         <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
           <MaterialIcons name="arrow-back" size={24} color={colors.text} />
         </TouchableOpacity>
-        <Text style={styles.headerTitle} numberOfLines={1}>Chi tiết bài học</Text>
-        <TouchableOpacity style={styles.backButton} onPress={() => router.push(`/lessons/vocabulary/${lesson.id}` as any)}>
-          <MaterialIcons name="style" size={22} color={colors.primary} />
-        </TouchableOpacity>
+        <Text style={styles.headerTitle}>Chi tiết bài học</Text>
+        <View style={{ width: 40 }} />
       </View>
 
-      <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
-        {/* Banner Card */}
-        <View style={styles.bannerCard}>
-          <View style={styles.tagRow}>
-            <View style={styles.domainTag}>
-              <Text style={styles.domainTagText}>{lesson.domain}</Text>
+      <ScrollView contentContainerStyle={styles.content}>
+        <View style={styles.domainTag}>
+          <Text style={styles.domainTagText}>{lesson.domain || 'Lĩnh vực khác'}</Text>
+        </View>
+        <Text style={styles.title}>{lesson.title}</Text>
+        <Text style={styles.meta}>
+          ⏱ {lesson.durationMinutes || lesson.duration || 15} phút · 📖 {lesson.vocabularyCount || lesson.termsCount || (lesson.vocabulary ? lesson.vocabulary.length : 0) || 0} thuật ngữ
+        </Text>
+        
+        {lesson.description ? (
+          <Text style={styles.description}>{lesson.description}</Text>
+        ) : null}
+
+        <View style={styles.sectionsContainer}>
+          <Text style={styles.sectionTitle}>Các phần nội dung:</Text>
+          {(lesson.sections || []).map((sec: any, index: number) => (
+            <View key={index} style={styles.sectionItem}>
+              <MaterialIcons name="label-outline" size={18} color={colors.primary} />
+              <Text style={styles.sectionText}>{sec.title || sec}</Text>
             </View>
-            <Text style={styles.durationText}>⏱ {lesson.durationMinutes} phút</Text>
-          </View>
-          <Text style={styles.lessonTitle}>{lesson.title}</Text>
-          <Text style={styles.lessonIntro}>{lesson.intro}</Text>
+          ))}
+          {(!lesson.sections || lesson.sections.length === 0) && (
+            <Text style={{ color: colors.mutedText, marginTop: 8 }}>Không có dữ liệu phần nội dung.</Text>
+          )}
         </View>
-
-        {/* Tab switcher */}
-        <View style={styles.tabSwitcher}>
-          <TouchableOpacity
-            style={[styles.tabButton, activeTab === 'theory' && styles.tabButtonActive]}
-            onPress={() => setActiveTab('theory')}
-          >
-            <Text style={[styles.tabButtonText, activeTab === 'theory' && styles.tabButtonTextActive]}>
-              Lý thuyết & Cấu trúc
-            </Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            style={[styles.tabButton, activeTab === 'terms' && styles.tabButtonActive]}
-            onPress={() => setActiveTab('terms')}
-          >
-            <Text style={[styles.tabButtonText, activeTab === 'terms' && styles.tabButtonTextActive]}>
-              Thuật ngữ ({lesson.terms.length})
-            </Text>
-          </TouchableOpacity>
-        </View>
-
-        {activeTab === 'theory' ? (
-          <View style={styles.theoryBox}>
-            <Text style={styles.theoryText}>{lesson.theoryContent}</Text>
-          </View>
-        ) : (
-          <View style={styles.termsList}>
-            {lesson.terms.map((t) => (
-              <View key={t.term} style={styles.termCard}>
-                <Text style={styles.termName}>{t.term}</Text>
-                <Text style={styles.termDef}>{t.def}</Text>
-                <Text style={styles.termExample}>💬 Ví dụ: {t.example}</Text>
-              </View>
-            ))}
-          </View>
-        )}
       </ScrollView>
 
-      {/* Bottom Bar CTAs */}
+      {/* Bottom Actions */}
       <View style={styles.bottomBar}>
         <TouchableOpacity
-          style={styles.vocabButton}
-          onPress={() => router.push(`/lessons/vocabulary/${lesson.id}` as any)}
+          style={styles.btnStudy}
+          onPress={() => router.push(`/lessons/vocabulary/${id}` as any)}
         >
-          <MaterialIcons name="style" size={18} color={colors.primary} />
-          <Text style={styles.vocabButtonText}>Học Flashcards</Text>
+          <MaterialIcons name="local-library" size={20} color="#fff" style={{ marginRight: 8 }} />
+          <Text style={styles.btnStudyText}>Học từ vựng</Text>
         </TouchableOpacity>
 
         <TouchableOpacity
-          style={styles.quizButton}
-          onPress={() => router.push(`/quiz/${lesson.id}` as any)}
+          style={[styles.btnComplete, marking && { opacity: 0.7 }]}
+          onPress={markComplete}
+          disabled={marking}
         >
-          <Text style={styles.quizButtonText}>Làm bài Quiz</Text>
-          <MaterialIcons name="arrow-forward" size={18} color="#ffffff" />
+          <MaterialIcons name="check-circle" size={20} color="#fff" style={{ marginRight: 8 }} />
+          <Text style={styles.btnCompleteText}>
+            {marking ? 'Đang xử lý...' : 'Đánh dấu hoàn thành'}
+          </Text>
         </TouchableOpacity>
       </View>
     </View>
@@ -148,157 +156,100 @@ const styles = StyleSheet.create({
   headerTitle: {
     fontSize: 16,
     fontWeight: '800',
-    color: colors.text,
-    maxWidth: 220
+    color: colors.text
   },
-  scrollContent: {
-    padding: spacing.lg,
-    paddingBottom: 110,
-    gap: spacing.md
-  },
-  bannerCard: {
-    backgroundColor: '#ffffff',
-    borderRadius: 16,
-    padding: spacing.lg,
-    borderWidth: 1,
-    borderColor: '#e2e8f0',
-    gap: spacing.xs
-  },
-  tagRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 4
+  content: {
+    padding: spacing.lg
   },
   domainTag: {
     backgroundColor: '#ede9fe',
-    paddingHorizontal: 8,
-    paddingVertical: 2,
-    borderRadius: 6
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 6,
+    alignSelf: 'flex-start',
+    marginBottom: spacing.md
   },
   domainTagText: {
-    fontSize: 10,
-    fontWeight: '700',
-    color: colors.primary
-  },
-  durationText: {
-    fontSize: 11,
-    color: colors.mutedText
-  },
-  lessonTitle: {
-    fontSize: 18,
-    fontWeight: '800',
-    color: colors.text
-  },
-  lessonIntro: {
-    fontSize: 13,
-    color: colors.mutedText,
-    lineHeight: 18,
-    marginTop: 4
-  },
-  tabSwitcher: {
-    flexDirection: 'row',
-    backgroundColor: '#e2e8f0',
-    borderRadius: 10,
-    padding: 3
-  },
-  tabButton: {
-    flex: 1,
-    paddingVertical: 8,
-    alignItems: 'center',
-    borderRadius: 8
-  },
-  tabButtonActive: {
-    backgroundColor: '#ffffff'
-  },
-  tabButtonText: {
     fontSize: 12,
     fontWeight: '700',
-    color: colors.mutedText
-  },
-  tabButtonTextActive: {
     color: colors.primary
   },
-  theoryBox: {
-    backgroundColor: '#ffffff',
-    borderRadius: 14,
+  title: {
+    fontSize: 22,
+    fontWeight: '800',
+    color: colors.text,
+    marginBottom: spacing.sm
+  },
+  meta: {
+    fontSize: 13,
+    color: colors.mutedText,
+    marginBottom: spacing.lg
+  },
+  description: {
+    fontSize: 15,
+    color: colors.text,
+    lineHeight: 22,
+    marginBottom: spacing.xl,
+    padding: spacing.md,
+    backgroundColor: '#fff',
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: '#e2e8f0'
+  },
+  sectionsContainer: {
+    backgroundColor: '#fff',
+    borderRadius: 12,
     padding: spacing.md,
     borderWidth: 1,
     borderColor: '#e2e8f0'
   },
-  theoryText: {
-    fontSize: 13,
+  sectionTitle: {
+    fontSize: 16,
+    fontWeight: '700',
     color: colors.text,
-    lineHeight: 20,
-    fontFamily: 'monospace'
+    marginBottom: spacing.md
   },
-  termsList: {
-    gap: spacing.sm
+  sectionItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: spacing.sm
   },
-  termCard: {
-    backgroundColor: '#ffffff',
-    borderRadius: 14,
-    padding: spacing.md,
-    borderWidth: 1,
-    borderColor: '#e2e8f0',
-    gap: 4
-  },
-  termName: {
+  sectionText: {
     fontSize: 14,
-    fontWeight: '800',
-    color: colors.primary
-  },
-  termDef: {
-    fontSize: 12,
     color: colors.text,
-    lineHeight: 16
-  },
-  termExample: {
-    fontSize: 11,
-    color: colors.mutedText,
-    fontStyle: 'italic',
-    marginTop: 2
+    marginLeft: spacing.sm
   },
   bottomBar: {
-    position: 'absolute',
-    bottom: 0,
-    left: 0,
-    right: 0,
+    padding: spacing.lg,
     backgroundColor: '#ffffff',
-    padding: spacing.md,
     borderTopWidth: 1,
     borderTopColor: '#e2e8f0',
-    flexDirection: 'row',
-    gap: spacing.sm
+    gap: spacing.md
   },
-  vocabButton: {
-    flex: 1,
-    height: 48,
-    borderRadius: 10,
-    backgroundColor: '#ede9fe',
+  btnStudy: {
     flexDirection: 'row',
+    backgroundColor: colors.primary,
+    height: 50,
+    borderRadius: 12,
     alignItems: 'center',
-    justifyContent: 'center',
-    gap: spacing.xs
+    justifyContent: 'center'
   },
-  vocabButtonText: {
-    color: colors.primary,
-    fontSize: 13,
+  btnStudyText: {
+    color: '#ffffff',
+    fontSize: 16,
     fontWeight: '700'
   },
-  quizButton: {
-    flex: 1,
-    height: 48,
-    borderRadius: 10,
-    backgroundColor: colors.primary,
+  btnComplete: {
     flexDirection: 'row',
+    backgroundColor: '#16a34a',
+    height: 50,
+    borderRadius: 12,
     alignItems: 'center',
-    justifyContent: 'center',
-    gap: spacing.xs
+    justifyContent: 'center'
   },
-  quizButtonText: {
+  btnCompleteText: {
     color: '#ffffff',
-    fontSize: 13,
+    fontSize: 16,
     fontWeight: '700'
   }
 });

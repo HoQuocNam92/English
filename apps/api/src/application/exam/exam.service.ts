@@ -78,4 +78,21 @@ export class ExamsService {
     if (learnerId) where.learnerId = learnerId
     return this.prisma.examAttempt.findMany({ where, include: { learner: { include: { userDetail: true } } }, orderBy: { startedAt: 'desc' } })
   }
+
+  async getMyAttempts(learnerId: string) {
+    return this.prisma.examAttempt.findMany({ 
+      where: { learnerId }, 
+      include: { exam: { select: { title: true, domain: true, level: true } } }, 
+      orderBy: { startedAt: 'desc' } 
+    })
+  }
+
+  async getAttemptById(id: string, learnerId: string) {
+    const attempt = await this.prisma.examAttempt.findUnique({
+      where: { id },
+      include: { exam: true, learner: { include: { userDetail: true } } }
+    })
+    if (!attempt || attempt.learnerId !== learnerId) throw new NotFoundException('Attempt not found')
+    return attempt
+  }
 }

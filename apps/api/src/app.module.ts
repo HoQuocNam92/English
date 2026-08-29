@@ -11,11 +11,17 @@ import { ExamModule } from './modules/exam.module'
 import { ProgressModule } from './modules/progress.module'
 import { LearnerProfileModule } from './modules/learner-profile.module'
 import { TaxonomyModule } from './modules/taxonomy.module'
+import { UploadModule } from './modules/upload.module'
+
+import { RecommendationModule } from './modules/recommendation.module'
+import { PaymentModule } from './modules/payment.module'
+import { RedisCacheModule } from './infrastructure/cache/redis.module'
 
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true }),
     PrismaModule,
+    RedisCacheModule,
     AuthModule,
     UserModule,
     RoleModule,
@@ -26,6 +32,9 @@ import { TaxonomyModule } from './modules/taxonomy.module'
     ProgressModule,
     LearnerProfileModule,
     TaxonomyModule,
+    RecommendationModule,
+    PaymentModule,
+    UploadModule,
   ],
 })
 export class AppModule {}

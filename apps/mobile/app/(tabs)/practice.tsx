@@ -1,70 +1,42 @@
+import { useEffect, useState } from 'react';
 import { useRouter } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
-import { StyleSheet, Text, View, TouchableOpacity, ScrollView } from 'react-native';
+import { StyleSheet, Text, View, TouchableOpacity, ScrollView, ActivityIndicator } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
 import { colors, spacing } from '@techenglish/design-tokens';
+import { api } from '../../src/shared/api/api-client';
 
-interface PracticeMode {
+interface Exam {
   id: string;
   title: string;
-  badge: string;
-  desc: string;
-  stats: string;
-  icon: keyof typeof MaterialIcons.glyphMap;
-  color: string;
-  bgLight: string;
-  route: string;
+  description: string;
+  durationMinutes: number;
+  questionCount: number;
+  domain?: { name: string };
+  status: string;
 }
-
-const practiceModes: PracticeMode[] = [
-  {
-    id: 'vocab',
-    title: 'Flashcards Thuật ngữ IT',
-    badge: 'Spaced Repetition (SRS)',
-    desc: 'Lật thẻ ghi nhớ định nghĩa tiếng Anh, phát âm chuẩn và ví dụ trong code.',
-    stats: '450 thẻ từ vựng · 84 thẻ cần ôn hôm nay',
-    icon: 'style',
-    color: '#4f46e5',
-    bgLight: '#eef2ff',
-    route: '/lessons/vocabulary/vocab-1'
-  },
-  {
-    id: 'scenario',
-    title: 'Xử lý Tình huống (Scenario-Based)',
-    badge: 'Real-world Cases',
-    desc: 'Đọc mô tả sự cố hệ thống (Outage, Latency, Data Leak) và chọn phương án xử lý.',
-    stats: '120 tình huống thực tế · Điểm TB: 78%',
-    icon: 'psychology',
-    color: '#7c3aed',
-    bgLight: '#f5f3ff',
-    route: '/scenario/scen-1'
-  },
-  {
-    id: 'quiz',
-    title: 'Trắc nghiệm theo Chủ đề (Quick Quiz)',
-    badge: '10 - 20 câu',
-    desc: 'Luyện tập nhanh câu hỏi theo từng Domain: IAM, Networking, Databases.',
-    stats: '24 bộ đề chủ đề · Tỷ lệ đúng 82%',
-    icon: 'quiz',
-    color: '#0284c7',
-    bgLight: '#f0f9ff',
-    route: '/quiz/quiz-1'
-  },
-  {
-    id: 'mock-exam',
-    title: 'Thi thử Đề Quốc tế (Full Mock Exam)',
-    badge: 'AWS CLF-C02 Format',
-    desc: 'Mô phỏng kỳ thi thật 65 câu hỏi trong 90 phút, có bấm giờ và tính điểm đỗ/trượt.',
-    stats: '6 đề thi hoàn chỉnh · Tỷ lệ đỗ 79%',
-    icon: 'military-tech',
-    color: '#b45309',
-    bgLight: '#fef3c7',
-    route: '/quiz/mock-1'
-  }
-];
 
 export default function MobilePracticeScreen() {
   const router = useRouter();
+  const [exams, setExams] = useState<Exam[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchExams = async () => {
+      try {
+        const data = await api.get<{ data: Exam[] }>('/exams?limit=10&status=published');
+        // The endpoint usually returns { data: [...] } or just an array depending on the backend, 
+        // assuming { data } based on standard REST patterns, if not we will adjust.
+        // Let's support both array and { data }
+        setExams(Array.isArray(data) ? data : (data?.data || []));
+      } catch (error) {
+        console.error('Failed to fetch exams', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchExams();
+  }, []);
 
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.contentContainer} showsVerticalScrollIndicator={false}>
@@ -80,31 +52,35 @@ export default function MobilePracticeScreen() {
 
       {/* Modes Grid */}
       <View style={styles.modesList}>
-        {practiceModes.map((mode) => (
-          <TouchableOpacity
-            key={mode.id}
-            style={styles.modeCard}
-            onPress={() => router.push(mode.route as any)}
-            activeOpacity={0.8}
-          >
-            <View style={styles.cardHeader}>
-              <View style={[styles.iconBox, { backgroundColor: mode.bgLight }]}>
-                <MaterialIcons name={mode.icon} size={24} color={mode.color} />
+        {loading ? (
+          <ActivityIndicator size="large" color={colors.primary} style={{ marginTop: 20 }} />
+        ) : (
+          exams.map((exam) => (
+            <TouchableOpacity
+              key={exam.id}
+              style={styles.modeCard}
+              onPress={() => router.push(`/quiz/${exam.id}` as any)}
+              activeOpacity={0.8}
+            >
+              <View style={styles.cardHeader}>
+                <View style={[styles.iconBox, { backgroundColor: '#f0f9ff' }]}>
+                  <MaterialIcons name="quiz" size={24} color="#0284c7" />
+                </View>
+                <View style={[styles.badge, { backgroundColor: '#f0f9ff' }]}>
+                  <Text style={[styles.badgeText, { color: '#0284c7' }]}>{exam.domain?.name || 'Tổng hợp'}</Text>
+                </View>
               </View>
-              <View style={[styles.badge, { backgroundColor: mode.bgLight }]}>
-                <Text style={[styles.badgeText, { color: mode.color }]}>{mode.badge}</Text>
+
+              <Text style={styles.modeTitle}>{exam.title}</Text>
+              <Text style={styles.modeDesc}>{exam.description || `Đề thi gồm ${exam.questionCount} câu hỏi.`}</Text>
+
+              <View style={styles.cardFooter}>
+                <Text style={styles.modeStats}>{exam.questionCount} câu · {exam.durationMinutes} phút</Text>
+                <MaterialIcons name="arrow-forward" size={18} color="#0284c7" />
               </View>
-            </View>
-
-            <Text style={styles.modeTitle}>{mode.title}</Text>
-            <Text style={styles.modeDesc}>{mode.desc}</Text>
-
-            <View style={styles.cardFooter}>
-              <Text style={styles.modeStats}>{mode.stats}</Text>
-              <MaterialIcons name="arrow-forward" size={18} color={mode.color} />
-            </View>
-          </TouchableOpacity>
-        ))}
+            </TouchableOpacity>
+          ))
+        )}
       </View>
     </ScrollView>
   );

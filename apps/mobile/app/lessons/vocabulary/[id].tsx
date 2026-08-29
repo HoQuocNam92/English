@@ -1,47 +1,71 @@
-import { useState } from 'react';
-import { useRouter } from 'expo-router';
+import { useState, useEffect } from 'react';
+import { useLocalSearchParams, useRouter } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
-import { StyleSheet, Text, View, TouchableOpacity } from 'react-native';
+import { StyleSheet, Text, View, TouchableOpacity, ActivityIndicator } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
 import { colors, spacing } from '@techenglish/design-tokens';
-
-const flashcards = [
-  {
-    id: 1,
-    term: 'Idempotency',
-    phonetic: '/ˌaɪ.dəmˈpoʊ.tən.si/',
-    type: 'noun',
-    defVi: 'Tính lũy thừa / Tính bất biến qua nhiều lần thực thi',
-    defEn: 'The property of certain operations in mathematics and computer science whereby that operation can be applied multiple times without changing the result beyond the initial application.',
-    example: 'HTTP GET, PUT, and DELETE are idempotent methods by specification.'
-  },
-  {
-    id: 2,
-    term: 'Payload',
-    phonetic: '/ˈpeɪ.loʊd/',
-    type: 'noun',
-    defVi: 'Dữ liệu tải trọng / Thân gói tin HTTP',
-    defEn: 'The essential data that is carried within a transmission packet, excluding headers and metadata.',
-    example: 'The JSON payload exceeds the maximum request limit of 10MB.'
-  },
-  {
-    id: 3,
-    term: 'Stateless',
-    phonetic: '/ˈsteɪt.ləs/',
-    type: 'adjective',
-    defVi: 'Phi trạng thái (mỗi request độc lập)',
-    defEn: 'Communications protocol in which the server treats each request as an independent transaction unrelated to previous requests.',
-    example: 'REST APIs should be stateless, storing session information on the client.'
-  }
-];
+import { api } from '../../../src/shared/api/api-client';
 
 export default function MobileVocabularyLessonScreen() {
+  const { id } = useLocalSearchParams();
   const router = useRouter();
+  const [flashcards, setFlashcards] = useState<any[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isFlipped, setIsFlipped] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
+
+  useEffect(() => {
+    if (id) fetchData();
+  }, [id]);
+
+  const fetchData = async () => {
+    try {
+      setLoading(true);
+      setError('');
+      const response = await api.get<any>(`/vocabulary?lessonId=${id}`);
+      const data = response.data || response;
+      setFlashcards(Array.isArray(data) ? data : data.items || []);
+    } catch (err: any) {
+      setError(err.message || 'Lỗi tải từ vựng. Vui lòng thử lại.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  if (loading) {
+    return (
+      <View style={[styles.container, { justifyContent: 'center', alignItems: 'center' }]}>
+        <ActivityIndicator size="large" color={colors.primary} />
+      </View>
+    );
+  }
+
+  if (error || flashcards.length === 0) {
+    return (
+      <View style={[styles.container, { justifyContent: 'center', alignItems: 'center', padding: 20 }]}>
+        <Text style={{ color: 'red', textAlign: 'center', marginBottom: 20 }}>{error || 'Chưa có từ vựng cho bài học này.'}</Text>
+        {error && (
+          <TouchableOpacity onPress={fetchData} style={{ padding: 10, backgroundColor: colors.primary, borderRadius: 8, marginBottom: 10 }}>
+            <Text style={{ color: 'white' }}>Thử lại</Text>
+          </TouchableOpacity>
+        )}
+        <TouchableOpacity onPress={() => router.back()}>
+          <Text style={{ color: colors.primary }}>Quay lại</Text>
+        </TouchableOpacity>
+      </View>
+    );
+  }
 
   const currentCard = flashcards[currentIndex];
   const total = flashcards.length;
+  
+  const term = currentCard.word || currentCard.term || 'No Term';
+  const phonetic = currentCard.phonetic || currentCard.pronunciation || '';
+  const type = currentCard.partOfSpeech || currentCard.type || 'word';
+  const defVi = currentCard.meaningVi || currentCard.defVi || 'Không có nghĩa tiếng Việt';
+  const defEn = currentCard.meaningEn || currentCard.defEn || currentCard.definition || '';
+  const example = currentCard.example || (currentCard.examples && currentCard.examples[0]) || '';
 
   const handleNextCard = () => {
     setIsFlipped(false);
@@ -79,7 +103,7 @@ export default function MobileVocabularyLessonScreen() {
         >
           <View style={styles.cardTop}>
             <View style={styles.typeBadge}>
-              <Text style={styles.typeBadgeText}>{currentCard.type}</Text>
+              <Text style={styles.typeBadgeText}>{type}</Text>
             </View>
             <TouchableOpacity style={styles.soundButton}>
               <MaterialIcons name="volume-up" size={24} color={colors.primary} />
@@ -87,17 +111,19 @@ export default function MobileVocabularyLessonScreen() {
           </View>
 
           <View style={styles.cardMain}>
-            <Text style={styles.termText}>{currentCard.term}</Text>
-            <Text style={styles.phoneticText}>{currentCard.phonetic}</Text>
+            <Text style={styles.termText}>{term}</Text>
+            {phonetic ? <Text style={styles.phoneticText}>{phonetic}</Text> : null}
 
             {isFlipped ? (
               <View style={styles.flippedContent}>
                 <View style={styles.divider} />
-                <Text style={styles.defViText}>{currentCard.defVi}</Text>
-                <Text style={styles.defEnText}>{currentCard.defEn}</Text>
-                <View style={styles.exampleBox}>
-                  <Text style={styles.exampleText}>💬 {currentCard.example}</Text>
-                </View>
+                <Text style={styles.defViText}>{defVi}</Text>
+                {defEn ? <Text style={styles.defEnText}>{defEn}</Text> : null}
+                {example ? (
+                  <View style={styles.exampleBox}>
+                    <Text style={styles.exampleText}>💬 {example}</Text>
+                  </View>
+                ) : null}
               </View>
             ) : (
               <View style={styles.tapPrompt}>
@@ -196,7 +222,8 @@ const styles = StyleSheet.create({
   typeBadgeText: {
     fontSize: 11,
     fontWeight: '700',
-    color: colors.primary
+    color: colors.primary,
+    textTransform: 'capitalize'
   },
   soundButton: {
     width: 36,

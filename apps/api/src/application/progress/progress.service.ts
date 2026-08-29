@@ -22,5 +22,13 @@ export class ProgressService {
     })
   }
 
+  async markLessonComplete(learnerId: string, lessonId: string) {
+    return this.prisma.learningProgress.upsert({
+      where: { learnerId_resourceType_resourceId: { learnerId, resourceType: 'lesson', resourceId: lessonId } },
+      update: { status: 'completed', completionPercent: 100, completedAt: new Date() },
+      create: { learnerId, resourceType: 'lesson', resourceId: lessonId, status: 'completed', completionPercent: 100, startedAt: new Date(), completedAt: new Date() }
+    })
+  }
+
   async getLearnerProgress(learnerId: string) { return this.getMyProgress(learnerId) }
 }

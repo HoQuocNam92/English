@@ -2,6 +2,7 @@ import { Controller, Get, Post, Patch, Body, Param, Query, UseGuards, HttpCode, 
 import { ApiTags, ApiBearerAuth, ApiOperation } from '@nestjs/swagger'
 import { UsersService } from '../application/user/user.service'
 import { CreateUserDto, UpdateUserDto, UserQueryDto } from './http-dto/user.dto'
+import { UpdateProfileDto, ChangePasswordDto } from './http-dto/profile.dto'
 import { JwtAuthGuard } from '../infrastructure/auth/jwt-auth.guard'
 import { PermissionsGuard } from '../infrastructure/auth/permissions.guard'
 import { RequirePermissions } from './decorators/require-permissions.decorator'
@@ -27,6 +28,19 @@ export class UsersController {
     return this.usersService.findOne(user.sub)
   }
 
+  @Patch('me')
+  @ApiOperation({ summary: 'Update my own profile' })
+  updateMe(@CurrentUser() user: JwtPayload, @Body() dto: UpdateProfileDto) {
+    return this.usersService.update(user.sub, dto)
+  }
+
+  @Post('me/change-password')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Change password' })
+  changePassword(@CurrentUser() user: JwtPayload, @Body() dto: ChangePasswordDto) {
+    return this.usersService.changePassword(user.sub, dto)
+  }
+
   @Get(':id')
   @RequirePermissions('users:read')
   @ApiOperation({ summary: 'Get user by id' })
@@ -46,12 +60,6 @@ export class UsersController {
   @ApiOperation({ summary: 'Update user' })
   update(@Param('id') id: string, @Body() dto: UpdateUserDto) {
     return this.usersService.update(id, dto)
-  }
-
-  @Patch('me/profile')
-  @ApiOperation({ summary: 'Update my own profile' })
-  updateMe(@CurrentUser() user: JwtPayload, @Body() dto: UpdateUserDto) {
-    return this.usersService.update(user.sub, dto)
   }
 
   @Patch(':id/suspend')

@@ -1,22 +1,61 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
-import { StyleSheet, Text, View, TextInput, TouchableOpacity, ScrollView, Alert } from 'react-native';
+import { StyleSheet, Text, View, TextInput, TouchableOpacity, ScrollView, Alert, ActivityIndicator } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
 import { colors, spacing } from '@techenglish/design-tokens';
+import { api } from '../../src/shared/api/api-client';
+import { validateDisplayName, validatePhone } from '../../src/shared/utils/validators';
 
 export default function MobileEditProfileScreen() {
   const router = useRouter();
-  const [displayName, setDisplayName] = useState('Nguyễn Hoàng Nam');
-  const [email] = useState('nam.learner@techenglish.edu.vn');
-  const [phone, setPhone] = useState('0912345678');
-  const [bio, setBio] = useState('Backend Engineer transitioning to Cloud Solutions Architect.');
+  const [displayName, setDisplayName] = useState('');
+  const [email, setEmail] = useState('');
+  const [phone, setPhone] = useState('');
+  const [bio, setBio] = useState('');
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
 
-  const handleSave = () => {
-    Alert.alert('Thành công', 'Đã cập nhật thông tin cá nhân thành công!', [
-      { text: 'OK', onPress: () => router.back() }
-    ]);
+  useEffect(() => {
+    api.get('/me')
+      .then((data: any) => {
+        setDisplayName(data.displayName || '');
+        setEmail(data.email || '');
+        setPhone(data.phone || '');
+        setBio(data.bio || '');
+      })
+      .catch(err => Alert.alert('Lỗi', 'Không thể tải thông tin'))
+      .finally(() => setLoading(false));
+  }, []);
+
+  const handleSave = async () => {
+    const nameErr = validateDisplayName(displayName);
+    if (nameErr) return Alert.alert('Lỗi', nameErr);
+    const phoneErr = validatePhone(phone);
+    if (phoneErr) return Alert.alert('Lỗi', phoneErr);
+
+    setSaving(true);
+    try {
+      await api.patch('/me', { displayName, phone, bio });
+      Alert.alert('Thành công', 'Đã cập nhật thông tin cá nhân thành công!', [
+        { text: 'OK', onPress: () => router.back() }
+      ]);
+    } catch (err: any) {
+      Alert.alert('Lỗi', err.message || 'Có lỗi xảy ra');
+    } finally {
+      setSaving(false);
+    }
   };
+
+  if (loading) {
+    return (
+      <View style={[styles.container, { justifyContent: 'center', alignItems: 'center' }]}>
+        <ActivityIndicator size="large" color={colors.primary} />
+      </View>
+    );
+  }
+
+  const avatarLetter = displayName ? displayName.charAt(0).toUpperCase() : 'N';
 
   return (
     <View style={styles.container}>
@@ -34,7 +73,7 @@ export default function MobileEditProfileScreen() {
         {/* Avatar Section */}
         <View style={styles.avatarSection}>
           <View style={styles.avatarBox}>
-            <Text style={styles.avatarText}>N</Text>
+            <Text style={styles.avatarText}>{avatarLetter}</Text>
           </View>
           <TouchableOpacity style={styles.changeAvatarBtn}>
             <Text style={styles.changeAvatarText}>Đổi ảnh đại diện</Text>
@@ -86,8 +125,8 @@ export default function MobileEditProfileScreen() {
 
       {/* Bottom Bar */}
       <View style={styles.bottomBar}>
-        <TouchableOpacity style={styles.saveBtn} onPress={handleSave}>
-          <Text style={styles.saveBtnText}>Lưu thay đổi</Text>
+        <TouchableOpacity style={styles.saveBtn} onPress={handleSave} disabled={saving}>
+          {saving ? <ActivityIndicator color="#fff" /> : <Text style={styles.saveBtnText}>Lưu thay đổi</Text>}
         </TouchableOpacity>
       </View>
     </View>

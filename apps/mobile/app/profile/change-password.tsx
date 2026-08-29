@@ -1,28 +1,45 @@
 import { useState } from 'react';
 import { useRouter } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
-import { StyleSheet, Text, View, TextInput, TouchableOpacity, ScrollView, Alert } from 'react-native';
+import { StyleSheet, Text, View, TextInput, TouchableOpacity, ScrollView, Alert, ActivityIndicator } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
 import { colors, spacing } from '@techenglish/design-tokens';
+import { api } from '../../src/shared/api/api-client';
+import { validatePassword } from '../../src/shared/utils/validators';
 
 export default function MobileChangePasswordScreen() {
   const router = useRouter();
   const [currentPassword, setCurrentPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
+  const [saving, setSaving] = useState(false);
 
-  const handleUpdate = () => {
-    if (!currentPassword || !newPassword || !confirmPassword) {
-      Alert.alert('Lỗi', 'Vui lòng điền đầy đủ các trường mật khẩu.');
+  const handleUpdate = async () => {
+    if (!currentPassword) {
+      Alert.alert('Lỗi', 'Vui lòng nhập mật khẩu hiện tại.');
+      return;
+    }
+    const passErr = validatePassword(newPassword);
+    if (passErr) {
+      Alert.alert('Lỗi', passErr);
       return;
     }
     if (newPassword !== confirmPassword) {
       Alert.alert('Lỗi', 'Mật khẩu mới và xác nhận mật khẩu không khớp.');
       return;
     }
-    Alert.alert('Thành công', 'Đổi mật khẩu thành công!', [
-      { text: 'OK', onPress: () => router.back() }
-    ]);
+
+    setSaving(true);
+    try {
+      await api.post('/me/change-password', { currentPassword, newPassword });
+      Alert.alert('Thành công', 'Đổi mật khẩu thành công!', [
+        { text: 'OK', onPress: () => router.back() }
+      ]);
+    } catch (err: any) {
+      Alert.alert('Lỗi', err.message || 'Có lỗi xảy ra');
+    } finally {
+      setSaving(false);
+    }
   };
 
   return (
@@ -54,7 +71,7 @@ export default function MobileChangePasswordScreen() {
             <Text style={styles.label}>Mật khẩu mới</Text>
             <TextInput
               style={styles.input}
-              placeholder="Tối thiểu 8 ký tự"
+              placeholder="Tối thiểu 8 ký tự, có chữ hoa, số, ký tự đặc biệt"
               value={newPassword}
               onChangeText={setNewPassword}
               secureTextEntry
@@ -76,8 +93,8 @@ export default function MobileChangePasswordScreen() {
 
       {/* Bottom Bar */}
       <View style={styles.bottomBar}>
-        <TouchableOpacity style={styles.saveBtn} onPress={handleUpdate}>
-          <Text style={styles.saveBtnText}>Cập nhật mật khẩu</Text>
+        <TouchableOpacity style={styles.saveBtn} onPress={handleUpdate} disabled={saving}>
+          {saving ? <ActivityIndicator color="#fff" /> : <Text style={styles.saveBtnText}>Cập nhật mật khẩu</Text>}
         </TouchableOpacity>
       </View>
     </View>

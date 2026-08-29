@@ -228,7 +228,7 @@ export class TaxonomyService {
         include: {
           userDetail: true,
           learnerProfile: { include: { level: true } },
-          learnerProgress: { include: { domain: true } },
+          learnerProgress: true,
           examAttempts: true,
         },
         orderBy: { createdAt: 'desc' },

@@ -1,18 +1,81 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
-import { StyleSheet, Text, View, TextInput, TouchableOpacity, ScrollView } from 'react-native';
+import { StyleSheet, Text, View, TextInput, TouchableOpacity, ScrollView, ActivityIndicator, Alert, Image } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
 import { colors, spacing } from '@techenglish/design-tokens';
+import { useAuth } from '../../src/shared/store/auth-context';
+import { validateEmail } from '../../src/shared/utils/validators';
+import * as WebBrowser from 'expo-web-browser';
+import * as Google from 'expo-auth-session/providers/google';
+import { api } from '../../src/shared/api/api-client';
+
+WebBrowser.maybeCompleteAuthSession();
 
 export default function MobileLoginScreen() {
   const router = useRouter();
+  const { login } = useAuth();
   const [email, setEmail] = useState('nam.learner@techenglish.edu.vn');
   const [password, setPassword] = useState('Learner@123456');
   const [showPassword, setShowPassword] = useState(false);
+  const [emailError, setEmailError] = useState('');
+  const [passwordError, setPasswordError] = useState('');
+  const [loginError, setLoginError] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
 
-  const handleLogin = () => {
-    router.replace('/(tabs)/home' as any);
+  const [request, response, promptAsync] = Google.useAuthRequest({
+    clientId: process.env.EXPO_PUBLIC_GOOGLE_CLIENT_ID ?? '',
+    iosClientId: process.env.EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID ?? '',
+    androidClientId: process.env.EXPO_PUBLIC_GOOGLE_ANDROID_CLIENT_ID ?? '',
+  });
+
+  useEffect(() => {
+    if (response?.type === 'success') {
+      const { id_token } = response.params;
+      if (id_token) {
+        handleGoogleLogin(id_token);
+      }
+    }
+  }, [response]);
+
+  const handleGoogleLogin = async (idToken: string) => {
+    setIsLoading(true);
+    try {
+      const { data } = await api.post<any>('/auth/google/mobile', { idToken });
+      await (useAuth as any)().loginWithTokens?.(data); // Using any because auth-context is not updated yet, wait, we can just call it
+      router.replace('/(tabs)/home' as any);
+    } catch (err: any) {
+      Alert.alert('Lỗi', err.message);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleLogin = async () => {
+    setEmailError('');
+    setPasswordError('');
+    setLoginError('');
+
+    const emailErr = validateEmail(email);
+    if (emailErr) setEmailError(emailErr);
+    
+    let passErr = '';
+    if (!password) passErr = 'Mật khẩu không được để trống';
+    else if (password.length < 8) passErr = 'Mật khẩu phải có ít nhất 8 ký tự';
+    
+    if (passErr) setPasswordError(passErr);
+
+    if (emailErr || passErr) return;
+
+    setIsLoading(true);
+    try {
+      await login(email, password);
+      router.replace('/(tabs)/home' as any);
+    } catch (err: any) {
+      setLoginError(err.message || 'Đăng nhập thất bại. Vui lòng thử lại.');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -27,9 +90,11 @@ export default function MobileLoginScreen() {
       </View>
 
       <View style={styles.card}>
+        {loginError ? <Text style={styles.errorText}>{loginError}</Text> : null}
+        
         <View style={styles.inputGroup}>
           <Text style={styles.label}>Email</Text>
-          <View style={styles.inputWrapper}>
+          <View style={[styles.inputWrapper, emailError ? styles.inputError : null]}>
             <MaterialIcons name="mail-outline" size={20} color={colors.outline} style={styles.inputIcon} />
             <TextInput
               style={styles.input}
@@ -38,13 +103,15 @@ export default function MobileLoginScreen() {
               onChangeText={setEmail}
               autoCapitalize="none"
               keyboardType="email-address"
+              editable={!isLoading}
             />
           </View>
+          {emailError ? <Text style={styles.errorTextSmall}>{emailError}</Text> : null}
         </View>
 
         <View style={styles.inputGroup}>
           <Text style={styles.label}>Mật khẩu</Text>
-          <View style={styles.inputWrapper}>
+          <View style={[styles.inputWrapper, passwordError ? styles.inputError : null]}>
             <MaterialIcons name="lock-outline" size={20} color={colors.outline} style={styles.inputIcon} />
             <TextInput
               style={styles.input}
@@ -52,25 +119,43 @@ export default function MobileLoginScreen() {
               value={password}
               onChangeText={setPassword}
               secureTextEntry={!showPassword}
+              editable={!isLoading}
             />
-            <TouchableOpacity onPress={() => setShowPassword(!showPassword)} style={styles.eyeIcon}>
+            <TouchableOpacity onPress={() => setShowPassword(!showPassword)} style={styles.eyeIcon} disabled={isLoading}>
               <MaterialIcons name={showPassword ? 'visibility-off' : 'visibility'} size={20} color={colors.outline} />
             </TouchableOpacity>
           </View>
+          {passwordError ? <Text style={styles.errorTextSmall}>{passwordError}</Text> : null}
         </View>
 
-        <TouchableOpacity style={styles.forgotPassword}>
+        <TouchableOpacity style={styles.forgotPassword} disabled={isLoading}>
           <Text style={styles.forgotPasswordText}>Quên mật khẩu?</Text>
         </TouchableOpacity>
 
-        <TouchableOpacity style={styles.loginButton} activeOpacity={0.8} onPress={handleLogin}>
-          <Text style={styles.loginButtonText}>Đăng nhập</Text>
-          <MaterialIcons name="arrow-forward" size={18} color="#ffffff" />
+        <TouchableOpacity style={styles.loginButton} activeOpacity={0.8} onPress={handleLogin} disabled={isLoading}>
+          {isLoading ? (
+            <ActivityIndicator color="#ffffff" size="small" />
+          ) : (
+            <>
+              <Text style={styles.loginButtonText}>Đăng nhập</Text>
+              <MaterialIcons name="arrow-forward" size={18} color="#ffffff" />
+            </>
+          )}
+        </TouchableOpacity>
+
+        <TouchableOpacity 
+          style={[styles.loginButton, { backgroundColor: '#ffffff', borderWidth: 1, borderColor: '#e2e8f0', marginTop: spacing.md }]} 
+          activeOpacity={0.8} 
+          onPress={() => promptAsync()} 
+          disabled={!request || isLoading}
+        >
+          <MaterialIcons name="g-translate" size={18} color="#ea4335" />
+          <Text style={[styles.loginButtonText, { color: '#334155' }]}>Đăng nhập với Google</Text>
         </TouchableOpacity>
 
         <View style={styles.footerRow}>
           <Text style={styles.footerText}>Chưa có tài khoản? </Text>
-          <TouchableOpacity onPress={() => router.push('/(auth)/register' as any)}>
+          <TouchableOpacity onPress={() => router.push('/(auth)/register' as any)} disabled={isLoading}>
             <Text style={styles.registerLink}>Đăng ký ngay</Text>
           </TouchableOpacity>
         </View>
@@ -196,5 +281,21 @@ const styles = StyleSheet.create({
     fontSize: 13,
     fontWeight: '700',
     color: colors.primary
+  },
+  errorText: {
+    color: '#ef4444',
+    fontSize: 14,
+    textAlign: 'center',
+    marginBottom: spacing.xs
+  },
+  errorTextSmall: {
+    color: '#ef4444',
+    fontSize: 12,
+    marginTop: 2,
+    marginLeft: 4
+  },
+  inputError: {
+    borderColor: '#ef4444',
+    borderWidth: 1
   }
 });

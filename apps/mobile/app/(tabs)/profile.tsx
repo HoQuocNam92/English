@@ -1,11 +1,24 @@
+import { useEffect, useState } from 'react';
 import { useRouter } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
-import { StyleSheet, Text, View, TouchableOpacity, ScrollView, Alert } from 'react-native';
+import { StyleSheet, Text, View, TouchableOpacity, ScrollView, Alert, ActivityIndicator } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
 import { colors, spacing } from '@techenglish/design-tokens';
+import { api } from '../../src/shared/api/api-client';
+import { useAuth } from '../../src/shared/store/auth-context';
 
 export default function MobileProfileScreen() {
   const router = useRouter();
+  const { logout, user } = useAuth();
+  const [profile, setProfile] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    api.get('/me')
+      .then(data => setProfile(data))
+      .catch(err => console.error(err))
+      .finally(() => setLoading(false));
+  }, []);
 
   const handleLogout = () => {
     Alert.alert('Đăng xuất', 'Bạn có chắc chắn muốn đăng xuất tài khoản?', [
@@ -13,10 +26,28 @@ export default function MobileProfileScreen() {
       {
         text: 'Đăng xuất',
         style: 'destructive',
-        onPress: () => router.replace('/(auth)/login' as any)
+        onPress: async () => {
+          await logout();
+          router.replace('/(auth)/login' as any);
+        }
       }
     ]);
   };
+
+  if (loading) {
+    return (
+      <View style={[styles.container, { justifyContent: 'center', alignItems: 'center' }]}>
+        <ActivityIndicator size="large" color={colors.primary} />
+      </View>
+    );
+  }
+
+  const displayName = profile?.displayName || user?.displayName || 'Người dùng';
+  const email = profile?.email || user?.email || '';
+  const role = profile?.role || user?.role || 'learner';
+  const avatarLetter = displayName.charAt(0).toUpperCase();
+  const certGoal = profile?.certGoal || 'AWS Cloud Practitioner';
+  const mainDomain = profile?.mainDomain || 'Cloud Computing';
 
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.contentContainer} showsVerticalScrollIndicator={false}>
@@ -26,16 +57,18 @@ export default function MobileProfileScreen() {
       <View style={styles.profileCard}>
         <View style={styles.avatarRow}>
           <View style={styles.avatar}>
-            <Text style={styles.avatarText}>N</Text>
+            <Text style={styles.avatarText}>{avatarLetter}</Text>
           </View>
           <View style={styles.userInfo}>
             <View style={styles.nameRow}>
-              <Text style={styles.displayName}>Nguyễn Hoàng Nam</Text>
-              <View style={styles.proBadge}>
-                <Text style={styles.proBadgeText}>PRO</Text>
-              </View>
+              <Text style={styles.displayName}>{displayName}</Text>
+              {role === 'pro' && (
+                <View style={styles.proBadge}>
+                  <Text style={styles.proBadgeText}>PRO</Text>
+                </View>
+              )}
             </View>
-            <Text style={styles.userEmail}>nam.learner@techenglish.edu.vn</Text>
+            <Text style={styles.userEmail}>{email}</Text>
           </View>
         </View>
 
@@ -43,11 +76,11 @@ export default function MobileProfileScreen() {
         <View style={styles.goalBox}>
           <View style={styles.goalRow}>
             <Text style={styles.goalLabel}>Mục tiêu chứng chỉ</Text>
-            <Text style={styles.goalValue}>AWS Cloud Practitioner</Text>
+            <Text style={styles.goalValue}>{certGoal}</Text>
           </View>
           <View style={styles.goalRow}>
             <Text style={styles.goalLabel}>Chuyên ngành chính</Text>
-            <Text style={styles.goalValue}>Cloud Computing</Text>
+            <Text style={styles.goalValue}>{mainDomain}</Text>
           </View>
         </View>
       </View>
@@ -75,6 +108,20 @@ export default function MobileProfileScreen() {
           </View>
           <MaterialIcons name="chevron-right" size={20} color={colors.outline} />
         </TouchableOpacity>
+        
+        {/* Nâng cấp PRO menu item */}
+        {role !== 'pro' && (
+          <TouchableOpacity
+            style={styles.menuItem}
+            onPress={() => router.push('/payment' as any)}
+          >
+            <View style={styles.menuLeft}>
+              <MaterialIcons name="star-outline" size={22} color={colors.primary} />
+              <Text style={styles.menuText}>Nâng cấp tài khoản PRO</Text>
+            </View>
+            <MaterialIcons name="chevron-right" size={20} color={colors.outline} />
+          </TouchableOpacity>
+        )}
 
         <TouchableOpacity
           style={styles.menuItem}

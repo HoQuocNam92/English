@@ -1,18 +1,46 @@
+import { useEffect, useState } from 'react';
 import { useRouter } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
-import { StyleSheet, Text, View, TouchableOpacity, ScrollView } from 'react-native';
+import { StyleSheet, Text, View, TouchableOpacity, ScrollView, ActivityIndicator } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
 import { colors, spacing } from '@techenglish/design-tokens';
+import { api } from '../../src/shared/api/api-client';
 
 export default function MobileProgressScreen() {
   const router = useRouter();
+  const [loading, setLoading] = useState(true);
+  const [progress, setProgress] = useState<any>(null);
 
-  const domainSkills = [
+  useEffect(() => {
+    api.get('/progress/me')
+      .then(data => setProgress(data))
+      .catch(err => console.error(err))
+      .finally(() => setLoading(false));
+  }, []);
+
+  if (loading) {
+    return (
+      <View style={[styles.container, { justifyContent: 'center', alignItems: 'center' }]}>
+        <ActivityIndicator size="large" color={colors.primary} />
+      </View>
+    );
+  }
+
+  const domainSkills = progress?.domainSkills || [
     { name: 'Cloud Computing (AWS/GCP)', percent: 84, color: '#4f46e5' },
     { name: 'REST APIs & Web Architecture', percent: 92, color: '#16a34a' },
     { name: 'DevOps & CI/CD Pipelines', percent: 68, color: '#0284c7' },
     { name: 'Cybersecurity & InfoSec', percent: 52, color: '#7c3aed' },
     { name: 'Data Engineering & BigQuery', percent: 45, color: '#d97706' }
+  ];
+  const streakDays = progress?.streakDays ?? 5;
+  const streakHours = progress?.streakHours ?? 24.5;
+  const readinessPercent = progress?.readinessPercent ?? 80;
+  const readinessTarget = progress?.readinessTarget ?? 'AWS Certified Cloud Practitioner (CLF-C02)';
+  const readinessScore = progress?.readinessScore ?? 82;
+  const recentTests = progress?.recentTests || [
+    { id: '1', title: 'AWS Cloud Practitioner Mock #1', meta: 'Hôm qua · 65 câu · Làm trong 58 phút', scoreText: '89% Đạt' },
+    { id: '2', title: 'IAM & Security Policy Quiz', meta: '3 ngày trước · 20 câu · Làm trong 15 phút', scoreText: '95% Đạt' }
   ];
 
   return (
@@ -30,12 +58,12 @@ export default function MobileProgressScreen() {
         <View style={styles.streakLeft}>
           <Text style={styles.streakEmoji}>🔥</Text>
           <View>
-            <Text style={styles.streakTitle}>Chuỗi 5 Ngày liên tiếp</Text>
+            <Text style={styles.streakTitle}>Chuỗi {streakDays} Ngày liên tiếp</Text>
             <Text style={styles.streakSub}>Học ít nhất 15 phút mỗi ngày</Text>
           </View>
         </View>
         <View style={styles.hoursBadge}>
-          <Text style={styles.hoursText}>24.5 Giờ</Text>
+          <Text style={styles.hoursText}>{streakHours} Giờ</Text>
         </View>
       </View>
 
@@ -43,14 +71,14 @@ export default function MobileProgressScreen() {
       <View style={styles.certCard}>
         <View style={styles.certHeader}>
           <Text style={styles.certLabel}>Độ sẵn sàng thi chứng chỉ</Text>
-          <Text style={styles.certPercent}>80%</Text>
+          <Text style={styles.certPercent}>{readinessPercent}%</Text>
         </View>
-        <Text style={styles.certName}>AWS Certified Cloud Practitioner (CLF-C02)</Text>
+        <Text style={styles.certName}>{readinessTarget}</Text>
         <View style={styles.progressBar}>
-          <View style={[styles.progressFill, { width: '80%' }]} />
+          <View style={[styles.progressFill, { width: `${readinessPercent}%` }]} />
         </View>
         <Text style={styles.certAdvice}>
-          💡 Điểm trung bình thi thử của bạn là <Text style={styles.boldText}>82%</Text> (vượt chuẩn đỗ 70%). Bạn đã sẵn sàng đăng ký thi thật!
+          💡 Điểm trung bình thi thử của bạn là <Text style={styles.boldText}>{readinessScore}%</Text> (vượt chuẩn đỗ 70%). Bạn đã sẵn sàng đăng ký thi thật!
         </Text>
       </View>
 
@@ -58,7 +86,7 @@ export default function MobileProgressScreen() {
       <View style={styles.sectionCard}>
         <Text style={styles.sectionTitle}>Mức độ thành thạo theo chuyên ngành</Text>
         <View style={styles.skillsList}>
-          {domainSkills.map((s) => (
+          {domainSkills.map((s: any) => (
             <View key={s.name} style={styles.skillItem}>
               <View style={styles.skillHeader}>
                 <Text style={styles.skillName}>{s.name}</Text>
@@ -82,31 +110,21 @@ export default function MobileProgressScreen() {
         </View>
 
         <View style={styles.historyList}>
-          <TouchableOpacity
-            style={styles.historyItem}
-            onPress={() => router.push('/test-result/res-1' as any)}
-          >
-            <View style={styles.historyLeft}>
-              <Text style={styles.historyTitle}>AWS Cloud Practitioner Mock #1</Text>
-              <Text style={styles.historyMeta}>Hôm qua · 65 câu · Làm trong 58 phút</Text>
-            </View>
-            <View style={styles.scoreBadgePass}>
-              <Text style={styles.scorePassText}>89% Đạt</Text>
-            </View>
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            style={styles.historyItem}
-            onPress={() => router.push('/test-result/res-2' as any)}
-          >
-            <View style={styles.historyLeft}>
-              <Text style={styles.historyTitle}>IAM & Security Policy Quiz</Text>
-              <Text style={styles.historyMeta}>3 ngày trước · 20 câu · Làm trong 15 phút</Text>
-            </View>
-            <View style={styles.scoreBadgePass}>
-              <Text style={styles.scorePassText}>95% Đạt</Text>
-            </View>
-          </TouchableOpacity>
+          {recentTests.map((t: any) => (
+            <TouchableOpacity
+              key={t.id}
+              style={styles.historyItem}
+              onPress={() => router.push(`/test-result/${t.id}` as any)}
+            >
+              <View style={styles.historyLeft}>
+                <Text style={styles.historyTitle}>{t.title}</Text>
+                <Text style={styles.historyMeta}>{t.meta}</Text>
+              </View>
+              <View style={styles.scoreBadgePass}>
+                <Text style={styles.scorePassText}>{t.scoreText}</Text>
+              </View>
+            </TouchableOpacity>
+          ))}
         </View>
       </View>
     </ScrollView>

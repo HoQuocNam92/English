@@ -8,13 +8,16 @@ export class VocabularyService {
   async findAll(params: any) {
     const page = Math.max(1, Number(params.page) || 1)
     const limit = Math.min(Math.max(1, Number(params.limit) || 20), 100)
-    const { search, domainCode, levelCode, status } = params
+    const { search, domainCode, levelCode, status, lessonId } = params
     const skip = (page - 1) * limit
     const where: any = {}
     if (search) where.OR = [{ term: { contains: search, mode: 'insensitive' } }, { definitionEn: { contains: search, mode: 'insensitive' } }]
     if (domainCode) where.domain = { code: domainCode }
     if (levelCode) where.level = { code: levelCode }
     if (status) where.status = status
+    if (lessonId) {
+      where.lessonVocabularies = { some: { lessonId } }
+    }
     const [data, total] = await Promise.all([
       this.prisma.vocabulary.findMany({ where, skip, take: limit, include: { domain: true, level: true, examples: true }, orderBy: { createdAt: 'desc' } }),
       this.prisma.vocabulary.count({ where })

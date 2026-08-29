@@ -14,5 +14,12 @@ export class ProgressController {
   constructor(private svc: ProgressService) {}
   @Get('me') @ApiOperation({ summary: 'Get my learning progress' }) getMe(@CurrentUser() u: JwtPayload) { return this.svc.getMyProgress(u.sub) }
   @Post('me') @ApiOperation({ summary: 'Update my progress' }) updateMe(@CurrentUser() u: JwtPayload, @Body() dto: any) { return this.svc.upsertProgress(u.sub, dto) }
+  
+  @Post('mark-lesson/:lessonId')
+  @ApiOperation({ summary: 'Mark lesson as complete' })
+  markLesson(@CurrentUser() u: JwtPayload, @Param('lessonId') lessonId: string) {
+    return this.svc.markLessonComplete(u.sub, lessonId)
+  }
+
   @Get('learners/:id') @RequirePermissions('reports:read') getLearner(@Param('id') id: string) { return this.svc.getLearnerProgress(id) }
 }

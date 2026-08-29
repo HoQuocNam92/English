@@ -46,6 +46,10 @@ export class AuthService {
     if (!valid) throw new UnauthorizedException('Invalid credentials')
 
     const full = await this.getUserWithPermissions(user.id)
+    return this.generateTokensForUser(full)
+  }
+
+  private async generateTokensForUser(full: any) {
     const payload = this.buildPayload(full)
 
     const accessToken = this.jwt.sign(payload, { expiresIn: '15m' })
@@ -54,7 +58,7 @@ export class AuthService {
 
     await this.prisma.refreshToken.create({
       data: {
-        userId: user.id,
+        userId: full.id,
         tokenHash,
         expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
       }
@@ -62,7 +66,7 @@ export class AuthService {
 
     // Update last login
     await this.prisma.userDetail.update({
-      where: { userId: user.id },
+      where: { userId: full.id },
       data: { lastLoginAt: new Date() }
     }).catch(() => {})
 
@@ -70,14 +74,64 @@ export class AuthService {
       accessToken,
       refreshToken,
       user: {
-        id: user.id,
-        email: user.email,
+        id: full.id,
+        email: full.email,
         displayName: full?.userDetail?.displayName,
         avatarUrl: full?.userDetail?.avatarUrl,
         roles: payload.roles,
         permissions: payload.permissions,
       }
     }
+  }
+
+  async findOrCreateGoogleUser(profile: { googleId: string; email: string; displayName: string; avatarUrl?: string }) {
+    let user = await this.prisma.user.findUnique({
+      where: { email: profile.email },
+    })
+
+    if (!user) {
+      const learnerRole = await this.prisma.role.findUnique({ where: { code: 'learner' } })
+      user = await this.prisma.user.create({
+        data: {
+          email: profile.email,
+          passwordHash: '',
+          status: 'active',
+          userDetail: {
+            create: {
+              displayName: profile.displayName,
+              avatarUrl: profile.avatarUrl,
+            },
+          },
+          userRoles: learnerRole ? { create: { roleId: learnerRole.id } } : undefined,
+        },
+      })
+    } else if (profile.avatarUrl) {
+      const full = await this.getUserWithPermissions(user.id)
+      if (!full?.userDetail?.avatarUrl) {
+        await this.prisma.userDetail.update({
+          where: { userId: user.id },
+          data: { avatarUrl: profile.avatarUrl },
+        })
+      }
+    }
+
+    const fullUser = await this.getUserWithPermissions(user.id)
+    return this.generateTokensForUser(fullUser)
+  }
+
+  async verifyGoogleIdToken(idToken: string) {
+    const response = await fetch(`https://oauth2.googleapis.com/tokeninfo?id_token=${idToken}`)
+    if (!response.ok) throw new UnauthorizedException('Invalid Google token')
+    const payload = await response.json() as any
+    
+    const email = payload.email
+    const displayName = payload.name ?? email
+    const avatarUrl = payload.picture
+    const googleId = payload.sub
+    
+    if (!email) throw new UnauthorizedException('No email in Google token')
+    
+    return this.findOrCreateGoogleUser({ googleId, email, displayName, avatarUrl })
   }
 
   async refresh(refreshToken: string) {

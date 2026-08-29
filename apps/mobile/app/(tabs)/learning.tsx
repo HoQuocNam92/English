@@ -1,9 +1,10 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
-import { StyleSheet, Text, View, TouchableOpacity, ScrollView } from 'react-native';
+import { StyleSheet, Text, View, TouchableOpacity, ScrollView, ActivityIndicator } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
 import { colors, spacing } from '@techenglish/design-tokens';
+import { api } from '../../src/shared/api/api-client';
 
 interface ModuleSection {
   id: string;
@@ -20,46 +21,82 @@ interface ModuleSection {
   }[];
 }
 
-const modules: ModuleSection[] = [
-  {
-    id: 'mod-1',
-    title: 'Module 1: Cloud Concepts & Architecture',
-    progress: 100,
-    totalLessons: 3,
-    completedLessons: 3,
-    lessons: [
-      { id: 'les-1', title: 'What is Cloud Computing & Global Infrastructure', duration: 15, termsCount: 12, status: 'completed' },
-      { id: 'les-2', title: 'Shared Responsibility Model & Well-Architected Framework', duration: 20, termsCount: 15, status: 'completed' },
-      { id: 'les-3', title: 'High Availability vs Fault Tolerance', duration: 18, termsCount: 10, status: 'completed' }
-    ]
-  },
-  {
-    id: 'mod-2',
-    title: 'Module 2: AWS IAM & Access Control',
-    progress: 66,
-    totalLessons: 3,
-    completedLessons: 2,
-    lessons: [
-      { id: 'les-4', title: 'IAM Users, Groups, and Roles Terminology', duration: 25, termsCount: 18, status: 'completed' },
-      { id: 'les-5', title: 'JSON Policy Structure: Effect, Principal, Action', duration: 30, termsCount: 22, status: 'in_progress' },
-      { id: 'les-6', title: 'Multi-Factor Authentication (MFA) & Root User Best Practices', duration: 15, termsCount: 8, status: 'in_progress' }
-    ]
-  },
-  {
-    id: 'mod-3',
-    title: 'Module 3: Storage & Database Terminology',
-    progress: 0,
-    totalLessons: 4,
-    completedLessons: 0,
-    lessons: [
-      { id: 'les-7', title: 'Amazon S3 Object Storage vs EBS Block Storage', duration: 20, termsCount: 16, status: 'locked' },
-      { id: 'les-8', title: 'Amazon RDS vs DynamoDB NoSQL Key-Value', duration: 25, termsCount: 14, status: 'locked' }
-    ]
-  }
-];
-
 export default function MobileLearningScreen() {
   const router = useRouter();
+  const [modules, setModules] = useState<ModuleSection[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
+
+  useEffect(() => {
+    fetchData();
+  }, []);
+
+  const fetchData = async () => {
+    try {
+      setLoading(true);
+      setError('');
+      const response = await api.get<any>('/lessons?limit=20');
+      const data = response.data || response;
+      const lessonsArray = Array.isArray(data) ? data : data.items || [];
+
+      const grouped = lessonsArray.reduce((acc: any, lesson: any) => {
+        const domain = lesson.domain || 'Lĩnh vực khác';
+        if (!acc[domain]) {
+          acc[domain] = {
+            id: domain,
+            title: domain,
+            progress: 0,
+            totalLessons: 0,
+            completedLessons: 0,
+            lessons: []
+          };
+        }
+        acc[domain].totalLessons += 1;
+        // Just mock some progress logic based on real data
+        const isCompleted = lesson.status === 'completed';
+        if (isCompleted) acc[domain].completedLessons += 1;
+        
+        acc[domain].lessons.push({
+          id: lesson._id || lesson.id,
+          title: lesson.title,
+          duration: lesson.durationMinutes || lesson.duration || 15,
+          termsCount: lesson.vocabularyCount || lesson.termsCount || (lesson.vocabulary ? lesson.vocabulary.length : 0) || 0,
+          status: lesson.status || 'in_progress'
+        });
+        return acc;
+      }, {});
+      
+      // Calculate progress percentage
+      Object.values(grouped).forEach((mod: any) => {
+        mod.progress = mod.totalLessons > 0 ? Math.round((mod.completedLessons / mod.totalLessons) * 100) : 0;
+      });
+
+      setModules(Object.values(grouped));
+    } catch (err: any) {
+      setError(err.message || 'Lỗi tải dữ liệu. Vui lòng thử lại.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  if (loading) {
+    return (
+      <View style={[styles.container, { justifyContent: 'center', alignItems: 'center' }]}>
+        <ActivityIndicator size="large" color={colors.primary} />
+      </View>
+    );
+  }
+
+  if (error) {
+    return (
+      <View style={[styles.container, { justifyContent: 'center', alignItems: 'center', padding: 20 }]}>
+        <Text style={{ color: 'red', textAlign: 'center', marginBottom: 20 }}>{error}</Text>
+        <TouchableOpacity onPress={fetchData} style={{ padding: 10, backgroundColor: colors.primary, borderRadius: 8 }}>
+          <Text style={{ color: 'white' }}>Thử lại</Text>
+        </TouchableOpacity>
+      </View>
+    );
+  }
 
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.contentContainer} showsVerticalScrollIndicator={false}>
@@ -69,10 +106,10 @@ export default function MobileLearningScreen() {
       <View style={styles.header}>
         <View>
           <Text style={styles.title}>Lộ trình học tập</Text>
-          <Text style={styles.subtitle}>AWS Cloud Practitioner Pathway</Text>
+          <Text style={styles.subtitle}>Danh sách bài học của bạn</Text>
         </View>
         <View style={styles.overallBadge}>
-          <Text style={styles.overallBadgeText}>68% Hoàn thành</Text>
+          <Text style={styles.overallBadgeText}>Đang cập nhật</Text>
         </View>
       </View>
 
@@ -120,7 +157,7 @@ export default function MobileLearningScreen() {
                     </View>
 
                     <View style={styles.lessonInfo}>
-                      <Text style={[styles.lessonTitle, isLocked && styles.lessonTitleLocked]}>
+                      <Text style={[styles.lessonTitle, isLocked && styles.lessonTitleLocked]} numberOfLines={2}>
                         {lesson.title}
                       </Text>
                       <Text style={styles.lessonSubtitle}>
@@ -135,6 +172,9 @@ export default function MobileLearningScreen() {
             </View>
           </View>
         ))}
+        {modules.length === 0 && (
+          <Text style={{ textAlign: 'center', marginTop: 20, color: colors.mutedText }}>Chưa có bài học nào.</Text>
+        )}
       </View>
     </ScrollView>
   );

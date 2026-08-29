@@ -1,12 +1,69 @@
+import { useState, useEffect } from 'react';
 import { useRouter } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
-import { StyleSheet, Text, View, TouchableOpacity, ScrollView } from 'react-native';
+import { StyleSheet, Text, View, TouchableOpacity, ScrollView, ActivityIndicator } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
 import { colors, spacing } from '@techenglish/design-tokens';
+import { api } from '../../src/shared/api/api-client';
 
 export default function MobileHomeScreen() {
   const router = useRouter();
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState('');
+  const [userData, setUserData] = useState<any>(null);
+  const [progressData, setProgressData] = useState<any>(null);
+  const [recommendation, setRecommendation] = useState<any>(null);
+  const [lessons, setLessons] = useState<any[]>([]);
 
+  const fetchHomeData = async () => {
+    setIsLoading(true);
+    setError('');
+    try {
+      const [meRes, progRes, recRes, lessonsRes] = await Promise.all([
+        api.get<any>('/me'),
+        api.get<any>('/progress/me'),
+        api.get<any>('/recommendations/my'),
+        api.get<any>('/lessons?limit=4')
+      ]);
+      setUserData(meRes);
+      setProgressData(progRes);
+      setRecommendation(recRes);
+      setLessons(lessonsRes?.data || lessonsRes || []);
+    } catch (err: any) {
+      setError(err.message || 'Không thể tải dữ liệu');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchHomeData();
+  }, []);
+
+  if (isLoading) {
+    return (
+      <View style={[styles.container, { justifyContent: 'center', alignItems: 'center' }]}>
+        <ActivityIndicator size="large" color={colors.primary} />
+      </View>
+    );
+  }
+
+  if (error) {
+    return (
+      <View style={[styles.container, { justifyContent: 'center', alignItems: 'center' }]}>
+        <Text style={{ color: '#ef4444', marginBottom: 16 }}>{error}</Text>
+        <TouchableOpacity style={[styles.continueButton, { paddingHorizontal: 24 }]} onPress={fetchHomeData}>
+          <Text style={styles.continueButtonText}>Thử lại</Text>
+        </TouchableOpacity>
+      </View>
+    );
+  }
+
+  const name = userData?.displayName || 'Bạn';
+  const avatarLetter = name.charAt(0).toUpperCase();
+  const goalTitle = userData?.certGoals?.[0] || 'Chứng chỉ tiếng Anh CNTT';
+  const progressPercent = progressData?.completionPercent || 0;
+  
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.contentContainer} showsVerticalScrollIndicator={false}>
       <StatusBar style="dark" />
@@ -14,24 +71,23 @@ export default function MobileHomeScreen() {
       {/* Top Header */}
       <View style={styles.header}>
         <View>
-          <Text style={styles.greeting}>Chào Nam 👋</Text>
+          <Text style={styles.greeting}>Chào {name} 👋</Text>
           <Text style={styles.subGreeting}>Tiếp tục hành trình học hôm nay</Text>
         </View>
         <TouchableOpacity style={styles.avatarBox} onPress={() => router.push('/(tabs)/profile' as any)}>
-          <Text style={styles.avatarText}>N</Text>
+          <Text style={styles.avatarText}>{avatarLetter}</Text>
         </TouchableOpacity>
       </View>
 
       {/* Hero Goal Card */}
       <View style={styles.heroCard}>
         <Text style={styles.heroLabel}>Mục tiêu hiện tại</Text>
-        <Text style={styles.heroTitle}>AWS Cloud Practitioner (CLF-C02)</Text>
+        <Text style={styles.heroTitle}>{goalTitle}</Text>
         <View style={styles.progressRow}>
-          <Text style={styles.progressText}>68% hoàn thành</Text>
-          <Text style={styles.lessonsCountText}>24/35 bài học</Text>
+          <Text style={styles.progressText}>{progressPercent}% hoàn thành</Text>
         </View>
         <View style={styles.progressBar}>
-          <View style={[styles.progressFill, { width: '68%' }]} />
+          <View style={[styles.progressFill, { width: `${progressPercent}%` }]} />
         </View>
 
         <TouchableOpacity
@@ -45,39 +101,41 @@ export default function MobileHomeScreen() {
       </View>
 
       {/* AI Recommendation Card */}
-      <View style={styles.aiCard}>
-        <View style={styles.aiIconBox}>
-          <MaterialIcons name="psychology" size={24} color={colors.aiAccent} />
+      {recommendation && (
+        <View style={styles.aiCard}>
+          <View style={styles.aiIconBox}>
+            <MaterialIcons name="psychology" size={24} color={colors.aiAccent} />
+          </View>
+          <View style={styles.aiContent}>
+            <Text style={styles.aiTitle}>AI Gợi ý ôn tập</Text>
+            <Text style={styles.aiDesc}>
+              {recommendation.hint || `Dựa trên dữ liệu học gần đây, bạn nên củng cố phần ${recommendation.topic || 'từ vựng'}.`}
+            </Text>
+            <TouchableOpacity
+              style={styles.aiAction}
+              onPress={() => router.push('/lessons/vocabulary/vocab-1' as any)}
+            >
+              <Text style={styles.aiActionText}>Ôn tập ngay</Text>
+              <MaterialIcons name="chevron-right" size={16} color={colors.aiAccent} />
+            </TouchableOpacity>
+          </View>
         </View>
-        <View style={styles.aiContent}>
-          <Text style={styles.aiTitle}>AI Gợi ý ôn tập</Text>
-          <Text style={styles.aiDesc}>
-            Dựa trên 3 bài test gần đây, bạn cần củng cố thuật ngữ phần <Text style={styles.boldText}>VPC & IAM Policies</Text> để cải thiện tỷ lệ đúng.
-          </Text>
-          <TouchableOpacity
-            style={styles.aiAction}
-            onPress={() => router.push('/lessons/vocabulary/vocab-1' as any)}
-          >
-            <Text style={styles.aiActionText}>Ôn tập ngay</Text>
-            <MaterialIcons name="chevron-right" size={16} color={colors.aiAccent} />
-          </TouchableOpacity>
-        </View>
-      </View>
+      )}
 
       {/* Streak & Stats Row */}
       <View style={styles.statsRow}>
         <View style={styles.statCard}>
           <Text style={styles.statEmoji}>🔥</Text>
           <View>
-            <Text style={styles.statValue}>5 Ngày</Text>
+            <Text style={styles.statValue}>{progressData?.streak || 0} Ngày</Text>
             <Text style={styles.statLabel}>Chuỗi học liên tiếp</Text>
           </View>
         </View>
         <View style={styles.statCard}>
           <Text style={styles.statEmoji}>📖</Text>
           <View>
-            <Text style={styles.statValue}>48 Từ</Text>
-            <Text style={styles.statLabel}>Đã thuộc tuần này</Text>
+            <Text style={styles.statValue}>{progressData?.wordsLearned || 0} Từ</Text>
+            <Text style={styles.statLabel}>Đã thuộc</Text>
           </View>
         </View>
       </View>
@@ -92,35 +150,29 @@ export default function MobileHomeScreen() {
         </View>
 
         <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.horizontalList}>
-          <TouchableOpacity
-            style={styles.lessonCard}
-            activeOpacity={0.8}
-            onPress={() => router.push('/lessons/les-1' as any)}
-          >
-            <View style={styles.lessonTag}>
-              <Text style={styles.lessonTagText}>Cloud Computing</Text>
-            </View>
-            <Text style={styles.lessonTitle}>AWS IAM: Roles vs Policies</Text>
-            <Text style={styles.lessonMeta}>15 thuật ngữ · 10 câu trắc nghiệm</Text>
-            <View style={styles.cardProgress}>
-              <View style={[styles.cardProgressFill, { width: '80%' }]} />
-            </View>
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            style={styles.lessonCard}
-            activeOpacity={0.8}
-            onPress={() => router.push('/lessons/les-2' as any)}
-          >
-            <View style={styles.lessonTag}>
-              <Text style={styles.lessonTagText}>Software Eng</Text>
-            </View>
-            <Text style={styles.lessonTitle}>REST APIs & HTTP Status Codes</Text>
-            <Text style={styles.lessonMeta}>20 thuật ngữ · 12 câu trắc nghiệm</Text>
-            <View style={styles.cardProgress}>
-              <View style={[styles.cardProgressFill, { width: '40%' }]} />
-            </View>
-          </TouchableOpacity>
+          {lessons.length > 0 ? (
+            lessons.map((lesson, idx) => (
+              <TouchableOpacity
+                key={lesson.id || idx}
+                style={styles.lessonCard}
+                activeOpacity={0.8}
+                onPress={() => router.push(`/lessons/${lesson.id || 'les-1'}` as any)}
+              >
+                <View style={styles.lessonTag}>
+                  <Text style={styles.lessonTagText}>{lesson.domain || 'General'}</Text>
+                </View>
+                <Text style={styles.lessonTitle}>{lesson.title}</Text>
+                <Text style={styles.lessonMeta}>
+                  {lesson.termCount || 0} thuật ngữ · {lesson.questionCount || 0} câu trắc nghiệm
+                </Text>
+                <View style={styles.cardProgress}>
+                  <View style={[styles.cardProgressFill, { width: `${lesson.progress || 0}%` }]} />
+                </View>
+              </TouchableOpacity>
+            ))
+          ) : (
+            <Text style={{ color: colors.mutedText }}>Chưa có bài học nào.</Text>
+          )}
         </ScrollView>
       </View>
     </ScrollView>

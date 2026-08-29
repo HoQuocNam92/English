@@ -119,6 +119,18 @@ export class UsersService {
     return this.findOne(id)
   }
 
+  async changePassword(id: string, dto: any) {
+    const user = await this.prisma.user.findUnique({ where: { id } })
+    if (!user) throw new NotFoundException('User not found')
+
+    const isMatch = await bcrypt.compare(dto.currentPassword, user.passwordHash)
+    if (!isMatch) throw new ConflictException('Mật khẩu hiện tại không đúng')
+
+    const passwordHash = await bcrypt.hash(dto.newPassword, 12)
+    await this.prisma.user.update({ where: { id }, data: { passwordHash } })
+    return { success: true }
+  }
+
   async suspend(id: string) {
     await this.findOne(id)
     await this.prisma.user.update({ where: { id }, data: { status: 'suspended' } })
