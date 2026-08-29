@@ -8,8 +8,8 @@ import { useAuth } from '@/features/auth/presentation';
 export default function LoginPage() {
   const router = useRouter();
   const { session, loading, submitting, error, submitLogin, signOut } = useAuth();
-  const [email, setEmail] = useState('admin@techenglish.edu.vn');
-  const [password, setPassword] = useState('password123');
+  const [email, setEmail] = useState('admin@techenglish.pro');
+  const [password, setPassword] = useState('Demo@123456');
   const [showPassword, setShowPassword] = useState(false);
   const [rememberMe, setRememberMe] = useState(true);
 
@@ -223,7 +223,7 @@ export default function LoginPage() {
                   </button>
                   <button
                     type="button"
-                    onClick={() => handleQuickLogin('teacher@techenglish.pro')}
+                    onClick={() => handleQuickLogin('nguyen.thanh@techenglish.pro')}
                     className="flex-1 py-1.5 px-2.5 rounded-md text-xs font-medium bg-surface-container hover:bg-surface-container-high text-on-surface border border-outline-variant/40 transition-colors text-center"
                   >
                     🎓 Teacher Demo
