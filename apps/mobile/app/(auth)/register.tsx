@@ -6,6 +6,7 @@ import { MaterialIcons } from '@expo/vector-icons';
 import { colors, spacing } from '@techenglish/design-tokens';
 import { api, ApiError } from '../../src/shared/api/api-client';
 import { validateEmail, validatePassword, validateDisplayName } from '../../src/shared/utils/validators';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 export default function MobileRegisterScreen() {
   const router = useRouter();
@@ -47,7 +48,12 @@ export default function MobileRegisterScreen() {
 
     setIsLoading(true);
     try {
-      await api.post('/auth/register', { displayName, email, password });
+      const result = await api.post<any>('/auth/register', { displayName, email, password });
+      // Lưu token để các bước onboarding gọi API được xác thực
+      await Promise.all([
+        AsyncStorage.setItem('access_token', result.accessToken),
+        AsyncStorage.setItem('refresh_token', result.refreshToken ?? ''),
+      ]);
       router.replace('/(onboarding)/level' as any);
     } catch (err: any) {
       if (err instanceof ApiError) {

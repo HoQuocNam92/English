@@ -4,7 +4,7 @@
  */
 
 const SESSION_KEY = 'techenglish.web.session';
-const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3001/api/v1';
+const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:8080/api/v1';
 
 function getAccessToken(): string | null {
   if (typeof window === 'undefined') return null;

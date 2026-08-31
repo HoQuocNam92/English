@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
-import { StyleSheet, Text, View, TouchableOpacity, ScrollView, Alert, ActivityIndicator } from 'react-native';
+import { StyleSheet, Text, View, TouchableOpacity, ScrollView, Alert, ActivityIndicator, Image } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
 import { colors, spacing } from '@techenglish/design-tokens';
 import { api } from '../../src/shared/api/api-client';
@@ -14,7 +14,7 @@ export default function MobileProfileScreen() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    api.get('/me')
+    api.get('/auth/me')
       .then(data => setProfile(data))
       .catch(err => console.error(err))
       .finally(() => setLoading(false));
@@ -46,6 +46,7 @@ export default function MobileProfileScreen() {
   const email = profile?.email || user?.email || '';
   const role = profile?.role || user?.role || 'learner';
   const avatarLetter = displayName.charAt(0).toUpperCase();
+  const avatarUrl = profile?.avatarUrl || profile?.userDetail?.avatarUrl || user?.avatarUrl;
   const certGoal = profile?.certGoal || 'AWS Cloud Practitioner';
   const mainDomain = profile?.mainDomain || 'Cloud Computing';
 
@@ -56,9 +57,13 @@ export default function MobileProfileScreen() {
       {/* Profile Header Card */}
       <View style={styles.profileCard}>
         <View style={styles.avatarRow}>
-          <View style={styles.avatar}>
-            <Text style={styles.avatarText}>{avatarLetter}</Text>
-          </View>
+          {avatarUrl ? (
+            <Image source={{ uri: avatarUrl }} style={styles.avatar} />
+          ) : (
+            <View style={styles.avatar}>
+              <Text style={styles.avatarText}>{avatarLetter}</Text>
+            </View>
+          )}
           <View style={styles.userInfo}>
             <View style={styles.nameRow}>
               <Text style={styles.displayName}>{displayName}</Text>
@@ -109,6 +114,17 @@ export default function MobileProfileScreen() {
           <MaterialIcons name="chevron-right" size={20} color={colors.outline} />
         </TouchableOpacity>
         
+        <TouchableOpacity
+          style={styles.menuItem}
+          onPress={() => router.push('/payment/history' as any)}
+        >
+          <View style={styles.menuLeft}>
+            <MaterialIcons name="workspace-premium" size={22} color={colors.primary} />
+            <Text style={styles.menuText}>Gói dịch vụ & Lịch sử thanh toán</Text>
+          </View>
+          <MaterialIcons name="chevron-right" size={20} color={colors.outline} />
+        </TouchableOpacity>
+
         {/* Nâng cấp PRO menu item */}
         {role !== 'pro' && (
           <TouchableOpacity

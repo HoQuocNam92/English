@@ -1,5 +1,6 @@
 import { Module, Global } from '@nestjs/common';
 import { CacheModule } from '@nestjs/cache-manager';
+import { RedisLockService } from './redis-lock.service';
 
 @Global()
 @Module({
@@ -16,7 +17,7 @@ import { CacheModule } from '@nestjs/cache-manager';
             ttl: 300_000, // ms
           } as any;
         }
-        // In-memory fallback for development
+        // In-memory fallback for development (no Redis)
         return {
           ttl: 300_000,
           max: 1000,
@@ -25,7 +26,7 @@ import { CacheModule } from '@nestjs/cache-manager';
       isGlobal: true,
     }),
   ],
-  exports: [CacheModule],
+  providers: [RedisLockService],
+  exports: [CacheModule, RedisLockService],
 })
 export class RedisCacheModule {}
-

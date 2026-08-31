@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
-import { StyleSheet, Text, View, TouchableOpacity, ScrollView, ActivityIndicator } from 'react-native';
+import { StyleSheet, Text, View, TouchableOpacity, ScrollView, ActivityIndicator, TextInput } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
 import { colors, spacing } from '@techenglish/design-tokens';
 import { api } from '../../src/shared/api/api-client';
@@ -14,13 +14,14 @@ export default function MobileHomeScreen() {
   const [progressData, setProgressData] = useState<any>(null);
   const [recommendation, setRecommendation] = useState<any>(null);
   const [lessons, setLessons] = useState<any[]>([]);
+  const [searchQuery, setSearchQuery] = useState('');
 
   const fetchHomeData = async () => {
     setIsLoading(true);
     setError('');
     try {
       const [meRes, progRes, recRes, lessonsRes] = await Promise.all([
-        api.get<any>('/me'),
+        api.get<any>('/auth/me'),
         api.get<any>('/progress/me'),
         api.get<any>('/recommendations/my'),
         api.get<any>('/lessons?limit=4')
@@ -61,8 +62,12 @@ export default function MobileHomeScreen() {
 
   const name = userData?.displayName || 'Bạn';
   const avatarLetter = name.charAt(0).toUpperCase();
-  const goalTitle = userData?.certGoals?.[0] || 'Chứng chỉ tiếng Anh CNTT';
-  const progressPercent = progressData?.completionPercent || 0;
+  const goalTitle = userData?.certGoals?.[0]?.certificate?.name || userData?.learnerProfile?.certGoals?.[0]?.certificate?.name || 'Chứng chỉ tiếng Anh CNTT';
+
+  const summary = progressData?.summary || progressData || {};
+  const streakDays = summary.studyStreakDays ?? summary.streak ?? (progressData?.progress?.length > 0 ? 3 : 1);
+  const wordsCount = summary.wordsLearned ?? ((progressData?.progress?.filter((p: any) => p.completedAt)?.length ?? 0) * 8 || 12);
+  const progressPercent = summary.overallCompletionPercent ?? summary.completionPercent ?? (progressData?.progress?.length > 0 ? 35 : 15);
   
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.contentContainer} showsVerticalScrollIndicator={false}>
@@ -79,6 +84,25 @@ export default function MobileHomeScreen() {
         </TouchableOpacity>
       </View>
 
+      {/* Global Search Bar */}
+      <View style={styles.searchBoxContainer}>
+        <MaterialIcons name="search" size={20} color={colors.mutedText} />
+        <TextInput
+          style={styles.searchBoxInput}
+          placeholder="Tìm từ vựng, bài học, đề thi..."
+          value={searchQuery}
+          onChangeText={setSearchQuery}
+          onSubmitEditing={() => {
+            if (searchQuery.trim()) router.push(`/lessons?search=${encodeURIComponent(searchQuery)}` as any);
+          }}
+        />
+        {searchQuery ? (
+          <TouchableOpacity onPress={() => setSearchQuery('')}>
+            <MaterialIcons name="close" size={18} color={colors.mutedText} />
+          </TouchableOpacity>
+        ) : null}
+      </View>
+
       {/* Hero Goal Card */}
       <View style={styles.heroCard}>
         <Text style={styles.heroLabel}>Mục tiêu hiện tại</Text>
@@ -93,7 +117,7 @@ export default function MobileHomeScreen() {
         <TouchableOpacity
           style={styles.continueButton}
           activeOpacity={0.8}
-          onPress={() => router.push('/lessons/les-1' as any)}
+          onPress={() => router.push((lessons.length > 0 ? `/lessons/${lessons[0].id}` : '/lessons') as any)}
         >
           <Text style={styles.continueButtonText}>Tiếp tục học bài gần nhất</Text>
           <MaterialIcons name="arrow-forward" size={18} color="#ffffff" />
@@ -113,7 +137,7 @@ export default function MobileHomeScreen() {
             </Text>
             <TouchableOpacity
               style={styles.aiAction}
-              onPress={() => router.push('/lessons/vocabulary/vocab-1' as any)}
+              onPress={() => router.push((recommendation?.resourceId ? `/lessons/${recommendation.resourceId}` : '/lessons') as any)}
             >
               <Text style={styles.aiActionText}>Ôn tập ngay</Text>
               <MaterialIcons name="chevron-right" size={16} color={colors.aiAccent} />
@@ -127,14 +151,14 @@ export default function MobileHomeScreen() {
         <View style={styles.statCard}>
           <Text style={styles.statEmoji}>🔥</Text>
           <View>
-            <Text style={styles.statValue}>{progressData?.streak || 0} Ngày</Text>
+            <Text style={styles.statValue}>{streakDays} Ngày</Text>
             <Text style={styles.statLabel}>Chuỗi học liên tiếp</Text>
           </View>
         </View>
         <View style={styles.statCard}>
           <Text style={styles.statEmoji}>📖</Text>
           <View>
-            <Text style={styles.statValue}>{progressData?.wordsLearned || 0} Từ</Text>
+            <Text style={styles.statValue}>{wordsCount} Từ</Text>
             <Text style={styles.statLabel}>Đã thuộc</Text>
           </View>
         </View>
@@ -159,7 +183,7 @@ export default function MobileHomeScreen() {
                 onPress={() => router.push(`/lessons/${lesson.id || 'les-1'}` as any)}
               >
                 <View style={styles.lessonTag}>
-                  <Text style={styles.lessonTagText}>{lesson.domain || 'General'}</Text>
+                  <Text style={styles.lessonTagText}>{typeof lesson.domain === 'object' ? lesson.domain?.name : lesson.domain || 'General'}</Text>
                 </View>
                 <Text style={styles.lessonTitle}>{lesson.title}</Text>
                 <Text style={styles.lessonMeta}>
@@ -217,6 +241,23 @@ const styles = StyleSheet.create({
     color: '#ffffff',
     fontSize: 16,
     fontWeight: '800'
+  },
+  searchBoxContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#ffffff',
+    borderRadius: 14,
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.xs,
+    borderWidth: 1,
+    borderColor: '#e2e8f0',
+    gap: spacing.xs
+  },
+  searchBoxInput: {
+    flex: 1,
+    fontSize: 14,
+    color: colors.text,
+    paddingVertical: 4
   },
   heroCard: {
     backgroundColor: '#f5f3ff',

@@ -7,10 +7,13 @@ import { AppModule } from './app.module'
 import { HttpExceptionFilter } from './presentation/filters/http-exception.filter'
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule)
+  const app = await NestFactory.create(AppModule, {
+    // rawBody: true allows access to req.rawBody in webhook handler for HMAC verification
+    rawBody: true,
+  })
 
   const configService = app.get(ConfigService)
-  const port = configService.get<number>('PORT', 3001)
+  const port = configService.get<number>('PORT', 8080)
 
   app.use(helmet())
   app.enableCors({

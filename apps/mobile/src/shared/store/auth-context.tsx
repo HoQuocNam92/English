@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { apiRequest } from '../api/api-client';
 
 interface User {
   id: string;
@@ -8,6 +9,9 @@ interface User {
   role: string;
   roles: string[];
   permissions: string[];
+  avatarUrl?: string;
+  bio?: string;
+  phone?: string;
 }
 
 interface AuthState {
@@ -22,6 +26,7 @@ interface AuthContextValue extends AuthState {
   loginWithTokens: (data: { accessToken: string; refreshToken?: string; user: any }) => Promise<void>;
   logout: () => Promise<void>;
   updateUser: (updates: Partial<User>) => void;
+  fetchUser: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextValue | null>(null);
@@ -52,7 +57,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const login = async (email: string, password: string) => {
-    const API_BASE = process.env.EXPO_PUBLIC_API_URL ?? 'http://10.0.2.2:3001/api/v1';
+    const API_BASE = process.env.EXPO_PUBLIC_API_URL ?? 'http://10.0.2.2:8080/api/v1';
     const res = await fetch(`${API_BASE}/auth/login`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -109,7 +114,29 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setState({ user, accessToken: data.accessToken, isLoggedIn: true, isLoading: false });
   };
 
-  return <AuthContext.Provider value={{ ...state, login, loginWithTokens, logout, updateUser }}>{children}</AuthContext.Provider>;
+  const fetchUser = async () => {
+    try {
+      const data: any = await apiRequest('/auth/me');
+      if (data) {
+        setState(s => {
+          if (!s.user) return s;
+          const updatedUser: User = {
+            ...s.user,
+            displayName: data.displayName ?? s.user.displayName,
+            avatarUrl: data.avatarUrl ?? data.userDetail?.avatarUrl ?? s.user.avatarUrl,
+            bio: data.bio ?? s.user.bio,
+            phone: data.phone ?? s.user.phone,
+          };
+          AsyncStorage.setItem('user', JSON.stringify(updatedUser));
+          return { ...s, user: updatedUser };
+        });
+      }
+    } catch (e) {
+      console.error('fetchUser error', e);
+    }
+  };
+
+  return <AuthContext.Provider value={{ ...state, login, loginWithTokens, logout, updateUser, fetchUser }}>{children}</AuthContext.Provider>;
 }
 
 export function useAuth() {

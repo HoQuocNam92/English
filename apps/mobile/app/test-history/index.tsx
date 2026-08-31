@@ -1,7 +1,7 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { useRouter } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
-import { StyleSheet, Text, View, TouchableOpacity, ScrollView, ActivityIndicator } from 'react-native';
+import { StyleSheet, Text, View, TouchableOpacity, ScrollView, ActivityIndicator, RefreshControl } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
 import { colors, spacing } from '@techenglish/design-tokens';
 import { api } from '../../src/shared/api/api-client';
@@ -11,32 +11,70 @@ interface AttemptHistory {
   score: number;
   isPassed: boolean;
   createdAt: string;
+  startedAt?: string;
   exam: {
     title: string;
     domain?: { name: string };
   };
 }
 
+interface PaginationMeta {
+  total: number;
+  page: number;
+  limit: number;
+  totalPages: number;
+}
+
+const ITEMS_PER_PAGE = 10;
+
 export default function MobileTestHistoryScreen() {
   const router = useRouter();
   const [history, setHistory] = useState<AttemptHistory[]>([]);
   const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [totalItems, setTotalItems] = useState(0);
 
-  useEffect(() => {
-    const fetchHistory = async () => {
-      try {
-        const data = await api.get<{ data: AttemptHistory[] }>('/exams/attempts/my');
-        setHistory(Array.isArray(data) ? data : (data?.data || []));
-      } catch (error) {
-        console.error('Failed to fetch test history', error);
-      } finally {
-        setLoading(false);
+  const fetchHistory = useCallback(async (page: number = 1, isRefresh: boolean = false) => {
+    if (isRefresh) setRefreshing(true);
+    else setLoading(true);
+
+    try {
+      const data = await api.get<{ data: AttemptHistory[]; meta?: PaginationMeta }>(
+        `/exams/attempts/my?page=${page}&limit=${ITEMS_PER_PAGE}`
+      );
+      if (Array.isArray(data)) {
+        setHistory(data);
+        setTotalPages(1);
+        setTotalItems(data.length);
+      } else {
+        setHistory(data?.data || []);
+        setTotalPages(data?.meta?.totalPages || 1);
+        setTotalItems(data?.meta?.total || 0);
       }
-    };
-    fetchHistory();
+    } catch (error) {
+      console.error('Failed to fetch test history', error);
+    } finally {
+      setLoading(false);
+      setRefreshing(false);
+    }
   }, []);
 
-  const formatDate = (dateString: string) => {
+  useEffect(() => {
+    fetchHistory(currentPage);
+  }, [currentPage, fetchHistory]);
+
+  const onRefresh = () => {
+    if (currentPage === 1) {
+      fetchHistory(1, true);
+    } else {
+      setCurrentPage(1);
+    }
+  };
+
+  const formatDate = (dateString?: string) => {
+    if (!dateString) return '';
     try {
       const date = new Date(dateString);
       return date.toLocaleDateString('vi-VN');
@@ -57,41 +95,90 @@ export default function MobileTestHistoryScreen() {
         <View style={{ width: 40 }} />
       </View>
 
-      <ScrollView contentContainerStyle={styles.listContent}>
-        {loading ? (
-          <ActivityIndicator size="large" color={colors.primary} style={{ marginTop: 20 }} />
-        ) : history.length === 0 ? (
-          <Text style={styles.emptyText}>Chưa có lịch sử làm bài</Text>
-        ) : (
-          history.map((item) => (
-            <TouchableOpacity
-              key={item.id}
-              style={styles.card}
-              onPress={() => router.push(`/test-result/${item.id}` as any)}
-              activeOpacity={0.8}
-            >
-              <View style={styles.cardLeft}>
-                <View style={styles.domainTag}>
-                  <Text style={styles.domainTagText}>{item.exam?.domain?.name || 'Tổng hợp'}</Text>
-                </View>
-                <Text style={styles.cardTitle}>{item.exam?.title}</Text>
-                <Text style={styles.cardDate}>Ngày thi: {formatDate(item.createdAt)}</Text>
-              </View>
+      {/* Content */}
+      {loading ? (
+        <View style={styles.loadingContainer}>
+          <ActivityIndicator size="large" color={colors.primary} />
+        </View>
+      ) : (
+        <ScrollView
+          contentContainerStyle={styles.listContent}
+          refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
+        >
+          {totalItems > 0 && (
+            <View style={styles.metaRow}>
+              <Text style={styles.metaText}>Tổng cộng: {totalItems} bài thi</Text>
+              {totalPages > 1 && (
+                <Text style={styles.metaText}>Trang {currentPage}/{totalPages}</Text>
+              )}
+            </View>
+          )}
 
-              <View style={styles.cardRight}>
-                <Text style={[styles.scoreText, item.isPassed ? styles.scorePass : styles.scoreFail]}>
-                  {item.score?.toFixed(0)}
-                </Text>
-                <View style={[styles.statusBadge, item.isPassed ? styles.statusBadgePass : styles.statusBadgeFail]}>
-                  <Text style={[styles.statusText, item.isPassed ? styles.scorePass : styles.scoreFail]}>
-                    {item.isPassed ? 'Đạt' : 'Chưa đạt'}
-                  </Text>
+          {history.length === 0 ? (
+            <Text style={styles.emptyText}>Chưa có lịch sử làm bài</Text>
+          ) : (
+            <>
+              {history.map((item: any) => {
+                const isPassed = item.isPassed ?? item.passed ?? false;
+                const displayScore = Math.round(item.scorePercent ?? item.score ?? 0);
+
+                return (
+                  <TouchableOpacity
+                    key={item.id}
+                    style={styles.card}
+                    onPress={() => router.push(`/test-result/${item.id}` as any)}
+                    activeOpacity={0.8}
+                  >
+                    <View style={styles.cardLeft}>
+                      <View style={styles.domainTag}>
+                        <Text style={styles.domainTagText}>{item.exam?.domain?.name || 'Tổng hợp'}</Text>
+                      </View>
+                      <Text style={styles.cardTitle}>{item.exam?.title}</Text>
+                      <Text style={styles.cardDate}>Ngày thi: {formatDate(item.createdAt || item.startedAt)}</Text>
+                    </View>
+
+                    <View style={styles.cardRight}>
+                      <Text style={[styles.scoreText, isPassed ? styles.scorePass : styles.scoreFail]}>
+                        {displayScore}%
+                      </Text>
+                      <View style={[styles.statusBadge, isPassed ? styles.statusBadgePass : styles.statusBadgeFail]}>
+                        <Text style={[styles.statusText, isPassed ? styles.scorePass : styles.scoreFail]}>
+                          {isPassed ? 'Đạt' : 'Chưa đạt'}
+                        </Text>
+                      </View>
+                    </View>
+                  </TouchableOpacity>
+                );
+              })}
+
+              {/* Pagination Controls */}
+              {totalPages > 1 && (
+                <View style={styles.paginationRow}>
+                  <TouchableOpacity
+                    style={[styles.pageBtn, currentPage === 1 && styles.pageBtnDisabled]}
+                    onPress={() => setCurrentPage((prev) => Math.max(1, prev - 1))}
+                    disabled={currentPage === 1}
+                  >
+                    <MaterialIcons name="chevron-left" size={20} color={currentPage === 1 ? '#cbd5e1' : colors.text} />
+                    <Text style={[styles.pageBtnText, currentPage === 1 && styles.pageBtnTextDisabled]}>Trang trước</Text>
+                  </TouchableOpacity>
+
+                  <Text style={styles.pageIndicator}>{currentPage} / {totalPages}</Text>
+
+                  <TouchableOpacity
+                    style={[styles.pageBtn, currentPage === totalPages && styles.pageBtnDisabled]}
+                    onPress={() => setCurrentPage((prev) => Math.min(totalPages, prev + 1))}
+                    disabled={currentPage === totalPages}
+                  >
+                    <Text style={[styles.pageBtnText, currentPage === totalPages && styles.pageBtnTextDisabled]}>Trang sau</Text>
+                    <MaterialIcons name="chevron-right" size={20} color={currentPage === totalPages ? '#cbd5e1' : colors.text} />
+                  </TouchableOpacity>
                 </View>
-              </View>
-            </TouchableOpacity>
-          ))
-        )}
-      </ScrollView>
+              )}
+            </>
+          )}
+        </ScrollView>
+      )}
     </View>
   );
 }
@@ -124,9 +211,26 @@ const styles = StyleSheet.create({
     fontWeight: '800',
     color: colors.text
   },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center'
+  },
   listContent: {
     padding: spacing.lg,
-    gap: spacing.md
+    gap: spacing.md,
+    paddingBottom: spacing.xl
+  },
+  metaRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: spacing.xs
+  },
+  metaText: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: colors.mutedText
   },
   emptyText: {
     textAlign: 'center',
@@ -198,5 +302,39 @@ const styles = StyleSheet.create({
   statusText: {
     fontSize: 10,
     fontWeight: '800'
+  },
+  paginationRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingVertical: spacing.md,
+    marginTop: spacing.sm
+  },
+  pageBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#ffffff',
+    borderWidth: 1,
+    borderColor: '#e2e8f0',
+    paddingHorizontal: 14,
+    paddingVertical: 8,
+    borderRadius: 8
+  },
+  pageBtnDisabled: {
+    backgroundColor: '#f8fafc',
+    borderColor: '#f1f5f9'
+  },
+  pageBtnText: {
+    fontSize: 13,
+    fontWeight: '700',
+    color: colors.text
+  },
+  pageBtnTextDisabled: {
+    color: '#cbd5e1'
+  },
+  pageIndicator: {
+    fontSize: 13,
+    fontWeight: '800',
+    color: colors.text
   }
 });

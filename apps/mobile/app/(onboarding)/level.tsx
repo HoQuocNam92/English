@@ -4,6 +4,7 @@ import { StatusBar } from 'expo-status-bar';
 import { StyleSheet, Text, View, TouchableOpacity, ScrollView } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
 import { colors, spacing } from '@techenglish/design-tokens';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 interface LevelOption {
   id: string;
@@ -47,6 +48,12 @@ const levels: LevelOption[] = [
 export default function OnboardingLevelScreen() {
   const router = useRouter();
   const [selectedLevel, setSelectedLevel] = useState('intermediate');
+
+  const handleNext = async () => {
+    // Lưu lựa chọn vào AsyncStorage để bước cuối tổng hợp gửi API
+    await AsyncStorage.setItem('onboarding_level', selectedLevel);
+    router.push('/(onboarding)/it-field' as any);
+  };
 
   return (
     <View style={styles.container}>
@@ -93,7 +100,7 @@ export default function OnboardingLevelScreen() {
 
       {/* Bottom Action */}
       <View style={styles.bottomBar}>
-        <TouchableOpacity style={styles.nextButton} onPress={() => router.push('/(onboarding)/it-field' as any)}>
+        <TouchableOpacity style={styles.nextButton} onPress={handleNext}>
           <Text style={styles.nextButtonText}>Tiếp tục</Text>
           <MaterialIcons name="arrow-forward" size={20} color="#ffffff" />
         </TouchableOpacity>
@@ -103,129 +110,30 @@ export default function OnboardingLevelScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#f8fafc'
-  },
-  scrollContent: {
-    padding: spacing.lg,
-    paddingTop: 50,
-    paddingBottom: 100
-  },
-  progressHeader: {
-    marginBottom: spacing.lg
-  },
-  stepIndicator: {
-    fontSize: 12,
-    fontWeight: '700',
-    color: colors.primary,
-    marginBottom: spacing.xs
-  },
-  progressBar: {
-    height: 4,
-    backgroundColor: '#e2e8f0',
-    borderRadius: 2
-  },
-  progressFill: {
-    height: 4,
-    backgroundColor: colors.primary,
-    borderRadius: 2
-  },
-  title: {
-    fontSize: 22,
-    fontWeight: '800',
-    color: colors.text,
-    marginBottom: spacing.xs
-  },
-  subtitle: {
-    fontSize: 13,
-    color: colors.mutedText,
-    marginBottom: spacing.lg,
-    lineHeight: 18
-  },
-  optionsList: {
-    gap: spacing.md
-  },
+  container: { flex: 1, backgroundColor: '#f8fafc' },
+  scrollContent: { padding: spacing.lg, paddingTop: 50, paddingBottom: 100 },
+  progressHeader: { marginBottom: spacing.lg },
+  stepIndicator: { fontSize: 12, fontWeight: '700', color: colors.primary, marginBottom: spacing.xs },
+  progressBar: { height: 4, backgroundColor: '#e2e8f0', borderRadius: 2 },
+  progressFill: { height: 4, backgroundColor: colors.primary, borderRadius: 2 },
+  title: { fontSize: 22, fontWeight: '800', color: colors.text, marginBottom: spacing.xs },
+  subtitle: { fontSize: 13, color: colors.mutedText, marginBottom: spacing.lg, lineHeight: 18 },
+  optionsList: { gap: spacing.md },
   optionCard: {
-    backgroundColor: '#ffffff',
-    borderRadius: 14,
-    padding: spacing.md,
-    borderWidth: 1.5,
-    borderColor: '#e2e8f0',
-    flexDirection: 'row',
-    alignItems: 'flex-start',
-    gap: spacing.md
+    backgroundColor: '#ffffff', borderRadius: 14, padding: spacing.md,
+    borderWidth: 1.5, borderColor: '#e2e8f0', flexDirection: 'row', alignItems: 'flex-start', gap: spacing.md
   },
-  optionCardSelected: {
-    borderColor: colors.primary,
-    backgroundColor: '#f5f3ff'
-  },
-  iconBox: {
-    width: 44,
-    height: 44,
-    borderRadius: 12,
-    backgroundColor: '#f1f5f9',
-    alignItems: 'center',
-    justifyContent: 'center'
-  },
-  iconBoxSelected: {
-    backgroundColor: '#ede9fe'
-  },
-  optionContent: {
-    flex: 1
-  },
-  titleRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: spacing.xs,
-    marginBottom: 4
-  },
-  levelName: {
-    fontSize: 15,
-    fontWeight: '700',
-    color: colors.text
-  },
-  levelNameSelected: {
-    color: colors.primary
-  },
-  tagBadge: {
-    backgroundColor: '#e0e7ff',
-    paddingHorizontal: 6,
-    paddingVertical: 2,
-    borderRadius: 6
-  },
-  tagText: {
-    fontSize: 10,
-    fontWeight: '700',
-    color: colors.primary
-  },
-  levelDesc: {
-    fontSize: 12,
-    color: colors.mutedText,
-    lineHeight: 16
-  },
-  bottomBar: {
-    position: 'absolute',
-    bottom: 0,
-    left: 0,
-    right: 0,
-    backgroundColor: '#ffffff',
-    padding: spacing.lg,
-    borderTopWidth: 1,
-    borderTopColor: '#e2e8f0'
-  },
-  nextButton: {
-    backgroundColor: colors.primary,
-    height: 50,
-    borderRadius: 12,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: spacing.xs
-  },
-  nextButtonText: {
-    color: '#ffffff',
-    fontSize: 15,
-    fontWeight: '700'
-  }
+  optionCardSelected: { borderColor: colors.primary, backgroundColor: '#f5f3ff' },
+  iconBox: { width: 44, height: 44, borderRadius: 12, backgroundColor: '#f1f5f9', alignItems: 'center', justifyContent: 'center' },
+  iconBoxSelected: { backgroundColor: '#ede9fe' },
+  optionContent: { flex: 1 },
+  titleRow: { flexDirection: 'row', alignItems: 'center', gap: spacing.xs, marginBottom: 4 },
+  levelName: { fontSize: 15, fontWeight: '700', color: colors.text },
+  levelNameSelected: { color: colors.primary },
+  tagBadge: { backgroundColor: '#e0e7ff', paddingHorizontal: 6, paddingVertical: 2, borderRadius: 6 },
+  tagText: { fontSize: 10, fontWeight: '700', color: colors.primary },
+  levelDesc: { fontSize: 12, color: colors.mutedText, lineHeight: 16 },
+  bottomBar: { position: 'absolute', bottom: 0, left: 0, right: 0, backgroundColor: '#ffffff', padding: spacing.lg, borderTopWidth: 1, borderTopColor: '#e2e8f0' },
+  nextButton: { backgroundColor: colors.primary, height: 50, borderRadius: 12, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: spacing.xs },
+  nextButtonText: { color: '#ffffff', fontSize: 15, fontWeight: '700' }
 });

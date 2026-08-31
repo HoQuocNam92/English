@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
-import { StyleSheet, Text, View, TouchableOpacity, ScrollView, ActivityIndicator } from 'react-native';
+import { StyleSheet, Text, View, TouchableOpacity, ScrollView, ActivityIndicator, Alert } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
 import { colors, spacing } from '@techenglish/design-tokens';
 import { api } from '../../src/shared/api/api-client';
@@ -13,6 +13,7 @@ interface Exam {
   durationMinutes: number;
   questionCount: number;
   domain?: { name: string };
+  isProOnly?: boolean;
   status: string;
 }
 
@@ -20,23 +21,44 @@ export default function MobilePracticeScreen() {
   const router = useRouter();
   const [exams, setExams] = useState<Exam[]>([]);
   const [loading, setLoading] = useState(true);
+  const [isPro, setIsPro] = useState(false);
 
   useEffect(() => {
-    const fetchExams = async () => {
-      try {
-        const data = await api.get<{ data: Exam[] }>('/exams?limit=10&status=published');
-        // The endpoint usually returns { data: [...] } or just an array depending on the backend, 
-        // assuming { data } based on standard REST patterns, if not we will adjust.
-        // Let's support both array and { data }
-        setExams(Array.isArray(data) ? data : (data?.data || []));
-      } catch (error) {
-        console.error('Failed to fetch exams', error);
-      } finally {
-        setLoading(false);
-      }
-    };
     fetchExams();
+    api.get<any>('/payment/subscription/me')
+      .then(res => {
+        const sub = res?.data || res;
+        setIsPro(sub?.isPro ?? false);
+      })
+      .catch(() => {});
   }, []);
+
+  const fetchExams = async () => {
+    try {
+      const data = await api.get<any>('/exams?limit=10&status=published');
+      const items = Array.isArray(data) ? data : (data?.data || data?.items || []);
+      setExams(items);
+    } catch (error) {
+      console.error('Failed to fetch exams', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleExamPress = (exam: Exam) => {
+    if (exam.isProOnly && !isPro) {
+      Alert.alert(
+        '🌟 Gói PRO Chuyên Nghiệp',
+        `Đề thi "${exam.title}" dành riêng cho tài khoản PRO. Bạn có muốn nâng cấp PRO để mở khóa toàn bộ bài học & đề thi không?`,
+        [
+          { text: 'Để sau', style: 'cancel' },
+          { text: '🚀 Nâng cấp PRO', onPress: () => router.push('/payment') }
+        ]
+      );
+      return;
+    }
+    router.push(`/quiz/${exam.id}` as any);
+  };
 
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.contentContainer} showsVerticalScrollIndicator={false}>
@@ -58,25 +80,32 @@ export default function MobilePracticeScreen() {
           exams.map((exam) => (
             <TouchableOpacity
               key={exam.id}
-              style={styles.modeCard}
-              onPress={() => router.push(`/quiz/${exam.id}` as any)}
+              style={[styles.modeCard, exam.isProOnly && { borderColor: '#f59e0b', backgroundColor: '#fffbeb' }]}
+              onPress={() => handleExamPress(exam)}
               activeOpacity={0.8}
             >
               <View style={styles.cardHeader}>
-                <View style={[styles.iconBox, { backgroundColor: '#f0f9ff' }]}>
-                  <MaterialIcons name="quiz" size={24} color="#0284c7" />
+                <View style={[styles.iconBox, { backgroundColor: exam.isProOnly ? '#fef3c7' : '#ede9fe' }]}>
+                  <MaterialIcons name={exam.isProOnly ? "workspace-premium" : "quiz"} size={24} color={exam.isProOnly ? "#d97706" : colors.primary} />
                 </View>
-                <View style={[styles.badge, { backgroundColor: '#f0f9ff' }]}>
-                  <Text style={[styles.badgeText, { color: '#0284c7' }]}>{exam.domain?.name || 'Tổng hợp'}</Text>
+                <View style={{ flexDirection: 'row', gap: 4, alignItems: 'center' }}>
+                  <View style={[styles.badge, { backgroundColor: '#ede9fe' }]}>
+                    <Text style={[styles.badgeText, { color: colors.primary }]}>{exam.domain?.name || 'Tổng hợp'}</Text>
+                  </View>
+                  {exam.isProOnly && (
+                    <View style={[styles.badge, { backgroundColor: '#fef3c7' }]}>
+                      <Text style={[styles.badgeText, { color: '#b45309', fontWeight: '800' }]}>👑 PRO</Text>
+                    </View>
+                  )}
                 </View>
               </View>
 
               <Text style={styles.modeTitle}>{exam.title}</Text>
-              <Text style={styles.modeDesc}>{exam.description || `Đề thi gồm ${exam.questionCount} câu hỏi.`}</Text>
+              <Text style={styles.modeDesc}>{exam.description || `Đề thi gồm ${exam.questionCount || 5} câu hỏi.`}</Text>
 
               <View style={styles.cardFooter}>
-                <Text style={styles.modeStats}>{exam.questionCount} câu · {exam.durationMinutes} phút</Text>
-                <MaterialIcons name="arrow-forward" size={18} color="#0284c7" />
+                <Text style={styles.modeStats}>{exam.questionCount || 5} câu · {exam.durationMinutes} phút</Text>
+                <MaterialIcons name={exam.isProOnly && !isPro ? "lock" : "arrow-forward"} size={18} color={exam.isProOnly && !isPro ? "#d97706" : colors.primary} />
               </View>
             </TouchableOpacity>
           ))

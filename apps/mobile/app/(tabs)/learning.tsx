@@ -35,33 +35,52 @@ export default function MobileLearningScreen() {
     try {
       setLoading(true);
       setError('');
-      const response = await api.get<any>('/lessons?limit=20');
-      const data = response.data || response;
-      const lessonsArray = Array.isArray(data) ? data : data.items || [];
+      const [resLessons, resProgress] = await Promise.allSettled([
+        api.get<any>('/lessons?limit=50'),
+        api.get<any>('/progress/me')
+      ]);
+
+      let lessonsArray: any[] = [];
+      if (resLessons.status === 'fulfilled') {
+        const data = resLessons.value.data || resLessons.value;
+        lessonsArray = Array.isArray(data) ? data : (data.items || data.data || []);
+      }
+
+      const completedIds = new Set<string>();
+      if (resProgress.status === 'fulfilled') {
+        const progData = resProgress.value.data || resProgress.value;
+        const progressList = progData.progress || [];
+        progressList.forEach((p: any) => {
+          if ((p.status === 'completed' || p.completedAt) && (p.resourceId || p.lessonId)) {
+            completedIds.add(p.resourceId || p.lessonId);
+          }
+        });
+      }
 
       const grouped = lessonsArray.reduce((acc: any, lesson: any) => {
-        const domain = lesson.domain || 'Lĩnh vực khác';
-        if (!acc[domain]) {
-          acc[domain] = {
-            id: domain,
-            title: domain,
+        const domainObj = lesson.domain;
+        const domainName = (domainObj && typeof domainObj === 'object') ? domainObj.name : (domainObj || 'Lĩnh vực khác');
+        if (!acc[domainName]) {
+          acc[domainName] = {
+            id: domainName,
+            title: domainName,
             progress: 0,
             totalLessons: 0,
             completedLessons: 0,
             lessons: []
           };
         }
-        acc[domain].totalLessons += 1;
-        // Just mock some progress logic based on real data
-        const isCompleted = lesson.status === 'completed';
-        if (isCompleted) acc[domain].completedLessons += 1;
+        acc[domainName].totalLessons += 1;
+        const lessonId = lesson._id || lesson.id;
+        const isCompleted = completedIds.has(lessonId);
+        if (isCompleted) acc[domainName].completedLessons += 1;
         
-        acc[domain].lessons.push({
-          id: lesson._id || lesson.id,
+        acc[domainName].lessons.push({
+          id: lessonId,
           title: lesson.title,
           duration: lesson.durationMinutes || lesson.duration || 15,
           termsCount: lesson.vocabularyCount || lesson.termsCount || (lesson.vocabulary ? lesson.vocabulary.length : 0) || 0,
-          status: lesson.status || 'in_progress'
+          status: isCompleted ? 'completed' : 'in_progress'
         });
         return acc;
       }, {});

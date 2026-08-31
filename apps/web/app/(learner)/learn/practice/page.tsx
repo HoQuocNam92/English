@@ -1,56 +1,80 @@
 'use client';
 
 import Link from 'next/link';
+import { useState, useEffect } from 'react';
 import { LearnerShell } from '@/shared/layout';
-
-const practiceCategories = [
-  {
-    id: 'vocab',
-    title: 'Flashcards Thuật ngữ Chuyên sâu (SRS)',
-    badge: 'Spaced Repetition',
-    description: 'Hệ thống lặp lại ngắt quãng giúp bạn ghi nhớ 450+ thuật ngữ IT vĩnh viễn với phát âm chuẩn IPA.',
-    stats: '450 thẻ từ vựng · 24 thẻ cần ôn tập hôm nay',
-    icon: 'style',
-    color: 'text-primary',
-    bgBadge: 'bg-primary/10 text-primary',
-    link: '/learn/flashcards/les-1'
-  },
-  {
-    id: 'scenario',
-    title: 'Xử lý Tình huống Thực tế (Scenario-Based)',
-    badge: 'Real-world Architecture',
-    description: 'Đọc mô tả sự cố hệ thống (Outage, Latency, Data Leak) và chọn giải pháp kỹ thuật tối ưu.',
-    stats: '120 tình huống thực tế · Điểm TB: 82.4%',
-    icon: 'psychology',
-    color: 'text-ai-accent',
-    bgBadge: 'bg-ai-accent/10 text-ai-accent',
-    link: '/learn/practice/scenario/scen-1'
-  },
-  {
-    id: 'quick-quiz',
-    title: 'Trắc nghiệm theo Chủ đề (Topic Quiz)',
-    badge: '10 - 20 câu',
-    description: 'Luyện tập nhanh câu hỏi theo từng Domain: IAM, Networking, Databases, Storage.',
-    stats: '24 bộ đề chủ đề · Tỷ lệ đúng 88%',
-    icon: 'quiz',
-    color: 'text-indigo-600',
-    bgBadge: 'bg-indigo-100 text-indigo-800',
-    link: '/learn/quiz/quiz-1'
-  },
-  {
-    id: 'mock-exam',
-    title: 'Thi thử Đề Quốc tế (Full Mock Exam)',
-    badge: 'AWS CLF-C02 Format',
-    description: 'Mô phỏng kỳ thi thật 65 câu hỏi trong 90 phút có bấm giờ, chấm điểm đỗ/trượt và phân tích Domain.',
-    stats: '6 đề thi chuẩn hóa · Tỷ lệ đỗ 83.3%',
-    icon: 'military_tech',
-    color: 'text-amber-600',
-    bgBadge: 'bg-amber-100 text-amber-900',
-    link: '/learn/quiz/mock-1'
-  }
-];
+import { apiClient } from '@/shared/api/api-client';
 
 export default function LearnerPracticePage() {
+  const [data, setData] = useState<any>({ exams: [], vocabCount: 0, lessons: [] });
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
+
+  useEffect(() => {
+    async function loadData() {
+      try {
+        const [examsRes, vocabRes, lessonsRes] = await Promise.all<any>([
+          apiClient.get('/exams?limit=4&status=published'),
+          apiClient.get('/vocabulary?limit=1'), // just to get total count if headers or metadata provides it, or just pass limit=100
+          apiClient.get('/lessons?limit=1')
+        ]);
+        
+        setData({
+          exams: examsRes?.data || examsRes || [],
+          vocabCount: vocabRes?.total || (vocabRes?.data || vocabRes || []).length,
+          lessons: lessonsRes?.data || lessonsRes || []
+        });
+      } catch (err) {
+        setError('Failed to load practice data');
+      } finally {
+        setLoading(false);
+      }
+    }
+    loadData();
+  }, []);
+
+  if (loading) return <LearnerShell><div className="flex justify-center p-10"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div></div></LearnerShell>;
+
+  const { exams, vocabCount, lessons } = data;
+  const firstLessonId = lessons[0]?.id || 'unknown';
+  const firstExamId = exams[0]?.id || 'unknown';
+
+  const practiceCategories = [
+    {
+      id: 'vocab',
+      title: 'Flashcards Thuật ngữ Chuyên sâu (SRS)',
+      badge: 'Spaced Repetition',
+      description: 'Hệ thống lặp lại ngắt quãng giúp bạn ghi nhớ thuật ngữ IT vĩnh viễn.',
+      stats: `${vocabCount || 0} thẻ từ vựng`,
+      icon: 'style',
+      color: 'text-primary',
+      bgBadge: 'bg-primary/10 text-primary',
+      link: `/learn/flashcards/${firstLessonId}`
+    },
+    {
+      id: 'scenario',
+      title: 'Xử lý Tình huống Thực tế (Scenario-Based)',
+      badge: 'Real-world Architecture',
+      description: 'Đọc mô tả sự cố hệ thống (Outage, Latency, Data Leak) và chọn giải pháp kỹ thuật tối ưu.',
+      stats: `Luyện tập tình huống`,
+      icon: 'psychology',
+      color: 'text-ai-accent',
+      bgBadge: 'bg-ai-accent/10 text-ai-accent',
+      link: `/learn/practice/scenario/scen-1`
+    },
+    {
+      id: 'mock-exam',
+      title: 'Thi thử (Mock Exam)',
+      badge: 'Format chuẩn',
+      description: 'Mô phỏng kỳ thi thật có bấm giờ, chấm điểm đỗ/trượt.',
+      stats: `${exams.length} đề thi`,
+      icon: 'military_tech',
+      color: 'text-amber-600',
+      bgBadge: 'bg-amber-100 text-amber-900',
+      link: `/learn/quiz/${firstExamId}`
+    }
+  ];
+
   return (
     <LearnerShell>
       <div className="flex flex-col gap-6">
@@ -58,11 +82,11 @@ export default function LearnerPracticePage() {
         <div>
           <h2 className="text-2xl font-bold text-on-surface tracking-tight">Trung tâm Luyện tập & Thi thử</h2>
           <p className="text-sm text-on-surface-variant mt-1">
-            Rèn luyện phản xạ thuật ngữ và giải quyết các bài toán kiến trúc thực tế trước kỳ thi chứng chỉ.
+            Rèn luyện phản xạ thuật ngữ và giải quyết các bài toán kiến trúc thực tế.
           </p>
         </div>
 
-        {/* 4 Practice Cards Grid */}
+        {/* Practice Cards Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {practiceCategories.map((cat) => (
             <div

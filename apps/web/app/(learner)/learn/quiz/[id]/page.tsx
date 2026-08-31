@@ -1,58 +1,91 @@
 'use client';
 
-import { useState } from 'react';
+import * as React from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { LearnerShell } from '@/shared/layout';
+import { apiClient } from '@/shared/api/api-client';
 
-const quizQuestions = [
-  {
-    id: 'q1',
-    prompt: 'Which AWS service provides virtually unlimited object storage accessible natively through standard HTTPS REST APIs?',
-    options: [
-      { id: 'A', text: 'Amazon EBS (Elastic Block Store)' },
-      { id: 'B', text: 'Amazon S3 (Simple Storage Service)' },
-      { id: 'C', text: 'Amazon EFS (Elastic File System)' },
-      { id: 'D', text: 'Amazon Storage Gateway' }
-    ]
-  },
-  {
-    id: 'q2',
-    prompt: 'Under the AWS Shared Responsibility Model, which of the following security tasks is the customer responsible for?',
-    options: [
-      { id: 'A', text: 'Patching the host physical hypervisor' },
-      { id: 'B', text: 'Disposing of decommissioned storage disks' },
-      { id: 'C', text: 'Configuring IAM user permissions and Multi-Factor Authentication (MFA)' },
-      { id: 'D', text: 'Maintaining physical security of AWS data centers' }
-    ]
-  },
-  {
-    id: 'q3',
-    prompt: 'Which architectural principle is defined by the ability of a cloud system to remain operational despite individual component failures?',
-    options: [
-      { id: 'A', text: 'Fault Tolerance' },
-      { id: 'B', text: 'Scalability' },
-      { id: 'C', text: 'Agility' },
-      { id: 'D', text: 'Elasticity' }
-    ]
-  }
-];
-
-export default function LearnerQuizTakingPage() {
+export default function LearnerQuizTakingPage({ params }: { params: Promise<{ id: string }> }) {
+  const unwrappedParams = React.use(params);
+  const examId = unwrappedParams.id;
   const router = useRouter();
+  
+  const [exam, setExam] = useState<any>(null);
+  const [attemptId, setAttemptId] = useState<string>('');
+  const [loading, setLoading] = useState(true);
+  const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState('');
+  
   const [currentIdx, setCurrentIdx] = useState(0);
   const [answers, setAnswers] = useState<Record<string, string>>({});
+  const [timeLeft, setTimeLeft] = useState<number>(0);
 
-  const q = quizQuestions[currentIdx];
-  const total = quizQuestions.length;
-  const selectedOpt = answers[q.id];
+  useEffect(() => {
+    async function startExam() {
+      try {
+        const [attemptRes, examRes] = await Promise.all<any>([
+          apiClient.post(`/exams/${examId}/attempts`, {}),
+          apiClient.get(`/exams/${examId}`)
+        ]);
+        
+        setAttemptId(attemptRes?.id || attemptRes?.data?.id || attemptRes);
+        const examData = examRes?.data || examRes;
+        setExam(examData);
+        setTimeLeft((examData.durationMinutes || 60) * 60);
+      } catch (err) {
+        setError('Failed to load exam or start attempt');
+      } finally {
+        setLoading(false);
+      }
+    }
+    if (examId) startExam();
+  }, [examId]);
 
-  const handleSelect = (optId: string) => {
-    setAnswers({ ...answers, [q.id]: optId });
+  useEffect(() => {
+    if (timeLeft > 0 && !submitting) {
+      const timer = setTimeout(() => setTimeLeft(timeLeft - 1), 1000);
+      return () => clearTimeout(timer);
+    } else if (timeLeft === 0 && exam) {
+      handleSubmit();
+    }
+  }, [timeLeft, submitting, exam]);
+
+  const handleSelect = (questionId: string, optId: string) => {
+    setAnswers({ ...answers, [questionId]: optId });
   };
 
-  const handleSubmit = () => {
-    router.push('/learn/quiz/result/res-1');
+  const handleSubmit = async () => {
+    if (!attemptId) return;
+    setSubmitting(true);
+    
+    const formattedAnswers = Object.keys(answers).map(qId => ({
+      questionId: qId,
+      selectedOptionIds: [answers[qId]]
+    }));
+
+    try {
+      await apiClient.post(`/exams/attempts/${attemptId}/submit`, { answers: formattedAnswers });
+      router.push(`/learn/quiz/result/${attemptId}`);
+    } catch (err) {
+      alert('Submit failed');
+      setSubmitting(false);
+    }
+  };
+
+  if (loading) return <LearnerShell><div className="p-8 text-center"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto"></div></div></LearnerShell>;
+  if (error || !exam) return <LearnerShell><div className="p-8 text-center text-red-500">{error}</div></LearnerShell>;
+
+  const questions = exam.questions || [];
+  const q = questions[currentIdx]?.question || questions[currentIdx] || {};
+  const total = questions.length;
+  const selectedOpt = answers[q.id];
+
+  const formatTime = (seconds: number) => {
+    const m = Math.floor(seconds / 60);
+    const s = seconds % 60;
+    return `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
   };
 
   return (
@@ -62,22 +95,23 @@ export default function LearnerQuizTakingPage() {
         <div className="p-4 rounded-2xl bg-surface-container-lowest border border-outline-variant/40 shadow-2xs flex flex-wrap justify-between items-center gap-4 sticky top-20 z-20">
           <div>
             <span className="text-[10px] font-extrabold text-primary uppercase tracking-wider block">
-              AWS Certified Cloud Practitioner Mock #1
+              {exam.title}
             </span>
-            <h2 className="text-base font-bold text-on-surface">Đề thi mô phỏng chuẩn hóa</h2>
+            <h2 className="text-base font-bold text-on-surface">Đề thi mô phỏng</h2>
           </div>
 
           <div className="flex items-center gap-4">
             <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-primary/10 border border-primary/20">
               <span className="material-symbols-outlined text-[20px] text-primary">timer</span>
-              <span className="font-mono text-sm font-extrabold text-primary">58:45</span>
+              <span className="font-mono text-sm font-extrabold text-primary">{formatTime(timeLeft)}</span>
             </div>
 
             <button
               onClick={handleSubmit}
-              className="px-5 py-2 bg-primary hover:bg-indigo-700 !text-white font-bold text-xs rounded-xl transition-all shadow-sm"
+              disabled={submitting}
+              className="px-5 py-2 bg-primary hover:bg-indigo-700 !text-white font-bold text-xs rounded-xl transition-all shadow-sm disabled:opacity-50"
             >
-              Nộp bài thi
+              {submitting ? 'Đang nộp...' : 'Nộp bài thi'}
             </button>
           </div>
         </div>
@@ -89,21 +123,20 @@ export default function LearnerQuizTakingPage() {
             <div className="p-8 rounded-2xl bg-surface-container-lowest border border-outline-variant/40 shadow-2xs space-y-6">
               <div className="flex justify-between items-center pb-3 border-b border-outline-variant/30">
                 <span className="text-xs font-bold text-primary">Câu hỏi #{currentIdx + 1} / {total}</span>
-                <span className="text-xs text-outline font-semibold">1 điểm</span>
               </div>
 
-              <h3 className="text-base lg:text-lg font-bold text-on-surface leading-relaxed">
+              <h3 className="text-base lg:text-lg font-bold text-on-surface leading-relaxed whitespace-pre-wrap">
                 {q.prompt}
               </h3>
 
               {/* Options */}
               <div className="space-y-3 pt-2">
-                {q.options.map((opt) => {
+                {q.options?.map((opt: any) => {
                   const isSelected = selectedOpt === opt.id;
                   return (
                     <div
                       key={opt.id}
-                      onClick={() => handleSelect(opt.id)}
+                      onClick={() => handleSelect(q.id, opt.id)}
                       className={`p-4 rounded-xl border-2 transition-all cursor-pointer flex items-center gap-3.5 ${
                         isSelected
                           ? 'bg-primary/5 border-primary shadow-xs ring-1 ring-primary/20'
@@ -115,7 +148,7 @@ export default function LearnerQuizTakingPage() {
                           isSelected ? 'bg-primary text-white' : 'bg-surface-container text-on-surface'
                         }`}
                       >
-                        {opt.id}
+                        {opt.key || opt.id.substring(0,2)}
                       </div>
                       <span className={`text-xs font-semibold ${isSelected ? 'text-primary' : 'text-on-surface'}`}>
                         {opt.text}
@@ -147,7 +180,8 @@ export default function LearnerQuizTakingPage() {
                 ) : (
                   <button
                     onClick={handleSubmit}
-                    className="px-6 py-2 bg-green-600 hover:bg-green-700 !text-white font-bold text-xs rounded-xl transition-all flex items-center gap-1 shadow-sm"
+                    disabled={submitting}
+                    className="px-6 py-2 bg-green-600 hover:bg-green-700 !text-white font-bold text-xs rounded-xl transition-all flex items-center gap-1 shadow-sm disabled:opacity-50"
                   >
                     <span className="!text-white">Hoàn thành & Nộp bài</span>
                     <span className="material-symbols-outlined text-[16px] !text-white">check</span>
@@ -162,13 +196,14 @@ export default function LearnerQuizTakingPage() {
             <div className="p-6 rounded-2xl bg-surface-container-lowest border border-outline-variant/40 shadow-2xs space-y-4">
               <h3 className="text-sm font-bold text-on-surface">Danh sách câu hỏi</h3>
               <div className="grid grid-cols-5 gap-2">
-                {quizQuestions.map((item, idx) => {
-                  const isAnswered = !!answers[item.id];
+                {questions.map((item: any, idx: number) => {
+                  const qId = item.question?.id || item.id;
+                  const isAnswered = !!answers[qId];
                   const isCurrent = idx === currentIdx;
 
                   return (
                     <button
-                      key={item.id}
+                      key={qId}
                       onClick={() => setCurrentIdx(idx)}
                       className={`h-9 rounded-lg text-xs font-bold transition-all ${
                         isCurrent

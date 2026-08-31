@@ -10,10 +10,17 @@ export default function MobileProgressScreen() {
   const router = useRouter();
   const [loading, setLoading] = useState(true);
   const [progress, setProgress] = useState<any>(null);
+  const [learnerProfile, setLearnerProfile] = useState<any>(null);
 
   useEffect(() => {
-    api.get('/progress/me')
-      .then(data => setProgress(data))
+    Promise.all([
+      api.get('/progress/me'),
+      api.get('/learner-profiles/me')
+    ])
+      .then(([progData, profData]) => {
+        setProgress(progData);
+        setLearnerProfile(profData);
+      })
       .catch(err => console.error(err))
       .finally(() => setLoading(false));
   }, []);
@@ -26,22 +33,29 @@ export default function MobileProgressScreen() {
     );
   }
 
-  const domainSkills = progress?.domainSkills || [
-    { name: 'Cloud Computing (AWS/GCP)', percent: 84, color: '#4f46e5' },
-    { name: 'REST APIs & Web Architecture', percent: 92, color: '#16a34a' },
-    { name: 'DevOps & CI/CD Pipelines', percent: 68, color: '#0284c7' },
-    { name: 'Cybersecurity & InfoSec', percent: 52, color: '#7c3aed' },
-    { name: 'Data Engineering & BigQuery', percent: 45, color: '#d97706' }
-  ];
-  const streakDays = progress?.streakDays ?? 5;
-  const streakHours = progress?.streakHours ?? 24.5;
-  const readinessPercent = progress?.readinessPercent ?? 80;
-  const readinessTarget = progress?.readinessTarget ?? 'AWS Certified Cloud Practitioner (CLF-C02)';
-  const readinessScore = progress?.readinessScore ?? 82;
-  const recentTests = progress?.recentTests || [
-    { id: '1', title: 'AWS Cloud Practitioner Mock #1', meta: 'Hôm qua · 65 câu · Làm trong 58 phút', scoreText: '89% Đạt' },
-    { id: '2', title: 'IAM & Security Policy Quiz', meta: '3 ngày trước · 20 câu · Làm trong 15 phút', scoreText: '95% Đạt' }
-  ];
+  const summary = progress?.summary || {};
+  const streakDays = summary.studyStreakDays ?? 0;
+  const streakHours = ((summary.totalStudyMinutes || 0) / 60).toFixed(1);
+  const readinessPercent = summary.averageScorePercent ?? 0;
+  const readinessTarget = learnerProfile?.certGoals?.[0]?.certificate?.name ?? 'Chứng chỉ mục tiêu';
+  const readinessScore = summary.averageScorePercent ?? 0;
+
+  const domainSkills = learnerProfile?.domains?.map((d: any, index: number) => {
+    const domainProgress = progress?.progress?.find((p: any) => p.domainId === d.domain?.id) || {};
+    const colorsList = ['#4f46e5', '#16a34a', '#0284c7', '#7c3aed', '#d97706'];
+    return {
+      name: d.domain?.name || 'Unknown',
+      percent: domainProgress.completionPercent || 0,
+      color: colorsList[index % colorsList.length]
+    };
+  }) || [];
+
+  const recentTests = progress?.recentAttempts?.map((t: any) => ({
+    id: t.id,
+    title: t.exam?.title || 'Bài kiểm tra',
+    meta: `${new Date(t.submittedAt).toLocaleDateString('vi-VN')} · ${t.totalQuestions || 0} câu · Làm trong ${t.exam?.durationMinutes || 0} phút`,
+    scoreText: `${t.scorePercent || 0}% Đạt` // Simplification for now, UI just needs a string
+  })) || [];
 
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.contentContainer} showsVerticalScrollIndicator={false}>
@@ -86,7 +100,7 @@ export default function MobileProgressScreen() {
       <View style={styles.sectionCard}>
         <Text style={styles.sectionTitle}>Mức độ thành thạo theo chuyên ngành</Text>
         <View style={styles.skillsList}>
-          {domainSkills.map((s: any) => (
+          {domainSkills.length > 0 ? domainSkills.map((s: any) => (
             <View key={s.name} style={styles.skillItem}>
               <View style={styles.skillHeader}>
                 <Text style={styles.skillName}>{s.name}</Text>
@@ -96,37 +110,27 @@ export default function MobileProgressScreen() {
                 <View style={[styles.skillBarFill, { width: `${s.percent}%`, backgroundColor: s.color }]} />
               </View>
             </View>
-          ))}
+          )) : <Text style={{color: colors.mutedText}}>Chưa có dữ liệu chuyên ngành.</Text>}
         </View>
       </View>
 
-      {/* Recent Test History */}
-      <View style={styles.sectionCard}>
-        <View style={styles.sectionHeader}>
-          <Text style={styles.sectionTitle}>Lịch sử bài kiểm tra gần đây</Text>
-          <TouchableOpacity onPress={() => router.push('/test-history' as any)}>
-            <Text style={styles.seeAllText}>Xem tất cả</Text>
-          </TouchableOpacity>
+      {/* Test History CTA */}
+      <TouchableOpacity 
+        style={[styles.sectionCard, { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingVertical: spacing.md }]}
+        onPress={() => router.push('/test-history' as any)}
+        activeOpacity={0.8}
+      >
+        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
+          <View style={{ width: 40, height: 40, borderRadius: 10, backgroundColor: '#ede9fe', alignItems: 'center', justifyContent: 'center' }}>
+            <MaterialIcons name="assignment" size={22} color={colors.primary} />
+          </View>
+          <View>
+            <Text style={{ fontSize: 15, fontWeight: '800', color: colors.text }}>Lịch sử thi & Bảng điểm chi tiết</Text>
+            <Text style={{ fontSize: 12, color: colors.mutedText, marginTop: 2 }}>Xem lại tất cả kết quả bài thi và đáp án từng câu</Text>
+          </View>
         </View>
-
-        <View style={styles.historyList}>
-          {recentTests.map((t: any) => (
-            <TouchableOpacity
-              key={t.id}
-              style={styles.historyItem}
-              onPress={() => router.push(`/test-result/${t.id}` as any)}
-            >
-              <View style={styles.historyLeft}>
-                <Text style={styles.historyTitle}>{t.title}</Text>
-                <Text style={styles.historyMeta}>{t.meta}</Text>
-              </View>
-              <View style={styles.scoreBadgePass}>
-                <Text style={styles.scorePassText}>{t.scoreText}</Text>
-              </View>
-            </TouchableOpacity>
-          ))}
-        </View>
-      </View>
+        <MaterialIcons name="chevron-right" size={22} color={colors.outline} />
+      </TouchableOpacity>
     </ScrollView>
   );
 }

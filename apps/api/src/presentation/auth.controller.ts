@@ -1,8 +1,6 @@
-import { Controller, Post, Body, HttpCode, HttpStatus, UseGuards, Get, Req, Res } from '@nestjs/common'
-import { AuthGuard } from '@nestjs/passport'
-import { Response, Request } from 'express'
+import { Controller, Post, Body, HttpCode, HttpStatus, UseGuards, Get } from '@nestjs/common'
 import { ApiTags, ApiBearerAuth, ApiOperation } from '@nestjs/swagger'
-import { LoginDto, RefreshTokenDto, ChangePasswordDto } from './http-dto/auth.dto'
+import { LoginDto, RegisterDto, RefreshTokenDto, AuthChangePasswordDto, GoogleMobileDto, ForgotPasswordDto, ResetPasswordDto } from './http-dto/auth.dto'
 import { AuthService } from '../application/auth/auth.service'
 import { JwtAuthGuard } from '../infrastructure/auth/jwt-auth.guard'
 import { CurrentUser, JwtPayload } from './decorators/current-user.decorator'
@@ -14,9 +12,30 @@ export class AuthController {
 
   @Post('login')
   @HttpCode(HttpStatus.OK)
-  @ApiOperation({ summary: 'Login - get access + refresh token' })
+  @ApiOperation({ summary: 'Login bằng email/password (admin & giảng viên)' })
   login(@Body() dto: LoginDto) {
     return this.authService.login(dto)
+  }
+
+  @Post('register')
+  @HttpCode(HttpStatus.CREATED)
+  @ApiOperation({ summary: 'Đăng ký tài khoản learner mới (mobile)' })
+  register(@Body() dto: RegisterDto) {
+    return this.authService.register(dto)
+  }
+
+  @Post('forgot-password')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Yêu cầu gửi OTP quên mật khẩu qua Email' })
+  forgotPassword(@Body() dto: ForgotPasswordDto) {
+    return this.authService.forgotPassword(dto)
+  }
+
+  @Post('reset-password')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Đặt lại mật khẩu bằng mã OTP' })
+  resetPassword(@Body() dto: ResetPasswordDto) {
+    return this.authService.resetPassword(dto)
   }
 
   @Post('refresh')
@@ -48,35 +67,15 @@ export class AuthController {
   @ApiBearerAuth()
   @HttpCode(HttpStatus.NO_CONTENT)
   @ApiOperation({ summary: 'Change password' })
-  changePassword(@CurrentUser() user: JwtPayload, @Body() dto: ChangePasswordDto) {
+  changePassword(@CurrentUser() user: JwtPayload, @Body() dto: AuthChangePasswordDto) {
     return this.authService.changePassword(user.sub, dto)
   }
 
-  // Google OAuth endpoints (no JWT required)
-  @Get('google')
-  @UseGuards(AuthGuard('google'))
-  async googleAuth() {
-    // Passport redirects to Google
-  }
-
-  @Get('google/callback')
-  @UseGuards(AuthGuard('google'))
-  async googleCallback(@Req() req: Request, @Res() res: Response) {
-    const tokens = req.user as any
-    // Redirect to frontend with tokens as query params (web)
-    const webUrl = process.env.APP_URL ?? 'http://localhost:3000'
-    const params = new URLSearchParams({
-      access_token: tokens.accessToken,
-      refresh_token: tokens.refreshToken,
-      user: JSON.stringify(tokens.user),
-    })
-    res.redirect(`${webUrl}/auth/google/callback?${params.toString()}`)
-  }
-
-  // Mobile Google OAuth - receive Google ID token from Expo client
+  // ─── Mobile only ──────────────────────────────────────────────────────────
+  // Expo app gửi Google ID token lên, server verify với Google API và trả JWT
   @Post('google/mobile')
-  async googleMobileAuth(@Body() dto: { idToken: string }) {
-    // Verify the Google ID token and return our JWT
+  @ApiOperation({ summary: 'Mobile Google Login - Expo app gửi Google ID token' })
+  googleMobileAuth(@Body() dto: GoogleMobileDto) {
     return this.authService.verifyGoogleIdToken(dto.idToken)
   }
 }

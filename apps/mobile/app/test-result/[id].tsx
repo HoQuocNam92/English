@@ -5,6 +5,7 @@ import { StatusBar } from 'expo-status-bar';
 import { MaterialIcons } from '@expo/vector-icons';
 import { colors, spacing } from '@techenglish/design-tokens';
 import { api } from '../../src/shared/api/api-client';
+import { safeText } from '../../src/shared/utils/safeText';
 
 interface AttemptResult {
   id: string;
@@ -80,7 +81,7 @@ export default function MobileTestResultScreen() {
             color={result.isPassed ? '#16a34a' : '#dc2626'} 
           />
         </View>
-        <Text style={styles.examTitle}>{result.exam?.title || 'Bài thi'}</Text>
+        <Text style={styles.examTitle}>{safeText(result.exam?.title, 'Bài thi')}</Text>
         
         <Text style={[styles.passStatus, { color: result.isPassed ? '#16a34a' : '#dc2626' }]}>
           {result.isPassed ? 'Chúc mừng! Bạn đã đạt' : 'Rất tiếc! Bạn chưa đạt'}
@@ -121,12 +122,24 @@ export default function MobileTestResultScreen() {
         </View>
       </View>
 
-      <TouchableOpacity 
-        style={styles.actionBtn} 
-        onPress={() => router.replace('/(tabs)/practice')}
-      >
-        <Text style={styles.actionBtnText}>Trở về luyện tập</Text>
-      </TouchableOpacity>
+      <View style={{ gap: 12, marginTop: spacing.md }}>
+        <TouchableOpacity 
+          style={styles.primaryActionBtn} 
+          onPress={() => router.push(`/answer-review/${id}` as any)}
+          activeOpacity={0.8}
+        >
+          <MaterialIcons name="fact-check" size={22} color="#fff" style={{ marginRight: 8 }} />
+          <Text style={styles.primaryActionBtnText}>Xem chi tiết từng câu & Đáp án</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity 
+          style={styles.secondaryActionBtn} 
+          onPress={() => router.replace('/(tabs)/practice')}
+          activeOpacity={0.8}
+        >
+          <Text style={styles.secondaryActionBtnText}>Trở về luyện tập</Text>
+        </TouchableOpacity>
+      </View>
     </ScrollView>
   );
 }
@@ -253,16 +266,37 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     color: colors.text
   },
-  actionBtn: {
+  primaryActionBtn: {
     backgroundColor: colors.primary,
     paddingVertical: 16,
-    borderRadius: 12,
+    paddingHorizontal: spacing.md,
+    borderRadius: 14,
+    flexDirection: 'row',
     alignItems: 'center',
-    marginTop: spacing.md
+    justifyContent: 'center',
+    shadowColor: colors.primary,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.2,
+    shadowRadius: 8,
+    elevation: 3
   },
-  actionBtnText: {
-    color: '#fff',
-    fontSize: 16,
+  primaryActionBtnText: {
+    color: '#ffffff',
+    fontSize: 15,
+    fontWeight: '800'
+  },
+  secondaryActionBtn: {
+    backgroundColor: '#ffffff',
+    paddingVertical: 14,
+    borderRadius: 14,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 1.5,
+    borderColor: '#e2e8f0'
+  },
+  secondaryActionBtnText: {
+    color: colors.text,
+    fontSize: 14,
     fontWeight: '700'
   },
   backHomeBtn: {

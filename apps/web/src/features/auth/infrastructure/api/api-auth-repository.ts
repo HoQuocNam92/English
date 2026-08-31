@@ -3,7 +3,7 @@ import type { StoragePort } from '@/shared/storage';
 import type { AuthRepository, LoginInput } from '../../application/ports/auth-repository';
 
 const SESSION_KEY = 'techenglish.web.session';
-const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3001/api/v1';
+const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:8080/api/v1';
 
 export class ApiAuthRepository implements AuthRepository {
   constructor(private readonly storage: StoragePort) {}

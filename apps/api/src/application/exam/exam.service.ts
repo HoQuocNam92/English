@@ -48,29 +48,91 @@ export class ExamsService {
 
   async startAttempt(examId: string, learnerId: string) {
     const exam = await this.findOne(examId)
-    const existingCount = await this.prisma.examAttempt.count({ where: { examId, learnerId, status: { not: 'expired' } } })
-    if (existingCount >= exam.maxAttempts) throw new BadRequestException('Max attempts reached')
+    // Check if there's an in-progress attempt first
+    const inProgress = await this.prisma.examAttempt.findFirst({ 
+      where: { examId, learnerId, status: 'in_progress' },
+      include: { exam: true }
+    })
+    if (inProgress) return inProgress
+
     const questionsSnapshot = exam.questions.map((eq: any) => ({ id: eq.question.id, type: eq.question.type, prompt: eq.question.prompt, context: eq.question.context, options: eq.question.options, points: eq.question.points }))
     const expiresAt = exam.durationMinutes ? new Date(Date.now() + exam.durationMinutes * 60 * 1000) : undefined
-    return this.prisma.examAttempt.create({ data: { examId, learnerId, questionsSnapshot, examSnapshot: { id: exam.id, title: exam.title, passingScorePercent: exam.passingScorePercent }, expiresAt } })
+    return this.prisma.examAttempt.create({ 
+      data: { 
+        examId, 
+        learnerId, 
+        questionsSnapshot, 
+        examSnapshot: { id: exam.id, title: exam.title, passingScorePercent: exam.passingScorePercent, durationMinutes: exam.durationMinutes }, 
+        expiresAt 
+      },
+      include: { exam: true }
+    })
   }
 
   async submitAttempt(attemptId: string, learnerId: string, answers: any[]) {
     const attempt = await this.prisma.examAttempt.findUnique({ where: { id: attemptId } })
     if (!attempt || attempt.learnerId !== learnerId) throw new NotFoundException('Attempt not found')
     if (attempt.status !== 'in_progress') throw new BadRequestException('Attempt already submitted')
-    const snapshot = attempt.questionsSnapshot as any[]
-    let totalScore = 0; let maxScore = 0
-    for (const q of snapshot) {
-      maxScore += q.points
+    
+    const snapshot = (attempt.questionsSnapshot as any[]) || []
+    let totalScore = 0
+    let maxScore = 0
+    let correctCount = 0
+    let incorrectCount = 0
+
+    const updatedSnapshot = snapshot.map((q: any) => {
       const ans = answers.find((a: any) => a.questionId === q.id)
-      if (!ans) continue
-      const correctIds = q.options?.filter((o: any) => o.isCorrect).map((o: any) => o.id) ?? []
-      const isCorrect = ans.selectedOptionIds?.length === correctIds.length && ans.selectedOptionIds.every((id: string) => correctIds.includes(id))
-      if (isCorrect) totalScore += q.points
-    }
+      const selectedIds = ans?.selectedOptionIds ?? []
+      
+      const correctOpts = q.options?.filter((o: any) => o.isCorrect) ?? []
+      const correctIds = correctOpts.map((o: any) => o.id || o.key)
+      
+      const isCorrect = selectedIds.length > 0 && 
+        selectedIds.length === correctIds.length && 
+        selectedIds.every((id: string) => correctIds.includes(id))
+
+      maxScore += q.points || 1
+      if (isCorrect) {
+        totalScore += q.points || 1
+        correctCount++
+      } else {
+        incorrectCount++
+      }
+
+      return {
+        ...q,
+        userSelectedOptionIds: selectedIds,
+        isUserCorrect: isCorrect
+      }
+    })
+
     const scorePercent = maxScore > 0 ? (totalScore / maxScore) * 100 : 0
-    return this.prisma.examAttempt.update({ where: { id: attemptId }, data: { status: 'graded', score: totalScore, maxScore, scorePercent, passed: scorePercent >= (attempt.examSnapshot as any).passingScorePercent, submittedAt: new Date(), gradedAt: new Date() } })
+    const passingScore = (attempt.examSnapshot as any)?.passingScorePercent ?? 70
+    const passed = scorePercent >= passingScore
+
+    const updated = await this.prisma.examAttempt.update({
+      where: { id: attemptId },
+      data: {
+        status: 'graded',
+        questionsSnapshot: updatedSnapshot,
+        score: totalScore,
+        maxScore,
+        scorePercent,
+        passed,
+        submittedAt: new Date(),
+        gradedAt: new Date()
+      },
+      include: { exam: true }
+    })
+
+    return {
+      ...updated,
+      isPassed: passed,
+      totalQuestions: updatedSnapshot.length,
+      correctAnswersCount: correctCount,
+      incorrectAnswersCount: incorrectCount,
+      score: Math.round(scorePercent)
+    }
   }
 
   async getAttempts(examId: string, learnerId?: string) {
@@ -79,12 +141,42 @@ export class ExamsService {
     return this.prisma.examAttempt.findMany({ where, include: { learner: { include: { userDetail: true } } }, orderBy: { startedAt: 'desc' } })
   }
 
-  async getMyAttempts(learnerId: string) {
-    return this.prisma.examAttempt.findMany({ 
-      where: { learnerId }, 
-      include: { exam: { select: { title: true, domain: true, level: true } } }, 
-      orderBy: { startedAt: 'desc' } 
+  async getMyAttempts(learnerId: string, params: any = {}) {
+    const page = Math.max(1, Number(params.page) || 1)
+    const limit = Math.min(Math.max(1, Number(params.limit) || 10), 100)
+    const skip = (page - 1) * limit
+    const where = { learnerId }
+
+    const [attempts, total] = await Promise.all([
+      this.prisma.examAttempt.findMany({ 
+        where, 
+        skip,
+        take: limit,
+        include: { exam: { select: { title: true, domain: true, level: true } } }, 
+        orderBy: { startedAt: 'desc' } 
+      }),
+      this.prisma.examAttempt.count({ where })
+    ])
+
+    const formattedData = attempts.map(a => {
+      const isPassed = a.passed ?? ((a.scorePercent ?? 0) >= 70)
+      const score = Math.round(a.scorePercent ?? a.score ?? 0)
+      return {
+        ...a,
+        isPassed,
+        score
+      }
     })
+
+    return {
+      data: formattedData,
+      meta: {
+        total,
+        page,
+        limit,
+        totalPages: Math.ceil(total / limit) || 1
+      }
+    }
   }
 
   async getAttemptById(id: string, learnerId: string) {
@@ -93,6 +185,19 @@ export class ExamsService {
       include: { exam: true, learner: { include: { userDetail: true } } }
     })
     if (!attempt || attempt.learnerId !== learnerId) throw new NotFoundException('Attempt not found')
-    return attempt
+
+    const snapshot = Array.isArray(attempt.questionsSnapshot) ? attempt.questionsSnapshot : []
+    const totalQuestions = snapshot.length
+    const correctCount = snapshot.filter((q: any) => q.isUserCorrect === true).length
+    const incorrectCount = Math.max(0, totalQuestions - correctCount)
+
+    return {
+      ...attempt,
+      isPassed: attempt.passed ?? ((attempt.scorePercent ?? 0) >= 70),
+      score: Math.round(attempt.scorePercent ?? attempt.score ?? 0),
+      totalQuestions,
+      correctAnswersCount: correctCount,
+      incorrectAnswersCount: incorrectCount
+    }
   }
 }

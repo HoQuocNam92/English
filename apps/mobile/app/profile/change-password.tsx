@@ -13,6 +13,17 @@ export default function MobileChangePasswordScreen() {
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [saving, setSaving] = useState(false);
+  const [showCurrent, setShowCurrent] = useState(false);
+  const [showNew, setShowNew] = useState(false);
+  const [showConfirm, setShowConfirm] = useState(false);
+
+  const rules = [
+    { label: 'Ít nhất 8 ký tự', ok: newPassword.length >= 8 },
+    { label: 'Có chữ hoa (A-Z)', ok: /[A-Z]/.test(newPassword) },
+    { label: 'Có chữ số (0-9)', ok: /[0-9]/.test(newPassword) },
+    { label: 'Có ký tự đặc biệt (!@#...)', ok: /[^A-Za-z0-9]/.test(newPassword) },
+  ];
+  const allRulesMet = rules.every(r => r.ok);
 
   const handleUpdate = async () => {
     if (!currentPassword) {
@@ -31,7 +42,7 @@ export default function MobileChangePasswordScreen() {
 
     setSaving(true);
     try {
-      await api.post('/me/change-password', { currentPassword, newPassword });
+      await api.post('/users/me/change-password', { currentPassword, newPassword });
       Alert.alert('Thành công', 'Đổi mật khẩu thành công!', [
         { text: 'OK', onPress: () => router.back() }
       ]);
@@ -45,7 +56,6 @@ export default function MobileChangePasswordScreen() {
   return (
     <View style={styles.container}>
       <StatusBar style="dark" />
-      {/* Header */}
       <View style={styles.header}>
         <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
           <MaterialIcons name="arrow-back" size={24} color={colors.text} />
@@ -56,44 +66,82 @@ export default function MobileChangePasswordScreen() {
 
       <ScrollView contentContainerStyle={styles.scrollContent} keyboardShouldPersistTaps="handled">
         <View style={styles.formCard}>
+          {/* Mật khẩu hiện tại */}
           <View style={styles.inputGroup}>
             <Text style={styles.label}>Mật khẩu hiện tại</Text>
-            <TextInput
-              style={styles.input}
-              placeholder="••••••••"
-              value={currentPassword}
-              onChangeText={setCurrentPassword}
-              secureTextEntry
-            />
+            <View style={styles.inputRow}>
+              <TextInput
+                style={styles.input}
+                placeholder="••••••••"
+                value={currentPassword}
+                onChangeText={setCurrentPassword}
+                secureTextEntry={!showCurrent}
+              />
+              <TouchableOpacity style={styles.eyeBtn} onPress={() => setShowCurrent(!showCurrent)}>
+                <MaterialIcons name={showCurrent ? 'visibility-off' : 'visibility'} size={20} color={colors.outline} />
+              </TouchableOpacity>
+            </View>
           </View>
 
+          {/* Mật khẩu mới */}
           <View style={styles.inputGroup}>
             <Text style={styles.label}>Mật khẩu mới</Text>
-            <TextInput
-              style={styles.input}
-              placeholder="Tối thiểu 8 ký tự, có chữ hoa, số, ký tự đặc biệt"
-              value={newPassword}
-              onChangeText={setNewPassword}
-              secureTextEntry
-            />
+            <View style={styles.inputRow}>
+              <TextInput
+                style={styles.input}
+                placeholder="Nhập mật khẩu mới"
+                value={newPassword}
+                onChangeText={setNewPassword}
+                secureTextEntry={!showNew}
+              />
+              <TouchableOpacity style={styles.eyeBtn} onPress={() => setShowNew(!showNew)}>
+                <MaterialIcons name={showNew ? 'visibility-off' : 'visibility'} size={20} color={colors.outline} />
+              </TouchableOpacity>
+            </View>
+
+            {/* Password requirements */}
+            <View style={styles.rulesBox}>
+              {rules.map(r => (
+                <View key={r.label} style={styles.ruleRow}>
+                  <MaterialIcons
+                    name={r.ok ? 'check-circle' : 'radio-button-unchecked'}
+                    size={14}
+                    color={r.ok ? '#16a34a' : '#94a3b8'}
+                  />
+                  <Text style={[styles.ruleText, r.ok && styles.ruleTextOk]}>{r.label}</Text>
+                </View>
+              ))}
+            </View>
           </View>
 
+          {/* Xác nhận mật khẩu */}
           <View style={styles.inputGroup}>
             <Text style={styles.label}>Xác nhận mật khẩu mới</Text>
-            <TextInput
-              style={styles.input}
-              placeholder="Nhập lại mật khẩu mới"
-              value={confirmPassword}
-              onChangeText={setConfirmPassword}
-              secureTextEntry
-            />
+            <View style={styles.inputRow}>
+              <TextInput
+                style={styles.input}
+                placeholder="Nhập lại mật khẩu mới"
+                value={confirmPassword}
+                onChangeText={setConfirmPassword}
+                secureTextEntry={!showConfirm}
+              />
+              <TouchableOpacity style={styles.eyeBtn} onPress={() => setShowConfirm(!showConfirm)}>
+                <MaterialIcons name={showConfirm ? 'visibility-off' : 'visibility'} size={20} color={colors.outline} />
+              </TouchableOpacity>
+            </View>
+            {confirmPassword.length > 0 && newPassword !== confirmPassword && (
+              <Text style={styles.errorText}>Mật khẩu xác nhận không khớp</Text>
+            )}
           </View>
         </View>
       </ScrollView>
 
-      {/* Bottom Bar */}
       <View style={styles.bottomBar}>
-        <TouchableOpacity style={styles.saveBtn} onPress={handleUpdate} disabled={saving}>
+        <TouchableOpacity
+          style={[styles.saveBtn, (!allRulesMet || saving) && styles.saveBtnDisabled]}
+          onPress={handleUpdate}
+          disabled={saving || !allRulesMet}
+        >
           {saving ? <ActivityIndicator color="#fff" /> : <Text style={styles.saveBtnText}>Cập nhật mật khẩu</Text>}
         </TouchableOpacity>
       </View>
@@ -150,14 +198,12 @@ const styles = StyleSheet.create({
     color: colors.text
   },
   input: {
-    borderWidth: 1,
-    borderColor: '#cbd5e1',
-    borderRadius: 10,
+    flex: 1,
     paddingHorizontal: spacing.sm,
     height: 46,
     fontSize: 14,
     color: colors.text,
-    backgroundColor: '#ffffff'
+    backgroundColor: 'transparent'
   },
   bottomBar: {
     position: 'absolute',
@@ -176,9 +222,49 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center'
   },
+  saveBtnDisabled: {
+    backgroundColor: '#a5b4fc'
+  },
   saveBtnText: {
     color: '#ffffff',
     fontSize: 15,
     fontWeight: '700'
+  },
+  inputRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: '#cbd5e1',
+    borderRadius: 10,
+    backgroundColor: '#ffffff',
+    paddingRight: 4
+  },
+  eyeBtn: {
+    padding: 10
+  },
+  rulesBox: {
+    marginTop: 8,
+    backgroundColor: '#f8fafc',
+    borderRadius: 10,
+    padding: 10,
+    gap: 6
+  },
+  ruleRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6
+  },
+  ruleText: {
+    fontSize: 12,
+    color: '#94a3b8'
+  },
+  ruleTextOk: {
+    color: '#16a34a'
+  },
+  errorText: {
+    fontSize: 12,
+    color: '#ef4444',
+    marginTop: 4,
+    marginLeft: 4
   }
 });

@@ -1,10 +1,11 @@
 import { useEffect, useState, useRef } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView, ActivityIndicator, Alert } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, ScrollView, ActivityIndicator, Alert, Modal } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { MaterialIcons } from '@expo/vector-icons';
 import { colors, spacing } from '@techenglish/design-tokens';
 import { api } from '../../src/shared/api/api-client';
+import { safeText } from '../../src/shared/utils/safeText';
 
 interface Option {
   id: string;
@@ -30,6 +31,7 @@ export default function MobileQuizScreen() {
   
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
+  const [showSubmitModal, setShowSubmitModal] = useState(false);
   const [attemptId, setAttemptId] = useState<string | null>(null);
   const [questions, setQuestions] = useState<Question[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -38,16 +40,25 @@ export default function MobileQuizScreen() {
   const [timeLeft, setTimeLeft] = useState<number | null>(null);
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
+  const unansweredQuestions = questions.reduce<number[]>((acc, q, index) => {
+    const qAns = answers[q.id] || [];
+    if (qAns.length === 0) acc.push(index + 1);
+    return acc;
+  }, []);
+
   useEffect(() => {
     const startExam = async () => {
       try {
-        const res = await api.post<Attempt>(`/exams/${id}/start`, {});
+        const res = await api.post<Attempt>(`/exams/${id}/attempts`, {});
         const data = (res as any).data || res;
         setAttemptId(data.id);
-        setQuestions(data.questions || []);
-        setTimeLeft((data.exam?.durationMinutes || 60) * 60);
-      } catch (error) {
-        Alert.alert('Lỗi', 'Không thể bắt đầu bài kiểm tra.');
+        const qList = data.questionsSnapshot || data.questions || [];
+        setQuestions(qList);
+        const durationMins = data.examSnapshot?.durationMinutes || data.exam?.durationMinutes || 15;
+        setTimeLeft(durationMins * 60);
+      } catch (error: any) {
+        console.error('Start exam failed:', error);
+        Alert.alert('Lỗi', error.message || 'Không thể bắt đầu bài kiểm tra.');
         router.back();
       } finally {
         setLoading(false);
@@ -108,14 +119,7 @@ export default function MobileQuizScreen() {
   };
 
   const confirmSubmit = () => {
-    Alert.alert(
-      'Nộp bài',
-      'Bạn có chắc chắn muốn nộp bài không?',
-      [
-        { text: 'Hủy', style: 'cancel' },
-        { text: 'Nộp bài', style: 'destructive', onPress: submitExam }
-      ]
-    );
+    setShowSubmitModal(true);
   };
 
   if (loading) {
@@ -156,41 +160,50 @@ export default function MobileQuizScreen() {
       {/* Progress */}
       <View style={styles.progressContainer}>
         <View style={styles.progressBar}>
-          <View style={[styles.progressFill, { width: `${((currentIndex + 1) / questions.length) * 100}%` }]} />
+          <View style={[styles.progressFill, { width: `${((currentIndex + 1) / (questions.length || 1)) * 100}%` }]} />
         </View>
         <Text style={styles.progressText}>Câu {currentIndex + 1} / {questions.length}</Text>
       </View>
 
-      {/* Question */}
-      {currentQuestion && (
-        <ScrollView style={styles.content} contentContainerStyle={styles.contentContainer}>
-          <Text style={styles.questionType}>
-            {isMultipleChoice ? 'Chọn nhiều đáp án' : 'Chọn 1 đáp án'}
-          </Text>
-          <Text style={styles.questionText}>{currentQuestion.text}</Text>
+      {/* Question Content */}
+      <ScrollView contentContainerStyle={styles.content}>
+        {currentQuestion && (
+          <View style={styles.questionCard}>
+            <Text style={styles.questionTypeTag}>
+              {isMultipleChoice ? 'CHỌN NHIỀU ĐÁP ÁN' : 'CHỌN 1 ĐÁP ÁN'}
+            </Text>
+            <Text style={styles.prompt}>
+              {safeText((currentQuestion as any).prompt || currentQuestion.text)}
+            </Text>
 
-          <View style={styles.optionsList}>
-            {currentQuestion.options.map(option => {
-              const isSelected = (answers[currentQuestion.id] || []).includes(option.id);
-              return (
-                <TouchableOpacity
-                  key={option.id}
-                  style={[styles.optionItem, isSelected && styles.optionItemSelected]}
-                  onPress={() => toggleOption(currentQuestion.id, option.id, isMultipleChoice)}
-                  activeOpacity={0.7}
-                >
-                  <View style={[styles.radio, isMultipleChoice && styles.checkbox, isSelected && styles.radioSelected]}>
-                    {isSelected && <MaterialIcons name="check" size={14} color="#fff" />}
-                  </View>
-                  <Text style={[styles.optionText, isSelected && styles.optionTextSelected]}>
-                    {option.text}
-                  </Text>
-                </TouchableOpacity>
-              );
-            })}
+            {/* Options */}
+            <View style={styles.optionsList}>
+              {currentQuestion.options?.map((option: any, optIdx: number) => {
+                const optId = option.id || option.key || String(optIdx);
+                const selected = answers[currentQuestion.id]?.includes(optId);
+                const rawText = safeText(option.text || option.content || option.value || option.label || option);
+                const displayText = option.key && !rawText.startsWith(`${option.key}.`) ? `${option.key}. ${rawText}` : rawText;
+
+                return (
+                  <TouchableOpacity
+                    key={optId}
+                    style={[styles.optionItem, selected && styles.optionItemSelected]}
+                    onPress={() => toggleOption(currentQuestion.id, optId, isMultipleChoice)}
+                    activeOpacity={0.7}
+                  >
+                    <View style={[styles.radio, isMultipleChoice && styles.checkbox, selected && styles.radioSelected]}>
+                      {selected && <MaterialIcons name="check" size={14} color="#fff" />}
+                    </View>
+                    <Text style={[styles.optionText, selected && styles.optionTextSelected]}>
+                      {displayText}
+                    </Text>
+                  </TouchableOpacity>
+                );
+              })}
+            </View>
           </View>
-        </ScrollView>
-      )}
+        )}
+      </ScrollView>
 
       {/* Footer Navigation */}
       <View style={styles.footer}>
@@ -219,6 +232,58 @@ export default function MobileQuizScreen() {
           </TouchableOpacity>
         )}
       </View>
+
+      {/* Custom Submit Modal */}
+      <Modal
+        visible={showSubmitModal}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setShowSubmitModal(false)}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalCard}>
+            <Text style={styles.modalTitle}>Xác nhận nộp bài</Text>
+            
+            {unansweredQuestions.length > 0 ? (
+              <View style={styles.unansweredBox}>
+                <MaterialIcons name="warning" size={24} color="#b45309" style={{ marginRight: 8 }} />
+                <Text style={styles.unansweredText}>
+                  Bạn còn {unansweredQuestions.length} câu chưa làm ({unansweredQuestions.map(n => `#${n}`).join(', ')}). Bạn có chắc chắn muốn nộp bài không?
+                </Text>
+              </View>
+            ) : (
+              <Text style={styles.modalMessage}>
+                Bạn đã hoàn thành tất cả {questions.length} câu hỏi! Bạn có chắc chắn muốn nộp bài không?
+              </Text>
+            )}
+
+            <View style={styles.modalBtnRow}>
+              <TouchableOpacity
+                style={styles.modalCancelBtn}
+                onPress={() => setShowSubmitModal(false)}
+                disabled={submitting}
+              >
+                <Text style={styles.modalCancelText}>Hủy</Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                style={styles.modalSubmitBtn}
+                onPress={() => {
+                  setShowSubmitModal(false);
+                  submitExam();
+                }}
+                disabled={submitting}
+              >
+                {submitting ? (
+                  <ActivityIndicator color="#ffffff" size="small" />
+                ) : (
+                  <Text style={styles.modalSubmitText}>Nộp bài</Text>
+                )}
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
     </View>
   );
 }
@@ -277,6 +342,26 @@ const styles = StyleSheet.create({
   contentContainer: {
     padding: spacing.lg,
     paddingBottom: spacing.xl
+  },
+  questionCard: {
+    backgroundColor: '#ffffff',
+    borderRadius: 16,
+    padding: spacing.md,
+    marginBottom: spacing.md
+  },
+  questionTypeTag: {
+    fontSize: 11,
+    fontWeight: '800',
+    color: colors.primary,
+    marginBottom: spacing.xs,
+    textTransform: 'uppercase'
+  },
+  prompt: {
+    fontSize: 16,
+    fontWeight: '700',
+    color: colors.text,
+    lineHeight: 24,
+    marginBottom: spacing.lg
   },
   questionType: {
     fontSize: 12,
@@ -369,5 +454,73 @@ const styles = StyleSheet.create({
   },
   navBtnTextDisabled: {
     color: colors.mutedText
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.5)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: spacing.lg
+  },
+  modalCard: {
+    width: '100%',
+    backgroundColor: '#ffffff',
+    borderRadius: 20,
+    padding: spacing.xl,
+    gap: spacing.md
+  },
+  modalTitle: {
+    fontSize: 18,
+    fontWeight: '800',
+    color: colors.text,
+    textAlign: 'center'
+  },
+  unansweredBox: {
+    backgroundColor: '#fef3c7',
+    padding: spacing.md,
+    borderRadius: 12,
+    flexDirection: 'row',
+    alignItems: 'center'
+  },
+  unansweredText: {
+    fontSize: 13,
+    color: '#92400e',
+    flex: 1,
+    lineHeight: 18
+  },
+  modalMessage: {
+    fontSize: 14,
+    color: colors.text,
+    textAlign: 'center',
+    lineHeight: 20
+  },
+  modalBtnRow: {
+    flexDirection: 'row',
+    gap: spacing.md,
+    marginTop: spacing.sm
+  },
+  modalCancelBtn: {
+    flex: 1,
+    backgroundColor: '#f1f5f9',
+    paddingVertical: 14,
+    borderRadius: 12,
+    alignItems: 'center'
+  },
+  modalCancelText: {
+    color: colors.text,
+    fontWeight: '700',
+    fontSize: 15
+  },
+  modalSubmitBtn: {
+    flex: 1,
+    backgroundColor: colors.primary,
+    paddingVertical: 14,
+    borderRadius: 12,
+    alignItems: 'center'
+  },
+  modalSubmitText: {
+    color: '#ffffff',
+    fontWeight: '800',
+    fontSize: 15
   }
 });

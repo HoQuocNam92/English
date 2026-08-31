@@ -1,13 +1,13 @@
-# TechEnglish Pro
+# TechEnglish Pro 🚀
 
 <p align="center">
-  <strong>Hệ thống học tiếng Anh chuyên ngành IT cho sinh viên & kỹ sư phần mềm</strong>
+  <strong>Nền tảng học tiếng Anh chuyên ngành IT & Luyện thi Chứng chỉ Quốc tế</strong>
 </p>
 
 <p align="center">
-  <img src="https://img.shields.io/badge/Next.js-15-black?logo=nextdotjs" />
+  <img src="https://img.shields.io/badge/Next.js-15.5-black?logo=nextdotjs" />
   <img src="https://img.shields.io/badge/Expo-SDK%2054-white?logo=expo&logoColor=black" />
-  <img src="https://img.shields.io/badge/NestJS-10-ea2845?logo=nestjs" />
+  <img src="https://img.shields.io/badge/NestJS-11.2-ea2845?logo=nestjs" />
   <img src="https://img.shields.io/badge/PostgreSQL-16-336791?logo=postgresql&logoColor=white" />
   <img src="https://img.shields.io/badge/Prisma-5.22-2D3748?logo=prisma" />
   <img src="https://img.shields.io/badge/pnpm-11.9-F69220?logo=pnpm&logoColor=white" />
@@ -16,295 +16,185 @@
 
 ---
 
-TechEnglish Pro la nen tang hoc tieng Anh ky thuat chuyen sau danh cho ba nhom nguoi dung: **Admin**, **Giang vien** va **Hoc vien**. He thong cung cap lo trinh hoc ca nhan hoa theo domain IT, muc tieu nghe nghiep, chung chi quoc te, cung tinh nang thi thu va cham diem tu dong.
+## 📌 Giới thiệu Dự Án
 
-## Tinh nang chinh
+**TechEnglish Pro** (KLCN028) là hệ thống học tiếng Anh kỹ thuật chuyên sâu dành cho sinh viên và kỹ sư phần mềm (Backend, Frontend, DevOps, Cloud, Security, Data). Nền tảng được thiết kế cho 3 nhóm người dùng: **Admin**, **Giảng viên** và **Học viên**.
 
-### Desktop Cong Admin & Giang vien (Web)
-
-- Dang nhap, phan quyen RBAC (admin / teacher / learner)
-- Quan ly bai hoc, tu vung, ngan hang cau hoi, noi dung on chung chi
-- Tao nhom hoc vien, gan chung chi muc tieu, theo doi tien do
-- Tao de thi, cau hinh thoi gian & diem dat; xem ket qua & lich su
-- Dashboard bao cao tien do hoc vien
-
-### Mobile Ung dung Hoc vien (Mobile)
-
-- Onboarding: trinh do, domain IT, muc tieu nghe nghiep, chung chi dich
-- Hoc bai hoc ky thuat, tu vung chuyen nganh, flashcard, tai lieu API
-- Quiz, bai tap tinh huong, de thi thu chung chi
-- Diem so, giai thich dap an, lich su lam bai, tien do ca nhan
-- Goi y bai hoc & de thi ca nhan hoa dua tren diem yeu va muc tieu
-
-### Backend & Database
-
-- **NestJS** theo **Clean Architecture** (Domain -> Application -> Infrastructure -> Presentation)
-- **PostgreSQL 16** voi **Prisma ORM 5** — schema day du 32 bang, migration da ap dung
-- **OpenAPI 3.0** contract 2800+ dong cho toan bo REST API
-- Snapshot cau hoi tai thoi diem thi (JSONB) de bao toan lich su lam bai
-- JWT refresh-token rotation, RBAC ba cap
+Hệ thống kết hợp lộ trình học cá nhân hóa, từ vựng theo chuyên ngành, bài học kỹ thuật chuẩn hóa, cùng hệ thống thi thử chứng chỉ (AWS, Kubernetes CKA, CompTIA Security+...) có chấm điểm tự động và theo dõi tiến độ chi tiết.
 
 ---
 
-## Cong nghe
+## 🔥 Tính Năng Nổi Bật
 
-| Thanh phan | Stack |
+### 1. Học viên (App Mobile Expo)
+- **Onboarding Cá Nhân Hóa**: Thiết lập trình độ, lĩnh vực IT quan tâm, mục tiêu nghề nghiệp và chứng chỉ quốc tế.
+- **Học Từ Vựng & Kỹ Thuật**: Flashcard từ vựng kèm phát âm IPA, câu ví dụ thực tế và tài liệu API.
+- **Theo Dõi Tiến Độ**: Lưu vết hoàn thành bài học real-time, biểu đồ thành thạo theo chuyên ngành.
+- **Thi Thử Chứng Chỉ**: Đề thi thời gian thực, tự động chấm điểm, lưu lịch sử lượt làm bài (phân trang 10 bài/trang) và đáp án chi tiết.
+- **Nâng Cấp Gói PRO (VietQR / SePay)**: Tích hợp cổng thanh toán VietQR quét mã tự động, hiển thị thông tin gói PRO và lịch sử đơn hàng.
+- **Quên Mật Khẩu Qua Email**: Khôi phục mật khẩu 2 bước qua mã OTP gửi về Email (kèm chế độ Dev Fallback console log).
+
+### 2. Quản Trị & Giảng Viên (Web Portal Next.js 15)
+- **Đăng Nhập Phân Quyền RBAC**: Hỗ trợ 3 vai trò chính (`admin`, `teacher`, `learner`) và custom permissions.
+- **Quản Lý Bài Học & Từ Vựng**: Tạo, sửa, xuất bản nội dung bài học, thuật ngữ và ví dụ.
+- **Ngân Hàng Câu Hỏi & Đề Thi**: Thiết lập bộ đề thi, trọng số câu hỏi, thời gian làm bài và điểm đạt.
+- **Quản Lý Học Viên & Nhóm Lớp**: Giảng viên tạo nhóm lớp, gán chứng chỉ mục tiêu và xem báo cáo kết quả thi.
+
+### 3. Backend REST API & Database (NestJS & Prisma)
+- **NestJS Clean Architecture**: Phân lớp rõ ràng (Presentation, Application, Domain, Infrastructure).
+- **Phân Trang Chuẩn REST**: Áp dụng phân trang metadata `{ data, meta: { total, page, limit, totalPages } }` cho toàn bộ danh sách.
+- **Thanh Toán SePay & Auto Webhook**: Xác thực Webhook HMAC SHA256 an toàn, tự động kích hoạt gói PRO.
+- **Email Service (Nodemailer)**: Tự động gửi OTP khôi phục mật khẩu qua SMTP, hỗ trợ Dev Fallback mượt mà.
+
+---
+
+## 🛠 Công Nghệ Sử Dụng
+
+| Thành phần | Công nghệ / Thư viện |
 |---|---|
-| **Web** | Next.js 15, React 19, TypeScript, Tailwind CSS 4 |
-| **Mobile** | Expo SDK 54, React Native 0.81, Expo Router 6, TypeScript |
-| **Backend** | NestJS 10, TypeScript — Clean Architecture |
-| **Database** | PostgreSQL 16, Prisma ORM 5.22 |
-| **Monorepo** | pnpm 11 Workspaces |
-| **API Spec** | OpenAPI 3.0.3 (Swagger) |
+| **Web Frontend** | Next.js 15, React 19, Tailwind CSS v4, TypeScript |
+| **Mobile App** | Expo SDK 54, React Native 0.81, Expo Router v6, TypeScript |
+| **Backend API** | NestJS 11, TypeScript, Nodemailer, Cloudinary, SePay SDK |
+| **Database** | PostgreSQL 16, Prisma ORM 5.22 (33 models) |
+| **Monorepo** | pnpm Workspaces 11.9.0 |
+| **API Contract** | OpenAPI 3.0.3 (Swagger UI) |
 
 ---
 
-## Kien truc
+## 📁 Cấu Trúc Dự Án
 
 ```
-Next.js Web ────┐
-                ├──▶  NestJS REST API  ──▶  Prisma  ──▶  PostgreSQL
-Expo Mobile ────┘
-                           │
-                  packages/contracts       ← API types dung chung
-                  packages/design-tokens  ← mau, spacing, radius
-                  packages/shared-kernel  ← Result<T>, pagination
-```
-
-Backend chia thanh bon lop tach biet hoan toan:
-
-```
-Presentation   ← HTTP request/response (Controller, DTO, Guard)
-Application    ← Use cases, Interfaces (Port)
-Domain         ← Entity, Value Object, Domain Rule (pure TypeScript)
-Infrastructure ← Prisma adapter, PostgreSQL, External Services
-```
-
----
-
-## Cau truc thu muc
-
-```
-TechEnglish-Pro/
+English/
 ├── apps/
-│   ├── api/                        # NestJS backend
+│   ├── api/                        # NestJS Backend API (Port 8080)
 │   │   ├── prisma/
-│   │   │   ├── schema.prisma       # 32 models, full schema
-│   │   │   ├── seed.ts             # Seed data (levels, domains, users...)
-│   │   │   └── migrations/         # Migration khoi tao da ap dung
+│   │   │   ├── schema.prisma       # Full 33 tables schema
+│   │   │   └── seed.ts             # Seed database data (Accounts, Pro plans, Lessons, Exams)
 │   │   ├── src/
-│   │   │   ├── modules/            # Feature modules (chua implement)
-│   │   │   └── shared/             # Guards, interceptors, pipes
-│   │   ├── openapi.yaml            # OpenAPI 3.0 contract (2800+ dong)
-│   │   ├── tsconfig.json
-│   │   └── package.json
-│   ├── web/                        # Next.js 15 — Admin & Teacher portal
-│   └── mobile/                     # Expo SDK 54 — Learner app
+│   │   │   ├── application/        # Use cases (Auth, Exams, Progress, Payment, Upload)
+│   │   │   ├── domain/             # Entities & business rules
+│   │   │   ├── infrastructure/     # Prisma, Email, Storage, Auth Guards
+│   │   │   ├── presentation/       # REST Controllers & DTOs
+│   │   │   └── modules/            # NestJS Feature Modules
+│   │   └── .env                    # Environment configuration
+│   ├── web/                        # Next.js 15 Web Portal (Admin & Teacher) (Port 3000)
+│   └── mobile/                     # Expo React Native Learner App
 ├── packages/
-│   ├── contracts/                  # Kieu du lieu & API contract dung chung
-│   ├── design-tokens/              # Mau sac, typography, spacing
-│   └── shared-kernel/              # Result<T>, AppError, pagination
-├── docs/                           # 23 tai lieu thiet ke & kien truc
-├── pnpm-workspace.yaml
-└── package.json
+│   ├── contracts/                  # Shared API contracts & TypeScript interfaces
+│   ├── design-tokens/              # Design tokens (Colors, Spacing, Radius)
+│   └── shared-kernel/              # AppError, Result<T>, Pagination helpers
+├── docs/                           # Architecture specs & guidelines
+└── README.md
 ```
 
 ---
 
-## Database — 32 bang PostgreSQL
+## 🔑 Tài Khoản Demo & Seed Data
 
-| Nhom | Bang | Mo ta |
-|---|---|---|
-| Auth | `users`, `refresh_tokens` | Tai khoan & JWT rotation |
-| Master data | `levels`, `domains`, `career_goals`, `certificates`, `certificate_domains` | Danh muc he thong |
-| Learner profile | `learner_profiles` + 3 bang noi | Ho so, domain, muc tieu, chung chi dich |
-| Groups | `learner_groups`, `learner_group_members` | Lop hoc & thanh vien |
-| Vocabulary | `vocabularies`, `vocabulary_examples` | Tu vung chuyen nganh |
-| Lessons | `lessons`, `lesson_sections`, `lesson_vocabularies`, `lesson_certificates`, `certification_contents` | Bai hoc & noi dung |
-| Questions | `questions`, `question_options`, `question_certificates` | Ngan hang cau hoi |
-| Exams | `exams`, `exam_questions` | De thi |
-| Attempts | `exam_attempts` (JSONB snapshot), `attempt_answers`, `attempt_answer_options` | Luot lam bai |
-| Progress | `learning_progress`, `progress_summary_cache` | Tien do hoc tap |
-| AI | `recommendations`, `recommendation_feedbacks` | Goi y ca nhan hoa |
+Sau khi chạy lệnh `db:seed`, hệ thống khởi tạo sẵn các tài khoản thử nghiệm:
+
+| Tài khoản | Mật khẩu | Vai trò | Gói dịch vụ | Ghi chú |
+|---|---|---|---|---|
+| `admin@techenglish.pro` | `Demo@123456` | **Admin** | **PRO Lifetime** | Quyền quản trị tối cao |
+| `nguyen.thanh@techenglish.pro` | `Demo@123456` | **Teacher** | Standard | Giảng viên Cloud & DevOps |
+| `tran.minh@techenglish.pro` | `Demo@123456` | **Teacher** | Standard | Giảng viên Security & Networking |
+| `learner1@techenglish.pro` | `Demo@123456` | **Learner** | **PRO Yearly** | Backend Dev, AWS-SAA |
+| `learner2@techenglish.pro` | `Demo@123456` | **Learner** | Standard | DevOps Intern, CKA |
+| `learner3@techenglish.pro` | `Demo@123456` | **Learner** | Standard | Security Analyst, Security+ |
 
 ---
 
-## Yeu cau moi truong
+## ⚡ Hướng Dẫn Cài Đặt & Chạy Dự Án
 
-| Cong cu | Phien ban |
-|---|---|
-| Node.js | `>= 20.19.4` |
-| pnpm | `11.9.0` |
-| PostgreSQL | `>= 15` |
-| Expo Go | SDK 54 |
+### 1. Yêu cầu môi trường
+- Node.js >= 20.19.0
+- pnpm >= 11.9.0
+- PostgreSQL >= 15
 
+### 2. Cài đặt Dependencies
 ```bash
-node --version   # v20+
-pnpm --version   # 11.9.0
-```
-
----
-
-## Cai dat & Chay
-
-### 1. Clone va cai dependencies
-
-```bash
+# Clone repository
 git clone git@github.com:HoQuocNam92/English.git
 cd English
+
+# Cài đặt toàn bộ node_modules
 pnpm install
 ```
 
-### 2. Cau hinh moi truong
-
+### 3. Cấu hình Môi trường (`.env`)
+Tạo file `apps/api/.env` từ file mẫu:
 ```bash
-# Windows
+# Windows PowerShell
 copy apps\api\.env.example apps\api\.env
-
-# macOS / Linux
-cp apps/api/.env.example apps/api/.env
 ```
 
-Chinh `apps/api/.env` voi thong tin PostgreSQL:
-
+Nội dung cấu hình trong `apps/api/.env`:
 ```env
-DATABASE_URL="postgresql://postgres:password@localhost:5432/techenglish?schema=public"
+DATABASE_URL="postgresql://postgres:123456@localhost:5432/techenglish?schema=public"
+JWT_SECRET=techenglish-super-secret-jwt-key-change-in-production-2026
+PORT=8080
+NODE_ENV=development
+
+# SMTP Email Configuration (Dùng cho Quên Mật Khẩu OTP)
+SMTP_HOST=smtp.gmail.com
+SMTP_PORT=587
+SMTP_SECURE=false
+SMTP_USER=your_email@gmail.com
+SMTP_PASS=your_app_password
+SMTP_FROM="TechEnglish Pro" <no-reply@techenglish.pro>
+
+# SePay VietQR Payment Gateway
+SEPAY_BANK_NAME=VIETINBANK
+SEPAY_BANK_ACC=105886719416
+SEPAY_ACCOUNT_NAME=HO QUOC NAM
 ```
 
-> Khong commit file `.env` len repository.
-
-### 3. Khoi tao database
-
+### 4. Khởi tạo Cơ sở dữ liệu & Seed Data
 ```bash
-# Tao toan bo 32 bang
-pnpm --filter @techenglish/api db:migrate:dev
+# Đẩy schema vào Database
+pnpm --filter @techenglish/api run db:push
 
 # Generate Prisma Client
-pnpm --filter @techenglish/api db:generate
+pnpm --filter @techenglish/api run db:generate
 
-# Seed du lieu mau
-pnpm --filter @techenglish/api db:seed
+# Nạp dữ liệu seed
+pnpm --filter @techenglish/api run db:seed
 ```
 
-Sau khi seed, tai khoan demo:
+### 5. Khởi chạy Ứng dụng
 
-| Tai khoan | Mat khau | Vai tro |
-|---|---|---|
-| `admin@techenglish.pro` | `Demo@123456` | Admin |
-| `teacher@techenglish.pro` | `Demo@123456` | Giang vien |
-| `learner1@techenglish.pro` | `Demo@123456` | Hoc vien |
-| `learner2@techenglish.pro` | `Demo@123456` | Hoc vien |
-
-Xem data truc quan:
-
+**Chạy API Server (NestJS - Port 8080):**
 ```bash
-pnpm --filter @techenglish/api db:studio
-# → http://localhost:5555
+pnpm --filter @techenglish/api run dev
 ```
 
-### 4. Chay ung dung
-
-**Web (Admin & Teacher portal):**
-
+**Chạy Web Portal (Next.js 15 - Port 3000):**
 ```bash
 pnpm --filter web dev
-# → http://localhost:3000
 ```
 
-**Mobile (Learner app):**
-
+**Chạy Mobile App (Expo SDK 54):**
 ```bash
 pnpm --filter mobile dev
-# Quet QR bang Expo Go | nhan `a` Android | nhan `i` iOS
 ```
 
-Xoa Metro cache neu can:
+---
+
+## 🧪 Lệnh Kiểm Tra & Build
 
 ```bash
-pnpm -C apps/mobile exec expo start --clear
+# Typecheck TypeScript cho toàn bộ project
+pnpm --filter mobile run typecheck
+
+# Build NestJS API
+pnpm --filter @techenglish/api run build
+
+# Xem dữ liệu trực quan bằng Prisma Studio (Port 5555)
+pnpm --filter @techenglish/api run db:studio
 ```
 
 ---
 
-## Swagger / OpenAPI
+## 📄 Giấy Phép (License)
 
-Contract API nam tai [`apps/api/openapi.yaml`](apps/api/openapi.yaml) — OpenAPI 3.0.3, hon 2 800 dong, bao phu **16 nhom tai nguyen**: Auth, Users, Learner Profiles, Domains, Levels, Career Goals, Certificates, Learner Groups, Vocabulary, Lessons, Questions, Exams, Exam Attempts, Learning Progress, Reports, Recommendations, Dashboard.
-
-Import vao [Swagger Editor](https://editor.swagger.io/) de xem tai lieu tuong tac.
-
----
-
-## Scripts huu ich
-
-```bash
-# Typecheck
-pnpm typecheck
-pnpm --filter web typecheck
-pnpm --filter mobile typecheck
-
-# Build web production
-pnpm --filter web build
-
-# Database
-pnpm --filter @techenglish/api db:migrate:dev    # Tao migration moi
-pnpm --filter @techenglish/api db:migrate:deploy # Apply migration (production)
-pnpm --filter @techenglish/api db:generate       # Generate Prisma Client
-pnpm --filter @techenglish/api db:seed           # Seed demo data
-pnpm --filter @techenglish/api db:studio         # GUI Prisma Studio
-pnpm --filter @techenglish/api db:reset          # Reset toan bo DB (dev only)
-```
-
----
-
-## Trang thai trien khai
-
-| Hang muc | Trang thai |
-|---|---|
-| Web Admin/Giang vien | Giao dien & luong demo (mock data) |
-| Mobile hoc vien | Giao dien & dieu huong demo |
-| Shared packages | contracts, design-tokens, shared-kernel |
-| OpenAPI contract | Contract v1 day du — 16 nhom tai nguyen |
-| Prisma schema | 32 bang, index, trigger, enum day du |
-| Database migration | `init_full_schema` da apply thanh cong |
-| Seed data | Levels, domains, certs, users, lessons, questions, exam |
-| NestJS API | Chua implement — schema & contract san sang |
-| Authentication that | JWT + RBAC — cho NestJS |
-| Web/Mobile -> API | Dang dung mock data, cho backend |
-| AI Recommendations | Moi o muc thiet ke, cho backend |
-
----
-
-## Roadmap
-
-1. **Auth module** — JWT, refresh token, RBAC (Admin / Teacher / Learner)
-2. **Users & Learner Profile** — CRUD, onboarding flow
-3. **Content modules** — Vocabulary, Lessons, Questions, Exams
-4. **Exam engine** — Submit, auto-grade, JSONB snapshot ket qua
-5. **Progress tracking** — Cap nhat tien do real-time
-6. **Web/Mobile integration** — Thay mock repository bang HTTP adapter
-7. **AI Recommendations** — Goi y ca nhan hoa dua tren profile & tien do
-
----
-
-## Tai lieu
-
-| Tai lieu | Mo ta |
-|---|---|
-| [Project brief](docs/00-project-brief.md) | Tong quan san pham |
-| [Functional requirements](docs/01-functional-requirements.md) | Yeu cau chuc nang chi tiet |
-| [Domain model](docs/03-domain-model.md) | Entity & quan he nghiep vu |
-| [Complex flows](docs/05-complex-flows.md) | Exam lifecycle, progress, AI |
-| [Project structure](docs/08-project-structure.md) | Cau truc thu muc |
-| [Tech stack](docs/16-tech-stack.md) | Cong nghe & ly do chon |
-| [Clean Architecture](docs/17-clean-architecture.md) | Kien truc backend |
-| [Web Next.js](docs/19-web-nextjs.md) | Huong dan web frontend |
-| [Mobile React Native](docs/20-mobile-react-native.md) | Huong dan mobile |
-| [PostgreSQL & Prisma](docs/22-postgresql-prisma.md) | Quy uoc database |
-| [Seed data guidance](docs/14-seed-data-guidance.md) | Huong dan seed |
-| [OpenAPI contract](apps/api/openapi.yaml) | Dac ta REST API day du |
-
----
-
-## License
-
-Private project — moi quyen thuoc ve tac gia.
+Dự án thuộc bản quyền **KLCN028 TechEnglish Pro**. Mọi quyền được bảo lưu.

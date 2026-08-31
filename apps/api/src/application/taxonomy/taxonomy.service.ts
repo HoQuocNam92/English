@@ -293,6 +293,34 @@ export class TaxonomyService {
     const passedCount = attempts.filter((a) => a.passed).length
     const passRate = attempts.length > 0 ? Math.round((passedCount / attempts.length) * 100) : 78
 
+    const days = ['CN', 'T2', 'T3', 'T4', 'T5', 'T6', 'T7'];
+    const today = new Date();
+    const weeklyActivity = [];
+
+    for (let i = 6; i >= 0; i--) {
+      const date = new Date(today);
+      date.setDate(today.getDate() - i);
+      const startOfDay = new Date(date.setHours(0,0,0,0));
+      const endOfDay = new Date(date.setHours(23,59,59,999));
+      
+      const [activeUsers, studyMinutes] = await Promise.all([
+        this.prisma.examAttempt.findMany({
+          where: { startedAt: { gte: startOfDay, lte: endOfDay } },
+          select: { learnerId: true },
+          distinct: ['learnerId']
+        }).then(r => r.length),
+        this.prisma.learningProgress.count({
+          where: { updatedAt: { gte: startOfDay, lte: endOfDay } }
+        }).then(count => count * 15) // estimate 15 min per progress update
+      ]);
+      
+      weeklyActivity.push({
+        day: days[new Date(startOfDay).getDay()],
+        studyHours: Math.round(studyMinutes / 60 * 10) / 10,
+        activeUsers
+      });
+    }
+
     return {
       overview: {
         totalUsers,
@@ -320,15 +348,7 @@ export class TaxonomyService {
         questions: l._count.questions,
         exams: l._count.exams,
       })),
-      weeklyActivity: [
-        { day: 'T2', studyHours: 42, activeUsers: 28 },
-        { day: 'T3', studyHours: 58, activeUsers: 35 },
-        { day: 'T4', studyHours: 65, activeUsers: 40 },
-        { day: 'T5', studyHours: 72, activeUsers: 46 },
-        { day: 'T6', studyHours: 85, activeUsers: 52 },
-        { day: 'T7', studyHours: 94, activeUsers: 59 },
-        { day: 'CN', studyHours: 76, activeUsers: 48 },
-      ],
+      weeklyActivity,
     }
   }
 }

@@ -6,6 +6,17 @@ import { MaterialIcons } from '@expo/vector-icons';
 import { colors, spacing } from '@techenglish/design-tokens';
 import { api } from '../../src/shared/api/api-client';
 
+/** Convert any API value (string | object | null) to a renderable string */
+function safeText(val: any, fallback = ''): string {
+  if (val === null || val === undefined) return fallback;
+  if (typeof val === 'string') return val || fallback;
+  if (typeof val === 'number' || typeof val === 'boolean') return String(val);
+  if (typeof val === 'object') {
+    return String(val.text ?? val.name ?? val.title ?? val.content ?? val.value ?? fallback);
+  }
+  return fallback;
+}
+
 export default function MobileLessonDetailScreen() {
   const { id } = useLocalSearchParams();
   const router = useRouter();
@@ -13,6 +24,8 @@ export default function MobileLessonDetailScreen() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [marking, setMarking] = useState(false);
+
+  const [isCompleted, setIsCompleted] = useState(false);
 
   useEffect(() => {
     if (id) fetchData();
@@ -22,8 +35,26 @@ export default function MobileLessonDetailScreen() {
     try {
       setLoading(true);
       setError('');
-      const response = await api.get<any>(`/lessons/${id}`);
-      setLesson(response.data || response);
+      const [resLesson, resProgress] = await Promise.allSettled([
+        api.get<any>(`/lessons/${id}`),
+        api.get<any>('/progress/me')
+      ]);
+
+      if (resLesson.status === 'fulfilled') {
+        setLesson(resLesson.value.data || resLesson.value);
+      } else {
+        throw new Error('Lỗi tải bài học.');
+      }
+
+      if (resProgress.status === 'fulfilled') {
+        const progData = resProgress.value.data || resProgress.value;
+        const progressList = progData.progress || [];
+        const found = progressList.some((p: any) => 
+          (p.resourceId === id || p.lessonId === id) && 
+          (p.status === 'completed' || p.completedAt || p.isCompleted)
+        );
+        setIsCompleted(found);
+      }
     } catch (err: any) {
       setError(err.message || 'Lỗi tải bài học. Vui lòng thử lại.');
     } finally {
@@ -35,8 +66,8 @@ export default function MobileLessonDetailScreen() {
     try {
       setMarking(true);
       await api.post(`/progress/mark-lesson/${id}`, {});
-      alert('Đã đánh dấu hoàn thành bài học!');
-      router.back();
+      setIsCompleted(true);
+      alert('Tuyệt vời! Bạn đã hoàn thành bài học này!');
     } catch (err: any) {
       alert(err.message || 'Lỗi khi đánh dấu. Vui lòng thử lại.');
     } finally {
@@ -80,23 +111,25 @@ export default function MobileLessonDetailScreen() {
 
       <ScrollView contentContainerStyle={styles.content}>
         <View style={styles.domainTag}>
-          <Text style={styles.domainTagText}>{lesson.domain || 'Lĩnh vực khác'}</Text>
+          <Text style={styles.domainTagText}>{safeText(lesson.domain, 'Lĩnh vực khác')}</Text>
         </View>
-        <Text style={styles.title}>{lesson.title}</Text>
+        <Text style={styles.title}>{safeText(lesson.title, 'Bài học')}</Text>
         <Text style={styles.meta}>
           ⏱ {lesson.durationMinutes || lesson.duration || 15} phút · 📖 {lesson.vocabularyCount || lesson.termsCount || (lesson.vocabulary ? lesson.vocabulary.length : 0) || 0} thuật ngữ
         </Text>
-        
+
         {lesson.description ? (
-          <Text style={styles.description}>{lesson.description}</Text>
+          <Text style={styles.description}>{safeText(lesson.description)}</Text>
         ) : null}
 
         <View style={styles.sectionsContainer}>
           <Text style={styles.sectionTitle}>Các phần nội dung:</Text>
           {(lesson.sections || []).map((sec: any, index: number) => (
-            <View key={index} style={styles.sectionItem}>
+            <View key={sec.id || index} style={styles.sectionItem}>
               <MaterialIcons name="label-outline" size={18} color={colors.primary} />
-              <Text style={styles.sectionText}>{sec.title || sec}</Text>
+              <Text style={styles.sectionText}>
+                {safeText(sec.title) || safeText(sec.content) || `Phần ${index + 1}`}
+              </Text>
             </View>
           ))}
           {(!lesson.sections || lesson.sections.length === 0) && (
@@ -116,13 +149,22 @@ export default function MobileLessonDetailScreen() {
         </TouchableOpacity>
 
         <TouchableOpacity
-          style={[styles.btnComplete, marking && { opacity: 0.7 }]}
+          style={[
+            styles.btnComplete,
+            isCompleted && { backgroundColor: '#16a34a' },
+            marking && { opacity: 0.7 }
+          ]}
           onPress={markComplete}
-          disabled={marking}
+          disabled={marking || isCompleted}
         >
-          <MaterialIcons name="check-circle" size={20} color="#fff" style={{ marginRight: 8 }} />
+          <MaterialIcons 
+            name={isCompleted ? "check-circle" : "check-circle-outline"} 
+            size={20} 
+            color="#fff" 
+            style={{ marginRight: 8 }} 
+          />
           <Text style={styles.btnCompleteText}>
-            {marking ? 'Đang xử lý...' : 'Đánh dấu hoàn thành'}
+            {marking ? 'Đang xử lý...' : (isCompleted ? 'Đã hoàn thành' : 'Đánh dấu hoàn thành')}
           </Text>
         </TouchableOpacity>
       </View>

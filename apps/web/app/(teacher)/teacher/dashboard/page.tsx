@@ -59,7 +59,7 @@ export default function TeacherDashboardPage() {
   React.useEffect(() => {
     async function load() {
       try {
-        const [lessonsRes, examsRes, groupsRes, studentsRes, analyticsRes] = await Promise.all([
+        const [lessonsRes, examsRes, groupsRes, studentsRes, analyticsRes] = await Promise.all<any>([
           apiClient.get<PaginatedResponse<LessonItem>>('/lessons?limit=4'),
           apiClient.get<PaginatedResponse<unknown>>('/exams?limit=1'),
           apiClient.get<PaginatedResponse<unknown>>('/student-groups?limit=1'),

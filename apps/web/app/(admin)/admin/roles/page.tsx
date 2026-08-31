@@ -125,7 +125,7 @@ export default function AdminRolesPage() {
       setLoading(true);
       setError(null);
       try {
-        const [rolesRes, permsRes] = await Promise.all([
+        const [rolesRes, permsRes] = await Promise.all<any>([
           apiClient.get<RoleItem[]>('/roles'),
           apiClient.get<PermissionItem[]>('/roles/permissions'),
         ]);

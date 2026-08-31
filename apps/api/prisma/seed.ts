@@ -277,11 +277,11 @@ async function main() {
   const lesson2 = await prisma.lesson.upsert({
     where: { slug: 'aws-high-availability-architecture' }, update: {},
     create: {
-      title: 'AWS Solutions Architect — Designing for High Availability',
+      title: 'AWS Solutions Architect — Designing for High Availability (PRO)',
       slug: 'aws-high-availability-architecture',
-      summary: 'Tìm hiểu cách thiết kế kiến trúc AWS có tính sẵn sàng cao sử dụng Multi-AZ deployments, ELB và Auto Scaling — các chủ đề cốt lõi trong kỳ thi AWS SAA.',
+      summary: 'Tìm hiểu cách thiết kế kiến trúc AWS có tính sẵn sàng cao sử dụng Multi-AZ deployments, ELB và Auto Scaling — dành riêng cho tài khoản PRO.',
       type: 'technical_reading', domainId: domains['CLOUD'].id, levelId: levels[1].id,
-      estimatedMinutes: 50, status: ContentStatus.published, publishedAt: new Date(), createdById: teacher1.id,
+      estimatedMinutes: 50, isProOnly: true, status: ContentStatus.published, publishedAt: new Date(), createdById: teacher1.id,
       certificates: { create: [{ certificateId: certs['AWS-SAA'].id }] },
       sections: {
         create: [
@@ -299,11 +299,11 @@ async function main() {
   const lesson3 = await prisma.lesson.upsert({
     where: { slug: 'kubernetes-pod-troubleshooting' }, update: {},
     create: {
-      title: 'Kubernetes Troubleshooting — Common Pod Issues',
+      title: 'Kubernetes Troubleshooting — Common Pod Issues (PRO)',
       slug: 'kubernetes-pod-troubleshooting',
-      summary: 'Hướng dẫn thực tế để chẩn đoán và giải quyết các vấn đề pod Kubernetes phổ biến: CrashLoopBackOff, OOMKilled, ImagePullBackOff và Pending.',
+      summary: 'Hướng dẫn thực tế để chẩn đoán và giải quyết các vấn đề pod Kubernetes phổ biến: CrashLoopBackOff, OOMKilled, ImagePullBackOff và Pending — dành riêng cho tài khoản PRO.',
       type: 'case_study', domainId: domains['DEVOPS'].id, levelId: levels[2].id,
-      estimatedMinutes: 40, status: ContentStatus.published, publishedAt: new Date(), createdById: teacher2.id,
+      estimatedMinutes: 40, isProOnly: true, status: ContentStatus.published, publishedAt: new Date(), createdById: teacher2.id,
       certificates: { create: [{ certificateId: certs['CKA'].id }] },
       sections: {
         create: [
@@ -320,11 +320,11 @@ async function main() {
   const lesson4 = await prisma.lesson.upsert({
     where: { slug: 'network-security-fundamentals' }, update: {},
     create: {
-      title: 'CompTIA Security+ — Network Security Fundamentals',
+      title: 'CompTIA Security+ — Network Security Fundamentals (PRO)',
       slug: 'network-security-fundamentals',
-      summary: 'Các khái niệm bảo mật mạng thiết yếu cho kỳ thi CompTIA Security+: firewall types, VPN protocols, IDS vs IPS và kiến trúc zero-trust.',
+      summary: 'Các khái niệm bảo mật mạng thiết yếu cho kỳ thi CompTIA Security+: firewall types, VPN protocols, IDS vs IPS và kiến trúc zero-trust — dành riêng cho tài khoản PRO.',
       type: 'technical_reading', domainId: domains['CYBERSEC'].id, levelId: levels[1].id,
-      estimatedMinutes: 45, status: ContentStatus.published, publishedAt: new Date(), createdById: teacher2.id,
+      estimatedMinutes: 45, isProOnly: true, status: ContentStatus.published, publishedAt: new Date(), createdById: teacher2.id,
       certificates: { create: [{ certificateId: certs['COMPTIA-SECURITY-PLUS'].id }] },
       sections: {
         create: [
@@ -356,6 +356,24 @@ async function main() {
   })
   console.log('   ✅ 5 lessons seeded')
 
+  // Link vocabularies to lessons
+  console.log('🔗 Link Vocabulary to Lessons...')
+  const allVocab = await prisma.vocabulary.findMany()
+  const seededLessons = await prisma.lesson.findMany()
+  for (const lesson of seededLessons) {
+    // Find vocabularies matching the lesson's domain or grab a sample
+    let matchingVocab = allVocab.filter(v => v.domainId === lesson.domainId)
+    if (matchingVocab.length === 0) matchingVocab = allVocab.slice(0, 6)
+    for (const v of matchingVocab) {
+      await prisma.lessonVocabulary.upsert({
+        where: { lessonId_vocabularyId: { lessonId: lesson.id, vocabularyId: v.id } },
+        update: {},
+        create: { lessonId: lesson.id, vocabularyId: v.id }
+      })
+    }
+  }
+  console.log('   ✅ Vocabulary linked to lessons')
+
   // ============================================================
   // 9. QUESTIONS (15)
   // ============================================================
@@ -374,111 +392,111 @@ async function main() {
   }
 
   // REST API (5 questions)
-  await makeQ('single_choice', 'Which HTTP status code should a REST API return when a resource is successfully created?', null, '201 Created is the correct status for resource creation. The response should include a Location header pointing to the new resource. 200 OK is for general success, 204 is for success with no content, and 200 is not specific enough for creation.', 'SOFTWARE_ENG', LevelCode.beginner, ['HTTP','REST','status codes'], 1.0, [], [
-    { key: 'A', text: '200 OK', correct: false, exp: '200 OK indicates general success but does not specifically communicate that a resource was created.' },
-    { key: 'B', text: '201 Created', correct: true, exp: '201 Created is the correct response for successful resource creation, typically with a Location header.' },
-    { key: 'C', text: '204 No Content', correct: false, exp: '204 No Content is used when success has no response body, common for DELETE operations.' },
-    { key: 'D', text: '301 Moved Permanently', correct: false, exp: '301 is a redirect status code, not used for resource creation.' },
+  await makeQ('single_choice', 'Which HTTP status code should a REST API return when a resource is successfully created?', null, 'Mã trạng thái 201 Created là phản hồi chuẩn khi tạo mới một tài nguyên thành công. Phản hồi thường bao gồm header Location trỏ tới URL của tài nguyên vừa tạo. 200 OK dành cho thành công chung, 204 dành cho thành công không có body.', 'SOFTWARE_ENG', LevelCode.beginner, ['HTTP','REST','status codes'], 1.0, [], [
+    { key: 'A', text: '200 OK', correct: false, exp: '200 OK cho biết yêu cầu thành công chung nhưng không biểu thị rõ việc tạo mới tài nguyên.' },
+    { key: 'B', text: '201 Created', correct: true, exp: '201 Created là phản hồi chuẩn xác cho việc tạo mới tài nguyên thành công.' },
+    { key: 'C', text: '204 No Content', correct: false, exp: '204 No Content dùng khi thành công nhưng không trả về nội dung body, thường dùng cho thao tác DELETE.' },
+    { key: 'D', text: '301 Moved Permanently', correct: false, exp: '301 là mã chuyển hướng trang, không dùng cho việc tạo tài nguyên.' },
   ])
 
-  await makeQ('single_choice', 'Which HTTP method is both safe AND idempotent?', null, 'GET is safe (does not modify state) and idempotent (calling it multiple times produces the same result). PUT is idempotent but not safe. POST and PATCH are neither safe nor idempotent.', 'SOFTWARE_ENG', LevelCode.intermediate, ['HTTP methods','idempotency','REST'], 1.0, [], [
-    { key: 'A', text: 'POST', correct: false, exp: 'POST is neither safe nor idempotent — it creates new resources each time.' },
-    { key: 'B', text: 'PUT', correct: false, exp: 'PUT is idempotent but NOT safe — it modifies the resource.' },
-    { key: 'C', text: 'GET', correct: true, exp: 'GET is both safe (read-only) and idempotent (same result regardless of how many times called).' },
-    { key: 'D', text: 'PATCH', correct: false, exp: 'PATCH is designed for partial updates and may not be idempotent depending on implementation.' },
+  await makeQ('single_choice', 'Which HTTP method is both safe AND idempotent?', null, 'Phương thức GET vừa safe (không thay đổi trạng thái hệ thống) vừa idempotent (gọi nhiều lần cho cùng một kết quả). PUT là idempotent nhưng không safe. POST và PATCH đều không safe và không idempotent.', 'SOFTWARE_ENG', LevelCode.intermediate, ['HTTP methods','idempotency','REST'], 1.0, [], [
+    { key: 'A', text: 'POST', correct: false, exp: 'POST không safe và không idempotent — mỗi lần gọi sẽ tạo mới một tài nguyên.' },
+    { key: 'B', text: 'PUT', correct: false, exp: 'PUT là idempotent nhưng không safe vì nó chỉnh sửa dữ liệu trên server.' },
+    { key: 'C', text: 'GET', correct: true, exp: 'GET vừa safe (chỉ đọc) vừa idempotent (kết quả không đổi dù gọi bao nhiêu lần).' },
+    { key: 'D', text: 'PATCH', correct: false, exp: 'PATCH được dùng cho cập nhật một phần và thường không đảm bảo tính idempotent.' },
   ])
 
-  await makeQ('single_choice', 'A client sends a JSON request body but forgets to include a required field. Which HTTP status code should the server return?', null, '400 Bad Request indicates the server cannot process the request due to client-side errors, such as missing required fields or invalid data format. 422 Unprocessable Entity is also acceptable but 400 is more common for missing fields.', 'SOFTWARE_ENG', LevelCode.beginner, ['HTTP','status codes','validation'], 1.0, [], [
-    { key: 'A', text: '401 Unauthorized', correct: false, exp: '401 is for authentication failure, not validation errors.' },
-    { key: 'B', text: '403 Forbidden', correct: false, exp: '403 means the request is understood but not allowed due to permissions.' },
-    { key: 'C', text: '400 Bad Request', correct: true, exp: '400 Bad Request is the correct response for invalid or malformed request data.' },
-    { key: 'D', text: '500 Internal Server Error', correct: false, exp: '500 is for unexpected server-side failures, not client validation errors.' },
+  await makeQ('single_choice', 'A client sends a JSON request body but forgets to include a required field. Which HTTP status code should the server return?', null, 'Mã 400 Bad Request cho biết server không thể xử lý request do lỗi từ phía client (như thiếu trường bắt buộc hoặc sai định dạng dữ liệu).', 'SOFTWARE_ENG', LevelCode.beginner, ['HTTP','status codes','validation'], 1.0, [], [
+    { key: 'A', text: '401 Unauthorized', correct: false, exp: '401 là lỗi thiếu hoặc sai thông tin xác thực (token/password).' },
+    { key: 'B', text: '403 Forbidden', correct: false, exp: '403 cho biết client đã đăng nhập nhưng không có quyền truy cập.' },
+    { key: 'C', text: '400 Bad Request', correct: true, exp: '400 Bad Request là câu trả lời chuẩn khi dữ liệu gửi lên bị thiếu hoặc không hợp lệ.' },
+    { key: 'D', text: '500 Internal Server Error', correct: false, exp: '500 là lỗi bất ngờ từ phía hệ thống máy chủ.' },
   ])
 
-  await makeQ('single_choice', 'A REST API returns HTTP 429. What is the most likely reason?', null, 'HTTP 429 Too Many Requests indicates the client has exceeded the rate limit configured on the API. This is a protective measure to prevent overload. The client should implement exponential backoff and retry after the period specified in the Retry-After header.', 'SOFTWARE_ENG', LevelCode.intermediate, ['rate limiting','HTTP','API design'], 1.0, [], [
-    { key: 'A', text: 'The server is experiencing an internal error', correct: false, exp: 'Internal server errors return 5xx codes, not 429.' },
-    { key: 'B', text: 'The client has exceeded the rate limit', correct: true, exp: '429 Too Many Requests means the client has sent too many requests in a given time window.' },
-    { key: 'C', text: 'The authentication token has expired', correct: false, exp: 'An expired token would return 401 Unauthorized.' },
-    { key: 'D', text: 'The request payload is too large', correct: false, exp: 'A payload too large would return 413 Payload Too Large.' },
+  await makeQ('single_choice', 'A REST API returns HTTP 429. What is the most likely reason?', null, 'HTTP 429 Too Many Requests thông báo client đã vượt quá giới hạn tần suất request (rate limit) được cấu hình trên API để bảo vệ hệ thống khỏi bị quá tải.', 'SOFTWARE_ENG', LevelCode.intermediate, ['rate limiting','HTTP','API design'], 1.0, [], [
+    { key: 'A', text: 'The server is experiencing an internal error', correct: false, exp: 'Lỗi nội bộ máy chủ trả về mã 5xx.' },
+    { key: 'B', text: 'The client has exceeded the rate limit', correct: true, exp: '429 Too Many Requests nghĩa là client đã gửi quá nhiều request trong một khoảng thời gian.' },
+    { key: 'C', text: 'The authentication token has expired', correct: false, exp: 'Token hết hạn sẽ trả về mã 401 Unauthorized.' },
+    { key: 'D', text: 'The request payload is too large', correct: false, exp: 'Payload quá lớn sẽ trả về 413 Payload Too Large.' },
   ])
 
-  await makeQ('single_choice', 'Which HTTP method should be used to update only specific fields of an existing resource?', null, 'PATCH is designed for partial updates — only the provided fields are modified. PUT replaces the entire resource. POST creates new resources. DELETE removes resources.', 'SOFTWARE_ENG', LevelCode.intermediate, ['HTTP methods','REST','PATCH'], 1.0, [], [
-    { key: 'A', text: 'PUT', correct: false, exp: 'PUT replaces the ENTIRE resource with the provided body — not suitable for partial updates.' },
-    { key: 'B', text: 'POST', correct: false, exp: 'POST is for creating new resources, not updating existing ones.' },
-    { key: 'C', text: 'DELETE', correct: false, exp: 'DELETE removes the resource.' },
-    { key: 'D', text: 'PATCH', correct: true, exp: 'PATCH applies a partial update to a resource — only fields provided in the request body are changed.' },
+  await makeQ('single_choice', 'Which HTTP method should be used to update only specific fields of an existing resource?', null, 'Phương thức PATCH được thiết kế cho việc cập nhật một phần (partial update) — chỉ thay đổi các trường được truyền trong body. PUT sẽ thay thế toàn bộ tài nguyên.', 'SOFTWARE_ENG', LevelCode.intermediate, ['HTTP methods','REST','PATCH'], 1.0, [], [
+    { key: 'A', text: 'PUT', correct: false, exp: 'PUT ghi đè toàn bộ tài nguyên bằng body mới — không tối ưu cho cập nhật một phần.' },
+    { key: 'B', text: 'POST', correct: false, exp: 'POST dùng để tạo mới tài nguyên.' },
+    { key: 'C', text: 'DELETE', correct: false, exp: 'DELETE dùng để xoá tài nguyên.' },
+    { key: 'D', text: 'PATCH', correct: true, exp: 'PATCH dùng để cập nhật một phần dữ liệu của tài nguyên hiện có.' },
   ])
 
   // AWS Architecture (5 questions)
-  await makeQ('scenario', 'A company runs a MySQL database on Amazon RDS. The database must automatically failover to a secondary instance in a different Availability Zone within 60-120 seconds if the primary fails. Which RDS feature should be enabled?', 'The company has an SLA requiring 99.95% uptime. Manual intervention for database failures is not acceptable.', 'RDS Multi-AZ creates a synchronous standby replica in a different AZ. If the primary fails, RDS automatically updates the DNS endpoint to point to the standby — no manual intervention needed. Read Replicas use asynchronous replication and require manual promotion to become primary.', 'CLOUD', LevelCode.intermediate, ['AWS','RDS','high availability','Multi-AZ'], 2.0, ['AWS-SAA'], [
-    { key: 'A', text: 'RDS Read Replica in the same region', correct: false, exp: 'Read Replicas use asynchronous replication and do not provide automatic failover.' },
-    { key: 'B', text: 'RDS Multi-AZ deployment', correct: true, exp: 'Multi-AZ provides synchronous replication and automatic failover to the standby in 60-120 seconds.' },
-    { key: 'C', text: 'Amazon Aurora Global Database', correct: false, exp: 'Aurora Global Database is for cross-region DR, not same-region AZ failover.' },
-    { key: 'D', text: 'Amazon DynamoDB', correct: false, exp: 'DynamoDB is a different database service entirely — not a feature of RDS.' },
+  await makeQ('scenario', 'A company runs a MySQL database on Amazon RDS. The database must automatically failover to a secondary instance in a different Availability Zone within 60-120 seconds if the primary fails. Which RDS feature should be enabled?', 'The company has an SLA requiring 99.95% uptime. Manual intervention for database failures is not acceptable.', 'RDS Multi-AZ tạo một bản sao standby đồng bộ ở Availability Zone khác. Khi máy chủ chính bị sự cố, RDS sẽ tự động chuyển hướng sang bản sao standby trong 60-120 giây mà không cần can thiệp thủ công.', 'CLOUD', LevelCode.intermediate, ['AWS','RDS','high availability','Multi-AZ'], 2.0, ['AWS-SAA'], [
+    { key: 'A', text: 'RDS Read Replica in the same region', correct: false, exp: 'Read Replica sử dụng nhân bản bất đồng bộ và không hỗ trợ tự động failover.' },
+    { key: 'B', text: 'RDS Multi-AZ deployment', correct: true, exp: 'Multi-AZ nhân bản đồng bộ và tự động chuyển vùng khi máy chủ chính gặp sự cố.' },
+    { key: 'C', text: 'Amazon Aurora Global Database', correct: false, exp: 'Aurora Global Database dùng cho khôi phục thảm hoạ đa vùng (cross-region).' },
+    { key: 'D', text: 'Amazon DynamoDB', correct: false, exp: 'DynamoDB là dịch vụ NoSQL hoàn toàn khác.' },
   ])
 
-  await makeQ('scenario', 'An application needs to store and retrieve user session data with consistent sub-millisecond latency. The sessions are small (under 2KB) but accessed thousands of times per second.', 'The application has 50,000 concurrent users. Session data must be available for 30 minutes after last activity, then automatically expire.', 'Amazon ElastiCache for Redis provides in-memory storage with sub-millisecond latency and native support for TTL-based key expiration — perfect for session management. DynamoDB DAX is also fast but Redis is the standard choice for session storage. RDS and S3 are too slow for sub-millisecond requirements.', 'CLOUD', LevelCode.intermediate, ['AWS','ElastiCache','Redis','session management','caching'], 2.0, ['AWS-SAA'], [
-    { key: 'A', text: 'Amazon S3 with Transfer Acceleration', correct: false, exp: 'S3 is object storage with latency measured in milliseconds, not sub-milliseconds.' },
-    { key: 'B', text: 'Amazon RDS PostgreSQL with connection pooling', correct: false, exp: 'RDS adds network round-trip and disk I/O latency — not suitable for sub-millisecond requirements.' },
-    { key: 'C', text: 'Amazon ElastiCache for Redis', correct: true, exp: 'ElastiCache Redis provides sub-millisecond in-memory access and supports TTL for automatic session expiration.' },
-    { key: 'D', text: 'Amazon DynamoDB with On-Demand capacity', correct: false, exp: 'DynamoDB has single-digit millisecond latency — close but ElastiCache Redis is faster for this use case.' },
+  await makeQ('scenario', 'An application needs to store and retrieve user session data with consistent sub-millisecond latency. The sessions are small (under 2KB) but accessed thousands of times per second.', 'The application has 50,000 concurrent users. Session data must be available for 30 minutes after last activity, then automatically expire.', 'Amazon ElastiCache for Redis cung cấp bộ nhớ in-memory với độ trễ dưới 1 mili-giây và hỗ trợ tự động hết hạn key (TTL) — hoàn hảo cho việc lưu trữ session người dùng.', 'CLOUD', LevelCode.intermediate, ['AWS','ElastiCache','Redis','session management','caching'], 2.0, ['AWS-SAA'], [
+    { key: 'A', text: 'Amazon S3 with Transfer Acceleration', correct: false, exp: 'S3 là bộ nhớ lưu trữ file/object, độ trễ tính bằng mili-giây chứ không phải sub-millisecond.' },
+    { key: 'B', text: 'Amazon RDS PostgreSQL with connection pooling', correct: false, exp: 'RDS đọc từ đĩa cứng nên quá chậm cho yêu cầu độ trễ dưới 1ms.' },
+    { key: 'C', text: 'Amazon ElastiCache for Redis', correct: true, exp: 'ElastiCache Redis cung cấp tốc độ truy xuất in-memory dưới 1ms và tự động xóa session bằng TTL.' },
+    { key: 'D', text: 'Amazon DynamoDB with On-Demand capacity', correct: false, exp: 'DynamoDB có độ trễ vài mili-giây, vẫn chậm hơn so với Redis in-memory.' },
   ])
 
-  await makeQ('single_choice', 'An S3 bucket contains sensitive company data. The bucket must block ALL public access but allow a specific IAM role (arn:aws:iam::123456789012:role/DataProcessorRole) to read objects. What is the correct approach?', null, 'An S3 Bucket Policy (resource-based policy) is the correct tool to grant cross-account or IAM-entity-specific access to S3 objects while maintaining the Block Public Access setting. ACLs are legacy and less flexible. CORS handles browser cross-origin requests. Transfer Acceleration is for upload performance.', 'CLOUD', LevelCode.intermediate, ['AWS','S3','IAM','security','bucket policy'], 1.0, ['AWS-SAA'], [
-    { key: 'A', text: 'Configure an S3 ACL to allow the IAM role', correct: false, exp: 'S3 ACLs are legacy and cannot grant access to specific IAM roles; use bucket policies instead.' },
-    { key: 'B', text: 'Attach a Bucket Policy allowing s3:GetObject for the IAM role', correct: true, exp: 'Bucket Policies (resource-based policies) precisely control who can access S3 objects, including specific IAM roles.' },
-    { key: 'C', text: 'Enable CORS on the bucket for the IAM role', correct: false, exp: 'CORS controls browser-based cross-origin requests, not IAM-based access control.' },
-    { key: 'D', text: 'Enable S3 Transfer Acceleration', correct: false, exp: 'Transfer Acceleration improves upload performance — it is not an access control mechanism.' },
+  await makeQ('single_choice', 'An S3 bucket contains sensitive company data. The bucket must block ALL public access but allow a specific IAM role (arn:aws:iam::123456789012:role/DataProcessorRole) to read objects. What is the correct approach?', null, 'S3 Bucket Policy (chính sách dựa trên tài nguyên) là công cụ chuẩn để cấp quyền truy cập cho một IAM role cụ thể trong khi vẫn duy trì chế độ Chặn truy cập công khai (Block Public Access).', 'CLOUD', LevelCode.intermediate, ['AWS','S3','IAM','security','bucket policy'], 1.0, ['AWS-SAA'], [
+    { key: 'A', text: 'Configure an S3 ACL to allow the IAM role', correct: false, exp: 'S3 ACLs là chuẩn cũ và không thể gán trực tiếp cho IAM role.' },
+    { key: 'B', text: 'Attach a Bucket Policy allowing s3:GetObject for the IAM role', correct: true, exp: 'Bucket Policy phân quyền chính xác cho IAM role mà vẫn chặn toàn bộ truy cập công khai.' },
+    { key: 'C', text: 'Enable CORS on the bucket for the IAM role', correct: false, exp: 'CORS cấu hình truy cập giữa các tên miền trên trình duyệt, không dùng cho phân quyền IAM.' },
+    { key: 'D', text: 'Enable S3 Transfer Acceleration', correct: false, exp: 'Transfer Acceleration tăng tốc độ upload dữ liệu, không phải cơ chế phân quyền.' },
   ])
 
-  await makeQ('scenario', 'A web application runs on EC2 instances in a VPC. The instances need to download software updates from the internet, but they must NOT be directly accessible from the internet (no public IP addresses assigned).', 'The EC2 instances are in private subnets. The company needs outbound internet access for package updates but zero inbound access from the internet.', 'A NAT Gateway in a public subnet allows EC2 instances in private subnets to initiate outbound connections to the internet, while blocking all inbound connections initiated from the internet. Internet Gateway alone allows bidirectional traffic. VPN and Direct Connect are for connecting on-premises networks, not for internet access.', 'CLOUD', LevelCode.intermediate, ['AWS','NAT Gateway','VPC','networking'], 2.0, ['AWS-SAA'], [
-    { key: 'A', text: 'Attach an Internet Gateway to the VPC and assign public IPs to the EC2 instances', correct: false, exp: 'Assigning public IPs makes the instances directly accessible from the internet — violates the requirement.' },
-    { key: 'B', text: 'Place EC2 instances in public subnets with security groups blocking inbound traffic', correct: false, exp: 'Instances in public subnets can still have public IPs; this approach does not fully satisfy the requirement.' },
-    { key: 'C', text: 'Deploy a NAT Gateway in a public subnet and route private subnet traffic through it', correct: true, exp: 'NAT Gateway enables outbound-only internet access for private subnet resources — perfect for this use case.' },
-    { key: 'D', text: 'Use AWS Direct Connect to route traffic through the corporate network', correct: false, exp: 'Direct Connect is for dedicated connectivity between on-premises and AWS, not for general internet access.' },
+  await makeQ('scenario', 'A web application runs on EC2 instances in a VPC. The instances need to download software updates from the internet, but they must NOT be directly accessible from the internet (no public IP addresses assigned).', 'The EC2 instances are in private subnets. The company needs outbound internet access for package updates but zero inbound access from the internet.', 'NAT Gateway nằm trong public subnet cho phép các EC2 instances trong private subnet khởi tạo kết nối ra internet, đồng thời chặn toàn bộ các kết nối đi vào từ internet.', 'CLOUD', LevelCode.intermediate, ['AWS','NAT Gateway','VPC','networking'], 2.0, ['AWS-SAA'], [
+    { key: 'A', text: 'Attach an Internet Gateway to the VPC and assign public IPs to the EC2 instances', correct: false, exp: 'Gán public IP khiến instance có thể bị truy cập trực tiếp từ internet — vi phạm yêu cầu đề bài.' },
+    { key: 'B', text: 'Place EC2 instances in public subnets with security groups blocking inbound traffic', correct: false, exp: 'Đặt tại public subnet vẫn có rủi ro bị tấn công trực tiếp.' },
+    { key: 'C', text: 'Deploy a NAT Gateway in a public subnet and route private subnet traffic through it', correct: true, exp: 'NAT Gateway cung cấp quyền truy cập ra internet 1 chiều cho private subnet — hoàn hảo cho yêu cầu này.' },
+    { key: 'D', text: 'Use AWS Direct Connect to route traffic through the corporate network', correct: false, exp: 'Direct Connect dùng để nối mạng nội bộ doanh nghiệp với AWS, không dùng cho tải phần mềm qua internet.' },
   ])
 
-  await makeQ('single_choice', 'A company wants to route HTTP requests to different backend services based on the URL path: /api/* to an API server fleet, and /static/* to a separate static content server. Which AWS load balancer supports this?', null, 'Application Load Balancer (ALB) operates at Layer 7 (HTTP/HTTPS) and natively supports path-based routing rules, host-based routing, and weighted routing. Network Load Balancer (NLB) works at Layer 4 (TCP/UDP) and does not understand HTTP paths.', 'CLOUD', LevelCode.intermediate, ['AWS','ELB','ALB','load balancing','routing'], 1.0, ['AWS-SAA'], [
-    { key: 'A', text: 'Network Load Balancer (NLB)', correct: false, exp: 'NLB operates at Layer 4 (TCP/UDP) and cannot inspect HTTP path headers.' },
-    { key: 'B', text: 'Classic Load Balancer (CLB)', correct: false, exp: 'CLB is legacy and does not support path-based routing.' },
-    { key: 'C', text: 'Application Load Balancer (ALB)', correct: true, exp: 'ALB operates at Layer 7 and supports path-based routing, making it ideal for this use case.' },
-    { key: 'D', text: 'Gateway Load Balancer (GWLB)', correct: false, exp: 'GWLB is used for inline security inspection via third-party virtual appliances, not for application routing.' },
+  await makeQ('single_choice', 'A company wants to route HTTP requests to different backend services based on the URL path: /api/* to an API server fleet, and /static/* to a separate static content server. Which AWS load balancer supports this?', null, 'Application Load Balancer (ALB) hoạt động ở Tầng 7 (HTTP/HTTPS) và hỗ trợ định tuyến dựa trên đường dẫn URL (path-based routing) như /api/* hay /static/*. NLB chỉ hoạt động ở Tầng 4 nên không đọc được HTTP path.', 'CLOUD', LevelCode.intermediate, ['AWS','ELB','ALB','load balancing','routing'], 1.0, ['AWS-SAA'], [
+    { key: 'A', text: 'Network Load Balancer (NLB)', correct: false, exp: 'NLB hoạt động ở Tầng 4 (TCP/UDP) nên không thể kiểm tra header đường dẫn HTTP.' },
+    { key: 'B', text: 'Classic Load Balancer (CLB)', correct: false, exp: 'CLB là dòng cũ và không hỗ trợ định tuyến dựa trên đường dẫn path.' },
+    { key: 'C', text: 'Application Load Balancer (ALB)', correct: true, exp: 'ALB hoạt động ở Tầng 7 và hỗ trợ phân luồng dựa trên URL path rất mạnh mẽ.' },
+    { key: 'D', text: 'Gateway Load Balancer (GWLB)', correct: false, exp: 'GWLB dùng để định tuyến qua các thiết bị bảo mật ảo, không dùng cho định tuyến ứng dụng.' },
   ])
 
   // Kubernetes / DevOps (5 questions)
-  await makeQ('scenario', 'A Kubernetes pod is in CrashLoopBackOff state. What is the FIRST command you should run to diagnose the issue?', 'The pod has been crashing repeatedly for 20 minutes. You need to quickly identify whether it is an application error, a missing environment variable, or a configuration issue.', 'kubectl describe pod provides a comprehensive view of the pod\'s current state, events, environment variables, mounted volumes, and — most importantly — the Last State section showing why the previous container terminated. The events section often shows the root cause immediately. kubectl logs shows application output but kubectl describe gives the broader context first.', 'DEVOPS', LevelCode.intermediate, ['Kubernetes','troubleshooting','CrashLoopBackOff','kubectl'], 2.0, ['CKA'], [
-    { key: 'A', text: 'kubectl get nodes', correct: false, exp: 'Node status is not relevant for a pod that is starting and crashing.' },
-    { key: 'B', text: 'kubectl describe pod <pod-name>', correct: true, exp: 'kubectl describe shows events, environment variables, volume mounts, and the reason for previous terminations — the most useful first step.' },
-    { key: 'C', text: 'kubectl get services', correct: false, exp: 'Service listings are irrelevant for diagnosing a crashing pod.' },
-    { key: 'D', text: 'kubectl apply -f pod.yaml', correct: false, exp: 'Re-applying the manifest without diagnosing first will not fix the underlying issue.' },
+  await makeQ('scenario', 'A Kubernetes pod is in CrashLoopBackOff state. What is the FIRST command you should run to diagnose the issue?', 'The pod has been crashing repeatedly for 20 minutes. You need to quickly identify whether it is an application error, a missing environment variable, or a configuration issue.', 'Lệnh kubectl describe pod hiển thị toàn bộ thông tin chi tiết về sự kiện, biến môi trường, các volume được mount và lý do container bị crash ở mục Last State. Đây là bước đầu tiên và hiệu quả nhất để chẩn đoán sự cố.', 'DEVOPS', LevelCode.intermediate, ['Kubernetes','troubleshooting','CrashLoopBackOff','kubectl'], 2.0, ['CKA'], [
+    { key: 'A', text: 'kubectl get nodes', correct: false, exp: 'Trạng thái node không giúp chẩn đoán lỗi ứng dụng trong pod.' },
+    { key: 'B', text: 'kubectl describe pod <pod-name>', correct: true, exp: 'kubectl describe hiển thị thông tin sự kiện, lý do crash trước đó và cấu hình pod — bước đầu tiên hữu ích nhất.' },
+    { key: 'C', text: 'kubectl get services', correct: false, exp: 'Service không liên quan tới việc container bị crash.' },
+    { key: 'D', text: 'kubectl apply -f pod.yaml', correct: false, exp: 'Chạy lại file YAML khi chưa biết lỗi sẽ không giải quyết được vấn đề.' },
   ])
 
-  await makeQ('single_choice', 'A Kubernetes pod shows status OOMKilled with exit code 137. What happened?', null, 'OOMKilled (Out of Memory Killed) with exit code 137 means the Linux kernel OOM killer terminated the container because it exceeded its configured memory limit. Exit code 137 = SIGKILL (128 + 9). The solution involves either increasing the memory limit or optimizing the application\'s memory usage.', 'DEVOPS', LevelCode.intermediate, ['Kubernetes','OOMKilled','memory','troubleshooting'], 1.0, ['CKA'], [
-    { key: 'A', text: 'The container was throttled due to insufficient CPU', correct: false, exp: 'CPU throttling does not kill containers; they run slower instead. OOMKilled is specifically a memory issue.' },
-    { key: 'B', text: 'The container exceeded its configured memory limit and was killed', correct: true, exp: 'OOMKilled means the container used more memory than its limit, and the kernel\'s OOM killer terminated it.' },
-    { key: 'C', text: 'The container image could not be pulled from the registry', correct: false, exp: 'Image pull failures show as ImagePullBackOff or ErrImagePull, not OOMKilled.' },
-    { key: 'D', text: 'The pod failed its liveness probe 3 consecutive times', correct: false, exp: 'Liveness probe failures restart the container but show as "Unhealthy" in events, not OOMKilled.' },
+  await makeQ('single_choice', 'A Kubernetes pod shows status OOMKilled with exit code 137. What happened?', null, 'Lỗi OOMKilled (mã thoát 137) xảy ra khi container tiêu tốn vượt quá dung lượng RAM (Memory Limit) được cấp phép, dẫn đến việc tiến trình bị Linux kernel dừng đột ngột.', 'DEVOPS', LevelCode.intermediate, ['Kubernetes','OOMKilled','memory','troubleshooting'], 1.0, ['CKA'], [
+    { key: 'A', text: 'The container was throttled due to insufficient CPU', correct: false, exp: 'Thiếu CPU chỉ khiến container chạy chậm chứ không bị dừng ngắt đột ngột như OOMKilled.' },
+    { key: 'B', text: 'The container exceeded its configured memory limit and was killed', correct: true, exp: 'OOMKilled có nghĩa là container dùng quá giới hạn RAM và bị Linux Kernel kill.' },
+    { key: 'C', text: 'The container image could not be pulled from the registry', correct: false, exp: 'Lỗi tải image sẽ có trạng thái ImagePullBackOff.' },
+    { key: 'D', text: 'The pod failed its liveness probe 3 consecutive times', correct: false, exp: 'Lỗi liveness probe sẽ hiển thị Unhealthy trong sự kiện chứ không báo OOMKilled.' },
   ])
 
-  await makeQ('single_choice', 'Which Kubernetes workload object automatically ensures that exactly N replicas of a pod are always running, and replaces failed pods?', null, 'A Deployment manages ReplicaSets, which in turn ensure the specified number of pod replicas are always running. If a pod fails or is deleted, the ReplicaSet controller immediately creates a replacement. Deployments also support rolling updates and rollbacks.', 'DEVOPS', LevelCode.beginner, ['Kubernetes','Deployment','ReplicaSet','workloads'], 1.0, ['CKA'], [
-    { key: 'A', text: 'Job', correct: false, exp: 'Jobs run a task to completion — they do not maintain continuously running replicas.' },
-    { key: 'B', text: 'DaemonSet', correct: false, exp: 'DaemonSet ensures one pod runs on each node, not a specific number of replicas.' },
-    { key: 'C', text: 'StatefulSet', correct: false, exp: 'StatefulSet manages stateful applications with stable identities but is not the general-purpose replica manager.' },
-    { key: 'D', text: 'Deployment', correct: true, exp: 'Deployment + ReplicaSet ensures exactly N replicas run at all times, replacing failed pods automatically.' },
+  await makeQ('single_choice', 'Which Kubernetes workload object automatically ensures that exactly N replicas of a pod are always running, and replaces failed pods?', null, 'Deployment quản lý ReplicaSets, đảm bảo duy trì chính xác số lượng bản sao pod đang chạy. Nếu 1 pod bị lỗi, ReplicaSet sẽ tự động tạo mới pod thay thế.', 'DEVOPS', LevelCode.beginner, ['Kubernetes','Deployment','ReplicaSet','workloads'], 1.0, ['CKA'], [
+    { key: 'A', text: 'Job', correct: false, exp: 'Job dùng để chạy công việc 1 lần rồi kết thúc.' },
+    { key: 'B', text: 'DaemonSet', correct: false, exp: 'DaemonSet đảm bảo chạy 1 pod trên từng Node trong cluster.' },
+    { key: 'C', text: 'StatefulSet', correct: false, exp: 'StatefulSet quản lý ứng dụng có định danh trạng thái riêng.' },
+    { key: 'D', text: 'Deployment', correct: true, exp: 'Deployment + ReplicaSet giúp duy trì số lượng N pod luôn hoạt động liên tục.' },
   ])
 
-  await makeQ('single_choice', 'What is the PRIMARY advantage of a blue-green deployment strategy?', null, 'Blue-green deployment\'s primary advantage is zero-downtime deployment with instant rollback capability. By maintaining two identical environments, you can switch traffic between them instantly. If the new (green) version has issues, you simply switch back to the old (blue) version without any deployment time.', 'DEVOPS', LevelCode.intermediate, ['blue-green deployment','deployment strategy','zero downtime','rollback'], 1.0, [], [
-    { key: 'A', text: 'Significantly reduces infrastructure costs', correct: false, exp: 'Blue-green actually doubles infrastructure costs temporarily since two environments must run simultaneously.' },
-    { key: 'B', text: 'Increases CPU utilization efficiency', correct: false, exp: 'Blue-green does not specifically improve CPU efficiency.' },
-    { key: 'C', text: 'Enables zero-downtime deployment with instant rollback capability', correct: true, exp: 'The main benefit is zero-downtime releases and the ability to instantly revert by switching traffic back to the previous environment.' },
-    { key: 'D', text: 'Eliminates the need for testing before deployment', correct: false, exp: 'Testing is still essential — blue-green does not replace pre-deployment testing.' },
+  await makeQ('single_choice', 'What is the PRIMARY advantage of a blue-green deployment strategy?', null, 'Ưu điểm lớn nhất của Blue-Green Deployment là phát hành không gián đoạn (zero-downtime) và khả năng rollback (khôi phục) phiên bản cũ ngay lập tức nếu phiên bản mới bị lỗi.', 'DEVOPS', LevelCode.intermediate, ['blue-green deployment','deployment strategy','zero downtime','rollback'], 1.0, [], [
+    { key: 'A', text: 'Significantly reduces infrastructure costs', correct: false, exp: 'Blue-green tạm thời tốn gấp đôi chi phí hạ tầng vì cần duy trì 2 môi trường song song.' },
+    { key: 'B', text: 'Increases CPU utilization efficiency', correct: false, exp: 'Blue-green không giúp tăng hiệu suất CPU.' },
+    { key: 'C', text: 'Enables zero-downtime deployment with instant rollback capability', correct: true, exp: 'Lợi ích chính là zero-downtime và khả năng chuyển hướng traffic về phiên bản cũ ngay lập tức.' },
+    { key: 'D', text: 'Eliminates the need for testing before deployment', correct: false, exp: 'Vẫn phải test kỹ trước khi chuyển giao traffic.' },
   ])
 
-  await makeQ('scenario', 'A developer pushes code and the CI/CD pipeline fails at the "test" stage. The error message says "3 unit tests failed". What should the developer check FIRST?', 'The pipeline has 5 stages: build → lint → test → docker-build → deploy. The failure is at stage 3 (test). The build and lint stages passed successfully.', 'Since the build and lint stages passed, the code syntax is correct. The "3 unit tests failed" message directly points to unit test output as the first thing to investigate. The developer should read the test output to understand which tests failed and why before looking at anything else.', 'DEVOPS', LevelCode.beginner, ['CI/CD','testing','troubleshooting','pipeline'], 1.0, [], [
-    { key: 'A', text: 'Check production server logs for related errors', correct: false, exp: 'The failure is at the test stage, before any deployment occurs. Production logs are irrelevant.' },
-    { key: 'B', text: 'Review the deployment configuration files', correct: false, exp: 'Deployment config is for later stages. The failure is at testing.' },
-    { key: 'C', text: 'Read the unit test output to identify which tests failed and why', correct: true, exp: 'The failure is explicitly in unit tests — reading the test output is the direct path to understanding the root cause.' },
-    { key: 'D', text: 'Check the firewall rules on the CI server', correct: false, exp: 'Firewall rules would not cause unit test failures.' },
+  await makeQ('scenario', 'A developer pushes code and the CI/CD pipeline fails at the "test" stage. The error message says "3 unit tests failed". What should the developer check FIRST?', 'The pipeline has 5 stages: build → lint → test → docker-build → deploy. The failure is at stage 3 (test). The build and lint stages passed successfully.', 'Vì bước Build và Lint đã thành công nên cú pháp code đã đúng. Thông báo "3 unit tests failed" chỉ ra ngay rằng lập trình viên cần xem log kết quả kiểm thử (unit test output) để biết chính xác test case nào bị trượt và vì sao.', 'DEVOPS', LevelCode.beginner, ['CI/CD','testing','troubleshooting','pipeline'], 1.0, [], [
+    { key: 'A', text: 'Check production server logs for related errors', correct: false, exp: 'Lỗi xảy ra ở bước test trên CI, chưa hề được deploy lên production.' },
+    { key: 'B', text: 'Review the deployment configuration files', correct: false, exp: 'File cấu hình deploy là ở các bước sau.' },
+    { key: 'C', text: 'Read the unit test output to identify which tests failed and why', correct: true, exp: 'Đọc chi tiết kết quả unit test là cách nhanh nhất để tìm nguyên nhân gốc rễ.' },
+    { key: 'D', text: 'Check the firewall rules on the CI server', correct: false, exp: 'Tường lửa không làm cho unit test bị fail.' },
   ])
   console.log('   ✅ 15 questions seeded')
 
@@ -495,11 +513,11 @@ async function main() {
   if (!await prisma.exam.findFirst({ where: { title: 'AWS SAA Mock Exam — High Availability & Networking' } })) {
     await prisma.exam.create({
       data: {
-        title: 'AWS SAA Mock Exam — High Availability & Networking',
-        description: 'Bài kiểm tra thực hành phong cách AWS SAA-C03, tập trung vào high availability, networking và database design. Bao gồm scenario-based questions với context thực tế.',
+        title: 'AWS SAA Mock Exam — High Availability & Networking (PRO)',
+        description: 'Bài kiểm tra thực hành phong cách AWS SAA-C03, tập trung vào high availability, networking và database design. Dành riêng cho tài khoản PRO.',
         domainId: domains['CLOUD'].id, levelId: levels[1].id, certificateId: certs['AWS-SAA'].id,
         topics: ['Multi-AZ','Load Balancing','NAT Gateway','ElastiCache','RDS'], durationMinutes: 20,
-        passingScorePercent: 70.0, maxAttempts: 3, shuffleQuestions: true,
+        passingScorePercent: 70.0, maxAttempts: 3, shuffleQuestions: true, isProOnly: true,
         status: ContentStatus.published, publishedAt: new Date(), createdById: teacher1.id,
         questions: { create: awsQuestions.slice(0, 5).map((q, i) => ({ questionId: q.id, order: i + 1, weight: 1.0 })) },
       },
@@ -549,7 +567,38 @@ async function main() {
       },
     })
   }
-  console.log('   ✅ 2 learner groups seeded')
+  // Seed PRO Subscription for learner1@techenglish.pro
+  const user1 = await prisma.user.findUnique({ where: { email: 'learner1@techenglish.pro' } });
+  if (user1) {
+    const order1 = await prisma.paymentOrder.upsert({
+      where: { idempotencyKey: 'seed-idem-learner1' },
+      update: { status: 'paid', paidAt: new Date() },
+      create: {
+        userId: user1.id,
+        planId: 'pro_yearly',
+        amount: 799000,
+        idempotencyKey: 'seed-idem-learner1',
+        status: 'paid',
+        paidAt: new Date(),
+        expiresAt: new Date(Date.now() + 365 * 86400000),
+      }
+    });
+
+    await prisma.userSubscription.upsert({
+      where: { userId: user1.id },
+      update: { status: 'active', expiresAt: new Date(Date.now() + 365 * 86400000) },
+      create: {
+        userId: user1.id,
+        planId: 'pro_yearly',
+        orderId: order1.id,
+        status: 'active',
+        startedAt: new Date(),
+        expiresAt: new Date(Date.now() + 365 * 86400000),
+      }
+    });
+  }
+
+  console.log('   ✅ PRO Subscription seeded for learner1@techenglish.pro');
 
   // ============================================================
   // 12. PHASE 3: SEED EXAM ATTEMPTS, PROGRESS, CACHE, RECOMMENDATIONS
@@ -736,12 +785,67 @@ async function main() {
     }
   }
 
+  // ============================================================
+  // 11. PAYMENT & PRO SUBSCRIPTIONS SEED
+  // ============================================================
+  console.log('💳 Seed Pro Plans & Subscriptions...')
+  
+  // Plan quotas
+  const planQuotas = [
+    { planId: 'pro_monthly', maxSlots: 500, soldSlots: 45 },
+    { planId: 'pro_yearly', maxSlots: 200, soldSlots: 88 },
+    { planId: 'pro_lifetime', maxSlots: 50, soldSlots: 12 },
+  ]
+  for (const pq of planQuotas) {
+    await prisma.planQuota.upsert({
+      where: { planId: pq.planId },
+      update: {},
+      create: pq,
+    })
+  }
+
+  // Active Pro Subscription for learner1 & adminUser
+  const proUsers = [
+    { user: learner1, planId: 'pro_yearly', amount: 1290000, days: 365 },
+    { user: adminUser, planId: 'pro_lifetime', amount: 2990000, days: 3650 },
+  ]
+
+  for (const pu of proUsers) {
+    const existingSub = await prisma.userSubscription.findUnique({ where: { userId: pu.user.id } })
+    if (!existingSub) {
+      const order = await prisma.paymentOrder.create({
+        data: {
+          userId: pu.user.id,
+          planId: pu.planId,
+          amount: pu.amount,
+          idempotencyKey: `seed-order-${pu.user.id}`,
+          status: 'paid',
+          sepayTransactionId: `SEPAY_${pu.user.id.slice(0, 8).toUpperCase()}`,
+          paidAt: new Date(),
+          expiresAt: new Date(Date.now() + 15 * 60 * 1000),
+        }
+      })
+
+      await prisma.userSubscription.create({
+        data: {
+          userId: pu.user.id,
+          planId: pu.planId,
+          orderId: order.id,
+          status: 'active',
+          startedAt: new Date(),
+          expiresAt: new Date(Date.now() + pu.days * 24 * 60 * 60 * 1000),
+        }
+      })
+    }
+  }
+  console.log('   ✅ 3 Plan Quotas & 2 Active Pro Subscriptions (Learner1 & Admin)')
+
   console.log('\n✨ Seed hoàn tất!')
   console.log('\n📌 Tài khoản demo:')
-  console.log('   Admin:    admin@techenglish.pro         / Demo@123456')
+  console.log('   Admin:    admin@techenglish.pro         / Demo@123456  [PRO Lifetime]')
   console.log('   Teacher1: nguyen.thanh@techenglish.pro  / Demo@123456  (Cloud & DevOps)')
   console.log('   Teacher2: tran.minh@techenglish.pro     / Demo@123456  (Security & Networking)')
-  console.log('   Learner1: learner1@techenglish.pro      / Demo@123456  (Backend dev, AWS-SAA)')
+  console.log('   Learner1: learner1@techenglish.pro      / Demo@123456  [PRO Yearly] (Backend dev, AWS-SAA)')
   console.log('   Learner2: learner2@techenglish.pro      / Demo@123456  (DevOps intern, CKA)')
   console.log('   Learner3: learner3@techenglish.pro      / Demo@123456  (Security analyst, Security+)')
   console.log('   Learner4: learner4@techenglish.pro      / Demo@123456  (Data engineer, GCP-ACE)')

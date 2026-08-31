@@ -1,8 +1,9 @@
-import { Injectable, UnauthorizedException, ConflictException } from '@nestjs/common'
+import { Injectable, UnauthorizedException, ConflictException, BadRequestException, NotFoundException } from '@nestjs/common'
 import { JwtService } from '@nestjs/jwt'
 import { ConfigService } from '@nestjs/config'
 import { PrismaService } from '../../infrastructure/database/prisma.service'
-import { LoginDto, ChangePasswordDto } from '../../presentation/http-dto/auth.dto'
+import { EmailService } from '../../infrastructure/email/email.service'
+import { LoginDto, RegisterDto, AuthChangePasswordDto, ForgotPasswordDto, ResetPasswordDto } from '../../presentation/http-dto/auth.dto'
 import * as bcrypt from 'bcrypt'
 import * as crypto from 'crypto'
 
@@ -12,6 +13,7 @@ export class AuthService {
     private prisma: PrismaService,
     private jwt: JwtService,
     private config: ConfigService,
+    private emailService: EmailService,
   ) {}
 
   private async getUserWithPermissions(userId: string) {
@@ -48,6 +50,44 @@ export class AuthService {
     const full = await this.getUserWithPermissions(user.id)
     return this.generateTokensForUser(full)
   }
+
+  async register(dto: RegisterDto) {
+    // Kiểm tra email đã tồn tại chưa
+    const existing = await this.prisma.user.findUnique({ where: { email: dto.email } })
+    if (existing) throw new ConflictException('Email đã được sử dụng')
+
+    const passwordHash = await bcrypt.hash(dto.password, 12)
+    const learnerRole = await this.prisma.role.findUnique({ where: { code: 'learner' } })
+
+    const user = await this.prisma.user.create({
+      data: {
+        email: dto.email,
+        passwordHash,
+        status: 'active',
+        userDetail: {
+          create: { displayName: dto.displayName },
+        },
+        userRoles: learnerRole ? { create: { roleId: learnerRole.id } } : undefined,
+      },
+    })
+
+    // Tạo learner profile trống, chờ onboarding hoàn tất
+    const defaultLevel = await this.prisma.level.findFirst({ where: { code: 'beginner' } })
+    if (defaultLevel) {
+      await this.prisma.learnerProfile.create({
+        data: {
+          userId: user.id,
+          levelId: defaultLevel.id,
+          onboardingCompleted: false,
+        },
+      })
+    }
+
+    const full = await this.getUserWithPermissions(user.id)
+    return this.generateTokensForUser(full)
+  }
+
+
 
   private async generateTokensForUser(full: any) {
     const payload = this.buildPayload(full)
@@ -178,7 +218,7 @@ export class AuthService {
     }
   }
 
-  async changePassword(userId: string, dto: ChangePasswordDto) {
+  async changePassword(userId: string, dto: AuthChangePasswordDto) {
     const user = await this.prisma.user.findUnique({ where: { id: userId } })
     if (!user) throw new UnauthorizedException()
 
@@ -193,5 +233,60 @@ export class AuthService {
       where: { userId, revokedAt: null },
       data: { revokedAt: new Date() }
     })
+  }
+
+  async forgotPassword(dto: ForgotPasswordDto) {
+    const user = await this.prisma.user.findUnique({ where: { email: dto.email } })
+    if (!user || user.status !== 'active') {
+      return { message: 'Nếu email tồn tại trên hệ thống, bạn sẽ nhận được mã OTP khôi phục mật khẩu.' }
+    }
+
+    // Generate 6-digit OTP
+    const otp = Math.floor(100000 + Math.random() * 900000).toString()
+    const otpHash = crypto.createHash('sha256').update(otp).digest('hex')
+    const expiresAt = new Date(Date.now() + 15 * 60 * 1000) // 15 mins
+
+    await this.prisma.passwordResetToken.create({
+      data: {
+        email: dto.email,
+        otpHash,
+        expiresAt,
+      }
+    })
+
+    await this.emailService.sendPasswordResetOtp(dto.email, otp)
+
+    return { message: 'Nếu email tồn tại trên hệ thống, bạn sẽ nhận được mã OTP khôi phục mật khẩu.' }
+  }
+
+  async resetPassword(dto: ResetPasswordDto) {
+    const otpHash = crypto.createHash('sha256').update(dto.otp).digest('hex')
+
+    const token = await this.prisma.passwordResetToken.findFirst({
+      where: {
+        email: dto.email,
+        otpHash,
+        usedAt: null,
+        expiresAt: { gt: new Date() }
+      },
+      orderBy: { createdAt: 'desc' }
+    })
+
+    if (!token) {
+      throw new BadRequestException('Mã OTP không hợp lệ hoặc đã hết hạn')
+    }
+
+    const user = await this.prisma.user.findUnique({ where: { email: dto.email } })
+    if (!user) throw new NotFoundException('Không tìm thấy tài khoản')
+
+    const passwordHash = await bcrypt.hash(dto.newPassword, 12)
+    
+    await this.prisma.$transaction([
+      this.prisma.user.update({ where: { id: user.id }, data: { passwordHash } }),
+      this.prisma.passwordResetToken.update({ where: { id: token.id }, data: { usedAt: new Date() } }),
+      this.prisma.refreshToken.updateMany({ where: { userId: user.id, revokedAt: null }, data: { revokedAt: new Date() } })
+    ])
+
+    return { message: 'Đặt lại mật khẩu thành công. Vui lòng đăng nhập bằng mật khẩu mới.' }
   }
 }

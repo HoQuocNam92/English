@@ -80,7 +80,7 @@ export default function AdminDashboardPage() {
   React.useEffect(() => {
     async function load() {
       try {
-        const [allUsers, allLessons, allExams, allVocab, allGroups, analyticsRes] = await Promise.all([
+        const [allUsers, allLessons, allExams, allVocab, allGroups, analyticsRes] = await Promise.all<any>([
           apiClient.get<PaginatedResponse<UserItem>>('/users?limit=5'),
           apiClient.get<PaginatedResponse<LessonItem>>('/lessons?limit=4'),
           apiClient.get<PaginatedResponse<ExamItem>>('/exams?limit=1'),
@@ -89,7 +89,7 @@ export default function AdminDashboardPage() {
           apiClient.get<AnalyticsData>('/analytics/dashboard').catch(() => null),
         ]);
 
-        const activeCount = allUsers.data.filter((u) => u.status === 'active').length;
+        const activeCount = allUsers.data.filter((u: any) => u.status === 'active').length;
 
         setStats({
           totalUsers: allUsers.meta.total,

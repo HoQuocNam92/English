@@ -1,32 +1,97 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
-import { StyleSheet, Text, View, TextInput, TouchableOpacity, ScrollView, Alert, ActivityIndicator } from 'react-native';
+import { StyleSheet, Text, View, TextInput, TouchableOpacity, ScrollView, Alert, ActivityIndicator, Image } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
+import * as ImagePicker from 'expo-image-picker';
 import { colors, spacing } from '@techenglish/design-tokens';
-import { api } from '../../src/shared/api/api-client';
+import { api, getTokens, API_BASE } from '../../src/shared/api/api-client';
 import { validateDisplayName, validatePhone } from '../../src/shared/utils/validators';
+import { useAuth } from '../../src/shared/store/auth-context';
 
 export default function MobileEditProfileScreen() {
   const router = useRouter();
+  const { fetchUser } = useAuth();
   const [displayName, setDisplayName] = useState('');
   const [email, setEmail] = useState('');
   const [phone, setPhone] = useState('');
   const [bio, setBio] = useState('');
+  const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [uploading, setUploading] = useState(false);
 
   useEffect(() => {
-    api.get('/me')
+    api.get('/auth/me')
       .then((data: any) => {
         setDisplayName(data.displayName || '');
         setEmail(data.email || '');
         setPhone(data.phone || '');
         setBio(data.bio || '');
+        setAvatarUrl(data.avatarUrl || data.userDetail?.avatarUrl || null);
       })
       .catch(err => Alert.alert('Lỗi', 'Không thể tải thông tin'))
       .finally(() => setLoading(false));
   }, []);
+
+  const handlePickImage = async () => {
+    try {
+      const result = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ImagePicker.MediaTypeOptions.Images,
+        allowsEditing: true,
+        aspect: [1, 1],
+        quality: 0.8,
+      });
+
+      if (!result.canceled && result.assets && result.assets[0]) {
+        uploadAvatar(result.assets[0]);
+      }
+    } catch (error) {
+      Alert.alert('Lỗi', 'Không thể chọn ảnh');
+    }
+  };
+
+  const uploadAvatar = async (asset: ImagePicker.ImagePickerAsset) => {
+    try {
+      setUploading(true);
+      const tokens = await getTokens();
+      
+      const formData = new FormData();
+      // @ts-ignore - React Native FormData expects this shape
+      formData.append('file', {
+        uri: asset.uri,
+        name: asset.fileName || 'avatar.jpg',
+        type: asset.mimeType || 'image/jpeg',
+      });
+
+      const response = await fetch(`${API_BASE}/upload/avatar`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${tokens?.accessToken}`,
+          'Accept': 'application/json',
+          // Note: Do not set Content-Type for FormData in fetch, browser/RN will set it with boundary
+        },
+        body: formData,
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.message || 'Upload failed');
+      }
+
+      const data = await response.json();
+      setAvatarUrl(data.url);
+      
+      // Update profile with new avatar URL
+      await api.patch('/auth/me', { avatarUrl: data.url });
+      await fetchUser(); // Update global auth context
+      Alert.alert('Thành công', 'Đã cập nhật ảnh đại diện');
+    } catch (error: any) {
+      Alert.alert('Lỗi', error.message || 'Không thể tải ảnh lên');
+    } finally {
+      setUploading(false);
+    }
+  };
 
   const handleSave = async () => {
     const nameErr = validateDisplayName(displayName);
@@ -36,7 +101,8 @@ export default function MobileEditProfileScreen() {
 
     setSaving(true);
     try {
-      await api.patch('/me', { displayName, phone, bio });
+      await api.patch('/auth/me', { displayName, phone, bio });
+      await fetchUser();
       Alert.alert('Thành công', 'Đã cập nhật thông tin cá nhân thành công!', [
         { text: 'OK', onPress: () => router.back() }
       ]);
@@ -72,11 +138,19 @@ export default function MobileEditProfileScreen() {
       <ScrollView contentContainerStyle={styles.scrollContent} keyboardShouldPersistTaps="handled">
         {/* Avatar Section */}
         <View style={styles.avatarSection}>
-          <View style={styles.avatarBox}>
-            <Text style={styles.avatarText}>{avatarLetter}</Text>
-          </View>
-          <TouchableOpacity style={styles.changeAvatarBtn}>
-            <Text style={styles.changeAvatarText}>Đổi ảnh đại diện</Text>
+          <TouchableOpacity onPress={handlePickImage} disabled={uploading}>
+            <View style={styles.avatarBox}>
+              {uploading ? (
+                <ActivityIndicator color="#ffffff" />
+              ) : avatarUrl ? (
+                <Image source={{ uri: avatarUrl }} style={{ width: 72, height: 72, borderRadius: 36 }} />
+              ) : (
+                <Text style={styles.avatarText}>{avatarLetter}</Text>
+              )}
+            </View>
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.changeAvatarBtn} onPress={handlePickImage} disabled={uploading}>
+            <Text style={styles.changeAvatarText}>{uploading ? 'Đang tải lên...' : 'Đổi ảnh đại diện'}</Text>
           </TouchableOpacity>
         </View>
 

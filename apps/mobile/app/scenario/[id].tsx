@@ -1,31 +1,56 @@
-import { useState } from 'react';
-import { useRouter } from 'expo-router';
+import { useState, useEffect } from 'react';
+import { useRouter, useLocalSearchParams } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
-import { StyleSheet, Text, View, TouchableOpacity, ScrollView } from 'react-native';
+import { StyleSheet, Text, View, TouchableOpacity, ScrollView, ActivityIndicator } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
 import { colors, spacing } from '@techenglish/design-tokens';
+import { api } from '../../src/shared/api/api-client';
+import { safeText } from '../../src/shared/utils/safeText';
 
 export default function MobileScenarioScreen() {
   const router = useRouter();
+  const { id } = useLocalSearchParams();
   const [selectedOption, setSelectedOption] = useState<string | null>(null);
   const [showExplanation, setShowExplanation] = useState(false);
+  
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
+  const [scenario, setScenario] = useState<any>(null);
 
-  const scenario = {
-    title: 'Multi-Region High Availability Migration',
-    domain: 'Cloud Architecture & Resilience',
-    description:
-      'A fintech application requires a globally distributed database that supports multi-region active-active writes and single-digit millisecond latency for reads. The engineering team wants a fully managed solution with zero operational maintenance of hardware or scaling clusters.',
-    question: 'Which AWS database service best meets these architectural and operational requirements?',
-    options: [
-      { id: 'A', text: 'Amazon RDS for PostgreSQL with Read Replicas' },
-      { id: 'B', text: 'Amazon DynamoDB with Global Tables enabled' },
-      { id: 'C', text: 'Amazon Aurora Serverless v1' },
-      { id: 'D', text: 'Self-hosted MongoDB on EC2 instances' }
-    ],
-    correctOption: 'B',
-    explanation:
-      'Amazon DynamoDB Global Tables provides a fully managed, multi-region, multi-active database that automatically replicates data across your choice of AWS regions. It delivers single-digit millisecond read/write performance at any scale without managing infrastructure.'
-  };
+  useEffect(() => {
+    if (!id) return;
+    setLoading(true);
+    api.get(`/questions/${id}`)
+      .then((data: any) => {
+        setScenario({
+          title: data.domain?.name ?? 'Tình huống',
+          domain: data.domain?.name ?? '',
+          description: data.context ?? '',
+          question: data.prompt,
+          options: data.options?.map((opt: any) => ({ id: opt.key, text: opt.text })) || [],
+          correctOption: data.options?.find((o: any) => o.isCorrect)?.key ?? 'A',
+          explanation: data.explanation ?? ''
+        });
+      })
+      .catch((err) => setError(err.message || 'Lỗi tải dữ liệu'))
+      .finally(() => setLoading(false));
+  }, [id]);
+
+  if (loading) {
+    return (
+      <View style={[styles.container, { justifyContent: 'center', alignItems: 'center' }]}>
+        <ActivityIndicator size="large" color={colors.primary} />
+      </View>
+    );
+  }
+
+  if (error || !scenario) {
+    return (
+      <View style={[styles.container, { justifyContent: 'center', alignItems: 'center' }]}>
+        <Text style={{ color: '#ef4444' }}>{error || 'Không tìm thấy dữ liệu'}</Text>
+      </View>
+    );
+  }
 
   const handleCheck = () => {
     if (!selectedOption) return;
@@ -48,19 +73,21 @@ export default function MobileScenarioScreen() {
         {/* Scenario Card */}
         <View style={styles.scenarioCard}>
           <View style={styles.tag}>
-            <Text style={styles.tagText}>{scenario.domain}</Text>
+            <Text style={styles.tagText}>{safeText(scenario.domain)}</Text>
           </View>
-          <Text style={styles.scenarioTitle}>{scenario.title}</Text>
-          <View style={styles.contextBox}>
-            <Text style={styles.contextLabel}>Bối cảnh kỹ thuật:</Text>
-            <Text style={styles.contextText}>{scenario.description}</Text>
-          </View>
-          <Text style={styles.questionText}>{scenario.question}</Text>
+          <Text style={styles.scenarioTitle}>{safeText(scenario.title)}</Text>
+          {scenario.description ? (
+            <View style={styles.contextBox}>
+              <Text style={styles.contextLabel}>Bối cảnh kỹ thuật:</Text>
+              <Text style={styles.contextText}>{safeText(scenario.description)}</Text>
+            </View>
+          ) : null}
+          <Text style={styles.questionText}>{safeText(scenario.question)}</Text>
         </View>
 
         {/* Options */}
         <View style={styles.optionsList}>
-          {scenario.options.map((opt) => {
+          {scenario.options.map((opt: any) => {
             const isSelected = selectedOption === opt.id;
             const isCorrect = opt.id === scenario.correctOption;
 
@@ -74,7 +101,7 @@ export default function MobileScenarioScreen() {
                   showExplanation && isSelected && !isCorrect && styles.optionCardWrong
                 ]}
                 onPress={() => !showExplanation && setSelectedOption(opt.id)}
-                activeOpacity={0.8}
+                activeOpacity={showExplanation ? 1 : 0.8}
               >
                 <View
                   style={[
@@ -84,16 +111,22 @@ export default function MobileScenarioScreen() {
                     showExplanation && isSelected && !isCorrect && styles.radioWrong
                   ]}
                 >
-                  <Text
-                    style={[
-                      styles.radioText,
-                      (isSelected || (showExplanation && isCorrect)) && styles.radioTextWhite
-                    ]}
-                  >
-                    {opt.id}
-                  </Text>
+                  {showExplanation && isCorrect ? (
+                    <MaterialIcons name="check" size={14} color="#fff" />
+                  ) : showExplanation && isSelected && !isCorrect ? (
+                    <MaterialIcons name="close" size={14} color="#fff" />
+                  ) : (
+                    <Text
+                      style={[
+                        styles.radioText,
+                        (isSelected || (showExplanation && isCorrect)) && styles.radioTextWhite
+                      ]}
+                    >
+                      {opt.id}
+                    </Text>
+                  )}
                 </View>
-                <Text style={styles.optionText}>{opt.text}</Text>
+                <Text style={styles.optionText}>{safeText(opt.text)}</Text>
               </TouchableOpacity>
             );
           })}

@@ -1,5 +1,7 @@
 import { Injectable, NotFoundException } from '@nestjs/common'
+import { LevelCode } from '@prisma/client'
 import { PrismaService } from '../../infrastructure/database/prisma.service'
+import { CompleteOnboardingDto } from '../../presentation/http-dto/content.dto'
 
 @Injectable()
 export class LearnerProfilesService {
@@ -19,6 +21,56 @@ export class LearnerProfilesService {
       create: { userId, levelId: level?.id ?? (await this.prisma.level.findFirst({ where: { code: 'beginner' } }))!.id, bio: dto.bio, weeklyStudyTargetMinutes: dto.weeklyStudyTargetMinutes ?? 180 },
       include: { level: true, domains: { include: { domain: true } }, careerGoals: { include: { careerGoal: true } }, certGoals: { include: { certificate: true } } }
     })
+  }
+
+  async completeOnboarding(userId: string, dto: CompleteOnboardingDto) {
+    // 1. Tìm level
+    const level = await this.prisma.level.findUnique({ where: { code: dto.levelCode as LevelCode } })
+
+    // 2. Upsert profile với level + onboardingCompleted
+    const profile = await this.prisma.learnerProfile.upsert({
+      where: { userId },
+      update: {
+        levelId: level?.id,
+        weeklyStudyTargetMinutes: dto.weeklyStudyTargetMinutes ?? 120,
+        onboardingCompleted: true,
+      },
+      create: {
+        userId,
+        levelId: level?.id ?? (await this.prisma.level.findFirst({ where: { code: 'beginner' } }))!.id,
+        weeklyStudyTargetMinutes: dto.weeklyStudyTargetMinutes ?? 120,
+        onboardingCompleted: true,
+      },
+    })
+
+    // 3. Cập nhật domains
+    const domains = await this.prisma.domain.findMany({ where: { code: { in: dto.domainCodes } } })
+    await this.prisma.learnerProfileDomain.deleteMany({ where: { profileId: profile.id } })
+    if (domains.length > 0) {
+      await this.prisma.learnerProfileDomain.createMany({
+        data: domains.map(d => ({ profileId: profile.id, domainId: d.id }))
+      })
+    }
+
+    // 4. Career goal (tuỳ chọn)
+    if (dto.careerGoalCode) {
+      const goal = await this.prisma.careerGoal.findUnique({ where: { code: dto.careerGoalCode } })
+      if (goal) {
+        await this.prisma.learnerProfileCareerGoal.deleteMany({ where: { profileId: profile.id } })
+        await this.prisma.learnerProfileCareerGoal.create({ data: { profileId: profile.id, careerGoalId: goal.id } })
+      }
+    }
+
+    // 5. Certificate goal (tuỳ chọn)
+    if (dto.certificateCode) {
+      const cert = await this.prisma.certificate.findFirst({ where: { OR: [{ code: dto.certificateCode }, { name: dto.certificateCode }] } })
+      if (cert) {
+        await this.prisma.learnerCertificateGoal.deleteMany({ where: { profileId: profile.id } })
+        await this.prisma.learnerCertificateGoal.create({ data: { profileId: profile.id, certificateId: cert.id } })
+      }
+    }
+
+    return this.findByUser(userId)
   }
 
   async updateDomains(userId: string, domainCodes: string[]) {
@@ -44,3 +96,4 @@ export class LearnerProfilesService {
     return { data, meta: { total, page, limit, totalPages: Math.ceil(total / limit) } }
   }
 }
+

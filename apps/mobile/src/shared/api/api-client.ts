@@ -1,6 +1,6 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-const API_BASE = process.env.EXPO_PUBLIC_API_URL ?? 'http://10.0.2.2:3001/api/v1';
+export const API_BASE = process.env.EXPO_PUBLIC_API_URL ?? 'http://10.0.2.2:8080/api/v1';
 // 10.0.2.2 = Android emulator → localhost; change to your IP for real device
 
 export class ApiError extends Error {
@@ -10,8 +10,16 @@ export class ApiError extends Error {
   }
 }
 
-async function getToken(): Promise<string | null> {
+export async function getToken(): Promise<string | null> {
   return AsyncStorage.getItem('access_token');
+}
+
+export async function getTokens(): Promise<{ accessToken: string | null; refreshToken: string | null }> {
+  const [accessToken, refreshToken] = await Promise.all([
+    AsyncStorage.getItem('access_token'),
+    AsyncStorage.getItem('refresh_token'),
+  ]);
+  return { accessToken, refreshToken };
 }
 
 export async function apiRequest<T>(
@@ -52,8 +60,8 @@ export async function apiRequest<T>(
 }
 
 export const api = {
-  get: <T>(path: string) => apiRequest<T>(path, { method: 'GET' }),
-  post: <T>(path: string, body: unknown) => apiRequest<T>(path, { method: 'POST', body: JSON.stringify(body) }),
-  patch: <T>(path: string, body: unknown) => apiRequest<T>(path, { method: 'PATCH', body: JSON.stringify(body) }),
-  delete: <T>(path: string) => apiRequest<T>(path, { method: 'DELETE' }),
+  get: <T>(path: string, options?: RequestInit) => apiRequest<T>(path, { ...options, method: 'GET' }),
+  post: <T>(path: string, body?: unknown, options?: RequestInit) => apiRequest<T>(path, { ...options, method: 'POST', body: body ? JSON.stringify(body) : undefined }),
+  patch: <T>(path: string, body?: unknown, options?: RequestInit) => apiRequest<T>(path, { ...options, method: 'PATCH', body: body ? JSON.stringify(body) : undefined }),
+  delete: <T>(path: string, options?: RequestInit) => apiRequest<T>(path, { ...options, method: 'DELETE' }),
 };

@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
-import { StyleSheet, Text, View, TouchableOpacity, ScrollView, TextInput, ActivityIndicator } from 'react-native';
+import { StyleSheet, Text, View, TouchableOpacity, ScrollView, TextInput, ActivityIndicator, Alert } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
 import { colors, spacing } from '@techenglish/design-tokens';
 import { api } from '../../src/shared/api/api-client';
@@ -12,9 +12,16 @@ export default function MobileLessonListScreen() {
   const [searchQuery, setSearchQuery] = useState('');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [isPro, setIsPro] = useState(false);
 
   useEffect(() => {
     fetchData();
+    api.get<any>('/payment/subscription/me')
+      .then(res => {
+        const sub = res?.data || res;
+        setIsPro(sub?.isPro ?? false);
+      })
+      .catch(() => {});
   }, []);
 
   const fetchData = async () => {
@@ -29,6 +36,21 @@ export default function MobileLessonListScreen() {
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleLessonPress = (item: any) => {
+    if (item.isProOnly && !isPro) {
+      Alert.alert(
+        '🌟 Gói PRO Chuyên Nghiệp',
+        `Bài học "${item.title}" dành riêng cho tài khoản PRO. Bạn có muốn nâng cấp PRO để mở khóa toàn bộ bài học & đề thi không?`,
+        [
+          { text: 'Để sau', style: 'cancel' },
+          { text: '🚀 Nâng cấp PRO', onPress: () => router.push('/payment') }
+        ]
+      );
+      return;
+    }
+    router.push(`/lessons/${item._id || item.id}` as any);
   };
 
   const filteredLessons = lessons.filter((lesson) => 
@@ -80,21 +102,28 @@ export default function MobileLessonListScreen() {
           {filteredLessons.map((item, index) => (
             <TouchableOpacity
               key={item._id || item.id}
-              style={styles.card}
+              style={[styles.card, item.isProOnly && { borderColor: '#f59e0b', backgroundColor: '#fffbeb' }]}
               activeOpacity={0.8}
-              onPress={() => router.push(`/lessons/${item._id || item.id}` as any)}
+              onPress={() => handleLessonPress(item)}
             >
               <View style={styles.orderCircle}>
                 <Text style={styles.orderText}>#{index + 1}</Text>
               </View>
               <View style={styles.cardInfo}>
-                <View style={styles.domainTag}>
-                  <Text style={styles.domainTagText}>{item.domain || 'Lĩnh vực khác'}</Text>
+                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+                  <View style={styles.domainTag}>
+                    <Text style={styles.domainTagText}>{item.domain?.name || item.domain || 'Lĩnh vực'}</Text>
+                  </View>
+                  {item.isProOnly && (
+                    <View style={{ backgroundColor: '#fef3c7', paddingHorizontal: 6, paddingVertical: 2, borderRadius: 4 }}>
+                      <Text style={{ fontSize: 10, fontWeight: '800', color: '#b45309' }}>👑 PRO</Text>
+                    </View>
+                  )}
                 </View>
                 <Text style={styles.cardTitle}>{item.title}</Text>
                 <Text style={styles.cardMeta}>⏱ {item.durationMinutes || item.duration || 15} phút · 📖 {item.vocabularyCount || item.termsCount || (item.vocabulary ? item.vocabulary.length : 0) || 0} thuật ngữ</Text>
               </View>
-              <MaterialIcons name="chevron-right" size={22} color={colors.outline} />
+              <MaterialIcons name={item.isProOnly && !isPro ? "lock" : "chevron-right"} size={22} color={item.isProOnly && !isPro ? "#d97706" : colors.outline} />
             </TouchableOpacity>
           ))}
           {filteredLessons.length === 0 && (

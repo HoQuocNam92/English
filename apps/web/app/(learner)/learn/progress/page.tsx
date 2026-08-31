@@ -1,15 +1,42 @@
 'use client';
 
+import { useState, useEffect } from 'react';
 import { LearnerShell } from '@/shared/layout';
+import { apiClient } from '@/shared/api/api-client';
 
 export default function LearnerPersonalProgressPage() {
-  const domainSkills = [
-    { name: 'Cloud Computing (AWS & Azure)', percent: 84, color: 'bg-primary' },
-    { name: 'REST APIs & Web Architecture', percent: 92, color: 'bg-green-600' },
-    { name: 'DevOps, CI/CD & Kubernetes', percent: 68, color: 'bg-indigo-600' },
-    { name: 'Cybersecurity & InfoSec', percent: 52, color: 'bg-purple-600' },
-    { name: 'Data Engineering & BigQuery', percent: 45, color: 'bg-amber-500' }
-  ];
+  const [data, setData] = useState<any>({ progress: null, profile: null });
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
+
+  useEffect(() => {
+    async function loadData() {
+      try {
+        const [progressRes, profileRes] = await Promise.all<any>([
+          apiClient.get('/progress/me'),
+          apiClient.get('/learner-profiles/me')
+        ]);
+        setData({
+          progress: progressRes,
+          profile: profileRes
+        });
+      } catch (err) {
+        setError('Failed to load progress data');
+      } finally {
+        setLoading(false);
+      }
+    }
+    loadData();
+  }, []);
+
+  if (loading) return <LearnerShell><div className="p-8 text-center"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto"></div></div></LearnerShell>;
+  if (error || !data.progress) return <LearnerShell><div className="p-8 text-center text-red-500">{error || 'Empty state'}</div></LearnerShell>;
+
+  const { progress, profile } = data;
+  const overallCompletion = progress?.summary?.overallCompletionPercent ?? 0;
+  const certGoal = profile?.certGoals?.[0]?.certificate?.name || 'N/A';
+  const domains = profile?.domains || [];
+  const recentAttempts = progress?.recentAttempts || [];
 
   return (
     <LearnerShell>
@@ -28,25 +55,17 @@ export default function LearnerPersonalProgressPage() {
             <div>
               <div className="flex items-center gap-2 mb-1">
                 <span className="px-2.5 py-0.5 rounded text-[11px] font-bold bg-amber-100 text-amber-900 border border-amber-300">
-                  CLF-C02
+                  MỤC TIÊU
                 </span>
-                <span className="text-xs font-semibold text-primary">AWS Certified Cloud Practitioner</span>
+                <span className="text-xs font-semibold text-primary">{certGoal}</span>
               </div>
-              <h3 className="text-xl font-extrabold text-on-surface">Độ sẵn sàng thi chứng chỉ: 80%</h3>
+              <h3 className="text-xl font-extrabold text-on-surface">Độ sẵn sàng: {overallCompletion}%</h3>
             </div>
-            <span className="px-3 py-1 rounded-full text-xs font-bold bg-green-100 text-green-800">
-              Đạt chuẩn tự tin thi thật
-            </span>
           </div>
 
           <div className="w-full h-3 rounded-full bg-surface-container overflow-hidden">
-            <div className="h-full rounded-full bg-primary" style={{ width: '80%' }} />
+            <div className="h-full rounded-full bg-primary" style={{ width: `${overallCompletion}%` }} />
           </div>
-
-          <p className="text-xs text-on-surface-variant leading-relaxed">
-            💡 Điểm trung bình qua 6 đề thi thử của bạn là <strong>82.4%</strong> (vượt xa chuẩn đỗ 70% của AWS).
-            Bạn đã hoàn thành 4/5 chặng giáo trình trọng tâm.
-          </p>
         </div>
 
         {/* 2-Column Skills & Pathways */}
@@ -55,49 +74,26 @@ export default function LearnerPersonalProgressPage() {
           <div className="lg:col-span-7 p-6 rounded-2xl bg-surface-container-lowest border border-outline-variant/40 shadow-2xs space-y-4">
             <h3 className="text-sm font-bold text-on-surface">Độ thành thạo theo chuyên ngành</h3>
             <div className="space-y-4">
-              {domainSkills.map((s) => (
-                <div key={s.name} className="space-y-1.5">
+              {domains.length > 0 ? domains.map((d: any, idx: number) => (
+                <div key={idx} className="space-y-1.5">
                   <div className="flex justify-between text-xs">
-                    <span className="font-semibold text-on-surface">{s.name}</span>
-                    <span className="font-extrabold text-on-surface">{s.percent}%</span>
-                  </div>
-                  <div className="w-full h-2 rounded-full bg-surface-container overflow-hidden">
-                    <div className={`h-full rounded-full ${s.color}`} style={{ width: `${s.percent}%` }} />
+                    <span className="font-semibold text-on-surface">{d.domain?.name} ({d.domain?.code})</span>
                   </div>
                 </div>
-              ))}
+              )) : <p className="text-xs text-slate-500">Chưa có dữ liệu chuyên ngành.</p>}
             </div>
           </div>
 
-          {/* Pathway Milestones (5 cols) */}
+          {/* Recent Exam Attempts (5 cols) */}
           <div className="lg:col-span-5 p-6 rounded-2xl bg-surface-container-lowest border border-outline-variant/40 shadow-2xs space-y-4">
-            <h3 className="text-sm font-bold text-on-surface">Các chặng trong lộ trình</h3>
+            <h3 className="text-sm font-bold text-on-surface">Kết quả thi gần đây</h3>
             <div className="space-y-2.5 text-xs">
-              <div className="flex items-center gap-3 p-3 rounded-xl bg-surface-bright border border-outline-variant/30">
-                <span className="material-symbols-outlined text-green-600 text-[20px]">check_circle</span>
-                <span className="flex-1 font-semibold text-on-surface">Chặng 1: Cloud Concepts & Global Infra</span>
-                <span className="font-bold text-green-600">100%</span>
-              </div>
-              <div className="flex items-center gap-3 p-3 rounded-xl bg-surface-bright border border-outline-variant/30">
-                <span className="material-symbols-outlined text-green-600 text-[20px]">check_circle</span>
-                <span className="flex-1 font-semibold text-on-surface">Chặng 2: Security & IAM Permissions</span>
-                <span className="font-bold text-green-600">100%</span>
-              </div>
-              <div className="flex items-center gap-3 p-3 rounded-xl bg-surface-bright border border-outline-variant/30">
-                <span className="material-symbols-outlined text-green-600 text-[20px]">check_circle</span>
-                <span className="flex-1 font-semibold text-on-surface">Chặng 3: Compute, S3 & Networking</span>
-                <span className="font-bold text-green-600">100%</span>
-              </div>
-              <div className="flex items-center gap-3 p-3 rounded-xl bg-surface-bright border border-outline-variant/30">
-                <span className="material-symbols-outlined text-primary text-[20px]">pending</span>
-                <span className="flex-1 font-semibold text-on-surface">Chặng 4: Billing & Support Plans</span>
-                <span className="font-bold text-primary">60%</span>
-              </div>
-              <div className="flex items-center gap-3 p-3 rounded-xl bg-surface-container-low text-outline">
-                <span className="material-symbols-outlined text-[20px]">radio_button_unchecked</span>
-                <span className="flex-1">Chặng 5: 3 Đề thi tổng hợp cuối khóa</span>
-                <span>0%</span>
-              </div>
+              {recentAttempts.length > 0 ? recentAttempts.map((attempt: any, idx: number) => (
+                <div key={idx} className="flex items-center gap-3 p-3 rounded-xl bg-surface-bright border border-outline-variant/30">
+                  <span className="flex-1 font-semibold text-on-surface">Bài thi #{attempt.examId || idx + 1}</span>
+                  <span className={`font-bold ${attempt.passed ? 'text-green-600' : 'text-red-500'}`}>{attempt.scorePercent}%</span>
+                </div>
+              )) : <p className="text-slate-500">Chưa có dữ liệu bài thi.</p>}
             </div>
           </div>
         </div>

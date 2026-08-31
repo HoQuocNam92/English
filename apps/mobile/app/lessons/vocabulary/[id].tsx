@@ -5,6 +5,8 @@ import { StyleSheet, Text, View, TouchableOpacity, ActivityIndicator } from 'rea
 import { MaterialIcons } from '@expo/vector-icons';
 import { colors, spacing } from '@techenglish/design-tokens';
 import { api } from '../../../src/shared/api/api-client';
+import { safeText } from '../../../src/shared/utils/safeText';
+import * as Speech from 'expo-speech';
 
 export default function MobileVocabularyLessonScreen() {
   const { id } = useLocalSearchParams();
@@ -25,7 +27,16 @@ export default function MobileVocabularyLessonScreen() {
       setError('');
       const response = await api.get<any>(`/vocabulary?lessonId=${id}`);
       const data = response.data || response;
-      setFlashcards(Array.isArray(data) ? data : data.items || []);
+      let items = Array.isArray(data) ? data : data.items || [];
+      
+      // Fallback: If no vocabulary linked to this specific lesson, fetch general vocabulary list
+      if (items.length === 0) {
+        const fallbackRes = await api.get<any>('/vocabulary?limit=20');
+        const fallbackData = fallbackRes.data || fallbackRes;
+        items = Array.isArray(fallbackData) ? fallbackData : fallbackData.items || [];
+      }
+      
+      setFlashcards(items);
     } catch (err: any) {
       setError(err.message || 'Lỗi tải từ vựng. Vui lòng thử lại.');
     } finally {
@@ -59,13 +70,22 @@ export default function MobileVocabularyLessonScreen() {
 
   const currentCard = flashcards[currentIndex];
   const total = flashcards.length;
+
+  const term      = safeText(currentCard.term ?? currentCard.word, 'No Term');
+  const phonetic  = safeText(currentCard.pronunciationIpa ?? currentCard.phonetic ?? currentCard.pronunciation);
+  const type      = safeText(currentCard.partOfSpeech ?? currentCard.type, 'word');
+  const defVi     = safeText(currentCard.definitionVi ?? currentCard.meaningVi ?? currentCard.defVi, 'Chưa có nghĩa tiếng Việt');
+  const defEn     = safeText(currentCard.definitionEn ?? currentCard.meaningEn ?? currentCard.defEn ?? currentCard.definition);
   
-  const term = currentCard.word || currentCard.term || 'No Term';
-  const phonetic = currentCard.phonetic || currentCard.pronunciation || '';
-  const type = currentCard.partOfSpeech || currentCard.type || 'word';
-  const defVi = currentCard.meaningVi || currentCard.defVi || 'Không có nghĩa tiếng Việt';
-  const defEn = currentCard.meaningEn || currentCard.defEn || currentCard.definition || '';
-  const example = currentCard.example || (currentCard.examples && currentCard.examples[0]) || '';
+  const exampleObj = Array.isArray(currentCard.examples) ? currentCard.examples[0] : currentCard.example;
+  const exampleEn  = safeText(typeof exampleObj === 'object' ? (exampleObj?.sentenceEn ?? exampleObj?.sentence) : exampleObj);
+  const exampleVi  = safeText(typeof exampleObj === 'object' ? (exampleObj?.translationVi ?? exampleObj?.translation) : '');
+
+  const playSound = () => {
+    if (term && term !== 'No Term') {
+      Speech.speak(term, { language: 'en-US' });
+    }
+  };
 
   const handleNextCard = () => {
     setIsFlipped(false);
@@ -105,23 +125,26 @@ export default function MobileVocabularyLessonScreen() {
             <View style={styles.typeBadge}>
               <Text style={styles.typeBadgeText}>{type}</Text>
             </View>
-            <TouchableOpacity style={styles.soundButton}>
+            <TouchableOpacity style={styles.soundButton} onPress={playSound}>
               <MaterialIcons name="volume-up" size={24} color={colors.primary} />
             </TouchableOpacity>
           </View>
 
           <View style={styles.cardMain}>
-            <Text style={styles.termText}>{term}</Text>
-            {phonetic ? <Text style={styles.phoneticText}>{phonetic}</Text> : null}
+            <TouchableOpacity onPress={playSound} activeOpacity={0.7} style={{ alignItems: 'center' }}>
+              <Text style={styles.termText}>{term}</Text>
+              {phonetic ? <Text style={styles.phoneticText}>{phonetic}</Text> : null}
+            </TouchableOpacity>
 
             {isFlipped ? (
               <View style={styles.flippedContent}>
                 <View style={styles.divider} />
                 <Text style={styles.defViText}>{defVi}</Text>
                 {defEn ? <Text style={styles.defEnText}>{defEn}</Text> : null}
-                {example ? (
+                {exampleEn ? (
                   <View style={styles.exampleBox}>
-                    <Text style={styles.exampleText}>💬 {example}</Text>
+                    <Text style={styles.exampleText}>💬 {exampleEn}</Text>
+                    {exampleVi ? <Text style={[styles.exampleText, { color: colors.primary, marginTop: 4 }]}>👉 {exampleVi}</Text> : null}
                   </View>
                 ) : null}
               </View>

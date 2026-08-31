@@ -16,7 +16,7 @@ export class VocabularyService {
     if (levelCode) where.level = { code: levelCode }
     if (status) where.status = status
     if (lessonId) {
-      where.lessonVocabularies = { some: { lessonId } }
+      where.lessonVocabs = { some: { lessonId } }
     }
     const [data, total] = await Promise.all([
       this.prisma.vocabulary.findMany({ where, skip, take: limit, include: { domain: true, level: true, examples: true }, orderBy: { createdAt: 'desc' } }),
