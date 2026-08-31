@@ -190,6 +190,10 @@ model User {
   paymentOrders PaymentOrder[]
   subscription  UserSubscription?
 
+  // Gamification
+  userStreak UserStreak?
+  userBadges UserBadge[]
+
   @@index([email])
   @@index([status])
   @@map("users")
@@ -1045,4 +1049,41 @@ updatedAt       DateTime @updatedAt @map("updated_at") @db.Timestamptz(6)
 @@index([planId])
 @@index([isActive])
 @@map("flash_sales")
+}
+
+/// Chuỗi ngày học liên tiếp Daily Streak & Điểm kinh nghiệm EXP của Học viên.
+model UserStreak {
+  id             String    @id @default(uuid()) @db.Uuid
+  userId         String    @unique @map("user_id") @db.Uuid
+  currentStreak  Int       @default(0) @map("current_streak")
+  maxStreak      Int       @default(0) @map("max_streak")
+  lastStudyDate  DateTime? @map("last_study_date") @db.Date
+  totalExpPoints Int       @default(0) @map("total_exp_points")
+  weeklyPoints   Int       @default(0) @map("weekly_points")
+  monthlyPoints  Int       @default(0) @map("monthly_points")
+  createdAt      DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt      DateTime  @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([totalExpPoints])
+  @@index([weeklyPoints])
+  @@map("user_streaks")
+}
+
+/// Huy hiệu thành tích mở khóa khi hoàn thành mốc học tập.
+model UserBadge {
+  id          String   @id @default(uuid()) @db.Uuid
+  userId      String   @map("user_id") @db.Uuid
+  badgeCode   String   @map("badge_code") @db.VarChar(50)
+  badgeName   String   @map("badge_name") @db.VarChar(150)
+  description String?  @db.VarChar(300)
+  iconUrl     String?  @map("icon_url") @db.VarChar(500)
+  unlockedAt  DateTime @default(now()) @map("unlocked_at") @db.Timestamptz(6)
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, badgeCode])
+  @@index([userId])
+  @@map("user_badges")
 }

@@ -865,7 +865,58 @@ async function main() {
     }
   }
 
-  console.log('   ✅ 3 Vouchers (WELCOME50K, FLASH30, PRO2026) & 1 Active FlashSale')
+  // Gamification (User Streaks & EXP Points for Leaderboard)
+  const allLearners = await prisma.user.findMany({
+    where: { email: { startsWith: 'learner' } }
+  });
+
+  const expData = [
+    { email: 'learner1@techenglish.pro', streak: 14, exp: 1250, weekly: 350, monthly: 920, badges: [{ code: 'STREAK_14', name: '🔥 14 Ngày Liên Tiếp', desc: 'Học tập kiên trì 14 ngày không gián đoạn.' }, { code: 'AWS_PRO', name: '☁️ Cloud Master', desc: 'Hoàn thành bộ đề thi AWS-SAA.' }] },
+    { email: 'learner2@techenglish.pro', streak: 9, exp: 980, weekly: 280, monthly: 710, badges: [{ code: 'STREAK_7', name: '🔥 7 Ngày Liên Tiếp', desc: 'Duy trì chuỗi học 7 ngày.' }] },
+    { email: 'learner3@techenglish.pro', streak: 5, exp: 740, weekly: 210, monthly: 540, badges: [{ code: 'VOCAB_EXPERT', name: '📚 Kho Từ Vựng', desc: 'Thạo hơn 100 từ vựng CNTT.' }] },
+    { email: 'learner4@techenglish.pro', streak: 3, exp: 460, weekly: 150, monthly: 360, badges: [] },
+    { email: 'learner5@techenglish.pro', streak: 1, exp: 220, weekly: 90, monthly: 220, badges: [] },
+  ];
+
+  for (const item of expData) {
+    const u = allLearners.find(x => x.email === item.email);
+    if (u) {
+      await prisma.userStreak.upsert({
+        where: { userId: u.id },
+        update: {
+          currentStreak: item.streak,
+          maxStreak: Math.max(item.streak, 15),
+          totalExpPoints: item.exp,
+          weeklyPoints: item.weekly,
+          monthlyPoints: item.monthly,
+          lastStudyDate: new Date(),
+        },
+        create: {
+          userId: u.id,
+          currentStreak: item.streak,
+          maxStreak: Math.max(item.streak, 15),
+          totalExpPoints: item.exp,
+          weeklyPoints: item.weekly,
+          monthlyPoints: item.monthly,
+          lastStudyDate: new Date(),
+        }
+      });
+
+      for (const b of item.badges) {
+        await prisma.userBadge.upsert({
+          where: { userId_badgeCode: { userId: u.id, badgeCode: b.code } },
+          update: {},
+          create: {
+            userId: u.id,
+            badgeCode: b.code,
+            badgeName: b.name,
+            description: b.desc,
+          }
+        });
+      }
+    }
+  }
+  console.log('   ✅ Seed Gamification Streaks & Leaderboard EXP Points for 5 Learners')
 
   console.log('\n✨ Seed hoàn tất!')
   console.log('\n📌 Tài khoản demo:')

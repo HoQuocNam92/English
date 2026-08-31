@@ -75,10 +75,17 @@ export default function MobileHomeScreen() {
 
       {/* Top Header */}
       <View style={styles.header}>
-        <View>
+        <View style={{ flex: 1 }}>
           <Text style={styles.greeting}>Chào {name} 👋</Text>
           <Text style={styles.subGreeting}>Tiếp tục hành trình học hôm nay</Text>
         </View>
+        <TouchableOpacity
+          style={{ flexDirection: 'row', alignItems: 'center', backgroundColor: '#fff7ed', borderWidth: 1, borderColor: '#ffedd5', paddingHorizontal: 10, paddingVertical: 6, borderRadius: 20, marginRight: 10 }}
+          onPress={() => router.push('/leaderboard' as any)}
+        >
+          <Text style={{ fontSize: 16, marginRight: 4 }}>🔥</Text>
+          <Text style={{ fontSize: 13, fontWeight: '800', color: '#c2410c' }}>{streakDays}</Text>
+        </TouchableOpacity>
         <TouchableOpacity style={styles.avatarBox} onPress={() => router.push('/(tabs)/profile' as any)}>
           <Text style={styles.avatarText}>{avatarLetter}</Text>
         </TouchableOpacity>
