@@ -958,56 +958,91 @@ model RecommendationFeedback {
 /// Đơn hàng thanh toán — mỗi lần user mua gói PRO.
 /// idempotency_key đảm bảo không tạo đơn trùng lặp dù client retry nhiều lần.
 model PaymentOrder {
-  id                 String      @id @default(uuid()) @db.Uuid
-  userId             String      @map("user_id") @db.Uuid
-  planId             String      @map("plan_id") @db.VarChar(50)
-  amount             Int         // VND, không có decimal cho tiền VN
-  idempotencyKey     String      @unique @map("idempotency_key") @db.VarChar(128)
-  status             OrderStatus @default(pending)
-  sepayTransactionId String?     @unique @map("sepay_transaction_id") @db.VarChar(100)
-  webhookPayload     Json?       @map("webhook_payload")   // raw payload từ SePay
-  webhookReceivedAt  DateTime?   @map("webhook_received_at") @db.Timestamptz(6)
-  paidAt             DateTime?   @map("paid_at") @db.Timestamptz(6)
-  expiresAt          DateTime    @map("expires_at") @db.Timestamptz(6)  // 15 phút
-  createdAt          DateTime    @default(now()) @map("created_at") @db.Timestamptz(6)
-  updatedAt          DateTime    @updatedAt @map("updated_at") @db.Timestamptz(6)
-
-  user         User              @relation(fields: [userId], references: [id], onDelete: Cascade)
-  subscription UserSubscription?
-
-  @@index([userId])
-  @@index([status])
-  @@index([sepayTransactionId])
-  @@map("payment_orders")
+id                 String      @id @default(uuid()) @db.Uuid
+userId             String      @map("user_id") @db.Uuid
+planId             String      @map("plan_id") @db.VarChar(50)
+amount             Int         // VND, không có decimal cho tiền VN
+originalAmount     Int?        @map("original_amount")
+discountAmount     Int?        @default(0) @map("discount_amount")
+voucherId          String?     @map("voucher_id") @db.Uuid
+voucherCode        String?     @map("voucher_code") @db.VarChar(50)
+idempotencyKey     String      @unique @map("idempotency_key") @db.VarChar(128)
+status             OrderStatus @default(pending)
+sepayTransactionId String?     @unique @map("sepay_transaction_id") @db.VarChar(100)
+webhookPayload     Json?       @map("webhook_payload")   // raw payload từ SePay
+webhookReceivedAt  DateTime?   @map("webhook_received_at") @db.Timestamptz(6)
+paidAt             DateTime?   @map("paid_at") @db.Timestamptz(6)
+expiresAt          DateTime    @map("expires_at") @db.Timestamptz(6)  // 15 phút
+createdAt          DateTime    @default(now()) @map("created_at") @db.Timestamptz(6)
+updatedAt          DateTime    @updatedAt @map("updated_at") @db.Timestamptz(6)
+user         User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+voucher      Voucher?          @relation(fields: [voucherId], references: [id], onDelete: SetNull)
+subscription UserSubscription?
+@@index([userId])
+@@index([status])
+@@index([sepayTransactionId])
+@@map("payment_orders")
 }
-
 /// Subscription đang active của user — mỗi user chỉ có 1 subscription (upsert).
 model UserSubscription {
-  id        String             @id @default(uuid()) @db.Uuid
-  userId    String             @unique @map("user_id") @db.Uuid
-  planId    String             @map("plan_id") @db.VarChar(50)
-  orderId   String             @unique @map("order_id") @db.Uuid
-  status    SubscriptionStatus @default(active)
-  startedAt DateTime           @map("started_at") @db.Timestamptz(6)
-  expiresAt DateTime           @map("expires_at") @db.Timestamptz(6)
-  createdAt DateTime           @default(now()) @map("created_at") @db.Timestamptz(6)
-  updatedAt DateTime           @updatedAt @map("updated_at") @db.Timestamptz(6)
-
-  user  User         @relation(fields: [userId], references: [id], onDelete: Cascade)
-  order PaymentOrder @relation(fields: [orderId], references: [id])
-
-  @@index([status])
-  @@index([expiresAt])
-  @@map("user_subscriptions")
+id        String             @id @default(uuid()) @db.Uuid
+userId    String             @unique @map("user_id") @db.Uuid
+planId    String             @map("plan_id") @db.VarChar(50)
+orderId   String             @unique @map("order_id") @db.Uuid
+status    SubscriptionStatus @default(active)
+startedAt DateTime           @map("started_at") @db.Timestamptz(6)
+expiresAt DateTime           @map("expires_at") @db.Timestamptz(6)
+createdAt DateTime           @default(now()) @map("created_at") @db.Timestamptz(6)
+updatedAt DateTime           @updatedAt @map("updated_at") @db.Timestamptz(6)
+user  User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+order PaymentOrder @relation(fields: [orderId], references: [id])
+@@index([status])
+@@index([expiresAt])
+@@map("user_subscriptions")
 }
-
 /// Quota / giới hạn slot bán của từng plan (early-bird, limited seats).
 /// maxSlots = null nghĩa là unlimited.
 model PlanQuota {
-  planId    String @id @db.VarChar(50)
-  maxSlots  Int?   @map("max_slots")    // null = unlimited
-  soldSlots Int    @default(0) @map("sold_slots")
-  updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamptz(6)
-
-  @@map("plan_quotas")
+planId    String @id @db.VarChar(50)
+maxSlots  Int?   @map("max_slots")    // null = unlimited
+soldSlots Int    @default(0) @map("sold_slots")
+updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamptz(6)
+@@map("plan_quotas")
+}
+/// Mã giảm giá Voucher áp dụng khi nâng cấp gói PRO.
+model Voucher {
+id                String   @id @default(uuid()) @db.Uuid
+code              String   @unique @db.VarChar(50)
+name              String   @db.VarChar(150)
+discountType      String   @default("percentage") @map("discount_type") @db.VarChar(20) // "percentage", "fixed"
+discountValue     Int      @map("discount_value")
+minOrderAmount    Int      @default(0) @map("min_order_amount")
+maxDiscountAmount Int?     @map("max_discount_amount")
+usageLimit        Int?     @map("usage_limit")
+usedCount         Int      @default(0) @map("used_count")
+startDate         DateTime @map("start_date") @db.Timestamptz(6)
+endDate           DateTime @map("end_date") @db.Timestamptz(6)
+isActive          Boolean  @default(true) @map("is_active")
+createdAt         DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+updatedAt         DateTime @updatedAt @map("updated_at") @db.Timestamptz(6)
+paymentOrders PaymentOrder[]
+@@index([code])
+@@index([isActive])
+@@map("vouchers")
+}
+/// Chương trình khuyến mãi Flash Sale cho các gói PRO.
+model FlashSale {
+id              String   @id @default(uuid()) @db.Uuid
+title           String   @db.VarChar(150)
+description     String?  @db.VarChar(500)
+planId          String   @map("plan_id") @db.VarChar(50)
+discountPercent Int      @map("discount_percent")
+startTime       DateTime @map("start_time") @db.Timestamptz(6)
+endTime         DateTime @map("end_time") @db.Timestamptz(6)
+isActive        Boolean  @default(true) @map("is_active")
+createdAt       DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+updatedAt       DateTime @updatedAt @map("updated_at") @db.Timestamptz(6)
+@@index([planId])
+@@index([isActive])
+@@map("flash_sales")
 }

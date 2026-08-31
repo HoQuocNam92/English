@@ -23,6 +23,9 @@ interface PaymentOrderResponse {
   status: string;
   planId: string;
   amount: number;
+  originalAmount?: number;
+  discountAmount?: number;
+  voucherCode?: string;
   shortRef: string;
   bankName: string;
   bankAcc: string;
@@ -39,6 +42,9 @@ export default function MobilePaymentScreen() {
   const [orderData, setOrderData] = useState<PaymentOrderResponse | null>(null);
   const [showQRModal, setShowQRModal] = useState(false);
   const [timeLeft, setTimeLeft] = useState<number>(900); // 15 phút đếm ngược
+  const [voucherCodeInput, setVoucherCodeInput] = useState('');
+  const [appliedVoucher, setAppliedVoucher] = useState<{ code: string; discountAmount: number; finalAmount: number; message: string } | null>(null);
+  const [applyingVoucher, setApplyingVoucher] = useState(false);
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
@@ -52,14 +58,39 @@ export default function MobilePaymentScreen() {
     };
   }, [showQRModal, timeLeft]);
 
+  const handleApplyVoucher = async () => {
+    if (!voucherCodeInput.trim()) {
+      Alert.alert('Thông báo', 'Vui lòng nhập mã giảm giá.');
+      return;
+    }
+    try {
+      setApplyingVoucher(true);
+      const res = await api.post<any>('/vouchers/apply', { code: voucherCodeInput.trim(), planId: 'pro_yearly' });
+      const data = res?.data || res;
+      if (data && data.valid) {
+        setAppliedVoucher(data);
+        Alert.alert('Thành công', data.message || 'Đã áp dụng mã giảm giá!');
+      }
+    } catch (err: any) {
+      Alert.alert('Lỗi áp dụng Voucher', err.message || 'Mã không hợp lệ hoặc đã hết hạn.');
+    } finally {
+      setApplyingVoucher(false);
+    }
+  };
+
   const handleSelectPlan = async (planId: string) => {
     setLoading(true);
     setSelectedPlanId(planId);
     try {
       const idempotencyKey = `idem-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;
+      const payload: any = { planId };
+      if (voucherCodeInput.trim()) {
+        payload.voucherCode = voucherCodeInput.trim();
+      }
+
       const res = await api.post<any>(
         '/payment/create-order',
-        { planId },
+        payload,
         { headers: { 'Idempotency-Key': idempotencyKey } }
       );
 

@@ -59,33 +59,31 @@ export class PaymentService {
    *   - Lock `order:create:{userId}:{planId}` trong 10s để tránh
    *     2 request cùng user+plan tạo đơn cùng lúc (bypass idempotency key check).
    */
-  async createOrder(userId: string, planId: string, idempotencyKey: string) {
+  async createOrder(userId: string, planId: string, idempotencyKey: string, voucherCode?: string) {
     const plan = PLANS[planId as PlanId];
     if (!plan) throw new BadRequestException(`Plan không hợp lệ: ${planId}`);
     if (!idempotencyKey || idempotencyKey.length > 128) {
       throw new BadRequestException('Idempotency-Key header bắt buộc và tối đa 128 ký tự');
     }
 
-    // ── 1. Idempotency check (DB lookup trước) ───────────────────────────────
     const existing = await this.prisma.paymentOrder.findUnique({
       where: { idempotencyKey },
+      include: { voucher: true },
     });
     if (existing) {
       this.logger.log(`Idempotency hit: key=${idempotencyKey} → orderId=${existing.id}`);
       return this.formatOrderResponse(existing);
     }
 
-    // ── 2. Redis lock để tránh concurrent creation cùng user+plan ────────────
     const lockKey = `order:create:${userId}:${planId}`;
     const result = await this.redisLock.withLock(lockKey, async () => {
-      return this.createOrderInTransaction(userId, planId, plan, idempotencyKey);
+      return this.createOrderInTransaction(userId, planId, plan, idempotencyKey, voucherCode);
     }, ORDER_LOCK_TTL_MS);
 
     if (result === null) {
-      // Lock bị giữ bởi process khác → có thể là đơn đang được tạo
-      // Retry idempotency check một lần nữa
       const retryCheck = await this.prisma.paymentOrder.findUnique({
         where: { idempotencyKey },
+        include: { voucher: true },
       });
       if (retryCheck) return this.formatOrderResponse(retryCheck);
       throw new ConflictException('Đơn hàng đang được xử lý, vui lòng thử lại sau giây lát');
@@ -99,19 +97,76 @@ export class PaymentService {
     planId: string,
     plan: typeof PLANS[PlanId],
     idempotencyKey: string,
+    voucherCode?: string,
   ) {
     const expiresAt = new Date(Date.now() + ORDER_TTL_MS);
     const orderId = crypto.randomUUID();
     const shortRef = `TE${Date.now().toString(36).toUpperCase()}`;
 
+    const originalAmount = plan.amount;
+    let discountAmount = 0;
+    let voucherId: string | undefined = undefined;
+    let matchedVoucherCode: string | undefined = undefined;
+
+    // 1. Flash sale discount
+    const now = new Date();
+    const activeFlashSale = await this.prisma.flashSale.findFirst({
+      where: {
+        planId,
+        isActive: true,
+        startTime: { lte: now },
+        endTime: { gte: now },
+      },
+    });
+
+    if (activeFlashSale) {
+      const fsDiscount = Math.floor((originalAmount * activeFlashSale.discountPercent) / 100);
+      discountAmount += fsDiscount;
+    }
+
+    // 2. Voucher discount
+    if (voucherCode) {
+      const voucher = await this.prisma.voucher.findUnique({
+        where: { code: voucherCode.toUpperCase().trim() },
+      });
+      if (!voucher || !voucher.isActive) {
+        throw new BadRequestException('Mã giảm giá không hợp lệ hoặc đã bị vô hiệu hóa.');
+      }
+      if (now < voucher.startDate || now > voucher.endDate) {
+        throw new BadRequestException('Mã giảm giá đã hết hạn sử dụng.');
+      }
+      if (voucher.usageLimit !== null && voucher.usedCount >= voucher.usageLimit) {
+        throw new BadRequestException('Mã giảm giá đã hết lượt sử dụng.');
+      }
+      if (originalAmount < voucher.minOrderAmount) {
+        throw new BadRequestException(`Mã giảm giá yêu cầu đơn hàng tối thiểu ${voucher.minOrderAmount.toLocaleString('vi-VN')} VNĐ.`);
+      }
+
+      let vDiscount = 0;
+      if (voucher.discountType === 'percentage') {
+        vDiscount = Math.floor((originalAmount * voucher.discountValue) / 100);
+        if (voucher.maxDiscountAmount && vDiscount > voucher.maxDiscountAmount) {
+          vDiscount = voucher.maxDiscountAmount;
+        }
+      } else {
+        vDiscount = voucher.discountValue;
+      }
+
+      discountAmount += vDiscount;
+      voucherId = voucher.id;
+      matchedVoucherCode = voucher.code;
+    }
+
+    const finalAmount = Math.max(0, originalAmount - discountAmount);
+
     let paymentUrl: string;
     const apiKey = process.env.SEPAY_API_KEY;
     if (apiKey && apiKey !== 'placeholder' && apiKey.trim() !== '') {
-      paymentUrl = await this.callSePayAPI(shortRef, plan);
+      paymentUrl = await this.callSePayAPI(shortRef, { ...plan, amount: finalAmount });
     } else {
       const bankAcc = process.env.SEPAY_BANK_ACC || '0901234567';
       const bankName = process.env.SEPAY_BANK_NAME || 'MBBank';
-      paymentUrl = `https://qr.sepay.vn/img?bank=${bankName}&acc=${bankAcc}&amount=${plan.amount}&des=${shortRef}`;
+      paymentUrl = `https://qr.sepay.vn/img?bank=${bankName}&acc=${bankAcc}&amount=${finalAmount}&des=${shortRef}`;
     }
 
     const order = await this.prisma.paymentOrder.create({
@@ -119,7 +174,11 @@ export class PaymentService {
         id: orderId,
         userId,
         planId,
-        amount: plan.amount,
+        amount: finalAmount,
+        originalAmount,
+        discountAmount,
+        voucherId,
+        voucherCode: matchedVoucherCode,
         idempotencyKey,
         status: 'pending',
         expiresAt,
@@ -144,6 +203,9 @@ export class PaymentService {
       status: order.status,
       planId: order.planId,
       amount: order.amount,
+      originalAmount: order.originalAmount ?? order.amount,
+      discountAmount: order.discountAmount ?? 0,
+      voucherCode: order.voucherCode ?? null,
       shortRef: ref,
       bankName,
       bankAcc,

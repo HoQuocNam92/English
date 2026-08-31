@@ -838,7 +838,34 @@ async function main() {
       })
     }
   }
-  console.log('   ✅ 3 Plan Quotas & 2 Active Pro Subscriptions (Learner1 & Admin)')
+  // Vouchers
+  const voucherData = [
+    { code: 'WELCOME50K', name: 'Giảm 50.000 VNĐ mừng học viên mới', discountType: 'fixed', discountValue: 50000, minOrderAmount: 100000, startDate: new Date(), endDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), isActive: true },
+    { code: 'FLASH30', name: 'Ưu đãi Flash Sale 30%', discountType: 'percentage', discountValue: 30, minOrderAmount: 0, startDate: new Date(), endDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), isActive: true },
+    { code: 'PRO2026', name: 'Mã giảm giá Khóa học TechEnglish 2026', discountType: 'percentage', discountValue: 20, minOrderAmount: 100000, startDate: new Date(), endDate: new Date(Date.now() + 60 * 24 * 60 * 60 * 1000), isActive: true },
+  ]
+
+  for (const v of voucherData) {
+    await prisma.voucher.upsert({
+      where: { code: v.code },
+      update: {},
+      create: v,
+    })
+  }
+
+  // Flash Sales
+  const flashSaleData = [
+    { title: 'Flash Sale Nâng Cấp Pro Hàng Tuần - Giảm 30%', description: 'Áp dụng giảm 30% cho gói PRO Năm khi đăng ký trong 7 ngày tới.', planId: 'pro_yearly', discountPercent: 30, startTime: new Date(), endTime: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), isActive: true },
+  ]
+
+  for (const fs of flashSaleData) {
+    const existing = await prisma.flashSale.findFirst({ where: { title: fs.title } })
+    if (!existing) {
+      await prisma.flashSale.create({ data: fs })
+    }
+  }
+
+  console.log('   ✅ 3 Vouchers (WELCOME50K, FLASH30, PRO2026) & 1 Active FlashSale')
 
   console.log('\n✨ Seed hoàn tất!')
   console.log('\n📌 Tài khoản demo:')

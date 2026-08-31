@@ -41,7 +41,7 @@ Nếu gọi lại với cùng key → server trả về đơn cũ, không tạo 
     @Headers('idempotency-key') idempotencyKey?: string,
   ) {
     const key = idempotencyKey || `idem-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;
-    return this.svc.createOrder(user.sub, dto.planId, key);
+    return this.svc.createOrder(user.sub, dto.planId, key, dto.voucherCode);
   }
 
   // ─── SePay Webhook ──────────────────────────────────────────────────────────
