@@ -840,28 +840,30 @@ async function main() {
   }
   // Vouchers
   const voucherData = [
-    { code: 'WELCOME50K', name: 'Giảm 50.000 VNĐ mừng học viên mới', discountType: 'fixed', discountValue: 50000, minOrderAmount: 100000, startDate: new Date(), endDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), isActive: true },
-    { code: 'FLASH30', name: 'Ưu đãi Flash Sale 30%', discountType: 'percentage', discountValue: 30, minOrderAmount: 0, startDate: new Date(), endDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), isActive: true },
-    { code: 'PRO2026', name: 'Mã giảm giá Khóa học TechEnglish 2026', discountType: 'percentage', discountValue: 20, minOrderAmount: 100000, startDate: new Date(), endDate: new Date(Date.now() + 60 * 24 * 60 * 60 * 1000), isActive: true },
+    { code: 'WELCOME50K', name: 'Giảm 50.000 VNĐ mừng học viên mới', discountType: 'fixed', discountValue: 50000, minOrderAmount: 100000, startDate: new Date(Date.now() - 24 * 60 * 60 * 1000), endDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), isActive: true },
+    { code: 'FLASH30', name: 'Ưu đãi Flash Sale 30% Gói PRO', discountType: 'percentage', discountValue: 30, minOrderAmount: 0, startDate: new Date(Date.now() - 24 * 60 * 60 * 1000), endDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), isActive: true },
+    { code: 'PRO2026', name: 'Mã giảm giá Khóa học TechEnglish 2026', discountType: 'percentage', discountValue: 20, minOrderAmount: 100000, startDate: new Date(Date.now() - 24 * 60 * 60 * 1000), endDate: new Date(Date.now() + 60 * 24 * 60 * 60 * 1000), isActive: true },
   ]
 
   for (const v of voucherData) {
     await prisma.voucher.upsert({
       where: { code: v.code },
-      update: {},
+      update: { startDate: v.startDate, endDate: v.endDate, isActive: true },
       create: v,
     })
   }
 
   // Flash Sales
   const flashSaleData = [
-    { title: 'Flash Sale Nâng Cấp Pro Hàng Tuần - Giảm 30%', description: 'Áp dụng giảm 30% cho gói PRO Năm khi đăng ký trong 7 ngày tới.', planId: 'pro_yearly', discountPercent: 30, startTime: new Date(), endTime: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), isActive: true },
+    { title: '⚡ Flash Sale Nâng Cấp Pro Hàng Tuần - Giảm 30%', description: 'Áp dụng giảm 30% cho gói PRO Năm khi đăng ký trong tuần này!', planId: 'pro_yearly', discountPercent: 30, startTime: new Date(Date.now() - 24 * 60 * 60 * 1000), endTime: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), isActive: true },
   ]
 
   for (const fs of flashSaleData) {
     const existing = await prisma.flashSale.findFirst({ where: { title: fs.title } })
     if (!existing) {
       await prisma.flashSale.create({ data: fs })
+    } else {
+      await prisma.flashSale.update({ where: { id: existing.id }, data: { startTime: fs.startTime, endTime: fs.endTime, isActive: true } })
     }
   }
 
@@ -918,6 +920,169 @@ async function main() {
   }
   console.log('   ✅ Seed Gamification Streaks & Leaderboard EXP Points for 5 Learners')
 
+  // Seed Discussion Posts
+  const learnerUser = await prisma.user.findFirst({ where: { email: 'learner1@techenglish.pro' } });
+  if (learnerUser) {
+    const postCount = await prisma.discussionPost.count();
+    if (postCount === 0) {
+      await prisma.discussionPost.createMany({
+        data: [
+          { userId: learnerUser.id, title: 'Làm thế nào để nhớ lâu các thuật ngữ networking?', content: 'Mình đang học về TCP/IP và OSI model nhưng hay quên lắm. Mọi người có tips gì không?', tags: ['networking', 'tips', 'memory'], isPinned: true },
+          { userId: learnerUser.id, title: 'AWS vs Azure - chứng chỉ nào dễ tìm việc hơn ở VN?', content: 'Mình đang cân nhắc giữa AWS Solutions Architect và Azure Administrator. Ai có kinh nghiệm thì cho mình biết với!', tags: ['aws', 'azure', 'career', 'certification'] },
+          { userId: learnerUser.id, title: 'Tài liệu học Docker và Kubernetes tốt nhất', content: 'Share resources học Docker/K8s mà mọi người thấy hữu ích nhé. Mình đang cần tài liệu tiếng Việt hoặc có subtitles.', tags: ['docker', 'kubernetes', 'devops', 'resources'] },
+          { userId: learnerUser.id, title: 'Kinh nghiệm thi AWS SAA-C03 lần đầu', content: 'Hôm qua mình vừa pass AWS SAA với 820/1000! Chia sẻ kinh nghiệm ôn thi cho những bạn đang chuẩn bị...', tags: ['aws', 'certification', 'exam-tips'] },
+          { userId: learnerUser.id, title: 'SQL Injection thực tế trông như thế nào?', content: 'Mình muốn hiểu SQL Injection không chỉ lý thuyết. Ai có ví dụ thực tế hoặc lab practice không?', tags: ['security', 'sql', 'practice'] },
+        ],
+      });
+      console.log('✅ Seeded discussion posts');
+    }
+  }
+
+  // ─── SEED: MOCK INTERVIEWS ───────────────────────────────────────────────
+  const interviewCount = await prisma.mockInterview.count();
+  if (interviewCount === 0) {
+    const l1 = await prisma.user.findFirst({ where: { email: 'learner1@techenglish.pro' } });
+    const l2 = await prisma.user.findFirst({ where: { email: 'learner2@techenglish.pro' } });
+    if (l1 && l2) {
+      const iv1 = await prisma.mockInterview.create({
+        data: { userId: l1.id, topic: 'cloud', difficulty: 'intermediate', status: 'completed', score: 8.2, completedAt: new Date(Date.now() - 2 * 24 * 3600000), feedback: 'Xuất sắc! Nắm vững IaaS/PaaS/SaaS. Cần đi sâu hơn về auto-scaling.' },
+      });
+      await prisma.mockInterviewTurn.createMany({
+        data: [
+          { interviewId: iv1.id, turnIndex: 0, question: 'Phân biệt IaaS, PaaS và SaaS. Cho ví dụ thực tế.', userAnswer: 'IaaS cung cấp hạ tầng ảo hóa như EC2. PaaS cung cấp nền tảng deploy như Heroku. SaaS là phần mềm sử dụng luôn như Gmail.', aiFeedback: 'Rất tốt! Phân biệt rõ ràng và ví dụ phù hợp. Gợi ý: thêm trade-offs giữa 3 loại.', score: 8.5 },
+          { interviewId: iv1.id, turnIndex: 1, question: 'AWS S3 là gì? Khi nào nên dùng S3 thay vì EBS?', userAnswer: 'S3 là object storage, EBS là block storage. S3 dùng cho static files, backup. EBS dùng cho database cần low latency.', aiFeedback: 'Xuất sắc! Phân biệt đúng use-case. Bổ sung: S3 có 99.999999999% durability.', score: 9.0 },
+          { interviewId: iv1.id, turnIndex: 2, question: 'Giải thích khái niệm auto-scaling trong cloud computing.', userAnswer: 'Auto-scaling tự động thêm bớt server dựa trên load. Scale out là thêm instance, scale in là xóa instance.', aiFeedback: 'Tốt! Cần đề cập thêm: cooldown period, scaling policies (CPU > 70% → scale out).', score: 7.5 },
+        ],
+      });
+      const iv2 = await prisma.mockInterview.create({
+        data: { userId: l2.id, topic: 'networking', difficulty: 'beginner', status: 'completed', score: 6.8, completedAt: new Date(Date.now() - 5 * 24 * 3600000), feedback: 'Kiến thức cơ bản tốt. Cần hiểu sâu hơn về routing protocols.' },
+      });
+      await prisma.mockInterviewTurn.createMany({
+        data: [
+          { interviewId: iv2.id, turnIndex: 0, question: 'Giải thích sự khác biệt giữa TCP và UDP.', userAnswer: 'TCP có kết nối, đảm bảo delivery. UDP không kết nối, nhanh hơn.', aiFeedback: 'Cơ bản đúng. Cần thêm: TCP dùng cho HTTP, SSH. UDP dùng cho DNS, video streaming.', score: 7.0 },
+          { interviewId: iv2.id, turnIndex: 1, question: 'OSI model có bao nhiêu tầng? Mô tả chức năng từng tầng.', userAnswer: '7 tầng: Physical, Data Link, Network, Transport, Session, Presentation, Application.', aiFeedback: 'Liệt kê chính xác! Lần sau hãy mô tả chức năng mỗi tầng có ví dụ.', score: 6.5 },
+        ],
+      });
+    }
+    console.log('   ✅ Seeded Mock Interviews & Turns');
+  }
+
+  // ─── SEED: WRITING SUBMISSIONS ─────────────────────────────────────────────
+  const writingCount = await prisma.writingSubmission.count();
+  if (writingCount === 0) {
+    const l1 = await prisma.user.findFirst({ where: { email: 'learner1@techenglish.pro' } });
+    const l3 = await prisma.user.findFirst({ where: { email: 'learner3@techenglish.pro' } });
+    if (l1) {
+      await prisma.writingSubmission.createMany({
+        data: [
+          {
+            userId: l1.id,
+            topic: 'Cloud Migration',
+            prompt: 'Viết email báo cáo tiến độ migrate hệ thống lên AWS cho CTO.',
+            userText: 'Dear Mr. Johnson,\n\nI am writing to provide a progress update on our AWS migration project.\n\nAs of this week, we have successfully migrated 60% of our production workloads to AWS EC2 and RDS. The S3 buckets are configured with proper IAM policies and versioning enabled.\n\nKey achievements:\n- Database migration completed with zero downtime using AWS DMS\n- Auto-scaling groups configured for peak load handling\n- CloudWatch monitoring dashboards set up\n\nRemaining risks: Legacy payment system integration requires additional 2 weeks.\n\nBest regards,\nKhanh',
+            aiFeedback: 'Email chuyên nghiệp và có cấu trúc tốt. Sử dụng từ vựng kỹ thuật chính xác (IAM, DMS, CloudWatch). Gợi ý: thêm timeline cụ thể và budget impact.',
+            grammarScore: 9.0, clarityScore: 8.5, vocabScore: 9.2, overallScore: 8.9,
+          },
+          {
+            userId: l1.id,
+            topic: 'Incident Report',
+            prompt: 'Viết incident report sau 2 giờ downtime production.',
+            userText: 'INCIDENT REPORT\nDate: 2024-01-15\nSeverity: P1 - Critical\n\nSummary: Production database experienced 2-hour outage due to storage exhaustion.\n\nRoot Cause: Automated log rotation was disabled after last deployment. Database disk usage reached 100%, causing write failures.\n\nImpact: ~500 users unable to access the platform. Revenue impact estimated at $2,000.\n\nResolution: Emergency disk expansion via AWS EBS volume modification. Log rotation re-enabled and monitoring threshold set to 80%.\n\nPreventive Actions:\n1. Add disk usage CloudWatch alarm at 75%\n2. Implement automated log rotation testing in CI/CD pipeline',
+            aiFeedback: 'Incident report rất chuyên nghiệp! Format chuẩn ITIL. Phân tích root cause rõ ràng. Preventive actions thực tế và đo lường được.',
+            grammarScore: 9.5, clarityScore: 9.0, vocabScore: 9.0, overallScore: 9.2,
+          },
+        ],
+      });
+    }
+    if (l3) {
+      await prisma.writingSubmission.create({
+        data: {
+          userId: l3.id,
+          topic: 'Security Policy',
+          prompt: 'Viết password policy cho công ty.',
+          userText: 'PASSWORD SECURITY POLICY\n\n1. Minimum length: 12 characters\n2. Must contain: uppercase, lowercase, numbers, special characters\n3. Password expiry: 90 days\n4. Cannot reuse last 5 passwords\n5. Account lockout after 5 failed attempts\n6. MFA required for admin accounts\n\nViolation consequences: Account suspension pending security review.',
+          aiFeedback: 'Policy rõ ràng và toàn diện. Gợi ý: thêm password manager recommendation và training requirements.',
+          grammarScore: 8.5, clarityScore: 9.0, vocabScore: 8.0, overallScore: 8.5,
+        },
+      });
+    }
+    console.log('   ✅ Seeded Writing Submissions');
+  }
+
+  // ─── SEED: DISCUSSION COMMENTS & VOTES ───────────────────────────────────
+  const commentCount = await prisma.discussionComment.count();
+  if (commentCount === 0) {
+    const posts = await prisma.discussionPost.findMany({ take: 3 });
+    const learners = await prisma.user.findMany({ where: { email: { in: ['learner2@techenglish.pro', 'learner3@techenglish.pro', 'learner4@techenglish.pro'] } } });
+    if (posts.length > 0 && learners.length > 0) {
+      for (const post of posts.slice(0, 3)) {
+        const shuffled = learners.sort(() => Math.random() - 0.5);
+        await prisma.discussionComment.createMany({
+          data: [
+            { postId: post.id, userId: shuffled[0].id, content: 'Mình cũng đang gặp vấn đề này! Cảm ơn bạn đã hỏi. Mình thường dùng Anki flashcard và làm lab thực hành để nhớ lâu hơn.' },
+            { postId: post.id, userId: shuffled[1 % shuffled.length].id, content: 'Tips của mình: đọc documentation gốc của AWS/RFC rất hữu ích. Và cứ thực hành truyền tán trên Cisco Packet Tracer.' },
+          ],
+        });
+        // Add votes
+        for (const learner of learners.slice(0, 2)) {
+          await prisma.discussionVote.upsert({
+            where: { postId_userId: { postId: post.id, userId: learner.id } },
+            update: {},
+            create: { postId: post.id, userId: learner.id, value: 1 },
+          });
+        }
+      }
+      console.log('   ✅ Seeded Discussion Comments & Votes');
+    }
+  }
+
+  // ─── SEED: LEARNING PLAN ITEMS ───────────────────────────────────────────────
+  const planCount = await prisma.learningPlanItem.count();
+  if (planCount === 0) {
+    const l1 = await prisma.user.findFirst({ where: { email: 'learner1@techenglish.pro' } });
+    const allLessons = await prisma.lesson.findMany({ take: 6, where: { status: 'published' } });
+    if (l1 && allLessons.length > 0) {
+      const today = new Date();
+      const planData = allLessons.slice(0, 5).map((lesson, i) => ({
+        userId: l1.id,
+        lessonId: lesson.id,
+        title: lesson.title,
+        plannedAt: new Date(today.getTime() + i * 24 * 3600000),
+        durationMin: lesson.estimatedMinutes || 30,
+        isCompleted: i < 2,
+        note: i === 0 ? 'Ôn lại phần IAM policies' : null,
+      }));
+      await prisma.learningPlanItem.createMany({ data: planData });
+      // Add extra for learner2
+      const l2 = await prisma.user.findFirst({ where: { email: 'learner2@techenglish.pro' } });
+      if (l2 && allLessons[0]) {
+        await prisma.learningPlanItem.create({
+          data: { userId: l2.id, title: 'Kubernetes Architecture Overview', plannedAt: new Date(today.getTime() + 2 * 3600000), durationMin: 45, isCompleted: false },
+        });
+      }
+      console.log('   ✅ Seeded Learning Plan Items');
+    }
+  }
+
+  // ─── SEED: EXTRA NOTIFICATIONS ──────────────────────────────────────────────────
+  const notifCount = await prisma.notification.count();
+  if (notifCount === 0) {
+    const l1 = await prisma.user.findFirst({ where: { email: 'learner1@techenglish.pro' } });
+    if (l1) {
+      await prisma.notification.createMany({
+        data: [
+          { userId: null, type: 'flash_sale', title: '⚡ Flash Sale Gói PRO - Giảm 30%!', message: 'Cơ hội vàng! Nâng cấp gói PRO ngay hôm nay với mã FLASH30 để tiết kiệm 30%. Chỉ còn 5 giờ!', actionUrl: '/learn/pricing', isRead: false },
+          { userId: l1.id, type: 'streak', title: '🔥 Chuỗi 14 ngày học liên tiếp!', message: 'Tuyệt vời! Bạn đã duy trì chuỗi học 14 ngày. Hãy tiếp tục để đạt badge "Học viên kiên trì"!', actionUrl: '/learn/achievements', isRead: false },
+          { userId: l1.id, type: 'lesson_complete', title: '✅ Hoàn thành bài học AWS S3', message: 'Chúc mừng! Bạn đã hoàn thành bài học AWS S3 Storage Basics. +50 EXP!', actionUrl: '/learn/lessons', isRead: true },
+          { userId: l1.id, type: 'reminder', title: '📚 Nhắc nhở học tập hôm nay', message: 'Bạn chưa học hôm nay. Hãy dành 15 phút để ôn tập từ vựng Cloud Computing nhé!', actionUrl: '/learn/lessons', isRead: false },
+          { userId: null, type: 'achievement', title: '🏆 Badge mới: AWS Expert!', message: 'TechEnglish vừa thêm huy hiệu "AWS Expert". Hoàn thành lộ trình Cloud Computing để mở khóa ngay!', actionUrl: '/learn/achievements', isRead: false },
+          { userId: l1.id, type: 'system', title: '🎉 Tài khoản PRO đã được kích hoạt!', message: 'Chúc mừng bạn đã nâng cấp lên PRO Yearly. Tận hưởng đầy đủ tính năng premium!', actionUrl: '/learn/profile', isRead: true },
+        ],
+      });
+      console.log('   ✅ Seeded Notifications');
+    }
+  }
+
   console.log('\n✨ Seed hoàn tất!')
   console.log('\n📌 Tài khoản demo:')
   console.log('   Admin:    admin@techenglish.pro         / Demo@123456  [PRO Lifetime]')
@@ -933,3 +1098,5 @@ async function main() {
 main()
   .catch((e) => { console.error('❌ Seed thất bại:', e); process.exit(1) })
   .finally(async () => { await prisma.$disconnect() })
+
+

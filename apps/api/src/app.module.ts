@@ -1,3 +1,8 @@
+import { NotificationController } from './presentation/notification.controller';
+import { PlannerController } from './presentation/planner.controller';
+import { MockInterviewController } from './presentation/mock-interview.controller';
+import { WritingController } from './presentation/writing.controller';
+import { DiscussionController } from './presentation/discussion.controller';
 import { Module } from '@nestjs/common'
 import { ConfigModule } from '@nestjs/config'
 import { PrismaModule } from './infrastructure/database/prisma.module'
@@ -18,6 +23,13 @@ import { PaymentModule } from './modules/payment.module'
 import { RedisCacheModule } from './infrastructure/cache/redis.module'
 
 @Module({
+  controllers: [
+    NotificationController, 
+    PlannerController,
+    MockInterviewController,
+    WritingController,
+    DiscussionController
+  ],
   imports: [
     ConfigModule.forRoot({ isGlobal: true }),
     PrismaModule,
@@ -38,3 +50,4 @@ import { RedisCacheModule } from './infrastructure/cache/redis.module'
   ],
 })
 export class AppModule {}
+

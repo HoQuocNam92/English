@@ -328,7 +328,7 @@ export default function TestBuilderPage() {
           <button
             type="submit"
             disabled={saving}
-            className="flex items-center gap-2 px-6 py-2.5 rounded-xl bg-primary text-on-primary text-sm font-semibold hover:opacity-90 disabled:opacity-50 transition-opacity"
+            className="flex items-center gap-2 px-6 py-2.5 rounded-xl bg-primary text-white text-sm font-semibold hover:opacity-90 disabled:opacity-50 transition-opacity"
           >
             {saving ? (
               <span className="animate-spin material-symbols-outlined text-[16px]">progress_activity</span>
@@ -350,3 +350,4 @@ export default function TestBuilderPage() {
     </div>
   );
 }
+

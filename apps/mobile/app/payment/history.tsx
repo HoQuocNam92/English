@@ -416,7 +416,7 @@ const styles = StyleSheet.create({
   subCardTitle: { fontSize: 16, fontWeight: '800', color: colors.text },
   subCardSubtitle: { fontSize: 12, color: colors.mutedText, marginTop: 2 },
   upgradeBtn: { backgroundColor: colors.primary, paddingVertical: 12, borderRadius: 10, flexDirection: 'row', alignItems: 'center', justifyContent: 'center' },
-  upgradeBtnText: { color: '#ffffff', fontSize: 14, fontWeight: '800' },
+  upgradeBtnText: { color: colors.onPrimary, fontSize: 14, fontWeight: '800' },
   sectionHeaderRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginTop: spacing.sm },
   sectionTitle: { fontSize: 16, fontWeight: '800', color: colors.text },
   paginationMeta: { fontSize: 12, color: colors.mutedText, fontWeight: '600' },
@@ -465,3 +465,4 @@ const styles = StyleSheet.create({
   confirmPaidBtn: { flex: 1, backgroundColor: colors.primary, paddingVertical: 14, borderRadius: 12, flexDirection: 'row', alignItems: 'center', justifyContent: 'center' },
   confirmPaidText: { color: '#ffffff', fontSize: 14, fontWeight: '800' }
 });
+

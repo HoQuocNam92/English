@@ -15,21 +15,28 @@ export default function MobileHomeScreen() {
   const [recommendation, setRecommendation] = useState<any>(null);
   const [lessons, setLessons] = useState<any[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
+  const [flashSales, setFlashSales] = useState<any[]>([]);
+  const [vouchers, setVouchers] = useState<any[]>([]);
 
   const fetchHomeData = async () => {
     setIsLoading(true);
     setError('');
     try {
-      const [meRes, progRes, recRes, lessonsRes] = await Promise.all([
+      const [meRes, progRes, recRes, lessonsRes, flashRes, voucherRes] = await Promise.allSettled([
         api.get<any>('/auth/me'),
         api.get<any>('/progress/me'),
         api.get<any>('/recommendations/my'),
-        api.get<any>('/lessons?limit=4')
+        api.get<any>('/lessons?limit=4'),
+        api.get<any>('/flash-sales/active'),
+        api.get<any>('/vouchers/active'),
       ]);
-      setUserData(meRes);
-      setProgressData(progRes);
-      setRecommendation(recRes);
-      setLessons(lessonsRes?.data || lessonsRes || []);
+
+      if (meRes.status === 'fulfilled') setUserData(meRes.value);
+      if (progRes.status === 'fulfilled') setProgressData(progRes.value);
+      if (recRes.status === 'fulfilled') setRecommendation(recRes.value);
+      if (lessonsRes.status === 'fulfilled') setLessons(lessonsRes.value?.data || lessonsRes.value || []);
+      if (flashRes.status === 'fulfilled') setFlashSales(Array.isArray(flashRes.value) ? flashRes.value : []);
+      if (voucherRes.status === 'fulfilled') setVouchers(Array.isArray(voucherRes.value) ? voucherRes.value : []);
     } catch (err: any) {
       setError(err.message || 'Không thể tải dữ liệu');
     } finally {
@@ -130,6 +137,48 @@ export default function MobileHomeScreen() {
           <MaterialIcons name="arrow-forward" size={18} color="#ffffff" />
         </TouchableOpacity>
       </View>
+
+      {/* ⚡ Promos & Flash Sale Card (Only shown if active in API) */}
+      {(flashSales.length > 0 || vouchers.length > 0) && (
+        <View style={styles.promoContainer}>
+          <View style={styles.promoHeaderRow}>
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+              <MaterialIcons name="local-offer" size={16} color={colors.primary} />
+              <Text style={styles.promoTitle}>ƯU ĐÃI KHUYẾN MÃI HOẠT ĐỘNG</Text>
+            </View>
+            {flashSales.length > 0 && (
+              <View style={styles.badgeSale}>
+                <Text style={styles.badgeSaleText}>-{flashSales[0].discountPercent}%</Text>
+              </View>
+            )}
+          </View>
+          <Text style={styles.promoDesc}>
+            {flashSales[0]?.title || 'Danh sách mã giảm giá và chương trình ưu đãi mới nhất!'}
+          </Text>
+
+          {/* Voucher chips */}
+          {vouchers.length > 0 && (
+            <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ marginVertical: 8 }}>
+              {vouchers.map((v: any) => (
+                <View key={v.id || v.code} style={styles.voucherChip}>
+                  <MaterialIcons name="confirmation-number" size={14} color={colors.primary} />
+                  <Text style={styles.voucherChipCode}>{v.code}</Text>
+                  <Text style={styles.voucherChipText}>({v.name})</Text>
+                </View>
+              ))}
+            </ScrollView>
+          )}
+
+          <TouchableOpacity
+            style={styles.promoButton}
+            activeOpacity={0.8}
+            onPress={() => router.push('/payment' as any)}
+          >
+            <Text style={styles.promoButtonText}>Nâng cấp PRO & Áp dụng Voucher</Text>
+            <MaterialIcons name="arrow-forward" size={16} color="#ffffff" />
+          </TouchableOpacity>
+        </View>
+      )}
 
       {/* AI Recommendation Card */}
       {recommendation && (
@@ -325,7 +374,7 @@ const styles = StyleSheet.create({
     marginTop: spacing.xs
   },
   continueButtonText: {
-    color: '#ffffff',
+    color: colors.onPrimary,
     fontSize: 14,
     fontWeight: '700'
   },
@@ -468,5 +517,80 @@ const styles = StyleSheet.create({
   boldText: {
     fontWeight: '700',
     color: colors.text
-  }
+  },
+  promoContainer: {
+    backgroundColor: '#3525cd',
+    borderRadius: 16,
+    padding: 16,
+    marginBottom: spacing.md,
+    shadowColor: '#3525cd',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.2,
+    shadowRadius: 8,
+    elevation: 4,
+  },
+  promoHeaderRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: 4,
+  },
+  promoTitle: {
+    fontSize: 13,
+    fontWeight: '900',
+    color: '#ffffff',
+    letterSpacing: 0.5,
+  },
+  badgeSale: {
+    backgroundColor: '#f59e0b',
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+    borderRadius: 10,
+  },
+  badgeSaleText: {
+    fontSize: 10,
+    fontWeight: '900',
+    color: '#000000',
+  },
+  promoDesc: {
+    fontSize: 12,
+    color: '#e0e7ff',
+    lineHeight: 16,
+  },
+  voucherChip: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#ffffff',
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    borderRadius: 20,
+    marginRight: 8,
+    gap: 4,
+  },
+  voucherChipCode: {
+    fontSize: 11,
+    fontWeight: '800',
+    color: colors.primary,
+  },
+  voucherChipText: {
+    fontSize: 10,
+    color: '#475569',
+  },
+  promoButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#f59e0b',
+    paddingVertical: 10,
+    paddingHorizontal: 16,
+    borderRadius: 12,
+    marginTop: 4,
+    gap: 6,
+  },
+  promoButtonText: {
+    fontSize: 12,
+    fontWeight: '900',
+    color: '#000000',
+  },
 });
+

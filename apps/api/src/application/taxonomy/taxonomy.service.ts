@@ -351,4 +351,96 @@ export class TaxonomyService {
       weeklyActivity,
     }
   }
+
+  async createStudentGroup(dto: any, currentUserId?: string) {
+    let teacherId = dto.teacherId
+    if (!teacherId && currentUserId) {
+      teacherId = currentUserId
+    }
+    if (!teacherId) {
+      const teacher = await this.prisma.user.findFirst({
+        where: { userRoles: { some: { role: { code: 'teacher' } } } },
+      })
+      teacherId = teacher?.id
+    }
+    if (!teacherId) {
+      const admin = await this.prisma.user.findFirst({
+        where: { userRoles: { some: { role: { code: 'admin' } } } },
+      })
+      teacherId = admin?.id
+    }
+    if (!teacherId) {
+      const anyUser = await this.prisma.user.findFirst()
+      teacherId = anyUser?.id
+    }
+
+    const group = await this.prisma.learnerGroup.create({
+      data: {
+        name: dto.name,
+        description: dto.description || null,
+        domainId: dto.domainId,
+        certificateId: dto.certificateId,
+        teacherId: teacherId!,
+        startsAt: dto.startsAt ? new Date(dto.startsAt) : null,
+        endsAt: dto.endsAt ? new Date(dto.endsAt) : null,
+      },
+      include: {
+        teacher: { include: { userDetail: true } },
+        domain: true,
+        certificate: true,
+        members: { include: { learner: { include: { userDetail: true } } } },
+        _count: { select: { members: true } },
+      },
+    })
+    return group
+  }
+
+  async createCertificate(dto: any) {
+    const cert = await this.prisma.certificate.create({
+      data: {
+        code: dto.code,
+        name: dto.name,
+        provider: dto.provider,
+        description: dto.description,
+        examUrl: dto.examUrl || null,
+      },
+      include: {
+        domains: { include: { domain: true } },
+        _count: {
+          select: {
+            exams: true,
+            lessonCerts: true,
+            questionCerts: true,
+          },
+        },
+      },
+    })
+    return { data: cert }
+  }
+
+  async updateCertificate(id: string, dto: any) {
+    const data: any = {}
+    if (dto.code !== undefined) data.code = dto.code
+    if (dto.name !== undefined) data.name = dto.name
+    if (dto.provider !== undefined) data.provider = dto.provider
+    if (dto.description !== undefined) data.description = dto.description
+    if (dto.examUrl !== undefined) data.examUrl = dto.examUrl
+    if (dto.isActive !== undefined) data.isActive = dto.isActive
+
+    const cert = await this.prisma.certificate.update({
+      where: { id },
+      data,
+      include: {
+        domains: { include: { domain: true } },
+        _count: {
+          select: {
+            exams: true,
+            lessonCerts: true,
+            questionCerts: true,
+          },
+        },
+      },
+    })
+    return { data: cert }
+  }
 }

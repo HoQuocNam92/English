@@ -1,8 +1,9 @@
-import { Controller, Get, Query, UseGuards } from '@nestjs/common'
+import { Controller, Get, Post, Patch, Body, Param, Query, UseGuards } from '@nestjs/common'
 import { ApiTags, ApiBearerAuth, ApiOperation } from '@nestjs/swagger'
 import { TaxonomyService } from '../application/taxonomy/taxonomy.service'
 import { JwtAuthGuard } from '../infrastructure/auth/jwt-auth.guard'
 import { PermissionsGuard } from '../infrastructure/auth/permissions.guard'
+import { CurrentUser, JwtPayload } from './decorators/current-user.decorator'
 
 @ApiTags('Taxonomy & Metadata')
 @ApiBearerAuth()
@@ -29,6 +30,18 @@ export class TaxonomyController {
     return this.svc.getCertificates()
   }
 
+  @Post('certificates')
+  @ApiOperation({ summary: 'Create a certificate' })
+  createCertificate(@Body() dto: any) {
+    return this.svc.createCertificate(dto)
+  }
+
+  @Patch('certificates/:id')
+  @ApiOperation({ summary: 'Update a certificate' })
+  updateCertificate(@Param('id') id: string, @Body() dto: any) {
+    return this.svc.updateCertificate(id, dto)
+  }
+
   @Get('students')
   @ApiOperation({ summary: 'List all students/learners (for teachers and admins)' })
   getStudents(@Query() q: any) {
@@ -39,6 +52,12 @@ export class TaxonomyController {
   @ApiOperation({ summary: 'List student groups' })
   getStudentGroups(@Query() q: any) {
     return this.svc.getStudentGroups(q)
+  }
+
+  @Post('student-groups')
+  @ApiOperation({ summary: 'Create student group' })
+  createStudentGroup(@Body() dto: any, @CurrentUser() user: JwtPayload) {
+    return this.svc.createStudentGroup(dto, user?.sub)
   }
 
   @Get('test-results')

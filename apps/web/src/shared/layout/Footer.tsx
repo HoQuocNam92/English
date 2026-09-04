@@ -92,7 +92,7 @@ export function Footer() {
                 </Link>
               </li>
               <li>
-                <Link href="/dashboard" className="hover:text-primary transition-colors">
+                <Link href="/admin-login" className="hover:text-primary transition-colors">
                   Cổng quản trị (Admin & Teacher)
                 </Link>
               </li>
@@ -113,7 +113,7 @@ export function Footer() {
         {/* Bottom copyright & attribution */}
         <div className="pt-6 border-t border-slate-200 flex flex-col sm:flex-row justify-between items-center gap-4 text-xs text-slate-500 font-medium">
           <div>
-            © 2026 <strong>TechEnglish Pro</strong>. Khóa luận tốt nghiệp KLCN028. All rights reserved.
+            © 2026 <strong>TechEnglish Pro</strong> All rights reserved.
           </div>
           <div className="flex items-center gap-4">
             <span>Phiên bản 1.0.0</span>

@@ -12,14 +12,15 @@ export default function LearnerPersonalProgressPage() {
   useEffect(() => {
     async function loadData() {
       try {
-        const [progressRes, profileRes] = await Promise.all<any>([
+        const [progressResult, profileResult] = await Promise.allSettled([
           apiClient.get('/progress/me'),
           apiClient.get('/learner-profiles/me')
         ]);
-        setData({
-          progress: progressRes,
-          profile: profileRes
-        });
+
+        const progress = progressResult.status === 'fulfilled' ? progressResult.value : null;
+        const profile = profileResult.status === 'fulfilled' ? profileResult.value : null;
+
+        setData({ progress, profile });
       } catch (err) {
         setError('Failed to load progress data');
       } finally {
@@ -30,7 +31,7 @@ export default function LearnerPersonalProgressPage() {
   }, []);
 
   if (loading) return <LearnerShell><div className="p-8 text-center"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto"></div></div></LearnerShell>;
-  if (error || !data.progress) return <LearnerShell><div className="p-8 text-center text-red-500">{error || 'Empty state'}</div></LearnerShell>;
+  if (error) return <LearnerShell><div className="p-8 text-center text-error">{error}</div></LearnerShell>;
 
   const { progress, profile } = data;
   const overallCompletion = progress?.summary?.overallCompletionPercent ?? 0;

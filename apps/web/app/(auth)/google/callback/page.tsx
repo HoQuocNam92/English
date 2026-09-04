@@ -20,8 +20,8 @@ function GoogleCallbackInner() {
 
         const roles = user.roles ?? []
         if (roles.includes('admin')) router.replace('/admin/dashboard')
-        else if (roles.includes('teacher')) router.replace('/teacher/dashboard')
-        else router.replace('/dashboard')
+        else if (roles.includes('teacher')) router.replace('/admin/dashboard')
+        else router.replace('/learn')
       } catch {
         router.replace('/login?error=oauth_failed')
       }

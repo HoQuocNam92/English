@@ -25,6 +25,12 @@ const ROLE_OPTS = [
   { value: 'learner', label: 'Học viên' },
 ];
 
+const CREATE_ROLE_OPTS = [
+  { value: 'learner', label: 'Học viên' },
+  { value: 'teacher', label: 'Giảng viên' },
+  { value: 'admin', label: 'Quản trị viên' },
+];
+
 function RoleBadge({ role }: { role: string }) {
   const r = ROLE_LABELS[role] ?? { label: role, cls: 'bg-gray-100 text-gray-600' };
   return <span className={`inline-flex px-2 py-0.5 rounded-full text-xs font-medium ${r.cls}`}>{r.label}</span>;
@@ -63,6 +69,221 @@ function validateStatusChange(currentStatus: string, newStatus: string): string 
   return null;
 }
 
+// ─── Create User Modal ─────────────────────────────────────────────────
+interface CreateUserForm {
+  email: string;
+  displayName: string;
+  password: string;
+  role: string;
+}
+
+interface CreateUserErrors {
+  email?: string;
+  displayName?: string;
+  password?: string;
+  role?: string;
+}
+
+function validateCreateForm(form: CreateUserForm): CreateUserErrors {
+  const errors: CreateUserErrors = {};
+  if (!form.email.trim()) {
+    errors.email = 'Email không được để trống';
+  } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email.trim())) {
+    errors.email = 'Email không đúng định dạng';
+  }
+  if (!form.displayName.trim()) {
+    errors.displayName = 'Tên hiển thị không được để trống';
+  }
+  if (!form.password) {
+    errors.password = 'Mật khẩu không được để trống';
+  } else if (form.password.length < 8) {
+    errors.password = 'Mật khẩu tối thiểu 8 ký tự';
+  }
+  if (!form.role) {
+    errors.role = 'Vui lòng chọn vai trò';
+  }
+  return errors;
+}
+
+const EMPTY_FORM: CreateUserForm = { email: '', displayName: '', password: '', role: 'learner' };
+
+interface CreateUserModalProps {
+  onClose: () => void;
+  onCreated: () => void;
+}
+
+function CreateUserModal({ onClose, onCreated }: CreateUserModalProps) {
+  const [form, setForm] = React.useState<CreateUserForm>(EMPTY_FORM);
+  const [errors, setErrors] = React.useState<CreateUserErrors>({});
+  const [submitting, setSubmitting] = React.useState(false);
+  const [submitError, setSubmitError] = React.useState<string | null>(null);
+
+  // Close on Escape key
+  React.useEffect(() => {
+    const handler = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose(); };
+    window.addEventListener('keydown', handler);
+    return () => window.removeEventListener('keydown', handler);
+  }, [onClose]);
+
+  const field = (name: keyof CreateUserForm) => ({
+    value: form[name],
+    onChange: (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+      setForm((prev) => ({ ...prev, [name]: e.target.value }));
+      if (errors[name]) setErrors((prev) => ({ ...prev, [name]: undefined }));
+    },
+  });
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const errs = validateCreateForm(form);
+    if (Object.keys(errs).length > 0) { setErrors(errs); return; }
+
+    setSubmitting(true);
+    setSubmitError(null);
+    try {
+      await apiClient.post('/users', {
+        email: form.email.trim(),
+        displayName: form.displayName.trim(),
+        password: form.password,
+        role: form.role,
+        roleCode: form.role,
+      });
+      onCreated();
+    } catch (err) {
+      setSubmitError(err instanceof ApiClientError ? err.message : 'Tạo tài khoản thất bại. Vui lòng thử lại.');
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  const inputCls = (hasErr: boolean) =>
+    `w-full rounded-xl border px-3 py-2 text-sm text-on-surface bg-surface-container-low focus:outline-none focus:ring-2 transition-colors ${
+      hasErr
+        ? 'border-red-400 focus:ring-red-300'
+        : 'border-outline-variant/60 focus:ring-primary/30'
+    }`;
+
+  return (
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center p-4"
+      style={{ backgroundColor: 'rgba(0,0,0,0.45)' }}
+      onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}
+    >
+      <div
+        className="relative w-full rounded-2xl bg-surface-container-low border border-outline-variant/30 shadow-xl overflow-hidden"
+        style={{ width: '100%', maxWidth: '480px' }}
+      >
+        {/* Header */}
+        <div className="flex items-center justify-between px-6 py-4 border-b border-outline-variant/30">
+          <h2 className="text-base font-semibold text-on-surface">Tạo tài khoản mới</h2>
+          <button
+            type="button"
+            onClick={onClose}
+            className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-outline-variant/20 transition-colors text-on-surface-variant"
+            aria-label="Đóng"
+          >
+            <span className="material-symbols-outlined text-[20px]">close</span>
+          </button>
+        </div>
+
+        {/* Form */}
+        <form onSubmit={handleSubmit} noValidate className="px-6 py-5 space-y-4">
+          {/* Email */}
+          <div>
+            <label className="block text-xs font-medium text-on-surface-variant mb-1">
+              Email <span className="text-red-500">*</span>
+            </label>
+            <input
+              type="email"
+              autoComplete="off"
+              placeholder="example@email.com"
+              className={inputCls(!!errors.email)}
+              {...field('email')}
+            />
+            {errors.email && <p className="mt-1 text-xs text-red-500">{errors.email}</p>}
+          </div>
+
+          {/* Display Name */}
+          <div>
+            <label className="block text-xs font-medium text-on-surface-variant mb-1">
+              Tên hiển thị <span className="text-red-500">*</span>
+            </label>
+            <input
+              type="text"
+              autoComplete="off"
+              placeholder="Nguyễn Văn A"
+              className={inputCls(!!errors.displayName)}
+              {...field('displayName')}
+            />
+            {errors.displayName && <p className="mt-1 text-xs text-red-500">{errors.displayName}</p>}
+          </div>
+
+          {/* Password */}
+          <div>
+            <label className="block text-xs font-medium text-on-surface-variant mb-1">
+              Mật khẩu <span className="text-red-500">*</span>
+            </label>
+            <input
+              type="password"
+              autoComplete="new-password"
+              placeholder="Tối thiểu 8 ký tự"
+              className={inputCls(!!errors.password)}
+              {...field('password')}
+            />
+            {errors.password && <p className="mt-1 text-xs text-red-500">{errors.password}</p>}
+          </div>
+
+          {/* Role */}
+          <div>
+            <label className="block text-xs font-medium text-on-surface-variant mb-1">
+              Vai trò <span className="text-red-500">*</span>
+            </label>
+            <select
+              className={inputCls(!!errors.role)}
+              {...field('role')}
+            >
+              {CREATE_ROLE_OPTS.map((r) => (
+                <option key={r.value} value={r.value}>{r.label}</option>
+              ))}
+            </select>
+            {errors.role && <p className="mt-1 text-xs text-red-500">{errors.role}</p>}
+          </div>
+
+          {/* Submit error */}
+          {submitError && (
+            <div className="p-3 rounded-xl bg-error-container text-on-error-container text-xs">
+              {submitError}
+            </div>
+          )}
+
+          {/* Actions */}
+          <div className="flex justify-end gap-3 pt-1">
+            <button
+              type="button"
+              onClick={onClose}
+              disabled={submitting}
+              className="px-4 py-2 rounded-xl text-sm border border-outline-variant text-on-surface hover:bg-surface-container transition-colors disabled:opacity-50"
+            >
+              Huỷ
+            </button>
+            <button
+              type="submit"
+              disabled={submitting}
+              className="px-4 py-2 rounded-xl text-sm bg-primary text-white hover:opacity-90 transition-opacity disabled:opacity-50 flex items-center gap-2"
+            >
+              {submitting && (
+                <span className="w-3.5 h-3.5 border-2 border-on-primary/40 border-t-on-primary rounded-full animate-spin" />
+              )}
+              {submitting ? 'Đang tạo...' : 'Tạo tài khoản'}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
+}
+
+// ─── Page ──────────────────────────────────────────────────────────────
 export default function AdminUsersPage() {
   const [users, setUsers] = React.useState<UserItem[]>([]);
   const [total, setTotal] = React.useState(0);
@@ -75,6 +296,8 @@ export default function AdminUsersPage() {
   const [error, setError] = React.useState<string | null>(null);
   const [actionLoading, setActionLoading] = React.useState<string | null>(null);
   const [actionError, setActionError] = React.useState<string | null>(null);
+  const [showCreateModal, setShowCreateModal] = React.useState(false);
+  const [successMessage, setSuccessMessage] = React.useState<string | null>(null);
   const limit = 15;
 
   const totalPages = Math.ceil(total / limit);
@@ -126,9 +349,27 @@ export default function AdminUsersPage() {
     }
   };
 
+  const handleCreated = () => {
+    setShowCreateModal(false);
+    setSuccessMessage('Tạo tài khoản thành công!');
+    void load();
+    setTimeout(() => setSuccessMessage(null), 4000);
+  };
+
   return (
     <div>
-      <PageHeader title="Quản lý người dùng" description="Danh sách toàn bộ tài khoản" />
+      {/* Header row */}
+      <div className="flex items-start justify-between gap-4">
+        <PageHeader title="Quản lý người dùng" description="Danh sách toàn bộ tài khoản" />
+        <button
+          type="button"
+          onClick={() => setShowCreateModal(true)}
+          className="mt-1 shrink-0 inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-primary text-white text-sm font-medium hover:opacity-90 transition-opacity"
+        >
+          <span className="material-symbols-outlined text-[18px]">person_add</span>
+          Tạo tài khoản mới
+        </button>
+      </div>
 
       {/* Filters */}
       <div className="mt-6 flex flex-col sm:flex-row gap-3 flex-wrap">
@@ -163,6 +404,14 @@ export default function AdminUsersPage() {
         <p className="mt-3 text-xs text-on-surface-variant">
           {total} người dùng · Trang {page}/{totalPages || 1}
         </p>
+      )}
+
+      {/* Success banner */}
+      {successMessage && (
+        <div className="mt-4 p-3 rounded-xl bg-green-100 text-green-800 text-sm flex items-center gap-2">
+          <span className="material-symbols-outlined text-[18px]">check_circle</span>
+          {successMessage}
+        </div>
       )}
 
       {error && (
@@ -270,6 +519,15 @@ export default function AdminUsersPage() {
           </div>
         )}
       </div>
+
+      {/* Create User Modal */}
+      {showCreateModal && (
+        <CreateUserModal
+          onClose={() => setShowCreateModal(false)}
+          onCreated={handleCreated}
+        />
+      )}
     </div>
   );
 }
+

@@ -275,7 +275,7 @@ const styles = StyleSheet.create({
     marginTop: spacing.xs
   },
   submitBtnText: {
-    color: '#ffffff',
+    color: colors.onPrimary,
     fontSize: 15,
     fontWeight: '700'
   },
@@ -299,3 +299,4 @@ const styles = StyleSheet.create({
     borderWidth: 1
   }
 });
+

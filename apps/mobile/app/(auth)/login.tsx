@@ -314,7 +314,7 @@ const styles = StyleSheet.create({
     marginTop: spacing.xs
   },
   loginButtonText: {
-    color: '#ffffff',
+    color: colors.onPrimary,
     fontSize: 15,
     fontWeight: '700'
   },
@@ -403,3 +403,4 @@ const styles = StyleSheet.create({
     color: '#334155'
   }
 });
+

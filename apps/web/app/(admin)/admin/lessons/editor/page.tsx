@@ -25,7 +25,7 @@ export default function LessonEditorPage() {
 
   const [title, setTitle] = React.useState('');
   const [summary, setSummary] = React.useState('');
-  const [type, setType] = React.useState('reading');
+  const [type, setType] = React.useState('vocabulary');
   const [domainId, setDomainId] = React.useState('');
   const [levelId, setLevelId] = React.useState('');
   const [estimatedMinutes, setEstimatedMinutes] = React.useState('');
@@ -177,10 +177,12 @@ export default function LessonEditorPage() {
             onChange={(e) => setType(e.target.value)}
             className="w-full rounded-xl border border-outline-variant px-4 py-2.5 text-sm text-on-surface bg-surface-container-low focus:outline-none focus:border-primary"
           >
-            <option value="reading">Đọc hiểu</option>
             <option value="vocabulary">Từ vựng</option>
-            <option value="mixed">Kết hợp</option>
-            <option value="scenario">Tình huống thực tế</option>
+            <option value="terminology">Thuật ngữ chuyên ngành</option>
+            <option value="technical_reading">Đọc hiểu tài liệu kỹ thuật</option>
+            <option value="api_documentation">Tài liệu API</option>
+            <option value="system_design">System Design cơ bản</option>
+            <option value="case_study">Case Study thực tế</option>
           </select>
         </div>
 
@@ -253,7 +255,7 @@ export default function LessonEditorPage() {
           <button
             type="submit"
             disabled={saving}
-            className="flex items-center gap-2 px-6 py-2.5 rounded-xl bg-primary text-on-primary text-sm font-semibold hover:opacity-90 disabled:opacity-50 transition-opacity"
+            className="flex items-center gap-2 px-6 py-2.5 rounded-xl bg-primary text-white text-sm font-semibold hover:opacity-90 disabled:opacity-50 transition-opacity"
           >
             {saving ? (
               <span className="animate-spin material-symbols-outlined text-[16px]">progress_activity</span>
@@ -275,3 +277,4 @@ export default function LessonEditorPage() {
     </div>
   );
 }
+

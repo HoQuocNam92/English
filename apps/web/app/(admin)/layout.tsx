@@ -5,7 +5,7 @@ import { RouteGuard } from '@/shared/layout/RouteGuard';
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
   return (
-    <RouteGuard allowedRoles={['admin']}>
+    <RouteGuard allowedRoles={['admin', 'teacher']}>
       <AppShell>{children}</AppShell>
     </RouteGuard>
   );

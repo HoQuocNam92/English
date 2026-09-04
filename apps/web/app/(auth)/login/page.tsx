@@ -2,25 +2,37 @@
 
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { useMemo, useState } from 'react';
+import { useMemo, useState, useEffect } from 'react';
 import { useAuth } from '@/features/auth/presentation';
 
 export default function LoginPage() {
   const router = useRouter();
   const { session, loading, submitting, error, submitLogin, signOut } = useAuth();
-  const [email, setEmail] = useState('admin@techenglish.pro');
+  const [email, setEmail] = useState('learner1@techenglish.pro');
   const [password, setPassword] = useState('Demo@123456');
   const [showPassword, setShowPassword] = useState(false);
   const [rememberMe, setRememberMe] = useState(true);
 
   const currentRole = useMemo(() => session?.user.role ?? 'guest', [session]);
 
+  // Nếu đã đăng nhập → tự động chuyển thẳng vào trang tương ứng
+  useEffect(() => {
+    if (!loading && session) {
+      const role = session.user.role;
+      if (role === 'admin' || role === 'teacher') {
+        router.replace('/admin/dashboard');
+      } else {
+        router.replace('/learn');
+      }
+    }
+  }, [session, loading, router]);
+
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     try {
       const result = await submitLogin({ email, password });
-      const role = (result as any)?.user?.role ?? 'admin';
-      router.push(role === 'teacher' ? '/teacher/dashboard' : '/admin/dashboard');
+      const role = (result as any)?.user?.role ?? 'learner';
+      router.push((role === 'admin' || role === 'teacher') ? '/admin/dashboard' : '/learn');
     } catch {
       // Handled by auth state
     }
@@ -30,6 +42,16 @@ export default function LoginPage() {
     setEmail(quickEmail);
     setPassword('Demo@123456');
   };
+
+  if (loading) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-background">
+        <div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin" />
+      </div>
+    );
+  }
+
+  if (session) return null;
 
   return (
     <main className="flex min-h-screen w-full bg-background text-on-surface antialiased overflow-hidden">
@@ -89,36 +111,30 @@ export default function LoginPage() {
             <p className="text-sm text-on-surface-variant">Đăng nhập để quản lý hệ thống học tập</p>
           </div>
 
-          {session ? (
-            <div className="flex flex-col gap-4 p-5 rounded-xl bg-surface-container-low border border-outline-variant/50">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-full bg-primary text-on-primary flex items-center justify-center font-bold">
-                  {session.user.displayName.charAt(0)}
-                </div>
-                <div>
-                  <h4 className="font-semibold text-on-surface">{session.user.displayName}</h4>
-                  <p className="text-xs text-on-surface-variant">{session.user.email} · Vai trò: <span className="font-medium text-primary uppercase">{currentRole}</span></p>
-                </div>
+          <form className="flex flex-col gap-5" onSubmit={handleSubmit}>
+              {/* Google OAuth Login Button */}
+              <button
+                type="button"
+                onClick={() => {
+                  const apiBase = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080/api/v1';
+                  window.location.href = `${apiBase}/auth/google`;
+                }}
+                className="w-full h-11 bg-white hover:bg-slate-50 border border-outline-variant text-on-surface font-bold rounded-xl text-sm transition-all flex items-center justify-center gap-3 shadow-2xs cursor-pointer"
+              >
+                <svg className="w-5 h-5" viewBox="0 0 24 24">
+                  <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
+                  <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" />
+                  <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z" />
+                  <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z" />
+                </svg>
+                <span>Đăng nhập bằng Google</span>
+              </button>
+
+              <div className="relative flex items-center justify-center my-0.5">
+                <div className="border-t border-outline-variant/40 w-full" />
+                <span className="bg-surface-container-lowest px-3 text-[11px] text-outline font-semibold absolute uppercase">hoặc Email</span>
               </div>
-              <div className="flex gap-3 mt-2">
-                <Link
-                  href={currentRole === 'teacher' ? '/teacher/dashboard' : '/admin/dashboard'}
-                  className="flex-1 h-11 bg-primary text-on-primary rounded-lg font-semibold flex items-center justify-center gap-2 hover:bg-primary-container transition-all shadow-sm"
-                >
-                  <span>Vào Dashboard</span>
-                  <span className="material-symbols-outlined text-[18px]">arrow_forward</span>
-                </Link>
-                <button
-                  type="button"
-                  onClick={signOut}
-                  className="px-4 h-11 border border-outline-variant rounded-lg font-medium text-on-surface hover:bg-surface-container transition-all"
-                >
-                  Đăng xuất
-                </button>
-              </div>
-            </div>
-          ) : (
-            <form className="flex flex-col gap-5" onSubmit={handleSubmit}>
+
               {/* Email Field */}
               <div className="flex flex-col gap-1.5">
                 <label className="text-sm font-semibold text-on-surface" htmlFor="email">
@@ -132,7 +148,7 @@ export default function LoginPage() {
                     className="w-full h-12 pl-11 pr-4 rounded-lg border border-outline-variant bg-surface-container-lowest text-sm text-on-surface focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition-all placeholder:text-outline/70"
                     id="email"
                     name="email"
-                    placeholder="admin@techenglish.edu.vn"
+                    placeholder="learner1@techenglish.pro"
                     type="email"
                     value={email}
                     onChange={(event) => setEmail(event.target.value)}
@@ -210,30 +226,44 @@ export default function LoginPage() {
                 </span>
               </button>
 
-
-
               {/* Quick login helper badges */}
               <div className="mt-2 pt-4 border-t border-outline-variant/30 flex flex-col gap-2">
                 <span className="text-xs font-medium text-outline">Đăng nhập nhanh cho bản Demo:</span>
                 <div className="flex gap-2">
                   <button
                     type="button"
-                    onClick={() => handleQuickLogin('admin@techenglish.pro')}
-                    className="flex-1 py-1.5 px-2.5 rounded-md text-xs font-medium bg-surface-container hover:bg-surface-container-high text-on-surface border border-outline-variant/40 transition-colors text-center"
+                    onClick={() => handleQuickLogin('learner1@techenglish.pro')}
+                    className="flex-1 py-1.5 px-2 rounded-md text-xs font-bold bg-indigo-50 hover:bg-indigo-100 text-primary border border-indigo-200 transition-colors text-center"
                   >
-                    👑 Admin Demo
+                    👨‍🎓 Học viên
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => handleQuickLogin('admin@techenglish.pro')}
+                    className="flex-1 py-1.5 px-2 rounded-md text-xs font-medium bg-surface-container hover:bg-surface-container-high text-on-surface border border-outline-variant/40 transition-colors text-center"
+                  >
+                    👑 Admin
                   </button>
                   <button
                     type="button"
                     onClick={() => handleQuickLogin('nguyen.thanh@techenglish.pro')}
-                    className="flex-1 py-1.5 px-2.5 rounded-md text-xs font-medium bg-surface-container hover:bg-surface-container-high text-on-surface border border-outline-variant/40 transition-colors text-center"
+                    className="flex-1 py-1.5 px-2 rounded-md text-xs font-medium bg-surface-container hover:bg-surface-container-high text-on-surface border border-outline-variant/40 transition-colors text-center"
                   >
-                    🎓 Teacher Demo
+                    🎓 Teacher
                   </button>
                 </div>
               </div>
+
+              {/* Register Link */}
+              <div className="mt-2 pt-4 border-t border-outline-variant/30 text-center">
+                <p className="text-sm text-on-surface-variant">
+                  Chưa có tài khoản?{' '}
+                  <Link href="/register" className="font-bold text-primary hover:underline transition-colors">
+                    Đăng ký ngay
+                  </Link>
+                </p>
+              </div>
             </form>
-          )}
 
           {/* Security Note */}
           <div className="mt-8 pt-4 border-t border-outline-variant/30 flex items-center justify-center gap-1.5 text-outline">

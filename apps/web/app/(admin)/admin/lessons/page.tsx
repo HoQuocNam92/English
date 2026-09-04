@@ -7,11 +7,11 @@ import type { LessonItem, PaginatedResponse } from '@/shared/api/api-client';
 
 const LESSON_TYPES: Record<string, string> = {
   vocabulary: 'Từ vựng',
-  terminology: 'Thuật ngữ',
-  technical_reading: 'Đọc kỹ thuật',
+  terminology: 'Thuật ngữ chuyên ngành',
+  technical_reading: 'Đọc hiểu kỹ thuật',
   api_documentation: 'Tài liệu API',
   system_design: 'System Design',
-  case_study: 'Case Study',
+  case_study: 'Case Study thực tế',
 };
 
 const STATUSES = [

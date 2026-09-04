@@ -83,10 +83,23 @@ export class UsersService {
       include: { userDetail: true, userRoles: { include: { role: true } } }
     })
 
-    if (dto.roleCode) {
-      const role = await this.prisma.role.findUnique({ where: { code: dto.roleCode } })
-      if (role) {
-        await this.prisma.userRole.create({ data: { userId: user.id, roleId: role.id } })
+    const roleToAssign = dto.roleCode || dto.role || 'learner'
+    const role = await this.prisma.role.findUnique({ where: { code: roleToAssign } })
+    if (role) {
+      await this.prisma.userRole.create({ data: { userId: user.id, roleId: role.id } })
+    }
+
+    if (roleToAssign === 'learner') {
+      const defaultLevel = await this.prisma.level.findFirst({ orderBy: { order: 'asc' } })
+      if (defaultLevel) {
+        await this.prisma.learnerProfile.create({
+          data: {
+            userId: user.id,
+            levelId: defaultLevel.id,
+            weeklyStudyTargetMinutes: 180,
+            onboardingCompleted: false,
+          },
+        }).catch(() => {})
       }
     }
 

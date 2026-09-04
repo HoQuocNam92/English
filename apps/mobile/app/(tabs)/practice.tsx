@@ -74,6 +74,21 @@ export default function MobilePracticeScreen() {
 
       {/* Modes Grid */}
       <View style={styles.modesList}>
+        <Text style={[styles.title, { fontSize: 18, marginTop: 10 }]}>Luyện tập AI</Text>
+        <TouchableOpacity style={styles.modeCard} onPress={() => router.push('/mock-interview' as any)}>
+          <View style={styles.cardHeader}>
+             <View style={[styles.iconBox, { backgroundColor: '#ede9fe' }]}><MaterialIcons name="mic" size={24} color={colors.primary} /></View>
+             <Text style={styles.modeTitle}>🎤 AI Mock Interview</Text>
+          </View>
+        </TouchableOpacity>
+        <TouchableOpacity style={styles.modeCard} onPress={() => router.push('/writing-practice' as any)}>
+          <View style={styles.cardHeader}>
+             <View style={[styles.iconBox, { backgroundColor: '#ede9fe' }]}><MaterialIcons name="edit" size={24} color={colors.primary} /></View>
+             <Text style={styles.modeTitle}>✍️ AI Writing Practice</Text>
+          </View>
+        </TouchableOpacity>
+
+        <Text style={[styles.title, { fontSize: 18, marginTop: 10 }]}>Đề thi</Text>
         {loading ? (
           <ActivityIndicator size="large" color={colors.primary} style={{ marginTop: 20 }} />
         ) : (

@@ -1,31 +1,69 @@
 import type { ReactNode } from 'react';
-import { Pressable, StyleSheet, View } from 'react-native';
+import { ActivityIndicator, Pressable, StyleSheet, View } from 'react-native';
 import { colors, radius, spacing } from '@techenglish/design-tokens';
 import { AppText } from './AppText';
 
-type ButtonVariant = 'primary' | 'secondary';
+type ButtonVariant = 'primary' | 'secondary' | 'ghost' | 'danger';
 
 export interface AppButtonProps {
   children: ReactNode;
   onPress?: () => void;
   variant?: ButtonVariant;
   disabled?: boolean;
+  loading?: boolean;
+  fullWidth?: boolean;
 }
 
-export function AppButton({ children, onPress, variant = 'primary', disabled = false }: AppButtonProps) {
-  const variantStyle = variant === 'primary' ? styles.primary : styles.secondary;
+export function AppButton({
+  children,
+  onPress,
+  variant = 'primary',
+  disabled = false,
+  loading = false,
+  fullWidth = false,
+}: AppButtonProps) {
+  const bg = {
+    primary: colors.primary,
+    secondary: colors.surfaceContainerLow,
+    ghost: 'transparent',
+    danger: colors.errorContainer,
+  }[variant];
+
+  const textColor = {
+    primary: colors.onPrimary,       // #ffffff — trắng trên nền xanh
+    secondary: colors.text,
+    ghost: colors.primary,
+    danger: colors.onErrorContainer,
+  }[variant];
+
+  const borderColor = {
+    primary: colors.primary,
+    secondary: colors.borderSubtle,
+    ghost: colors.borderSubtle,
+    danger: colors.errorContainer,
+  }[variant];
 
   return (
     <Pressable
       accessibilityRole="button"
-      disabled={disabled}
+      disabled={disabled || loading}
       onPress={onPress}
-      style={({ pressed }) => [styles.base, variantStyle, disabled && styles.disabled, pressed && !disabled && styles.pressed]}
+      style={({ pressed }) => [
+        styles.base,
+        { backgroundColor: bg, borderColor },
+        fullWidth && styles.fullWidth,
+        (disabled || loading) && styles.disabled,
+        pressed && !(disabled || loading) && styles.pressed,
+      ]}
     >
-      <View>
-        <AppText style={variant === 'primary' ? styles.primaryText : styles.secondaryText} variant="interface">
-          {children}
-        </AppText>
+      <View style={styles.inner}>
+        {loading ? (
+          <ActivityIndicator size="small" color={textColor} />
+        ) : (
+          <AppText style={[styles.label, { color: textColor }]} variant="interface">
+            {children}
+          </AppText>
+        )}
       </View>
     </Pressable>
   );
@@ -39,26 +77,30 @@ const styles = StyleSheet.create({
     borderRadius: radius.control,
     paddingHorizontal: spacing.md,
     paddingVertical: spacing.sm,
-    borderWidth: 1
+    borderWidth: 1,
   },
-  primary: {
-    backgroundColor: colors.primary,
-    borderColor: colors.primary
+  fullWidth: {
+    width: '100%',
   },
-  secondary: {
-    backgroundColor: colors.surface,
-    borderColor: colors.outlineVariant
+  inner: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  label: {
+    // color will be set inline per variant
   },
   disabled: {
-    opacity: 0.6
+    opacity: 0.5,
   },
   pressed: {
-    opacity: 0.85
+    opacity: 0.82,
   },
+  // Legacy aliases kept for backward compat
   primaryText: {
-    color: colors.surface
+    color: colors.onPrimary,
   },
   secondaryText: {
-    color: colors.text
-  }
+    color: colors.text,
+  },
 });

@@ -26,6 +26,9 @@ interface StudentGroupItem {
   _count?: { members: number };
 }
 
+interface DomainOption { id: string; name: string; code: string; }
+interface CertificateOption { id: string; name: string; code: string; }
+
 export default function AdminStudentGroupsPage() {
   const [groups, setGroups] = React.useState<StudentGroupItem[]>([]);
   const [total, setTotal] = React.useState(0);
@@ -59,9 +62,111 @@ export default function AdminStudentGroupsPage() {
 
   React.useEffect(() => { void load(); }, [load]);
 
+  // ── Create Group Modal ──────────────────────────────────────────────────────
+
+  const [showModal, setShowModal] = React.useState(false);
+  const [domains, setDomains] = React.useState<DomainOption[]>([]);
+  const [certificates, setCertificates] = React.useState<CertificateOption[]>([]);
+  const [optionsLoading, setOptionsLoading] = React.useState(false);
+
+  // Form state
+  const [formName, setFormName] = React.useState('');
+  const [formDescription, setFormDescription] = React.useState('');
+  const [formDomainId, setFormDomainId] = React.useState('');
+  const [formCertificateId, setFormCertificateId] = React.useState('');
+  const [formStartsAt, setFormStartsAt] = React.useState('');
+  const [formEndsAt, setFormEndsAt] = React.useState('');
+  const [formErrors, setFormErrors] = React.useState<Record<string, string>>({});
+  const [submitting, setSubmitting] = React.useState(false);
+  const [submitError, setSubmitError] = React.useState<string | null>(null);
+
+  const openModal = async () => {
+    setShowModal(true);
+    setFormName('');
+    setFormDescription('');
+    setFormDomainId('');
+    setFormCertificateId('');
+    setFormStartsAt('');
+    setFormEndsAt('');
+    setFormErrors({});
+    setSubmitError(null);
+
+    if (domains.length === 0 || certificates.length === 0) {
+      setOptionsLoading(true);
+      try {
+        const [domRes, certRes] = await Promise.all([
+          apiClient.get<{ data: DomainOption[] } | DomainOption[]>('/domains'),
+          apiClient.get<{ data: CertificateOption[] } | CertificateOption[]>('/certificates'),
+        ]);
+        setDomains(Array.isArray(domRes) ? domRes : (domRes as { data: DomainOption[] }).data ?? []);
+        setCertificates(Array.isArray(certRes) ? certRes : (certRes as { data: CertificateOption[] }).data ?? []);
+      } catch {
+        // non-fatal; selects will just be empty
+      } finally {
+        setOptionsLoading(false);
+      }
+    }
+  };
+
+  const closeModal = () => {
+    if (submitting) return;
+    setShowModal(false);
+  };
+
+  const validateForm = () => {
+    const errs: Record<string, string> = {};
+    if (!formName.trim()) errs.name = 'Tên nhóm là bắt buộc';
+    if (!formDomainId) errs.domainId = 'Vui lòng chọn lĩnh vực CNTT';
+    if (!formCertificateId) errs.certificateId = 'Vui lòng chọn chứng chỉ mục tiêu';
+    setFormErrors(errs);
+    return Object.keys(errs).length === 0;
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!validateForm()) return;
+
+    setSubmitting(true);
+    setSubmitError(null);
+    try {
+      await apiClient.post('/student-groups', {
+        name: formName.trim(),
+        ...(formDescription.trim() && { description: formDescription.trim() }),
+        domainId: formDomainId,
+        certificateId: formCertificateId,
+        ...(formStartsAt && { startsAt: formStartsAt }),
+        ...(formEndsAt && { endsAt: formEndsAt }),
+      });
+      setShowModal(false);
+      void load();
+    } catch (e) {
+      setSubmitError(e instanceof ApiClientError ? e.message : 'Tạo nhóm thất bại. Vui lòng thử lại.');
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  // ── Shared input class helper ───────────────────────────────────────────────
+  const inputCls = (field: string) =>
+    `w-full rounded-xl border px-3 py-2 text-sm bg-surface text-on-surface outline-none transition-colors focus:ring-2 focus:ring-primary/30 ${
+      formErrors[field]
+        ? 'border-error focus:border-error'
+        : 'border-outline-variant focus:border-primary'
+    }`;
+
   return (
     <div>
-      <PageHeader title="Quản lý nhóm học viên" description="Danh sách các lớp, nhóm luyện thi chứng chỉ và phân công giảng viên" />
+      {/* Header row with Create button */}
+      <div className="flex items-start justify-between gap-4">
+        <PageHeader title="Quản lý nhóm học viên" description="Danh sách các lớp, nhóm luyện thi chứng chỉ và phân công giảng viên" />
+        <button
+          onClick={() => { void openModal(); }}
+          className="shrink-0 mt-1 inline-flex items-center gap-2 rounded-xl bg-primary px-4 py-2 text-sm font-medium text-white shadow-sm hover:opacity-90 transition-opacity"
+        >
+          <span className="material-symbols-outlined text-[18px]">add</span>
+          Tạo nhóm mới
+        </button>
+      </div>
 
       {/* Filters */}
       <div className="mt-6 flex flex-col sm:flex-row gap-3">
@@ -186,6 +291,186 @@ export default function AdminStudentGroupsPage() {
           </div>
         </div>
       )}
+
+      {/* ── Create Group Modal ──────────────────────────────────────────────── */}
+      {showModal && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm"
+          onClick={(e) => { if (e.target === e.currentTarget) closeModal(); }}
+        >
+          <div
+            className="w-full rounded-2xl bg-surface shadow-xl border border-outline-variant/30 flex flex-col max-h-[90vh]"
+            style={{ width: '100%', maxWidth: '560px' }}
+          >
+            {/* Modal header */}
+            <div className="flex items-center justify-between px-6 py-4 border-b border-outline-variant/20">
+              <div className="flex items-center gap-2">
+                <span className="material-symbols-outlined text-primary text-[22px]">group_add</span>
+                <h2 className="text-base font-bold text-on-surface">Tạo nhóm học viên mới</h2>
+              </div>
+              <button
+                onClick={closeModal}
+                disabled={submitting}
+                className="rounded-lg p-1 text-on-surface-variant hover:bg-surface-container transition-colors disabled:opacity-40"
+              >
+                <span className="material-symbols-outlined text-[20px]">close</span>
+              </button>
+            </div>
+
+            {/* Modal body */}
+            <form id="create-group-form" onSubmit={(e) => { void handleSubmit(e); }} className="overflow-y-auto px-6 py-5 space-y-4 flex-1">
+              {/* Name */}
+              <div>
+                <label className="block text-xs font-semibold text-on-surface-variant mb-1">
+                  Tên nhóm / lớp học <span className="text-error">*</span>
+                </label>
+                <input
+                  type="text"
+                  value={formName}
+                  onChange={(e) => { setFormName(e.target.value); setFormErrors((prev) => ({ ...prev, name: '' })); }}
+                  placeholder="VD: AWS Solutions Architect - Khoá 1"
+                  maxLength={200}
+                  className={inputCls('name')}
+                />
+                {formErrors.name && (
+                  <p className="mt-1 text-xs text-error flex items-center gap-1">
+                    <span className="material-symbols-outlined text-[13px]">error</span>
+                    {formErrors.name}
+                  </p>
+                )}
+              </div>
+
+              {/* Description */}
+              <div>
+                <label className="block text-xs font-semibold text-on-surface-variant mb-1">
+                  Mô tả nhóm
+                </label>
+                <textarea
+                  value={formDescription}
+                  onChange={(e) => setFormDescription(e.target.value)}
+                  placeholder="Mô tả ngắn về mục tiêu, đối tượng học viên..."
+                  rows={3}
+                  maxLength={500}
+                  className={`${inputCls('description')} resize-none`}
+                />
+              </div>
+
+              {/* Domain */}
+              <div>
+                <label className="block text-xs font-semibold text-on-surface-variant mb-1">
+                  Lĩnh vực CNTT <span className="text-error">*</span>
+                </label>
+                <select
+                  value={formDomainId}
+                  onChange={(e) => { setFormDomainId(e.target.value); setFormErrors((prev) => ({ ...prev, domainId: '' })); }}
+                  disabled={optionsLoading}
+                  className={`${inputCls('domainId')} disabled:opacity-60`}
+                >
+                  <option value="">{optionsLoading ? 'Đang tải...' : '— Chọn lĩnh vực —'}</option>
+                  {domains.map((d) => (
+                    <option key={d.id} value={d.id}>{d.name} ({d.code})</option>
+                  ))}
+                </select>
+                {formErrors.domainId && (
+                  <p className="mt-1 text-xs text-error flex items-center gap-1">
+                    <span className="material-symbols-outlined text-[13px]">error</span>
+                    {formErrors.domainId}
+                  </p>
+                )}
+              </div>
+
+              {/* Certificate */}
+              <div>
+                <label className="block text-xs font-semibold text-on-surface-variant mb-1">
+                  Chứng chỉ mục tiêu <span className="text-error">*</span>
+                </label>
+                <select
+                  value={formCertificateId}
+                  onChange={(e) => { setFormCertificateId(e.target.value); setFormErrors((prev) => ({ ...prev, certificateId: '' })); }}
+                  disabled={optionsLoading}
+                  className={`${inputCls('certificateId')} disabled:opacity-60`}
+                >
+                  <option value="">{optionsLoading ? 'Đang tải...' : '— Chọn chứng chỉ —'}</option>
+                  {certificates.map((c) => (
+                    <option key={c.id} value={c.id}>{c.name} ({c.code})</option>
+                  ))}
+                </select>
+                {formErrors.certificateId && (
+                  <p className="mt-1 text-xs text-error flex items-center gap-1">
+                    <span className="material-symbols-outlined text-[13px]">error</span>
+                    {formErrors.certificateId}
+                  </p>
+                )}
+              </div>
+
+              {/* Dates row */}
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-xs font-semibold text-on-surface-variant mb-1">
+                    Ngày bắt đầu
+                  </label>
+                  <input
+                    type="date"
+                    value={formStartsAt}
+                    onChange={(e) => setFormStartsAt(e.target.value)}
+                    className={inputCls('startsAt')}
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-semibold text-on-surface-variant mb-1">
+                    Ngày kết thúc
+                  </label>
+                  <input
+                    type="date"
+                    value={formEndsAt}
+                    onChange={(e) => setFormEndsAt(e.target.value)}
+                    className={inputCls('endsAt')}
+                  />
+                </div>
+              </div>
+
+              {/* Submit error */}
+              {submitError && (
+                <div className="p-3 rounded-xl bg-error-container text-on-error-container text-sm flex items-center gap-2">
+                  <span className="material-symbols-outlined text-[16px]">error</span>
+                  <span>{submitError}</span>
+                </div>
+              )}
+            </form>
+
+            {/* Modal footer */}
+            <div className="flex items-center justify-end gap-3 px-6 py-4 border-t border-outline-variant/20">
+              <button
+                type="button"
+                onClick={closeModal}
+                disabled={submitting}
+                className="px-4 py-2 rounded-xl text-sm border border-outline-variant hover:bg-surface-container transition-colors disabled:opacity-40"
+              >
+                Huỷ
+              </button>
+              <button
+                type="submit"
+                form="create-group-form"
+                disabled={submitting}
+                className="inline-flex items-center gap-2 px-5 py-2 rounded-xl bg-primary text-white text-sm font-medium hover:opacity-90 transition-opacity disabled:opacity-50"
+              >
+                {submitting ? (
+                  <>
+                    <span className="material-symbols-outlined text-[16px] animate-spin">progress_activity</span>
+                    Đang tạo...
+                  </>
+                ) : (
+                  <>
+                    <span className="material-symbols-outlined text-[16px]">add</span>
+                    Tạo nhóm
+                  </>
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
+

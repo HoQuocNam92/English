@@ -62,12 +62,59 @@ export default function AdminCertificationsPage() {
     );
   };
 
+  // ── Modal state ──────────────────────────────────────────────
+  const [modalOpen, setModalOpen] = React.useState(false);
+  const [editTarget, setEditTarget] = React.useState<CertificateItem | null>(null);
+
+  const openCreate = () => {
+    setEditTarget(null);
+    setModalOpen(true);
+  };
+
+  const openEdit = (cert: CertificateItem) => {
+    setEditTarget(cert);
+    setModalOpen(true);
+  };
+
+  const handleSaved = (saved: CertificateItem) => {
+    setCerts((prev) => {
+      const idx = prev.findIndex((c) => c.id === saved.id);
+      const next = idx >= 0 ? prev.map((c) => (c.id === saved.id ? saved : c)) : [saved, ...prev];
+      // Re-apply current search filter
+      const q = searchInput.trim().toLowerCase();
+      if (q) {
+        setFilteredCerts(
+          next.filter(
+            (c) =>
+              c.name.toLowerCase().includes(q) ||
+              c.code.toLowerCase().includes(q) ||
+              c.provider.toLowerCase().includes(q) ||
+              c.description.toLowerCase().includes(q)
+          )
+        );
+      } else {
+        setFilteredCerts(next);
+      }
+      return next;
+    });
+    setModalOpen(false);
+  };
+
   return (
     <div>
-      <PageHeader
-        title="Chứng chỉ quốc tế"
-        description="Quản lý và theo dõi các chứng chỉ IT hàng đầu được hỗ trợ luyện thi trên hệ thống"
-      />
+      <div className="flex items-start justify-between gap-4">
+        <PageHeader
+          title="Chứng chỉ quốc tế"
+          description="Quản lý và theo dõi các chứng chỉ IT hàng đầu được hỗ trợ luyện thi trên hệ thống"
+        />
+        <button
+          onClick={openCreate}
+          className="shrink-0 mt-1 flex items-center gap-1.5 rounded-xl bg-primary px-4 py-2 text-sm font-semibold text-white shadow-sm hover:opacity-90 active:opacity-80 transition-opacity"
+        >
+          <span className="material-symbols-outlined text-[18px]">add</span>
+          Thêm chứng chỉ
+        </button>
+      </div>
 
       {/* Filters */}
       <div className="mt-6 flex flex-col sm:flex-row gap-3">
@@ -139,9 +186,18 @@ export default function AdminCertificationsPage() {
                     <span className="text-xs font-mono font-bold text-primary bg-primary/10 px-2.5 py-1 rounded-lg">
                       {c.code}
                     </span>
-                    <span className="text-xs text-on-surface-variant bg-surface-container px-2 py-0.5 rounded-md font-medium">
-                      {c.provider}
-                    </span>
+                    <div className="flex items-center gap-1.5">
+                      <span className="text-xs text-on-surface-variant bg-surface-container px-2 py-0.5 rounded-md font-medium">
+                        {c.provider}
+                      </span>
+                      <button
+                        onClick={() => openEdit(c)}
+                        title="Sửa chứng chỉ"
+                        className="flex items-center justify-center rounded-lg p-1 text-on-surface-variant hover:bg-surface-container hover:text-primary transition-colors"
+                      >
+                        <span className="material-symbols-outlined text-[16px]">edit</span>
+                      </button>
+                    </div>
                   </div>
 
                   <h3 className="font-bold text-sm text-on-surface line-clamp-2 mt-1">{c.name}</h3>
@@ -181,6 +237,252 @@ export default function AdminCertificationsPage() {
           </div>
         )}
       </div>
+
+      {/* Create / Edit Modal */}
+      {modalOpen && (
+        <CertModal
+          cert={editTarget}
+          onClose={() => setModalOpen(false)}
+          onSaved={handleSaved}
+        />
+      )}
     </div>
   );
 }
+
+// ── CertModal ────────────────────────────────────────────────────────────────
+
+interface CertFormValues {
+  code: string;
+  name: string;
+  provider: string;
+  description: string;
+  examUrl: string;
+}
+
+interface CertFormErrors {
+  code?: string;
+  name?: string;
+  provider?: string;
+  description?: string;
+}
+
+function CertModal({
+  cert,
+  onClose,
+  onSaved,
+}: {
+  cert: CertificateItem | null;
+  onClose: () => void;
+  onSaved: (saved: CertificateItem) => void;
+}) {
+  const isEdit = cert !== null;
+
+  const [values, setValues] = React.useState<CertFormValues>({
+    code: cert?.code ?? '',
+    name: cert?.name ?? '',
+    provider: cert?.provider ?? '',
+    description: cert?.description ?? '',
+    examUrl: cert?.examUrl ?? '',
+  });
+
+  const [errors, setErrors] = React.useState<CertFormErrors>({});
+  const [submitting, setSubmitting] = React.useState(false);
+  const [apiError, setApiError] = React.useState<string | null>(null);
+
+  const set = (field: keyof CertFormValues) => (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    setValues((v) => ({ ...v, [field]: e.target.value }));
+    if (errors[field as keyof CertFormErrors]) {
+      setErrors((er) => ({ ...er, [field]: undefined }));
+    }
+  };
+
+  const validate = (): boolean => {
+    const errs: CertFormErrors = {};
+    if (!values.code.trim()) errs.code = 'Mã chứng chỉ là bắt buộc';
+    if (!values.name.trim()) errs.name = 'Tên chứng chỉ là bắt buộc';
+    if (!values.provider.trim()) errs.provider = 'Tổ chức cấp là bắt buộc';
+    if (!values.description.trim()) errs.description = 'Mô tả là bắt buộc';
+    setErrors(errs);
+    return Object.keys(errs).length === 0;
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!validate()) return;
+    setApiError(null);
+    setSubmitting(true);
+    try {
+      const body: Record<string, string> = {
+        code: values.code.trim(),
+        name: values.name.trim(),
+        provider: values.provider.trim(),
+        description: values.description.trim(),
+      };
+      if (values.examUrl.trim()) body.examUrl = values.examUrl.trim();
+
+      let saved: CertificateItem;
+      if (isEdit) {
+        const res = await apiClient.patch<{ data: CertificateItem }>(`/certificates/${cert.id}`, body);
+        saved = res.data;
+      } else {
+        const res = await apiClient.post<{ data: CertificateItem }>('/certificates', body);
+        saved = res.data;
+      }
+      onSaved(saved);
+    } catch (err) {
+      setApiError(err instanceof ApiClientError ? err.message : 'Đã xảy ra lỗi, vui lòng thử lại');
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  // Close on backdrop click
+  const handleBackdrop = (e: React.MouseEvent<HTMLDivElement>) => {
+    if (e.target === e.currentTarget) onClose();
+  };
+
+  return (
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4"
+      onClick={handleBackdrop}
+    >
+      <div
+        className="w-full rounded-2xl bg-surface-container-low border border-outline-variant/30 shadow-xl flex flex-col max-h-[90vh]"
+        style={{ width: '100%', maxWidth: '560px' }}
+      >
+        {/* Header */}
+        <div className="flex items-center justify-between px-6 py-4 border-b border-outline-variant/20">
+          <h2 className="text-base font-bold text-on-surface">
+            {isEdit ? 'Sửa chứng chỉ' : 'Thêm chứng chỉ mới'}
+          </h2>
+          <button
+            onClick={onClose}
+            className="flex items-center justify-center rounded-lg p-1.5 text-on-surface-variant hover:bg-surface-container transition-colors"
+          >
+            <span className="material-symbols-outlined text-[20px]">close</span>
+          </button>
+        </div>
+
+        {/* Body */}
+        <form onSubmit={(e) => { void handleSubmit(e); }} className="overflow-y-auto px-6 py-5 space-y-4 flex-1">
+          {apiError && (
+            <div className="p-3 rounded-xl bg-error-container text-on-error-container text-sm flex items-center gap-2">
+              <span className="material-symbols-outlined text-[16px]">error</span>
+              <span>{apiError}</span>
+            </div>
+          )}
+
+          {/* Code */}
+          <div>
+            <label className="block text-xs font-semibold text-on-surface-variant mb-1">
+              Mã chứng chỉ <span className="text-error">*</span>
+            </label>
+            <input
+              type="text"
+              value={values.code}
+              onChange={set('code')}
+              placeholder="VD: AWS-SAA, CKA, CKAD"
+              className={`w-full rounded-xl border px-3 py-2 text-sm bg-surface text-on-surface placeholder:text-outline focus:outline-none focus:ring-2 focus:ring-primary/40 transition ${
+                errors.code ? 'border-error' : 'border-outline-variant'
+              }`}
+            />
+            {errors.code && <p className="mt-1 text-xs text-error">{errors.code}</p>}
+          </div>
+
+          {/* Name */}
+          <div>
+            <label className="block text-xs font-semibold text-on-surface-variant mb-1">
+              Tên đầy đủ <span className="text-error">*</span>
+            </label>
+            <input
+              type="text"
+              value={values.name}
+              onChange={set('name')}
+              placeholder="VD: AWS Solutions Architect Associate"
+              className={`w-full rounded-xl border px-3 py-2 text-sm bg-surface text-on-surface placeholder:text-outline focus:outline-none focus:ring-2 focus:ring-primary/40 transition ${
+                errors.name ? 'border-error' : 'border-outline-variant'
+              }`}
+            />
+            {errors.name && <p className="mt-1 text-xs text-error">{errors.name}</p>}
+          </div>
+
+          {/* Provider */}
+          <div>
+            <label className="block text-xs font-semibold text-on-surface-variant mb-1">
+              Tổ chức cấp <span className="text-error">*</span>
+            </label>
+            <input
+              type="text"
+              value={values.provider}
+              onChange={set('provider')}
+              placeholder="VD: Amazon Web Services, CNCF, CompTIA"
+              className={`w-full rounded-xl border px-3 py-2 text-sm bg-surface text-on-surface placeholder:text-outline focus:outline-none focus:ring-2 focus:ring-primary/40 transition ${
+                errors.provider ? 'border-error' : 'border-outline-variant'
+              }`}
+            />
+            {errors.provider && <p className="mt-1 text-xs text-error">{errors.provider}</p>}
+          </div>
+
+          {/* Description */}
+          <div>
+            <label className="block text-xs font-semibold text-on-surface-variant mb-1">
+              Mô tả <span className="text-error">*</span>
+            </label>
+            <textarea
+              value={values.description}
+              onChange={set('description')}
+              rows={4}
+              placeholder="Mô tả nội dung và yêu cầu của chứng chỉ..."
+              className={`w-full rounded-xl border px-3 py-2 text-sm bg-surface text-on-surface placeholder:text-outline focus:outline-none focus:ring-2 focus:ring-primary/40 transition resize-none ${
+                errors.description ? 'border-error' : 'border-outline-variant'
+              }`}
+            />
+            {errors.description && <p className="mt-1 text-xs text-error">{errors.description}</p>}
+          </div>
+
+          {/* examUrl */}
+          <div>
+            <label className="block text-xs font-semibold text-on-surface-variant mb-1">
+              URL trang chính thức <span className="text-outline text-[11px] font-normal">(tuỳ chọn)</span>
+            </label>
+            <input
+              type="url"
+              value={values.examUrl}
+              onChange={set('examUrl')}
+              placeholder="https://aws.amazon.com/certification/..."
+              className="w-full rounded-xl border border-outline-variant px-3 py-2 text-sm bg-surface text-on-surface placeholder:text-outline focus:outline-none focus:ring-2 focus:ring-primary/40 transition"
+            />
+          </div>
+        </form>
+
+        {/* Footer */}
+        <div className="flex items-center justify-end gap-3 px-6 py-4 border-t border-outline-variant/20">
+          <button
+            type="button"
+            onClick={onClose}
+            disabled={submitting}
+            className="rounded-xl border border-outline-variant px-4 py-2 text-sm font-semibold text-on-surface hover:bg-surface-container transition-colors disabled:opacity-50"
+          >
+            Huỷ
+          </button>
+          <button
+            type="submit"
+            disabled={submitting}
+            onClick={(e) => { void handleSubmit(e as unknown as React.FormEvent); }}
+            className="flex items-center gap-1.5 rounded-xl bg-primary px-4 py-2 text-sm font-semibold text-white hover:opacity-90 active:opacity-80 transition-opacity disabled:opacity-60"
+          >
+            {submitting && (
+              <svg className="animate-spin h-4 w-4 text-white" viewBox="0 0 24 24" fill="none">
+                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z" />
+              </svg>
+            )}
+            {submitting ? (isEdit ? 'Đang lưu...' : 'Đang tạo...') : (isEdit ? 'Lưu thay đổi' : 'Tạo chứng chỉ')}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+

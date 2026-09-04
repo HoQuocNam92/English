@@ -113,5 +113,6 @@ const styles = StyleSheet.create({
   bottomBar: { position: 'absolute', bottom: 0, left: 0, right: 0, backgroundColor: '#ffffff', padding: spacing.lg, borderTopWidth: 1, borderTopColor: '#e2e8f0' },
   nextButton: { backgroundColor: colors.primary, height: 50, borderRadius: 12, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: spacing.xs },
   nextButtonDisabled: { backgroundColor: '#cbd5e1' },
-  nextButtonText: { color: '#ffffff', fontSize: 15, fontWeight: '700' }
+  nextButtonText: { color: colors.onPrimary, fontSize: 15, fontWeight: '700' }
 });
+

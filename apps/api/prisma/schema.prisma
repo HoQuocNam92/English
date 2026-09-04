@@ -193,6 +193,13 @@ model User {
   // Gamification
   userStreak UserStreak?
   userBadges UserBadge[]
+  notifications    Notification[]
+  learningPlanItems LearningPlanItem[]
+  mockInterviews     MockInterview[]
+  writingSubmissions WritingSubmission[]
+  discussionPosts    DiscussionPost[]
+  discussionComments DiscussionComment[]
+  discussionVotes    DiscussionVote[]
 
   @@index([email])
   @@index([status])
@@ -609,6 +616,7 @@ model Lesson {
   vocabularies  LessonVocabulary[]
   certificates  LessonCertificate[]
   progressItems LearningProgress[]
+  learningPlanItems LearningPlanItem[]
 
   @@index([domainId])
   @@index([levelId])
@@ -1086,4 +1094,159 @@ model UserBadge {
   @@unique([userId, badgeCode])
   @@index([userId])
   @@map("user_badges")
+}
+
+
+// ─── AI Mock Interview ────────────────────────────────────────────────────────
+model MockInterview {
+  id          String              @id @default(uuid()) @db.Uuid
+  userId      String              @db.Uuid
+  topic       String              @db.VarChar(200)
+  difficulty  String              @default("intermediate") @db.VarChar(50)
+  status      MockInterviewStatus @default(in_progress)
+  score       Float?
+  feedback    String?             @db.Text
+  createdAt   DateTime            @default(now()) @map("created_at") @db.Timestamptz(6)
+  completedAt DateTime?           @map("completed_at") @db.Timestamptz(6)
+
+  user  User                  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  turns MockInterviewTurn[]
+
+  @@index([userId])
+  @@map("mock_interviews")
+}
+
+enum MockInterviewStatus {
+  in_progress
+  completed
+  abandoned
+}
+
+model MockInterviewTurn {
+  id          String   @id @default(uuid()) @db.Uuid
+  interviewId String   @map("interview_id") @db.Uuid
+  turnIndex   Int      @map("turn_index")
+  question    String   @db.Text
+  userAnswer  String?  @map("user_answer") @db.Text
+  aiFeedback  String?  @map("ai_feedback") @db.Text
+  score       Float?
+  createdAt   DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  interview MockInterview @relation(fields: [interviewId], references: [id], onDelete: Cascade)
+
+  @@index([interviewId])
+  @@map("mock_interview_turns")
+}
+
+// ─── AI Writing Practice ──────────────────────────────────────────────────────
+model WritingSubmission {
+  id          String   @id @default(uuid()) @db.Uuid
+  userId      String   @db.Uuid
+  prompt      String   @db.Text
+  topic       String   @db.VarChar(200)
+  userText    String   @map("user_text") @db.Text
+  aiFeedback  String?  @map("ai_feedback") @db.Text
+  grammarScore Float?  @map("grammar_score")
+  clarityScore Float?  @map("clarity_score")
+  vocabScore  Float?   @map("vocab_score")
+  overallScore Float?  @map("overall_score")
+  createdAt   DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("writing_submissions")
+}
+
+// ─── Community Discussion ─────────────────────────────────────────────────────
+model DiscussionPost {
+  id        String   @id @default(uuid()) @db.Uuid
+  userId    String   @db.Uuid
+  title     String   @db.VarChar(300)
+  content   String   @db.Text
+  tags      String[] @db.Text
+  isPinned  Boolean  @default(false) @map("is_pinned")
+  viewCount Int      @default(0) @map("view_count")
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  user     User                @relation(fields: [userId], references: [id], onDelete: Cascade)
+  comments DiscussionComment[]
+  votes    DiscussionVote[]
+
+  @@index([userId])
+  @@index([createdAt])
+  @@map("discussion_posts")
+}
+
+model DiscussionComment {
+  id        String   @id @default(uuid()) @db.Uuid
+  postId    String   @map("post_id") @db.Uuid
+  userId    String   @db.Uuid
+  content   String   @db.Text
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  post DiscussionPost @relation(fields: [postId], references: [id], onDelete: Cascade)
+  user User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([postId])
+  @@map("discussion_comments")
+}
+
+model DiscussionVote {
+  id     String @id @default(uuid()) @db.Uuid
+  postId String @map("post_id") @db.Uuid
+  userId String @db.Uuid
+  value  Int    @default(1) // 1 = upvote, -1 = downvote
+
+  post DiscussionPost @relation(fields: [postId], references: [id], onDelete: Cascade)
+  user User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([postId, userId])
+  @@map("discussion_votes")
+}
+
+model Notification {
+  id          String           @id @default(uuid()) @db.Uuid
+  userId      String?          @db.Uuid
+  type        NotificationType @default(system)
+  title       String           @db.VarChar(200)
+  message     String           @db.Text
+  isRead      Boolean          @default(false) @map("is_read")
+  actionUrl   String?          @map("action_url") @db.VarChar(500)
+  createdAt   DateTime         @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  user User? @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([createdAt])
+  @@map("notifications")
+}
+
+enum NotificationType {
+  system
+  lesson_complete
+  streak
+  flash_sale
+  achievement
+  reminder
+}
+
+model LearningPlanItem {
+  id         String   @id @default(uuid()) @db.Uuid
+  userId     String   @db.Uuid
+  lessonId   String?  @db.Uuid
+  title      String   @db.VarChar(200)
+  note       String?  @db.Text
+  plannedAt  DateTime @map("planned_at") @db.Timestamptz(6)
+  durationMin Int     @default(30) @map("duration_min")
+  isCompleted Boolean @default(false) @map("is_completed")
+  createdAt  DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  user   User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  lesson Lesson? @relation(fields: [lessonId], references: [id], onDelete: SetNull)
+
+  @@index([userId])
+  @@index([plannedAt])
+  @@map("learning_plan_items")
 }

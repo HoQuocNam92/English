@@ -147,5 +147,6 @@ const styles = StyleSheet.create({
   levelText: { fontSize: 12, color: colors.mutedText },
   bottomBar: { position: 'absolute', bottom: 0, left: 0, right: 0, backgroundColor: '#ffffff', padding: spacing.lg, borderTopWidth: 1, borderTopColor: '#e2e8f0' },
   finishButton: { backgroundColor: colors.primary, height: 50, borderRadius: 12, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: spacing.xs },
-  finishButtonText: { color: '#ffffff', fontSize: 15, fontWeight: '700' }
+  finishButtonText: { color: colors.onPrimary, fontSize: 15, fontWeight: '700' }
 });
+

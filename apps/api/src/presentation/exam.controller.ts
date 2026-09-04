@@ -16,7 +16,6 @@ export class ExamsController {
   constructor(private svc: ExamsService) {}
 
   @Get()
-  @RequirePermissions('exams:read')
   @ApiOperation({ summary: 'List exams' })
   findAll(@Query() q: any) { return this.svc.findAll(q) }
 
@@ -27,7 +26,6 @@ export class ExamsController {
   }
 
   @Get(':id')
-  @RequirePermissions('exams:read')
   @ApiOperation({ summary: 'Get exam by id' })
   findOne(@Param('id') id: string) { return this.svc.findOne(id) }
 
@@ -41,45 +39,31 @@ export class ExamsController {
   @ApiOperation({ summary: 'Update exam' })
   update(@Param('id') id: string, @Body() dto: UpdateExamDto) { return this.svc.update(id, dto) }
 
-  @Patch(':id/publish')
-  @RequirePermissions('exams:publish')
-  @ApiOperation({ summary: 'Publish exam' })
-  publish(@Param('id') id: string) { return this.svc.publish(id) }
-
   @Delete(':id')
-  @RequirePermissions('exams:create')
+  @RequirePermissions('exams:delete')
   @HttpCode(HttpStatus.NO_CONTENT)
   @ApiOperation({ summary: 'Delete exam' })
   delete(@Param('id') id: string) { return this.svc.delete(id) }
 
   @Post(':id/attempts')
-  @RequirePermissions('exams:read')
   @ApiOperation({ summary: 'Start exam attempt' })
   startAttempt(@Param('id') id: string, @CurrentUser() u: JwtPayload) {
     return this.svc.startAttempt(id, u.sub)
   }
 
   @Post('attempts/:attemptId/submit')
-  @RequirePermissions('exams:read')
   @ApiOperation({ summary: 'Submit exam attempt' })
-  submit(
-    @Param('attemptId') aId: string,
-    @Body() body: SubmitAttemptDto,
+  submitAttempt(
+    @Param('attemptId') attemptId: string,
     @CurrentUser() u: JwtPayload,
+    @Body() dto: SubmitAttemptDto,
   ) {
-    return this.svc.submitAttempt(aId, u.sub, body.answers ?? [])
+    return this.svc.submitAttempt(attemptId, u.sub, dto.answers)
   }
 
   @Get('attempts/:id')
-  @ApiOperation({ summary: 'Get exam attempt by id' })
+  @ApiOperation({ summary: 'Get attempt detail by id' })
   getAttemptById(@Param('id') id: string, @CurrentUser() u: JwtPayload) {
     return this.svc.getAttemptById(id, u.sub)
-  }
-
-  @Get(':id/attempts')
-  @RequirePermissions('exams:grade')
-  @ApiOperation({ summary: 'View all attempts for an exam (teacher/admin)' })
-  attempts(@Param('id') id: string, @Query('learnerId') lid?: string) {
-    return this.svc.getAttempts(id, lid)
   }
 }

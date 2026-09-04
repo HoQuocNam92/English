@@ -15,12 +15,10 @@ export class QuestionsController {
   constructor(private svc: QuestionsService) {}
 
   @Get()
-  @RequirePermissions('questions:read')
   @ApiOperation({ summary: 'List questions with filters' })
   findAll(@Query() q: any) { return this.svc.findAll(q) }
 
   @Get(':id')
-  @RequirePermissions('questions:read')
   @ApiOperation({ summary: 'Get question by id' })
   findOne(@Param('id') id: string) { return this.svc.findOne(id) }
 

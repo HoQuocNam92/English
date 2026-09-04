@@ -8,7 +8,8 @@ import {
   Alert, 
   Modal, 
   Image, 
-  ScrollView 
+  ScrollView,
+  TextInput,
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
@@ -34,6 +35,27 @@ interface PaymentOrderResponse {
   expiresAt?: string;
 }
 
+interface FlashSaleItem {
+  id: string;
+  title: string;
+  description?: string;
+  planId: string;
+  discountPercent: number;
+  startTime: string;
+  endTime: string;
+  originalAmount?: number;
+  discountedAmount?: number;
+}
+
+interface VoucherItem {
+  id: string;
+  code: string;
+  name: string;
+  discountType: string;
+  discountValue: number;
+  endDate: string;
+}
+
 export default function MobilePaymentScreen() {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
@@ -46,6 +68,34 @@ export default function MobilePaymentScreen() {
   const [appliedVoucher, setAppliedVoucher] = useState<{ code: string; discountAmount: number; finalAmount: number; message: string } | null>(null);
   const [applyingVoucher, setApplyingVoucher] = useState(false);
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  // Flash Sale & Available Vouchers
+  const [flashSales, setFlashSales] = useState<FlashSaleItem[]>([]);
+  const [availableVouchers, setAvailableVouchers] = useState<VoucherItem[]>([]);
+  const [showVoucherList, setShowVoucherList] = useState(false);
+
+  // Tải Flash Sale & Vouchers khi vào màn hình
+  useEffect(() => {
+    const fetchPromotions = async () => {
+      try {
+        const [salesRes, vouchersRes] = await Promise.allSettled([
+          api.get<any>('/flash-sales/active'),
+          api.get<any>('/vouchers/active'),
+        ]);
+        if (salesRes.status === 'fulfilled') {
+          const data = salesRes.value?.data ?? salesRes.value ?? [];
+          setFlashSales(Array.isArray(data) ? data : []);
+        }
+        if (vouchersRes.status === 'fulfilled') {
+          const data = vouchersRes.value?.data ?? vouchersRes.value ?? [];
+          setAvailableVouchers(Array.isArray(data) ? data : []);
+        }
+      } catch {
+        // ignore — promotions are optional
+      }
+    };
+    fetchPromotions();
+  }, []);
 
   useEffect(() => {
     if (showQRModal && timeLeft > 0) {
@@ -175,7 +225,108 @@ export default function MobilePaymentScreen() {
       <ScrollView contentContainerStyle={{ padding: spacing.lg, gap: spacing.md, paddingBottom: spacing.xl }} showsVerticalScrollIndicator={false}>
         <Text style={styles.title}>Chọn gói phù hợp với bạn</Text>
 
+        {/* Flash Sale Banner */}
+        {flashSales.length > 0 && flashSales.map((sale) => {
+          const endTime = new Date(sale.endTime);
+          const msLeft = endTime.getTime() - Date.now();
+          const hLeft = Math.floor(msLeft / 3600000);
+          const mLeft = Math.floor((msLeft % 3600000) / 60000);
+          return (
+            <View key={sale.id} style={styles.flashSaleBanner}>
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+                <MaterialIcons name="flash-on" size={20} color="#f59e0b" />
+                <Text style={styles.flashSaleTitle}>{sale.title}</Text>
+              </View>
+              {sale.description ? (
+                <Text style={styles.flashSaleDesc}>{sale.description}</Text>
+              ) : null}
+              <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginTop: 6 }}>
+                <View style={styles.flashSaleDiscount}>
+                  <Text style={styles.flashSaleDiscountText}>GIẢM {sale.discountPercent}%</Text>
+                </View>
+                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
+                  <MaterialIcons name="timer" size={14} color="#b45309" />
+                  <Text style={styles.flashSaleTimer}>
+                    Còn {hLeft > 0 ? `${hLeft}h ` : ''}{mLeft}p
+                  </Text>
+                </View>
+              </View>
+              {sale.originalAmount && sale.discountedAmount ? (
+                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, marginTop: 4 }}>
+                  <Text style={styles.flashSaleOriginal}>{sale.originalAmount.toLocaleString('vi-VN')}đ</Text>
+                  <Text style={styles.flashSalePrice}>{sale.discountedAmount.toLocaleString('vi-VN')}đ</Text>
+                </View>
+              ) : null}
+            </View>
+          );
+        })}
+
+        {/* Voucher Section */}
+        <View style={styles.voucherSection}>
+          <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
+            <Text style={styles.sectionLabel}>Mã giảm giá</Text>
+            {availableVouchers.length > 0 && (
+              <TouchableOpacity onPress={() => setShowVoucherList(!showVoucherList)}>
+                <Text style={{ color: colors.primary, fontSize: 12, fontWeight: '700' }}>
+                  {showVoucherList ? 'Ẩn' : `Xem ${availableVouchers.length} mã có sẵn`}
+                </Text>
+              </TouchableOpacity>
+            )}
+          </View>
+
+          {/* Available Vouchers List */}
+          {showVoucherList && availableVouchers.map((v) => (
+            <TouchableOpacity
+              key={v.id}
+              style={styles.voucherChip}
+              onPress={() => {
+                setVoucherCodeInput(v.code);
+                setShowVoucherList(false);
+              }}
+            >
+              <View style={{ flex: 1 }}>
+                <Text style={styles.voucherChipCode}>{v.code}</Text>
+                <Text style={styles.voucherChipName}>{v.name}</Text>
+              </View>
+              <View style={styles.voucherChipDiscount}>
+                <Text style={styles.voucherChipDiscountText}>
+                  {v.discountType === 'percentage' ? `-${v.discountValue}%` : `-${v.discountValue.toLocaleString('vi-VN')}đ`}
+                </Text>
+              </View>
+            </TouchableOpacity>
+          ))}
+
+          {/* Voucher Input */}
+          <View style={styles.voucherInputRow}>
+            <TextInput
+              value={voucherCodeInput}
+              onChangeText={(t) => setVoucherCodeInput(t.toUpperCase())}
+              placeholder="Nhập mã giảm giá..."
+              placeholderTextColor="#94a3b8"
+              autoCapitalize="characters"
+              style={styles.voucherInput}
+            />
+            <TouchableOpacity
+              style={[styles.voucherApplyBtn, applyingVoucher && { opacity: 0.6 }]}
+              onPress={handleApplyVoucher}
+              disabled={applyingVoucher}
+            >
+              {applyingVoucher
+                ? <ActivityIndicator size="small" color="#fff" />
+                : <Text style={styles.voucherApplyText}>Áp dụng</Text>
+              }
+            </TouchableOpacity>
+          </View>
+          {appliedVoucher && (
+            <View style={styles.voucherAppliedBadge}>
+              <MaterialIcons name="check-circle" size={16} color="#16a34a" />
+              <Text style={styles.voucherAppliedText}>{appliedVoucher.message}</Text>
+            </View>
+          )}
+        </View>
+
         {/* Gói 1 Tháng */}
+
         <TouchableOpacity 
           style={styles.planCard} 
           onPress={() => handleSelectPlan('pro_monthly')} 
@@ -411,5 +562,30 @@ const styles = StyleSheet.create({
   downloadBtn: { flex: 1, backgroundColor: '#ffffff', borderWidth: 1.5, borderColor: colors.primary, paddingVertical: 14, borderRadius: 12, flexDirection: 'row', alignItems: 'center', justifyContent: 'center' },
   downloadBtnText: { color: colors.primary, fontSize: 14, fontWeight: '700' },
   confirmPaidBtn: { flex: 1, backgroundColor: colors.primary, paddingVertical: 14, borderRadius: 12, flexDirection: 'row', alignItems: 'center', justifyContent: 'center' },
-  confirmPaidText: { color: '#ffffff', fontSize: 14, fontWeight: '800' }
+  confirmPaidText: { color: '#ffffff', fontSize: 14, fontWeight: '800' },
+
+  // Flash Sale Banner
+  flashSaleBanner: { backgroundColor: '#fffbeb', borderRadius: 16, padding: spacing.md, borderWidth: 1.5, borderColor: '#f59e0b' },
+  flashSaleTitle: { fontSize: 15, fontWeight: '800', color: '#92400e', flex: 1 },
+  flashSaleDesc: { fontSize: 12, color: '#b45309', marginTop: 2 },
+  flashSaleDiscount: { backgroundColor: '#f59e0b', paddingHorizontal: 10, paddingVertical: 4, borderRadius: 8 },
+  flashSaleDiscountText: { fontSize: 12, fontWeight: '900', color: '#ffffff' },
+  flashSaleTimer: { fontSize: 12, fontWeight: '700', color: '#b45309' },
+  flashSaleOriginal: { fontSize: 13, color: '#94a3b8', textDecorationLine: 'line-through', fontWeight: '600' },
+  flashSalePrice: { fontSize: 18, fontWeight: '900', color: '#16a34a' },
+
+  // Voucher Section
+  voucherSection: { backgroundColor: '#ffffff', borderRadius: 16, padding: spacing.md, borderWidth: 1, borderColor: '#e2e8f0' },
+  sectionLabel: { fontSize: 13, fontWeight: '800', color: colors.text },
+  voucherChip: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#f0fdf4', borderRadius: 10, padding: 10, marginBottom: 6, borderWidth: 1, borderColor: '#bbf7d0' },
+  voucherChipCode: { fontSize: 13, fontWeight: '800', color: '#15803d', fontFamily: 'monospace' },
+  voucherChipName: { fontSize: 11, color: '#166534', marginTop: 1 },
+  voucherChipDiscount: { backgroundColor: '#16a34a', paddingHorizontal: 8, paddingVertical: 3, borderRadius: 6 },
+  voucherChipDiscountText: { fontSize: 11, fontWeight: '800', color: colors.onPrimary },
+  voucherInputRow: { flexDirection: 'row', alignItems: 'center', gap: 8, marginTop: 4 },
+  voucherInput: { flex: 1, backgroundColor: '#f8fafc', borderWidth: 1, borderColor: '#e2e8f0', borderRadius: 10, paddingHorizontal: 12, paddingVertical: 10, fontSize: 13, fontWeight: '700', color: colors.text },
+  voucherApplyBtn: { backgroundColor: colors.primary, paddingHorizontal: 16, paddingVertical: 10, borderRadius: 10 },
+  voucherApplyText: { color: colors.onPrimary, fontSize: 13, fontWeight: '800' },
+  voucherAppliedBadge: { flexDirection: 'row', alignItems: 'center', gap: 6, backgroundColor: '#f0fdf4', padding: 8, borderRadius: 8, marginTop: 6 },
+  voucherAppliedText: { fontSize: 12, color: '#15803d', fontWeight: '600', flex: 1 },
 });

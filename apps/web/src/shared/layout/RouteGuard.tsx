@@ -27,8 +27,7 @@ export function RouteGuard({ children, allowedRoles = [], redirectTo }: RouteGua
 
     // Wrong role → redirect to own dashboard
     if (allowedRoles.length > 0 && !allowedRoles.includes(session.user.role)) {
-      const fallback =
-        redirectTo ?? (session.user.role === 'teacher' ? '/teacher/dashboard' : '/admin/dashboard');
+      const fallback = redirectTo ?? '/admin/dashboard';
       router.replace(fallback);
     }
   }, [session, loading, allowedRoles, redirectTo, router]);

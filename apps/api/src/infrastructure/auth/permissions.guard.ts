@@ -14,6 +14,9 @@ export class PermissionsGuard implements CanActivate {
     if (!required || required.length === 0) return true
 
     const { user } = context.switchToHttp().getRequest()
+    // Admin bypasses granular permission checks
+    if (user?.roles?.includes('admin')) return true
+
     const hasAll = required.every((p: string) => user?.permissions?.includes(p))
     if (!hasAll) throw new ForbiddenException('Insufficient permissions')
     return true

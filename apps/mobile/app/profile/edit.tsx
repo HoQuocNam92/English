@@ -319,8 +319,9 @@ const styles = StyleSheet.create({
     justifyContent: 'center'
   },
   saveBtnText: {
-    color: '#ffffff',
+    color: colors.onPrimary,
     fontSize: 15,
     fontWeight: '700'
   }
 });
+

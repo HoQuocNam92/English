@@ -226,7 +226,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#a5b4fc'
   },
   saveBtnText: {
-    color: '#ffffff',
+    color: colors.onPrimary,
     fontSize: 15,
     fontWeight: '700'
   },
@@ -268,3 +268,4 @@ const styles = StyleSheet.create({
     marginLeft: 4
   }
 });
+

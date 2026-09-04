@@ -11,7 +11,7 @@ export function Topbar() {
       {/* Mobile brand text */}
       <div className="flex items-center gap-2 md:hidden">
         <Link href="/dashboard" className="flex items-center gap-2">
-          <div className="w-7 h-7 rounded bg-primary text-on-primary flex items-center justify-center">
+          <div className="w-7 h-7 rounded bg-primary text-white flex items-center justify-center">
             <span className="material-symbols-outlined text-[18px] fill-1">terminal</span>
           </div>
           <span className="font-bold text-primary text-sm">TechEnglish Pro</span>
@@ -41,7 +41,7 @@ export function Topbar() {
         </button>
         <div className="h-8 w-px bg-outline-variant/40 hidden sm:block" />
         <div className="flex items-center gap-3">
-          <div className="w-8 h-8 rounded-full bg-primary-container text-on-primary font-bold text-xs flex items-center justify-center shadow-xs">
+          <div className="w-8 h-8 rounded-full bg-primary-container text-white font-bold text-xs flex items-center justify-center shadow-xs">
             {session?.user?.displayName ? session.user.displayName.charAt(0) : 'A'}
           </div>
           <div className="hidden lg:block text-left">
@@ -66,3 +66,4 @@ export function Topbar() {
     </header>
   );
 }
+

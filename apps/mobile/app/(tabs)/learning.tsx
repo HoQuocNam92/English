@@ -194,6 +194,24 @@ export default function MobileLearningScreen() {
         {modules.length === 0 && (
           <Text style={{ textAlign: 'center', marginTop: 20, color: colors.mutedText }}>Chưa có bài học nào.</Text>
         )}
+
+        <View style={{ marginTop: 20 }}>
+          <Text style={[styles.title, { fontSize: 18, marginBottom: 10 }]}>Truy cập nhanh</Text>
+          <View style={{ flexDirection: 'row', gap: 10 }}>
+            <TouchableOpacity style={{ flex: 1, backgroundColor: colors.surfaceContainerLowest, padding: 12, borderRadius: 12, alignItems: 'center', borderWidth: 1, borderColor: colors.outlineVariant }} onPress={() => router.push('/dictionary' as any)}>
+              <Text style={{ fontSize: 20 }}>📖</Text>
+              <Text style={{ marginTop: 4, color: colors.text, fontWeight: 'bold' }}>Từ điển</Text>
+            </TouchableOpacity>
+            <TouchableOpacity style={{ flex: 1, backgroundColor: colors.surfaceContainerLowest, padding: 12, borderRadius: 12, alignItems: 'center', borderWidth: 1, borderColor: colors.outlineVariant }} onPress={() => router.push('/calendar' as any)}>
+              <Text style={{ fontSize: 20 }}>🗓️</Text>
+              <Text style={{ marginTop: 4, color: colors.text, fontWeight: 'bold' }}>Lịch học</Text>
+            </TouchableOpacity>
+            <TouchableOpacity style={{ flex: 1, backgroundColor: colors.surfaceContainerLowest, padding: 12, borderRadius: 12, alignItems: 'center', borderWidth: 1, borderColor: colors.outlineVariant }} onPress={() => router.push('/community' as any)}>
+              <Text style={{ fontSize: 20 }}>👥</Text>
+              <Text style={{ marginTop: 4, color: colors.text, fontWeight: 'bold' }}>Cộng đồng</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
       </View>
     </ScrollView>
   );

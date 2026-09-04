@@ -84,7 +84,7 @@ const styles = StyleSheet.create({
     gap: spacing.xs
   },
   primaryButtonText: {
-    color: '#ffffff',
+    color: colors.onPrimary,
     fontSize: 15,
     fontWeight: '700'
   },
@@ -110,3 +110,4 @@ const styles = StyleSheet.create({
     fontWeight: '600'
   }
 });
+

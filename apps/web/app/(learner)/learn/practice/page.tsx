@@ -95,7 +95,7 @@ export default function LearnerPracticePage() {
             >
               <div>
                 <div className="flex justify-between items-start mb-4">
-                  <div className="w-12 h-12 rounded-xl bg-surface-container flex items-center justify-center group-hover:bg-primary group-hover:text-on-primary transition-colors">
+                  <div className="w-12 h-12 rounded-xl bg-surface-container flex items-center justify-center group-hover:bg-primary group-hover:text-white transition-colors">
                     <span className={`material-symbols-outlined text-[26px] ${cat.color} group-hover:text-white`}>
                       {cat.icon}
                     </span>
@@ -130,3 +130,4 @@ export default function LearnerPracticePage() {
     </LearnerShell>
   );
 }
+

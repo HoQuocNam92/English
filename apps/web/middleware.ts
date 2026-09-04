@@ -4,15 +4,20 @@ import type { NextRequest } from 'next/server';
 export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
-  // Only redirect bare root / to login
-  // All other auth checks are done client-side (session is in localStorage)
+  // Root → Landing page
   if (pathname === '/') {
-    return NextResponse.redirect(new URL('/login', request.url));
+    return NextResponse.redirect(new URL('/landing', request.url));
+  }
+
+  // /teacher/* → /admin/* (backward compatibility redirect)
+  if (pathname.startsWith('/teacher/')) {
+    const newPath = pathname.replace('/teacher/', '/admin/');
+    return NextResponse.redirect(new URL(newPath, request.url));
   }
 
   return NextResponse.next();
 }
 
 export const config = {
-  matcher: ['/'],
+  matcher: ['/', '/teacher/:path*'],
 };

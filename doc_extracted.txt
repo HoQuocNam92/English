@@ -1,0 +1,167 @@
+0: ĐỀ CƯƠNG CHI TIẾT
+1: KHÓA LUẬN CỬ NHÂN NGÀNH CNTT NĂM HỌC 2026 – 2027
+2: ĐỊNH HƯỚNG ỨNG DỤNG
+4: Mã đề tài: KLCN028
+5: Tên đề tài: Xây dựng hệ thống học tiếng Anh và ôn tập chuyên ngành CNTT
+6: Thông tin GVHD
+7: Họ tên giảng viên: Huỳnh Thị Cẩm Dung
+8: Điện thoại: 0966601459
+9: Email: dunghtc@huit.edu.vn
+10: Nhóm sinh viên thực hiện đề tài
+11: 		 MSSV:	Lớp: 	
+12: 		 MSSV:	Lớp: 	
+13: 		 MSSV:	Lớp: 	
+14: Mục tiêu: (Nêu chi tiết mục tiêu nội dung của đề tài: mục tiêu về khảo sát hệ thống, phân tích hệ thống, thiết kế hệ thống, xây dựng và cài đặt, báo cáo…; Trình bày mục tiêu về tinh thần, thái độ làm việc cá nhân, làm việc nhóm và tự học. 
+15: Lưu ý: Sinh viên phải xây dựng được một ứng dụng hoàn chỉnh trên 02 nền tảng từ (web, winform, mobile), có tối thiểu 4 nghiệp vụ thực tế và có 1-2 nghiệp vụ phức tạp.
+16: Khảo sát được nhu cầu học tiếng Anh chuyên ngành CNTT và nhu cầu luyện thi các chứng chỉ nghề nghiệp quốc tế của người học.
+17: Thu thập được các tài liệu, nội dung học tập liên quan đến từ vựng, thuật ngữ chuyên ngành, tài liệu kỹ thuật, bài đọc hiểu, bài tập và ngân hàng câu hỏi theo lĩnh vực CNTT/chứng chỉ mục tiêu.
+18: Xây dựng được mô hình quy trình nghiệp vụ của hệ thống học tiếng Anh chuyên ngành CNTT hỗ trợ luyện thi chứng chỉ nghề nghiệp quốc tế.
+19: Phân tích và thiết kế được mô hình dữ liệu, mô hình xử lý phù hợp với hoạt động quản lý nội dung học tập, bài kiểm tra, người học và tiến độ học tập.
+20: Lập kế hoạch thực hiện đề tài rõ ràng, khoa học và phân công công việc hợp lý giữa các thành viên trong nhóm nếu có.
+21: Xây dựng được ứng dụng hoàn chỉnh trên hai nền tảng: Website dành cho quản trị viên/giảng viên và ứng dụng di động dành cho người học.
+22: Cài đặt được mô hình dữ liệu trên hệ quản trị cơ sở dữ liệu phù hợp.
+23: Thiết kế được giao diện Website và ứng dụng di động thân thiện, dễ sử dụng, phù hợp với việc học tiếng Anh chuyên ngành CNTT.
+24: Cài đặt được chức năng quản lý tài khoản người học, giảng viên, quản trị viên và phân quyền người dùng.
+25: Cài đặt được chức năng quản lý hồ sơ người học gồm trình độ tiếng Anh, lĩnh vực CNTT quan tâm và mục tiêu chứng chỉ.
+26: Cài đặt được chức năng quản lý nội dung học tập, từ vựng, thuật ngữ chuyên ngành, bài đọc hiểu tài liệu kỹ thuật, case study và cấp độ học.
+27: Cài đặt được chức năng quản lý nội dung ôn tập, ngân hàng câu hỏi, bài kiểm tra, chấm điểm tự động và đánh giá kết quả học tập.
+28: Cài đặt được chức năng theo dõi tiến độ học tập, mức độ hoàn thành theo mục tiêu chứng chỉ và phân nhóm người học theo mục tiêu nghề nghiệp.
+29: Tích hợp trí tuệ nhân tạo nhằm hỗ trợ cá nhân hóa quá trình học tập dựa trên hồ sơ, mục tiêu và tiến độ học của người học.
+30: Xây dựng được chức năng học tiếng Anh chuyên ngành CNTT, luyện bài tập, làm bài trắc nghiệm, bài tập tình huống và nhận giải thích đáp án trên ứng dụng di động.
+31: Cài đặt được chức năng báo cáo, thống kê số lượng người học theo lĩnh vực CNTT và thống kê điểm theo từng mục tiêu học tập.
+32: Rèn luyện kỹ năng tự học, phân tích, thiết kế, xây dựng hệ thống phần mềm và ứng dụng AI.
+33: Hoàn thiện đầy đủ báo cáo theo đúng quy định và tiến độ được giao.
+34: Trình bày và bảo vệ được nội dung khóa luận trước giảng viên hướng dẫn và giảng viên phản biện một cách rõ ràng, thuyết phục.
+35: Có tinh thần trách nhiệm trong công việc, chủ động trao đổi, thảo luận, hỗ trợ các thành viên trong nhóm và hoàn thành nhiệm vụ đúng tiến độ.
+36: Yêu cầu
+37: Các nội dung cụ thể cần thực hiện: 
+38: Website dành cho quản trị viên/giảng viên
+39: Quản lý tài khoản và phân quyền
+40: Quản lý tài khoản người học, giảng viên và quản trị viên. 
+41: Thêm, cập nhật, xóa và tìm kiếm tài khoản người dùng. 
+42: Phân quyền người dùng theo vai trò: quản trị viên, giảng viên và người học. 
+43: Đăng nhập, đăng xuất và thay đổi mật khẩu. 
+44: Quản lý hồ sơ người học
+45: Quản lý thông tin hồ sơ người học. 
+46: Quản lý trình độ tiếng Anh của người học. 
+47: Quản lý lĩnh vực CNTT mà người học quan tâm. 
+48: Quản lý mục tiêu chứng chỉ nghề nghiệp của người học. 
+49: Tìm kiếm và tra cứu hồ sơ người học. 
+50: Quản lý nội dung học tập
+51: Quản lý hệ thống từ vựng tiếng Anh chuyên ngành CNTT. 
+52: Quản lý nội dung từ vựng theo lĩnh vực: Cloud Computing/Cybersecurity, Networking/Data Engineering/Data Science/Software Engineering và DevOps,... 
+53: Thêm mới, cập nhật, xóa và tìm kiếm nội dung học tập. 
+54: Quản lý bài học
+55: Quản lý bài học về thuật ngữ chuyên ngành CNTT. 
+56: Quản lý bài học đọc hiểu tài liệu kỹ thuật. 
+57: Quản lý bài học theo case study thực tế trong lĩnh vực CNTT. 
+58: Quản lý nội dung đọc hiểu bài viết, tài liệu API, technical documentation và system design cơ bản. 
+59: Quản lý cấp độ học
+60: Quản lý nội dung theo cấp độ Beginner, Intermediate, Advanced, Professional. 
+61: Quản lý nội dung ôn tập theo chứng chỉ
+62: Xây dựng và quản lý nội dung ôn tập theo chủ đề Cloud Computing/Cybersecurity, Networking/Data Engineering/Data Science/Software Engineering và DevOps,... 
+63: Quản lý ngân hàng câu hỏi
+64: Quản lý câu hỏi theo kỹ năng Vocabulary. 
+65: Quản lý câu hỏi theo kỹ năng Reading. 
+66: Quản lý câu hỏi theo kỹ năng Technical Understanding. 
+67: Quản lý câu hỏi dạng tình huống thực tế (Scenario-based). 
+68: Thêm mới, cập nhật, xóa và tìm kiếm câu hỏi. 
+69: Phân loại câu hỏi theo chủ đề, lĩnh vực CNTT, cấp độ học và mục tiêu chứng chỉ. 
+70: Quản lý bài kiểm tra và đánh giá
+71: Tạo bài kiểm tra theo chủ đề. 
+72: Tạo bài kiểm tra theo mục tiêu chứng chỉ. 
+73: Quản lý bài thi trắc nghiệm. 
+74: Quản lý bài tập tình huống thực tế. 
+75: Thực hiện chấm điểm tự động. 
+76: Quản lý kết quả làm bài của người học. 
+77: Quản lý người học và tiến độ học tập
+78: Theo dõi tiến độ học tập của từng người học. 
+79: Theo dõi mức độ hoàn thành nội dung học tập theo từng chứng chỉ mục tiêu. 
+80: Phân nhóm người học theo mục tiêu nghề nghiệp như Cloud, Security, Data,... 
+81: Xem kết quả bài kiểm tra và điểm theo từng người học. 
+82: Báo cáo và thống kê
+83: Thống kê số lượng người học theo lĩnh vực CNTT quan tâm. 
+84: Thống kê điểm theo từng mục tiêu chứng chỉ. 
+85: Thống kê tiến độ học tập của người học. 
+86: Xây dựng báo cáo phục vụ quản lý hoạt động của hệ thống. 
+87: Ứng dụng di động dành cho người học
+88: Tài khoản người học
+89: Đăng ký tài khoản. 
+90: Đăng nhập bằng tài khoản đã đăng ký. 
+91: Cập nhật thông tin hồ sơ học tập. 
+92: Cập nhật trình độ tiếng Anh. 
+93: Chọn lĩnh vực CNTT quan tâm. 
+94: Chọn mục tiêu nghề nghiệp như Cloud, Security, Data,... 
+95: Chọn mục tiêu chứng chỉ. 
+96: Học tiếng Anh chuyên ngành CNTT
+97: Học từ vựng theo lĩnh vực CNTT. 
+98: Học thuật ngữ trong tài liệu kỹ thuật. 
+99: Học nội dung đọc hiểu bài viết và technical documentation. 
+100: Học nội dung đọc hiểu API documentation. 
+101: Học nội dung system design cơ bản. 
+102: Học theo các tình huống thực tế trong công việc CNTT. 
+103: Học theo cấp độ Beginner, Intermediate, Advanced hoặc Professional. 
+104: Luyện bài tập và đánh giá
+105: Luyện bài ôn tập về Cloud Computing/Cybersecurity, Networking/Data Engineering/Data Science/Software Engineering và DevOps,... 
+106: Trả lời câu hỏi kỹ thuật bằng tiếng Anh. 
+107: Làm bài trắc nghiệm thuật ngữ CNTT. 
+108: Thực hiện bài kiểm tra theo chủ đề hoặc mục tiêu chứng chỉ. 
+109: Nhận điểm tự động sau khi hoàn thành bài làm. 
+110: Xem giải thích đáp án. 
+111: Theo dõi tiến độ học tập
+112: Xem tiến độ học tập của cá nhân. 
+113: Xem mức độ hoàn thành nội dung theo mục tiêu chứng chỉ. 
+114: Xem lịch sử kết quả bài kiểm tra. 
+115: Xem điểm theo từng nội dung hoặc chủ đề.
+116: Môi trường thực hiện
+117: Hệ quản trị CSDL: MySQL / PostgreSQL / MongoDB,...
+118: Ngôn ngữ lập trình: C#, Java, Node.js, PHP (Laravel),...
+119: Microsoft Office: Word, Power Point
+120: Thời gian thực hiện: 12 tuần (từ ngày 17/08/2026 tới ngày 08/11/2026)
+121: Thang điểm
+122: Thời gian và các công việc trong tuần:
+123: Tài liệu tham khảo
+124: Bài Giảng Phân tích hệ thống thông tin, Khoa CNTT, ĐH Công Thương TP.HCM
+125: Bài Giảng Công nghệ phần mềm, khoa CNTT, ĐH Công Thương TP.HCM
+126: P. N. Cương, N. T. M. Thư, and H. B. Quốc, Giáo trình Phân tích thiết kế hệ
+127: thống thông tin theo hướng đối tượng, NXB Khoa học và Kỹ thuật, 2016.
+128: S. Kendal, Object Oriented Programming using C#, 2nd ed., BookBoon; Internet Archive, 2018.
+129: Sommerville, I. (2016). Software engineering (10th ed.). Pearson Education.
+130: Một số yêu cầu khác
+131: Số lượng SV tối đa thực hiện đề tài: 3 sinh viên.
+132: Có khả năng và tư duy lập trình, đọc hiểu tiếng Anh,…
+133: Gặp giảng viên hướng dẫn ít nhất 1 lần/tuần, thực hiện đề tài theo sự phân công của giảng viên hướng dẫn. Trước mỗi buổi báo cáo, sinh viên phải tích hợp những nội dung được phân công vào chung trong một tài liệu/ phần mềm.
+134: 	Tp.HCM, ngày … tháng.....năm 2026
+135: 	Trưởng bộ môn	Giảng viên hướng dẫn
+136: 	(ký và ghi rõ họ tên)	(ký và ghi rõ họ tên)
+141: 	Vũ Văn Vinh
+--- TABLE 0 ---
+STT | Nội dung | CLO | Điểm
+ | Khảo sát nghiệp vụ, mô hình hóa nghiệp vụ  Xác định lý do, mục tiêu đề tài Khảo sát hiện trạng: Cơ cấu tổ chức, Qui trình, biểu mẫu | CLO1.1 |  0.25 0.5
+ | Lập kế hoạch và phân công thực hiện công việc | CLO6 | 0.25
+ | Phân tích hệ thống Lập sơ đồ Use-Case nghiệp vụ và đặc tả. Lập sơ đồ Use-Case hệ thống và đặc tả. Sơ đồ lớp phân tích | CLO1.2 |  0.25 0.25 0.25
+ | Thiết kế hệ thống Sơ đồ lớp thiết kế Mô hình dữ liệu | CLO2.1  |  0.25 0.25
+ | Thiết kế giao diện | CLO2.2 | 0.5
+ | Xây dựng API hệ thống Phân tích các chức năng trên các nền tảng | CLO1.1 | 0.25 0.25
+ | Xây dựng các chức năng cơ bản của ứng dụng: đăng nhập, đăng xuất, đổi mật khẩu, phân quyền người dùng. Cài đặt chức năng theo yêu cầu của bài toán Website dành cho quản trị viên/giảng viên Quản lý tài khoản và phân quyền Quản lý tài khoản người học, giảng viên và quản trị viên.  Thêm, cập nhật, xóa và tìm kiếm tài khoản người dùng.  Phân quyền người dùng theo vai trò: quản trị viên, giảng viên và người học.  Đăng nhập, đăng xuất và thay đổi mật khẩu.  Quản lý hồ sơ người học Quản lý thông tin hồ sơ người học.  Quản lý trình độ tiếng Anh của người học.  Quản lý lĩnh vực CNTT mà người học quan tâm.  Quản lý mục tiêu chứng chỉ nghề nghiệp của người học.  Tìm kiếm và tra cứu hồ sơ người học.  Quản lý nội dung học tập Quản lý hệ thống từ vựng tiếng Anh chuyên ngành CNTT.  Quản lý nội dung từ vựng theo lĩnh vực: Cloud Computing/Cybersecurity, Networking/Data Engineering/Data Science/Software Engineering và DevOps,...  Thêm mới, cập nhật, xóa và tìm kiếm nội dung học tập.  Quản lý bài học Quản lý bài học về thuật ngữ chuyên ngành CNTT.  Quản lý bài học đọc hiểu tài liệu kỹ thuật.  Quản lý bài học theo case study thực tế trong lĩnh vực CNTT.  Quản lý nội dung đọc hiểu bài viết, tài liệu API, technical documentation và system design cơ bản.  Quản lý cấp độ học Quản lý nội dung theo cấp độ Beginner, Intermediate, Advanced, Professional.  Quản lý nội dung ôn tập theo chứng chỉ Xây dựng và quản lý nội dung ôn tập theo chủ đề Cloud Computing/Cybersecurity, Networking/Data Engineering/Data Science/Software Engineering và DevOps,...  Quản lý ngân hàng câu hỏi Quản lý câu hỏi theo kỹ năng Vocabulary.  Quản lý câu hỏi theo kỹ năng Reading.  Quản lý câu hỏi theo kỹ năng Technical Understanding.  Quản lý câu hỏi dạng tình huống thực tế (Scenario-based).  Thêm mới, cập nhật, xóa và tìm kiếm câu hỏi.  Phân loại câu hỏi theo chủ đề, lĩnh vực CNTT, cấp độ học và mục tiêu chứng chỉ.  Quản lý bài kiểm tra và đánh giá Tạo bài kiểm tra theo chủ đề.  Tạo bài kiểm tra theo mục tiêu chứng chỉ.  Quản lý bài thi trắc nghiệm.  Quản lý bài tập tình huống thực tế.  Thực hiện chấm điểm tự động.  Quản lý kết quả làm bài của người học.  Quản lý người học và tiến độ học tập Theo dõi tiến độ học tập của từng người học.  Theo dõi mức độ hoàn thành nội dung học tập theo từng chứng chỉ mục tiêu.  Phân nhóm người học theo mục tiêu nghề nghiệp như Cloud, Security, Data,...  Xem kết quả bài kiểm tra và điểm theo từng người học.  Báo cáo và thống kê Thống kê số lượng người học theo lĩnh vực CNTT quan tâm.  Thống kê điểm theo từng mục tiêu chứng chỉ.  Thống kê tiến độ học tập của người học.  Xây dựng báo cáo phục vụ quản lý hoạt động của hệ thống.  Ứng dụng di động dành cho người học Tài khoản người học Đăng ký tài khoản.  Đăng nhập bằng tài khoản đã đăng ký.  Cập nhật thông tin hồ sơ học tập.  Cập nhật trình độ tiếng Anh.  Chọn lĩnh vực CNTT quan tâm.  Chọn mục tiêu nghề nghiệp như Cloud, Security, Data,...  Chọn mục tiêu chứng chỉ.  Học tiếng Anh chuyên ngành CNTT Học từ vựng theo lĩnh vực CNTT.  Học thuật ngữ trong tài liệu kỹ thuật.  Học nội dung đọc hiểu bài viết và technical documentation.  Học nội dung đọc hiểu API documentation.  Học nội dung system design cơ bản.  Học theo các tình huống thực tế trong công việc CNTT.  Học theo cấp độ Beginner, Intermediate, Advanced hoặc Professional.  Luyện bài tập và đánh giá Luyện bài ôn tập về Cloud Computing/Cybersecurity, Networking/Data Engineering/Data Science/Software Engineering và DevOps,...  Trả lời câu hỏi kỹ thuật bằng tiếng Anh.  Làm bài trắc nghiệm thuật ngữ CNTT.  Thực hiện bài kiểm tra theo chủ đề hoặc mục tiêu chứng chỉ.  Nhận điểm tự động sau khi hoàn thành bài làm.  Xem giải thích đáp án.  Theo dõi tiến độ học tập Xem tiến độ học tập của cá nhân.  Xem mức độ hoàn thành nội dung theo mục tiêu chứng chỉ.  Xem lịch sử kết quả bài kiểm tra.  Xem điểm theo từng nội dung hoặc chủ đề. | CLO3  | 0.5  3.5    0.25     0.25       0.25        0.25        0.25    0.25       0.25       0.25      0.25         0.25     0.25          0.25          0.25         0.25
+ | Kiểm thử và triển khai hệ thống | CLO4 | 0.75
+ | Nội dung kiến thức trình bày trong quyển báo cáo | CLO5.1 | 0.5
+ | Hình thức, định dạng quyển báo cáo | CLO5.1 | 0.5
+ | Thái độ, tác phong làm việc  | CLO6 | 0.5
+ | Phong cách báo cáo, Slide. | CLO5.2 | 0.5
+ | Cộng điểm khuyến khích cho nhóm sinh viên tham gia thực hiện NCKH liên quan nội dung đề tài (tổng điểm chung không vượt quá 10 điểm) Thi SV NCKH đạt giải cấp Khoa hoặc có bài báo đăng hội thảo cấp Khoa. Thi SV NCKH đạt giải cấp Trường hoặc có bài báo đăng tạp chí khoa học cấp Trường trở lên | CLO3 | 1.0   0.5  1.0
+Tổng cộng | Tổng cộng |  | 10.0
+--- TABLE 1 ---
+Tuần | Nội dung công việc
+1 | Xác định mục tiêu, phạm vi và yêu cầu đề tài; lập kế hoạch, phân công nhiệm vụ.
+2 | Khảo sát nhu cầu học tiếng Anh chuyên ngành CNTT và luyện thi chứng chỉ nghề nghiệp. Thu thập nội dung từ vựng, thuật ngữ, tài liệu kỹ thuật, bài học và câu hỏi ôn tập.
+3 | Phân tích nghiệp vụ. Lập sơ đồ Use Case nghiệp vụ, Use Case hệ thống và đặc tả các Use Case chính.
+4 | Lập sơ đồ lớp phân tích. Thiết kế sơ đồ lớp, mô hình dữ liệu, cơ sở dữ liệu và API dùng chung cho Website và ứng dụng di động.
+5 | Thiết kế giao diện Website và ứng dụng di động. Xây dựng chức năng đăng nhập, đăng xuất, quản lý tài khoản và phân quyền người dùng.
+6 | Cài đặt Website: quản lý tài khoản người học, giảng viên, quản trị viên; quản lý hồ sơ người học, trình độ, lĩnh vực CNTT quan tâm và mục tiêu chứng chỉ.
+7 | Cài đặt Website: quản lý nội dung học tập, từ vựng, thuật ngữ chuyên ngành, bài học, technical documentation, case study và cấp độ học.
+8 | Cài đặt Website: quản lý nội dung ôn tập theo chủ đề chứng chỉ; quản lý ngân hàng câu hỏi theo kỹ năng, chủ đề và cấp độ.
+9 | Cài đặt Website: tạo bài kiểm tra, chấm điểm tự động, quản lý kết quả, theo dõi tiến độ học tập, báo cáo và thống kê.
+10 | Cài đặt ứng dụng di động: tài khoản người học, học từ vựng/thuật ngữ, đọc hiểu tài liệu kỹ thuật, học theo tình huống và luyện bài tập.
+11 | Cài đặt chức năng theo dõi tiến độ, kết quả bài kiểm tra và đề xuất học tập trên ứng dụng.
+12 | Hoàn chỉnh báo cáo. Thiết kế bài báo cáo trên PowerPoint. Nộp báo cáo.
