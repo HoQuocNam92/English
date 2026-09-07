@@ -5,129 +5,210 @@ import { LearnerShell } from '@/shared/layout';
 import { apiClient } from '@/shared/api/api-client';
 import { useI18n } from '@/shared/i18n';
 
-interface Lesson {
-  id: string;
-  title: string;
-  level: string;
-  domain: string;
-  order: number;
-  status?: string;
-  duration?: string;
-}
-
-interface ProgressData {
-  completedLessons: number;
-  totalLessons: number;
-  percentage: number;
-}
-
 export default function RoadmapPage() {
   const { t } = useI18n();
-  const [lessons, setLessons] = useState<Lesson[]>([]);
-  const [progress, setProgress] = useState<ProgressData | null>(null);
-  const [filter, setFilter] = useState(t.roadmap.all);
   const [loading, setLoading] = useState(true);
+  const [progress, setProgress] = useState<any>(null);
 
   useEffect(() => {
     async function fetchData() {
       try {
-        const [lessonsRes, progressRes] = await Promise.all([
-          apiClient.get<{ items: Lesson[] }>('/lessons?limit=50'),
-          apiClient.get<ProgressData>('/progress/me')
-        ]);
-        setLessons(lessonsRes.items || []);
-        setProgress(progressRes || { completedLessons: 0, totalLessons: 0, percentage: 0 });
+        const progressRes = await apiClient.get('/progress/me');
+        setProgress((progressRes as any)?.data ?? progressRes ?? null);
       } catch (err) {
         console.error(err);
-        // Fallback
-        setLessons([
-          { id: '1', title: 'Introduction to Cloud', level: t.roadmap.basic, domain: 'Cloud', order: 1, status: 'completed', duration: '15 min' },
-          { id: '2', title: 'Docker Basics', level: t.roadmap.intermediate, domain: 'DevOps', order: 2, status: 'active', duration: '30 min' },
-          { id: '3', title: 'Kubernetes Advanced', level: t.roadmap.advanced, domain: 'Cloud', order: 3, status: 'locked', duration: '45 min' },
-        ]);
-        setProgress({ completedLessons: 1, totalLessons: 3, percentage: 33 });
       } finally {
         setLoading(false);
       }
     }
     fetchData();
-  }, [t.roadmap.basic, t.roadmap.intermediate, t.roadmap.advanced]);
+  }, []);
 
-  const filteredLessons = lessons.filter(l => filter === t.roadmap.all || l.level === filter);
+  if (loading) {
+    return (
+      <LearnerShell>
+        <div className="flex items-center justify-center h-64">
+          <div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin" />
+        </div>
+      </LearnerShell>
+    );
+  }
+
+  // Use provided design data
+  const roadmapData = {
+    title: 'AWS Certified Cloud Practitioner',
+    overallProgress: 40,
+    completedModules: 2,
+    totalModules: 6,
+    currentModule: {
+      name: 'IAM',
+      fullName: 'Identity and Access Management',
+    },
+    estTime: '2 tuần',
+    modules: [
+      { id: 1, title: 'Cloud Fundamentals', status: 'completed' },
+      { id: 2, title: 'Global Infrastructure', status: 'completed' },
+      { id: 3, title: 'IAM', subtitle: 'Identity and Access Management', status: 'active' },
+      { id: 4, title: 'VPC', subtitle: 'Virtual Private Cloud', status: 'pending' },
+      { id: 5, title: 'Monitoring', subtitle: 'CloudWatch & CloudTrail', status: 'pending' },
+      { id: 6, title: 'Practice Test', status: 'locked', isExam: true },
+    ]
+  };
 
   return (
     <LearnerShell>
-      <div className="flex flex-col gap-6">
-        <div>
-          <h1 className="text-2xl font-bold text-on-surface">{t.roadmap.title}</h1>
-          <p className="text-on-surface-variant">{t.roadmap.subtitle}</p>
-        </div>
-
-        {/* Progress summary card */}
-        <div className="bg-surface-container-lowest border border-outline-variant/40 rounded-2xl p-6 shadow-2xs flex items-center justify-between">
+      <div className="flex flex-col">
+        {/* Header Section */}
+        <header className="mb-8 flex flex-col md:flex-row justify-between items-start md:items-end gap-6">
           <div>
-            <h2 className="text-base md:text-lg font-bold text-on-surface">{t.roadmap.progressOverview}</h2>
-            <p className="text-sm text-on-surface-variant mt-1">{t.roadmap.completedLessons} {progress?.completedLessons}/{progress?.totalLessons} {t.roadmap.lessons}</p>
+            <h1 className="text-[30px] font-bold text-on-surface mb-2 tracking-tight">Lộ trình học tập</h1>
+            <p className="text-[20px] font-semibold text-on-surface-variant">{roadmapData.title}</p>
           </div>
-          <div className="w-1/3">
-            <div className="flex justify-end mb-1 text-sm font-bold text-primary">{progress?.percentage}%</div>
-            <div className="w-full bg-surface-container rounded-full h-2">
-              <div className="bg-primary h-2 rounded-full transition-all" style={{ width: `${progress?.percentage}%` }}></div>
+          {/* Quick Actions */}
+          <button className="bg-primary hover:bg-primary-container text-white font-semibold text-[14px] py-2 px-6 rounded-[10px] transition-colors flex items-center gap-2">
+            <span className="material-symbols-outlined" style={{ fontVariationSettings: "'FILL' 1" }}>play_arrow</span>
+            Tiếp tục học
+          </button>
+        </header>
+
+        {/* Bento Grid Metrics */}
+        <section className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+          {/* Progress Card */}
+          <div className="bg-surface-white border border-border-subtle rounded-xl p-6 flex flex-col justify-between hover:shadow-[0_1px_3px_rgba(15,23,24,0.06)] transition-shadow">
+            <div className="flex justify-between items-center mb-4">
+              <span className="font-semibold text-[14px] text-on-surface-variant">Tiến độ tổng quan</span>
+              <span className="material-symbols-outlined text-primary">analytics</span>
+            </div>
+            <div>
+              <div className="flex justify-between items-end mb-1">
+                <span className="text-[24px] font-bold text-on-surface tracking-tight">{roadmapData.overallProgress}%</span>
+                <span className="text-[12px] text-on-surface-variant">{roadmapData.completedModules}/{roadmapData.totalModules} học phần</span>
+              </div>
+              <div className="w-full h-2 bg-surface-container-high rounded-full overflow-hidden">
+                <div className="h-full bg-primary rounded-full transition-all duration-500 ease-out" style={{ width: `${roadmapData.overallProgress}%` }}></div>
+              </div>
             </div>
           </div>
-        </div>
 
-        {/* Filters */}
-        <div className="flex gap-2 overflow-x-auto pb-2">
-          {[t.roadmap.all, t.roadmap.basic, t.roadmap.intermediate, t.roadmap.advanced].map(f => (
-            <button
-              key={f}
-              onClick={() => setFilter(f)}
-              className={`whitespace-nowrap px-4 py-2 rounded-full font-bold text-sm transition-colors ${filter === f ? 'bg-primary text-white' : 'bg-surface-container-lowest border border-outline-variant/40 text-on-surface-variant hover:bg-surface-container-low'}`}
-            >
-              {f}
-            </button>
-          ))}
-        </div>
-
-        {/* Timeline */}
-        <div className="bg-surface-container-lowest border border-outline-variant/40 rounded-2xl p-6 shadow-2xs relative mt-4">
-          <div className="absolute left-[39px] top-6 bottom-6 w-[2px] bg-outline-variant/30"></div>
-          
-          <div className="flex flex-col gap-8 relative z-10">
-            {filteredLessons.map((lesson, i) => (
-              <div key={lesson.id} className="flex gap-6 items-center">
-                <div className={`w-10 h-10 rounded-full flex items-center justify-center font-bold text-white shrink-0 ${lesson.status === 'completed' ? 'bg-green-600' : lesson.status === 'active' ? 'bg-primary ring-4 ring-primary/20' : 'bg-surface-container text-on-surface-variant'}`}>
-                  {lesson.status === 'completed' ? <span className="material-symbols-outlined text-[20px]">check</span> : lesson.order}
-                </div>
-                
-                <div className="flex-1 border border-outline-variant/40 rounded-xl p-4 bg-white shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4">
-                  <div>
-                    <div className="flex items-center gap-2 mb-2">
-                      <span className="bg-indigo-50 text-primary border border-indigo-200 text-xs font-bold rounded-full px-2.5 py-0.5">{lesson.domain}</span>
-                      <span className="text-xs text-on-surface-variant flex items-center gap-1">
-                        <span className="material-symbols-outlined text-[14px]">schedule</span> {lesson.duration || '15 min'}
-                      </span>
-                    </div>
-                    <h3 className="font-bold text-on-surface">{lesson.title}</h3>
-                  </div>
-                  
-                  <div>
-                    {lesson.status === 'completed' ? (
-                      <button className="text-green-600 font-bold text-sm bg-green-50 px-4 py-2 rounded-xl" disabled>{t.roadmap.completed}</button>
-                    ) : lesson.status === 'active' ? (
-                      <button className="bg-primary !text-white font-bold rounded-xl px-4 py-2.5 hover:opacity-90">{t.roadmap.startNow}</button>
-                    ) : (
-                      <button className="text-on-surface-variant font-bold text-sm bg-surface-container px-4 py-2 rounded-xl flex items-center gap-1" disabled>
-                        <span className="material-symbols-outlined text-[16px]">lock</span> {t.roadmap.locked}
-                      </button>
-                    )}
-                  </div>
-                </div>
-              </div>
-            ))}
+          {/* Current Stage Card */}
+          <div className="bg-surface-white border border-border-subtle rounded-xl p-6 flex flex-col justify-between hover:shadow-[0_1px_3px_rgba(15,23,24,0.06)] transition-shadow border-l-4 border-l-secondary relative overflow-hidden">
+            <div className="absolute -right-4 -top-4 w-24 h-24 bg-ai-accent rounded-full opacity-50 pointer-events-none"></div>
+            <div className="flex justify-between items-center mb-4 relative z-10">
+              <span className="font-semibold text-[14px] text-secondary">Học phần hiện tại</span>
+              <span className="material-symbols-outlined text-secondary">school</span>
+            </div>
+            <div className="relative z-10">
+              <h3 className="text-[20px] font-semibold text-on-surface">{roadmapData.currentModule.name}</h3>
+              <p className="text-[12px] text-on-surface-variant mt-1">{roadmapData.currentModule.fullName}</p>
+            </div>
           </div>
-        </div>
+
+          {/* Estimated Time Card */}
+          <div className="bg-surface-white border border-border-subtle rounded-xl p-6 flex flex-col justify-between hover:shadow-[0_1px_3px_rgba(15,23,24,0.06)] transition-shadow">
+            <div className="flex justify-between items-center mb-4">
+              <span className="font-semibold text-[14px] text-on-surface-variant">Thời gian dự kiến còn lại</span>
+              <span className="material-symbols-outlined text-outline">schedule</span>
+            </div>
+            <div>
+              <span className="text-[24px] font-bold text-on-surface tracking-tight">{roadmapData.estTime}</span>
+              <p className="text-[12px] text-on-surface-variant mt-1">Dựa trên tốc độ học hiện tại của bạn</p>
+            </div>
+          </div>
+        </section>
+
+        {/* Visual Roadmap Timeline */}
+        <section className="bg-surface-white border border-border-subtle rounded-xl p-8">
+          <h2 className="text-[20px] font-semibold text-on-surface mb-6 flex items-center gap-2">
+            <span className="material-symbols-outlined text-on-surface-variant">map</span>
+            Chi tiết lộ trình
+          </h2>
+          
+          <div className="relative ml-2 mt-6">
+            {roadmapData.modules.map((module, index) => {
+              const isLast = index === roadmapData.modules.length - 1;
+              const borderClass = module.status === 'completed' ? 'border-primary' : 'border-surface-container-highest';
+              
+              return (
+                <div key={module.id} className={`relative pl-8 ${!isLast ? `pb-8 border-l-2 ${borderClass}` : ''}`}>
+                  {/* Timeline Dot */}
+                  {module.status === 'completed' && (
+                    <div className="absolute -left-[13px] top-0 w-6 h-6 rounded-full bg-primary flex items-center justify-center text-white shadow-sm z-10 ring-4 ring-surface-white">
+                      <span className="material-symbols-outlined text-[14px]" style={{ fontVariationSettings: "'FILL' 1" }}>check</span>
+                    </div>
+                  )}
+                  
+                  {module.status === 'active' && (
+                    <div className="absolute -left-[13px] top-0 w-6 h-6 rounded-full bg-surface-white border-2 border-secondary flex items-center justify-center z-10 ring-4 ring-surface-white">
+                      <div className="w-2.5 h-2.5 bg-secondary rounded-full"></div>
+                    </div>
+                  )}
+
+                  {module.status === 'pending' && (
+                    <div className="absolute -left-[13px] top-0 w-6 h-6 rounded-full bg-surface-white border-2 border-surface-container-highest flex items-center justify-center z-10 ring-4 ring-surface-white"></div>
+                  )}
+
+                  {module.status === 'locked' && (
+                    <div className="absolute -left-[13px] top-0 w-6 h-6 rounded-full bg-surface-white border-2 border-surface-container-highest flex items-center justify-center z-10 ring-4 ring-surface-white">
+                      <span className="material-symbols-outlined text-[14px] text-outline">lock</span>
+                    </div>
+                  )}
+
+                  {/* Content Card */}
+                  {module.status === 'completed' && (
+                    <div className="bg-surface-container-lowest border border-border-subtle rounded-lg p-4 hover:bg-surface-container-low transition-colors group cursor-pointer flex justify-between items-center">
+                      <div>
+                        <span className="text-[12px] font-bold tracking-[0.05em] text-primary mb-1 block uppercase">Học phần {module.id} • Hoàn thành</span>
+                        <h3 className="text-[14px] font-semibold text-on-surface group-hover:text-primary transition-colors">{module.title}</h3>
+                      </div>
+                      <span className="material-symbols-outlined text-outline group-hover:text-primary transition-colors">chevron_right</span>
+                    </div>
+                  )}
+
+                  {module.status === 'active' && (
+                    <div className="bg-ai-accent border border-secondary rounded-lg p-4 shadow-sm relative overflow-hidden">
+                      <div className="absolute left-0 top-0 bottom-0 w-1 bg-secondary"></div>
+                      <div className="flex justify-between items-center">
+                        <div>
+                          <span className="text-[12px] font-bold tracking-[0.05em] text-secondary mb-1 flex items-center gap-1 uppercase">
+                            <span className="material-symbols-outlined text-[14px]">bolt</span>
+                            Đang học
+                          </span>
+                          <h3 className="text-[14px] font-semibold text-on-surface">
+                            {module.title} <span className="text-[12px] text-on-surface-variant font-normal">({module.subtitle})</span>
+                          </h3>
+                        </div>
+                        <button className="text-secondary font-semibold text-[14px] hover:underline">Tiếp tục</button>
+                      </div>
+                    </div>
+                  )}
+
+                  {module.status === 'pending' && (
+                    <div className="bg-surface-white border border-border-subtle rounded-lg p-4 opacity-70 hover:opacity-100 transition-opacity">
+                      <div>
+                        <span className="text-[12px] font-bold tracking-[0.05em] text-on-surface-variant mb-1 block uppercase">Học phần {module.id} • Chưa bắt đầu</span>
+                        <h3 className="text-[14px] font-semibold text-on-surface">
+                          {module.title} {module.subtitle && <span className="text-[12px] text-on-surface-variant font-normal">({module.subtitle})</span>}
+                        </h3>
+                      </div>
+                    </div>
+                  )}
+
+                  {module.status === 'locked' && (
+                    <div className="bg-surface-white border border-border-subtle border-dashed rounded-lg p-4 opacity-70">
+                      <div className="flex justify-between items-center">
+                        <div>
+                          <span className="text-[12px] font-bold tracking-[0.05em] text-on-surface-variant mb-1 block uppercase">Bài kiểm tra cuối khóa</span>
+                          <h3 className="text-[14px] font-semibold text-on-surface">{module.title}</h3>
+                        </div>
+                        <span className="material-symbols-outlined text-outline">emoji_events</span>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        </section>
       </div>
     </LearnerShell>
   );

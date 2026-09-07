@@ -2,135 +2,133 @@
 
 import { useState, useEffect } from 'react';
 import { LearnerShell } from '@/shared/layout';
-import { apiClient } from '@/shared/api/api-client';
-import { useI18n } from '@/shared/i18n';
 
 export default function AnalyticsPage() {
-  const { t } = useI18n();
-  const [stats, setStats] = useState<any>(null);
-
+  const [data, setData] = useState<any>(null);
+  
   useEffect(() => {
-    const fetchStats = async () => {
-      try {
-        const progressRes: any = await apiClient.get('/progress/me');
-        const streakRes: any = await apiClient.get('/leaderboard/streaks/me');
-        
-        const progressData = progressRes?.data ?? progressRes ?? {};
-        const streakData = streakRes?.data ?? streakRes ?? {};
-        
-        setStats({
-          hours: progressData?.summary?.studyStreakDays || 0,
-          lessons: (progressData?.progress || []).length,
-          score: progressData?.summary?.overallCompletionPercent || 0,
-          streak: streakData?.currentStreak || 0,
-          totalExp: streakData?.totalExpPoints || 0,
-          weeklyPoints: streakData?.weeklyPoints || 0
-        });
-      } catch (error) {
-        setStats({
-          hours: 42,
-          lessons: 15,
-          score: 8.5,
-          streak: 7
-        });
-      }
-    };
-    fetchStats();
+    // Mock data for analytics
+    setData({
+      totalHours: 42,
+      vocabLearned: 120,
+      lessonsCompleted: 15,
+      avgScore: 8.5
+    });
   }, []);
 
   return (
     <LearnerShell>
-      <div className="flex flex-col gap-6 w-full max-w-6xl mx-auto py-6">
-        <header>
-          <h1 className="text-2xl md:text-3xl font-bold text-on-surface mb-2">{t.analytics.title}</h1>
-          <p className="text-sm md:text-base text-on-surface/70">{t.analytics.subtitle}</p>
+      <div className="max-w-7xl mx-auto px-4 py-8">
+        <header className="mb-8">
+          <h1 className="text-[30px] font-bold text-on-surface mb-2">Phân tích học tập</h1>
+          <p className="text-[14px] text-on-surface-variant">Theo dõi tiến độ và hiệu suất học tập kỹ thuật của bạn.</p>
         </header>
 
         {/* Summary Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          <div className="bg-surface-container-lowest border border-outline-variant/40 rounded-2xl p-6 shadow-2xs flex flex-col justify-between h-32">
-            <div className="flex justify-between items-start">
-              <span className="text-sm text-on-surface/70">{t.analytics.totalExp}</span>
-              <span className="material-symbols-outlined text-primary">star</span>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+          {[
+            { label: 'Tổng giờ học', value: '42h', icon: 'schedule', color: 'text-primary' },
+            { label: 'Từ vựng đã học', value: '120', icon: 'menu_book', color: 'text-secondary' },
+            { label: 'Bài học hoàn thành', value: '15', icon: 'check_circle', color: 'text-tertiary' },
+            { label: 'Điểm trung bình', value: '8.5/10', icon: 'grade', color: 'text-primary-container' },
+          ].map((card, i) => (
+            <div key={i} className="bg-surface-container-lowest border border-outline-variant rounded-xl p-6 flex flex-col justify-between h-32 hover:shadow-sm transition-shadow">
+              <div className="flex justify-between items-start">
+                <span className="text-[14px] text-on-surface-variant">{card.label}</span>
+                <span className={`material-symbols-outlined ${card.color}`}>{card.icon}</span>
+              </div>
+              <div className="text-[24px] font-bold text-on-surface">{card.value}</div>
             </div>
-            <div className="text-3xl font-bold text-on-surface">{stats?.totalExp || 0}</div>
-          </div>
-          <div className="bg-surface-container-lowest border border-outline-variant/40 rounded-2xl p-6 shadow-2xs flex flex-col justify-between h-32">
-            <div className="flex justify-between items-start">
-              <span className="text-sm text-on-surface/70">{t.analytics.lessonsCompleted}</span>
-              <span className="material-symbols-outlined text-primary">check_circle</span>
-            </div>
-            <div className="text-3xl font-bold text-on-surface">{stats?.lessons || 0}</div>
-          </div>
-          <div className="bg-surface-container-lowest border border-outline-variant/40 rounded-2xl p-6 shadow-2xs flex flex-col justify-between h-32">
-            <div className="flex justify-between items-start">
-              <span className="text-sm text-on-surface/70">{t.analytics.weeklyPoints}</span>
-              <span className="material-symbols-outlined text-primary">grade</span>
-            </div>
-            <div className="text-3xl font-bold text-on-surface">{stats?.weeklyPoints || 0}</div>
-          </div>
-          <div className="bg-surface-container-lowest border border-outline-variant/40 rounded-2xl p-6 shadow-2xs flex flex-col justify-between h-32">
-            <div className="flex justify-between items-start">
-              <span className="text-sm text-on-surface/70">{t.analytics.currentStreak}</span>
-              <span className="material-symbols-outlined text-orange-500">local_fire_department</span>
-            </div>
-            <div className="text-3xl font-bold text-on-surface">{stats?.streak || 0} <span className="text-lg text-on-surface/50">{t.analytics.days}</span></div>
-          </div>
+          ))}
         </div>
 
-        {/* Charts Grid */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-          {/* Activity Chart */}
-          <div className="bg-surface-container-lowest border border-outline-variant/40 rounded-2xl p-6 shadow-2xs lg:col-span-8 flex flex-col h-80">
-            <h3 className="text-base md:text-lg font-bold text-on-surface mb-6">{t.analytics.weeklyProgress}</h3>
-            <div className="flex-1 flex items-end justify-between gap-2 h-full pb-6 pt-4">
-              {[40, 60, 30, 80, 50, 20, 90].map((val, idx) => (
-                <div key={idx} className="flex flex-col items-center gap-2 w-full">
-                  <div className="w-full bg-primary/20 rounded-t-sm relative h-full flex items-end">
-                    <div className="w-full bg-primary rounded-t-sm transition-all" style={{ height: `${val}%` }}></div>
-                  </div>
-                  <span className="text-xs text-on-surface/60 font-medium">{'T' + (idx + 2 > 7 ? 'CN' : idx + 2)}</span>
-                </div>
-              ))}
+        {/* Charts */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 mb-8">
+          
+          {/* Study Time Trend (Line Chart) */}
+          <div className="bg-surface-container-lowest border border-outline-variant rounded-xl p-6 lg:col-span-8 flex flex-col h-96">
+            <h3 className="text-[20px] font-semibold text-on-surface mb-6">Xu hướng thời gian học</h3>
+            <div className="flex-1 relative w-full h-full">
+              <svg className="w-full h-full" viewBox="0 0 100 50" preserveAspectRatio="none">
+                <path d="M0,40 Q10,30 20,35 T40,20 T60,25 T80,10 T100,5" fill="none" stroke="#3525cd" strokeWidth="2"></path>
+                <circle cx="20" cy="35" r="1.5" fill="#ffffff" stroke="#3525cd" strokeWidth="1"></circle>
+                <circle cx="40" cy="20" r="1.5" fill="#ffffff" stroke="#3525cd" strokeWidth="1"></circle>
+                <circle cx="60" cy="25" r="1.5" fill="#ffffff" stroke="#3525cd" strokeWidth="1"></circle>
+                <circle cx="80" cy="10" r="1.5" fill="#ffffff" stroke="#3525cd" strokeWidth="1"></circle>
+              </svg>
+              <div className="absolute inset-0 flex flex-col justify-between pointer-events-none opacity-20 pb-[20%]">
+                <div className="w-full border-b border-outline-variant"></div>
+                <div className="w-full border-b border-outline-variant"></div>
+                <div className="w-full border-b border-outline-variant"></div>
+                <div className="w-full border-b border-outline-variant"></div>
+              </div>
             </div>
           </div>
 
-          {/* Topic Performance */}
-          <div className="bg-surface-container-lowest border border-outline-variant/40 rounded-2xl p-6 shadow-2xs lg:col-span-4 flex flex-col h-80">
-            <h3 className="text-base md:text-lg font-bold text-on-surface mb-6">{t.analytics.progressByDomain}</h3>
-            <div className="flex-1 flex flex-col justify-around">
+          {/* Vocabulary Growth (Area Chart) */}
+          <div className="bg-surface-container-lowest border border-outline-variant rounded-xl p-6 lg:col-span-4 flex flex-col h-96">
+            <h3 className="text-[20px] font-semibold text-on-surface mb-6">Tăng trưởng từ vựng</h3>
+            <div className="flex-1 relative w-full h-full">
+              <svg className="w-full h-full" viewBox="0 0 100 50" preserveAspectRatio="none">
+                <defs>
+                  <linearGradient id="areaGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+                    <stop offset="0%" stopColor="#712ae2" stopOpacity="0.4"></stop>
+                    <stop offset="100%" stopColor="#712ae2" stopOpacity="0"></stop>
+                  </linearGradient>
+                </defs>
+                <path d="M0,45 L0,40 Q25,35 50,20 T100,10 L100,45 Z" fill="url(#areaGradient)"></path>
+                <path d="M0,40 Q25,35 50,20 T100,10" fill="none" stroke="#712ae2" strokeWidth="2"></path>
+              </svg>
+            </div>
+          </div>
+
+          {/* Topic Performance (Bar Chart) */}
+          <div className="bg-surface-container-lowest border border-outline-variant rounded-xl p-6 lg:col-span-6 flex flex-col min-h-[320px]">
+            <h3 className="text-[20px] font-semibold text-on-surface mb-6">Hiệu suất theo chủ đề</h3>
+            <div className="flex-1 flex flex-col justify-around gap-4">
               {[
-                { name: 'Cloud Computing', val: 85, color: 'bg-primary' },
-                { name: 'Cybersecurity', val: 60, color: 'bg-purple-500' },
-                { name: 'Networking', val: 75, color: 'bg-blue-500' },
-                { name: 'DevOps', val: 90, color: 'bg-indigo-500' },
-              ].map((topic, idx) => (
-                <div key={idx} className="flex items-center gap-4">
-                  <div className="w-32 text-xs md:text-sm text-on-surface/70 truncate">{topic.name}</div>
+                { label: 'Cloud Computing', percent: 85, color: 'bg-primary' },
+                { label: 'Cybersecurity', percent: 60, color: 'bg-secondary' },
+                { label: 'Networking', percent: 75, color: 'bg-tertiary' },
+                { label: 'DevOps', percent: 90, color: 'bg-[#4f46e5]' },
+              ].map((bar, i) => (
+                <div key={i} className="flex items-center gap-4">
+                  <div className="w-32 text-[12px] text-on-surface-variant truncate">{bar.label}</div>
                   <div className="flex-1 h-2 bg-surface-container-low rounded-full overflow-hidden">
-                    <div className={`h-full rounded-full ${topic.color}`} style={{ width: `${topic.val}%` }}></div>
+                    <div className={`h-full ${bar.color} rounded-full`} style={{ width: `${bar.percent}%` }}></div>
                   </div>
-                  <div className="w-10 text-right text-xs font-bold text-on-surface">{topic.val}%</div>
+                  <div className="w-10 text-right text-[12px] font-bold text-on-surface">{bar.percent}%</div>
                 </div>
               ))}
             </div>
           </div>
-        </div>
 
-        {/* Insights */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <div className="bg-primary/5 rounded-2xl p-4 border border-primary/20">
-            <span className="material-symbols-outlined text-primary mb-2">insights</span>
-            <p className="text-sm font-medium">{t.analytics.insight1}</p>
+          {/* Activity Heatmap */}
+          <div className="bg-surface-container-lowest border border-outline-variant rounded-xl p-6 lg:col-span-6 flex flex-col min-h-[320px]">
+            <h3 className="text-[20px] font-semibold text-on-surface mb-6">Mức độ hoạt động hàng tuần</h3>
+            <div className="flex-1 flex items-center justify-center overflow-x-auto">
+              <div className="flex gap-1 pb-2">
+                {[
+                  [0,1,0,2,3,0,1],
+                  [1,2,3,4,2,1,0],
+                  [0,0,1,2,4,3,1],
+                  [2,3,4,4,3,2,1],
+                  [1,1,2,3,2,0,0],
+                  [3,4,4,2,1,1,0]
+                ].map((col, cIdx) => (
+                  <div key={cIdx} className="flex flex-col gap-1">
+                    {col.map((val, rIdx) => {
+                      const colors = ['bg-surface-container-low', 'bg-[#EEF2FF]', 'bg-[#d8e2ff]', 'bg-[#c3c0ff]', 'bg-primary'];
+                      return (
+                        <div key={rIdx} className={`w-3 h-3 rounded-sm ${colors[val]}`}></div>
+                      );
+                    })}
+                  </div>
+                ))}
+              </div>
+            </div>
           </div>
-          <div className="bg-primary/5 rounded-2xl p-4 border border-primary/20">
-            <span className="material-symbols-outlined text-primary mb-2">favorite</span>
-            <p className="text-sm font-medium">{t.analytics.insight2}</p>
-          </div>
-          <div className="bg-primary/5 rounded-2xl p-4 border border-primary/20">
-            <span className="material-symbols-outlined text-primary mb-2">trending_up</span>
-            <p className="text-sm font-medium">{t.analytics.insight3}</p>
-          </div>
+
         </div>
       </div>
     </LearnerShell>

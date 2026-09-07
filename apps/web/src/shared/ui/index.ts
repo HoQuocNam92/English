@@ -11,3 +11,4 @@ export * from './Select';
 export * from './Skeleton';
 export * from './Table';
 export { ThemeLanguageToggle } from './ThemeLanguageToggle';
+export { Modal } from './Modal';

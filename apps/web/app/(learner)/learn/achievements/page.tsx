@@ -12,7 +12,7 @@ export default function AchievementsPage() {
   useEffect(() => {
     const fetchStats = async () => {
       try {
-        const res: any = await apiClient.get('/gamification/my-streak');
+        const res: any = await apiClient.get('/leaderboard/streaks/me');
         if (res) setStats(res.data ?? res);
       } catch (error) {
         setStats({ streak: 7, exp: 1250, badges: 4, rank: 124 });
@@ -55,7 +55,7 @@ export default function AchievementsPage() {
                 <p className="text-sm text-on-surface/70 mt-1">{t.achievements.streakSubtitle}</p>
               </div>
               <div className="bg-primary/10 px-4 py-2 rounded-lg border border-primary/20 text-center">
-                <span className="block text-2xl font-bold text-primary leading-none">{stats?.streak || 0}</span>
+                <span className="block text-2xl font-bold text-primary leading-none">{stats?.currentStreak ?? stats?.streak ?? 0}</span>
                 <span className="text-xs font-bold text-primary mt-1 block uppercase">{t.achievements.streakDays}</span>
               </div>
             </div>

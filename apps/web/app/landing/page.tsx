@@ -33,11 +33,11 @@ export default function LandingPage() {
   if (session) return null;
 
   return (
-    <main className="min-h-screen bg-background text-on-surface antialiased flex flex-col">
+    <main className="min-h-screen bg-background text-on-surface antialiased flex flex-col overflow-x-hidden">
 
       {/* ─── Navbar ───────────────────────────────────────────────── */}
       <header className="sticky top-0 z-50 border-b border-outline-variant/30 bg-surface-container-lowest/90 backdrop-blur-md">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
+        <div className="mx-auto px-4 sm:px-6 h-16 flex items-center justify-between" style={{ maxWidth: '1152px' }}>
           <Link href="/landing" className="flex items-center gap-2.5">
             <div className="w-9 h-9 rounded-xl bg-primary flex items-center justify-center shadow-sm">
               <span className="material-symbols-outlined text-[22px] !text-white fill-1">terminal</span>
@@ -73,8 +73,8 @@ export default function LandingPage() {
       </header>
 
       {/* ─── Hero ─────────────────────────────────────────────────── */}
-      <section className="max-w-6xl mx-auto px-4 sm:px-6 pt-20 pb-24 flex flex-col lg:flex-row items-center gap-16">
-        <div className="flex-1 space-y-6 text-center lg:text-left">
+      <section className="mx-auto px-4 sm:px-6 pt-20 pb-24 flex flex-col lg:flex-row items-center gap-12 lg:gap-16" style={{ maxWidth: '1152px' }}>
+        <div className="flex-1 min-w-0 space-y-6 text-center lg:text-left">
           {/* Badge */}
           <div className="inline-flex items-center gap-2 px-3 py-1.5 bg-indigo-50 border border-indigo-200 rounded-full text-xs font-bold text-primary">
             <span className="material-symbols-outlined text-[14px]">stars</span>
@@ -87,7 +87,7 @@ export default function LandingPage() {
             cho lập trình viên
           </h1>
 
-          <p className="text-lg text-on-surface-variant max-w-xl leading-relaxed">
+          <p className="text-lg text-on-surface-variant w-full leading-relaxed [overflow-wrap:anywhere]">
             Từ vựng, thuật ngữ kỹ thuật, đọc hiểu API documentation và kỹ năng giao tiếp chuyên sâu —
             tất cả trong một nền tảng được thiết kế riêng cho Developer &amp; Engineer.
           </p>
@@ -128,8 +128,8 @@ export default function LandingPage() {
         </div>
 
         {/* Hero Visual Card */}
-        <div className="flex-1 relative hidden lg:flex items-center justify-center">
-          <div className="relative w-full max-w-md">
+        <div className="relative hidden lg:flex items-center justify-center shrink-0 w-[420px]">
+          <div className="relative w-full">
             {/* Main card */}
             <div className="bg-surface-container-lowest rounded-3xl border border-outline-variant/40 shadow-2xl p-6 space-y-4">
               <div className="flex items-center gap-3 pb-3 border-b border-outline-variant/30">
@@ -191,10 +191,10 @@ export default function LandingPage() {
 
       {/* ─── Features ─────────────────────────────────────────────── */}
       <section id="features" className="bg-surface-container-low py-20">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6">
+        <div className="mx-auto px-4 sm:px-6" style={{ maxWidth: '1152px' }}>
           <div className="text-center mb-14">
             <h2 className="text-3xl font-black text-on-surface tracking-tight">Tại sao chọn TechEnglish Pro?</h2>
-            <p className="text-on-surface-variant mt-3 max-w-xl mx-auto">Mọi tính năng được thiết kế dành riêng cho người học tiếng Anh IT</p>
+            <p className="text-on-surface-variant mt-3 mx-auto" style={{ maxWidth: '576px' }}>Mọi tính năng được thiết kế dành riêng cho người học tiếng Anh IT</p>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             {[
@@ -219,13 +219,13 @@ export default function LandingPage() {
 
       {/* ─── Plans ────────────────────────────────────────────────── */}
       <section id="plans" className="bg-background py-20">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6">
+        <div className="mx-auto px-4 sm:px-6" style={{ maxWidth: '1152px' }}>
           <div className="text-center mb-14">
             <h2 className="text-3xl font-black text-on-surface tracking-tight">Gói học phù hợp với bạn</h2>
             <p className="text-on-surface-variant mt-3">Bắt đầu miễn phí, nâng cấp khi sẵn sàng</p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-4xl mx-auto">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mx-auto" style={{ maxWidth: '896px' }}>
             {/* Free */}
             <div className="bg-surface-container-lowest rounded-2xl border border-outline-variant/40 p-6 space-y-4">
               <div>
@@ -297,7 +297,7 @@ export default function LandingPage() {
 
       {/* ─── CTA Footer Banner ───────────────────────────────────────────── */}
       <section className="py-16 bg-primary">
-        <div className="max-w-3xl mx-auto px-4 sm:px-6 text-center space-y-6">
+        <div className="mx-auto px-4 sm:px-6 text-center space-y-6" style={{ maxWidth: '768px' }}>
           <h2 className="text-3xl font-black !text-white tracking-tight">
             Bắt đầu hành trình chinh phục tiếng Anh IT ngay hôm nay
           </h2>

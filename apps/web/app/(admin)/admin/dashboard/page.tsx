@@ -122,58 +122,126 @@ export default function AdminDashboardPage() {
   const totalDomainItems = analytics?.domainsDistribution.reduce((s, d) => s + d.totalItems, 0) || 1;
 
   return (
-    <div>
-      <PageHeader title="Dashboard Quản trị" description="Tổng quan hệ thống, biểu đồ phân tích và số liệu vận hành toàn trường" />
+    <main className="flex-1 overflow-y-auto p-gutter lg:px-xl xl:px-margin bg-background">
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-end mb-xl gap-md">
+        <div>
+          <h2 className="font-headline-h1 text-headline-h1 text-on-surface mb-xs">Chào buổi sáng, Quản trị viên.</h2>
+          <p className="font-body-md text-body-md text-on-surface-variant">Hãy xem tình hình học tập hôm nay.</p>
+        </div>
+        <button className="bg-primary-container text-on-primary font-interface-sb text-interface-sb px-lg py-sm rounded-lg flex items-center gap-sm hover:bg-primary transition-colors shadow-sm">
+          <span className="material-symbols-outlined">add</span>
+          Tạo bài học
+        </button>
+      </div>
 
       {error && (
-        <div className="mt-4 p-3 rounded-xl bg-error-container text-on-error-container text-sm flex items-center gap-2">
+        <div className="mb-xl p-3 rounded-xl bg-error-container text-on-error-container text-sm flex items-center gap-2">
           <span className="material-symbols-outlined text-[18px]">error</span>
           <span>{error}</span>
         </div>
       )}
 
-      {/* Stats Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mt-6">
-        {statCards.map((stat) => (
-          <div key={stat.label} className="rounded-2xl bg-surface-container-low p-5 border border-outline-variant/30">
-            <div className="flex items-center justify-between mb-3">
-              <p className="text-xs font-medium text-on-surface-variant">{stat.label}</p>
-              <span className={`material-symbols-outlined text-[22px] ${stat.color}`}>{stat.icon}</span>
-            </div>
-            {loading ? (
-              <div className="space-y-2">
-                <div className="h-8 w-16 rounded bg-outline-variant/20 animate-pulse" />
-                <div className="h-3 w-24 rounded bg-outline-variant/10 animate-pulse" />
-              </div>
-            ) : (
-              <>
-                <p className="text-2xl font-bold text-on-surface">{stat.value.toLocaleString('vi-VN')}</p>
-                <p className="text-xs text-on-surface-variant mt-0.5">{stat.sub}</p>
-              </>
-            )}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-md mb-xl">
+        <div className="stat-card bg-surface-container-lowest p-md flex flex-col justify-between h-[120px] rounded-lg border border-outline-variant hover:shadow-[0_1px_3px_rgba(15,23,24,0.06)] hover:-translate-y-0.5 transition-all">
+          <div className="flex justify-between items-start">
+            <span className="font-body-sm text-body-sm text-on-surface-variant">Tổng người học</span>
+            <span className="material-symbols-outlined text-outline text-[20px]">group</span>
           </div>
-        ))}
+          <div>
+            <div className="font-headline-h2 text-headline-h2 text-on-surface flex items-baseline gap-sm">
+              {loading ? '...' : (stats?.totalUsers ?? 0).toLocaleString('vi-VN')}
+            </div>
+          </div>
+        </div>
+        
+        <div className="stat-card bg-surface-container-lowest p-md flex flex-col justify-between h-[120px] rounded-lg border border-outline-variant hover:shadow-[0_1px_3px_rgba(15,23,24,0.06)] hover:-translate-y-0.5 transition-all">
+          <div className="flex justify-between items-start">
+            <span className="font-body-sm text-body-sm text-on-surface-variant">Bài giảng xuất bản</span>
+            <span className="material-symbols-outlined text-outline text-[20px]">school</span>
+          </div>
+          <div>
+            <div className="font-headline-h2 text-headline-h2 text-on-surface">
+              {loading ? '...' : (stats?.totalLessons ?? 0).toLocaleString('vi-VN')}
+            </div>
+          </div>
+        </div>
+        
+        <div className="stat-card bg-surface-container-lowest p-md flex flex-col justify-between h-[120px] rounded-lg border border-outline-variant hover:shadow-[0_1px_3px_rgba(15,23,24,0.06)] hover:-translate-y-0.5 transition-all">
+          <div className="flex justify-between items-start">
+            <span className="font-body-sm text-body-sm text-on-surface-variant">Nội dung học</span>
+            <span className="material-symbols-outlined text-outline text-[20px]">library_books</span>
+          </div>
+          <div>
+            <div className="font-headline-h2 text-headline-h2 text-on-surface flex items-baseline gap-sm">
+              {loading ? '...' : (stats?.totalVocab ?? 0).toLocaleString('vi-VN')} <span className="font-body-sm text-body-sm text-on-surface-variant font-normal">items</span>
+            </div>
+          </div>
+        </div>
+        
+        <div className="stat-card bg-surface-container-lowest p-md flex flex-col justify-between h-[120px] rounded-lg border border-outline-variant hover:shadow-[0_1px_3px_rgba(15,23,24,0.06)] hover:-translate-y-0.5 transition-all">
+          <div className="flex justify-between items-start">
+            <span className="font-body-sm text-body-sm text-on-surface-variant">Đề thi chứng chỉ</span>
+            <span className="material-symbols-outlined text-outline text-[20px]">assignment</span>
+          </div>
+          <div>
+            <div className="font-headline-h2 text-headline-h2 text-on-surface flex items-baseline gap-sm">
+              {loading ? '...' : (stats?.totalExams ?? 0).toLocaleString('vi-VN')} <span className="font-body-sm text-body-sm text-on-surface-variant font-normal">active</span>
+            </div>
+          </div>
+        </div>
+        
+        <div className="stat-card bg-surface-container-lowest p-md flex flex-col justify-between h-[120px] rounded-lg border border-outline-variant hover:shadow-[0_1px_3px_rgba(15,23,24,0.06)] hover:-translate-y-0.5 transition-all">
+          <div className="flex justify-between items-start">
+            <span className="font-body-sm text-body-sm text-on-surface-variant">Tài khoản hoạt động</span>
+            <span className="material-symbols-outlined text-outline text-[20px]">group</span>
+          </div>
+          <div>
+            <div className="font-headline-h2 text-headline-h2 text-on-surface flex items-baseline gap-sm">
+              {loading ? '...' : (stats?.activeUsers ?? 0).toLocaleString('vi-VN')}
+            </div>
+          </div>
+        </div>
       </div>
 
-      {/* ─── BIỂU ĐỒ THỐNG KÊ TOÀN DIỆN ────────────────────────────── */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-6">
-        {/* Biểu đồ 1: Hoạt động học tập toàn trường */}
-        <div className="lg:col-span-2 rounded-2xl bg-surface-container-low border border-outline-variant/30 p-5">
-          <div className="flex items-center justify-between mb-4">
-            <div>
-              <h2 className="text-sm font-semibold text-on-surface">Tần suất học tập & Luyện thi (7 ngày qua)</h2>
-              <p className="text-xs text-on-surface-variant">Số giờ học và lượt truy cập của học viên toàn hệ thống</p>
+      <div className="grid grid-cols-12 gap-6 mb-xl">
+        <div className="stat-card bg-surface-container-lowest p-lg col-span-12 lg:col-span-4 min-h-[360px] flex flex-col rounded-lg border border-outline-variant hover:shadow-[0_1px_3px_rgba(15,23,24,0.06)] hover:-translate-y-0.5 transition-all">
+          <h3 className="font-headline-h3 text-headline-h3 text-on-surface mb-xl">Phân bố học liệu theo lĩnh vực CNTT</h3>
+          <div className="flex-1 relative flex items-center justify-center">
+            <div className="w-48 h-48 rounded-full border-[24px] border-surface-container-high relative flex items-center justify-center">
+              <div className="absolute inset-0 rounded-full border-[24px] border-transparent border-t-primary border-r-primary-container border-b-secondary-container opacity-90 transform rotate-45"></div>
+              <span className="font-headline-h2 text-headline-h2 text-on-surface absolute z-10 text-center flex flex-col">IT<span className="font-body-sm text-body-sm text-on-surface-variant font-normal">Sectors</span></span>
             </div>
-            <span className="text-xs bg-emerald-100 text-emerald-800 font-bold px-2.5 py-1 rounded-full flex items-center gap-1">
-              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" /> Trực tuyến
-            </span>
           </div>
-
-          {loading ? (
-            <div className="h-48 rounded-xl bg-outline-variant/10 animate-pulse" />
-          ) : (
-            <div className="pt-3">
-              <div className="flex items-end justify-between gap-3 h-44 px-2">
+          <div className="mt-lg grid grid-cols-2 gap-sm">
+            {(analytics?.domainsDistribution ?? []).slice(0, 4).map((dom, idx) => {
+              const bgClass = ['bg-primary', 'bg-primary-container', 'bg-secondary-container', 'bg-outline-variant'][idx] || 'bg-primary';
+              return (
+                <div key={dom.code} className="flex items-center gap-sm">
+                  <span className={`w-3 h-3 rounded-full ${bgClass}`}></span>
+                  <span className="font-body-sm text-body-sm truncate" title={dom.name}>{dom.name} ({Math.round((dom.totalItems / totalDomainItems) * 100)}%)</span>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+        
+        <div className="stat-card bg-surface-container-lowest p-lg col-span-12 lg:col-span-8 min-h-[360px] flex flex-col rounded-lg border border-outline-variant hover:shadow-[0_1px_3px_rgba(15,23,24,0.06)] hover:-translate-y-0.5 transition-all">
+          <div className="flex justify-between items-center mb-xl">
+            <h3 className="font-headline-h3 text-headline-h3 text-on-surface">Tiến độ học tập theo tuần</h3>
+            <select className="bg-surface-bright border border-outline-variant rounded-md px-sm py-xs font-body-sm text-body-sm outline-none focus:border-primary">
+              <option>Tuần này</option>
+              <option>Tháng này</option>
+            </select>
+          </div>
+          <div className="flex-1 relative flex items-end">
+            <div className="absolute inset-0 flex items-end justify-between px-md pb-md">
+              <div className="absolute inset-0 flex flex-col justify-between border-l border-b border-outline-variant/30 pb-xl ml-lg z-0">
+                <div className="w-full border-t border-outline-variant/20"></div>
+                <div className="w-full border-t border-outline-variant/20"></div>
+                <div className="w-full border-t border-outline-variant/20"></div>
+                <div className="w-full border-t border-outline-variant/20"></div>
+              </div>
+              <div className="relative w-full h-[80%] ml-xl z-10 flex items-end gap-2 justify-between">
                 {(analytics?.weeklyActivity ?? [
                   { day: 'T2', studyHours: 42, activeUsers: 28 },
                   { day: 'T3', studyHours: 58, activeUsers: 35 },
@@ -182,158 +250,115 @@ export default function AdminDashboardPage() {
                   { day: 'T6', studyHours: 85, activeUsers: 52 },
                   { day: 'T7', studyHours: 94, activeUsers: 59 },
                   { day: 'CN', studyHours: 76, activeUsers: 48 },
-                ]).map((item) => {
+                ]).map((item, idx) => {
                   const heightPercent = Math.round((item.studyHours / (maxWeeklyHours || 100)) * 100);
+                  const isMax = heightPercent >= 90;
                   return (
-                    <div key={item.day} className="flex-1 flex flex-col items-center gap-2 group">
-                      <span className="text-[11px] font-bold text-on-surface opacity-0 group-hover:opacity-100 transition-opacity">
-                        {item.studyHours}h
-                      </span>
-                      <div className="w-full bg-surface-container rounded-t-lg h-32 flex items-end overflow-hidden">
-                        <div
-                          className="w-full bg-gradient-to-t from-primary via-primary/80 to-blue-400 rounded-t-lg transition-all duration-500 group-hover:brightness-110"
-                          style={{ height: `${Math.max(15, heightPercent)}%` }}
-                        />
-                      </div>
-                      <span className="text-xs font-semibold text-on-surface-variant">{item.day}</span>
+                    <div key={item.day} className="w-2 bg-primary/20 rounded-t-sm relative group" style={{ height: `${Math.max(15, heightPercent)}%` }}>
+                      <div className={`absolute -top-3 left-1/2 -translate-x-1/2 w-2 h-2 rounded-full bg-primary group-hover:scale-150 transition-transform ${isMax ? 'shadow-[0_0_8px_rgba(79,70,229,0.5)]' : ''}`}></div>
                     </div>
                   );
                 })}
-              </div>
-              <div className="mt-4 pt-3 border-t border-outline-variant/20 flex items-center justify-between text-xs text-on-surface-variant">
-                <span>Tỷ lệ hoàn thành mục tiêu tuần: <strong className="text-primary font-bold">84.2%</strong></span>
-                <span>Tỷ lệ Đạt chứng chỉ (Pass rate): <strong className="text-emerald-700 font-bold">78%</strong></span>
               </div>
             </div>
-          )}
-        </div>
-
-        {/* Biểu đồ 2: Tỷ lệ nội dung theo Lĩnh vực IT */}
-        <div className="rounded-2xl bg-surface-container-low border border-outline-variant/30 p-5 flex flex-col justify-between">
-          <div>
-            <h2 className="text-sm font-semibold text-on-surface mb-1">Cơ cấu Nội dung IT</h2>
-            <p className="text-xs text-on-surface-variant mb-4">Phân bổ học liệu theo chuyên ngành CNTT</p>
-
-            {loading ? (
-              <div className="space-y-3">
-                {[1, 2, 3, 4].map((i) => <div key={i} className="h-6 rounded bg-outline-variant/20 animate-pulse" />)}
-              </div>
-            ) : (
-              <div className="space-y-3.5">
-                {(analytics?.domainsDistribution ?? []).slice(0, 5).map((dom, idx) => {
-                  const percent = Math.round((dom.totalItems / totalDomainItems) * 100);
-                  const colorClass = DOMAIN_COLORS[idx % DOMAIN_COLORS.length];
-                  return (
-                    <div key={dom.code}>
-                      <div className="flex items-center justify-between text-xs mb-1">
-                        <span className="font-medium text-on-surface truncate max-w-[150px]">{dom.name}</span>
-                        <span className="font-bold text-on-surface-variant">{percent}% ({dom.totalItems})</span>
-                      </div>
-                      <div className="w-full bg-surface-container h-2.5 rounded-full overflow-hidden">
-                        <div
-                          className={`h-full ${colorClass} rounded-full transition-all duration-500`}
-                          style={{ width: `${Math.max(10, percent)}%` }}
-                        />
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            )}
-          </div>
-
-          <div className="mt-4 pt-3 border-t border-outline-variant/20 flex items-center justify-between text-xs">
-            <span className="text-on-surface-variant">Tổng số học liệu</span>
-            <span className="font-bold text-primary">{totalDomainItems} mục</span>
+            <div className="absolute bottom-0 left-0 w-full flex justify-between ml-xl pr-md font-label-caps text-label-caps text-on-surface-variant">
+               {(analytics?.weeklyActivity ?? [
+                  { day: 'T2' }, { day: 'T3' }, { day: 'T4' }, { day: 'T5' }, { day: 'T6' }, { day: 'T7' }, { day: 'CN' }
+                ]).map(item => <span key={item.day}>{item.day}</span>)}
+            </div>
           </div>
         </div>
       </div>
 
-      {/* Two columns: Recent users + Recent lessons */}
-      <div className="mt-6 grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Recent users */}
-        <div className="rounded-2xl bg-surface-container-low border border-outline-variant/30 overflow-hidden">
-          <div className="px-5 py-4 border-b border-outline-variant/20 flex items-center justify-between">
-            <div>
-              <h2 className="text-sm font-semibold text-on-surface">Người dùng mới đăng ký</h2>
-              <p className="text-xs text-on-surface-variant">Tài khoản giảng viên & học viên mới nhất</p>
-            </div>
-            <a href="/admin/users" className="text-xs font-semibold text-primary hover:underline flex items-center gap-1">
-              Xem tất cả <span className="material-symbols-outlined text-[14px]">arrow_forward</span>
-            </a>
+      <div className="grid grid-cols-12 gap-6">
+        <div className="stat-card bg-surface-container-lowest p-lg col-span-12 lg:col-span-6 rounded-lg border border-outline-variant hover:shadow-[0_1px_3px_rgba(15,23,24,0.06)] hover:-translate-y-0.5 transition-all">
+          <div className="flex justify-between items-center mb-md border-b border-outline-variant pb-sm">
+            <h3 className="font-headline-h3 text-headline-h3 text-on-surface">Người dùng mới đăng ký</h3>
+            <a href="/admin/users" className="text-primary font-interface-sb text-body-sm hover:underline">Xem tất cả</a>
           </div>
-
-          {loading ? (
-            <div className="p-4 space-y-3">
-              {[1, 2, 3].map((i) => (
-                <div key={i} className="flex items-center gap-3">
-                  <div className="w-8 h-8 rounded-full bg-outline-variant/20 animate-pulse shrink-0" />
-                  <div className="flex-1 space-y-1.5">
-                    <div className="h-3.5 w-2/3 rounded bg-outline-variant/20 animate-pulse" />
-                    <div className="h-3 w-1/2 rounded bg-outline-variant/10 animate-pulse" />
+          <ul className="space-y-md">
+            {loading ? (
+              <div className="p-4 space-y-3">
+                {[1, 2, 3].map((i) => (
+                  <div key={i} className="flex items-center gap-3">
+                    <div className="w-8 h-8 rounded-full bg-outline-variant/20 animate-pulse shrink-0" />
+                    <div className="flex-1 space-y-1.5">
+                      <div className="h-3.5 w-2/3 rounded bg-outline-variant/20 animate-pulse" />
+                      <div className="h-3 w-1/2 rounded bg-outline-variant/10 animate-pulse" />
+                    </div>
                   </div>
-                </div>
-              ))}
-            </div>
-          ) : (
-            <div className="divide-y divide-outline-variant/20">
-              {recentUsers.map((u) => (
-                <div key={u.id} className="flex items-center gap-3 px-5 py-3.5 hover:bg-surface-container/40 transition-colors">
-                  <div className="w-8 h-8 rounded-full bg-primary/15 flex items-center justify-center shrink-0">
+                ))}
+              </div>
+            ) : (
+              recentUsers.map((u) => (
+                <li key={u.id} className="flex items-start gap-md">
+                  <div className="w-8 h-8 rounded-full bg-surface-container-highest flex items-center justify-center shrink-0">
                     <span className="text-xs font-bold text-primary">
                       {(u.displayName ?? u.email).charAt(0).toUpperCase()}
                     </span>
                   </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium text-on-surface truncate">{u.displayName ?? '—'}</p>
-                    <p className="text-xs text-on-surface-variant truncate">{u.email}</p>
+                  <div>
+                    <p className="font-body-md text-body-md text-on-surface"><span className="font-interface-sb">{u.displayName ?? u.email}</span> đã đăng ký tài khoản</p>
+                    <p className="font-body-sm text-body-sm text-on-surface-variant">
+                      Vai trò: {u.roles?.join(', ')}
+                    </p>
                   </div>
-                  <div className="flex gap-1 shrink-0">
-                    {u.roles?.map((r) => <RoleBadge key={r} role={r} />)}
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
+                </li>
+              ))
+            )}
+          </ul>
         </div>
-
-        {/* Recent lessons */}
-        <div className="rounded-2xl bg-surface-container-low border border-outline-variant/30 overflow-hidden">
-          <div className="px-5 py-4 border-b border-outline-variant/20 flex items-center justify-between">
-            <div>
-              <h2 className="text-sm font-semibold text-on-surface">Bài học trên hệ thống</h2>
-              <p className="text-xs text-on-surface-variant">Kho tài liệu kỹ thuật được cập nhật</p>
+        
+        <div className="col-span-12 lg:col-span-6 flex flex-col gap-xl">
+          <div className="stat-card bg-surface-container-lowest p-lg rounded-lg border border-outline-variant hover:shadow-[0_1px_3px_rgba(15,23,24,0.06)] hover:-translate-y-0.5 transition-all">
+            <h3 className="font-headline-h3 text-headline-h3 text-on-surface mb-md">Thao tác nhanh</h3>
+            <div className="grid grid-cols-2 gap-md">
+              <button className="flex flex-col items-center justify-center p-md border border-outline-variant rounded-lg hover:border-primary hover:bg-surface-bright transition-all group">
+                <span className="material-symbols-outlined text-outline group-hover:text-primary mb-xs">add_box</span>
+                <span className="font-interface-sb text-body-sm text-on-surface group-hover:text-primary">Tạo bài học</span>
+              </button>
+              <button className="flex flex-col items-center justify-center p-md border border-outline-variant rounded-lg hover:border-primary hover:bg-surface-bright transition-all group">
+                <span className="material-symbols-outlined text-outline group-hover:text-primary mb-xs">post_add</span>
+                <span className="font-interface-sb text-body-sm text-on-surface group-hover:text-primary">Thêm câu hỏi</span>
+              </button>
+              <button className="flex flex-col items-center justify-center p-md border border-outline-variant rounded-lg hover:border-primary hover:bg-surface-bright transition-all group">
+                <span className="material-symbols-outlined text-outline group-hover:text-primary mb-xs">quiz</span>
+                <span className="font-interface-sb text-body-sm text-on-surface group-hover:text-primary">Tạo bài kiểm tra</span>
+              </button>
+              <button className="flex flex-col items-center justify-center p-md border border-outline-variant rounded-lg hover:border-primary hover:bg-surface-bright transition-all group">
+                <span className="material-symbols-outlined text-outline group-hover:text-primary mb-xs">person_search</span>
+                <span className="font-interface-sb text-body-sm text-on-surface group-hover:text-primary">Tìm người học</span>
+              </button>
             </div>
-            <a href="/admin/lessons" className="text-xs font-semibold text-primary hover:underline flex items-center gap-1">
-              Xem tất cả <span className="material-symbols-outlined text-[14px]">arrow_forward</span>
-            </a>
           </div>
-
-          {loading ? (
-            <div className="p-4 space-y-3">
-              {[1, 2, 3].map((i) => <div key={i} className="h-12 rounded-xl bg-outline-variant/20 animate-pulse" />)}
+          
+          <div className="stat-card bg-surface-container-lowest p-lg flex-1 rounded-lg border border-outline-variant hover:shadow-[0_1px_3px_rgba(15,23,24,0.06)] hover:-translate-y-0.5 transition-all">
+            <div className="flex justify-between items-center mb-md">
+              <h3 className="font-headline-h3 text-headline-h3 text-on-surface">Bài học trên hệ thống</h3>
+              <button className="material-symbols-outlined text-on-surface-variant hover:text-primary">more_horiz</button>
             </div>
-          ) : (
-            <div className="divide-y divide-outline-variant/20">
-              {recentLessons.map((l) => (
-                <div key={l.id} className="px-5 py-3.5 hover:bg-surface-container/40 transition-colors">
-                  <p className="text-sm font-medium text-on-surface line-clamp-1">{l.title}</p>
-                  <div className="flex items-center gap-2 mt-1">
-                    <span className="text-xs text-on-surface-variant">{l.domain?.name}</span>
-                    <span className="text-xs text-on-surface-variant">·</span>
-                    <span className="text-xs text-on-surface-variant">{l.level?.name}</span>
-                    {l.status === 'published' ? (
-                      <span className="text-xs text-green-700 bg-green-50 px-2 py-0.5 rounded-full font-medium">Đã đăng</span>
-                    ) : (
-                      <span className="text-xs text-amber-700 bg-amber-50 px-2 py-0.5 rounded-full font-medium">Nháp</span>
-                    )}
+            <div className="flex items-center gap-md">
+              <div className="flex -space-x-4">
+                {recentLessons.slice(0, 3).map((l, i) => (
+                  <div key={l.id} className="w-10 h-10 rounded-full border-2 border-surface-container-lowest bg-surface-container-high flex items-center justify-center font-interface-sb text-body-sm text-on-surface-variant z-10" style={{ zIndex: 10 - i }}>
+                    {l.title.charAt(0).toUpperCase()}
                   </div>
-                </div>
-              ))}
+                ))}
+                {recentLessons.length > 3 && (
+                  <div className="w-10 h-10 rounded-full border-2 border-surface-container-lowest bg-surface-container-high flex items-center justify-center font-interface-sb text-body-sm text-on-surface-variant z-10">
+                    +{stats?.totalLessons ? stats.totalLessons - 3 : 0}
+                  </div>
+                )}
+              </div>
+              <div className="ml-sm">
+                <p className="font-body-sm text-body-sm text-on-surface-variant">Bài học mới cập nhật.</p>
+              </div>
             </div>
-          )}
+          </div>
         </div>
       </div>
-    </div>
+      
+      <div className="h-2xl"></div>
+    </main>
   );
 }

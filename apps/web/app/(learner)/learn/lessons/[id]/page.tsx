@@ -14,7 +14,7 @@ function renderSectionContent(sec: any) {
   switch (type) {
     case 'heading':
       return (
-        <h2 className="text-lg font-bold text-slate-900 mt-4">
+        <h2 className="text-[24px] font-bold text-on-surface mt-[2.5rem] mb-[1rem]" style={{ lineHeight: '1.4' }}>
           {content.text ?? content.heading ?? String(content)}
         </h2>
       );
@@ -22,9 +22,9 @@ function renderSectionContent(sec: any) {
     case 'rich_text':
       return (
         <div
-          className="prose prose-sm max-w-none text-slate-700 leading-relaxed"
+          className="prose max-w-none text-on-surface"
           dangerouslySetInnerHTML={{
-            __html: content.html ?? `<p>${content.text ?? content.body ?? String(content)}</p>`,
+            __html: content.html ?? `<p class="font-body-md text-[17px] leading-[1.7] max-w-[65ch] text-on-surface mb-[1.5rem]">${content.text ?? content.body ?? String(content)}</p>`,
           }}
         />
       );
@@ -33,7 +33,7 @@ function renderSectionContent(sec: any) {
       const lang = content.language ?? '';
       const code = content.code ?? content.text ?? String(content);
       return (
-        <pre className="bg-slate-900 text-green-400 text-xs p-4 rounded-xl overflow-x-auto">
+        <pre className="bg-slate-900 text-green-400 text-xs p-4 rounded-xl overflow-x-auto mb-4">
           <code>{code}</code>
           {lang && <span className="block text-right text-slate-500 text-[10px] mt-1">{lang}</span>}
         </pre>
@@ -42,22 +42,22 @@ function renderSectionContent(sec: any) {
 
     case 'image':
       return content.url ? (
-        <figure className="my-4">
+        <div className="my-6 rounded-xl overflow-hidden border border-outline-variant bg-surface-container-lowest p-4 flex flex-col items-center justify-center">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
             src={content.url}
             alt={content.alt ?? ''}
-            className="rounded-xl w-full max-h-72 object-cover border border-slate-200"
+            className="max-w-full h-auto object-contain max-h-64"
           />
           {content.caption && (
-            <figcaption className="text-center text-xs text-slate-500 mt-1">{content.caption}</figcaption>
+            <span className="font-body-sm text-[12px] text-on-surface-variant mt-2 text-center">{content.caption}</span>
           )}
-        </figure>
+        </div>
       ) : null;
 
     case 'callout':
       return (
-        <div className="bg-amber-50 border-l-4 border-amber-400 px-4 py-3 rounded-r-xl text-sm text-amber-900">
+        <div className="bg-primary/10 border-l-4 border-primary px-4 py-3 rounded-r-xl text-[14px] text-on-surface mb-4">
           {content.text ?? content.body ?? String(content)}
         </div>
       );
@@ -65,12 +65,12 @@ function renderSectionContent(sec: any) {
     case 'vocabulary_list': {
       const items: any[] = content.items ?? [];
       return items.length > 0 ? (
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 mb-4">
           {items.map((v: any, i: number) => (
-            <div key={i} className="p-3 bg-indigo-50 rounded-lg border border-indigo-100">
-              <span className="font-bold text-primary text-sm">{v.term}</span>
-              {v.ipa && <span className="ml-1 text-xs text-slate-400">/{v.ipa}/</span>}
-              <p className="text-xs text-slate-600 mt-0.5">{v.definition ?? v.definitionVi ?? ''}</p>
+            <div key={i} className="p-3 bg-primary/5 rounded-lg border border-primary/20">
+              <span className="font-bold text-primary text-[14px]">{v.term}</span>
+              {v.ipa && <span className="ml-1 text-[12px] text-outline">/{v.ipa}/</span>}
+              <p className="text-[12px] text-on-surface-variant mt-0.5">{v.definition ?? v.definitionVi ?? ''}</p>
             </div>
           ))}
         </div>
@@ -79,25 +79,24 @@ function renderSectionContent(sec: any) {
 
     case 'audio':
       return content.url ? (
-        <audio controls className="w-full mt-2">
+        <audio controls className="w-full mt-2 mb-4">
           <source src={content.url} />
         </audio>
       ) : null;
 
     case 'video':
       return content.url ? (
-        <video controls className="w-full rounded-xl mt-2 max-h-72">
+        <video controls className="w-full rounded-xl mt-2 mb-4 max-h-72">
           <source src={content.url} />
         </video>
       ) : null;
 
     default:
-      // Fallback: if content is a plain string or has a text field
       if (typeof content === 'string') {
-        return <p className="text-sm text-slate-700 leading-relaxed whitespace-pre-wrap">{content}</p>;
+        return <p className="font-body-md text-[17px] leading-[1.7] max-w-[65ch] text-on-surface mb-[1.5rem] whitespace-pre-wrap">{content}</p>;
       }
       if (content.text) {
-        return <p className="text-sm text-slate-700 leading-relaxed whitespace-pre-wrap">{content.text}</p>;
+        return <p className="font-body-md text-[17px] leading-[1.7] max-w-[65ch] text-on-surface mb-[1.5rem] whitespace-pre-wrap">{content.text}</p>;
       }
       return null;
   }
@@ -148,11 +147,11 @@ export default function LearnerLessonDetailPage({ params }: { params: Promise<{ 
   if (error || !lesson)
     return (
       <LearnerShell>
-        <div className="text-center text-red-500 py-8">
+        <div className="text-center text-error py-8">
           <p>{error || 'Không tìm thấy bài học.'}</p>
           <button
             onClick={() => window.location.reload()}
-            className="mt-4 px-4 py-2 bg-primary text-white rounded-lg text-sm"
+            className="mt-4 px-4 py-2 bg-primary text-white rounded-lg text-[14px]"
           >
             Thử lại
           </button>
@@ -160,159 +159,168 @@ export default function LearnerLessonDetailPage({ params }: { params: Promise<{ 
       </LearnerShell>
     );
 
-  // Vocabulary: API trả về lesson.vocabularies = [{id, order, vocabulary: {term, definitionVi, definitionEn, pronunciationIpa}}]
-  const vocabRelations: any[] = lesson.vocabularies ?? lesson.vocabulary ?? [];
-  const terms = vocabRelations.map((rel: any) => rel.vocabulary ?? rel);
-
-  // Sections sorted by order
   const sections: any[] = [...(lesson.sections ?? [])].sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
 
-  const levelBadge = lesson.level?.name ?? lesson.level?.code ?? null;
-  const domainBadge = lesson.domain?.name ?? lesson.domain?.code ?? null;
-  const estimatedMin = lesson.estimatedMinutes;
+  const levelBadge = lesson.level?.name ?? lesson.level?.code ?? 'Intermediate';
+  const domainBadge = lesson.domain?.name ?? lesson.domain?.code ?? 'Software Engineering';
+  const progressVal = 35; // Example progress
 
   return (
     <LearnerShell>
-      <div className="flex flex-col gap-6">
-        {/* Breadcrumb & Top Bar */}
-        <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3">
-          <nav className="flex items-center gap-2 text-xs text-on-surface-variant">
-            <Link href="/learn/lessons" className="hover:text-primary transition-colors">
-              Lộ trình học
-            </Link>
-            <span className="material-symbols-outlined text-[14px] text-outline">chevron_right</span>
-            <span className="text-primary font-semibold truncate max-w-xs">{lesson.title}</span>
-          </nav>
-
-          <div className="flex items-center gap-2 flex-wrap">
-            <button
-              onClick={markComplete}
-              disabled={marked}
-              className={`px-4 py-2 font-bold text-xs rounded-lg flex items-center gap-1.5 transition-colors ${
-                marked
-                  ? 'bg-green-100 text-green-700 cursor-default'
-                  : 'bg-green-100 text-green-800 hover:bg-green-200'
-              }`}
-            >
-              <span className="material-symbols-outlined text-[18px]">check_circle</span>
-              <span>{marked ? 'Đã hoàn thành' : 'Đánh dấu hoàn thành'}</span>
-            </button>
-            <Link
-              href={`/learn/flashcards/${lesson.id}`}
-              className="px-4 py-2 bg-primary/10 hover:bg-primary/20 text-primary font-bold text-xs rounded-lg flex items-center gap-1.5 transition-colors border border-primary/20"
-            >
-              <span className="material-symbols-outlined text-[18px]">style</span>
-              <span>Học Flashcards</span>
-            </Link>
-            <Link
-              href={`/learn/quiz/${lesson.id}`}
-              className="px-4 py-2 bg-primary hover:bg-indigo-700 !text-white font-bold text-xs rounded-lg flex items-center gap-1.5 transition-colors"
-            >
-              <span className="material-symbols-outlined text-[18px] !text-white">quiz</span>
-              <span className="!text-white">Làm Quiz</span>
-            </Link>
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8">
+        
+        {/* Left Column (Main Content - approx 75%) */}
+        <div className="lg:col-span-8 xl:col-span-9 flex flex-col gap-6">
+          
+          {/* Header Section */}
+          <div className="flex flex-col gap-4">
+            {/* Breadcrumbs */}
+            <div className="flex items-center text-[12px] text-on-surface-variant gap-1">
+              <Link href="/learn/lessons" className="hover:text-primary transition-colors">Khóa học</Link>
+              <span className="material-symbols-outlined text-[16px]">chevron_right</span>
+              <Link href="/learn/lessons" className="hover:text-primary transition-colors">{domainBadge}</Link>
+              <span className="material-symbols-outlined text-[16px]">chevron_right</span>
+              <span className="text-on-surface font-semibold">{lesson.title}</span>
+            </div>
+            
+            {/* Title & Meta */}
+            <div>
+              <div className="flex items-center gap-2 mb-1">
+                <span className="bg-primary/10 text-primary font-bold text-[12px] uppercase tracking-[0.05em] px-2 py-1 rounded">{domainBadge}</span>
+                <span className="bg-surface-container text-on-surface-variant font-bold text-[12px] uppercase tracking-[0.05em] px-2 py-1 rounded">{levelBadge}</span>
+              </div>
+              <h1 className="text-[30px] font-bold text-on-surface mt-2" style={{ lineHeight: '38px', letterSpacing: '-0.02em' }}>{lesson.title}</h1>
+              <p className="text-[14px] text-on-surface-variant mt-2 max-w-[600px]">
+                {lesson.summary || lesson.description || 'Learn the fundamental concepts and the technical vocabulary used in modern web development.'}
+              </p>
+            </div>
+            
+            {/* Progress Bar (Hero) */}
+            <div className="w-full mt-2">
+              <div className="flex justify-between items-center mb-1">
+                <span className="text-[12px] text-on-surface-variant">Tiến độ bài học</span>
+                <span className="font-semibold text-[14px] text-primary">{progressVal}%</span>
+              </div>
+              <div className="h-2 w-full bg-surface-container-highest rounded-full overflow-hidden">
+                <div className="h-full bg-primary rounded-full transition-all duration-500 ease-out" style={{ width: `${progressVal}%` }}></div>
+              </div>
+            </div>
           </div>
-        </div>
 
-        {/* Meta badges */}
-        <div className="flex flex-wrap gap-2 text-[11px]">
-          {domainBadge && (
-            <span className="px-2.5 py-1 rounded-full bg-indigo-50 text-indigo-700 border border-indigo-200 font-semibold">
-              {domainBadge}
-            </span>
-          )}
-          {levelBadge && (
-            <span className="px-2.5 py-1 rounded-full bg-purple-50 text-purple-700 border border-purple-200 font-semibold">
-              {levelBadge}
-            </span>
-          )}
-          {estimatedMin && (
-            <span className="px-2.5 py-1 rounded-full bg-slate-100 text-slate-600 border border-slate-200 font-semibold flex items-center gap-1">
-              <span className="material-symbols-outlined text-[13px]">schedule</span>
-              {estimatedMin} phút
-            </span>
-          )}
-        </div>
-
-        {/* 2-Column Reader Layout */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-          {/* Main Theory Content (8 cols) */}
-          <div className="lg:col-span-8 space-y-6">
-            <div className="p-6 rounded-2xl bg-surface-container-lowest border border-outline-variant/40 shadow-2xs space-y-4">
-              <h1 className="text-xl lg:text-2xl font-extrabold text-on-surface tracking-tight">
-                {lesson.title}
-              </h1>
-              {lesson.summary && (
-                <p className="text-xs lg:text-sm text-on-surface-variant leading-relaxed p-3.5 bg-surface-bright rounded-xl border border-outline-variant/30">
-                  {lesson.summary}
-                </p>
-              )}
-              {lesson.description && lesson.description !== lesson.summary && (
-                <p className="text-xs lg:text-sm text-on-surface-variant leading-relaxed">
-                  {lesson.description}
-                </p>
-              )}
-
-              {/* Formatted Reading Content */}
+          {/* Learning Canvas (Ambient Card) */}
+          <div className="bg-surface-container-lowest border border-outline-variant rounded-xl p-6 md:p-8 mt-4 hover:shadow-[0_4px_12px_rgba(15,23,24,0.08)] transition-all">
+            <div className="learning-content">
               {sections.length > 0 ? (
-                <div className="pt-4 border-t border-outline-variant/30 space-y-4">
-                  {sections.map((sec: any, idx: number) => (
-                    <div key={sec.id ?? idx}>{renderSectionContent(sec)}</div>
-                  ))}
-                </div>
+                sections.map((sec: any, idx: number) => (
+                  <div key={sec.id ?? idx}>{renderSectionContent(sec)}</div>
+                ))
               ) : (
-                <p className="text-xs text-slate-500 pt-4 border-t border-outline-variant/30">
-                  Bài học này chưa có nội dung.
-                </p>
+                <>
+                  <h2 className="text-[24px] font-bold text-on-surface mt-[2.5rem] mb-[1rem]" style={{ lineHeight: '1.4' }}>What is an API?</h2>
+                  <p className="font-body-md text-[17px] leading-[1.7] max-w-[65ch] text-on-surface mb-[1.5rem]">
+                    In software development, an <span className="bg-primary/10 text-primary px-1.5 py-0.5 rounded font-mono text-[0.9em] font-semibold">API</span> (Application Programming Interface) is a set of protocols and tools that allows different software applications to communicate with each other. It acts as an intermediary, processing data requests and returning responses.
+                  </p>
+                  <p className="font-body-md text-[17px] leading-[1.7] max-w-[65ch] text-on-surface mb-[1.5rem]">
+                    Imagine a restaurant menu: you (the client) look at the menu, place an order with the waiter (the API), and the kitchen (the server) prepares the food. You don't need to know how the kitchen cooks the food; you only need to know how to place the order and what to expect in return.
+                  </p>
+                  <h2 className="text-[24px] font-bold text-on-surface mt-[2.5rem] mb-[1rem]" style={{ lineHeight: '1.4' }}>The Fundamentals of REST</h2>
+                  <p className="font-body-md text-[17px] leading-[1.7] max-w-[65ch] text-on-surface mb-[1.5rem]">
+                    A <span className="bg-primary/10 text-primary px-1.5 py-0.5 rounded font-mono text-[0.9em] font-semibold">REST API</span> (Representational State Transfer) is a specific architectural style for building web services. It uses standard HTTP methods to perform operations on resources. These resources are identified by specific URLs, often referred to as an <span className="bg-primary/10 text-primary px-1.5 py-0.5 rounded font-mono text-[0.9em] font-semibold">Endpoint</span>.
+                  </p>
+                </>
               )}
             </div>
           </div>
 
-          {/* Right Vocabulary Glossary Sidebar (4 cols) */}
-          <div className="lg:col-span-4 space-y-6">
-            <div className="p-6 rounded-2xl bg-surface-container-lowest border border-outline-variant/40 shadow-2xs space-y-4 sticky top-24">
-              <div className="flex justify-between items-center pb-2 border-b border-outline-variant/30">
-                <h3 className="text-sm font-bold text-on-surface">Thuật ngữ trong bài</h3>
-                <span className="text-xs text-primary font-bold">{terms.length} từ vựng</span>
+          {/* Bottom Navigation (Lesson context) */}
+          <div className="flex justify-between items-center mt-8 border-t border-outline-variant pt-6">
+            <button className="flex items-center gap-2 px-4 py-2 border border-outline-variant rounded-lg text-on-surface hover:bg-surface-container-low transition-colors font-semibold text-[14px] group">
+              <span className="material-symbols-outlined text-on-surface-variant group-hover:text-primary transition-colors">arrow_back</span>
+              <div>
+                <div className="text-[12px] text-on-surface-variant text-left">Bài trước</div>
+                <div>HTTP Basics</div>
               </div>
-
-              <div className="space-y-3 max-h-96 overflow-y-auto">
-                {terms.length === 0 && (
-                  <p className="text-xs text-slate-500">Chưa có từ vựng cho bài học này.</p>
-                )}
-                {terms.map((t: any, idx: number) => (
-                  <div
-                    key={t.id ?? idx}
-                    className="p-3.5 rounded-xl bg-surface-bright border border-outline-variant/40 space-y-1.5 hover:border-primary/40 transition-colors"
-                  >
-                    <div className="flex justify-between items-start gap-2">
-                      <span className="text-sm font-bold text-primary">{t.term}</span>
-                      {t.partOfSpeech && (
-                        <span className="text-[10px] text-slate-500 italic shrink-0">{t.partOfSpeech}</span>
-                      )}
-                    </div>
-                    {t.pronunciationIpa && (
-                      <p className="text-[11px] text-slate-400">/{t.pronunciationIpa}/</p>
-                    )}
-                    <p className="text-xs font-semibold text-on-surface m-0">
-                      {t.definitionVi ?? t.definitionEn ?? t.definition ?? ''}
-                    </p>
-                    {t.definitionEn && t.definitionVi && (
-                      <p className="text-[11px] text-slate-500 italic">{t.definitionEn}</p>
-                    )}
-                  </div>
-                ))}
+            </button>
+            <button className="flex items-center gap-2 px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary/90 transition-colors font-semibold text-[14px] group">
+              <div className="text-right">
+                <div className="text-[12px] text-white/80">Tiếp theo</div>
+                <div>JSON Data Structures</div>
               </div>
+              <span className="material-symbols-outlined text-white">arrow_forward</span>
+            </button>
+          </div>
 
-              {terms.length > 0 && (
-                <Link
-                  href={`/learn/flashcards/${lesson.id}`}
-                  className="w-full py-2 text-center text-xs font-bold text-primary border border-primary/30 hover:bg-primary/5 rounded-xl block transition-colors"
-                >
-                  Luyện tất cả với Flashcard →
-                </Link>
-              )}
+        </div>
+
+        {/* Right Column (Sticky Sidebar - approx 25%) */}
+        <div className="lg:col-span-4 xl:col-span-3">
+          <div className="sticky top-24 flex flex-col gap-4">
+            
+            {/* Action Card */}
+            <div className="bg-surface-container-lowest border border-outline-variant rounded-xl p-4 flex flex-col gap-4 shadow-sm">
+              <button 
+                onClick={markComplete}
+                disabled={marked}
+                className="w-full flex justify-center items-center gap-2 bg-primary text-white py-3 px-4 rounded-lg font-semibold text-[14px] hover:bg-primary/90 transition-all disabled:opacity-50"
+              >
+                <span className="material-symbols-outlined" style={{ fontVariationSettings: marked ? "'FILL' 1" : "'FILL' 0" }}>check_circle</span>
+                {marked ? 'Đã hoàn thành' : 'Đánh dấu hoàn thành'}
+              </button>
+              <button className="w-full flex justify-center items-center gap-2 border border-outline-variant text-on-surface py-3 px-4 rounded-lg font-semibold text-[14px] hover:bg-surface-container-low transition-all">
+                <span className="material-symbols-outlined">bookmark_add</span>
+                Lưu từ vựng
+              </button>
             </div>
+            
+            {/* Lesson Index / Sections */}
+            <div className="bg-surface-container-lowest border border-outline-variant rounded-xl overflow-hidden shadow-sm">
+              <div className="p-4 border-b border-outline-variant bg-surface-container-low">
+                <h3 className="font-semibold text-[14px] text-on-surface">Nội dung bài học</h3>
+              </div>
+              <div className="flex flex-col">
+                <a className="flex items-start gap-2 p-4 hover:bg-surface-container-low transition-colors border-l-2 border-transparent" href="#">
+                  <span className="material-symbols-outlined text-green-600 text-[20px] mt-[2px]" style={{ fontVariationSettings: "'FILL' 1" }}>check_circle</span>
+                  <div>
+                    <div className="text-[12px] text-on-surface-variant">Phần 1</div>
+                    <div className="font-semibold text-[14px] text-on-surface">What is an API?</div>
+                  </div>
+                </a>
+                <a className="flex items-start gap-2 p-4 bg-primary/10 border-l-2 border-primary transition-colors" href="#">
+                  <span className="material-symbols-outlined text-primary text-[20px] mt-[2px]" style={{ fontVariationSettings: "'FILL' 1" }}>play_circle</span>
+                  <div>
+                    <div className="text-[12px] text-primary">Phần 2</div>
+                    <div className="font-semibold text-[14px] text-primary">The Fundamentals of REST</div>
+                  </div>
+                </a>
+                <a className="flex items-start gap-2 p-4 hover:bg-surface-container-low transition-colors border-l-2 border-transparent opacity-70" href="#">
+                  <span className="material-symbols-outlined text-outline text-[20px] mt-[2px]">lock</span>
+                  <div>
+                    <div className="text-[12px] text-on-surface-variant">Phần 3</div>
+                    <div className="font-semibold text-[14px] text-on-surface">Endpoints & Methods</div>
+                  </div>
+                </a>
+                <a className="flex items-start gap-2 p-4 hover:bg-surface-container-low transition-colors border-l-2 border-transparent opacity-70" href="#">
+                  <span className="material-symbols-outlined text-outline text-[20px] mt-[2px]">lock</span>
+                  <div>
+                    <div className="text-[12px] text-on-surface-variant">Phần 4</div>
+                    <div className="font-semibold text-[14px] text-on-surface">Quiz: API Vocabulary</div>
+                  </div>
+                </a>
+              </div>
+            </div>
+
+            {/* AI Context Widget */}
+            <div className="border border-secondary bg-secondary/10 rounded-xl p-4">
+              <div className="flex items-center gap-2 mb-2">
+                <span className="material-symbols-outlined text-secondary">psychology</span>
+                <span className="font-bold text-[12px] uppercase tracking-[0.05em] text-secondary">AI ASSISTANT</span>
+              </div>
+              <p className="text-[12px] text-on-surface-variant">
+                Bạn đang gặp khó khăn với thuật ngữ <span className="font-mono text-primary">Endpoint</span>? 
+              </p>
+              <button className="mt-2 text-secondary font-semibold text-[14px] hover:underline">Xem giải thích đơn giản hơn</button>
+            </div>
+
           </div>
         </div>
       </div>

@@ -2,17 +2,30 @@
 
 import Link from 'next/link';
 import { useAuth } from '@/features/auth/presentation';
+import { ThemeLanguageToggle } from '../ui/ThemeLanguageToggle';
 
-export function Topbar() {
+export interface TopbarProps {
+  onToggleMobileMenu?: () => void;
+}
+
+export function Topbar({ onToggleMobileMenu }: TopbarProps) {
   const { session, signOut } = useAuth();
 
   return (
-    <header className="h-16 border-b border-outline-variant/40 bg-surface-container-lowest flex justify-between items-center w-full px-6 lg:px-8 z-30 shrink-0 sticky top-0">
-      {/* Mobile brand text */}
-      <div className="flex items-center gap-2 md:hidden">
-        <Link href="/dashboard" className="flex items-center gap-2">
-          <div className="w-7 h-7 rounded bg-primary text-white flex items-center justify-center">
-            <span className="material-symbols-outlined text-[18px] fill-1">terminal</span>
+    <header className="h-16 border-b border-outline-variant/30 bg-surface-container-lowest flex justify-between items-center w-full px-4 sm:px-6 lg:px-8 z-30 shrink-0 sticky top-0">
+      {/* Mobile hamburger + brand */}
+      <div className="flex items-center gap-2.5 md:hidden">
+        <button
+          type="button"
+          onClick={onToggleMobileMenu}
+          aria-label="Mở menu"
+          className="p-1.5 rounded-lg text-on-surface-variant hover:bg-surface-container-high transition-colors"
+        >
+          <span className="material-symbols-outlined text-[24px]">menu</span>
+        </button>
+        <Link href="/admin/dashboard" className="flex items-center gap-2">
+          <div className="w-7 h-7 rounded bg-primary text-white flex items-center justify-center shadow-xs">
+            <span className="material-symbols-outlined text-[17px] fill-1">terminal</span>
           </div>
           <span className="font-bold text-primary text-sm">TechEnglish Pro</span>
         </Link>
@@ -32,6 +45,7 @@ export function Topbar() {
 
       {/* Right actions */}
       <div className="flex items-center gap-3">
+        <ThemeLanguageToggle />
         <button className="p-2 rounded-lg text-on-surface-variant hover:text-primary hover:bg-surface-container-high transition-colors relative">
           <span className="material-symbols-outlined text-[22px]">notifications</span>
           <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-error rounded-full" />
@@ -57,7 +71,7 @@ export function Topbar() {
             onClick={signOut}
             title="Đăng xuất"
             aria-label="Đăng xuất"
-            className="p-2 rounded-lg text-on-surface-variant hover:text-red-600 hover:bg-red-50 transition-all cursor-pointer shrink-0 ml-1"
+            className="p-2 rounded-lg text-on-surface-variant hover:text-red-600 hover:bg-error-container/20 transition-all cursor-pointer shrink-0 ml-1"
           >
             <span className="material-symbols-outlined text-[18px]">logout</span>
           </button>

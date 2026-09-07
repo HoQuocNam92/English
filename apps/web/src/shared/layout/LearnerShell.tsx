@@ -51,12 +51,12 @@ export function LearnerShell({ children }: LearnerShellProps) {
         <div className="flex items-center justify-between max-w-[1280px] mx-auto px-8 w-full h-full">
 
           {/* Left: Brand + Nav */}
-          <div className="flex items-center gap-8">
-            <Link href="/learn" className="text-[24px] font-bold text-primary tracking-tight leading-tight">
+          <div className="flex items-center gap-6">
+            <Link href="/learn" className="text-[20px] font-bold text-primary tracking-tight leading-tight whitespace-nowrap">
               TechEnglish Pro
             </Link>
 
-            <div className="hidden md:flex items-center h-full gap-6">
+            <div className="hidden md:flex items-center h-full gap-4">
               {navLinks.map((item) => {
                 const isActive = item.exactMatch
                   ? pathname === item.href
@@ -65,7 +65,7 @@ export function LearnerShell({ children }: LearnerShellProps) {
                   <Link
                     key={item.href}
                     href={item.href}
-                    className={`h-full flex items-center text-[14px] font-semibold transition-colors duration-200 border-b-2 ${
+                    className={`h-full flex items-center text-[13px] font-semibold transition-colors duration-200 border-b-2 whitespace-nowrap ${
                       isActive
                         ? 'text-primary border-primary pb-[2px]'
                         : 'text-on-surface-variant border-transparent hover:text-primary'
@@ -80,7 +80,7 @@ export function LearnerShell({ children }: LearnerShellProps) {
               <div className="relative h-full flex items-center" ref={moreRef}>
                 <button
                   onClick={() => setMoreOpen(!moreOpen)}
-                  className={`h-full flex items-center gap-1 text-[14px] font-semibold transition-colors duration-200 border-b-2 cursor-pointer ${
+                  className={`h-full flex items-center gap-1 text-[13px] font-semibold transition-colors duration-200 border-b-2 cursor-pointer whitespace-nowrap ${
                     moreOpen ? 'text-primary border-primary' : 'text-on-surface-variant border-transparent hover:text-primary'
                   }`}
                 >

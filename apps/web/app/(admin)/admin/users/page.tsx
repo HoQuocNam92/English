@@ -357,87 +357,111 @@ export default function AdminUsersPage() {
   };
 
   return (
-    <div>
-      {/* Header row */}
-      <div className="flex items-start justify-between gap-4">
-        <PageHeader title="Quản lý người dùng" description="Danh sách toàn bộ tài khoản" />
+    <main className="flex-1 p-margin flex flex-col gap-xl max-w-[1200px] mx-auto w-full">
+      {/* Page Header & Actions */}
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-md">
+        <div>
+          <h2 className="font-headline-h1 text-headline-h1 text-on-surface">Quản lý người dùng</h2>
+          <p className="font-body-md text-body-md text-on-surface-variant mt-xs">Quản lý danh sách học viên, giảng viên và quản trị viên.</p>
+        </div>
         <button
-          type="button"
           onClick={() => setShowCreateModal(true)}
-          className="mt-1 shrink-0 inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-primary text-white text-sm font-medium hover:opacity-90 transition-opacity"
+          className="flex items-center justify-center gap-sm text-on-primary px-lg py-sm rounded-lg font-interface-sb hover:bg-primary-container transition-colors shadow-sm whitespace-nowrap bg-primary"
         >
-          <span className="material-symbols-outlined text-[18px]">person_add</span>
-          Tạo tài khoản mới
+          <span className="material-symbols-outlined">add</span>
+          Thêm người dùng
         </button>
       </div>
 
-      {/* Filters */}
-      <div className="mt-6 flex flex-col sm:flex-row gap-3 flex-wrap">
-        <SearchInput
-          value={searchInput}
-          onChange={setSearchInput}
-          onSearch={(sanitized) => {
-            setPage(1);
-            setSearch(sanitized);
-          }}
-          placeholder="Tìm theo email hoặc tên người dùng..."
-          maxLength={100}
-        />
-        <select
-          value={statusFilter}
-          onChange={(e) => { setStatusFilter(e.target.value); setPage(1); }}
-          className="rounded-xl border border-outline-variant/60 bg-surface-container-low px-3 py-2 text-sm text-on-surface focus:outline-none"
-        >
-          {STATUS_OPTS.map((s) => <option key={s.value} value={s.value}>{s.label}</option>)}
-        </select>
-        <select
-          value={roleFilter}
-          onChange={(e) => { setRoleFilter(e.target.value); setPage(1); }}
-          className="rounded-xl border border-outline-variant/60 bg-surface-container-low px-3 py-2 text-sm text-on-surface focus:outline-none"
-        >
-          {ROLE_OPTS.map((r) => <option key={r.value} value={r.value}>{r.label}</option>)}
-        </select>
-      </div>
-
-      {/* Summary */}
-      {!loading && (
-        <p className="mt-3 text-xs text-on-surface-variant">
-          {total} người dùng · Trang {page}/{totalPages || 1}
-        </p>
-      )}
-
-      {/* Success banner */}
       {successMessage && (
-        <div className="mt-4 p-3 rounded-xl bg-green-100 text-green-800 text-sm flex items-center gap-2">
+        <div className="p-3 rounded-xl bg-green-100 text-green-800 text-sm flex items-center gap-2">
           <span className="material-symbols-outlined text-[18px]">check_circle</span>
           {successMessage}
         </div>
       )}
-
       {error && (
-        <div className="mt-4 p-3 rounded-xl bg-error-container text-on-error-container text-sm">{error}</div>
+        <div className="p-3 rounded-xl bg-error-container text-on-error-container text-sm flex items-center gap-2">
+          <span className="material-symbols-outlined text-[18px]">error</span>
+          {error}
+        </div>
       )}
       {actionError && (
-        <div className="mt-2 p-3 rounded-xl bg-error-container text-on-error-container text-sm">{actionError}</div>
+        <div className="p-3 rounded-xl bg-error-container text-on-error-container text-sm flex items-center gap-2">
+          <span className="material-symbols-outlined text-[18px]">error</span>
+          {actionError}
+        </div>
       )}
 
-      {/* Table */}
-      <div className="mt-4 rounded-2xl bg-surface-container-low border border-outline-variant/30 overflow-hidden">
-        <div className="overflow-x-auto">
-          <table className="w-full text-sm">
+      {/* Content Area - Bento/Card Style */}
+      <div className="bg-surface-container-lowest rounded-xl border border-outline-variant overflow-hidden flex flex-col">
+        {/* Tabs */}
+        <div className="flex border-b border-outline-variant overflow-x-auto px-md">
+          <button
+            onClick={() => { setRoleFilter(''); setPage(1); }}
+            className={`px-md py-md font-interface-sb text-interface-sb whitespace-nowrap ${roleFilter === '' ? 'border-b-2 border-primary-container text-primary-container' : 'text-on-surface-variant hover:text-on-surface transition-colors'}`}
+          >
+            Tất cả
+          </button>
+          <button
+            onClick={() => { setRoleFilter('learner'); setPage(1); }}
+            className={`px-md py-md font-interface-sb text-interface-sb whitespace-nowrap ${roleFilter === 'learner' ? 'border-b-2 border-primary-container text-primary-container' : 'text-on-surface-variant hover:text-on-surface transition-colors'}`}
+          >
+            Người học
+          </button>
+          <button
+            onClick={() => { setRoleFilter('teacher'); setPage(1); }}
+            className={`px-md py-md font-interface-sb text-interface-sb whitespace-nowrap ${roleFilter === 'teacher' ? 'border-b-2 border-primary-container text-primary-container' : 'text-on-surface-variant hover:text-on-surface transition-colors'}`}
+          >
+            Giảng viên
+          </button>
+          <button
+            onClick={() => { setRoleFilter('admin'); setPage(1); }}
+            className={`px-md py-md font-interface-sb text-interface-sb whitespace-nowrap ${roleFilter === 'admin' ? 'border-b-2 border-primary-container text-primary-container' : 'text-on-surface-variant hover:text-on-surface transition-colors'}`}
+          >
+            Quản trị viên
+          </button>
+        </div>
+
+        {/* Toolbar */}
+        <div className="p-md flex flex-col md:flex-row gap-md justify-between items-center bg-surface-bright">
+          <div className="relative w-full">
+            <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-outline">search</span>
+            <input
+              value={searchInput}
+              onChange={(e) => setSearchInput(e.target.value)}
+              onKeyDown={(e) => { if (e.key === 'Enter') { setPage(1); setSearch(searchInput); } }}
+              className="w-full md:w-64 pl-10 pr-4 py-2 bg-surface-container-lowest rounded-lg border border-outline-variant focus:border-primary focus:ring-2 focus:ring-primary-container focus:outline-none transition-all font-body-md text-body-md"
+              placeholder="Tìm theo tên, email..."
+              type="text"
+            />
+          </div>
+          <div className="flex w-full md:w-auto justify-end gap-sm ml-auto">
+            <select
+              value={statusFilter}
+              onChange={(e) => { setStatusFilter(e.target.value); setPage(1); }}
+              className="flex items-center gap-sm px-md py-2 border border-outline-variant rounded-lg font-interface-sb text-interface-sb text-on-surface hover:bg-surface-container-low transition-colors bg-surface-container-lowest focus:outline-none"
+            >
+              {STATUS_OPTS.map((s) => <option key={s.value} value={s.value}>{s.label}</option>)}
+            </select>
+          </div>
+        </div>
+
+        {/* Data Table */}
+        <div className="overflow-x-auto w-full">
+          <table className="w-full text-left border-collapse">
             <thead>
-              <tr className="border-b border-outline-variant/30 text-xs text-on-surface-variant">
-                <th className="px-4 py-3 text-left font-medium">Người dùng</th>
-                <th className="px-4 py-3 text-left font-medium">Email</th>
-                <th className="px-4 py-3 text-left font-medium">Vai trò</th>
-                <th className="px-4 py-3 text-left font-medium">Trạng thái</th>
-                <th className="px-4 py-3 text-left font-medium">Ngày tạo</th>
-                <th className="px-4 py-3 text-left font-medium">Thao tác</th>
+              <tr className="bg-surface-container-low border-y border-outline-variant">
+                <th className="p-md font-interface-sb text-interface-sb text-on-surface-variant">Người dùng</th>
+                <th className="p-md font-interface-sb text-interface-sb text-on-surface-variant">Email</th>
+                <th className="p-md font-interface-sb text-interface-sb text-on-surface-variant">Vai trò</th>
+                <th className="p-md font-interface-sb text-interface-sb text-on-surface-variant">Trạng thái</th>
+                <th className="p-md font-interface-sb text-interface-sb text-on-surface-variant">Ngày tạo</th>
+                <th className="p-md font-interface-sb text-interface-sb text-on-surface-variant text-right">Hành động</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-outline-variant/20">
+            <tbody className="divide-y divide-outline-variant">
               {loading ? (
-                Array.from({ length: 8 }).map((_, i) => <SkeletonRow key={i} />)
+                Array.from({ length: 5 }).map((_, i) => <SkeletonRow key={i} />)
               ) : users.length === 0 ? (
                 <tr>
                   <td colSpan={6} className="py-16 text-center">
@@ -447,30 +471,45 @@ export default function AdminUsersPage() {
                 </tr>
               ) : (
                 users.map((user) => (
-                  <tr key={user.id} className="hover:bg-surface-container/50 transition-colors">
-                    {/* Avatar + name */}
-                    <td className="px-4 py-3">
-                      <div className="flex items-center gap-3">
-                        <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center shrink-0">
-                          <span className="text-xs font-bold text-primary">
-                            {(user.displayName ?? user.email).charAt(0).toUpperCase()}
-                          </span>
+                  <tr key={user.id} className="hover:bg-surface-bright transition-colors group">
+                    <td className="p-md">
+                      <div className="flex items-center gap-md">
+                        <div className="w-10 h-10 rounded-full bg-primary-fixed flex items-center justify-center text-on-primary-fixed font-interface-sb shrink-0">
+                          {(user.displayName ?? user.email).charAt(0).toUpperCase()}
                         </div>
-                        <p className="font-medium text-on-surface">{user.displayName ?? '—'}</p>
+                        <span className="font-interface-sb text-interface-sb text-on-surface truncate">{user.displayName ?? '—'}</span>
                       </div>
                     </td>
-                    <td className="px-4 py-3 text-on-surface-variant">{user.email}</td>
-                    <td className="px-4 py-3">
+                    <td className="p-md font-body-md text-body-md text-on-surface-variant">{user.email}</td>
+                    <td className="p-md">
                       <div className="flex flex-wrap gap-1">
-                        {user.roles?.map((r) => <RoleBadge key={r} role={r} />) ?? <span className="text-on-surface-variant text-xs">—</span>}
+                        {user.roles?.map((r) => {
+                          let cls = 'bg-surface-container-highest text-outline border-outline-variant';
+                          let label = r;
+                          if (r === 'learner') { cls = 'bg-secondary-fixed text-on-secondary-fixed'; label = 'Người học'; }
+                          else if (r === 'teacher') { cls = 'bg-tertiary-fixed text-on-tertiary-fixed'; label = 'Giảng viên'; }
+                          else if (r === 'admin') { cls = 'bg-primary-container text-on-primary'; label = 'Admin'; }
+                          return (
+                            <span key={r} className={`inline-flex items-center px-2 py-1 rounded-full font-label-caps text-label-caps ${cls}`}>
+                              {label}
+                            </span>
+                          );
+                        }) ?? <span className="text-on-surface-variant text-xs">—</span>}
                       </div>
                     </td>
-                    <td className="px-4 py-3"><StatusBadge status={user.status} /></td>
-                    <td className="px-4 py-3 text-xs text-on-surface-variant">
+                    <td className="p-md">
+                      <span className={`inline-flex items-center px-2 py-1 rounded-full font-label-caps text-label-caps border ${
+                        user.status === 'active' ? 'bg-[#E6F4EA] text-[#137333] border-[#CEEAD6]' :
+                        user.status === 'suspended' ? 'bg-[#FCE8E6] text-[#C5221F] border-[#FAD2CF]' :
+                        'bg-surface-container-highest text-outline border-outline-variant'
+                      }`}>
+                        {user.status === 'active' ? 'Active' : user.status === 'suspended' ? 'Suspended' : 'Inactive'}
+                      </span>
+                    </td>
+                    <td className="p-md font-body-md text-body-md text-on-surface-variant">
                       {new Date(user.createdAt).toLocaleDateString('vi-VN')}
                     </td>
-                    <td className="px-4 py-3">
-                      {/* Don't allow suspending admins */}
+                    <td className="p-md text-right">
                       {!user.roles?.includes('admin') && (
                         <button
                           disabled={actionLoading === user.id}
@@ -481,9 +520,7 @@ export default function AdminUsersPage() {
                               : 'border-green-200 text-green-600 hover:bg-green-50'
                           } disabled:opacity-50`}
                         >
-                          {actionLoading === user.id ? (
-                            <span className="animate-pulse">...</span>
-                          ) : user.status === 'active' ? 'Khoá' : 'Mở khoá'}
+                          {actionLoading === user.id ? '...' : user.status === 'active' ? 'Khoá' : 'Mở khoá'}
                         </button>
                       )}
                     </td>
@@ -495,39 +532,40 @@ export default function AdminUsersPage() {
         </div>
 
         {/* Pagination */}
-        {totalPages > 1 && (
-          <div className="px-4 py-3 border-t border-outline-variant/30 flex items-center justify-between">
-            <p className="text-xs text-on-surface-variant">
-              {total} người dùng · Trang {page}/{totalPages}
-            </p>
-            <div className="flex gap-2">
+        {totalPages > 0 && (
+          <div className="p-md border-t border-outline-variant flex flex-col sm:flex-row items-center justify-between bg-surface-container-lowest gap-3">
+            <span className="font-body-sm text-body-sm text-on-surface-variant">
+              Hiển thị {(page - 1) * limit + 1}-{Math.min(page * limit, total)} của {total} người dùng
+            </span>
+            <div className="flex gap-sm">
               <button
                 disabled={page <= 1}
-                onClick={() => setPage((p) => p - 1)}
-                className="px-3 py-1.5 rounded-lg text-xs border border-outline-variant disabled:opacity-40 hover:bg-surface-container transition-colors"
+                onClick={() => setPage(p => p - 1)}
+                className="w-8 h-8 flex items-center justify-center rounded border border-outline-variant text-outline hover:bg-surface-container-low transition-colors disabled:opacity-50"
               >
-                ← Trước
+                <span className="material-symbols-outlined text-[20px]">chevron_left</span>
+              </button>
+              <button className="w-8 h-8 flex items-center justify-center rounded bg-primary text-on-primary font-body-sm transition-colors">
+                {page}
               </button>
               <button
                 disabled={page >= totalPages}
-                onClick={() => setPage((p) => p + 1)}
-                className="px-3 py-1.5 rounded-lg text-xs border border-outline-variant disabled:opacity-40 hover:bg-surface-container transition-colors"
+                onClick={() => setPage(p => p + 1)}
+                className="w-8 h-8 flex items-center justify-center rounded border border-outline-variant text-outline hover:bg-surface-container-low transition-colors disabled:opacity-50"
               >
-                Sau →
+                <span className="material-symbols-outlined text-[20px]">chevron_right</span>
               </button>
             </div>
           </div>
         )}
       </div>
 
-      {/* Create User Modal */}
       {showCreateModal && (
         <CreateUserModal
           onClose={() => setShowCreateModal(false)}
           onCreated={handleCreated}
         />
       )}
-    </div>
+    </main>
   );
 }
-

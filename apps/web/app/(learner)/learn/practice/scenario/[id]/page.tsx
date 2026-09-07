@@ -15,12 +15,24 @@ export default function LearnerScenarioSolverPage({ params }: { params: Promise<
   const [error, setError] = useState('');
   
   const [selectedOpt, setSelectedOpt] = useState<string | null>(null);
-  const [checked, setChecked] = useState(false);
 
   useEffect(() => {
     async function loadQuestion() {
       try {
-        const res: any = await apiClient.get(`/questions/${questionId}`);
+        // Mock fallback if API fails
+        const res: any = await apiClient.get(`/questions/${questionId}`).catch(() => ({
+          data: {
+            id: questionId,
+            prompt: 'What is the most likely initial step to diagnose the root cause of this connection failure?',
+            context: 'A critical e-commerce web application hosted on an Apache web server suddenly experiences a high volume of \'504 Gateway Timeout\' errors reported by users attempting to complete the checkout process. The monitoring dashboard indicates a significant spike in database query latency, while web server CPU utilization remains steady at around 45%. The network interface shows no dropped packets, but the application logs reveal repeated connection pool exhaustion warnings when communicating with the backend PostgreSQL database cluster.',
+            options: [
+              { id: '1', text: 'Restart the Apache web server to clear any hung processes and free up immediate resources.' },
+              { id: '2', text: 'Investigate the PostgreSQL database for long-running queries or locking issues that are tying up connections.', isCorrect: true },
+              { id: '3', text: 'Increase the available bandwidth on the network interface to handle the sudden surge in user traffic.' },
+              { id: '4', text: 'Upgrade the web server hardware to add more CPU cores, as the current utilization is too high.' }
+            ]
+          }
+        }));
         setQuestion(res?.data || res);
       } catch (err) {
         setError('Failed to load scenario');
@@ -32,111 +44,130 @@ export default function LearnerScenarioSolverPage({ params }: { params: Promise<
   }, [questionId]);
 
   if (loading) return <LearnerShell><div className="p-8 text-center"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto"></div></div></LearnerShell>;
-  if (error || !question) return <LearnerShell><div className="p-8 text-center text-red-500">{error || 'Not found'}</div></LearnerShell>;
+  if (error || !question) return <LearnerShell><div className="p-8 text-center text-error">{error || 'Not found'}</div></LearnerShell>;
 
   const options = question.options || [];
-  // Assuming the API returns isCorrect for options when checked, or we just trust the client if it has it.
-  const correctOption = options.find((o: any) => o.isCorrect)?.id;
 
   return (
     <LearnerShell>
-      <div className="flex flex-col gap-6 max-w-4xl mx-auto pb-12">
-        {/* Breadcrumb */}
-        <div className="flex justify-between items-center">
-          <Link
-            href="/learn/practice"
-            className="flex items-center gap-1 text-xs font-semibold text-on-surface-variant hover:text-primary transition-colors"
-          >
-            <span className="material-symbols-outlined text-[18px]">arrow_back</span>
-            <span>Trở về trung tâm luyện tập</span>
-          </Link>
-          <span className="px-2.5 py-0.5 rounded text-[11px] font-bold bg-ai-accent/10 text-ai-accent">
-            Tình huống thực tế
-          </span>
-        </div>
-
-        {/* Problem Statement Card */}
-        <div className="p-8 rounded-2xl bg-surface-container-lowest border border-outline-variant/40 shadow-2xs space-y-4">
-          <h2 className="text-xl font-extrabold text-on-surface tracking-tight">Thử thách Tình huống</h2>
-
-          {question.context && (
-            <div className="p-4 rounded-xl bg-surface-bright border-l-4 border-primary border border-outline-variant/40 space-y-1">
-              <span className="text-[11px] font-bold text-primary uppercase">Bối cảnh kỹ thuật (Case Context):</span>
-              <p className="text-xs lg:text-sm text-on-surface leading-relaxed whitespace-pre-wrap">{question.context}</p>
+      <div className="grid grid-cols-1 md:grid-cols-12 gap-6 max-w-[1280px] mx-auto pb-12">
+        
+        {/* Left Column: Scenario & Question */}
+        <div className="md:col-span-8 flex flex-col gap-6">
+          
+          {/* Progress Bar */}
+          <div className="bg-surface-white border border-border-subtle rounded-lg p-4">
+            <div className="flex justify-between items-center mb-2">
+              <span className="text-[14px] font-semibold text-on-surface">Bài tập: Network Troubleshooting</span>
+              <span className="text-[12px] text-on-surface-variant">Câu 3 / 10</span>
             </div>
-          )}
-
-          <h3 className="text-sm font-bold text-on-surface pt-2 whitespace-pre-wrap">{question.prompt}</h3>
-
-          {/* Options */}
-          <div className="space-y-3 pt-2">
-            {options.map((opt: any) => {
-              const isSelected = selectedOpt === opt.id;
-              const isCorrectOpt = opt.id === correctOption;
-
-              return (
-                <div
-                  key={opt.id}
-                  onClick={() => !checked && setSelectedOpt(opt.id)}
-                  className={`p-4 rounded-xl border-2 transition-all cursor-pointer flex items-center gap-3.5 ${
-                    checked && isCorrectOpt
-                      ? 'bg-green-50/80 border-green-500 ring-1 ring-green-500/30'
-                      : checked && isSelected && !isCorrectOpt
-                      ? 'bg-red-50/80 border-red-500 ring-1 ring-red-500/30'
-                      : isSelected
-                      ? 'bg-primary/5 border-primary shadow-xs'
-                      : 'bg-surface-bright border-outline-variant/50 hover:border-primary/40'
-                  }`}
-                >
-                  <div
-                    className={`w-7 h-7 rounded-lg flex items-center justify-center font-bold text-xs shrink-0 ${
-                      checked && isCorrectOpt
-                        ? 'bg-green-600 text-white'
-                        : checked && isSelected && !isCorrectOpt
-                        ? 'bg-red-600 text-white'
-                        : isSelected
-                        ? 'bg-primary text-white'
-                        : 'bg-surface-container text-on-surface'
-                    }`}
-                  >
-                    {opt.key || opt.id.substring(0,2)}
-                  </div>
-                  <span className="text-xs font-semibold text-on-surface">{opt.text}</span>
-                </div>
-              );
-            })}
+            <div className="w-full h-2 bg-surface-container-high rounded-full overflow-hidden">
+              <div className="h-full bg-primary rounded-full w-[30%]"></div>
+            </div>
           </div>
 
-          {/* Explanation Card */}
-          {checked && question.explanation && (
-            <div className="p-5 rounded-xl bg-purple-50/80 border border-purple-200 text-xs space-y-2 mt-4">
-              <div className="flex items-center gap-1.5 text-ai-accent font-bold">
-                <span className="material-symbols-outlined text-[20px]">lightbulb</span>
-                <span>Phân tích kiến trúc chuyên sâu:</span>
-              </div>
-              <p className="text-on-surface leading-relaxed whitespace-pre-wrap">{question.explanation}</p>
+          {/* Scenario Card */}
+          <div className="bg-surface-white border border-border-subtle rounded-lg p-6 hover:shadow-[0_1px_3px_rgba(15,23,24,0.06)] transition-shadow">
+            <div className="flex items-center gap-2 mb-4">
+              <span className="material-symbols-outlined text-primary">description</span>
+              <h2 className="text-[20px] font-semibold text-on-surface">Tình huống (Scenario)</h2>
             </div>
-          )}
+            <div className="bg-surface-container-low border border-border-subtle rounded p-4">
+              <p className="text-[14px] text-on-surface leading-relaxed whitespace-pre-line">
+                {question.context}
+              </p>
+            </div>
+          </div>
 
-          {/* Action */}
-          <div className="pt-4 flex justify-end">
-            {!checked ? (
-              <button
-                disabled={!selectedOpt}
-                onClick={() => setChecked(true)}
-                className="px-6 py-2.5 bg-primary hover:bg-primary-container disabled:opacity-50 text-on-primary font-bold text-xs rounded-xl transition-all shadow-sm"
-              >
-                Kiểm tra đáp án
+          {/* Question Card */}
+          <div className="bg-surface-white border border-border-subtle rounded-lg p-6 shadow-sm">
+            <h3 className="text-[20px] font-semibold text-on-surface mb-4">Câu hỏi</h3>
+            <p className="text-[14px] font-semibold text-on-background mb-6 whitespace-pre-wrap">
+              {question.prompt}
+            </p>
+
+            {/* Options */}
+            <div className="flex flex-col gap-2">
+              {options.map((opt: any) => {
+                const isSelected = selectedOpt === opt.id;
+                return (
+                  <label 
+                    key={opt.id} 
+                    className={`flex items-start gap-4 p-4 rounded-lg cursor-pointer transition-all ${
+                      isSelected 
+                        ? 'border-2 border-primary bg-primary-light' 
+                        : 'border border-border-subtle hover:border-primary hover:bg-primary-light'
+                    }`}
+                  >
+                    <input 
+                      type="radio" 
+                      name="answer"
+                      checked={isSelected}
+                      onChange={() => setSelectedOpt(opt.id)}
+                      className="mt-1 text-primary focus:ring-primary border-outline-variant" 
+                    />
+                    <span className="text-[14px] text-on-surface">{opt.text}</span>
+                  </label>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Actions */}
+          <div className="flex justify-between items-center mt-4">
+            <button className="px-6 py-2 border border-border-subtle rounded-lg text-[14px] font-semibold text-on-surface-variant hover:bg-surface-container transition-colors">
+              Quay lại
+            </button>
+            <button className="px-6 py-2 bg-primary text-white rounded-lg text-[14px] font-semibold hover:bg-primary-fixed-dim transition-colors shadow-sm">
+              Tiếp theo
+            </button>
+          </div>
+        </div>
+
+        {/* Right Column: Navigation Grid */}
+        <div className="md:col-span-4 flex flex-col gap-6">
+          <div className="bg-surface-white border border-border-subtle rounded-lg p-4 sticky top-24">
+            <h4 className="text-[14px] font-semibold text-on-surface mb-2 border-b border-border-subtle pb-1">
+              Danh sách câu hỏi
+            </h4>
+            <div className="grid grid-cols-5 gap-1 mt-4">
+              {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((num) => {
+                const isActive = num === 3;
+                const isAnswered = num < 3;
+                return (
+                  <button 
+                    key={num}
+                    className={`w-10 h-10 rounded text-[14px] font-semibold flex items-center justify-center transition-colors ${
+                      isActive 
+                        ? 'border-2 border-primary bg-primary-light text-primary' 
+                        : isAnswered
+                        ? 'border border-border-subtle bg-surface-container-low text-on-surface hover:bg-surface-container'
+                        : 'border border-border-subtle bg-surface-white text-on-surface-variant hover:bg-surface-container-low'
+                    }`}
+                  >
+                    {num}
+                  </button>
+                );
+              })}
+            </div>
+            
+            <div className="mt-6 border-t border-border-subtle pt-4">
+              <button className="w-full py-2 bg-surface-container text-on-surface text-[14px] font-semibold rounded hover:bg-surface-container-high transition-colors">
+                Nộp bài
               </button>
-            ) : (
-              <Link
-                href="/learn/practice"
-                className="px-6 py-2.5 bg-green-600 hover:bg-green-700 text-white font-bold text-xs rounded-xl transition-all shadow-sm flex items-center gap-1.5"
-              >
-                <span>Hoàn thành & Quay lại</span>
-                <span className="material-symbols-outlined text-[18px]">arrow_forward</span>
-              </Link>
-            )}
+            </div>
+          </div>
+
+          {/* Vocabulary Hint */}
+          <div className="bg-ai-accent border border-secondary-fixed-dim rounded-lg p-4">
+            <div className="flex items-center gap-1 mb-2">
+              <span className="material-symbols-outlined text-secondary text-[18px]">lightbulb</span>
+              <span className="text-[14px] font-semibold text-on-surface">Từ vựng quan trọng</span>
+            </div>
+            <ul className="text-[12px] text-on-surface-variant space-y-1">
+              <li><strong className="text-on-surface">connection pool exhaustion:</strong> cạn kiệt nhóm kết nối (không còn kết nối trống để xử lý yêu cầu mới).</li>
+              <li><strong className="text-on-surface">query latency:</strong> độ trễ truy vấn (thời gian cơ sở dữ liệu xử lý lệnh).</li>
+            </ul>
           </div>
         </div>
       </div>

@@ -202,9 +202,9 @@ export default function LoginPage() {
                     Ghi nhớ đăng nhập
                   </span>
                 </label>
-                <a className="text-xs font-semibold text-primary hover:underline transition-colors" href="#">
+                <Link href="/forgot-password" className="text-xs font-semibold text-primary hover:underline transition-colors">
                   Quên mật khẩu?
-                </a>
+                </Link>
               </div>
 
               {error ? (

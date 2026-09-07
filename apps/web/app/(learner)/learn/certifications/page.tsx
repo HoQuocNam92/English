@@ -1,151 +1,211 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
 import { LearnerShell } from '@/shared/layout';
-import { apiClient } from '@/shared/api/api-client';
-import { useI18n } from '@/shared/i18n';
-
-interface CertGoal {
-  id: string;
-  name: string;
-  progress: number;
-  startDate: string;
-}
-
-interface Exam {
-  id: string;
-  name: string;
-  date: string;
-}
 
 export default function CertificationsPage() {
-  const { t } = useI18n();
-  const [goal, setGoal] = useState<CertGoal | null>(null);
-  const [exams, setExams] = useState<Exam[]>([]);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    async function fetchData() {
-      try {
-        const [authRes, examsRes] = await Promise.all([
-          apiClient.get<any>('/auth/me'),
-          apiClient.get<{ items: Exam[] }>('/exams?limit=20')
-        ]);
-        setGoal(authRes?.certGoals?.[0] || { id: '1', name: 'AWS Certified Solutions Architect', progress: 65, startDate: '2026-01-01' });
-        setExams(examsRes.items || []);
-      } catch (err) {
-        console.error(err);
-        setGoal({ id: '1', name: 'AWS Certified Solutions Architect', progress: 65, startDate: '2026-01-01' });
-        setExams([
-          { id: '1', name: 'AWS SAA-C03', date: '2026-10-15' },
-          { id: '2', name: 'AZ-900', date: '2026-11-20' }
-        ]);
-      } finally {
-        setLoading(false);
-      }
-    }
-    fetchData();
-  }, []);
-
-  const circleRadius = 40;
-  const circumference = 2 * Math.PI * circleRadius;
-  const strokeDashoffset = circumference - ((goal?.progress || 0) / 100) * circumference;
-
   return (
     <LearnerShell>
-      <div className="flex flex-col gap-6">
-        <h1 className="text-2xl font-bold text-on-surface">Tiến độ Chứng chỉ</h1>
-
-        <div className="grid grid-cols-1 md:grid-cols-12 gap-6">
-          <div className="col-span-1 md:col-span-8 flex flex-col gap-6">
-            
-            {/* Active cert goal card */}
-            <div className="bg-surface-container-lowest border border-outline-variant/40 rounded-2xl p-6 shadow-2xs flex flex-col sm:flex-row items-center gap-6">
-              <div className="relative w-32 h-32 flex items-center justify-center">
-                <svg className="w-full h-full transform -rotate-90">
-                  <circle cx="64" cy="64" r="40" stroke="currentColor" strokeWidth="8" fill="transparent" className="text-surface-container" />
-                  <circle cx="64" cy="64" r="40" stroke="currentColor" strokeWidth="8" fill="transparent" className="text-primary transition-all duration-1000 ease-in-out" strokeDasharray={circumference} strokeDashoffset={strokeDashoffset} />
-                </svg>
-                <div className="absolute flex flex-col items-center">
-                  <span className="text-2xl font-bold text-on-surface">{goal?.progress}%</span>
-                </div>
-              </div>
-              <div>
-                <h2 className="text-xl font-bold text-on-surface mb-2">{goal?.name || 'Mục tiêu hiện tại'}</h2>
-                <p className="text-on-surface-variant text-sm mb-4">Bắt đầu từ: {goal?.startDate}</p>
-                <button className="bg-primary !text-white font-bold rounded-xl px-4 py-2.5 hover:opacity-90">
-                  Tiếp tục ôn thi
-                </button>
-              </div>
-            </div>
-
-            {/* Other Tracks */}
-            <h2 className="text-base md:text-lg font-bold text-on-surface mt-2">Các chứng chỉ khác</h2>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              {[
-                { name: 'Azure Fundamentals', progress: 30, completed: 12, total: 40, icon: 'cloud' },
-                { name: 'CKA Kubernetes', progress: 0, completed: 0, total: 55, icon: 'memory' }
-              ].map((track, i) => (
-                <div key={i} className="bg-surface-container-lowest border border-outline-variant/40 rounded-2xl p-5 shadow-2xs">
-                  <div className="flex items-center gap-3 mb-4">
-                    <div className="w-10 h-10 rounded-xl bg-indigo-50 flex items-center justify-center text-primary">
-                      <span className="material-symbols-outlined">{track.icon}</span>
-                    </div>
-                    <h3 className="font-bold text-on-surface">{track.name}</h3>
-                  </div>
-                  <div className="mb-2 flex justify-between text-xs text-on-surface-variant font-medium">
-                    <span>{track.completed}/{track.total} bài học</span>
-                    <span>{track.progress}%</span>
-                  </div>
-                  <div className="w-full bg-surface-container rounded-full h-1.5 mb-4">
-                    <div className="bg-primary h-1.5 rounded-full" style={{ width: `\${track.progress}%` }}></div>
-                  </div>
-                  <button className="w-full bg-surface-container hover:bg-surface-container-high text-primary font-bold rounded-xl px-4 py-2 transition-colors">
-                    {track.progress > 0 ? 'Tiếp tục' : 'Bắt đầu'}
-                  </button>
-                </div>
-              ))}
-            </div>
-
-          </div>
-
-          <div className="col-span-1 md:col-span-4 flex flex-col gap-6">
-            {/* Upcoming exams */}
-            <div className="bg-surface-container-lowest border border-outline-variant/40 rounded-2xl p-6 shadow-2xs">
-              <h2 className="text-base md:text-lg font-bold text-on-surface mb-4">Lịch thi sắp tới</h2>
-              {exams.length > 0 ? (
-                <div className="flex flex-col gap-3">
-                  {exams.map(exam => (
-                    <div key={exam.id} className="p-3 border border-outline-variant/40 rounded-xl bg-surface-container-lowest flex items-center gap-3">
-                      <div className="bg-red-50 text-red-600 rounded-lg p-2 text-center w-14 shrink-0">
-                        <div className="text-xs font-bold uppercase">{new Date(exam.date).toLocaleString('default', { month: 'short' })}</div>
-                        <div className="text-lg font-bold">{new Date(exam.date).getDate()}</div>
-                      </div>
-                      <div>
-                        <h4 className="font-bold text-sm">{exam.name}</h4>
-                        <p className="text-xs text-on-surface-variant">Lên kế hoạch dự thi</p>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              ) : (
-                <p className="text-sm text-on-surface-variant">Chưa có lịch thi nào được lên kế hoạch.</p>
-              )}
-            </div>
-
-            {/* Tips */}
-            <div className="bg-amber-50 border border-amber-200 rounded-2xl p-6">
-              <div className="flex items-center gap-2 text-amber-800 mb-2">
-                <span className="material-symbols-outlined">{t.certifications.title || 'lightbulb'}</span>
-                <h3 className="font-bold">Mẹo ôn thi</h3>
-              </div>
-              <p className="text-sm text-amber-900 leading-relaxed">
-                Nên dành ít nhất 30 phút mỗi ngày để ôn tập flashcards và làm 1 bài thi thử vào cuối tuần để quen với áp lực thời gian.
-              </p>
-            </div>
-          </div>
+      <div className="max-w-7xl mx-auto px-4 py-8">
+        <div className="mb-8">
+          <h1 className="text-[30px] font-bold text-on-surface mb-2">Tiến độ chứng chỉ</h1>
+          <p className="text-[14px] text-on-surface-variant">Theo dõi quá trình học tập và mức độ sẵn sàng cho các kỳ thi chứng chỉ quốc tế.</p>
         </div>
 
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          
+          {/* Card 1: AWS CCP */}
+          <div className="bg-surface-container-lowest border border-outline-variant rounded-xl p-6 hover:shadow-sm transition-shadow flex flex-col relative overflow-hidden group">
+            <div className="absolute top-0 left-0 w-full h-1 bg-surface-container-high">
+              <div className="h-full bg-primary" style={{ width: '62%', transition: 'width 1s ease-in-out' }}></div>
+            </div>
+            <div className="flex justify-between items-start mb-4 mt-2">
+              <div>
+                <h2 className="text-[20px] font-bold text-on-surface">AWS Certified Cloud Practitioner</h2>
+                <span className="text-[12px] font-bold text-on-surface-variant mt-1 inline-block uppercase">Mức độ sẵn sàng</span>
+              </div>
+              <div className="text-[24px] font-bold text-primary">62%</div>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 flex-grow mb-6">
+              <div className="bg-surface-container p-4 rounded-lg border border-outline-variant">
+                <div className="flex items-center gap-2 mb-2">
+                  <span className="material-symbols-outlined text-[16px] text-tertiary">check_circle</span>
+                  <span className="text-[14px] font-semibold text-on-surface">Kỹ năng đã đạt</span>
+                </div>
+                <ul className="text-[12px] text-on-surface-variant space-y-2">
+                  {['Cloud Basics', 'EC2', 'S3 Storage'].map(s => (
+                    <li key={s} className="flex items-start gap-2">
+                      <span className="w-1.5 h-1.5 rounded-full bg-tertiary mt-1.5 shrink-0"></span>{s}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+              <div className="bg-surface-container p-4 rounded-lg border border-outline-variant">
+                <div className="flex items-center gap-2 mb-2">
+                  <span className="material-symbols-outlined text-[16px] text-secondary">pending</span>
+                  <span className="text-[14px] font-semibold text-on-surface">Kỹ năng cần học</span>
+                </div>
+                <ul className="text-[12px] text-on-surface-variant space-y-2">
+                  {['IAM', 'Monitoring', 'VPC'].map(s => (
+                    <li key={s} className="flex items-start gap-2">
+                      <span className="w-1.5 h-1.5 rounded-full bg-outline-variant mt-1.5 shrink-0"></span>{s}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            </div>
+            <div className="pt-4 border-t border-outline-variant flex justify-end mt-auto">
+              <button className="px-4 py-2 bg-primary text-white text-[14px] font-semibold rounded-lg hover:bg-primary/90 transition-colors">
+                Tiếp tục học
+              </button>
+            </div>
+          </div>
+
+          {/* Card 2: CompTIA */}
+          <div className="bg-surface-container-lowest border border-outline-variant rounded-xl p-6 hover:shadow-sm transition-shadow flex flex-col relative overflow-hidden group">
+            <div className="absolute top-0 left-0 w-full h-1 bg-surface-container-high">
+              <div className="h-full bg-secondary" style={{ width: '45%' }}></div>
+            </div>
+            <div className="flex justify-between items-start mb-4 mt-2">
+              <div>
+                <h2 className="text-[20px] font-bold text-on-surface">CompTIA Security+</h2>
+                <span className="text-[12px] font-bold text-on-surface-variant mt-1 inline-block uppercase">Mức độ sẵn sàng</span>
+              </div>
+              <div className="text-[24px] font-bold text-secondary">45%</div>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 flex-grow mb-6">
+              <div className="bg-surface-container p-4 rounded-lg border border-outline-variant">
+                <div className="flex items-center gap-2 mb-2">
+                  <span className="material-symbols-outlined text-[16px] text-tertiary">check_circle</span>
+                  <span className="text-[14px] font-semibold text-on-surface">Kỹ năng đã đạt</span>
+                </div>
+                <ul className="text-[12px] text-on-surface-variant space-y-2">
+                  {['Threats & Vulnerabilities', 'Identity Management'].map(s => (
+                    <li key={s} className="flex items-start gap-2">
+                      <span className="w-1.5 h-1.5 rounded-full bg-tertiary mt-1.5 shrink-0"></span>{s}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+              <div className="bg-surface-container p-4 rounded-lg border border-outline-variant">
+                <div className="flex items-center gap-2 mb-2">
+                  <span className="material-symbols-outlined text-[16px] text-secondary">pending</span>
+                  <span className="text-[14px] font-semibold text-on-surface">Kỹ năng cần học</span>
+                </div>
+                <ul className="text-[12px] text-on-surface-variant space-y-2">
+                  {['Cryptography', 'Risk Management', 'Network Architecture'].map(s => (
+                    <li key={s} className="flex items-start gap-2">
+                      <span className="w-1.5 h-1.5 rounded-full bg-outline-variant mt-1.5 shrink-0"></span>{s}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            </div>
+            <div className="pt-4 border-t border-outline-variant flex justify-end mt-auto">
+              <button className="px-4 py-2 bg-primary text-white text-[14px] font-semibold rounded-lg hover:bg-primary/90 transition-colors">
+                Tiếp tục học
+              </button>
+            </div>
+          </div>
+
+          {/* Card 3: Cisco CCNA */}
+          <div className="bg-surface-container-lowest border border-outline-variant rounded-xl p-6 hover:shadow-sm transition-shadow flex flex-col relative overflow-hidden group">
+            <div className="absolute top-0 left-0 w-full h-1 bg-surface-container-high">
+              <div className="h-full bg-tertiary" style={{ width: '80%' }}></div>
+            </div>
+            <div className="flex justify-between items-start mb-4 mt-2">
+              <div>
+                <h2 className="text-[20px] font-bold text-on-surface">Cisco CCNA</h2>
+                <span className="text-[12px] font-bold text-on-surface-variant mt-1 inline-block uppercase">Mức độ sẵn sàng</span>
+              </div>
+              <div className="text-[24px] font-bold text-tertiary">80%</div>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 flex-grow mb-6">
+              <div className="bg-surface-container p-4 rounded-lg border border-outline-variant">
+                <div className="flex items-center gap-2 mb-2">
+                  <span className="material-symbols-outlined text-[16px] text-tertiary">check_circle</span>
+                  <span className="text-[14px] font-semibold text-on-surface">Kỹ năng đã đạt</span>
+                </div>
+                <ul className="text-[12px] text-on-surface-variant space-y-2">
+                  {['Network Fundamentals', 'IP Connectivity', 'Security Fundamentals'].map(s => (
+                    <li key={s} className="flex items-start gap-2">
+                      <span className="w-1.5 h-1.5 rounded-full bg-tertiary mt-1.5 shrink-0"></span>{s}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+              <div className="bg-surface-container p-4 rounded-lg border border-outline-variant">
+                <div className="flex items-center gap-2 mb-2">
+                  <span className="material-symbols-outlined text-[16px] text-secondary">pending</span>
+                  <span className="text-[14px] font-semibold text-on-surface">Kỹ năng cần học</span>
+                </div>
+                <ul className="text-[12px] text-on-surface-variant space-y-2">
+                  {['Automation & Programmability'].map(s => (
+                    <li key={s} className="flex items-start gap-2">
+                      <span className="w-1.5 h-1.5 rounded-full bg-outline-variant mt-1.5 shrink-0"></span>{s}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            </div>
+            <div className="pt-4 border-t border-outline-variant flex justify-end mt-auto">
+              <button className="px-4 py-2 bg-primary text-white text-[14px] font-semibold rounded-lg hover:bg-primary/90 transition-colors">
+                Tiếp tục học
+              </button>
+            </div>
+          </div>
+
+          {/* Card 4: Google Cloud Associate */}
+          <div className="bg-[#F5F3FF] border border-secondary rounded-xl p-6 hover:shadow-sm transition-shadow flex flex-col relative overflow-hidden group">
+            <div className="absolute top-0 left-0 w-full h-1 bg-surface-container-high">
+              <div className="h-full bg-secondary" style={{ width: '20%' }}></div>
+            </div>
+            <div className="flex justify-between items-start mb-4 mt-2">
+              <div>
+                <div className="flex items-center gap-1 mb-1">
+                  <span className="material-symbols-outlined text-[16px] text-secondary">auto_awesome</span>
+                  <span className="text-[12px] font-bold text-secondary uppercase">Đề xuất lộ trình AI</span>
+                </div>
+                <h2 className="text-[20px] font-bold text-on-surface">Google Cloud Associate</h2>
+                <span className="text-[12px] font-bold text-on-surface-variant mt-1 inline-block uppercase">Mức độ sẵn sàng</span>
+              </div>
+              <div className="text-[24px] font-bold text-secondary">20%</div>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 flex-grow mb-6">
+              <div className="bg-surface-container-lowest p-4 rounded-lg border border-outline-variant">
+                <div className="flex items-center gap-2 mb-2">
+                  <span className="material-symbols-outlined text-[16px] text-tertiary">check_circle</span>
+                  <span className="text-[14px] font-semibold text-on-surface">Kỹ năng đã đạt</span>
+                </div>
+                <ul className="text-[12px] text-on-surface-variant space-y-2">
+                  {['GCP Basics'].map(s => (
+                    <li key={s} className="flex items-start gap-2">
+                      <span className="w-1.5 h-1.5 rounded-full bg-tertiary mt-1.5 shrink-0"></span>{s}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+              <div className="bg-surface-container-lowest p-4 rounded-lg border border-outline-variant">
+                <div className="flex items-center gap-2 mb-2">
+                  <span className="material-symbols-outlined text-[16px] text-secondary">pending</span>
+                  <span className="text-[14px] font-semibold text-on-surface">Kỹ năng cần học</span>
+                </div>
+                <ul className="text-[12px] text-on-surface-variant space-y-2">
+                  {['Compute Engine', 'Kubernetes Engine', 'Cloud Storage'].map(s => (
+                    <li key={s} className="flex items-start gap-2">
+                      <span className="w-1.5 h-1.5 rounded-full bg-outline-variant mt-1.5 shrink-0"></span>{s}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            </div>
+            <div className="pt-4 border-t border-outline-variant flex justify-end mt-auto">
+              <button className="px-4 py-2 bg-surface-container-lowest text-secondary border border-secondary text-[14px] font-semibold rounded-lg hover:bg-secondary/10 transition-colors">
+                Bắt đầu học
+              </button>
+            </div>
+          </div>
+
+        </div>
       </div>
     </LearnerShell>
   );

@@ -57,112 +57,140 @@ export default function AdminStudentsPage() {
   React.useEffect(() => { void load(); }, [load]);
 
   return (
-    <div>
-      <PageHeader title="Quản lý học viên" description="Danh sách học viên, tiến độ học tập và mục tiêu chứng chỉ" />
-
-      {/* Filters */}
-      <div className="mt-6 flex flex-col sm:flex-row gap-3">
-        <SearchInput
-          value={searchInput}
-          onChange={setSearchInput}
-          onSearch={(sanitized) => {
-            setPage(1);
-            setSearch(sanitized);
-          }}
-          placeholder="Tìm kiếm học viên theo tên, email..."
-          maxLength={100}
-        />
-        <select
-          value={status}
-          onChange={(e) => { setStatus(e.target.value); setPage(1); }}
-          className="rounded-xl border border-outline-variant/60 bg-surface-container-low px-3 py-2 text-sm text-on-surface focus:outline-none"
-        >
-          <option value="">Tất cả trạng thái</option>
-          <option value="active">Đang học (Active)</option>
-          <option value="suspended">Tạm khoá</option>
-          <option value="inactive">Chưa kích hoạt</option>
-        </select>
+    <main className="flex-1 p-margin overflow-y-auto">
+      <div className="mb-xl">
+        <h2 className="font-headline-h1 text-headline-h1 text-on-surface mb-xs">Danh sách người học</h2>
+        <p className="font-body-md text-body-md text-on-surface-variant">Quản lý và theo dõi lộ trình học tập của sinh viên.</p>
       </div>
-
-      {!loading && (
-        <p className="mt-3 text-xs text-on-surface-variant">
-          Tổng cộng {total} học viên {search && `— kết quả cho "${search}"`}
-        </p>
-      )}
-
+      
       {error && (
-        <div className="mt-4 p-3 rounded-xl bg-error-container text-on-error-container text-sm flex items-center gap-2">
+        <div className="mb-xl p-3 rounded-xl bg-error-container text-on-error-container text-sm flex items-center gap-2">
           <span className="material-symbols-outlined text-[18px]">error</span>
           <span>{error}</span>
         </div>
       )}
 
-      {/* Grid of students */}
-      <div className="mt-4 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        {loading ? (
-          Array.from({ length: 6 }).map((_, i) => (
-            <div key={i} className="rounded-2xl border border-outline-variant/30 bg-surface-container-low p-5 space-y-3 animate-pulse">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-full bg-outline-variant/20" />
-                <div className="space-y-1.5 flex-1">
-                  <div className="h-4 w-2/3 rounded bg-outline-variant/20" />
-                  <div className="h-3 w-1/2 rounded bg-outline-variant/10" />
-                </div>
-              </div>
-            </div>
-          ))
-        ) : students.length === 0 ? (
-          <div className="col-span-full py-16 text-center bg-surface-container-low rounded-2xl border border-outline-variant/30">
-            <span className="material-symbols-outlined text-[48px] text-outline mb-3 block">school</span>
-            <p className="text-sm text-on-surface-variant">Không tìm thấy học viên nào</p>
-          </div>
-        ) : (
-          students.map((st) => (
-            <div
-              key={st.id}
-              className="rounded-2xl border border-outline-variant/30 bg-surface-container-low p-5 flex flex-col justify-between hover:shadow-sm transition-all"
-            >
-              <div>
-                <div className="flex items-start justify-between gap-2 mb-3">
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold text-sm">
-                      {(st.displayName ?? st.email).charAt(0).toUpperCase()}
-                    </div>
-                    <div>
-                      <h3 className="font-bold text-sm text-on-surface">{st.displayName ?? 'Học viên'}</h3>
-                      <p className="text-xs text-on-surface-variant truncate max-w-[180px]">{st.email}</p>
-                    </div>
-                  </div>
-                  <StatusBadge status={st.status} />
-                </div>
-
-                {st.phoneNumber && (
-                  <div className="flex items-center gap-1 text-xs text-on-surface-variant mb-2">
-                    <span className="material-symbols-outlined text-[14px]">call</span>
-                    <span>{st.phoneNumber}</span>
-                  </div>
-                )}
-              </div>
-
-              <div className="mt-4 pt-3 border-t border-outline-variant/20 flex items-center justify-between text-xs text-on-surface-variant">
-                <span>Tham gia: {new Date(st.createdAt).toLocaleDateString('vi-VN')}</span>
-                <span className="text-primary font-medium text-[11px] bg-primary/5 px-2 py-0.5 rounded">Học viên IT</span>
-              </div>
-            </div>
-          ))
-        )}
+      <div className="bg-surface-container-lowest rounded-xl border border-outline-variant p-md mb-xl flex flex-wrap gap-md items-center shadow-[0_1px_3px_rgba(15,23,24,0.06)]">
+        <div className="flex-1 min-w-[200px] relative">
+          <span className="material-symbols-outlined absolute left-sm top-1/2 -translate-y-1/2 text-outline">search</span>
+          <input 
+            value={searchInput}
+            onChange={(e) => setSearchInput(e.target.value)}
+            onKeyDown={(e) => { if (e.key === 'Enter') { setPage(1); setSearch(searchInput); } }}
+            className="w-full pl-xl pr-sm py-sm rounded-lg border border-outline-variant bg-surface-bright focus:border-primary focus:ring-1 focus:ring-primary focus:outline-none font-body-md text-on-surface transition-colors placeholder:text-outline" 
+            placeholder="Tìm theo tên, email..." 
+            type="text"
+          />
+        </div>
+        <select 
+          value={status}
+          onChange={(e) => { setStatus(e.target.value); setPage(1); }}
+          className="rounded-lg border border-outline-variant bg-surface-bright py-sm pl-sm pr-xl font-body-md text-on-surface focus:border-primary focus:ring-1 focus:ring-primary focus:outline-none min-w-[150px]"
+        >
+          <option value="">Trạng thái (Tất cả)</option>
+          <option value="active">Đang học</option>
+          <option value="suspended">Tạm khoá</option>
+          <option value="inactive">Chưa kích hoạt</option>
+        </select>
+        <select className="rounded-lg border border-outline-variant bg-surface-bright py-sm pl-sm pr-xl font-body-md text-on-surface focus:border-primary focus:ring-1 focus:ring-primary focus:outline-none min-w-[150px]">
+          <option value="">Lĩnh vực CNTT</option>
+          <option value="se">Software Engineering</option>
+          <option value="cc">Cloud Computing</option>
+          <option value="ai">Artificial Intelligence</option>
+        </select>
+        <button className="bg-surface-container hover:bg-surface-container-high text-on-surface font-interface-sb py-sm px-md rounded-lg border border-outline-variant transition-colors flex items-center gap-xs">
+          <span className="material-symbols-outlined text-[20px]">filter_list</span>
+          Lọc
+        </button>
       </div>
 
-      {/* Pagination */}
-      {totalPages > 1 && (
-        <div className="mt-6 flex items-center justify-between">
-          <p className="text-xs text-on-surface-variant">Trang {page}/{totalPages}</p>
-          <div className="flex gap-2">
-            <button disabled={page <= 1} onClick={() => setPage((p) => p - 1)} className="px-4 py-2 rounded-xl text-sm border border-outline-variant disabled:opacity-40 hover:bg-surface-container transition-colors">← Trước</button>
-            <button disabled={page >= totalPages} onClick={() => setPage((p) => p + 1)} className="px-4 py-2 rounded-xl text-sm border border-outline-variant disabled:opacity-40 hover:bg-surface-container transition-colors">Sau →</button>
-          </div>
+      <div className="bg-surface-container-lowest rounded-xl border border-outline-variant overflow-hidden shadow-[0_1px_3px_rgba(15,23,24,0.06)]">
+        <div className="overflow-x-auto">
+          <table className="w-full text-left border-collapse">
+            <thead>
+              <tr className="bg-surface-container-low border-b border-outline-variant text-on-surface-variant font-label-caps text-label-caps uppercase">
+                <th className="p-md font-bold">Học viên</th>
+                <th className="p-md font-bold">Trạng thái / Cấp độ</th>
+                <th className="p-md font-bold">Lĩnh vực CNTT</th>
+                <th className="p-md font-bold">Ngày đăng ký</th>
+                <th className="p-md font-bold text-center">Thao tác</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-outline-variant font-body-md text-on-surface">
+              {loading ? (
+                 <tr><td colSpan={5} className="text-center py-8">Đang tải...</td></tr>
+              ) : students.length === 0 ? (
+                 <tr><td colSpan={5} className="text-center py-8 text-on-surface-variant">Không tìm thấy người học nào.</td></tr>
+              ) : (
+                students.map((u) => (
+                  <tr key={u.id} className="hover:bg-surface-bright transition-colors group">
+                    <td className="p-md">
+                      <div className="flex items-center gap-sm">
+                        <div className="w-10 h-10 rounded-full bg-primary-fixed flex items-center justify-center text-on-primary-fixed font-interface-sb shrink-0 border border-outline-variant">
+                          {(u.displayName ?? u.email).charAt(0).toUpperCase()}
+                        </div>
+                        <div>
+                          <p className="font-interface-sb text-interface-sb text-on-surface">{u.displayName ?? '—'}</p>
+                          <p className="font-body-sm text-body-sm text-on-surface-variant">{u.email}</p>
+                        </div>
+                      </div>
+                    </td>
+                    <td className="p-md">
+                      <div className="flex flex-col gap-1 items-start">
+                        <span className={`inline-flex items-center px-2 py-1 rounded-full font-interface-sb text-[12px] ${
+                          u.status === 'active' ? 'bg-[#E6F4EA] text-[#137333]' :
+                          u.status === 'suspended' ? 'bg-[#FCE8E6] text-[#C5221F]' :
+                          'bg-surface-container-highest text-outline'
+                        }`}>
+                          {u.status === 'active' ? 'Đang học' : u.status === 'suspended' ? 'Tạm khoá' : 'Chưa kích hoạt'}
+                        </span>
+                        <span className="inline-flex items-center px-2 py-1 rounded-full bg-secondary-fixed text-on-secondary-fixed font-interface-sb text-[12px]">Trung cấp (Intermediate)</span>
+                      </div>
+                    </td>
+                    <td className="p-md">
+                      <span className="inline-flex items-center px-2 py-1 rounded-md border border-outline-variant bg-surface text-on-surface-variant font-body-sm text-[12px]">Cloud Computing</span>
+                    </td>
+                    <td className="p-md text-on-surface-variant">
+                      {new Date(u.createdAt).toLocaleDateString('vi-VN')}
+                    </td>
+                    <td className="p-md text-center">
+                      <button className="text-primary hover:text-tertiary-container transition-colors p-sm rounded-lg hover:bg-primary-fixed opacity-0 group-hover:opacity-100">
+                        <span className="font-interface-sb text-interface-sb">Xem chi tiết</span>
+                      </button>
+                    </td>
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </table>
         </div>
-      )}
-    </div>
+
+        {total > 0 && (
+          <div className="p-md border-t border-outline-variant flex flex-col sm:flex-row items-center justify-between bg-surface-container-lowest gap-3">
+            <span className="font-body-sm text-body-sm text-on-surface-variant">
+              Hiển thị {(page - 1) * limit + 1}-{Math.min(page * limit, total)} của {total} học viên
+            </span>
+            <div className="flex items-center gap-xs">
+              <button 
+                disabled={page <= 1}
+                onClick={() => setPage(p => p - 1)}
+                className="p-sm rounded-lg border border-outline-variant text-on-surface-variant hover:bg-surface-container disabled:opacity-50 transition-colors flex items-center justify-center"
+              >
+                <span className="material-symbols-outlined text-[20px]">chevron_left</span>
+              </button>
+              <button className="w-8 h-8 rounded-lg bg-primary text-on-primary font-interface-sb flex items-center justify-center">{page}</button>
+              <button 
+                disabled={page >= totalPages}
+                onClick={() => setPage(p => p + 1)}
+                className="p-sm rounded-lg border border-outline-variant text-on-surface hover:bg-surface-container disabled:opacity-50 transition-colors flex items-center justify-center"
+              >
+                <span className="material-symbols-outlined text-[20px]">chevron_right</span>
+              </button>
+            </div>
+          </div>
+        )}
+      </div>
+      <div className="h-24 md:h-8"></div>
+    </main>
   );
 }

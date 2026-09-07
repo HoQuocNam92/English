@@ -4,7 +4,7 @@ import Link from 'next/link';
 
 export function Footer() {
   return (
-    <footer className="w-full bg-white border-t border-slate-200 mt-auto transition-colors">
+    <footer className="w-full bg-surface-container-lowest border-t border-outline-variant mt-auto transition-colors">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8 mb-8">
           {/* Col 1: Brand Info */}
@@ -17,17 +17,17 @@ export function Footer() {
                 TechEnglish Pro
               </span>
             </Link>
-            <p className="text-xs text-slate-500 leading-relaxed">
+            <p className="text-xs text-on-surface-variant leading-relaxed">
               Nền tảng học tiếng Anh chuyên ngành CNTT và luyện thi chứng chỉ quốc tế hàng đầu dành cho kỹ sư phần mềm.
             </p>
           </div>
 
           {/* Col 2: Learning Tracks */}
           <div className="space-y-3">
-            <h4 className="text-xs font-bold text-slate-900 uppercase tracking-wider">
+            <h4 className="text-xs font-bold text-on-surface uppercase tracking-wider">
               Chương trình đào tạo
             </h4>
-            <ul className="space-y-2 text-xs text-slate-600 font-medium">
+            <ul className="space-y-2 text-xs text-on-surface-variant font-medium">
               <li>
                 <Link href="/learn/lessons" className="hover:text-primary transition-colors">
                   Lộ trình Cloud Computing (AWS/GCP)
@@ -53,10 +53,10 @@ export function Footer() {
 
           {/* Col 3: Practice & Tools */}
           <div className="space-y-3">
-            <h4 className="text-xs font-bold text-slate-900 uppercase tracking-wider">
+            <h4 className="text-xs font-bold text-on-surface uppercase tracking-wider">
               Luyện tập & Thi thử
             </h4>
-            <ul className="space-y-2 text-xs text-slate-600 font-medium">
+            <ul className="space-y-2 text-xs text-on-surface-variant font-medium">
               <li>
                 <Link href="/learn/flashcards/les-1" className="hover:text-primary transition-colors">
                   Thẻ từ vựng Flashcards SRS
@@ -82,10 +82,10 @@ export function Footer() {
 
           {/* Col 4: Support & Portals */}
           <div className="space-y-3">
-            <h4 className="text-xs font-bold text-slate-900 uppercase tracking-wider">
+            <h4 className="text-xs font-bold text-on-surface uppercase tracking-wider">
               Hệ thống
             </h4>
-            <ul className="space-y-2 text-xs text-slate-600 font-medium">
+            <ul className="space-y-2 text-xs text-on-surface-variant font-medium">
               <li>
                 <Link href="/learn" className="hover:text-primary transition-colors">
                   Cổng học viên (Learner Portal)
@@ -111,7 +111,7 @@ export function Footer() {
         </div>
 
         {/* Bottom copyright & attribution */}
-        <div className="pt-6 border-t border-slate-200 flex flex-col sm:flex-row justify-between items-center gap-4 text-xs text-slate-500 font-medium">
+        <div className="pt-6 border-t border-outline-variant flex flex-col sm:flex-row justify-between items-center gap-4 text-xs text-on-surface-variant font-medium">
           <div>
             © 2026 <strong>TechEnglish Pro</strong> All rights reserved.
           </div>

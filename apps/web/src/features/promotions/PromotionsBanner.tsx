@@ -7,7 +7,7 @@ export function PromotionsBanner() {
   const [flashSales, setFlashSales] = useState<any[]>([]);
   const [vouchers, setVouchers] = useState<any[]>([]);
   const [copiedCode, setCopiedCode] = useState<string | null>(null);
-  const [timeLeft, setTimeLeft] = useState<{ hours: number; minutes: number; seconds: number } | null>(null);
+  const [timeLeft, setTimeLeft] = useState<{ days: number; hours: number; minutes: number; seconds: number } | null>(null);
 
   useEffect(() => {
     async function fetchPromotions() {
@@ -47,10 +47,11 @@ export function PromotionsBanner() {
         setTimeLeft(null);
         return;
       }
-      const hours = Math.floor(diff / (1000 * 60 * 60));
+      const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+      const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
       const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
       const seconds = Math.floor((diff % (1000 * 60)) / 1000);
-      setTimeLeft({ hours, minutes, seconds });
+      setTimeLeft({ days, hours, minutes, seconds });
     };
 
     updateTimer();
@@ -90,15 +91,23 @@ export function PromotionsBanner() {
               <div className="flex items-center gap-2 text-xs font-bold text-on-surface-variant">
                 <span>Thời gian còn lại:</span>
                 <div className="flex items-center gap-1 font-mono font-bold">
-                  <span className="bg-slate-900 text-green-400 px-2 py-0.5 rounded text-xs">
+                  {timeLeft.days > 0 && (
+                    <>
+                      <span className="bg-inverse-surface text-green-400 px-2 py-0.5 rounded text-xs">
+                        {timeLeft.days}d
+                      </span>
+                      <span>:</span>
+                    </>
+                  )}
+                  <span className="bg-inverse-surface text-green-400 px-2 py-0.5 rounded text-xs">
                     {String(timeLeft.hours).padStart(2, '0')}h
                   </span>
                   <span>:</span>
-                  <span className="bg-slate-900 text-green-400 px-2 py-0.5 rounded text-xs">
+                  <span className="bg-inverse-surface text-green-400 px-2 py-0.5 rounded text-xs">
                     {String(timeLeft.minutes).padStart(2, '0')}m
                   </span>
                   <span>:</span>
-                  <span className="bg-slate-900 text-green-400 px-2 py-0.5 rounded text-xs">
+                  <span className="bg-inverse-surface text-green-400 px-2 py-0.5 rounded text-xs">
                     {String(timeLeft.seconds).padStart(2, '0')}s
                   </span>
                 </div>

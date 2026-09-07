@@ -15,7 +15,10 @@ export default function RegisterPage() {
   const [displayName, setDisplayName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [agreeTerms, setAgreeTerms] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState('');
 
@@ -35,6 +38,18 @@ export default function RegisterPage() {
     event.preventDefault();
     setSubmitting(true);
     setError('');
+
+    if (password !== confirmPassword) {
+      setError('Mật khẩu xác nhận không khớp.');
+      setSubmitting(false);
+      return;
+    }
+
+    if (!agreeTerms) {
+      setError('Vui lòng đồng ý với Điều khoản dịch vụ và Chính sách bảo mật.');
+      setSubmitting(false);
+      return;
+    }
 
     try {
       const res: any = await apiClient.post('/auth/register', {
@@ -214,6 +229,54 @@ export default function RegisterPage() {
                 <span className="material-symbols-outlined text-[13px] text-outline">info</span>
                 Mật khẩu tối thiểu 6 ký tự (nên chứa chữ hoa, chữ số và ký tự đặc biệt).
               </p>
+            </div>
+
+            {/* Confirm Password Field */}
+            <div className="flex flex-col gap-1.5">
+              <label className="text-sm font-semibold text-on-surface" htmlFor="confirmPassword">
+                Xác nhận mật khẩu
+              </label>
+              <div className="relative">
+                <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-outline material-symbols-outlined text-[20px]">
+                  lock_reset
+                </span>
+                <input
+                  className="w-full h-11 pl-11 pr-11 rounded-lg border border-outline-variant bg-surface-container-lowest text-sm text-on-surface focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition-all placeholder:text-outline/70"
+                  id="confirmPassword"
+                  name="confirmPassword"
+                  placeholder="••••••••"
+                  type={showConfirmPassword ? 'text' : 'password'}
+                  minLength={6}
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  required
+                />
+                <button
+                  className="absolute right-3.5 top-1/2 -translate-y-1/2 text-outline hover:text-on-surface transition-colors cursor-pointer flex items-center justify-center"
+                  type="button"
+                  onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                  tabIndex={-1}
+                >
+                  <span className="material-symbols-outlined text-[20px]">
+                    {showConfirmPassword ? 'visibility_off' : 'visibility'}
+                  </span>
+                </button>
+              </div>
+            </div>
+
+            {/* Terms Checkbox */}
+            <div className="flex items-start gap-2 mt-1">
+              <input 
+                type="checkbox" 
+                id="terms" 
+                checked={agreeTerms} 
+                onChange={(e) => setAgreeTerms(e.target.checked)} 
+                className="mt-1 border-outline-variant rounded text-primary focus:ring-primary" 
+                required 
+              />
+              <label htmlFor="terms" className="text-[13px] text-on-surface-variant leading-tight">
+                Tôi đồng ý với <Link href="/terms" className="text-primary hover:underline font-semibold">Điều khoản dịch vụ</Link> và <Link href="/privacy" className="text-primary hover:underline font-semibold">Chính sách bảo mật</Link> của hệ thống
+              </label>
             </div>
 
             {error ? (

@@ -79,201 +79,204 @@ export default function AdminReportsPage() {
   ) ?? [];
 
   return (
-    <div>
-      <PageHeader
-        title="Báo cáo & Phân tích thống kê"
-        description="Báo cáo tổng hợp năng lực học tập, cơ cấu học liệu và phân tích kết quả thi toàn trường"
-      />
-
-      {error && (
-        <div className="mt-4 p-3 rounded-xl bg-error-container text-on-error-container text-sm flex items-center gap-2">
-          <span className="material-symbols-outlined text-[18px]">error</span>
-          <span>{error}</span>
+    <main className="flex-1 overflow-y-auto p-margin bg-background">
+      <div className="max-w-[1440px] mx-auto flex flex-col gap-xl">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-md">
+          <div>
+            <h2 className="font-headline-h1 text-headline-h1 text-on-surface">Báo cáo Tổng quan</h2>
+            <p className="font-body-md text-body-md text-on-surface-variant mt-sm">Hiệu suất học tập và tương tác của hệ thống.</p>
+          </div>
+          <div className="flex flex-wrap items-center gap-sm bg-surface-container-lowest p-sm rounded-lg border border-outline-variant">
+            <select 
+              defaultValue="month"
+              onChange={(e) => {}}
+              className="bg-transparent border-none text-interface-sb font-interface-sb text-on-surface focus:ring-0 cursor-pointer py-xs px-sm rounded hover:bg-surface-container-low transition-colors"
+            >
+              <option value="month">Tháng này</option>
+              <option value="last_month">Tháng trước</option>
+              <option value="year">Năm nay</option>
+            </select>
+            <div className="w-px h-4 bg-outline-variant"></div>
+            <select className="bg-transparent border-none text-interface-sb font-interface-sb text-on-surface focus:ring-0 cursor-pointer py-xs px-sm rounded hover:bg-surface-container-low transition-colors">
+              <option>Tất cả lĩnh vực</option>
+              <option>Cloud Computing</option>
+              <option>Cybersecurity</option>
+              <option>Data Science</option>
+            </select>
+            <div className="w-px h-4 bg-outline-variant"></div>
+            <select className="bg-transparent border-none text-interface-sb font-interface-sb text-on-surface focus:ring-0 cursor-pointer py-xs px-sm rounded hover:bg-surface-container-low transition-colors">
+              <option>Tất cả chứng chỉ</option>
+              <option>AWS Solutions Architect</option>
+              <option>CompTIA Security+</option>
+              <option>Azure Fundamentals</option>
+            </select>
+            <button className="ml-sm flex items-center justify-center p-xs bg-primary text-on-primary rounded hover:bg-primary-container transition-colors">
+              <span className="material-symbols-outlined text-[18px]" data-icon="filter_list">filter_list</span>
+            </button>
+          </div>
         </div>
-      )}
 
-      {/* KPI Overview */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mt-6">
-        {[
-          { label: 'Tổng số học liệu', value: loading ? '—' : String(totalDomainItems), sub: 'Bài học, từ vựng, câu hỏi & đề thi', icon: 'menu_book', color: 'text-primary' },
-          { label: 'Tỷ lệ Đạt chứng chỉ', value: loading ? '—' : `${analytics?.overview.passRate ?? 78}%`, sub: 'Học viên vượt qua Mock Exam', icon: 'verified', color: 'text-emerald-600' },
-          { label: 'Tài khoản hoạt động', value: loading ? '—' : String(analytics?.overview.activeUsers ?? 0), sub: 'Giảng viên & học viên tích cực', icon: 'group', color: 'text-secondary' },
-          { label: 'Tổng giờ học tuần qua', value: loading ? '—' : '496 giờ', sub: 'Tăng 14.8% so với tuần trước', icon: 'schedule', color: 'text-tertiary' },
-        ].map((s) => (
-          <div key={s.label} className="rounded-2xl bg-surface-container-low border border-outline-variant/30 p-5">
-            <div className="flex items-center justify-between mb-2">
-              <p className="text-xs font-medium text-on-surface-variant">{s.label}</p>
-              <span className={`material-symbols-outlined text-[22px] ${s.color}`}>{s.icon}</span>
-            </div>
-            <p className="text-2xl font-bold text-on-surface">{s.value}</p>
-            <p className="text-xs text-on-surface-variant mt-1">{s.sub}</p>
+        {error && (
+          <div className="p-3 rounded-xl bg-error-container text-on-error-container text-sm flex items-center gap-2">
+            <span className="material-symbols-outlined text-[18px]">error</span>
+            <span>{error}</span>
           </div>
-        ))}
-      </div>
+        )}
 
-      {/* ─── 2 KHỐI BIỂU ĐỒ BÁO CÁO CHUYÊN SÂU ─────────────────────────── */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-6">
-        {/* Biểu đồ 1: Xu hướng học tập theo tuần */}
-        <div className="rounded-2xl bg-surface-container-low border border-outline-variant/30 p-5">
-          <div className="flex items-center justify-between mb-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-gutter">
+          <div className="bg-surface-container-lowest p-lg rounded-xl border border-outline-variant hover:shadow-[0_1px_3px_rgba(15,23,24,0.06)] transition-all flex flex-col justify-between">
+            <div className="flex items-center justify-between mb-md">
+              <span className="font-interface-sb text-interface-sb text-on-surface-variant">Tổng số người học</span>
+              <span className="material-symbols-outlined text-primary" data-icon="group">group</span>
+            </div>
             <div>
-              <h2 className="text-sm font-semibold text-on-surface">Xu hướng học tập theo các ngày trong tuần</h2>
-              <p className="text-xs text-on-surface-variant">Phân bố số giờ ôn tập từ vựng, đọc bài giảng và thi thử</p>
+              <div className="font-headline-h1 text-headline-h1 text-on-surface">{loading ? '...' : analytics?.overview.totalUsers.toLocaleString()}</div>
+              <div className="flex items-center gap-xs mt-xs text-[#16a34a] font-body-sm text-body-sm">
+                <span className="material-symbols-outlined text-[14px]" data-icon="trending_up">trending_up</span>
+                <span>+5.2% so với tháng trước</span>
+              </div>
             </div>
-            <span className="text-xs font-bold text-primary bg-primary/10 px-2.5 py-1 rounded-full">Toàn hệ thống</span>
           </div>
 
-          <div className="pt-2">
-            <div className="flex items-end justify-between gap-3 h-44 px-2">
-              {(analytics?.weeklyActivity ?? [
-                { day: 'T2', studyHours: 42, activeUsers: 28 },
-                { day: 'T3', studyHours: 58, activeUsers: 35 },
-                { day: 'T4', studyHours: 65, activeUsers: 40 },
-                { day: 'T5', studyHours: 72, activeUsers: 46 },
-                { day: 'T6', studyHours: 85, activeUsers: 52 },
-                { day: 'T7', studyHours: 94, activeUsers: 59 },
-                { day: 'CN', studyHours: 76, activeUsers: 48 },
-              ]).map((item) => {
-                const heightPercent = Math.round((item.studyHours / (maxWeeklyHours || 100)) * 100);
-                return (
-                  <div key={item.day} className="flex-1 flex flex-col items-center gap-1.5 group">
-                    <span className="text-[10px] font-bold text-on-surface opacity-0 group-hover:opacity-100 transition-opacity">
-                      {item.studyHours}h
-                    </span>
-                    <div className="w-full bg-surface-container rounded-t-lg h-32 flex items-end overflow-hidden">
-                      <div
-                        className="w-full bg-gradient-to-t from-primary via-primary/85 to-indigo-400 rounded-t-lg transition-all duration-500 group-hover:brightness-110"
-                        style={{ height: `${Math.max(15, heightPercent)}%` }}
-                      />
+          <div className="bg-surface-container-lowest p-lg rounded-xl border border-outline-variant hover:shadow-[0_1px_3px_rgba(15,23,24,0.06)] transition-all flex flex-col justify-between">
+            <div className="flex items-center justify-between mb-md">
+              <span className="font-interface-sb text-interface-sb text-on-surface-variant">Người học hoạt động</span>
+              <span className="material-symbols-outlined text-secondary" data-icon="local_fire_department">local_fire_department</span>
+            </div>
+            <div>
+              <div className="font-headline-h1 text-headline-h1 text-on-surface">{loading ? '...' : analytics?.overview.activeUsers.toLocaleString()}</div>
+              <div className="flex items-center gap-xs mt-xs text-[#16a34a] font-body-sm text-body-sm">
+                <span className="material-symbols-outlined text-[14px]" data-icon="trending_up">trending_up</span>
+                <span>+2.1% so với tháng trước</span>
+              </div>
+            </div>
+          </div>
+
+          <div className="bg-surface-container-lowest p-lg rounded-xl border border-outline-variant hover:shadow-[0_1px_3px_rgba(15,23,24,0.06)] transition-all flex flex-col justify-between">
+            <div className="flex items-center justify-between mb-md">
+              <span className="font-interface-sb text-interface-sb text-on-surface-variant">Tỷ lệ hoàn thành</span>
+              <span className="material-symbols-outlined text-tertiary" data-icon="task_alt">task_alt</span>
+            </div>
+            <div>
+              <div className="font-headline-h1 text-headline-h1 text-on-surface">{loading ? '...' : Math.round((analytics?.overview.passRate || 0)*100)}%</div>
+              <div className="w-full bg-surface-container-high h-2 rounded-full mt-sm overflow-hidden">
+                <div className="bg-tertiary h-full rounded-full" style={{ width: `${Math.round((analytics?.overview.passRate || 0)*100)}%` }}></div>
+              </div>
+            </div>
+          </div>
+
+          <div className="bg-surface-container-lowest p-lg rounded-xl border border-outline-variant hover:shadow-[0_1px_3px_rgba(15,23,24,0.06)] transition-all flex flex-col justify-between">
+            <div className="flex items-center justify-between mb-md">
+              <span className="font-interface-sb text-interface-sb text-on-surface-variant">Điểm TB hệ thống</span>
+              <span className="material-symbols-outlined text-primary-container" data-icon="school">school</span>
+            </div>
+            <div>
+              <div className="font-headline-h1 text-headline-h1 text-on-surface">7.8<span className="text-headline-h3 text-on-surface-variant">/10</span></div>
+              <div className="flex items-center gap-xs mt-xs text-[#dc2626] font-body-sm text-body-sm">
+                <span className="material-symbols-outlined text-[14px]" data-icon="trending_down">trending_down</span>
+                <span>-0.1 so với tháng trước</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-gutter">
+          <div className="lg:col-span-2 bg-surface-container-lowest p-lg rounded-xl border border-outline-variant hover:shadow-[0_1px_3px_rgba(15,23,24,0.06)] transition-all flex flex-col">
+            <div className="flex items-center justify-between mb-lg">
+              <h3 className="font-headline-h3 text-headline-h3 text-on-surface">Tiến độ học tập theo tuần</h3>
+              <button className="text-on-surface-variant hover:text-primary p-xs rounded hover:bg-surface-container-low transition-colors">
+                <span className="material-symbols-outlined" data-icon="more_vert">more_vert</span>
+              </button>
+            </div>
+            <div className="flex-1 relative w-full h-[300px] flex items-end">
+              <div className="flex items-end justify-between gap-3 h-full w-full px-2">
+                {(analytics?.weeklyActivity ?? [
+                  { day: 'T2', studyHours: 42, activeUsers: 28 },
+                  { day: 'T3', studyHours: 58, activeUsers: 35 },
+                  { day: 'T4', studyHours: 65, activeUsers: 40 },
+                  { day: 'T5', studyHours: 72, activeUsers: 46 },
+                  { day: 'T6', studyHours: 85, activeUsers: 52 },
+                  { day: 'T7', studyHours: 94, activeUsers: 59 },
+                  { day: 'CN', studyHours: 76, activeUsers: 48 },
+                ]).map((item) => {
+                  const heightPercent = Math.round((item.studyHours / (maxWeeklyHours || 100)) * 100);
+                  return (
+                    <div key={item.day} className="flex-1 flex flex-col items-center gap-1.5 group h-full justify-end">
+                      <span className="text-[10px] font-bold text-on-surface opacity-0 group-hover:opacity-100 transition-opacity">
+                        {item.studyHours}h
+                      </span>
+                      <div className="w-full bg-surface-container rounded-t-lg h-[80%] flex items-end overflow-hidden">
+                        <div
+                          className="w-full bg-primary rounded-t-lg transition-all duration-500 group-hover:brightness-110"
+                          style={{ height: `${Math.max(15, heightPercent)}%` }}
+                        />
+                      </div>
+                      <span className="text-xs font-semibold text-on-surface-variant">{item.day}</span>
                     </div>
-                    <span className="text-xs font-semibold text-on-surface-variant">{item.day}</span>
+                  );
+                })}
+              </div>
+            </div>
+          </div>
+
+          <div className="bg-surface-container-lowest p-lg rounded-xl border border-outline-variant hover:shadow-[0_1px_3px_rgba(15,23,24,0.06)] transition-all flex flex-col">
+            <div className="flex items-center justify-between mb-lg">
+              <h3 className="font-headline-h3 text-headline-h3 text-on-surface">Phân bố theo lĩnh vực</h3>
+              <button className="text-on-surface-variant hover:text-primary p-xs rounded hover:bg-surface-container-low transition-colors">
+                <span className="material-symbols-outlined" data-icon="more_vert">more_vert</span>
+              </button>
+            </div>
+            <div className="flex-1 relative w-full h-[200px] flex justify-center items-center">
+              <div className="w-32 h-32 rounded-full border-[16px] border-surface-container-high relative flex items-center justify-center">
+                <div className="absolute inset-0 rounded-full border-[16px] border-transparent border-t-primary border-r-secondary border-b-tertiary opacity-90 transform rotate-45"></div>
+                <span className="font-headline-h3 text-headline-h3 text-on-surface absolute z-10 text-center flex flex-col">IT</span>
+              </div>
+            </div>
+            <div className="mt-md flex flex-col gap-sm">
+              {(analytics?.domainsDistribution ?? []).slice(0,3).map((dom, idx) => {
+                const bgClasses = ['bg-primary', 'bg-secondary', 'bg-tertiary'];
+                return (
+                  <div key={dom.code} className="flex items-center justify-between font-body-sm text-body-sm">
+                    <div className="flex items-center gap-xs"><div className={`w-3 h-3 rounded-full ${bgClasses[idx%3]}`}></div><span className="truncate max-w-[100px]">{dom.name}</span></div>
+                    <span className="font-interface-sb text-on-surface">{Math.round((dom.totalItems / totalDomainItems) * 100)}%</span>
                   </div>
-                );
+                )
               })}
             </div>
           </div>
-        </div>
 
-        {/* Biểu đồ 2: Cơ cấu Cấp độ học tập (Level Hierarchy) */}
-        <div className="rounded-2xl bg-surface-container-low border border-outline-variant/30 p-5">
-          <div className="flex items-center justify-between mb-4">
-            <div>
-              <h2 className="text-sm font-semibold text-on-surface">Phân bổ Học liệu theo Cấp độ CEFR & IT</h2>
-              <p className="text-xs text-on-surface-variant">Cân đối độ khó bài giảng từ cơ bản đến chuyên nghiệp</p>
+          <div className="lg:col-span-3 bg-surface-container-lowest p-lg rounded-xl border border-outline-variant hover:shadow-[0_1px_3px_rgba(15,23,24,0.06)] transition-all flex flex-col">
+            <div className="flex items-center justify-between mb-lg">
+              <h3 className="font-headline-h3 text-headline-h3 text-on-surface">Điểm trung bình theo chứng chỉ</h3>
+              <button className="text-on-surface-variant hover:text-primary p-xs rounded hover:bg-surface-container-low transition-colors">
+                <span className="material-symbols-outlined" data-icon="more_vert">more_vert</span>
+              </button>
             </div>
-            <span className="text-xs font-bold text-emerald-800 bg-emerald-100 px-2.5 py-1 rounded-full">4 Cấp độ</span>
-          </div>
-
-          <div className="space-y-3">
-            {(analytics?.levelsDistribution ?? []).map((lvl) => {
-              const totalInLevel = lvl.lessons + lvl.vocabularies + lvl.questions + lvl.exams;
-              const percent = Math.round((totalInLevel / totalDomainItems) * 100);
-              return (
-                <div key={lvl.code} className="bg-surface-container/60 p-3 rounded-xl border border-outline-variant/20">
-                  <div className="flex items-center justify-between text-xs mb-1.5">
-                    <div className="flex items-center gap-2">
-                      <span className="font-bold text-on-surface">{lvl.name}</span>
-                      <code className="text-[10px] text-on-surface-variant font-mono bg-surface-container px-1.5 py-0.5 rounded">
-                        Bậc {lvl.order}
-                      </code>
-                    </div>
-                    <span className="font-bold text-primary">{totalInLevel} mục ({percent}%)</span>
-                  </div>
-                  <div className="w-full bg-surface-container h-2 rounded-full overflow-hidden">
-                    <div
-                      className="h-full bg-primary rounded-full transition-all duration-500"
-                      style={{ width: `${Math.max(5, percent)}%` }}
-                    />
-                  </div>
-                  <div className="flex gap-4 mt-2 text-[11px] text-on-surface-variant">
-                    <span>Bài học: <strong>{lvl.lessons}</strong></span>
-                    <span>Từ vựng: <strong>{lvl.vocabularies}</strong></span>
-                    <span>Câu hỏi: <strong>{lvl.questions}</strong></span>
-                    <span>Đề thi: <strong>{lvl.exams}</strong></span>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        </div>
-      </div>
-
-      {/* ─── BẢNG BÁO CÁO CHI TIẾT THEO CHUYÊN NGÀNH CNTT ─────────────── */}
-      <div className="mt-8 rounded-2xl bg-surface-container-low border border-outline-variant/30 overflow-hidden">
-        <div className="p-5 border-b border-outline-variant/20 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-          <div>
-            <h2 className="text-base font-bold text-on-surface">Báo cáo chi tiết theo Chuyên ngành CNTT</h2>
-            <p className="text-xs text-on-surface-variant">Thống kê số lượng bài học, từ vựng và câu hỏi của từng lĩnh vực</p>
-          </div>
-          <div className="w-full sm:w-80">
-            <SearchInput
-              value={searchInput}
-              onChange={setSearchInput}
-              onSearch={setSearch}
-              placeholder="Lọc theo tên lĩnh vực CNTT..."
-              maxLength={50}
-            />
-          </div>
-        </div>
-
-        <div className="overflow-x-auto">
-          <table className="w-full text-sm">
-            <thead>
-              <tr className="border-b border-outline-variant/30 text-xs text-on-surface-variant bg-surface-container/50">
-                <th className="px-5 py-3.5 text-left font-semibold">Chuyên ngành CNTT</th>
-                <th className="px-5 py-3.5 text-left font-semibold">Mã</th>
-                <th className="px-5 py-3.5 text-center font-semibold">Bài giảng</th>
-                <th className="px-5 py-3.5 text-center font-semibold">Từ vựng IT</th>
-                <th className="px-5 py-3.5 text-center font-semibold">Câu hỏi</th>
-                <th className="px-5 py-3.5 text-center font-semibold">Đề thi</th>
-                <th className="px-5 py-3.5 text-right font-semibold">Tổng học liệu</th>
-                <th className="px-5 py-3.5 text-right font-semibold">Tỷ trọng</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-outline-variant/20">
-              {loading ? (
-                Array.from({ length: 5 }).map((_, i) => (
-                  <tr key={i}>
-                    {[1, 2, 3, 4, 5, 6, 7, 8].map((j) => (
-                      <td key={j} className="px-5 py-4">
-                        <div className="h-4 rounded bg-outline-variant/20 animate-pulse" />
-                      </td>
-                    ))}
-                  </tr>
-                ))
-              ) : filteredDomains.length === 0 ? (
-                <tr>
-                  <td colSpan={8} className="py-12 text-center text-on-surface-variant text-sm">
-                    Không tìm thấy dữ liệu lĩnh vực phù hợp
-                  </td>
-                </tr>
-              ) : (
-                filteredDomains.map((dom, idx) => {
-                  const percent = Math.round((dom.totalItems / totalDomainItems) * 100);
-                  const colorClass = DOMAIN_COLORS[idx % DOMAIN_COLORS.length];
-                  return (
-                    <tr key={dom.code} className="hover:bg-surface-container/40 transition-colors">
-                      <td className="px-5 py-4">
-                        <div className="flex items-center gap-2.5">
-                          <span className={`w-2.5 h-2.5 rounded-full ${colorClass}`} />
-                          <span className="font-semibold text-on-surface">{dom.name}</span>
+            <div className="flex-1 relative w-full h-[300px]">
+              <div className="flex items-end justify-between gap-6 h-full w-full px-2 pt-6">
+                 {['AWS Architect', 'Azure Fund.', 'CompTIA Sec+', 'CCNA', 'CISSP', 'GCP Data Eng'].map((label, i) => {
+                    const scores = [7.2, 8.5, 7.8, 6.9, 8.1, 7.5];
+                    const heightPercent = Math.round((scores[i] / 10) * 100);
+                    return (
+                      <div key={label} className="flex-1 flex flex-col items-center gap-2 group h-full justify-end">
+                        <span className="text-xs font-bold text-on-surface opacity-0 group-hover:opacity-100 transition-opacity">
+                          {scores[i]}
+                        </span>
+                        <div className="w-full bg-surface-container h-[80%] flex items-end">
+                          <div
+                            className="w-full bg-primary transition-all duration-500 group-hover:brightness-110 rounded-t-sm"
+                            style={{ height: `${heightPercent}%` }}
+                          />
                         </div>
-                      </td>
-                      <td className="px-5 py-4 text-xs font-mono text-on-surface-variant">{dom.code}</td>
-                      <td className="px-5 py-4 text-center font-medium text-on-surface">{dom.lessons}</td>
-                      <td className="px-5 py-4 text-center font-medium text-on-surface">{dom.vocabularies}</td>
-                      <td className="px-5 py-4 text-center font-medium text-on-surface">{dom.questions}</td>
-                      <td className="px-5 py-4 text-center font-medium text-on-surface">{dom.exams}</td>
-                      <td className="px-5 py-4 text-right font-bold text-primary">{dom.totalItems}</td>
-                      <td className="px-5 py-4 text-right font-bold text-on-surface-variant">{percent}%</td>
-                    </tr>
-                  );
-                })
-              )}
-            </tbody>
-          </table>
+                        <span className="text-[10px] font-semibold text-on-surface-variant text-center leading-tight h-8">{label}</span>
+                      </div>
+                    );
+                 })}
+              </div>
+            </div>
+          </div>
         </div>
       </div>
-    </div>
+    </main>
   );
 }

@@ -100,13 +100,13 @@ export default function LearnerHomePage() {
         {/* Stat Cards — 3 col */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           {[
-            { icon: 'school', label: t.home.level, value: level, bg: 'bg-primary-light', text: 'text-primary' },
-            { icon: 'cloud', label: t.home.itField, value: domain, bg: 'bg-secondary-fixed', text: 'text-secondary' },
-            { icon: 'workspace_premium', label: t.home.certGoal, value: cert, bg: 'bg-tertiary-fixed', text: 'text-tertiary' },
+            { icon: 'school', label: t.home.level, value: level, bg: 'bg-primary-container/20', text: 'text-primary' },
+            { icon: 'cloud', label: t.home.itField, value: domain, bg: 'bg-secondary-container/20', text: 'text-secondary' },
+            { icon: 'workspace_premium', label: t.home.certGoal, value: cert, bg: 'bg-tertiary-container/20', text: 'text-tertiary' },
           ].map((s) => (
             <div
               key={s.label}
-              className="bg-surface-white border border-border-subtle rounded-lg p-4 flex items-center gap-4 hover:shadow-[0_1px_3px_rgba(15,23,24,0.06)] transition-shadow"
+              className="bg-surface-container border border-outline-variant rounded-lg p-4 flex items-center gap-4 hover:shadow-[0_1px_3px_rgba(15,23,24,0.06)] transition-shadow"
             >
               <div className={`w-12 h-12 rounded-full ${s.bg} ${s.text} flex items-center justify-center`}>
                 <span className="material-symbols-outlined" style={{ fontVariationSettings: "'FILL' 1" }}>{s.icon}</span>
@@ -119,6 +119,7 @@ export default function LearnerHomePage() {
           ))}
         </div>
 
+
         {/* ⚡ Promos & Flash Sale Section */}
         <PromotionsBanner />
       </section>
@@ -130,9 +131,9 @@ export default function LearnerHomePage() {
         <section className="lg:col-span-8 flex flex-col gap-6">
 
           {/* Current Goal Card */}
-          <div className="bg-surface-white border border-border-subtle rounded-xl p-6 flex flex-col justify-between hover:shadow-[0_1px_3px_rgba(15,23,24,0.06)] transition-shadow relative overflow-hidden">
+          <div className="bg-surface-container border border-outline-variant rounded-xl p-6 flex flex-col justify-between hover:shadow-[0_1px_3px_rgba(15,23,24,0.06)] transition-shadow relative overflow-hidden">
             {/* Decorative blob */}
-            <div className="absolute top-0 right-0 w-64 h-64 bg-primary-light rounded-bl-full opacity-50 -z-0 pointer-events-none" />
+            <div className="absolute top-0 right-0 w-64 h-64 bg-primary/5 rounded-bl-full opacity-50 -z-0 pointer-events-none" />
 
             <div className="z-10">
               <div className="flex justify-between items-start mb-4">
@@ -182,14 +183,14 @@ export default function LearnerHomePage() {
                   <Link
                     key={lesson.id}
                     href={`/learn/lessons/${lesson.id}`}
-                    className="bg-surface-white border border-border-subtle rounded-lg overflow-hidden hover:shadow-[0_1px_3px_rgba(15,23,24,0.06)] transition-shadow flex flex-col"
+                    className="bg-surface-container border border-outline-variant rounded-lg overflow-hidden hover:shadow-[0_1px_3px_rgba(15,23,24,0.06)] transition-shadow flex flex-col"
                   >
                     {/* Thumbnail */}
-                    <div className="w-full h-32 bg-surface-container-low border-b border-border-subtle relative overflow-hidden">
-                      <div className="absolute inset-0 bg-gradient-to-br from-primary-light to-surface-container flex items-center justify-center">
+                    <div className="w-full h-32 bg-surface-container-low border-b border-outline-variant relative overflow-hidden">
+                      <div className="absolute inset-0 bg-gradient-to-br from-primary/10 to-surface-container flex items-center justify-center">
                         <span className="material-symbols-outlined text-primary opacity-30" style={{ fontSize: '64px' }}>auto_stories</span>
                       </div>
-                      <span className="absolute top-2 left-2 bg-surface-white/90 backdrop-blur text-primary text-[12px] font-bold px-2 py-1 rounded border border-border-subtle">
+                      <span className="absolute top-2 left-2 bg-surface-container/90 backdrop-blur text-primary text-[12px] font-bold px-2 py-1 rounded border border-outline-variant">
                         {domain}
                       </span>
                     </div>
@@ -208,7 +209,7 @@ export default function LearnerHomePage() {
                           <div className="bg-primary h-1.5 rounded-full" style={{ width: `${lessonProgress}%` }} />
                         </div>
                       </div>
-                      <button className="w-full text-center py-1.5 border border-border-subtle text-on-surface text-[14px] font-semibold rounded hover:bg-surface-container-low transition-colors">
+                      <button className="w-full text-center py-1.5 border border-outline-variant text-on-surface text-[14px] font-semibold rounded hover:bg-surface-container-low transition-colors">
                         {t.common.continue}
                       </button>
                     </div>
@@ -223,10 +224,10 @@ export default function LearnerHomePage() {
                   <Link
                     key={p.title}
                     href="/learn/lessons"
-                    className="bg-surface-white border border-border-subtle rounded-lg overflow-hidden hover:shadow-[0_1px_3px_rgba(15,23,24,0.06)] transition-shadow flex flex-col"
+                    className="bg-surface-container border border-outline-variant rounded-lg overflow-hidden hover:shadow-[0_1px_3px_rgba(15,23,24,0.06)] transition-shadow flex flex-col"
                   >
-                    <div className="w-full h-32 bg-surface-container-low border-b border-border-subtle relative flex items-center justify-center">
-                      <span className="absolute top-2 left-2 bg-surface-white/90 backdrop-blur text-primary text-[12px] font-bold px-2 py-1 rounded border border-border-subtle">{p.domain}</span>
+                    <div className="w-full h-32 bg-surface-container-low border-b border-outline-variant relative flex items-center justify-center">
+                      <span className="absolute top-2 left-2 bg-surface-container/90 backdrop-blur text-primary text-[12px] font-bold px-2 py-1 rounded border border-outline-variant">{p.domain}</span>
                       <span className="material-symbols-outlined text-primary opacity-20" style={{ fontSize: '64px' }}>auto_stories</span>
                     </div>
                     <div className="p-4 flex flex-col flex-grow">
@@ -241,13 +242,14 @@ export default function LearnerHomePage() {
                           <div className="bg-primary h-1.5 rounded-full" style={{ width: `${p.progress}%` }} />
                         </div>
                       </div>
-                      <button className="w-full text-center py-1.5 border border-border-subtle text-on-surface text-[14px] font-semibold rounded hover:bg-surface-container-low transition-colors">
+                      <button className="w-full text-center py-1.5 border border-outline-variant text-on-surface text-[14px] font-semibold rounded hover:bg-surface-container-low transition-colors">
                         {t.common.continue}
                       </button>
                     </div>
                   </Link>
                 ))
               )}
+
             </div>
           </div>
         </section>
@@ -256,11 +258,11 @@ export default function LearnerHomePage() {
         <aside className="lg:col-span-4 flex flex-col gap-6">
 
           {/* AI Recommendation Widget */}
-          <div className="rounded-xl p-4 relative overflow-hidden group border" style={{ backgroundColor: '#F5F3FF', borderColor: '#7C3AED' }}>
-            <div className="absolute top-2 right-2 opacity-20 group-hover:opacity-100 transition-opacity" style={{ color: '#7C3AED' }}>
+          <div className="rounded-xl p-4 relative overflow-hidden group border bg-ai-accent-bg border-ai-accent-border">
+            <div className="absolute top-2 right-2 opacity-20 group-hover:opacity-100 transition-opacity text-ai-accent">
               <span className="material-symbols-outlined" style={{ fontVariationSettings: "'FILL' 1" }}>auto_awesome</span>
             </div>
-            <h3 className="text-[14px] font-semibold flex items-center gap-2 mb-2" style={{ color: '#5B21B6' }}>
+            <h3 className="text-[14px] font-semibold flex items-center gap-2 mb-2 text-tertiary">
               <span className="material-symbols-outlined text-[18px]">psychology</span>
               {t.aiRecommendations.forYou}
             </h3>
@@ -268,31 +270,32 @@ export default function LearnerHomePage() {
               {t.aiRecommendations.basedOnProgress}:
             </p>
             {recommendations.length > 0 ? recommendations.slice(0, 2).map((rec: any) => (
-              <div key={rec.id ?? rec.lessonId} className="bg-surface-white rounded p-2 flex items-center justify-between mb-2 border" style={{ borderColor: '#E9D5FF' }}>
+              <div key={rec.id ?? rec.lessonId} className="bg-surface-container rounded p-2 flex items-center justify-between mb-2 border border-outline-variant">
                 <div>
                   <h4 className="text-[14px] font-semibold text-on-surface">{rec.lesson?.title ?? rec.title ?? t.aiRecommendations.recommended}</h4>
                   <p className="text-[12px] font-bold text-on-surface-variant uppercase tracking-[0.05em]">{t.practice.difficulty}: {rec.difficulty ?? t.practice.beginner}</p>
                 </div>
                 <Link href={`/learn/lessons/${rec.lesson?.id ?? rec.lessonId ?? ''}`}>
-                  <button className="w-8 h-8 rounded-full flex items-center justify-center hover:opacity-80 transition-colors" style={{ backgroundColor: '#EDE9FE', color: '#7C3AED' }}>
+                  <button className="w-8 h-8 rounded-full flex items-center justify-center hover:opacity-80 transition-colors bg-primary/20 text-primary">
                     <span className="material-symbols-outlined text-[18px]">play_arrow</span>
                   </button>
                 </Link>
               </div>
             )) : (
-              <div className="bg-surface-white rounded p-2 flex items-center justify-between border" style={{ borderColor: '#E9D5FF' }}>
+              <div className="bg-surface-container rounded p-2 flex items-center justify-between border border-outline-variant">
                 <div>
                   <h4 className="text-[14px] font-semibold text-on-surface">Networking Fundamentals</h4>
                   <p className="text-[12px] font-bold text-on-surface-variant">{t.practice.difficulty}: {t.practice.beginner}</p>
                 </div>
                 <Link href="/learn/lessons">
-                  <button className="w-8 h-8 rounded-full flex items-center justify-center" style={{ backgroundColor: '#EDE9FE', color: '#7C3AED' }}>
+                  <button className="w-8 h-8 rounded-full flex items-center justify-center bg-primary/20 text-primary">
                     <span className="material-symbols-outlined text-[18px]">play_arrow</span>
                   </button>
                 </Link>
               </div>
             )}
           </div>
+
 
           {/* Kết quả kiểm tra gần đây */}
           <div>
@@ -304,7 +307,7 @@ export default function LearnerHomePage() {
               {attempts.length > 0 ? attempts.slice(0, 3).map((a: any) => (
                 <div
                   key={a.id}
-                  className="bg-surface-white border border-border-subtle rounded-lg p-2 flex items-center justify-between hover:shadow-[0_1px_3px_rgba(15,23,24,0.06)] transition-shadow"
+                  className="bg-surface-container border border-outline-variant rounded-lg p-2 flex items-center justify-between hover:shadow-[0_1px_3px_rgba(15,23,24,0.06)] transition-shadow"
                 >
                   <div>
                     <h4 className="text-[14px] font-semibold text-on-surface">{a.exam?.title ?? a.examTitle ?? t.practice.exams}</h4>
@@ -322,7 +325,7 @@ export default function LearnerHomePage() {
                   { title: 'EC2 & Compute Mock', when: 'Hôm qua', score: '85/100' },
                   { title: 'Security Vocab Quiz', when: '3 ngày trước', score: '92/100' },
                 ].map((a) => (
-                  <div key={a.title} className="bg-surface-white border border-border-subtle rounded-lg p-2 flex items-center justify-between hover:shadow-[0_1px_3px_rgba(15,23,24,0.06)] transition-shadow">
+                  <div key={a.title} className="bg-surface-container border border-outline-variant rounded-lg p-2 flex items-center justify-between hover:shadow-[0_1px_3px_rgba(15,23,24,0.06)] transition-shadow">
                     <div>
                       <h4 className="text-[14px] font-semibold text-on-surface">{a.title}</h4>
                       <p className="text-[12px] font-bold text-on-surface-variant">{a.when}</p>
@@ -343,15 +346,15 @@ export default function LearnerHomePage() {
               <span className="material-symbols-outlined text-on-surface-variant text-[18px]">history</span>
               {t.analytics.recentActivity}
             </h3>
-            <div className="bg-surface-white border border-border-subtle rounded-lg p-4">
-              <ul className="relative border-l border-border-subtle ml-2 pb-2 space-y-4">
+            <div className="bg-surface-container border border-outline-variant rounded-lg p-4">
+              <ul className="relative border-l border-outline-variant ml-2 pb-2 space-y-4">
                 {[
                   { text: t.lessons.lessonComplete, bold: 'IAM Policies', when: '2 giờ trước', done: true },
                   { text: 'Mở khoá huy hiệu', bold: 'Cloud Novice', when: 'Hôm qua', done: false },
                   { text: 'Đăng nhập từ thiết bị mới', bold: '', when: '4 ngày trước', done: false },
                 ].map((item, i) => (
                   <li key={i} className="relative pl-4">
-                    <div className={`absolute w-2 h-2 rounded-full -left-[5px] top-1.5 ring-4 ring-surface-white ${item.done ? 'bg-primary' : 'bg-surface-container-high'}`} />
+                    <div className={`absolute w-2 h-2 rounded-full -left-[5px] top-1.5 ring-4 ring-surface-container ${item.done ? 'bg-primary' : 'bg-surface-container-high'}`} />
                     <p className="text-[12px] text-on-surface">
                       {item.text} {item.bold && <strong>{item.bold}</strong>}
                     </p>
@@ -362,6 +365,7 @@ export default function LearnerHomePage() {
             </div>
           </div>
         </aside>
+
       </div>
     </LearnerShell>
   );
