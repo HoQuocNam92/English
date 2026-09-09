@@ -11,7 +11,7 @@
   <img src="https://img.shields.io/badge/Expo-SDK%2054-white?style=for-the-badge&logo=expo&logoColor=black" />
   <img src="https://img.shields.io/badge/NestJS-11-red?style=for-the-badge&logo=nestjs" />
   <img src="https://img.shields.io/badge/Prisma-5.22-2D3748?style=for-the-badge&logo=prisma" />
-  <img src="https://img.shields.io/badge/PostgreSQL-16-336791?style=for-the-badge&logo=postgresql" />
+  <img src="https://img.shields.io/badge/PostgreSQL-18-336791?style=for-the-badge&logo=postgresql" />
 </p>
 
 ---
@@ -30,7 +30,7 @@
 
 | Tính năng | Mô tả |
 |-----------|-------|
-| 🤖 AI English Coach | Hỏi đáp, sửa câu, luyện hội thoại IT và lưu từ vựng |
+| 🤖 AI Tutor RAG | Hỏi đáp theo học liệu đã duyệt, tìm kiếm ngữ nghĩa đa ngôn ngữ, rerank và dẫn nguồn về lesson |
 | 🃏 Flashcards | Ôn tập từ vựng kỹ thuật theo bài học |
 | 📖 Technical Reading Lab | Đọc hiểu tài liệu IT, câu hỏi comprehension |
 | 📚 Technical Dictionary | Từ điển kỹ thuật IT chuyên ngành, tìm kiếm nhanh |
@@ -48,6 +48,110 @@
 | 🔐 Google OAuth | Đăng nhập bằng Google account |
 | 📧 Email Reset Password | Quên mật khẩu gửi email qua SMTP |
 | ☁️ Cloudinary Upload | Upload avatar, hình ảnh bài học |
+
+---
+
+## 🧭 Luồng học tập sản phẩm
+
+`Placement Test → IT Field → Career Goal → Personal Roadmap → Foundation → IT Core → Specialized → Lesson → Vocabulary / Reading / Listening → Practice → Scenario → Mini Test → Review → Spaced Repetition`
+
+- Placement Test lấy câu hỏi `published` có topic `placement` và chấm tại API; client không nhận đáp án đúng.
+- IT Field và Career Goal đọc từ `domains` và `career_goals`, không gán cứng trong giao diện.
+- Personal Roadmap chỉ chọn lesson `published` phù hợp trình độ, domain và mục tiêu nghề nghiệp.
+- Scenario là dạng câu hỏi tình huống, không phải Mock Interview hoặc Writing Practice.
+
+## 🤖 AI Tutor RAG
+
+AI Tutor là semantic RAG chạy thật trên Web và Mobile. Hệ thống chỉ index `lessons`, `lesson_sections` và `vocabularies` có trạng thái `published`. Mỗi câu trả lời có citation tới chunk/lesson gốc; nếu bằng chứng không đạt ngưỡng, API từ chối trả lời thay vì yêu cầu LLM suy đoán.
+
+### Kiến trúc
+
+```text
+Published content
+      │
+      ▼
+Chunking + content versioning
+      │
+      ▼
+Cohere embed-v4.0 (search_document, 1024 dimensions)
+      │
+      ▼
+LangChain PGVectorStore + PostgreSQL pgvector 0.8.6
+      │
+      ▼
+HNSW cosine retrieval (Top K)
+      │
+      ▼
+Cohere rerank-v4.0-fast
+      │
+      ▼
+Relevance threshold + metadata/lesson scope
+      │
+      ▼
+Groq openai/gpt-oss-20b grounded generation
+      │
+      ▼
+Answer + citations + feedback + usage tracking
+```
+
+Điểm tổng hợp dùng Cohere rerank 60%, pgvector similarity 30% và keyword score 10%. Khi hỏi từ màn hình lesson, `lessonId` được đưa vào metadata filter để không truy xuất bài khác. Nội dung bị unpublish sẽ bị loại khỏi cả knowledge source, chunk và vector trong lần reindex tiếp theo.
+
+### Thành phần
+
+| Thành phần | Công nghệ |
+|---|---|
+| Orchestration/retrieval | LangChain.js |
+| Document/query embedding | Cohere `embed-v4.0` |
+| Vector store | PostgreSQL 18 + pgvector `vector(1024)` |
+| Approximate nearest neighbor | HNSW + cosine distance |
+| Reranking | Cohere `rerank-v4.0-fast` |
+| Grounded generation | Groq `openai/gpt-oss-20b` |
+| API, auth, quota | NestJS |
+| Metadata và citation | Prisma/PostgreSQL |
+
+### Bảo vệ và giới hạn
+
+- Chỉ dữ liệu `published` được gửi sang Cohere để embedding/rerank.
+- Không index tài khoản, tiến độ, hội thoại, thanh toán hoặc dữ liệu quản trị.
+- Không tiết lộ đáp án của bài kiểm tra đang diễn ra.
+- Có giới hạn số câu hỏi theo người dùng/ngày qua `AI_DAILY_MESSAGE_LIMIT`.
+- Trial Cohere phù hợp phát triển/thử nghiệm; production phải dùng key và điều khoản production.
+- Không được trộn vector từ hai embedding model hoặc hai kích thước trong cùng bảng.
+
+### Vận hành và kiểm tra
+
+```bash
+# Áp migration, gồm extension/table/index pgvector
+pnpm --filter @techenglish/api db:migrate:deploy
+
+# Index hoặc đồng bộ lại nội dung published
+pnpm --filter @techenglish/api rag:reindex
+
+# Kiểm tra extension, số vector, dimensions và indexes
+pnpm --filter @techenglish/api rag:vector-status
+
+# Semantic retrieval + Cohere rerank smoke test
+pnpm --filter @techenglish/api rag:test
+```
+
+Trạng thái đã kiểm chứng tại thời điểm cập nhật README: 59 vector, 1024 chiều, có HNSW cosine index và GIN metadata index.
+
+API quản trị:
+
+```text
+POST /admin/knowledge/reindex   Reindex toàn bộ nguồn published
+GET  /admin/knowledge/health    Kiểm tra source/chunk/vector/model/reranker
+```
+
+API người học:
+
+```text
+POST /ai-chat/conversations
+GET  /ai-chat/conversations
+GET  /ai-chat/conversations/:id/messages
+POST /ai-chat/conversations/:id/messages
+POST /ai-chat/messages/:id/feedback
+```
 
 ---
 
@@ -75,9 +179,7 @@ English/
 │   │   │   └── (learner)/learn/    # 20+ learner pages
 │   │   │       ├── page.tsx        # Dashboard chính
 │   │   │       ├── lessons/        # Danh sách & chi tiết bài học
-│   │   │       ├── mock-interview/ # AI Mock Interview
-│   │   │       ├── writing-practice/ # AI Writing Practice
-│   │   │       ├── smart-review/   # AI Smart Review Flashcards
+│   │   │       ├── ai-coach/       # AI Tutor RAG + citations
 │   │   │       ├── reading-lab/    # Technical Reading Lab
 │   │   │       ├── dictionary/     # Technical Dictionary
 │   │   │       ├── calendar/       # Learning Calendar
@@ -108,9 +210,7 @@ English/
 │       │   ├── (auth)/             # Login, Register, Forgot Password
 │       │   ├── (onboarding)/       # Level, Domain, Certificate, Career Goal
 │       │   ├── (tabs)/             # 5 tabs: Home, Learning, Practice, Progress, Profile
-│       │   ├── mock-interview/     # AI Mock Interview (3-phase)
-│       │   ├── writing-practice/   # AI Writing Practice + history
-│       │   ├── dictionary/         # Technical Dictionary + A-Z filter
+│       │   ├── ai-tutor/           # Mobile AI Tutor RAG
 │       │   ├── calendar/           # Learning Calendar + mini calendar
 │       │   ├── community/          # Community list + [id] detail
 │       │   ├── leaderboard/        # Leaderboard
@@ -136,7 +236,10 @@ English/
 |-----------|-----------|----------|
 | NestJS | 11 | Framework chính |
 | Prisma | 5.22 | ORM & Database migrations |
-| PostgreSQL | 16 | Database chính |
+| PostgreSQL + pgvector | 18.3 + 0.8.6 | Database chính và vector store |
+| LangChain.js | 1.x | PGVectorStore và retrieval orchestration |
+| Cohere | Embed v4 + Rerank v4 Fast | Embedding đa ngôn ngữ và reranking |
+| Groq | GPT OSS 20B | Grounded answer generation |
 | Redis | 7 | Cache & Rate limiting |
 | JWT | — | Access & Refresh tokens |
 | Google OAuth | 2.0 | Social login |
@@ -158,8 +261,8 @@ English/
 | Công nghệ | Phiên bản | Mục đích |
 |-----------|-----------|----------|
 | Expo | SDK 54 | Build tool & runtime |
-| React Native | 0.76 | Mobile UI |
-| Expo Router | v4 | File-based routing |
+| React Native | 0.81 | Mobile UI |
+| Expo Router | v6 | File-based routing |
 | AsyncStorage | — | Local persistent storage |
 
 ---
@@ -168,8 +271,8 @@ English/
 
 ### Yêu cầu
 - Node.js ≥ 20
-- pnpm ≥ 9
-- PostgreSQL 16
+- pnpm ≥ 11
+- PostgreSQL 18 và pgvector ≥ 0.8
 - Redis 7
 
 ### 1. Clone & Install
@@ -190,7 +293,7 @@ JWT_SECRET="your-jwt-secret"
 JWT_REFRESH_SECRET="your-refresh-secret"
 GOOGLE_CLIENT_ID="xxx.apps.googleusercontent.com"
 GOOGLE_CLIENT_SECRET="xxx"
-GOOGLE_CALLBACK_URL="http://localhost:3001/auth/google/callback"
+GOOGLE_CALLBACK_URL="http://localhost:8080/api/v1/auth/google/callback"
 SMTP_HOST="smtp.gmail.com"
 SMTP_PORT=587
 SMTP_USER="your@gmail.com"
@@ -201,25 +304,33 @@ CLOUDINARY_API_SECRET="xxx"
 SEPAY_API_KEY="xxx"
 GROQ_API_KEY="gsk_your_key_here"
 GROQ_MODEL="openai/gpt-oss-20b"
-Cloudinary banner uploads use the backend variables `CLOUDINARY_CLOUD_NAME`, `CLOUDINARY_API_KEY`, and `CLOUDINARY_API_SECRET`.
+COHERE_API_KEY="your-cohere-key"
+EMBEDDING_PROVIDER="cohere"
+EMBEDDING_MODEL="embed-v4.0"
+EMBEDDING_DIMENSIONS=1024
+COHERE_RERANK_MODEL="rerank-v4.0-fast"
+RAG_TOP_K=20
+RAG_FINAL_K=6
+RAG_MIN_SCORE=0.2
+AI_DAILY_MESSAGE_LIMIT=30
 SEPAY_BANK_ACCOUNT="xxx"
 
 # apps/web/.env.local
-NEXT_PUBLIC_API_URL="http://localhost:3001"
+NEXT_PUBLIC_API_URL="http://localhost:8080/api/v1"
 ```
 
 ### 3. Database & Seed
 
 ```bash
-cd apps/api
-npx prisma db push
-npx tsx prisma/seed.ts
+pnpm --filter @techenglish/api db:migrate:deploy
+pnpm --filter @techenglish/api db:seed
+pnpm --filter @techenglish/api rag:reindex
 ```
 
 ### 4. Start Development
 
 ```bash
-# API (port 3001)
+# API (port 8080)
 cd apps/api && pnpm dev
 
 # Web (port 3000)
@@ -277,13 +388,16 @@ GET  /leaderboard/streaks/me  Streak & EXP của tôi
 POST /leaderboard/streaks/check-in  Điểm danh nhận EXP
 ```
 
-### AI English Coach
+### AI Tutor RAG
 ```
 POST /ai-chat/public                     Hỏi đáp công khai
 POST /ai-chat/conversations              Tạo cuộc trò chuyện
 GET  /ai-chat/conversations              Danh sách cuộc trò chuyện
 POST /ai-chat/conversations/:id/messages Gửi tin nhắn
+POST /ai-chat/messages/:id/feedback       Đánh giá câu trả lời
 POST /ai-chat/saved-vocabulary           Lưu từ vựng từ AI Coach
+POST /admin/knowledge/reindex             Đồng bộ knowledge base [Admin]
+GET  /admin/knowledge/health              Trạng thái RAG [Admin]
 ```
 
 ### Student Groups
@@ -384,7 +498,7 @@ const { t, locale, setLocale } = useI18n();
 
 ## 🗄️ Database Models
 
-Database hiện có **68 bảng vật lý**: **67 bảng ứng dụng** được ánh xạ bởi đúng **67 Prisma model** và một bảng hệ thống `_prisma_migrations`. Bảng hệ thống do Prisma tự quản lý nên không khai báo thành model.
+Database hiện có **74 bảng vật lý**: **72 bảng được ánh xạ bởi Prisma**, bảng vector chuyên dụng `knowledge_vectors` do LangChain/pgvector quản lý và bảng hệ thống `_prisma_migrations`.
 
 Quy ước quan hệ:
 
@@ -500,14 +614,20 @@ Quy ước quan hệ:
 | `discussion_comments` | Bình luận của user trong bài viết. | N–1 với post và user. |
 | `discussion_votes` | Upvote/downvote của user. | N–N user–post; unique ngăn vote trùng. |
 
-### 11. AI English Coach — 4 bảng
+### 11. AI Tutor và RAG — 10 bảng
 
 | Bảng | Vai trò | Quan hệ chính |
 |---|---|---|
-| `ai_conversations` | Cuộc trò chuyện theo chế độ Q&A, correction, IT conversation hoặc vocabulary. | N–1 với user; 1–N với message/error. |
-| `ai_messages` | Tin nhắn user/assistant và metadata. | N–1 với conversation; 1–N với learning error. |
+| `ai_conversations` | Cuộc trò chuyện Q&A/vocabulary, có thể giới hạn theo lesson. | N–1 với user; 1–N với message/error. |
+| `ai_messages` | Tin nhắn user/assistant và metadata phản hồi. | N–1 với conversation; 1–N với citation/feedback/error. |
 | `ai_learning_errors` | Lỗi gốc, bản sửa và giải thích tiếng Việt. | N–1 với conversation; tùy chọn N–1 với message. |
 | `ai_saved_vocabulary` | Từ/cụm từ lưu từ AI Coach và ghi chú cá nhân. | N–1 với user; unique theo user–term–phrase. |
+| `knowledge_sources` | Nguồn được index, loại nguồn, phiên bản và trạng thái index. | 1–N với knowledge chunk; unique theo source type–source ID. |
+| `knowledge_chunks` | Đoạn nội dung sau chunking và metadata nghiệp vụ. | N–1 với source; 1–N với citation. |
+| `knowledge_vectors` | Nội dung, metadata JSONB và embedding `vector(1024)`. | ID tương ứng `knowledge_chunks.id`; có HNSW và GIN index. |
+| `ai_message_citations` | Nguồn chứng minh cho từng câu trả lời, kèm rank và score. | Bảng nối N–N AI message–knowledge chunk. |
+| `ai_feedback` | Đánh giá hữu ích/chưa đúng của người học. | N–1 với AI message; unique theo message–user. |
+| `ai_usage_daily` | Request và token AI theo ngày để kiểm soát quota. | Unique theo user–ngày. |
 
 ### 12. Lộ trình, planner và analytics — 5 bảng
 
@@ -560,7 +680,7 @@ Quy ước quan hệ:
 
 ## 📄 License
 
-MIT © 2025 Quốc Nam
+MIT © 2026 Quốc Nam
 
 ---
 

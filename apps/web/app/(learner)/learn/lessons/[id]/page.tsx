@@ -202,9 +202,8 @@ export default function LearnerLessonDetailPage({ params }: { params: Promise<{ 
                 <span className="bg-surface-container text-on-surface-variant font-bold text-[12px] uppercase tracking-[0.05em] px-2 py-1 rounded">{levelBadge}</span>
               </div>
               <h1 className="text-[30px] font-bold text-on-surface mt-2" style={{ lineHeight: '38px', letterSpacing: '-0.02em' }}>{lesson.title}</h1>
-              <p className="text-[14px] text-on-surface-variant mt-2 max-w-[600px]">
-                {lesson.summary || lesson.description || 'Learn the fundamental concepts and the technical vocabulary used in modern web development.'}
-              </p>
+              {(lesson.summary || lesson.description) && <p className="text-[14px] text-on-surface-variant mt-2 max-w-[600px]">{lesson.summary || lesson.description}</p>}
+              <Link href={`/learn/ai-coach?lessonId=${lesson.id}`} className="mt-4 inline-flex items-center gap-2 rounded-xl bg-primary px-4 py-2 text-sm font-bold !text-white"><span className="material-symbols-outlined text-[18px]">forum</span>Hỏi AI Tutor về bài này</Link>
             </div>
             
             {/* Progress Bar (Hero) */}
@@ -224,21 +223,7 @@ export default function LearnerLessonDetailPage({ params }: { params: Promise<{ 
             <div className="learning-content">
               {activeSection ? (
                 <div key={activeSection.id ?? activeSectionIndex}>{renderSectionContent(activeSection)}</div>
-              ) : (
-                <>
-                  <h2 className="text-[24px] font-bold text-on-surface mt-[2.5rem] mb-[1rem]" style={{ lineHeight: '1.4' }}>What is an API?</h2>
-                  <p className="font-body-md text-[17px] leading-[1.7] max-w-[65ch] text-on-surface mb-[1.5rem]">
-                    In software development, an <span className="bg-primary/10 text-primary px-1.5 py-0.5 rounded font-mono text-[0.9em] font-semibold">API</span> (Application Programming Interface) is a set of protocols and tools that allows different software applications to communicate with each other. It acts as an intermediary, processing data requests and returning responses.
-                  </p>
-                  <p className="font-body-md text-[17px] leading-[1.7] max-w-[65ch] text-on-surface mb-[1.5rem]">
-                    Imagine a restaurant menu: you (the client) look at the menu, place an order with the waiter (the API), and the kitchen (the server) prepares the food. You don't need to know how the kitchen cooks the food; you only need to know how to place the order and what to expect in return.
-                  </p>
-                  <h2 className="text-[24px] font-bold text-on-surface mt-[2.5rem] mb-[1rem]" style={{ lineHeight: '1.4' }}>The Fundamentals of REST</h2>
-                  <p className="font-body-md text-[17px] leading-[1.7] max-w-[65ch] text-on-surface mb-[1.5rem]">
-                    A <span className="bg-primary/10 text-primary px-1.5 py-0.5 rounded font-mono text-[0.9em] font-semibold">REST API</span> (Representational State Transfer) is a specific architectural style for building web services. It uses standard HTTP methods to perform operations on resources. These resources are identified by specific URLs, often referred to as an <span className="bg-primary/10 text-primary px-1.5 py-0.5 rounded font-mono text-[0.9em] font-semibold">Endpoint</span>.
-                  </p>
-                </>
-              )}
+              ) : <p className="rounded-xl border border-dashed p-6 text-center text-on-surface-variant">Bài học chưa có nội dung được xuất bản.</p>}
             </div>
           </div>
 

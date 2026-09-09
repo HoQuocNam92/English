@@ -42,6 +42,15 @@ export class TaxonomyService {
     return { data: domains }
   }
 
+  async getCareerGoals() {
+    const goals = await this.prisma.careerGoal.findMany({
+      where: { isActive: true },
+      orderBy: { name: 'asc' },
+      include: { _count: { select: { skills: true, profileCareerGoals: true } } },
+    })
+    return { data: goals }
+  }
+
   async getCertificates() {
     const certs = await this.prisma.certificate.findMany({
       orderBy: { name: 'asc' },

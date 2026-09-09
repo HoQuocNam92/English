@@ -1222,6 +1222,7 @@ model AiConversation {
   userId    String            @map("user_id") @db.Uuid
   mode      AiChatMode        @default(qa)
   title     String            @default("Cuộc trò chuyện mới") @db.VarChar(200)
+  lessonId  String?           @map("lesson_id") @db.Uuid
   createdAt DateTime          @default(now()) @map("created_at") @db.Timestamptz(6)
   updatedAt DateTime          @updatedAt @map("updated_at") @db.Timestamptz(6)
   user      User              @relation(fields: [userId], references: [id], onDelete: Cascade)
@@ -1241,6 +1242,8 @@ model AiMessage {
   createdAt      DateTime          @default(now()) @map("created_at") @db.Timestamptz(6)
   conversation   AiConversation    @relation(fields: [conversationId], references: [id], onDelete: Cascade)
   errors         AiLearningError[]
+  citations      AiMessageCitation[]
+  feedback       AiFeedback[]
 
   @@index([conversationId, createdAt])
   @@map("ai_messages")
@@ -1279,6 +1282,105 @@ model AiSavedVocabulary {
   @@unique([userId, term, phrase])
   @@index([userId, createdAt])
   @@map("ai_saved_vocabulary")
+}
+
+enum KnowledgeSourceType {
+  lesson
+  lesson_section
+  vocabulary
+
+  @@map("knowledge_source_type")
+}
+
+enum KnowledgeIndexStatus {
+  pending
+  indexed
+  failed
+  stale
+
+  @@map("knowledge_index_status")
+}
+
+model KnowledgeSource {
+  id             String               @id @default(uuid()) @db.Uuid
+  sourceType     KnowledgeSourceType  @map("source_type")
+  sourceId       String               @map("source_id") @db.Uuid
+  title          String               @db.VarChar(300)
+  contentVersion String               @map("content_version") @db.VarChar(100)
+  status         KnowledgeIndexStatus @default(pending)
+  errorMessage   String?              @map("error_message") @db.Text
+  indexedAt      DateTime?            @map("indexed_at") @db.Timestamptz(6)
+  createdAt      DateTime             @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt      DateTime             @updatedAt @map("updated_at") @db.Timestamptz(6)
+  chunks         KnowledgeChunk[]
+
+  @@unique([sourceType, sourceId])
+  @@index([status])
+  @@map("knowledge_sources")
+}
+
+model KnowledgeChunk {
+  id            String               @id @default(uuid()) @db.Uuid
+  sourceId      String               @map("source_id") @db.Uuid
+  chunkIndex    Int                  @map("chunk_index")
+  content       String               @db.Text
+  tokenCount    Int                  @default(0) @map("token_count")
+  lessonId      String?              @map("lesson_id") @db.Uuid
+  domainId      String?              @map("domain_id") @db.Uuid
+  levelId       String?              @map("level_id") @db.Uuid
+  certificateId String?              @map("certificate_id") @db.Uuid
+  language      String               @default("mixed") @db.VarChar(20)
+  embedding     Float[]              @default([])
+  embeddingModel String?             @map("embedding_model") @db.VarChar(100)
+  source        KnowledgeSource      @relation(fields: [sourceId], references: [id], onDelete: Cascade)
+  citations     AiMessageCitation[]
+
+  @@unique([sourceId, chunkIndex])
+  @@index([lessonId])
+  @@index([domainId, levelId])
+  @@map("knowledge_chunks")
+}
+
+model AiMessageCitation {
+  messageId String         @map("message_id") @db.Uuid
+  chunkId   String         @map("chunk_id") @db.Uuid
+  rank      Int
+  score     Float
+  message   AiMessage      @relation(fields: [messageId], references: [id], onDelete: Cascade)
+  chunk     KnowledgeChunk @relation(fields: [chunkId], references: [id], onDelete: Restrict)
+
+  @@id([messageId, chunkId])
+  @@index([chunkId])
+  @@map("ai_message_citations")
+}
+
+model AiFeedback {
+  id        String    @id @default(uuid()) @db.Uuid
+  messageId String    @map("message_id") @db.Uuid
+  userId    String    @map("user_id") @db.Uuid
+  helpful   Boolean
+  reason    String?   @db.VarChar(500)
+  createdAt DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
+  message   AiMessage @relation(fields: [messageId], references: [id], onDelete: Cascade)
+
+  @@unique([messageId, userId])
+  @@index([userId, createdAt])
+  @@map("ai_feedback")
+}
+
+model AiUsageDaily {
+  id           String   @id @default(uuid()) @db.Uuid
+  userId       String   @map("user_id") @db.Uuid
+  usageDate    DateTime @map("usage_date") @db.Date
+  requestCount Int      @default(0) @map("request_count")
+  inputTokens  Int      @default(0) @map("input_tokens")
+  outputTokens Int      @default(0) @map("output_tokens")
+  createdAt    DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt    DateTime @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  @@unique([userId, usageDate])
+  @@index([usageDate])
+  @@map("ai_usage_daily")
 }
 
 model LandingBanner {

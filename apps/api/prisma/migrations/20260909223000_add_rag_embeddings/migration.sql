@@ -1,0 +1,3 @@
+ALTER TABLE "knowledge_chunks"
+  ADD COLUMN "embedding" DOUBLE PRECISION[] NOT NULL DEFAULT ARRAY[]::DOUBLE PRECISION[],
+  ADD COLUMN "embedding_model" VARCHAR(100);

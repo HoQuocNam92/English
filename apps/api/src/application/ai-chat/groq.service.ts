@@ -123,6 +123,7 @@ export class GroqService {
   async chat(params: {
     mode: AiChatMode; input: string; action?: string; learnerContext: string;
     history: Array<{ role: string; content: string }>;
+    knowledgeContext?: string;
   }) {
     const modeGuide: Record<AiChatMode, string> = {
       qa: 'Giải thích bằng tiếng Việt dễ hiểu, cho ví dụ tiếng Anh ngành IT và kết thúc bằng một bài tập ngắn.',
@@ -134,9 +135,13 @@ export class GroqService {
       ? 'Hãy dịch chính xác nội dung sang tiếng Việt và điền translationVi.'
       : params.action === 'grammar_check'
         ? 'Hãy kiểm tra ngữ pháp kỹ, điền correctedText và errors.' : '';
+    const grounding = params.knowledgeContext
+      ? `\nKHO KIẾN THỨC ĐƯỢC PHÉP SỬ DỤNG:\n${params.knowledgeContext}\nChỉ trả lời dựa trên kho kiến thức trên. Không được phát minh dữ kiện hoặc nguồn. Nếu kho không đủ, nói rõ không đủ dữ liệu.`
+      : '\nKhông có kho kiến thức phù hợp. Không được tự suy đoán nội dung chuyên môn.';
     const system = `Bạn là AI English Coach chuyên tiếng Anh CNTT cho người Việt. ${modeGuide[params.mode]} ${actionGuide}
 Thông tin người học: ${params.learnerContext}
-Không bịa dữ liệu cá nhân. Nếu không chắc một phiên âm hoặc nghĩa chuyên ngành, nói rõ trong answer. Chỉ điền vocabulary khi chế độ là vocabulary hoặc câu hỏi trực tiếp về từ vựng; các chế độ khác trả mảng vocabulary rỗng. Trả lời súc tích dưới 500 từ. Luôn trả đúng JSON schema; answer là nội dung chính có thể hiển thị trực tiếp.`;
+${grounding}
+Không bịa dữ liệu cá nhân. Không tiết lộ đáp án bài kiểm tra đang diễn ra. Chỉ điền vocabulary khi chế độ là vocabulary hoặc câu hỏi trực tiếp về từ vựng; các chế độ khác trả mảng vocabulary rỗng. Trả lời súc tích dưới 500 từ. Luôn trả đúng JSON schema; answer là nội dung chính có thể hiển thị trực tiếp.`;
     return this.complete([{ role: 'system', content: system }, ...params.history, { role: 'user', content: params.input }], 'english_coach_response', RESPONSE_SCHEMA);
   }
 

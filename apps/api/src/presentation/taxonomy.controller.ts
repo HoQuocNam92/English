@@ -26,6 +26,12 @@ export class TaxonomyController {
     return this.svc.getDomains()
   }
 
+  @Get('career-goals')
+  @ApiOperation({ summary: 'List active career goals' })
+  getCareerGoals() {
+    return this.svc.getCareerGoals()
+  }
+
   @Get('certificates')
   @ApiOperation({ summary: 'List all certificates' })
   getCertificates() {

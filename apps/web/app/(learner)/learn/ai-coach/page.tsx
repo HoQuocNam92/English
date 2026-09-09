@@ -4,19 +4,14 @@ import { useEffect, useRef, useState } from 'react';
 import { LearnerShell } from '@/shared/layout';
 import { apiClient } from '@/shared/api/api-client';
 
-type Mode = 'qa' | 'correction' | 'it_conversation' | 'vocabulary';
+type Mode = 'qa' | 'vocabulary';
 type Message = { id: string; role: 'user' | 'assistant'; content: string; metadata?: any };
-const modes: Array<{ id: Mode | 'quiz'; label: string; icon: string }> = [
-  { id: 'qa', label: 'Hỏi đáp', icon: 'help' },
-  { id: 'correction', label: 'Sửa câu', icon: 'spellcheck' },
-  { id: 'it_conversation', label: 'Hội thoại IT', icon: 'forum' },
-  { id: 'vocabulary', label: 'Từ vựng', icon: 'translate' },
-  { id: 'quiz', label: 'Tạo Quiz', icon: 'quiz' },
+const modes: Array<{ id: Mode; label: string; icon: string }> = [
+  { id: 'qa', label: 'Hỏi theo tài liệu', icon: 'menu_book' },
+  { id: 'vocabulary', label: 'Giải thích từ vựng', icon: 'translate' },
 ];
 const modeCopy: Record<Mode, { heading: string; example: string; placeholder: string }> = {
   qa: { heading: 'Hỏi AI về tiếng Anh chuyên ngành IT', example: 'Ví dụ: “Khi nào dùng do và make?”', placeholder: 'Nhập câu hỏi tiếng Anh của bạn…' },
-  correction: { heading: 'Nhập một câu để AI sửa và giải thích lỗi', example: 'Ví dụ: “I am work as developer.”', placeholder: 'Nhập câu tiếng Anh cần sửa…' },
-  it_conversation: { heading: 'Luyện hội thoại hoặc phỏng vấn ngành IT', example: 'Ví dụ: “Tôi muốn luyện phỏng vấn Java Developer.”', placeholder: 'Chọn chủ đề hoặc trả lời AI bằng tiếng Anh…' },
   vocabulary: { heading: 'Học từ vựng theo cụm và ngữ cảnh', example: 'Ví dụ: nhập “deploy” hoặc “production environment”.', placeholder: 'Nhập từ hoặc cụm từ cần học…' },
 };
 
@@ -40,7 +35,8 @@ export default function AiCoachPage() {
   async function startConversation(selectedMode: Mode = mode) {
     setError(''); setQuiz(null); setMessages([]); setAnswers({}); setInput(''); setConversationId('');
     try {
-      const conversation: any = await apiClient.post('/ai-chat/conversations', { mode: selectedMode });
+      const lessonId = typeof window !== 'undefined' ? new URLSearchParams(window.location.search).get('lessonId') : null;
+      const conversation: any = await apiClient.post('/ai-chat/conversations', { mode: selectedMode, lessonId: lessonId || undefined });
       setConversationId(conversation.id);
     } catch (err: any) { setError(err.message || 'Không thể bắt đầu cuộc trò chuyện.'); }
   }
@@ -52,7 +48,7 @@ export default function AiCoachPage() {
     setLoading(true); setError('');
     try {
       const response: any = await apiClient.post(`/ai-chat/conversations/${conversationId}/messages`, { content, mode, action });
-      setMessages((current) => [...current, response.message]);
+      setMessages((current) => [...current, { ...response.message, metadata: { ...(response.message.metadata ?? {}), citations: response.result?.citations ?? [] } }]);
     } catch (err: any) {
       setError(err.message || 'Groq chưa phản hồi. Vui lòng thử lại.');
     } finally { setLoading(false); }
@@ -67,10 +63,14 @@ export default function AiCoachPage() {
     finally { setLoading(false); }
   }
 
-  function changeMode(next: Mode | 'quiz') {
-    if (next === 'quiz') { void generateQuiz(); return; }
+  function changeMode(next: Mode) {
     if (next === mode && !quiz) return;
     setMode(next); void startConversation(next);
+  }
+
+  async function sendFeedback(messageId: string, helpful: boolean) {
+    try { await apiClient.post(`/ai-chat/messages/${messageId}/feedback`, { helpful }); }
+    catch (err: any) { setError(err.message || 'Không thể gửi phản hồi.'); }
   }
 
   function speak(text: string) {
@@ -97,12 +97,12 @@ export default function AiCoachPage() {
     <LearnerShell>
       <div className="mx-auto w-full min-w-0 max-w-5xl space-y-4">
         <div className="flex items-start justify-between gap-4">
-          <div><h1 className="text-2xl font-bold">AI English Coach</h1><p className="mt-1 text-sm text-on-surface-variant">Học tiếng Anh IT với Groq và nội dung cá nhân hóa theo hồ sơ của bạn.</p></div>
+          <div><h1 className="text-2xl font-bold">AI Tutor RAG</h1><p className="mt-1 text-sm text-on-surface-variant">Câu trả lời chỉ dựa trên lesson và từ vựng đã được duyệt, kèm nguồn kiểm chứng.</p></div>
           <button onClick={() => startConversation()} className="rounded-xl border border-outline-variant px-4 py-2 text-sm font-semibold hover:bg-surface-container">Cuộc trò chuyện mới</button>
         </div>
 
         <div className="flex flex-wrap gap-2 rounded-2xl border border-outline-variant/50 bg-surface-container-lowest p-2">
-          {modes.map((item) => { const active = item.id === 'quiz' ? !!quiz : item.id === mode && !quiz; return <button type="button" aria-pressed={active} key={item.id} onClick={() => changeMode(item.id)} className={`flex items-center gap-2 rounded-xl border px-4 py-2 text-sm font-semibold transition-colors ${active ? 'border-indigo-700 bg-indigo-600 text-white shadow-sm' : 'border-transparent text-on-surface hover:border-outline-variant hover:bg-surface-container'}`}><span className="material-symbols-outlined text-[19px]">{item.icon}</span>{item.label}</button>; })}
+          {modes.map((item) => { const active = item.id === mode; return <button type="button" aria-pressed={active} key={item.id} onClick={() => changeMode(item.id)} className={`flex items-center gap-2 rounded-xl border px-4 py-2 text-sm font-semibold transition-colors ${active ? 'border-indigo-700 bg-indigo-600 text-white shadow-sm' : 'border-transparent text-on-surface hover:border-outline-variant hover:bg-surface-container'}`}><span className="material-symbols-outlined text-[19px]">{item.icon}</span>{item.label}</button>; })}
         </div>
 
         <section className="flex min-h-[620px] flex-col overflow-hidden rounded-2xl border border-outline-variant/50 bg-surface-container-lowest shadow-sm">
@@ -123,6 +123,7 @@ export default function AiCoachPage() {
                   <textarea value={notes[key] || ''} onChange={(event) => setNotes((current) => ({ ...current, [key]: event.target.value }))} maxLength={2000} rows={2} placeholder="Ghi chú của bạn cho từ này…" className="mt-3 w-full resize-none rounded-lg border border-violet-200 px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-violet-200" />
                   {savedTerms[key] && <p className="mt-1 text-xs text-green-700">Đã lưu từ vựng và ghi chú.</p>}
                 </div>; })}
+                {message.role === 'assistant' && !!message.metadata?.citations?.length && <div className="border-t border-outline-variant/50 pt-3"><p className="text-xs font-bold uppercase tracking-wide text-on-surface-variant">Nguồn tham khảo</p><div className="mt-2 space-y-2">{message.metadata.citations.map((citation: any) => <a key={`${citation.sourceType}-${citation.sourceId}`} href={citation.lessonId ? `/learn/lessons/${citation.lessonId}` : '#'} className="block rounded-lg bg-white p-2 text-xs text-primary"><b>[{citation.rank}] {citation.title}</b><span className="mt-1 block text-on-surface-variant">{citation.excerpt}</span></a>)}</div><div className="mt-2 flex gap-2"><button type="button" onClick={() => sendFeedback(message.id, true)} className="rounded-full bg-white px-3 py-1 text-xs">Hữu ích</button><button type="button" onClick={() => sendFeedback(message.id, false)} className="rounded-full bg-white px-3 py-1 text-xs">Chưa đúng</button></div></div>}
                 {message.role === 'user' && <div className="mt-2 flex flex-wrap gap-2 text-xs text-on-surface">
                   <button onClick={() => send(message.content, 'grammar_check')} className="rounded-full bg-white px-3 py-1.5">Kiểm tra ngữ pháp</button>
                   <button onClick={() => send(message.content, 'translate')} className="rounded-full bg-white px-3 py-1.5">Dịch nghĩa</button>

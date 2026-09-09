@@ -139,6 +139,10 @@ export default function MobileLessonDetailScreen() {
             )}
           </View>
         </View>
+        <TouchableOpacity style={{ flexDirection: 'row', gap: 8, alignItems: 'center', justifyContent: 'center', backgroundColor: colors.primary, borderRadius: 12, padding: 14 }} onPress={() => router.push(`/ai-tutor?lessonId=${id}` as any)}>
+          <MaterialIcons name="forum" size={20} color="#fff" />
+          <Text style={{ color: '#fff', fontWeight: '700' }}>Hỏi AI Tutor về bài này</Text>
+        </TouchableOpacity>
       </ScrollView>
 
       {/* Bottom Actions Fixed */}

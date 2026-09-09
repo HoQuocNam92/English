@@ -24,6 +24,8 @@ import { ReadingLabController } from './presentation/reading-lab.controller';
 import { AiChatModule } from './modules/ai-chat.module';
 import { LandingBannerController } from './presentation/landing-banner.controller';
 import { PlannerController } from './presentation/planner.controller';
+import { PlacementTestController } from './presentation/placement-test.controller';
+import { RecommendationModule } from './modules/recommendation.module';
 
 @Module({
   controllers: [
@@ -33,7 +35,8 @@ import { PlannerController } from './presentation/planner.controller';
     LearningPathController,
     ReadingLabController,
     LandingBannerController,
-    PlannerController
+    PlannerController,
+    PlacementTestController
   ],
   imports: [
     ConfigModule.forRoot({ isGlobal: true }),
@@ -52,6 +55,7 @@ import { PlannerController } from './presentation/planner.controller';
     PaymentModule,
     UploadModule,
     AiChatModule,
+    RecommendationModule,
   ],
 })
 export class AppModule {}
