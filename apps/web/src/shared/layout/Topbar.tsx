@@ -12,7 +12,7 @@ export function Topbar({ onToggleMobileMenu }: TopbarProps) {
   const { session, signOut } = useAuth();
 
   return (
-    <header className="h-16 border-b border-outline-variant/30 bg-surface-container-lowest flex justify-between items-center w-full px-4 sm:px-6 lg:px-8 z-30 shrink-0 sticky top-0">
+    <header className="h-[72px] border-b border-outline-variant/50 bg-surface-container-lowest/95 backdrop-blur flex justify-between items-center w-full px-4 sm:px-8 z-30 shrink-0">
       {/* Mobile hamburger + brand */}
       <div className="flex items-center gap-2.5 md:hidden">
         <button
@@ -32,12 +32,12 @@ export function Topbar({ onToggleMobileMenu }: TopbarProps) {
       </div>
 
       {/* Search Input */}
-      <div className="relative hidden sm:block w-72 lg:w-96">
+      <div className="relative hidden sm:block w-72 lg:w-[420px]">
         <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-outline text-[20px]">
           search
         </span>
         <input
-          className="w-full pl-10 pr-4 py-2 rounded-lg border border-outline-variant/60 bg-surface-bright focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none text-xs text-on-surface transition-all placeholder:text-outline"
+          className="w-full h-10 pl-10 pr-4 rounded-xl border border-outline-variant/60 bg-surface-container-low focus:bg-surface-container-lowest focus:border-primary focus:ring-4 focus:ring-primary/10 outline-none text-[13px] text-on-surface transition-all placeholder:text-outline"
           placeholder="Tìm kiếm học viên, bài học, chứng chỉ..."
           type="text"
         />

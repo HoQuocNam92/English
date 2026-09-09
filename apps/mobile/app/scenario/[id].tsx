@@ -24,7 +24,7 @@ export default function MobileScenarioScreen() {
       .then((data: any) => {
         setScenario({
           title: data.domain?.name ?? 'Tình huống',
-          domain: data.domain?.name ?? '',
+          domain: data.domain?.name ?? 'Production Environment',
           description: data.context ?? '',
           question: data.prompt,
           options: data.options?.map((opt: any) => ({ id: opt.key, text: opt.text })) || [],
@@ -62,34 +62,46 @@ export default function MobileScenarioScreen() {
       <StatusBar style="dark" />
       {/* Header */}
       <View style={styles.header}>
-        <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
-          <MaterialIcons name="arrow-back" size={24} color={colors.text} />
+        <TouchableOpacity style={styles.headerIconBtn} onPress={() => router.back()}>
+          <MaterialIcons name="close" size={24} color="#464555" />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>Tình huống thực tế</Text>
-        <View style={{ width: 40 }} />
+        <Text style={styles.headerTitle}>Scenario Quiz</Text>
+        <TouchableOpacity style={styles.headerIconBtn}>
+          <MaterialIcons name="more-vert" size={24} color="#464555" />
+        </TouchableOpacity>
       </View>
 
       <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
-        {/* Scenario Card */}
-        <View style={styles.scenarioCard}>
-          <View style={styles.tag}>
-            <Text style={styles.tagText}>{safeText(scenario.domain)}</Text>
+        {/* Progress Indicator (Mocked for single scenario) */}
+        <View style={styles.progressRow}>
+          <View style={styles.progressBarBg}>
+            <View style={[styles.progressBarFill, { width: '100%' }]} />
           </View>
-          <Text style={styles.scenarioTitle}>{safeText(scenario.title)}</Text>
-          {scenario.description ? (
-            <View style={styles.contextBox}>
-              <Text style={styles.contextLabel}>Bối cảnh kỹ thuật:</Text>
-              <Text style={styles.contextText}>{safeText(scenario.description)}</Text>
-            </View>
-          ) : null}
-          <Text style={styles.questionText}>{safeText(scenario.question)}</Text>
+          <Text style={styles.progressText}>1/1</Text>
         </View>
+
+        {/* Scenario Context Box */}
+        {scenario.description ? (
+          <View style={styles.contextBox}>
+            <View style={styles.contextHeader}>
+              <MaterialIcons name="terminal" size={18} color={colors.primary} />
+              <Text style={styles.contextTag}>{safeText(scenario.domain)}</Text>
+            </View>
+            <Text style={styles.contextText}>{safeText(scenario.description)}</Text>
+          </View>
+        ) : null}
+
+        <Text style={styles.questionText}>{safeText(scenario.question)}</Text>
 
         {/* Options */}
         <View style={styles.optionsList}>
-          {scenario.options.map((opt: any) => {
+          {scenario.options.map((opt: any, index: number) => {
             const isSelected = selectedOption === opt.id;
             const isCorrect = opt.id === scenario.correctOption;
+
+            // Optional icon mapping based on index if we want visual variety
+            const icons = ['dns', 'router', 'database', 'code'];
+            const iconName = icons[index % icons.length] as any;
 
             return (
               <TouchableOpacity
@@ -103,30 +115,31 @@ export default function MobileScenarioScreen() {
                 onPress={() => !showExplanation && setSelectedOption(opt.id)}
                 activeOpacity={showExplanation ? 1 : 0.8}
               >
-                <View
-                  style={[
-                    styles.radio,
-                    isSelected && styles.radioSelected,
-                    showExplanation && isCorrect && styles.radioCorrect,
-                    showExplanation && isSelected && !isCorrect && styles.radioWrong
-                  ]}
-                >
-                  {showExplanation && isCorrect ? (
-                    <MaterialIcons name="check" size={14} color="#fff" />
-                  ) : showExplanation && isSelected && !isCorrect ? (
-                    <MaterialIcons name="close" size={14} color="#fff" />
-                  ) : (
-                    <Text
-                      style={[
-                        styles.radioText,
-                        (isSelected || (showExplanation && isCorrect)) && styles.radioTextWhite
-                      ]}
-                    >
-                      {opt.id}
-                    </Text>
-                  )}
+                <MaterialIcons 
+                  name={iconName} 
+                  size={24} 
+                  color={
+                    showExplanation && isCorrect ? '#16a34a' :
+                    showExplanation && isSelected && !isCorrect ? colors.error :
+                    isSelected ? colors.primary : '#c7c4d8'
+                  } 
+                  style={{ marginTop: 2 }}
+                />
+                <View style={styles.optionContent}>
+                  <Text style={[styles.optionTitle, isSelected && styles.optionTitleSelected]}>
+                    {opt.id}. {safeText(opt.text)}
+                  </Text>
                 </View>
-                <Text style={styles.optionText}>{safeText(opt.text)}</Text>
+                
+                {showExplanation && (
+                  <View style={{ marginLeft: 'auto' }}>
+                    {isCorrect ? (
+                      <MaterialIcons name="check-circle" size={20} color="#16a34a" />
+                    ) : isSelected && !isCorrect ? (
+                      <MaterialIcons name="cancel" size={20} color={colors.error} />
+                    ) : null}
+                  </View>
+                )}
               </TouchableOpacity>
             );
           })}
@@ -137,7 +150,7 @@ export default function MobileScenarioScreen() {
           <View style={styles.explanationCard}>
             <View style={styles.expHeader}>
               <MaterialIcons name="lightbulb" size={20} color={colors.primary} />
-              <Text style={styles.expTitle}>Giải thích kiến trúc hệ thống</Text>
+              <Text style={styles.expTitle}>Explanation</Text>
             </View>
             <Text style={styles.expText}>{scenario.explanation}</Text>
           </View>
@@ -145,19 +158,18 @@ export default function MobileScenarioScreen() {
       </ScrollView>
 
       {/* Bottom Bar */}
-      <View style={styles.bottomBar}>
+      <View style={styles.bottomFixedArea}>
         {!showExplanation ? (
           <TouchableOpacity
-            style={[styles.actionBtn, !selectedOption && styles.actionBtnDisabled]}
+            style={[styles.btnPrimary, !selectedOption && styles.btnPrimaryDisabled]}
             disabled={!selectedOption}
             onPress={handleCheck}
           >
-            <Text style={styles.actionBtnText}>Kiểm tra đáp án</Text>
+            <Text style={styles.btnPrimaryText}>Check Answer</Text>
           </TouchableOpacity>
         ) : (
-          <TouchableOpacity style={styles.actionBtn} onPress={() => router.back()}>
-            <Text style={styles.actionBtnText}>Hoàn thành tình huống</Text>
-            <MaterialIcons name="check" size={20} color="#ffffff" />
+          <TouchableOpacity style={styles.btnSecondary} onPress={() => router.back()}>
+            <Text style={styles.btnSecondaryText}>Continue</Text>
           </TouchableOpacity>
         )}
       </View>
@@ -168,189 +180,198 @@ export default function MobileScenarioScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f8fafc'
+    backgroundColor: '#f7f9fb'
   },
   header: {
+    height: 64,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingHorizontal: spacing.lg,
-    paddingTop: 50,
-    paddingBottom: spacing.md,
+    paddingHorizontal: spacing.md,
+    paddingTop: 20,
     backgroundColor: '#ffffff',
     borderBottomWidth: 1,
-    borderBottomColor: '#e2e8f0'
+    borderBottomColor: '#c7c4d8',
+    marginTop: 20
   },
-  backButton: {
+  headerIconBtn: {
     width: 40,
     height: 40,
-    borderRadius: 10,
+    borderRadius: 20,
     alignItems: 'center',
     justifyContent: 'center'
   },
   headerTitle: {
-    fontSize: 16,
-    fontWeight: '800',
-    color: colors.text
+    fontSize: 18,
+    fontWeight: '700',
+    color: colors.primary
   },
   scrollContent: {
-    padding: spacing.lg,
+    padding: spacing.md,
+    paddingTop: spacing.lg,
     paddingBottom: 110,
-    gap: spacing.md
+    gap: spacing.lg
   },
-  scenarioCard: {
-    backgroundColor: '#ffffff',
-    borderRadius: 16,
-    padding: spacing.lg,
-    borderWidth: 1,
-    borderColor: '#e2e8f0',
-    gap: spacing.sm
+  progressRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.sm,
+    marginBottom: spacing.xs
   },
-  tag: {
-    backgroundColor: '#ede9fe',
-    paddingHorizontal: 8,
-    paddingVertical: 2,
-    borderRadius: 6,
-    alignSelf: 'flex-start'
+  progressBarBg: {
+    flex: 1,
+    height: 8,
+    backgroundColor: '#e6e8ea',
+    borderRadius: 4,
+    overflow: 'hidden'
   },
-  tagText: {
-    fontSize: 10,
+  progressBarFill: {
+    height: '100%',
+    backgroundColor: colors.primary,
+    borderRadius: 4
+  },
+  progressText: {
+    fontSize: 12,
     fontWeight: '700',
-    color: colors.primary
-  },
-  scenarioTitle: {
-    fontSize: 17,
-    fontWeight: '800',
-    color: colors.text
+    color: '#464555'
   },
   contextBox: {
-    backgroundColor: '#f8fafc',
-    borderRadius: 10,
+    backgroundColor: '#ffffff',
+    borderRadius: 12,
     padding: spacing.md,
-    borderLeftWidth: 3,
-    borderLeftColor: colors.primary,
-    gap: 4
+    borderWidth: 1,
+    borderColor: '#c7c4d8'
   },
-  contextLabel: {
-    fontSize: 11,
+  contextHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.xs,
+    marginBottom: spacing.sm
+  },
+  contextTag: {
+    fontSize: 12,
     fontWeight: '700',
-    color: colors.primary
+    color: colors.primary,
+    textTransform: 'uppercase'
   },
   contextText: {
-    fontSize: 13,
-    color: colors.text,
-    lineHeight: 18
+    fontSize: 14,
+    color: '#191c1e',
+    lineHeight: 22
   },
   questionText: {
-    fontSize: 14,
-    fontWeight: '700',
-    color: colors.text,
-    marginTop: 4
+    fontSize: 20,
+    fontWeight: '600',
+    color: '#191c1e',
+    lineHeight: 28
   },
   optionsList: {
     gap: spacing.sm
   },
   optionCard: {
     backgroundColor: '#ffffff',
-    borderRadius: 14,
+    borderRadius: 12,
     padding: spacing.md,
-    borderWidth: 1.5,
-    borderColor: '#e2e8f0',
+    borderWidth: 1,
+    borderColor: '#c7c4d8',
     flexDirection: 'row',
-    alignItems: 'center',
+    alignItems: 'flex-start',
     gap: spacing.md
   },
   optionCardSelected: {
     borderColor: colors.primary,
-    backgroundColor: '#f5f3ff'
+    backgroundColor: '#f5f3ff', // approx primary-fixed/20
+    borderWidth: 2,
+    padding: spacing.md - 1
   },
   optionCardCorrect: {
     borderColor: '#16a34a',
-    backgroundColor: '#f0fdf4'
+    backgroundColor: '#f0fdf4',
+    borderWidth: 2,
+    padding: spacing.md - 1
   },
   optionCardWrong: {
     borderColor: colors.error,
-    backgroundColor: '#fef2f2'
+    backgroundColor: '#fef2f2',
+    borderWidth: 2,
+    padding: spacing.md - 1
   },
-  radio: {
-    width: 30,
-    height: 30,
-    borderRadius: 15,
-    backgroundColor: '#f1f5f9',
-    alignItems: 'center',
+  optionContent: {
+    flex: 1,
     justifyContent: 'center'
   },
-  radioSelected: {
-    backgroundColor: colors.primary
-  },
-  radioCorrect: {
-    backgroundColor: '#16a34a'
-  },
-  radioWrong: {
-    backgroundColor: colors.error
-  },
-  radioText: {
-    fontSize: 12,
-    fontWeight: '800',
-    color: colors.text
-  },
-  radioTextWhite: {
-    color: '#ffffff'
-  },
-  optionText: {
-    flex: 1,
-    fontSize: 13,
+  optionTitle: {
+    fontSize: 14,
     fontWeight: '600',
-    color: colors.text
+    color: '#191c1e',
+    lineHeight: 20
+  },
+  optionTitleSelected: {
+    color: colors.primary
   },
   explanationCard: {
     backgroundColor: '#ffffff',
-    borderRadius: 14,
-    padding: spacing.lg,
+    borderRadius: 12,
+    padding: spacing.md,
     borderWidth: 1,
-    borderColor: '#e2e8f0',
-    gap: spacing.xs
+    borderColor: '#c7c4d8',
+    gap: spacing.xs,
+    marginTop: spacing.sm
   },
   expHeader: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 6
+    gap: 6,
+    marginBottom: spacing.xs
   },
   expTitle: {
-    fontSize: 13,
-    fontWeight: '800',
+    fontSize: 14,
+    fontWeight: '700',
     color: colors.primary
   },
   expText: {
-    fontSize: 12,
-    color: colors.text,
-    lineHeight: 18
+    fontSize: 14,
+    color: '#191c1e',
+    lineHeight: 20
   },
-  bottomBar: {
+  bottomFixedArea: {
     position: 'absolute',
     bottom: 0,
     left: 0,
     right: 0,
-    backgroundColor: '#ffffff',
-    padding: spacing.lg,
+    backgroundColor: 'rgba(255,255,255,0.95)',
+    padding: spacing.md,
+    paddingBottom: 32, // safe area
     borderTopWidth: 1,
-    borderTopColor: '#e2e8f0'
+    borderTopColor: '#e6e8ea'
   },
-  actionBtn: {
+  btnPrimary: {
     backgroundColor: colors.primary,
-    height: 50,
-    borderRadius: 12,
-    flexDirection: 'row',
+    height: 52,
+    borderRadius: 10,
     alignItems: 'center',
     justifyContent: 'center',
-    gap: spacing.xs
+    width: '100%'
   },
-  actionBtnDisabled: {
+  btnPrimaryDisabled: {
     opacity: 0.5
   },
-  actionBtnText: {
+  btnPrimaryText: {
     color: '#ffffff',
     fontSize: 15,
-    fontWeight: '700'
+    fontWeight: '600'
+  },
+  btnSecondary: {
+    backgroundColor: '#e6e8ea', // Or primary-container
+    height: 52,
+    borderRadius: 10,
+    alignItems: 'center',
+    justifyContent: 'center',
+    width: '100%'
+  },
+  btnSecondaryText: {
+    color: '#191c1e',
+    fontSize: 15,
+    fontWeight: '600'
   }
 });

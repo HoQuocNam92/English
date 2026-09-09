@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
-import { StyleSheet, Text, View, TouchableOpacity, ScrollView, ActivityIndicator, TextInput } from 'react-native';
+import { StyleSheet, Text, View, TouchableOpacity, ScrollView, ActivityIndicator, TextInput, Image } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
 import { colors, spacing } from '@techenglish/design-tokens';
 import { api } from '../../src/shared/api/api-client';
@@ -74,188 +74,194 @@ export default function MobileHomeScreen() {
   const summary = progressData?.summary || progressData || {};
   const streakDays = summary.studyStreakDays ?? summary.streak ?? (progressData?.progress?.length > 0 ? 3 : 1);
   const wordsCount = summary.wordsLearned ?? ((progressData?.progress?.filter((p: any) => p.completedAt)?.length ?? 0) * 8 || 12);
-  const progressPercent = summary.overallCompletionPercent ?? summary.completionPercent ?? (progressData?.progress?.length > 0 ? 35 : 15);
+  const progressPercent = summary.overallCompletionPercent ?? summary.completionPercent ?? (progressData?.progress?.length > 0 ? 65 : 65);
   
   return (
-    <ScrollView style={styles.container} contentContainerStyle={styles.contentContainer} showsVerticalScrollIndicator={false}>
+    <View style={styles.container}>
       <StatusBar style="dark" />
 
-      {/* Top Header */}
-      <View style={styles.header}>
-        <View style={{ flex: 1 }}>
-          <Text style={styles.greeting}>Chào {name} 👋</Text>
-          <Text style={styles.subGreeting}>Tiếp tục hành trình học hôm nay</Text>
-        </View>
-        <TouchableOpacity
-          style={{ flexDirection: 'row', alignItems: 'center', backgroundColor: '#fff7ed', borderWidth: 1, borderColor: '#ffedd5', paddingHorizontal: 10, paddingVertical: 6, borderRadius: 20, marginRight: 10 }}
-          onPress={() => router.push('/leaderboard' as any)}
-        >
-          <Text style={{ fontSize: 16, marginRight: 4 }}>🔥</Text>
-          <Text style={{ fontSize: 13, fontWeight: '800', color: '#c2410c' }}>{streakDays}</Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.avatarBox} onPress={() => router.push('/(tabs)/profile' as any)}>
-          <Text style={styles.avatarText}>{avatarLetter}</Text>
-        </TouchableOpacity>
-      </View>
-
-      {/* Global Search Bar */}
-      <View style={styles.searchBoxContainer}>
-        <MaterialIcons name="search" size={20} color={colors.mutedText} />
-        <TextInput
-          style={styles.searchBoxInput}
-          placeholder="Tìm từ vựng, bài học, đề thi..."
-          value={searchQuery}
-          onChangeText={setSearchQuery}
-          onSubmitEditing={() => {
-            if (searchQuery.trim()) router.push(`/lessons?search=${encodeURIComponent(searchQuery)}` as any);
-          }}
-        />
-        {searchQuery ? (
-          <TouchableOpacity onPress={() => setSearchQuery('')}>
-            <MaterialIcons name="close" size={18} color={colors.mutedText} />
-          </TouchableOpacity>
-        ) : null}
-      </View>
-
-      {/* Hero Goal Card */}
-      <View style={styles.heroCard}>
-        <Text style={styles.heroLabel}>Mục tiêu hiện tại</Text>
-        <Text style={styles.heroTitle}>{goalTitle}</Text>
-        <View style={styles.progressRow}>
-          <Text style={styles.progressText}>{progressPercent}% hoàn thành</Text>
-        </View>
-        <View style={styles.progressBar}>
-          <View style={[styles.progressFill, { width: `${progressPercent}%` }]} />
-        </View>
-
-        <TouchableOpacity
-          style={styles.continueButton}
-          activeOpacity={0.8}
-          onPress={() => router.push((lessons.length > 0 ? `/lessons/${lessons[0].id}` : '/lessons') as any)}
-        >
-          <Text style={styles.continueButtonText}>Tiếp tục học bài gần nhất</Text>
-          <MaterialIcons name="arrow-forward" size={18} color="#ffffff" />
-        </TouchableOpacity>
-      </View>
-
-      {/* ⚡ Promos & Flash Sale Card (Only shown if active in API) */}
-      {(flashSales.length > 0 || vouchers.length > 0) && (
-        <View style={styles.promoContainer}>
-          <View style={styles.promoHeaderRow}>
-            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
-              <MaterialIcons name="local-offer" size={16} color={colors.primary} />
-              <Text style={styles.promoTitle}>ƯU ĐÃI KHUYẾN MÃI HOẠT ĐỘNG</Text>
-            </View>
-            {flashSales.length > 0 && (
-              <View style={styles.badgeSale}>
-                <Text style={styles.badgeSaleText}>-{flashSales[0].discountPercent}%</Text>
-              </View>
-            )}
+      {/* Top Header Fixed */}
+      <View style={styles.headerContainer}>
+        <View style={styles.headerLeft}>
+          <View style={styles.avatarBoxSmall}>
+            <Text style={styles.avatarTextSmall}>{avatarLetter}</Text>
           </View>
-          <Text style={styles.promoDesc}>
-            {flashSales[0]?.title || 'Danh sách mã giảm giá và chương trình ưu đãi mới nhất!'}
-          </Text>
+          <View>
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
+              <Text style={styles.greetingTitle}>Chào {name}</Text>
+              <Text style={{ fontSize: 16 }}>👋</Text>
+            </View>
+            <Text style={styles.greetingSubtitle}>Sẵn sàng học bài mới chưa?</Text>
+          </View>
+        </View>
+        <TouchableOpacity style={styles.streakBadge} onPress={() => router.push('/leaderboard' as any)}>
+          <Text style={{ fontSize: 14 }}>🔥</Text>
+          <Text style={styles.streakText}>{streakDays} ngày</Text>
+        </TouchableOpacity>
+      </View>
 
-          {/* Voucher chips */}
-          {vouchers.length > 0 && (
-            <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ marginVertical: 8 }}>
-              {vouchers.map((v: any) => (
-                <View key={v.id || v.code} style={styles.voucherChip}>
-                  <MaterialIcons name="confirmation-number" size={14} color={colors.primary} />
-                  <Text style={styles.voucherChipCode}>{v.code}</Text>
-                  <Text style={styles.voucherChipText}>({v.name})</Text>
-                </View>
-              ))}
-            </ScrollView>
-          )}
+      <ScrollView contentContainerStyle={styles.contentContainer} showsVerticalScrollIndicator={false}>
+        
+        {/* Hero Goal Card */}
+        <View style={styles.heroCard}>
+          <View style={styles.heroCardHeader}>
+            <View style={styles.heroBadge}>
+              <MaterialIcons name="play-circle" size={12} color="#ffffff" />
+              <Text style={styles.heroBadgeText}>Đang học</Text>
+            </View>
+            <Text style={styles.heroTimeText}>Còn 15 phút</Text>
+          </View>
+          <Text style={styles.heroTitle}>{lessons[0]?.title || 'RESTful API Design'}</Text>
+          <Text style={styles.heroSubtitle}>Chương 4: Authentication & JWT Tokens</Text>
+          
+          <View style={styles.heroProgressContainer}>
+            <View style={styles.heroProgressLabels}>
+              <Text style={styles.heroProgressLabelText}>Tiến độ khóa học</Text>
+              <Text style={styles.heroProgressValueText}>{progressPercent}%</Text>
+            </View>
+            <View style={styles.heroProgressBarBg}>
+              <View style={[styles.heroProgressBarFill, { width: `${progressPercent}%` }]} />
+            </View>
+          </View>
 
           <TouchableOpacity
-            style={styles.promoButton}
-            activeOpacity={0.8}
-            onPress={() => router.push('/payment' as any)}
+            style={styles.heroButton}
+            activeOpacity={0.9}
+            onPress={() => router.push((lessons.length > 0 ? `/lessons/${lessons[0].id}` : '/lessons') as any)}
           >
-            <Text style={styles.promoButtonText}>Nâng cấp PRO & Áp dụng Voucher</Text>
-            <MaterialIcons name="arrow-forward" size={16} color="#ffffff" />
+            <Text style={styles.heroButtonText}>Học tiếp ngay</Text>
+            <MaterialIcons name="arrow-forward" size={18} color={colors.primary} />
           </TouchableOpacity>
         </View>
-      )}
 
-      {/* AI Recommendation Card */}
-      {recommendation && (
-        <View style={styles.aiCard}>
-          <View style={styles.aiIconBox}>
-            <MaterialIcons name="psychology" size={24} color={colors.aiAccent} />
+        {/* Daily Goal card */}
+        <View style={styles.dailyGoalCard}>
+          <View style={styles.dailyGoalHeader}>
+            <View style={styles.dailyGoalHeaderLeft}>
+              <MaterialIcons name="flag" size={20} color={colors.primary} />
+              <Text style={styles.dailyGoalTitle}>Mục tiêu hôm nay</Text>
+            </View>
+            <View style={styles.dailyGoalBadge}>
+              <Text style={styles.dailyGoalBadgeText}>2/3 bài</Text>
+            </View>
           </View>
-          <View style={styles.aiContent}>
-            <Text style={styles.aiTitle}>AI Gợi ý ôn tập</Text>
-            <Text style={styles.aiDesc}>
-              {recommendation.hint || `Dựa trên dữ liệu học gần đây, bạn nên củng cố phần ${recommendation.topic || 'từ vựng'}.`}
-            </Text>
-            <TouchableOpacity
-              style={styles.aiAction}
-              onPress={() => router.push((recommendation?.resourceId ? `/lessons/${recommendation.resourceId}` : '/lessons') as any)}
-            >
-              <Text style={styles.aiActionText}>Ôn tập ngay</Text>
-              <MaterialIcons name="chevron-right" size={16} color={colors.aiAccent} />
+          
+          <View style={styles.dailyGoalProgressRow}>
+            <View style={[styles.dailyGoalSegment, styles.dailyGoalSegmentActive]} />
+            <View style={[styles.dailyGoalSegment, styles.dailyGoalSegmentActive]} />
+            <View style={[styles.dailyGoalSegment, styles.dailyGoalSegmentInactive]} />
+          </View>
+          
+          <View style={styles.dailyGoalFooter}>
+            <Text style={styles.dailyGoalDesc}>Chỉ cần hoàn thành 1 bài nữa để giữ streak!</Text>
+            <Text style={styles.dailyGoalXp}>+50 XP</Text>
+          </View>
+        </View>
+
+        {/* Quick Practice */}
+        <View style={styles.sectionContainer}>
+          <View style={styles.sectionHeader}>
+            <Text style={styles.sectionTitle}>Luyện tập nhanh</Text>
+            <TouchableOpacity onPress={() => router.push('/(tabs)/practice' as any)}>
+              <Text style={styles.sectionActionText}>Xem tất cả</Text>
+            </TouchableOpacity>
+          </View>
+          
+          <View style={styles.quickPracticeGrid}>
+            <TouchableOpacity style={styles.quickPracticeCard} onPress={() => router.push('/lessons?type=vocabulary' as any)}>
+              <View style={styles.quickPracticeCardHeader}>
+                <View style={[styles.quickPracticeIconBox, { backgroundColor: '#eff6ff' }]}>
+                  <MaterialIcons name="menu-book" size={18} color="#2563eb" />
+                </View>
+                <View style={[styles.quickPracticeBadge, { backgroundColor: '#eff6ff' }]}>
+                  <Text style={[styles.quickPracticeBadgeText, { color: '#2563eb' }]}>10 từ</Text>
+                </View>
+              </View>
+              <View>
+                <Text style={styles.quickPracticeCardTitle}>Ôn thuật ngữ</Text>
+                <Text style={styles.quickPracticeCardDesc}>3 phút ôn tập</Text>
+              </View>
+            </TouchableOpacity>
+
+            <TouchableOpacity style={styles.quickPracticeCard} onPress={() => router.push('/(tabs)/practice' as any)}>
+              <View style={styles.quickPracticeCardHeader}>
+                <View style={[styles.quickPracticeIconBox, { backgroundColor: '#faf5ff' }]}>
+                  <MaterialIcons name="quiz" size={18} color="#9333ea" />
+                </View>
+                <View style={[styles.quickPracticeBadge, { backgroundColor: '#faf5ff' }]}>
+                  <Text style={[styles.quickPracticeBadgeText, { color: '#9333ea' }]}>5 câu</Text>
+                </View>
+              </View>
+              <View>
+                <Text style={styles.quickPracticeCardTitle}>Quiz nhanh 5p</Text>
+                <Text style={styles.quickPracticeCardDesc}>Kiểm tra kiến thức</Text>
+              </View>
             </TouchableOpacity>
           </View>
         </View>
-      )}
 
-      {/* Streak & Stats Row */}
-      <View style={styles.statsRow}>
-        <View style={styles.statCard}>
-          <Text style={styles.statEmoji}>🔥</Text>
-          <View>
-            <Text style={styles.statValue}>{streakDays} Ngày</Text>
-            <Text style={styles.statLabel}>Chuỗi học liên tiếp</Text>
-          </View>
-        </View>
-        <View style={styles.statCard}>
-          <Text style={styles.statEmoji}>📖</Text>
-          <View>
-            <Text style={styles.statValue}>{wordsCount} Từ</Text>
-            <Text style={styles.statLabel}>Đã thuộc</Text>
-          </View>
-        </View>
-      </View>
-
-      {/* Tiếp tục học (Horizontal list) */}
-      <View style={styles.section}>
-        <View style={styles.sectionHeader}>
-          <Text style={styles.sectionTitle}>Bài học tiếp theo</Text>
-          <TouchableOpacity onPress={() => router.push('/(tabs)/learning' as any)}>
-            <Text style={styles.seeAllText}>Xem tất cả</Text>
+        {/* AI Recommendation Card */}
+        <View style={styles.sectionContainer}>
+          <Text style={[styles.sectionTitle, { marginBottom: spacing.sm }]}>Đề xuất cho bạn</Text>
+          <TouchableOpacity style={styles.aiCard} onPress={() => router.push((recommendation?.resourceId ? `/lessons/${recommendation.resourceId}` : '/lessons') as any)}>
+            <View style={styles.aiIconBox}>
+              <MaterialIcons name="psychology" size={24} color="#7C3AED" />
+            </View>
+            <View style={styles.aiContent}>
+              <Text style={styles.aiLabel}>GỢI Ý DỰA TRÊN ĐIỂM SỐ</Text>
+              <Text style={styles.aiTitle} numberOfLines={1}>{recommendation?.topic || 'Networking Fundamentals'}</Text>
+              <Text style={styles.aiDesc} numberOfLines={1}>12 bài • 45 phút ôn luyện</Text>
+            </View>
+            <View style={styles.aiButton}>
+              <Text style={styles.aiButtonText}>Học</Text>
+            </View>
           </TouchableOpacity>
         </View>
 
-        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.horizontalList}>
-          {lessons.length > 0 ? (
-            lessons.map((lesson, idx) => (
-              <TouchableOpacity
-                key={lesson.id || idx}
-                style={styles.lessonCard}
-                activeOpacity={0.8}
-                onPress={() => router.push(`/lessons/${lesson.id || 'les-1'}` as any)}
-              >
-                <View style={styles.lessonTag}>
-                  <Text style={styles.lessonTagText}>{typeof lesson.domain === 'object' ? lesson.domain?.name : lesson.domain || 'General'}</Text>
+        {/* ⚡ Promos & Flash Sale Card (Only shown if active in API) */}
+        {(flashSales.length > 0 || vouchers.length > 0) && (
+          <View style={styles.promoContainer}>
+            <View style={styles.promoHeaderRow}>
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+                <MaterialIcons name="local-offer" size={16} color="#ffffff" />
+                <Text style={styles.promoTitle}>ƯU ĐÃI KHUYẾN MÃI HOẠT ĐỘNG</Text>
+              </View>
+              {flashSales.length > 0 && (
+                <View style={styles.badgeSale}>
+                  <Text style={styles.badgeSaleText}>-{flashSales[0].discountPercent}%</Text>
                 </View>
-                <Text style={styles.lessonTitle}>{lesson.title}</Text>
-                <Text style={styles.lessonMeta}>
-                  {lesson.termCount || 0} thuật ngữ · {lesson.questionCount || 0} câu trắc nghiệm
-                </Text>
-                <View style={styles.cardProgress}>
-                  <View style={[styles.cardProgressFill, { width: `${lesson.progress || 0}%` }]} />
-                </View>
-              </TouchableOpacity>
-            ))
-          ) : (
-            <Text style={{ color: colors.mutedText }}>Chưa có bài học nào.</Text>
-          )}
-        </ScrollView>
-      </View>
-    </ScrollView>
+              )}
+            </View>
+            <Text style={styles.promoDesc}>
+              {flashSales[0]?.title || 'Danh sách mã giảm giá và chương trình ưu đãi mới nhất!'}
+            </Text>
+
+            {/* Voucher chips */}
+            {vouchers.length > 0 && (
+              <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ marginVertical: 8 }}>
+                {vouchers.map((v: any) => (
+                  <View key={v.id || v.code} style={styles.voucherChip}>
+                    <MaterialIcons name="confirmation-number" size={14} color={colors.primary} />
+                    <Text style={styles.voucherChipCode}>{v.code}</Text>
+                    <Text style={styles.voucherChipText}>({v.name})</Text>
+                  </View>
+                ))}
+              </ScrollView>
+            )}
+
+            <TouchableOpacity
+              style={styles.promoButton}
+              activeOpacity={0.8}
+              onPress={() => router.push('/payment' as any)}
+            >
+              <Text style={styles.promoButtonText}>Nâng cấp PRO & Áp dụng Voucher</Text>
+              <MaterialIcons name="arrow-forward" size={16} color="#000000" />
+            </TouchableOpacity>
+          </View>
+        )}
+
+      </ScrollView>
+    </View>
   );
 }
 
@@ -264,104 +270,358 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#f8fafc'
   },
-  contentContainer: {
-    padding: spacing.lg,
-    paddingTop: 50,
-    paddingBottom: 30,
-    gap: spacing.lg
-  },
-  header: {
+  headerContainer: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    alignItems: 'center'
+    alignItems: 'center',
+    paddingHorizontal: spacing.md,
+    paddingTop: 60,
+    paddingBottom: spacing.md,
+    backgroundColor: '#ffffff',
+    borderBottomWidth: 1,
+    borderBottomColor: '#e0e3e5',
+    elevation: 2,
+    shadowColor: '#0f1718',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.06,
+    shadowRadius: 3,
   },
-  greeting: {
-    fontSize: 22,
-    fontWeight: '800',
-    color: colors.text
+  headerLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.sm,
   },
-  subGreeting: {
-    fontSize: 13,
-    color: colors.mutedText,
-    marginTop: 2
-  },
-  avatarBox: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
+  avatarBoxSmall: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
     backgroundColor: colors.primary,
     alignItems: 'center',
-    justifyContent: 'center'
+    justifyContent: 'center',
+    borderWidth: 1,
+    borderColor: '#DDD6FE',
   },
-  avatarText: {
+  avatarTextSmall: {
     color: '#ffffff',
     fontSize: 16,
     fontWeight: '800'
   },
-  searchBoxContainer: {
+  greetingTitle: {
+    fontSize: 18,
+    fontWeight: '700',
+    color: '#191c1e',
+  },
+  greetingSubtitle: {
+    fontSize: 12,
+    color: '#464555',
+    marginTop: 2,
+  },
+  streakBadge: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#ffffff',
-    borderRadius: 14,
-    paddingHorizontal: spacing.md,
-    paddingVertical: spacing.xs,
+    backgroundColor: '#F5F3FF',
     borderWidth: 1,
-    borderColor: '#e2e8f0',
-    gap: spacing.xs
+    borderColor: '#DDD6FE',
+    paddingHorizontal: spacing.sm,
+    paddingVertical: 4,
+    borderRadius: 16,
+    gap: 4,
   },
-  searchBoxInput: {
-    flex: 1,
-    fontSize: 14,
-    color: colors.text,
-    paddingVertical: 4
+  streakText: {
+    fontSize: 13,
+    fontWeight: '600',
+    color: colors.primary,
+  },
+  contentContainer: {
+    padding: spacing.md,
+    paddingBottom: 80,
+    gap: spacing.lg
   },
   heroCard: {
-    backgroundColor: '#f5f3ff',
-    borderRadius: 16,
-    padding: spacing.lg,
-    borderWidth: 1,
-    borderColor: '#ddd6fe',
-    gap: spacing.xs
+    backgroundColor: '#4F46E5', // Fallback for gradient
+    borderRadius: 12,
+    padding: spacing.md,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.1,
+    shadowRadius: 6,
+    elevation: 4,
   },
-  heroLabel: {
-    fontSize: 11,
-    fontWeight: '800',
-    color: colors.primary,
-    textTransform: 'uppercase',
-    letterSpacing: 0.5
-  },
-  heroTitle: {
-    fontSize: 17,
-    fontWeight: '800',
-    color: colors.text,
-    marginVertical: 2
-  },
-  progressRow: {
+  heroCardHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginTop: 4
+    marginBottom: spacing.xs,
   },
-  progressText: {
-    fontSize: 13,
-    fontWeight: '700',
-    color: colors.primary
+  heroBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: 'rgba(255,255,255,0.1)',
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+    borderRadius: 12,
+    gap: 4,
   },
-  lessonsCountText: {
+  heroBadgeText: {
+    fontSize: 11,
+    fontWeight: '600',
+    color: 'rgba(255,255,255,0.8)',
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
+  },
+  heroTimeText: {
     fontSize: 12,
-    color: colors.mutedText
+    fontWeight: '500',
+    color: 'rgba(255,255,255,0.9)',
   },
-  progressBar: {
-    height: 6,
-    backgroundColor: '#e2e8f0',
-    borderRadius: 3,
-    marginVertical: spacing.xs,
-    overflow: 'hidden'
+  heroTitle: {
+    fontSize: 18,
+    fontWeight: '700',
+    color: '#ffffff',
+    marginBottom: 4,
   },
-  progressFill: {
+  heroSubtitle: {
+    fontSize: 13,
+    color: 'rgba(255,255,255,0.8)',
+    marginBottom: spacing.sm,
+  },
+  heroProgressContainer: {
+    marginBottom: spacing.md,
+  },
+  heroProgressLabels: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 4,
+  },
+  heroProgressLabelText: {
+    fontSize: 12,
+    color: 'rgba(255,255,255,0.8)',
+  },
+  heroProgressValueText: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: '#ffffff',
+  },
+  heroProgressBarBg: {
+    height: 8,
+    backgroundColor: 'rgba(255,255,255,0.2)',
+    borderRadius: 4,
+    overflow: 'hidden',
+  },
+  heroProgressBarFill: {
     height: '100%',
+    backgroundColor: '#ffffff',
+    borderRadius: 4,
+  },
+  heroButton: {
+    backgroundColor: '#ffffff',
+    height: 44,
+    borderRadius: 8,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: spacing.xs,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.05,
+    shadowRadius: 2,
+    elevation: 2,
+  },
+  heroButtonText: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: colors.primary,
+  },
+  dailyGoalCard: {
+    backgroundColor: '#ffffff',
+    borderWidth: 1,
+    borderColor: '#E0E3E5',
+    borderRadius: 12,
+    padding: spacing.md,
+    shadowColor: '#0f1718',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.06,
+    shadowRadius: 3,
+    elevation: 2,
+  },
+  dailyGoalHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: spacing.sm,
+  },
+  dailyGoalHeaderLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.xs,
+  },
+  dailyGoalTitle: {
+    fontSize: 15,
+    fontWeight: '600',
+    color: '#191c1e',
+  },
+  dailyGoalBadge: {
+    backgroundColor: '#F5F3FF',
+    borderWidth: 1,
+    borderColor: '#DDD6FE',
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+    borderRadius: 12,
+  },
+  dailyGoalBadgeText: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: colors.primary,
+  },
+  dailyGoalProgressRow: {
+    flexDirection: 'row',
+    gap: 8,
+    marginBottom: 8,
+  },
+  dailyGoalSegment: {
+    flex: 1,
+    height: 8,
+    borderRadius: 4,
+  },
+  dailyGoalSegmentActive: {
     backgroundColor: colors.primary,
-    borderRadius: 3
+  },
+  dailyGoalSegmentInactive: {
+    backgroundColor: '#e6e8ea',
+  },
+  dailyGoalFooter: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  dailyGoalDesc: {
+    fontSize: 12,
+    color: '#464555',
+    flex: 1,
+  },
+  dailyGoalXp: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: colors.primary,
+    marginLeft: spacing.sm,
+  },
+  sectionContainer: {
+    width: '100%',
+  },
+  sectionHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: spacing.sm,
+  },
+  sectionTitle: {
+    fontSize: 16,
+    fontWeight: '700',
+    color: '#191c1e',
+  },
+  sectionActionText: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: colors.primary,
+  },
+  quickPracticeGrid: {
+    flexDirection: 'row',
+    gap: spacing.sm,
+  },
+  quickPracticeCard: {
+    flex: 1,
+    backgroundColor: '#ffffff',
+    borderWidth: 1,
+    borderColor: '#c7c4d8',
+    borderRadius: 12,
+    padding: spacing.sm,
+    minHeight: 80,
+    justifyContent: 'space-between',
+  },
+  quickPracticeCardHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: spacing.xs,
+  },
+  quickPracticeIconBox: {
+    width: 32,
+    height: 32,
+    borderRadius: 8,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  quickPracticeBadge: {
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    borderRadius: 4,
+  },
+  quickPracticeBadgeText: {
+    fontSize: 10,
+    fontWeight: '600',
+  },
+  quickPracticeCardTitle: {
+    fontSize: 13,
+    fontWeight: '600',
+    color: '#191c1e',
+    marginBottom: 2,
+  },
+  quickPracticeCardDesc: {
+    fontSize: 11,
+    color: '#464555',
+  },
+  aiCard: {
+    backgroundColor: '#ffffff',
+    borderWidth: 1,
+    borderColor: '#c7c4d8',
+    borderRadius: 12,
+    padding: spacing.sm,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.md,
+  },
+  aiIconBox: {
+    width: 48,
+    height: 48,
+    borderRadius: 8,
+    backgroundColor: '#F5F3FF',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  aiContent: {
+    flex: 1,
+  },
+  aiLabel: {
+    fontSize: 10,
+    fontWeight: '600',
+    color: colors.primary,
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
+    marginBottom: 2,
+  },
+  aiTitle: {
+    fontSize: 13,
+    fontWeight: '600',
+    color: '#191c1e',
+    marginBottom: 2,
+  },
+  aiDesc: {
+    fontSize: 11,
+    color: '#464555',
+  },
+  aiButton: {
+    backgroundColor: '#F5F3FF',
+    borderWidth: 1,
+    borderColor: '#DDD6FE',
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    borderRadius: 8,
+  },
+  aiButtonText: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: colors.primary,
   },
   continueButton: {
     backgroundColor: colors.primary,
@@ -370,7 +630,6 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    gap: spacing.xs,
     marginTop: spacing.xs
   },
   continueButtonText: {
@@ -378,151 +637,10 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '700'
   },
-  aiCard: {
-    backgroundColor: '#ffffff',
-    borderRadius: 16,
-    padding: spacing.md,
-    borderLeftWidth: 4,
-    borderLeftColor: colors.aiAccent,
-    borderWidth: 1,
-    borderColor: '#e2e8f0',
-    flexDirection: 'row',
-    gap: spacing.md
-  },
-  aiIconBox: {
-    width: 38,
-    height: 38,
-    borderRadius: 10,
-    backgroundColor: '#f5f3ff',
-    alignItems: 'center',
-    justifyContent: 'center'
-  },
-  aiContent: {
-    flex: 1
-  },
-  aiTitle: {
-    fontSize: 13,
-    fontWeight: '800',
-    color: colors.aiAccent,
-    marginBottom: 2
-  },
-  aiDesc: {
-    fontSize: 12,
-    color: colors.mutedText,
-    lineHeight: 16,
-    marginBottom: 6
-  },
-  aiAction: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 2
-  },
-  aiActionText: {
-    fontSize: 12,
-    fontWeight: '700',
-    color: colors.aiAccent
-  },
-  statsRow: {
-    flexDirection: 'row',
-    gap: spacing.md
-  },
-  statCard: {
-    flex: 1,
-    backgroundColor: '#ffffff',
-    borderRadius: 14,
-    padding: spacing.md,
-    borderWidth: 1,
-    borderColor: '#e2e8f0',
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: spacing.sm
-  },
-  statEmoji: {
-    fontSize: 24
-  },
-  statValue: {
-    fontSize: 14,
-    fontWeight: '800',
-    color: colors.text
-  },
-  statLabel: {
-    fontSize: 11,
-    color: colors.mutedText
-  },
-  section: {
-    gap: spacing.sm
-  },
-  sectionHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center'
-  },
-  sectionTitle: {
-    fontSize: 16,
-    fontWeight: '800',
-    color: colors.text
-  },
-  seeAllText: {
-    fontSize: 13,
-    fontWeight: '600',
-    color: colors.primary
-  },
-  horizontalList: {
-    gap: spacing.md,
-    paddingRight: spacing.lg
-  },
-  lessonCard: {
-    width: 220,
-    backgroundColor: '#ffffff',
-    borderRadius: 14,
-    padding: spacing.md,
-    borderWidth: 1,
-    borderColor: '#e2e8f0',
-    gap: spacing.xs
-  },
-  lessonTag: {
-    backgroundColor: '#eef2ff',
-    paddingHorizontal: 8,
-    paddingVertical: 2,
-    borderRadius: 6,
-    alignSelf: 'flex-start'
-  },
-  lessonTagText: {
-    fontSize: 10,
-    fontWeight: '700',
-    color: colors.primary
-  },
-  lessonTitle: {
-    fontSize: 14,
-    fontWeight: '700',
-    color: colors.text,
-    marginTop: 2
-  },
-  lessonMeta: {
-    fontSize: 11,
-    color: colors.mutedText
-  },
-  cardProgress: {
-    height: 4,
-    backgroundColor: '#f1f5f9',
-    borderRadius: 2,
-    marginTop: spacing.xs,
-    overflow: 'hidden'
-  },
-  cardProgressFill: {
-    height: '100%',
-    backgroundColor: colors.primary,
-    borderRadius: 2
-  },
-  boldText: {
-    fontWeight: '700',
-    color: colors.text
-  },
   promoContainer: {
     backgroundColor: '#3525cd',
     borderRadius: 16,
     padding: 16,
-    marginBottom: spacing.md,
     shadowColor: '#3525cd',
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.2,
@@ -584,7 +702,7 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
     paddingHorizontal: 16,
     borderRadius: 12,
-    marginTop: 4,
+    marginTop: 8,
     gap: 6,
   },
   promoButtonText: {
@@ -593,4 +711,5 @@ const styles = StyleSheet.create({
     color: '#000000',
   },
 });
+
 

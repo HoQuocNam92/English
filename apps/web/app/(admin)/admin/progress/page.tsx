@@ -82,11 +82,11 @@ export default function AdminProgressPage() {
       )}
 
       {/* Table */}
-      <div className="mt-4 rounded-2xl bg-surface-container-low border border-outline-variant/30 overflow-hidden">
+      <div className="mt-4 rounded-2xl bg-surface-container-lowest overflow-hidden shadow-[0_8px_28px_rgba(15,23,42,0.05)]">
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
-              <tr className="border-b border-outline-variant/30 text-xs text-on-surface-variant bg-surface-container/50">
+              <tr className="border-b border-outline-variant/20 text-xs text-on-surface-variant bg-surface-container-low/60">
                 <th className="px-4 py-3 text-left font-medium">Học viên</th>
                 <th className="px-4 py-3 text-left font-medium">Trình độ</th>
                 <th className="px-4 py-3 text-left font-medium">Tiến độ bài học</th>

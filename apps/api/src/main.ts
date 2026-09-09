@@ -5,6 +5,7 @@ import { ConfigService } from '@nestjs/config'
 import helmet from 'helmet'
 import { AppModule } from './app.module'
 import { HttpExceptionFilter } from './presentation/filters/http-exception.filter'
+import { SanitizeInputPipe } from './presentation/pipes/sanitize-input.pipe'
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule, {
@@ -22,6 +23,7 @@ async function bootstrap() {
   })
 
   app.useGlobalPipes(
+    new SanitizeInputPipe(),
     new ValidationPipe({ whitelist: true, transform: true, forbidNonWhitelisted: true }),
   )
   app.useGlobalFilters(new HttpExceptionFilter())

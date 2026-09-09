@@ -29,16 +29,19 @@ export class ExamsService {
   }
 
   async create(dto: any, createdById: string) {
-    const domain = await this.prisma.domain.findUnique({ where: { code: dto.domainCode } })
-    const level = await this.prisma.level.findUnique({ where: { code: dto.levelCode } })
+    const domain = await this.prisma.domain.findUnique({ where: { id: dto.domainId } })
+    const level = await this.prisma.level.findUnique({ where: { id: dto.levelId } })
     if (!domain||!level) throw new NotFoundException('Domain or Level not found')
-    return this.prisma.exam.create({ data: { title: dto.title, description: dto.description, domainId: domain.id, levelId: level.id, topics: dto.topics??[], durationMinutes: dto.durationMinutes, passingScorePercent: dto.passingScorePercent??70, maxAttempts: dto.maxAttempts??1, shuffleQuestions: dto.shuffleQuestions??false, status: dto.status??'draft', createdById } })
+    return this.prisma.exam.create({ data: { title: dto.title, description: dto.description, domainId: domain.id, levelId: level.id, certificateId: dto.certificateId || null, topics: dto.topics??[], durationMinutes: dto.durationMinutes, passingScorePercent: dto.passingScorePercent??70, maxAttempts: dto.maxAttempts??1, shuffleQuestions: dto.shuffleQuestions??false, status: dto.status??'draft', createdById, questions: dto.questions?.length ? { create: dto.questions.map((question: any) => ({ questionId: question.questionId, order: question.order })) } : undefined } })
   }
 
   async update(id: string, dto: any) {
     await this.findOne(id)
     const data: any = {}
     for (const f of ['title','description','durationMinutes','passingScorePercent','maxAttempts','shuffleQuestions','status','availableFrom','availableUntil']) if (dto[f]!==undefined) data[f]=dto[f]
+    if (dto.domainId !== undefined) data.domain = { connect: { id: dto.domainId } }
+    if (dto.levelId !== undefined) data.level = { connect: { id: dto.levelId } }
+    if (dto.certificateId !== undefined) data.certificate = dto.certificateId ? { connect: { id: dto.certificateId } } : { disconnect: true }
     if (dto.status==='published') data.publishedAt=new Date()
     return this.prisma.exam.update({ where: { id }, data })
   }

@@ -25,6 +25,20 @@ class AssignRoleDto {
 class AssignPermissionDto {
   @ApiProperty() @IsString() permissionId: string
 }
+class CreatePermissionDto {
+  @ApiProperty() @IsString() code: string
+  @ApiProperty() @IsString() name: string
+  @ApiProperty() @IsString() resource: string
+  @ApiProperty() @IsString() action: string
+  @ApiPropertyOptional() @IsOptional() @IsString() description?: string
+}
+class UpdatePermissionDto {
+  @ApiPropertyOptional() @IsOptional() @IsString() code?: string
+  @ApiPropertyOptional() @IsOptional() @IsString() name?: string
+  @ApiPropertyOptional() @IsOptional() @IsString() resource?: string
+  @ApiPropertyOptional() @IsOptional() @IsString() action?: string
+  @ApiPropertyOptional() @IsOptional() @IsString() description?: string
+}
 
 @ApiTags('Roles & Permissions')
 @ApiBearerAuth()
@@ -38,6 +52,15 @@ export class RolesController {
 
   @Get('permissions') @RequirePermissions('permissions:read') @ApiOperation({ summary: 'List all permissions' })
   allPermissions() { return this.rolesService.findAllPermissions() }
+
+  @Post('permissions') @RequirePermissions('roles:create') @ApiOperation({ summary: 'Create permission' })
+  createPermission(@Body() dto: CreatePermissionDto) { return this.rolesService.createPermission(dto) }
+
+  @Patch('permissions/:permissionId') @RequirePermissions('roles:update') @ApiOperation({ summary: 'Update permission' })
+  updatePermission(@Param('permissionId') permissionId: string, @Body() dto: UpdatePermissionDto) { return this.rolesService.updatePermission(permissionId, dto) }
+
+  @Delete('permissions/:permissionId') @RequirePermissions('roles:delete') @HttpCode(HttpStatus.NO_CONTENT) @ApiOperation({ summary: 'Delete permission' })
+  deletePermission(@Param('permissionId') permissionId: string) { return this.rolesService.deletePermission(permissionId) }
 
   @Get(':id') @RequirePermissions('roles:read') @ApiOperation({ summary: 'Get role detail' })
   findOne(@Param('id') id: string) { return this.rolesService.findOne(id) }

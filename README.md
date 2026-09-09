@@ -10,7 +10,7 @@
   <img src="https://img.shields.io/badge/Next.js-15-black?style=for-the-badge&logo=nextdotjs" />
   <img src="https://img.shields.io/badge/Expo-SDK%2054-white?style=for-the-badge&logo=expo&logoColor=black" />
   <img src="https://img.shields.io/badge/NestJS-11-red?style=for-the-badge&logo=nestjs" />
-  <img src="https://img.shields.io/badge/Prisma-6-2D3748?style=for-the-badge&logo=prisma" />
+  <img src="https://img.shields.io/badge/Prisma-5.22-2D3748?style=for-the-badge&logo=prisma" />
   <img src="https://img.shields.io/badge/PostgreSQL-16-336791?style=for-the-badge&logo=postgresql" />
 </p>
 
@@ -30,9 +30,8 @@
 
 | Tính năng | Mô tả |
 |-----------|-------|
-| 🤖 AI Mock Interview | Luyện phỏng vấn kỹ thuật với AI, chấm điểm & nhận xét |
-| ✍️ AI Writing Practice | Luyện viết technical English, AI chấm ngữ pháp/từ vựng/rõ ràng |
-| 🃏 AI Smart Review | Ôn tập từ vựng thông minh bằng flashcard 3D flip |
+| 🤖 AI English Coach | Hỏi đáp, sửa câu, luyện hội thoại IT và lưu từ vựng |
+| 🃏 Flashcards | Ôn tập từ vựng kỹ thuật theo bài học |
 | 📖 Technical Reading Lab | Đọc hiểu tài liệu IT, câu hỏi comprehension |
 | 📚 Technical Dictionary | Từ điển kỹ thuật IT chuyên ngành, tìm kiếm nhanh |
 | 🗓️ Learning Calendar | Quản lý lịch học, kế hoạch theo ngày/tuần/tháng |
@@ -40,8 +39,7 @@
 | 🏆 Leaderboard & Gamification | Bảng xếp hạng EXP, streak hàng ngày, badge, thành tích |
 | 🔔 Notification Center | Thông báo hệ thống, nhắc nhở học tập, flash sale |
 | 📊 Learning Analytics | Phân tích tiến độ, biểu đồ học tập chi tiết |
-| 🎯 Skill Gap Analysis | So sánh kỹ năng hiện tại với yêu cầu công việc mục tiêu |
-| 📝 Exam Readiness Score | Đánh giá sẵn sàng thi chứng chỉ (AWS, Azure, GCP, CKA...) |
+| 🎯 Certification Objectives | Quản lý mục tiêu kiến thức, nội dung và mức độ thành thạo theo chứng chỉ |
 | 🗺️ AI Learning Path Generator | AI tạo lộ trình học cá nhân hóa theo mục tiêu |
 | 🌙 Dark / Light Mode | Hỗ trợ cả 2 theme, mặc định Light, nhớ lựa chọn |
 | 🌐 Tiếng Việt / English | Chuyển đổi ngôn ngữ giao diện hoàn toàn (20+ trang) |
@@ -137,7 +135,7 @@ English/
 | Công nghệ | Phiên bản | Mục đích |
 |-----------|-----------|----------|
 | NestJS | 11 | Framework chính |
-| Prisma | 6 | ORM & Database migrations |
+| Prisma | 5.22 | ORM & Database migrations |
 | PostgreSQL | 16 | Database chính |
 | Redis | 7 | Cache & Rate limiting |
 | JWT | — | Access & Refresh tokens |
@@ -201,6 +199,9 @@ CLOUDINARY_CLOUD_NAME="xxx"
 CLOUDINARY_API_KEY="xxx"
 CLOUDINARY_API_SECRET="xxx"
 SEPAY_API_KEY="xxx"
+GROQ_API_KEY="gsk_your_key_here"
+GROQ_MODEL="openai/gpt-oss-20b"
+Cloudinary banner uploads use the backend variables `CLOUDINARY_CLOUD_NAME`, `CLOUDINARY_API_KEY`, and `CLOUDINARY_API_SECRET`.
 SEPAY_BANK_ACCOUNT="xxx"
 
 # apps/web/.env.local
@@ -276,14 +277,24 @@ GET  /leaderboard/streaks/me  Streak & EXP của tôi
 POST /leaderboard/streaks/check-in  Điểm danh nhận EXP
 ```
 
-### AI Features
+### AI English Coach
 ```
-POST /interview/start         Bắt đầu AI Mock Interview
-POST /interview/:id/answer    Trả lời câu hỏi phỏng vấn
-GET  /interview/my            Lịch sử phỏng vấn của tôi
-GET  /writing/prompts         Danh sách đề bài Writing
-POST /writing/submit          Nộp bài → nhận AI feedback + scores
-GET  /writing/my              Lịch sử bài nộp
+POST /ai-chat/public                     Hỏi đáp công khai
+POST /ai-chat/conversations              Tạo cuộc trò chuyện
+GET  /ai-chat/conversations              Danh sách cuộc trò chuyện
+POST /ai-chat/conversations/:id/messages Gửi tin nhắn
+POST /ai-chat/saved-vocabulary           Lưu từ vựng từ AI Coach
+```
+
+### Student Groups
+```
+GET    /student-groups                         Danh sách nhóm
+POST   /student-groups                         Tạo nhóm
+GET    /student-groups/:id                     Chi tiết nhóm
+PATCH  /student-groups/:id                     Cập nhật nhóm
+DELETE /student-groups/:id                     Xóa nhóm
+POST   /student-groups/:id/members             Thêm học viên
+DELETE /student-groups/:id/members/:learnerId  Xóa học viên khỏi nhóm
 ```
 
 ### Planning & Notifications
@@ -373,27 +384,146 @@ const { t, locale, setLocale } = useI18n();
 
 ## 🗄️ Database Models
 
-```
-User ──┬── UserDetail       (profile info, avatar, bio)
-       ├── UserStreak        (EXP, currentStreak, badges)
-       ├── UserBadge[]
-       ├── Subscription      (plan type, expiry, isPro)
-       ├── LessonProgress[]
-       ├── TestResult[]
-       ├── LearningPlanItem[]
-       ├── Notification[]
-       ├── MockInterview[]   ── MockInterviewTurn[]
-       ├── WritingSubmission[]
-       └── DiscussionPost[]  ── DiscussionComment[]
-                             └── DiscussionVote[]
+Database hiện có **68 bảng vật lý**: **67 bảng ứng dụng** được ánh xạ bởi đúng **67 Prisma model** và một bảng hệ thống `_prisma_migrations`. Bảng hệ thống do Prisma tự quản lý nên không khai báo thành model.
 
-Lesson ─── VocabularyItem[]
-       └── Question[]        ── Exam[]
-                             └── ExamQuestion[]
+Quy ước quan hệ:
 
-Domain / Level / CertificateGoal / CareerGoal (taxonomies)
-Plan / FlashSale / Voucher / Order (payment)
-```
+- **1–1**: một bản ghi bên A có tối đa một bản ghi bên B.
+- **1–N**: một bản ghi cha có nhiều bản ghi con; mỗi bản ghi con thuộc một cha.
+- **N–N**: nhiều bản ghi hai phía liên kết qua một bảng nối.
+- Các quan hệ có `onDelete: Cascade` sẽ tự xóa bản ghi con khi bản ghi cha bị xóa.
+
+### 1. Xác thực, người dùng và RBAC — 8 bảng
+
+| Bảng | Vai trò | Quan hệ chính |
+|---|---|---|
+| `users` | Tài khoản xác thực trung tâm: email, mật khẩu băm và trạng thái. | 1–1 với `user_details`, `learner_profiles`, `user_streaks`, `user_subscriptions`; 1–N với token, đơn hàng, tiến độ, thông báo và nội dung người dùng. |
+| `user_details` | Hồ sơ cá nhân, avatar, tên hiển thị, locale và múi giờ. | 1–1, khóa ngoại duy nhất đến `users`. |
+| `refresh_tokens` | Phiên đăng nhập dài hạn, hết hạn và thu hồi token. | N–1 với `users`. |
+| `password_reset_tokens` | OTP/token đặt lại mật khẩu theo email. | Không FK; liên kết logic bằng email. |
+| `roles` | Vai trò hệ thống và vai trò tùy chỉnh. | N–N với user qua `user_roles`; N–N với permission qua `role_permissions`. |
+| `permissions` | Quyền chi tiết dạng `resource:action`. | N–N với `roles`. |
+| `role_permissions` | Bảng nối role–permission. | PK ghép `role_id + permission_id`. |
+| `user_roles` | Gán một hoặc nhiều role cho user, kèm người cấp và hạn dùng. | PK ghép `user_id + role_id`; hai FK đến `users`, `roles`. |
+
+### 2. Danh mục và hồ sơ học viên — 9 bảng
+
+| Bảng | Vai trò | Quan hệ chính |
+|---|---|---|
+| `domains` | Lĩnh vực CNTT như Cloud, DevOps, Security. | 1–N với bài học, từ vựng, câu hỏi, đề thi, nhóm; N–N với certificate và learner profile. |
+| `levels` | Cấp độ Beginner–Professional. | 1–N với profile, content, assessment và lab. |
+| `career_goals` | Mục tiêu nghề nghiệp. | N–N với profile; 1–N với `career_goal_skills`. |
+| `certificates` | Chứng chỉ CNTT và nhà cung cấp. | 1–N với objective, lab, exam, group; N–N với domain, lesson, question. |
+| `certificate_domains` | Bảng nối certificate–domain. | Quan hệ N–N, PK ghép. |
+| `learner_profiles` | Trình độ, mục tiêu học hàng tuần và onboarding. | 1–1 với user; N–N với domain/career goal; 1–N với certificate goal và objective mastery. |
+| `learner_profile_domains` | Lĩnh vực học viên quan tâm. | Bảng nối N–N profile–domain. |
+| `learner_profile_career_goals` | Nghề nghiệp học viên hướng tới. | Bảng nối N–N profile–career goal. |
+| `learner_certificate_goals` | Chứng chỉ mục tiêu và ngày dự kiến. | N–1 với profile và certificate; unique theo cặp. |
+
+### 3. Nhóm/lớp học viên — 2 bảng
+
+| Bảng | Vai trò | Quan hệ chính |
+|---|---|---|
+| `learner_groups` | Lớp do Admin/Teacher quản lý; có mã nhóm, lĩnh vực, chứng chỉ và lịch. | N–1 với teacher, domain, certificate; 1–N với member. |
+| `learner_group_members` | Thành viên của lớp và ngày tham gia. | N–N giữa group và learner; PK ghép ngăn thành viên trùng. |
+
+### 4. Từ vựng và nguồn dữ liệu — 4 bảng
+
+| Bảng | Vai trò | Quan hệ chính |
+|---|---|---|
+| `vocabularies` | Thuật ngữ IT, IPA, audio, nghĩa Anh–Việt, tag, domain và level. | N–1 với domain/level; 1–N với example/source; N–N với lesson/objective. |
+| `vocabulary_examples` | Câu ví dụ và bản dịch. | N–1 với vocabulary, xóa cascade. |
+| `lesson_vocabularies` | Từ vựng xuất hiện trong bài học. | Bảng nối N–N lesson–vocabulary. |
+| `vocabulary_sources` | Nguồn, URL, tiêu đề, hash, metadata và thời điểm thu thập. | N–1 với vocabulary; PK ghép `vocabulary_id + source + source_url`. |
+
+### 5. Bài học, chứng chỉ, objective và lab — 10 bảng
+
+| Bảng | Vai trò | Quan hệ chính |
+|---|---|---|
+| `lessons` | Bài học, loại bài, thời lượng, domain, level và tác giả. | 1–N với section/progress/session; N–N với vocabulary, certificate, objective. |
+| `lesson_sections` | Các khối text, media, code, callout hoặc quiz theo thứ tự. | N–1 với lesson. |
+| `lesson_certificates` | Bài học phục vụ chứng chỉ nào. | Bảng nối N–N. |
+| `certification_contents` | Nội dung tham khảo riêng của chứng chỉ. | N–1 với certificate. |
+| `certification_objectives` | Cây mục tiêu kiến thức, trọng số, ngưỡng nội dung và nguồn chuẩn. | N–1 với certificate; tự quan hệ cha–con 1–N; N–N với lesson/question/vocabulary/lab. |
+| `hands_on_labs` | Bài lab, hướng dẫn JSON, luật chấm và thời lượng. | N–1 với certificate/level; N–N với objective. |
+| `objective_lessons` | Gắn objective với bài học. | Bảng nối N–N, PK ghép. |
+| `objective_questions` | Gắn objective với câu hỏi. | Bảng nối N–N, PK ghép. |
+| `objective_vocabularies` | Gắn objective với từ vựng. | Bảng nối N–N, PK ghép. |
+| `objective_labs` | Gắn objective với lab thực hành. | Bảng nối N–N, PK ghép. |
+
+### 6. Ngân hàng câu hỏi, đề thi và bài làm — 8 bảng
+
+| Bảng | Vai trò | Quan hệ chính |
+|---|---|---|
+| `questions` | Câu hỏi, loại, ngữ cảnh, giải thích và điểm. | 1–N với option/answer; N–N với certificate, exam, objective. |
+| `question_options` | Phương án trắc nghiệm và cờ đúng. | N–1 với question. |
+| `question_certificates` | Phạm vi chứng chỉ của câu hỏi. | Bảng nối N–N. |
+| `exams` | Đề thi, thời lượng, điểm đạt và phạm vi nội dung. | N–1 với domain/level/certificate/tác giả; N–N với question; 1–N với attempt. |
+| `exam_questions` | Câu hỏi trong đề, thứ tự và trọng số. | Bảng nối N–N exam–question. |
+| `exam_attempts` | Một lần học viên làm đề, điểm và trạng thái. | N–1 với user/exam; 1–N với answer. |
+| `attempt_answers` | Câu trả lời cho một question trong attempt. | N–1 với attempt/question; 1–N với option đã chọn. |
+| `attempt_answer_options` | Lựa chọn cụ thể trong câu trả lời nhiều đáp án. | Bảng nối answer–question option. |
+
+### 7. Tiến độ, mastery và gợi ý — 5 bảng
+
+| Bảng | Vai trò | Quan hệ chính |
+|---|---|---|
+| `learning_progress` | Tiến độ polymorphic theo lesson/domain/certificate. | N–1 với user; `resource_id` trỏ logic theo `resource_type`. |
+| `progress_summary_cache` | Tổng hợp tiến độ để dashboard đọc nhanh. | 1–1 với learner/user. |
+| `learner_objective_mastery` | Điểm kiến thức, thực hành và số lần đánh giá theo objective. | N–N profile–objective, PK ghép. |
+| `recommendations` | Gợi ý lesson/practice/exam và lý do đề xuất. | N–1 với user; 1–N với feedback. |
+| `recommendation_feedbacks` | Hành động helpful/not-helpful/dismissed/opened. | N–1 với recommendation và user. |
+
+### 8. Thanh toán, gói PRO và khuyến mãi — 5 bảng
+
+| Bảng | Vai trò | Quan hệ chính |
+|---|---|---|
+| `payment_orders` | Đơn mua gói, idempotency, giao dịch SePay và webhook. | N–1 với user/voucher; 1–1 với subscription. |
+| `user_subscriptions` | Gói hiện tại và thời hạn của user. | 1–1 với user và payment order. |
+| `plan_quotas` | Số slot tối đa và đã bán theo plan. | PK là `plan_id`, không có FK. |
+| `vouchers` | Quy tắc mã giảm giá và giới hạn sử dụng. | 1–N với payment order. |
+| `flash_sales` | Khuyến mãi theo plan và khoảng thời gian. | Liên kết logic qua `plan_id`. |
+
+### 9. Gamification và thông báo — 3 bảng
+
+| Bảng | Vai trò | Quan hệ chính |
+|---|---|---|
+| `user_streaks` | Streak, EXP, điểm tuần và tháng. | 1–1 với user. |
+| `user_badges` | Huy hiệu đã mở khóa. | N–1 với user; unique theo user–badge code. |
+| `notifications` | Thông báo cá nhân hoặc toàn hệ thống. | N–1 tùy chọn với user; `user_id = null` là broadcast. |
+
+### 10. Cộng đồng — 3 bảng
+
+| Bảng | Vai trò | Quan hệ chính |
+|---|---|---|
+| `discussion_posts` | Bài viết, tag, vote, lượt xem và trạng thái kiểm duyệt. | N–1 với user; 1–N với comment/vote. |
+| `discussion_comments` | Bình luận của user trong bài viết. | N–1 với post và user. |
+| `discussion_votes` | Upvote/downvote của user. | N–N user–post; unique ngăn vote trùng. |
+
+### 11. AI English Coach — 4 bảng
+
+| Bảng | Vai trò | Quan hệ chính |
+|---|---|---|
+| `ai_conversations` | Cuộc trò chuyện theo chế độ Q&A, correction, IT conversation hoặc vocabulary. | N–1 với user; 1–N với message/error. |
+| `ai_messages` | Tin nhắn user/assistant và metadata. | N–1 với conversation; 1–N với learning error. |
+| `ai_learning_errors` | Lỗi gốc, bản sửa và giải thích tiếng Việt. | N–1 với conversation; tùy chọn N–1 với message. |
+| `ai_saved_vocabulary` | Từ/cụm từ lưu từ AI Coach và ghi chú cá nhân. | N–1 với user; unique theo user–term–phrase. |
+
+### 12. Lộ trình, planner và analytics — 5 bảng
+
+| Bảng | Vai trò | Quan hệ chính |
+|---|---|---|
+| `learning_sessions` | Phiên học, thời lượng, ngày và khung giờ. | N–1 với user; tùy chọn N–1 với lesson. |
+| `career_goal_skills` | Kỹ năng cần cho mục tiêu nghề nghiệp. | N–1 với career goal; tùy chọn N–1 với lesson. |
+| `learning_paths` | Lộ trình cá nhân hóa của user. | N–1 với user; 1–N với module. |
+| `learning_path_modules` | Các chặng theo thứ tự và phần trăm tiến độ. | N–1 với learning path; `current_lesson_id` là tham chiếu logic. |
+| `learning_plan_items` | Kế hoạch học theo ngày, thời lượng và trạng thái hoàn thành. | N–1 với user; tùy chọn N–1 với lesson. |
+
+### 13. Landing page — 1 bảng
+
+| Bảng | Vai trò | Quan hệ chính |
+|---|---|---|
+| `landing_banners` | Banner, CTA, hình Cloudinary, bố cục chữ, màu sắc, thứ tự và lịch hiển thị. | Bảng độc lập, không có FK. |
 
 ---
 
@@ -419,10 +549,9 @@ Plan / FlashSale / Voucher / Order (payment)
 | Questions | 15 |
 | Exams | 2 |
 | Subscription plans | 5 (1/3/6/12 tháng + Lifetime) |
-| MockInterview sessions | 2 hoàn chỉnh + 5 turns |
-| WritingSubmissions | 3 (với AI scores) |
 | DiscussionPosts | 5 + comments + votes |
-| LearningPlanItems | 6 |
+| CertificationObjectives | 53 mục tiêu chứng chỉ |
+| VocabularySources | 2.577 nguồn từ vựng |
 | Notifications | 6 (đa loại) |
 | Flash Sales | 1 active |
 | Vouchers | 3 active |

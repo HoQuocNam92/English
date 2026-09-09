@@ -33,15 +33,15 @@ export function Pagination({ className, page, limit, total, totalPages, onPageCh
   const visiblePages = buildVisiblePages(page, safeTotalPages);
 
   return (
-    <div className={cn('flex flex-col gap-3 border-t border-border bg-surface px-4 py-4 sm:flex-row sm:items-center sm:justify-between', className)}>
-      <span className="text-sm text-muted-foreground">
-        Showing {start} to {end} of {total} entries
+    <div className={cn('flex flex-col gap-3 border-t border-outline-variant/20 bg-surface-container-lowest px-5 py-4 sm:flex-row sm:items-center sm:justify-between', className)}>
+      <span className="text-sm text-on-surface-variant">
+        Hiển thị {start}–{end} trong tổng số {total}
       </span>
 
       <div className="flex items-center gap-1">
         <button
-          aria-label="Previous page"
-          className="flex h-9 w-9 items-center justify-center rounded-[var(--radius-control)] border border-border text-muted-foreground transition-colors hover:bg-background disabled:cursor-not-allowed disabled:opacity-50"
+          aria-label="Trang trước"
+          className="flex h-9 w-9 items-center justify-center rounded-lg border border-outline-variant/50 text-on-surface-variant transition-colors hover:bg-primary/5 hover:text-primary disabled:cursor-not-allowed disabled:opacity-35"
           disabled={page <= 1}
           onClick={() => onPageChange(page - 1)}
           type="button"
@@ -51,14 +51,14 @@ export function Pagination({ className, page, limit, total, totalPages, onPageCh
 
         {visiblePages.map((entry, index) =>
           entry === 'ellipsis' ? (
-            <span className="px-2 text-sm text-muted-foreground" key={`ellipsis-${index}`}>
+            <span className="px-2 text-sm text-on-surface-variant" key={`ellipsis-${index}`}>
               ...
             </span>
           ) : (
             <button
               className={cn(
                 'flex h-9 min-w-9 items-center justify-center rounded-[var(--radius-control)] px-3 text-sm font-semibold transition-colors',
-                entry === page ? 'bg-primary text-primary-foreground' : 'text-foreground hover:bg-background'
+                entry === page ? 'bg-primary text-white shadow-sm' : 'text-on-surface hover:bg-primary/5'
               )}
               key={entry}
               onClick={() => onPageChange(entry)}
@@ -70,8 +70,8 @@ export function Pagination({ className, page, limit, total, totalPages, onPageCh
         )}
 
         <button
-          aria-label="Next page"
-          className="flex h-9 w-9 items-center justify-center rounded-[var(--radius-control)] border border-border text-foreground transition-colors hover:bg-background disabled:cursor-not-allowed disabled:opacity-50"
+          aria-label="Trang sau"
+          className="flex h-9 w-9 items-center justify-center rounded-lg border border-outline-variant/50 text-on-surface-variant transition-colors hover:bg-primary/5 hover:text-primary disabled:cursor-not-allowed disabled:opacity-35"
           disabled={page >= safeTotalPages}
           onClick={() => onPageChange(page + 1)}
           type="button"

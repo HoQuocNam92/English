@@ -1,7 +1,4 @@
 import { NotificationController } from './presentation/notification.controller';
-import { PlannerController } from './presentation/planner.controller';
-import { MockInterviewController } from './presentation/mock-interview.controller';
-import { WritingController } from './presentation/writing.controller';
 import { DiscussionController } from './presentation/discussion.controller';
 import { Module } from '@nestjs/common'
 import { ConfigModule } from '@nestjs/config'
@@ -18,17 +15,25 @@ import { LearnerProfileModule } from './modules/learner-profile.module'
 import { TaxonomyModule } from './modules/taxonomy.module'
 import { UploadModule } from './modules/upload.module'
 
-import { RecommendationModule } from './modules/recommendation.module'
 import { PaymentModule } from './modules/payment.module'
 import { RedisCacheModule } from './infrastructure/cache/redis.module'
 
+import { AnalyticsController } from './presentation/analytics.controller';
+import { LearningPathController } from './presentation/learning-path.controller';
+import { ReadingLabController } from './presentation/reading-lab.controller';
+import { AiChatModule } from './modules/ai-chat.module';
+import { LandingBannerController } from './presentation/landing-banner.controller';
+import { PlannerController } from './presentation/planner.controller';
+
 @Module({
   controllers: [
-    NotificationController, 
-    PlannerController,
-    MockInterviewController,
-    WritingController,
-    DiscussionController
+    NotificationController,
+    DiscussionController,
+    AnalyticsController,
+    LearningPathController,
+    ReadingLabController,
+    LandingBannerController,
+    PlannerController
   ],
   imports: [
     ConfigModule.forRoot({ isGlobal: true }),
@@ -44,9 +49,9 @@ import { RedisCacheModule } from './infrastructure/cache/redis.module'
     ProgressModule,
     LearnerProfileModule,
     TaxonomyModule,
-    RecommendationModule,
     PaymentModule,
     UploadModule,
+    AiChatModule,
   ],
 })
 export class AppModule {}

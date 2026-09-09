@@ -58,15 +58,15 @@ export default function LoginPage() {
       {/* Left Section (45% Visual/Brand) */}
       <section className="hidden lg:flex w-[45%] flex-col relative bg-surface-container-low border-r border-outline-variant/30 overflow-hidden">
         {/* Content Overlay */}
-        <div className="relative z-10 flex flex-col h-full p-8 xl:p-12 justify-between">
+        <div className="relative z-10 flex flex-col h-full p-8 xl:p-12">
           <div>
-            <div className="flex items-center gap-2">
+            <Link href="/landing" className="inline-flex items-center gap-2">
               <span className="material-symbols-outlined text-primary text-[32px] fill-1">terminal</span>
               <h1 className="text-2xl font-bold tracking-tight text-primary">TechEnglish Pro</h1>
-            </div>
+            </Link>
           </div>
 
-          <div className="my-auto max-w-[90%]">
+          <div className="mt-20 max-w-[90%] xl:mt-24">
             <h2 className="text-3xl xl:text-4xl font-extrabold text-on-surface mb-4 leading-tight">
               Nền tảng học tiếng Anh chuyên ngành CNTT
             </h2>
@@ -75,7 +75,7 @@ export default function LoginPage() {
             </p>
           </div>
 
-          <div className="flex items-center gap-3 text-xs text-outline">
+          <div className="mt-auto flex items-center gap-3 text-xs text-outline">
             <span>© 2026 TechEnglish Pro. Khóa luận tốt nghiệp KLCN028.</span>
           </div>
         </div>
@@ -98,6 +98,10 @@ export default function LoginPage() {
 
       {/* Right Section (55% Login Form) */}
       <section className="w-full lg:w-[55%] flex items-center justify-center bg-surface-container-lowest p-6 md:p-12 lg:p-16 relative">
+        <Link href="/landing" className="absolute right-6 top-6 flex items-center gap-1.5 rounded-lg border border-outline-variant bg-white px-3 py-2 text-xs font-bold text-on-surface-variant transition-colors hover:border-primary hover:text-primary lg:right-10 lg:top-8">
+          <span className="material-symbols-outlined text-[17px]">arrow_back</span>
+          Về trang giới thiệu
+        </Link>
         {/* Mobile Logo */}
         <div className="absolute top-6 left-6 lg:hidden flex items-center gap-2">
           <span className="material-symbols-outlined text-primary text-[28px] fill-1">terminal</span>

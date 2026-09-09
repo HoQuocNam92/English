@@ -58,6 +58,8 @@ export class AuthService {
 
     const passwordHash = await bcrypt.hash(dto.password, 12)
     const learnerRole = await this.prisma.role.findUnique({ where: { code: 'learner' } })
+    const defaultLevel = await this.prisma.level.findFirst({ orderBy: { order: 'asc' } })
+    if (!learnerRole || !defaultLevel) throw new BadRequestException('Hệ thống chưa cấu hình vai trò hoặc cấp độ mặc định cho học viên')
 
     const user = await this.prisma.user.create({
       data: {
@@ -67,21 +69,10 @@ export class AuthService {
         userDetail: {
           create: { displayName: dto.displayName },
         },
-        userRoles: learnerRole ? { create: { roleId: learnerRole.id } } : undefined,
+        userRoles: { create: { roleId: learnerRole.id } },
+        learnerProfile: { create: { levelId: defaultLevel.id, onboardingCompleted: false } },
       },
     })
-
-    // Tạo learner profile trống, chờ onboarding hoàn tất
-    const defaultLevel = await this.prisma.level.findFirst({ where: { code: 'beginner' } })
-    if (defaultLevel) {
-      await this.prisma.learnerProfile.create({
-        data: {
-          userId: user.id,
-          levelId: defaultLevel.id,
-          onboardingCompleted: false,
-        },
-      })
-    }
 
     const full = await this.getUserWithPermissions(user.id)
     return this.generateTokensForUser(full)
@@ -131,6 +122,8 @@ export class AuthService {
 
     if (!user) {
       const learnerRole = await this.prisma.role.findUnique({ where: { code: 'learner' } })
+      const defaultLevel = await this.prisma.level.findFirst({ orderBy: { order: 'asc' } })
+      if (!learnerRole || !defaultLevel) throw new BadRequestException('Hệ thống chưa cấu hình vai trò hoặc cấp độ mặc định cho học viên')
       user = await this.prisma.user.create({
         data: {
           email: profile.email,
@@ -142,7 +135,8 @@ export class AuthService {
               avatarUrl: profile.avatarUrl,
             },
           },
-          userRoles: learnerRole ? { create: { roleId: learnerRole.id } } : undefined,
+          userRoles: { create: { roleId: learnerRole.id } },
+          learnerProfile: { create: { levelId: defaultLevel.id, onboardingCompleted: false } },
         },
       })
     } else if (profile.avatarUrl) {

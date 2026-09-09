@@ -9,89 +9,72 @@ export default function ReadingLabPage() {
   const [loading, setLoading] = useState(true);
   const [articles, setArticles] = useState<any[]>([]);
   const [categories, setCategories] = useState<any[]>([]);
+  const [levels, setLevels] = useState<any[]>([]);
   const [search, setSearch] = useState('');
+  const [debouncedSearch, setDebouncedSearch] = useState('');
+  const [categoryId, setCategoryId] = useState('');
+  const [levelId, setLevelId] = useState('');
+  const [page, setPage] = useState(1);
+  const [total, setTotal] = useState(0);
+  const [totalPages, setTotalPages] = useState(1);
+
+  useEffect(() => {
+    const timer = window.setTimeout(() => { setDebouncedSearch(search.trim()); setPage(1); }, 300);
+    return () => window.clearTimeout(timer);
+  }, [search]);
 
   useEffect(() => {
     async function loadData() {
+      setLoading(true);
       try {
-        const [articlesRes, categoriesRes] = await Promise.all<any>([
-          apiClient.get('/reading-lab/articles').catch(() => ({ data: [] })),
-          apiClient.get('/reading-lab/categories').catch(() => ({ data: [] }))
+        const query = new URLSearchParams({ page: String(page), limit: '6' });
+        if (categoryId) query.set('domainId', categoryId);
+        if (levelId) query.set('levelId', levelId);
+        if (debouncedSearch) query.set('search', debouncedSearch);
+        const [articlesRes, categoriesRes, levelsRes] = await Promise.all<any>([
+          apiClient.get(`/reading-lab/articles?${query}`).catch(() => ({ items: [], total: 0, totalPages: 1 })),
+          categories.length ? Promise.resolve(categories) : apiClient.get('/reading-lab/categories').catch(() => []),
+          levels.length ? Promise.resolve(levels) : apiClient.get('/levels').catch(() => ({ data: [] }))
         ]);
         
-        setArticles(articlesRes?.data || articlesRes || []);
-        setCategories(categoriesRes?.data || categoriesRes || []);
+        const payload = articlesRes?.data || articlesRes || {};
+        const items = Array.isArray(payload) ? payload : (payload.items || []);
+        setArticles(items.map((item: any) => ({
+          ...item,
+          category: item.domain?.name || 'CNTT',
+          readTime: `${item.estimatedMinutes || 0} phút đọc`,
+          level: item.level?.name || item.level?.code || 'Chưa phân loại',
+          summary: item.summary || 'Bài đọc kỹ thuật.',
+          progress: Number(item.progress?.completionPercent || 0),
+          isAiAssisted: Array.isArray(item.keyConcepts) && item.keyConcepts.length > 0,
+          aiConcepts: item.keyConcepts || [],
+          keyTerms: item.keyConcepts || [],
+          termCount: item.keyConcepts?.length || 0,
+          isNew: item.publishedAt ? Date.now() - new Date(item.publishedAt).getTime() < 14 * 86400000 : false,
+        })));
+        setTotal(Number(payload.total ?? items.length));
+        setTotalPages(Math.max(1, Number(payload.totalPages ?? 1)));
+        if (!categories.length) setCategories(categoriesRes?.data || categoriesRes || []);
+        if (!levels.length) setLevels(levelsRes?.data || levelsRes || []);
       } catch (err) {
-        // use fallback data matching design
+        setArticles([]);
       } finally {
         setLoading(false);
       }
     }
     loadData();
-  }, []);
+  }, [page, categoryId, levelId, debouncedSearch]);
 
-  // Mock data for UI since API might not exist yet
-  const displayArticles = articles.length > 0 ? articles : [
-    {
-      id: '1',
-      title: 'Understanding Kubernetes Architecture for Scalable Microservices',
-      summary: 'A deep dive into the core components of Kubernetes, including control plane nodes, worker nodes, pods, and how they interact to provide orchestration for containerized applications.',
-      isNew: true,
-      category: 'Cloud',
-      readTime: '12 min read',
-      level: 'B2 Intermediate',
-      isAiAssisted: true,
-      aiConcepts: ['Orchestration', 'Control Plane', 'Pods'],
-      termCount: 12,
-      progress: 0
-    },
-    {
-      id: '2',
-      title: 'Serverless Computing: Pros, Cons, and Use Cases',
-      summary: 'Evaluate when to use serverless architectures like AWS Lambda versus traditional container-based deployments, focusing on cost, cold starts, and vendor lock-in.',
-      isNew: false,
-      category: 'Cloud',
-      readTime: '8 min read',
-      level: 'B2 Intermediate',
-      isAiAssisted: false,
-      keyTerms: ['Cold Start', 'Vendor Lock-in', 'Stateless'],
-      progress: 30
-    },
-    {
-      id: '3',
-      title: 'Implementing Zero Trust Architecture in Multi-Cloud Environments',
-      summary: 'A comprehensive guide to applying zero trust security principles across heterogeneous cloud platforms, focusing on identity management and micro-segmentation.',
-      isNew: false,
-      category: 'Cloud',
-      readTime: '15 min read',
-      level: 'C1 Advanced',
-      isAiAssisted: true,
-      aiConcepts: ['Micro-segmentation', 'Identity Access Management', 'RBAC'],
-      termCount: 18,
-      progress: 0
-    },
-    {
-      id: '4',
-      title: 'Introduction to IaaS, PaaS, and SaaS',
-      summary: 'A fundamental overview of the three main cloud computing service models, providing clear definitions and everyday examples to distinguish between them.',
-      isNew: false,
-      category: 'Cloud',
-      readTime: '5 min read',
-      level: 'B1 Beginner',
-      isAiAssisted: false,
-      keyTerms: ['Infrastructure', 'Platform', 'Software as a Service'],
-      progress: 100
-    }
-  ];
+  const displayArticles = articles;
 
   return (
     <LearnerShell>
-      <div className="flex flex-col max-w-[1280px] mx-auto pb-12">
+      <div className="mx-auto flex w-full min-w-0 max-w-[1280px] flex-col pb-12">
         {/* Page Header */}
         <div className="mb-8">
           <h1 className="text-[24px] md:text-[30px] font-bold text-on-surface mb-2 tracking-tight">Thư viện đọc hiểu CNTT</h1>
-          <p className="text-[14px] text-on-surface-variant max-w-2xl">
-            Nâng cao kỹ năng đọc hiểu tài liệu chuyên ngành với các bài báo, whitepaper và tài liệu kỹ thuật được tuyển chọn. AI hỗ trợ phân tích từ vựng và khái niệm khó.
+          <p className="w-full text-[14px] leading-6 text-on-surface-variant" style={{ maxWidth: '42rem' }}>
+            Nâng cao kỹ năng đọc hiểu tài liệu chuyên ngành với các bài báo, whitepaper và tài liệu kỹ thuật được tuyển chọn, kèm từ vựng và khái niệm trọng tâm.
           </p>
         </div>
 
@@ -101,67 +84,26 @@ export default function ReadingLabPage() {
             <div className="bg-surface-white border border-border-subtle rounded-lg p-6 hover:shadow-[0_1px_3px_rgba(15,23,24,0.06)] transition-shadow duration-200 sticky top-24">
               <h3 className="text-[20px] font-semibold text-on-surface mb-4">Danh mục</h3>
               <ul className="flex flex-col gap-2">
-                <li>
-                  <button className="w-full text-left px-4 py-2 rounded bg-primary-light text-primary text-[14px] font-semibold flex items-center justify-between group transition-colors">
-                    <span className="flex items-center gap-2"><span className="material-symbols-outlined text-[20px]">cloud</span> Cloud Computing</span>
-                    <span className="bg-surface-white text-primary px-2 py-0.5 rounded-full text-[10px] font-bold">12</span>
-                  </button>
-                </li>
-                <li>
-                  <button className="w-full text-left px-4 py-2 rounded hover:bg-surface-container-low text-on-surface-variant text-[14px] flex items-center justify-between group transition-colors">
-                    <span className="flex items-center gap-2"><span className="material-symbols-outlined text-[20px]">security</span> Cybersecurity</span>
-                    <span className="bg-surface-container-high text-on-surface-variant group-hover:bg-surface-white px-2 py-0.5 rounded-full text-[10px] font-bold transition-colors">8</span>
-                  </button>
-                </li>
-                <li>
-                  <button className="w-full text-left px-4 py-2 rounded hover:bg-surface-container-low text-on-surface-variant text-[14px] flex items-center justify-between group transition-colors">
-                    <span className="flex items-center gap-2"><span className="material-symbols-outlined text-[20px]">data_object</span> Software Eng.</span>
-                    <span className="bg-surface-container-high text-on-surface-variant group-hover:bg-surface-white px-2 py-0.5 rounded-full text-[10px] font-bold transition-colors">15</span>
-                  </button>
-                </li>
-                <li>
-                  <button className="w-full text-left px-4 py-2 rounded hover:bg-surface-container-low text-on-surface-variant text-[14px] flex items-center justify-between group transition-colors">
-                    <span className="flex items-center gap-2"><span className="material-symbols-outlined text-[20px]">smart_toy</span> AI & Machine Learning</span>
-                    <span className="bg-surface-container-high text-on-surface-variant group-hover:bg-surface-white px-2 py-0.5 rounded-full text-[10px] font-bold transition-colors">24</span>
-                  </button>
-                </li>
+                <li><button type="button" onClick={() => { setCategoryId(''); setPage(1); }} className={`w-full px-4 py-2 rounded text-[14px] flex items-center gap-2 ${!categoryId ? 'bg-primary text-white' : 'bg-surface-container-low text-on-surface hover:bg-primary/10'}`}><span className="material-symbols-outlined text-[20px]">apps</span>Tất cả danh mục</button></li>
+                {categories.map((category) => <li key={category.id}><button type="button" onClick={() => { setCategoryId(category.id); setPage(1); }} className={`w-full px-4 py-2 rounded text-[14px] flex items-center gap-2 text-left ${categoryId === category.id ? 'bg-primary text-white' : 'bg-surface-container-low text-on-surface hover:bg-primary/10'}`}><span className="material-symbols-outlined text-[20px]">{category.icon || 'folder'}</span>{category.name}</button></li>)}
+                {!categories.length && !loading && <li className="text-[12px] text-on-surface-variant">Chưa có danh mục bài đọc.</li>}
               </ul>
               
               <hr className="border-t border-border-subtle my-4" />
               
               <h3 className="text-[14px] font-semibold text-on-surface mb-2">Mức độ</h3>
               <div className="flex flex-col gap-1">
-                <label className="flex items-center gap-2 cursor-pointer group">
-                  <input type="checkbox" className="rounded border-border-subtle text-primary focus:ring-primary focus:ring-offset-0 h-4 w-4" />
-                  <span className="text-[12px] text-on-surface-variant group-hover:text-on-surface">Beginner (B1)</span>
-                </label>
-                <label className="flex items-center gap-2 cursor-pointer group">
-                  <input type="checkbox" defaultChecked className="rounded border-border-subtle text-primary focus:ring-primary focus:ring-offset-0 h-4 w-4" />
-                  <span className="text-[12px] text-on-surface-variant group-hover:text-on-surface">Intermediate (B2)</span>
-                </label>
-                <label className="flex items-center gap-2 cursor-pointer group">
-                  <input type="checkbox" className="rounded border-border-subtle text-primary focus:ring-primary focus:ring-offset-0 h-4 w-4" />
-                  <span className="text-[12px] text-on-surface-variant group-hover:text-on-surface">Advanced (C1+)</span>
-                </label>
+                {levels.map(level => <label key={level.id} className="flex items-center gap-2 cursor-pointer group"><input type="radio" name="reading-level" checked={levelId === level.id} onChange={() => { setLevelId(level.id); setPage(1); }} className="border-border-subtle text-primary focus:ring-primary h-4 w-4" /><span className="text-[12px] text-on-surface-variant group-hover:text-on-surface">{level.name} ({level.code})</span></label>)}
+                {levelId && <button type="button" onClick={() => { setLevelId(''); setPage(1); }} className="mt-2 text-left text-xs font-semibold text-primary hover:underline">Bỏ lọc mức độ</button>}
               </div>
             </div>
           </aside>
 
           {/* Main Content Area */}
-          <div className="md:col-span-9 flex flex-col gap-6">
+          <div className="flex w-full min-w-0 flex-col gap-6 md:col-span-9">
             {/* Active Filters & Search */}
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-              <div className="flex items-center gap-2 flex-wrap">
-                <span className="text-[12px] text-on-surface-variant">Đang xem:</span>
-                <span className="inline-flex items-center gap-1 px-2 py-1 bg-surface-white border border-border-subtle rounded-full text-[12px] font-bold tracking-[0.05em] uppercase text-on-surface">
-                  Cloud Computing
-                  <button className="text-on-surface-variant hover:text-error transition-colors"><span className="material-symbols-outlined text-[14px]">close</span></button>
-                </span>
-                <span className="inline-flex items-center gap-1 px-2 py-1 bg-surface-white border border-border-subtle rounded-full text-[12px] font-bold tracking-[0.05em] uppercase text-on-surface">
-                  Intermediate (B2)
-                  <button className="text-on-surface-variant hover:text-error transition-colors"><span className="material-symbols-outlined text-[14px]">close</span></button>
-                </span>
-              </div>
+              <div className="text-[12px] text-on-surface-variant">{total} bài đọc đã xuất bản</div>
               <div className="relative w-full sm:w-64">
                 <span className="material-symbols-outlined absolute left-2 top-1/2 -translate-y-1/2 text-outline text-[20px]">search</span>
                 <input 
@@ -176,6 +118,7 @@ export default function ReadingLabPage() {
 
             {/* Reading Cards Grid */}
             <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
+              {!loading && !displayArticles.length && <div className="xl:col-span-2 w-full rounded-lg border border-border-subtle bg-surface-white p-8 text-center text-on-surface-variant">Không có bài đọc phù hợp. Nội dung chỉ xuất hiện khi có bài Technical Reading đã được xuất bản.</div>}
               {displayArticles.map((article: any) => (
                 <article key={article.id} className={`bg-surface-white border border-border-subtle rounded-lg p-4 hover:shadow-[0_1px_3px_rgba(15,23,24,0.06)] transition-shadow duration-200 flex flex-col h-full relative overflow-hidden ${article.progress === 100 ? 'opacity-70' : ''}`}>
                   
@@ -202,7 +145,7 @@ export default function ReadingLabPage() {
                   {article.isAiAssisted ? (
                     <div className="bg-ai-accent border border-[#7C3AED] rounded p-2 mb-4">
                       <div className="flex items-center gap-1 mb-1 text-secondary text-[14px] font-semibold">
-                        <span className="material-symbols-outlined text-[16px]">psychology</span> AI Key Concepts
+                        <span className="material-symbols-outlined text-[16px]">psychology</span> Khái niệm trọng tâm
                       </div>
                       <div className="flex flex-wrap gap-1">
                         {article.aiConcepts?.map((c: string) => (
@@ -239,11 +182,11 @@ export default function ReadingLabPage() {
                     )}
                     
                     {article.progress === 0 ? (
-                      <button className="bg-primary hover:bg-primary-fixed-variant text-white text-[14px] font-semibold px-4 py-2 rounded transition-colors">Bắt đầu đọc</button>
+                      <Link href={`/learn/lessons/${article.id}`} className="bg-primary hover:bg-primary-fixed-variant text-white text-[14px] font-semibold px-4 py-2 rounded transition-colors">Bắt đầu đọc</Link>
                     ) : article.progress === 100 ? (
-                      <button className="border border-border-subtle hover:bg-surface-container-low text-on-surface text-[14px] font-semibold px-4 py-2 rounded transition-colors">Đọc lại</button>
+                      <Link href={`/learn/lessons/${article.id}`} className="border border-border-subtle hover:bg-surface-container-low text-on-surface text-[14px] font-semibold px-4 py-2 rounded transition-colors">Đọc lại</Link>
                     ) : (
-                      <button className="border border-border-subtle hover:border-primary hover:text-primary text-on-surface text-[14px] font-semibold px-4 py-2 rounded transition-colors">Tiếp tục đọc</button>
+                      <Link href={`/learn/lessons/${article.id}`} className="border border-border-subtle hover:border-primary hover:text-primary text-on-surface text-[14px] font-semibold px-4 py-2 rounded transition-colors">Tiếp tục đọc</Link>
                     )}
                   </div>
                 </article>
@@ -251,18 +194,15 @@ export default function ReadingLabPage() {
             </div>
 
             {/* Pagination */}
-            <div className="flex justify-center items-center gap-2 mt-6">
-              <button disabled className="w-8 h-8 flex items-center justify-center rounded border border-border-subtle text-outline hover:text-primary hover:border-primary transition-colors disabled:opacity-50">
+            {totalPages > 1 && <div className="flex justify-center items-center gap-2 mt-6">
+              <button type="button" onClick={() => setPage(value => Math.max(1, value - 1))} disabled={page === 1} className="w-8 h-8 flex items-center justify-center rounded border border-border-subtle text-outline hover:text-primary hover:border-primary transition-colors disabled:opacity-50">
                 <span className="material-symbols-outlined text-[20px]">chevron_left</span>
               </button>
-              <button className="w-8 h-8 flex items-center justify-center rounded bg-primary text-white text-[14px] font-semibold">1</button>
-              <button className="w-8 h-8 flex items-center justify-center rounded border border-border-subtle text-on-surface hover:text-primary hover:border-primary transition-colors text-[14px] font-semibold">2</button>
-              <button className="w-8 h-8 flex items-center justify-center rounded border border-border-subtle text-on-surface hover:text-primary hover:border-primary transition-colors text-[14px] font-semibold">3</button>
-              <span className="text-outline">...</span>
-              <button className="w-8 h-8 flex items-center justify-center rounded border border-border-subtle text-outline hover:text-primary hover:border-primary transition-colors">
+              {Array.from({ length: totalPages }, (_, index) => index + 1).map(pageNumber => <button type="button" key={pageNumber} onClick={() => setPage(pageNumber)} className={`w-8 h-8 flex items-center justify-center rounded border text-[14px] font-semibold ${pageNumber === page ? 'border-primary bg-primary text-white' : 'border-border-subtle text-on-surface hover:border-primary hover:text-primary'}`}>{pageNumber}</button>)}
+              <button type="button" onClick={() => setPage(value => Math.min(totalPages, value + 1))} disabled={page === totalPages} className="w-8 h-8 flex items-center justify-center rounded border border-border-subtle text-outline hover:text-primary hover:border-primary transition-colors disabled:opacity-50">
                 <span className="material-symbols-outlined text-[20px]">chevron_right</span>
               </button>
-            </div>
+            </div>}
           </div>
         </div>
       </div>

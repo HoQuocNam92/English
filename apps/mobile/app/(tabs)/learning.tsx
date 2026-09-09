@@ -1,349 +1,359 @@
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useRouter } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
-import { StyleSheet, Text, View, TouchableOpacity, ScrollView, ActivityIndicator } from 'react-native';
+import {
+  StyleSheet, Text, View, TouchableOpacity, ScrollView,
+  ActivityIndicator, TextInput
+} from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
 import { colors, spacing } from '@techenglish/design-tokens';
 import { api } from '../../src/shared/api/api-client';
 
-interface ModuleSection {
-  id: string;
-  title: string;
-  progress: number;
-  totalLessons: number;
-  completedLessons: number;
-  lessons: {
-    id: string;
-    title: string;
-    duration: number;
-    termsCount: number;
-    status: 'completed' | 'in_progress' | 'locked';
-  }[];
-}
+const DOMAIN_CHIPS = ['Tất cả', 'Cloud', 'Security', 'Networking', 'Data', 'Software', 'DevOps'];
+const DOMAIN_CODES: Record<string, string> = { Cloud: 'CLOUD', Security: 'CYBERSEC', Networking: 'NETWORKING', Data: 'DATA_AI', Software: 'SOFTWARE_ENG', DevOps: 'DEVOPS' };
+
+const CATEGORIES = [
+  {
+    id: 'vocabulary',
+    title: 'Vocabulary',
+    desc: 'Xây dựng vốn từ vựng nền tảng IT.',
+    icon: 'sort',
+    iconBg: '#EEF2FF',
+    iconColor: '#4F46E5',
+    wide: false,
+    route: '/lessons?type=vocabulary',
+  },
+  {
+    id: 'terminology',
+    title: 'Technical Terminology',
+    desc: 'Hiểu sâu các thuật ngữ chuyên ngành cốt lõi.',
+    icon: 'terminal',
+    iconBg: '#F0F9FF',
+    iconColor: '#0058be',
+    wide: false,
+    route: '/lessons?type=terminology',
+  },
+  {
+    id: 'reading',
+    title: 'Technical Reading',
+    desc: 'Luyện kỹ năng đọc hiểu tài liệu tiếng Anh công nghệ.',
+    icon: 'menu-book',
+    iconBg: '#F5F3FF',
+    iconColor: '#7C3AED',
+    wide: true,
+    route: '/lessons?type=technical_reading',
+  },
+  {
+    id: 'api-docs',
+    title: 'API Documentation',
+    desc: 'Phân tích và hiểu tài liệu API chuẩn.',
+    icon: 'api',
+    iconBg: '#FFF1F2',
+    iconColor: '#ba1a1a',
+    wide: false,
+    route: '/lessons?type=api_documentation',
+  },
+  {
+    id: 'system-design',
+    title: 'System Design',
+    desc: 'Thiết kế hệ thống qua góc nhìn tiếng Anh.',
+    icon: 'architecture',
+    iconBg: '#EEF2FF',
+    iconColor: '#4F46E5',
+    wide: false,
+    route: '/lessons?type=system_design',
+  },
+  {
+    id: 'case-study',
+    title: 'Case Study',
+    desc: 'Phân tích các tình huống thực tế trong ngành.',
+    icon: 'assignment',
+    iconBg: '#F0F9FF',
+    iconColor: '#0058be',
+    wide: true,
+    route: '/lessons?type=case_study',
+  },
+];
 
 export default function MobileLearningScreen() {
   const router = useRouter();
-  const [modules, setModules] = useState<ModuleSection[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
+  const [searchQuery, setSearchQuery] = useState('');
+  const [activeChip, setActiveChip] = useState('Tất cả');
+  const [recommendation, setRecommendation] = useState<any>(null);
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    fetchData();
+    api.get<any>('/recommendations/my').then((res) => {
+      setRecommendation(res);
+    }).catch(() => {});
   }, []);
 
-  const fetchData = async () => {
-    try {
-      setLoading(true);
-      setError('');
-      const [resLessons, resProgress] = await Promise.allSettled([
-        api.get<any>('/lessons?limit=50'),
-        api.get<any>('/progress/me')
-      ]);
-
-      let lessonsArray: any[] = [];
-      if (resLessons.status === 'fulfilled') {
-        const data = resLessons.value.data || resLessons.value;
-        lessonsArray = Array.isArray(data) ? data : (data.items || data.data || []);
-      }
-
-      const completedIds = new Set<string>();
-      if (resProgress.status === 'fulfilled') {
-        const progData = resProgress.value.data || resProgress.value;
-        const progressList = progData.progress || [];
-        progressList.forEach((p: any) => {
-          if ((p.status === 'completed' || p.completedAt) && (p.resourceId || p.lessonId)) {
-            completedIds.add(p.resourceId || p.lessonId);
-          }
-        });
-      }
-
-      const grouped = lessonsArray.reduce((acc: any, lesson: any) => {
-        const domainObj = lesson.domain;
-        const domainName = (domainObj && typeof domainObj === 'object') ? domainObj.name : (domainObj || 'Lĩnh vực khác');
-        if (!acc[domainName]) {
-          acc[domainName] = {
-            id: domainName,
-            title: domainName,
-            progress: 0,
-            totalLessons: 0,
-            completedLessons: 0,
-            lessons: []
-          };
-        }
-        acc[domainName].totalLessons += 1;
-        const lessonId = lesson._id || lesson.id;
-        const isCompleted = completedIds.has(lessonId);
-        if (isCompleted) acc[domainName].completedLessons += 1;
-        
-        acc[domainName].lessons.push({
-          id: lessonId,
-          title: lesson.title,
-          duration: lesson.durationMinutes || lesson.duration || 15,
-          termsCount: lesson.vocabularyCount || lesson.termsCount || (lesson.vocabulary ? lesson.vocabulary.length : 0) || 0,
-          status: isCompleted ? 'completed' : 'in_progress'
-        });
-        return acc;
-      }, {});
-      
-      // Calculate progress percentage
-      Object.values(grouped).forEach((mod: any) => {
-        mod.progress = mod.totalLessons > 0 ? Math.round((mod.completedLessons / mod.totalLessons) * 100) : 0;
-      });
-
-      setModules(Object.values(grouped));
-    } catch (err: any) {
-      setError(err.message || 'Lỗi tải dữ liệu. Vui lòng thử lại.');
-    } finally {
-      setLoading(false);
-    }
+  const handleCategoryPress = (route: string) => {
+    const separator = route.includes('?') ? '&' : '?';
+    const domainQuery = activeChip === 'Tất cả' ? '' : `${separator}domainCode=${DOMAIN_CODES[activeChip]}`;
+    router.push(`${route}${domainQuery}` as any);
   };
 
-  if (loading) {
-    return (
-      <View style={[styles.container, { justifyContent: 'center', alignItems: 'center' }]}>
-        <ActivityIndicator size="large" color={colors.primary} />
-      </View>
-    );
-  }
-
-  if (error) {
-    return (
-      <View style={[styles.container, { justifyContent: 'center', alignItems: 'center', padding: 20 }]}>
-        <Text style={{ color: 'red', textAlign: 'center', marginBottom: 20 }}>{error}</Text>
-        <TouchableOpacity onPress={fetchData} style={{ padding: 10, backgroundColor: colors.primary, borderRadius: 8 }}>
-          <Text style={{ color: 'white' }}>Thử lại</Text>
+  // Render wide card (col-span-2) or normal card
+  const renderCategory = (cat: typeof CATEGORIES[0], idx: number) => {
+    if (cat.wide) {
+      return (
+        <TouchableOpacity
+          key={cat.id}
+          style={[styles.categoryCard, styles.categoryCardWide]}
+          onPress={() => handleCategoryPress(cat.route)}
+          activeOpacity={0.85}
+        >
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.md }}>
+            <View style={[styles.categoryIconBox, { backgroundColor: cat.iconBg }]}>
+              <MaterialIcons name={cat.icon as any} size={24} color={cat.iconColor} />
+            </View>
+            <View style={{ flex: 1 }}>
+              <Text style={styles.categoryTitle}>{cat.title}</Text>
+              <Text style={styles.categoryDesc} numberOfLines={2}>{cat.desc}</Text>
+            </View>
+            <MaterialIcons name="chevron-right" size={20} color="#c7c4d8" />
+          </View>
         </TouchableOpacity>
-      </View>
+      );
+    }
+    return (
+      <TouchableOpacity
+        key={cat.id}
+        style={styles.categoryCard}
+        onPress={() => handleCategoryPress(cat.route)}
+        activeOpacity={0.85}
+      >
+        <View style={[styles.categoryIconBox, { backgroundColor: cat.iconBg }]}>
+          <MaterialIcons name={cat.icon as any} size={22} color={cat.iconColor} />
+        </View>
+        <Text style={styles.categoryTitle}>{cat.title}</Text>
+        <Text style={styles.categoryDesc} numberOfLines={2}>{cat.desc}</Text>
+      </TouchableOpacity>
     );
+  };
+
+  // Split categories: wide ones go full width, normal ones go in 2-col rows
+  const rows: React.ReactElement[] = [];
+  let i = 0;
+  while (i < CATEGORIES.length) {
+    const cat = CATEGORIES[i];
+    if (cat.wide) {
+      rows.push(renderCategory(cat, i));
+      i++;
+    } else {
+      // Pair two normal cards
+      const next = CATEGORIES[i + 1];
+      if (next && !next.wide) {
+        rows.push(
+          <View key={`row-${i}`} style={styles.categoryRow}>
+            {renderCategory(cat, i)}
+            {renderCategory(next, i + 1)}
+          </View>
+        );
+        i += 2;
+      } else {
+        rows.push(renderCategory(cat, i));
+        i++;
+      }
+    }
   }
 
   return (
-    <ScrollView style={styles.container} contentContainerStyle={styles.contentContainer} showsVerticalScrollIndicator={false}>
+    <View style={styles.container}>
       <StatusBar style="dark" />
 
-      {/* Header */}
+      {/* Sticky Header */}
       <View style={styles.header}>
-        <View>
-          <Text style={styles.title}>Lộ trình học tập</Text>
-          <Text style={styles.subtitle}>Danh sách bài học của bạn</Text>
-        </View>
-        <View style={styles.overallBadge}>
-          <Text style={styles.overallBadgeText}>Đang cập nhật</Text>
-        </View>
-      </View>
-
-      {/* Modules List */}
-      <View style={styles.modulesContainer}>
-        {modules.map((mod) => (
-          <View key={mod.id} style={styles.moduleCard}>
-            <View style={styles.moduleHeader}>
-              <View style={styles.moduleHeaderLeft}>
-                <Text style={styles.moduleTitle}>{mod.title}</Text>
-                <Text style={styles.moduleMeta}>
-                  {mod.completedLessons}/{mod.totalLessons} bài học hoàn thành
-                </Text>
-              </View>
-              <View style={styles.progressCircle}>
-                <Text style={styles.progressCircleText}>{mod.progress}%</Text>
-              </View>
-            </View>
-
-            <View style={styles.lessonsList}>
-              {mod.lessons.map((lesson) => {
-                const isLocked = lesson.status === 'locked';
-                const isCompleted = lesson.status === 'completed';
-
-                return (
-                  <TouchableOpacity
-                    key={lesson.id}
-                    style={[styles.lessonItem, isLocked && styles.lessonItemLocked]}
-                    disabled={isLocked}
-                    onPress={() => router.push(`/lessons/${lesson.id}` as any)}
-                    activeOpacity={0.7}
-                  >
-                    <View
-                      style={[
-                        styles.statusIcon,
-                        isCompleted && styles.statusIconCompleted,
-                        isLocked && styles.statusIconLocked
-                      ]}
-                    >
-                      <MaterialIcons
-                        name={isCompleted ? 'check' : isLocked ? 'lock' : 'play-arrow'}
-                        size={18}
-                        color={isCompleted ? '#ffffff' : isLocked ? colors.outline : colors.primary}
-                      />
-                    </View>
-
-                    <View style={styles.lessonInfo}>
-                      <Text style={[styles.lessonTitle, isLocked && styles.lessonTitleLocked]} numberOfLines={2}>
-                        {lesson.title}
-                      </Text>
-                      <Text style={styles.lessonSubtitle}>
-                        ⏱ {lesson.duration} phút · 📖 {lesson.termsCount} thuật ngữ
-                      </Text>
-                    </View>
-
-                    {!isLocked && <MaterialIcons name="chevron-right" size={20} color={colors.outline} />}
-                  </TouchableOpacity>
-                );
-              })}
-            </View>
-          </View>
-        ))}
-        {modules.length === 0 && (
-          <Text style={{ textAlign: 'center', marginTop: 20, color: colors.mutedText }}>Chưa có bài học nào.</Text>
-        )}
-
-        <View style={{ marginTop: 20 }}>
-          <Text style={[styles.title, { fontSize: 18, marginBottom: 10 }]}>Truy cập nhanh</Text>
-          <View style={{ flexDirection: 'row', gap: 10 }}>
-            <TouchableOpacity style={{ flex: 1, backgroundColor: colors.surfaceContainerLowest, padding: 12, borderRadius: 12, alignItems: 'center', borderWidth: 1, borderColor: colors.outlineVariant }} onPress={() => router.push('/dictionary' as any)}>
-              <Text style={{ fontSize: 20 }}>📖</Text>
-              <Text style={{ marginTop: 4, color: colors.text, fontWeight: 'bold' }}>Từ điển</Text>
-            </TouchableOpacity>
-            <TouchableOpacity style={{ flex: 1, backgroundColor: colors.surfaceContainerLowest, padding: 12, borderRadius: 12, alignItems: 'center', borderWidth: 1, borderColor: colors.outlineVariant }} onPress={() => router.push('/calendar' as any)}>
-              <Text style={{ fontSize: 20 }}>🗓️</Text>
-              <Text style={{ marginTop: 4, color: colors.text, fontWeight: 'bold' }}>Lịch học</Text>
-            </TouchableOpacity>
-            <TouchableOpacity style={{ flex: 1, backgroundColor: colors.surfaceContainerLowest, padding: 12, borderRadius: 12, alignItems: 'center', borderWidth: 1, borderColor: colors.outlineVariant }} onPress={() => router.push('/community' as any)}>
-              <Text style={{ fontSize: 20 }}>👥</Text>
-              <Text style={{ marginTop: 4, color: colors.text, fontWeight: 'bold' }}>Cộng đồng</Text>
-            </TouchableOpacity>
-          </View>
+        <Text style={styles.headerTitle}>Học tập</Text>
+        {/* Search Bar */}
+        <View style={styles.searchBar}>
+          <MaterialIcons name="search" size={20} color="#777587" />
+          <TextInput
+            style={styles.searchInput}
+            placeholder="Tìm bài học, từ vựng..."
+            placeholderTextColor="#777587"
+            value={searchQuery}
+            onChangeText={setSearchQuery}
+            onSubmitEditing={() => router.push(`/lessons?q=${searchQuery}` as any)}
+          />
         </View>
       </View>
-    </ScrollView>
+
+      <ScrollView
+        contentContainerStyle={styles.content}
+        showsVerticalScrollIndicator={false}
+      >
+        {/* Domain Filter Chips */}
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={styles.chipsRow}
+        >
+          {DOMAIN_CHIPS.map((chip) => (
+            <TouchableOpacity
+              key={chip}
+              style={[
+                styles.chip,
+                activeChip === chip && styles.chipActive,
+              ]}
+              onPress={() => setActiveChip(chip)}
+            >
+              <Text style={[
+                styles.chipText,
+                activeChip === chip && styles.chipTextActive,
+              ]}>{chip}</Text>
+            </TouchableOpacity>
+          ))}
+        </ScrollView>
+
+        {/* Bento Grid Categories */}
+        <View style={styles.grid}>
+          {rows}
+        </View>
+
+        {/* AI Recommendation Banner */}
+        <View style={styles.aiBanner}>
+          <MaterialIcons name="smart-toy" size={20} color="#4F46E5" style={{ marginTop: 2 }} />
+          <View style={{ flex: 1 }}>
+            <Text style={styles.aiBannerTitle}>Gợi ý cho bạn</Text>
+            <Text style={styles.aiBannerDesc}>
+              {recommendation?.reason
+                ? recommendation.reason
+                : 'Dựa trên tiến độ, hãy tiếp tục với "Technical Terminology: Cloud Computing".'}
+            </Text>
+          </View>
+        </View>
+      </ScrollView>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f8fafc'
-  },
-  contentContainer: {
-    padding: spacing.lg,
-    paddingTop: 50,
-    paddingBottom: 40,
-    gap: spacing.lg
+    backgroundColor: '#f7f9fb',
   },
   header: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center'
-  },
-  title: {
-    fontSize: 22,
-    fontWeight: '800',
-    color: colors.text
-  },
-  subtitle: {
-    fontSize: 13,
-    color: colors.mutedText,
-    marginTop: 2
-  },
-  overallBadge: {
-    backgroundColor: '#ede9fe',
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-    borderRadius: 8
-  },
-  overallBadgeText: {
-    fontSize: 11,
-    fontWeight: '800',
-    color: colors.primary
-  },
-  modulesContainer: {
-    gap: spacing.lg
-  },
-  moduleCard: {
     backgroundColor: '#ffffff',
-    borderRadius: 16,
-    padding: spacing.md,
-    borderWidth: 1,
-    borderColor: '#e2e8f0',
-    gap: spacing.md
-  },
-  moduleHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingBottom: spacing.sm,
+    paddingHorizontal: spacing.md,
+    paddingTop: 60,
+    paddingBottom: spacing.md,
     borderBottomWidth: 1,
-    borderBottomColor: '#f1f5f9'
+    borderBottomColor: 'rgba(199,196,216,0.3)',
   },
-  moduleHeaderLeft: {
+  headerTitle: {
+    fontSize: 24,
+    fontWeight: '700',
+    color: colors.primary,
+    marginBottom: spacing.md,
+  },
+  searchBar: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#f2f4f6',
+    borderWidth: 1,
+    borderColor: '#c7c4d8',
+    borderRadius: 8,
+    paddingHorizontal: spacing.sm,
+    paddingVertical: spacing.sm,
+    gap: spacing.xs,
+  },
+  searchInput: {
     flex: 1,
-    marginRight: spacing.sm
-  },
-  moduleTitle: {
     fontSize: 14,
-    fontWeight: '800',
-    color: colors.text
+    color: '#191c1e',
   },
-  moduleMeta: {
-    fontSize: 11,
-    color: colors.mutedText,
-    marginTop: 2
+  content: {
+    padding: spacing.md,
+    paddingBottom: 100,
+    gap: spacing.lg,
   },
-  progressCircle: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-    backgroundColor: '#f5f3ff',
+  chipsRow: {
+    gap: spacing.sm,
+    paddingBottom: spacing.xs,
+  },
+  chip: {
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.xs,
+    backgroundColor: '#eceef0',
+    borderWidth: 1,
+    borderColor: '#c7c4d8',
+    borderRadius: 8,
+  },
+  chipActive: {
+    backgroundColor: '#4F46E5',
+    borderColor: '#4F46E5',
+  },
+  chipText: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#464555',
+    whiteSpace: 'nowrap',
+  } as any,
+  chipTextActive: {
+    color: '#ffffff',
+  },
+  grid: {
+    gap: spacing.md,
+  },
+  categoryRow: {
+    flexDirection: 'row',
+    gap: spacing.md,
+  },
+  categoryCard: {
+    flex: 1,
+    backgroundColor: '#ffffff',
+    borderWidth: 1,
+    borderColor: '#c7c4d8',
+    borderRadius: 12,
+    padding: spacing.md,
+    gap: spacing.sm,
+  },
+  categoryCardWide: {
+    flex: undefined,
+    width: '100%',
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  categoryIconBox: {
+    width: 40,
+    height: 40,
+    borderRadius: 8,
     alignItems: 'center',
     justifyContent: 'center',
-    borderWidth: 2,
-    borderColor: colors.primary
   },
-  progressCircleText: {
-    fontSize: 10,
-    fontWeight: '800',
-    color: colors.primary
+  categoryTitle: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#191c1e',
+    marginTop: 4,
   },
-  lessonsList: {
-    gap: spacing.sm
+  categoryDesc: {
+    fontSize: 12,
+    color: '#464555',
+    lineHeight: 18,
+    flex: 1,
   },
-  lessonItem: {
+  aiBanner: {
     flexDirection: 'row',
-    alignItems: 'center',
-    padding: spacing.sm,
-    borderRadius: 10,
-    backgroundColor: '#f8fafc',
-    gap: spacing.sm
-  },
-  lessonItemLocked: {
-    opacity: 0.6
-  },
-  statusIcon: {
-    width: 30,
-    height: 30,
+    alignItems: 'flex-start',
+    gap: spacing.sm,
+    borderWidth: 1,
+    borderColor: '#4F46E5',
+    backgroundColor: '#F5F3FF',
     borderRadius: 8,
-    backgroundColor: '#ede9fe',
-    alignItems: 'center',
-    justifyContent: 'center'
+    padding: spacing.md,
   },
-  statusIconCompleted: {
-    backgroundColor: '#16a34a'
+  aiBannerTitle: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#4F46E5',
   },
-  statusIconLocked: {
-    backgroundColor: '#e2e8f0'
+  aiBannerDesc: {
+    fontSize: 12,
+    color: '#464555',
+    marginTop: 4,
+    lineHeight: 18,
   },
-  lessonInfo: {
-    flex: 1
-  },
-  lessonTitle: {
-    fontSize: 13,
-    fontWeight: '700',
-    color: colors.text
-  },
-  lessonTitleLocked: {
-    color: colors.outline
-  },
-  lessonSubtitle: {
-    fontSize: 11,
-    color: colors.mutedText,
-    marginTop: 2
-  }
 });

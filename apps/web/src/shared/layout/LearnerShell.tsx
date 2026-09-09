@@ -7,6 +7,7 @@ import { useAuth } from '@/features/auth/presentation';
 import { useI18n } from '../i18n';
 import { Footer } from './Footer';
 import { ThemeLanguageToggle } from '../ui/ThemeLanguageToggle';
+import { LearnerChatWidget } from './LearnerChatWidget';
 
 interface LearnerShellProps {
   children: React.ReactNode;
@@ -22,9 +23,9 @@ export function LearnerShell({ children }: LearnerShellProps) {
     { href: '/learn', label: t.nav.home, exactMatch: true },
     { href: '/learn/lessons', label: t.nav.learning, exactMatch: false },
     { href: '/learn/practice', label: t.nav.practice, exactMatch: false },
+    { href: '/learn/quiz/tech', label: 'Thi thử', exactMatch: false },
     { href: '/learn/progress', label: t.nav.progress, exactMatch: false },
     { href: '/learn/roadmap', label: t.nav.roadmap, exactMatch: false },
-    { href: '/learn/achievements', label: t.nav.achievements, exactMatch: false },
   ];
   
   const [moreOpen, setMoreOpen] = useState(false);
@@ -90,16 +91,11 @@ export function LearnerShell({ children }: LearnerShellProps) {
                 {moreOpen && (
                   <div className="absolute top-full left-0 mt-1 w-52 bg-surface-container-lowest border border-outline-variant/50 rounded-xl shadow-lg z-50 py-1 overflow-hidden">
                     {[
-                      { href: '/learn/mock-interview', label: t.nav.mockInterview, icon: 'record_voice_over' },
-                      { href: '/learn/writing-practice', label: t.nav.writingPractice, icon: 'edit_document' },
-                      { href: '/learn/smart-review', label: t.nav.smartReview, icon: 'psychology' },
+                      { href: '/learn/ai-coach', label: 'AI English Coach', icon: 'smart_toy' },
+                      { href: '/learn/achievements', label: t.nav.achievements, icon: 'military_tech' },
                       { href: '/learn/reading-lab', label: t.nav.readingLab, icon: 'menu_book' },
-                      { href: '/learn/dictionary', label: t.nav.dictionary, icon: 'library_books' },
-                      { href: '/learn/calendar', label: t.nav.calendar, icon: 'calendar_month' },
                       { href: '/learn/community', label: t.nav.community, icon: 'forum' },
                       { href: '/learn/path-generator', label: t.nav.pathGenerator, icon: 'route' },
-                      { href: '/learn/skill-gap', label: t.nav.skillGap, icon: 'troubleshoot' },
-                      { href: '/learn/exam-readiness', label: t.nav.examReadiness, icon: 'quiz' },
                     ].map((item) => (
                       <Link
                         key={item.href}
@@ -164,6 +160,7 @@ export function LearnerShell({ children }: LearnerShellProps) {
 
       {/* ── Shared Footer ──────────────────────────────────────────── */}
       <Footer />
+      <LearnerChatWidget />
     </div>
   );
 }

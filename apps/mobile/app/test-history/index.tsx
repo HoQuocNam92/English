@@ -88,97 +88,122 @@ export default function MobileTestHistoryScreen() {
       <StatusBar style="dark" />
       {/* Header */}
       <View style={styles.header}>
-        <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
-          <MaterialIcons name="arrow-back" size={24} color={colors.text} />
+        <TouchableOpacity style={styles.headerIconBtn} onPress={() => router.back()}>
+          <MaterialIcons name="arrow-back" size={24} color={colors.primary} />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>Lịch sử kiểm tra</Text>
-        <View style={{ width: 40 }} />
+        <Text style={styles.headerTitle}>IT English Pro</Text>
+        <TouchableOpacity style={styles.headerIconBtn}>
+          <MaterialIcons name="more-vert" size={24} color={colors.primary} />
+        </TouchableOpacity>
       </View>
 
       {/* Content */}
-      {loading ? (
-        <View style={styles.loadingContainer}>
-          <ActivityIndicator size="large" color={colors.primary} />
+      <ScrollView
+        contentContainerStyle={styles.scrollContent}
+        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
+        showsVerticalScrollIndicator={false}
+      >
+        {/* Page Header */}
+        <View style={styles.pageHeader}>
+          <Text style={styles.pageTitle}>Lịch sử bài thi</Text>
+          <Text style={styles.pageSubtitle}>Xem lại các bài thi gần đây để theo dõi sự tiến bộ của bạn.</Text>
         </View>
-      ) : (
-        <ScrollView
-          contentContainerStyle={styles.listContent}
-          refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
-        >
-          {totalItems > 0 && (
-            <View style={styles.metaRow}>
-              <Text style={styles.metaText}>Tổng cộng: {totalItems} bài thi</Text>
-              {totalPages > 1 && (
-                <Text style={styles.metaText}>Trang {currentPage}/{totalPages}</Text>
-              )}
-            </View>
-          )}
 
-          {history.length === 0 ? (
-            <Text style={styles.emptyText}>Chưa có lịch sử làm bài</Text>
-          ) : (
-            <>
-              {history.map((item: any) => {
-                const isPassed = item.isPassed ?? item.passed ?? false;
-                const displayScore = Math.round(item.scorePercent ?? item.score ?? 0);
+        {/* Filters */}
+        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.filtersList}>
+          <TouchableOpacity style={[styles.filterChip, styles.filterChipActive]}>
+            <Text style={[styles.filterText, styles.filterTextActive]}>Tất cả</Text>
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.filterChip}>
+            <Text style={styles.filterText}>Gần đây</Text>
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.filterChip}>
+            <Text style={styles.filterText}>Theo chứng chỉ</Text>
+          </TouchableOpacity>
+        </ScrollView>
 
-                return (
-                  <TouchableOpacity
-                    key={item.id}
-                    style={styles.card}
-                    onPress={() => router.push(`/test-result/${item.id}` as any)}
-                    activeOpacity={0.8}
-                  >
+        {loading && !refreshing ? (
+          <View style={styles.loadingContainer}>
+            <ActivityIndicator size="large" color={colors.primary} />
+          </View>
+        ) : history.length === 0 ? (
+          <Text style={styles.emptyText}>Chưa có lịch sử làm bài</Text>
+        ) : (
+          <View style={styles.listContent}>
+            {history.map((item: any) => {
+              const isPassed = item.isPassed ?? item.passed ?? false;
+              const displayScore = Math.round(item.scorePercent ?? item.score ?? 0);
+              const cardColor = isPassed ? '#16a34a' : '#ba1a1a';
+              const tagColor = isPassed ? colors.primary : '#0058be';
+              const tagBg = isPassed ? '#e2dfff' : '#d8e2ff'; // primary-fixed / secondary-fixed
+
+              return (
+                <TouchableOpacity
+                  key={item.id}
+                  style={styles.card}
+                  onPress={() => router.push(`/test-result/${item.id}` as any)}
+                  activeOpacity={0.8}
+                >
+                  {/* Left Indicator Line */}
+                  <View style={[styles.cardIndicator, { backgroundColor: cardColor }]} />
+                  
+                  <View style={styles.cardMain}>
                     <View style={styles.cardLeft}>
-                      <View style={styles.domainTag}>
-                        <Text style={styles.domainTagText}>{item.exam?.domain?.name || 'Tổng hợp'}</Text>
-                      </View>
-                      <Text style={styles.cardTitle}>{item.exam?.title}</Text>
-                      <Text style={styles.cardDate}>Ngày thi: {formatDate(item.createdAt || item.startedAt)}</Text>
-                    </View>
-
-                    <View style={styles.cardRight}>
-                      <Text style={[styles.scoreText, isPassed ? styles.scorePass : styles.scoreFail]}>
-                        {displayScore}%
-                      </Text>
-                      <View style={[styles.statusBadge, isPassed ? styles.statusBadgePass : styles.statusBadgeFail]}>
-                        <Text style={[styles.statusText, isPassed ? styles.scorePass : styles.scoreFail]}>
-                          {isPassed ? 'Đạt' : 'Chưa đạt'}
+                      <View style={[styles.domainTag, { backgroundColor: tagBg }]}>
+                        <Text style={[styles.domainTagText, { color: tagColor }]}>
+                          {item.exam?.domain?.name || 'Tổng hợp'}
                         </Text>
                       </View>
+                      <Text style={styles.cardTitle}>{item.exam?.title}</Text>
                     </View>
-                  </TouchableOpacity>
-                );
-              })}
+                    
+                    <View style={styles.cardRight}>
+                      <Text style={[styles.scoreText, { color: cardColor }]}>
+                        {displayScore}%
+                      </Text>
+                      <Text style={styles.cardDate}>{formatDate(item.createdAt || item.startedAt)}</Text>
+                    </View>
+                  </View>
 
-              {/* Pagination Controls */}
-              {totalPages > 1 && (
-                <View style={styles.paginationRow}>
-                  <TouchableOpacity
-                    style={[styles.pageBtn, currentPage === 1 && styles.pageBtnDisabled]}
-                    onPress={() => setCurrentPage((prev) => Math.max(1, prev - 1))}
-                    disabled={currentPage === 1}
-                  >
-                    <MaterialIcons name="chevron-left" size={20} color={currentPage === 1 ? '#cbd5e1' : colors.text} />
-                    <Text style={[styles.pageBtnText, currentPage === 1 && styles.pageBtnTextDisabled]}>Trang trước</Text>
-                  </TouchableOpacity>
+                  <View style={styles.cardBottom}>
+                    <MaterialIcons 
+                      name={isPassed ? 'check-circle' : 'cancel'} 
+                      size={16} 
+                      color={cardColor} 
+                    />
+                    <Text style={[styles.statusText, { color: cardColor }]}>
+                      {isPassed ? 'Đạt' : 'Chưa đạt'}
+                    </Text>
+                  </View>
+                </TouchableOpacity>
+              );
+            })}
 
-                  <Text style={styles.pageIndicator}>{currentPage} / {totalPages}</Text>
+            {/* Pagination Controls */}
+            {totalPages > 1 && (
+              <View style={styles.paginationRow}>
+                <TouchableOpacity
+                  style={[styles.pageBtn, currentPage === 1 && styles.pageBtnDisabled]}
+                  onPress={() => setCurrentPage((prev) => Math.max(1, prev - 1))}
+                  disabled={currentPage === 1}
+                >
+                  <MaterialIcons name="chevron-left" size={20} color={currentPage === 1 ? '#c7c4d8' : '#191c1e'} />
+                </TouchableOpacity>
 
-                  <TouchableOpacity
-                    style={[styles.pageBtn, currentPage === totalPages && styles.pageBtnDisabled]}
-                    onPress={() => setCurrentPage((prev) => Math.min(totalPages, prev + 1))}
-                    disabled={currentPage === totalPages}
-                  >
-                    <Text style={[styles.pageBtnText, currentPage === totalPages && styles.pageBtnTextDisabled]}>Trang sau</Text>
-                    <MaterialIcons name="chevron-right" size={20} color={currentPage === totalPages ? '#cbd5e1' : colors.text} />
-                  </TouchableOpacity>
-                </View>
-              )}
-            </>
-          )}
-        </ScrollView>
-      )}
+                <Text style={styles.pageIndicator}>{currentPage} / {totalPages}</Text>
+
+                <TouchableOpacity
+                  style={[styles.pageBtn, currentPage === totalPages && styles.pageBtnDisabled]}
+                  onPress={() => setCurrentPage((prev) => Math.min(totalPages, prev + 1))}
+                  disabled={currentPage === totalPages}
+                >
+                  <MaterialIcons name="chevron-right" size={20} color={currentPage === totalPages ? '#c7c4d8' : '#191c1e'} />
+                </TouchableOpacity>
+              </View>
+            )}
+          </View>
+        )}
+      </ScrollView>
     </View>
   );
 }
@@ -186,155 +211,191 @@ export default function MobileTestHistoryScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f8fafc'
+    backgroundColor: '#f7f9fb'
   },
   header: {
+    height: 64,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingHorizontal: spacing.lg,
-    paddingTop: 50,
-    paddingBottom: spacing.md,
-    backgroundColor: '#ffffff',
+    paddingHorizontal: spacing.md,
+    paddingTop: 20,
+    backgroundColor: '#f7f9fb',
     borderBottomWidth: 1,
-    borderBottomColor: '#e2e8f0'
+    borderBottomColor: '#c7c4d8',
+    marginTop: 20
   },
-  backButton: {
+  headerIconBtn: {
     width: 40,
     height: 40,
-    borderRadius: 10,
+    borderRadius: 20,
     alignItems: 'center',
     justifyContent: 'center'
   },
   headerTitle: {
-    fontSize: 16,
-    fontWeight: '800',
-    color: colors.text
+    fontSize: 20,
+    fontWeight: '600',
+    color: colors.primary
+  },
+  scrollContent: {
+    paddingBottom: 48,
+  },
+  pageHeader: {
+    paddingHorizontal: spacing.md,
+    paddingTop: spacing.lg,
+    paddingBottom: spacing.md
+  },
+  pageTitle: {
+    fontSize: 24,
+    fontWeight: '700',
+    color: '#191c1e',
+    marginBottom: spacing.xs,
+    letterSpacing: -0.2
+  },
+  pageSubtitle: {
+    fontSize: 14,
+    color: '#464555',
+    lineHeight: 20
+  },
+  filtersList: {
+    paddingHorizontal: spacing.md,
+    paddingBottom: spacing.md,
+    gap: spacing.sm,
+    alignItems: 'center'
+  },
+  filterChip: {
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.sm,
+    borderRadius: 20,
+    backgroundColor: '#ffffff',
+    borderWidth: 1,
+    borderColor: '#c7c4d8'
+  },
+  filterChipActive: {
+    backgroundColor: colors.primary,
+    borderColor: colors.primary
+  },
+  filterText: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#464555'
+  },
+  filterTextActive: {
+    color: '#ffffff'
   },
   loadingContainer: {
-    flex: 1,
+    padding: spacing.xl,
     justifyContent: 'center',
     alignItems: 'center'
   },
-  listContent: {
-    padding: spacing.lg,
-    gap: spacing.md,
-    paddingBottom: spacing.xl
-  },
-  metaRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: spacing.xs
-  },
-  metaText: {
-    fontSize: 12,
-    fontWeight: '600',
-    color: colors.mutedText
-  },
   emptyText: {
     textAlign: 'center',
-    color: colors.mutedText,
+    color: '#464555',
     marginTop: spacing.xl
+  },
+  listContent: {
+    paddingHorizontal: spacing.md,
+    gap: spacing.md
   },
   card: {
     backgroundColor: '#ffffff',
-    borderRadius: 14,
+    borderRadius: 12,
     padding: spacing.md,
     borderWidth: 1,
-    borderColor: '#e2e8f0',
+    borderColor: '#c7c4d8',
+    position: 'relative',
+    overflow: 'hidden',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.05,
+    shadowRadius: 2,
+    elevation: 1
+  },
+  cardIndicator: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    bottom: 0,
+    width: 4
+  },
+  cardMain: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    alignItems: 'center'
+    alignItems: 'flex-start',
+    paddingLeft: spacing.xs
   },
   cardLeft: {
     flex: 1,
-    marginRight: spacing.sm,
-    gap: 2
+    paddingRight: spacing.sm,
+    gap: spacing.xs
   },
   domainTag: {
-    backgroundColor: '#ede9fe',
-    paddingHorizontal: 6,
-    paddingVertical: 1,
+    paddingHorizontal: 8,
+    paddingVertical: 2,
     borderRadius: 4,
     alignSelf: 'flex-start'
   },
   domainTagText: {
-    fontSize: 10,
+    fontSize: 12,
     fontWeight: '700',
-    color: colors.primary
+    letterSpacing: 0.5,
+    textTransform: 'uppercase'
   },
   cardTitle: {
-    fontSize: 13,
-    fontWeight: '700',
-    color: colors.text,
-    marginTop: 2
-  },
-  cardDate: {
-    fontSize: 11,
-    color: colors.mutedText
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#191c1e',
+    lineHeight: 20
   },
   cardRight: {
     alignItems: 'flex-end',
-    gap: 4
+    flexShrink: 0
   },
   scoreText: {
-    fontSize: 16,
-    fontWeight: '800'
+    fontSize: 20,
+    fontWeight: '600'
   },
-  scorePass: {
-    color: '#16a34a'
+  cardDate: {
+    fontSize: 12,
+    color: '#464555',
+    marginTop: 2
   },
-  scoreFail: {
-    color: '#dc2626'
-  },
-  statusBadge: {
-    paddingHorizontal: 8,
-    paddingVertical: 2,
-    borderRadius: 6
-  },
-  statusBadgePass: {
-    backgroundColor: '#dcfce7'
-  },
-  statusBadgeFail: {
-    backgroundColor: '#fee2e2'
+  cardBottom: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.xs,
+    paddingLeft: spacing.xs,
+    marginTop: spacing.sm
   },
   statusText: {
-    fontSize: 10,
-    fontWeight: '800'
+    fontSize: 14,
+    fontWeight: '600'
   },
   paginationRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
     paddingVertical: spacing.md,
-    marginTop: spacing.sm
+    marginTop: spacing.xs
   },
   pageBtn: {
     flexDirection: 'row',
     alignItems: 'center',
+    justifyContent: 'center',
     backgroundColor: '#ffffff',
     borderWidth: 1,
-    borderColor: '#e2e8f0',
-    paddingHorizontal: 14,
-    paddingVertical: 8,
+    borderColor: '#c7c4d8',
+    width: 40,
+    height: 40,
     borderRadius: 8
   },
   pageBtnDisabled: {
-    backgroundColor: '#f8fafc',
-    borderColor: '#f1f5f9'
-  },
-  pageBtnText: {
-    fontSize: 13,
-    fontWeight: '700',
-    color: colors.text
-  },
-  pageBtnTextDisabled: {
-    color: '#cbd5e1'
+    backgroundColor: '#f7f9fb',
+    borderColor: '#e6e8ea'
   },
   pageIndicator: {
-    fontSize: 13,
-    fontWeight: '800',
-    color: colors.text
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#191c1e'
   }
 });

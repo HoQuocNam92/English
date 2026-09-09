@@ -1,9 +1,11 @@
 'use client';
 
 import * as React from 'react';
+import Link from 'next/link';
 import { PageHeader } from '@/shared/ui';
 import { apiClient, ApiClientError } from '@/shared/api/api-client';
 import type { PaginatedResponse, UserItem, LessonItem, ExamItem } from '@/shared/api/api-client';
+import { useAuth } from '@/features/auth/presentation';
 
 interface AnalyticsData {
   overview: {
@@ -63,6 +65,9 @@ const DOMAIN_COLORS = [
 ];
 
 export default function AdminDashboardPage() {
+  const { session } = useAuth();
+  const roles = session?.user?.roles ?? (session?.user?.role ? [session.user.role] : []);
+  const isAdmin = roles.includes('admin') && !roles.includes('teacher');
   const [stats, setStats] = React.useState<{
     totalUsers: number;
     activeUsers: number;
@@ -81,12 +86,12 @@ export default function AdminDashboardPage() {
     async function load() {
       try {
         const [allUsers, allLessons, allExams, allVocab, allGroups, analyticsRes] = await Promise.all<any>([
-          apiClient.get<PaginatedResponse<UserItem>>('/users?limit=5'),
+          isAdmin ? apiClient.get<PaginatedResponse<UserItem>>('/users?limit=5') : Promise.resolve({ data: [], meta: { total: 0 } }),
           apiClient.get<PaginatedResponse<LessonItem>>('/lessons?limit=4'),
           apiClient.get<PaginatedResponse<ExamItem>>('/exams?limit=1'),
           apiClient.get<PaginatedResponse<unknown>>('/vocabulary?limit=1'),
           apiClient.get<PaginatedResponse<unknown>>('/student-groups?limit=1'),
-          apiClient.get<AnalyticsData>('/analytics/dashboard').catch(() => null),
+          isAdmin ? apiClient.get<AnalyticsData>('/analytics/dashboard').catch(() => null) : Promise.resolve(null),
         ]);
 
         const activeCount = allUsers.data.filter((u: any) => u.status === 'active').length;
@@ -109,7 +114,7 @@ export default function AdminDashboardPage() {
       }
     }
     void load();
-  }, []);
+  }, [isAdmin]);
 
   const statCards = [
     { label: 'Tổng người dùng', value: stats?.totalUsers ?? 0, sub: `${stats?.totalUsers ?? 0} tài khoản hệ thống`, icon: 'people', color: 'text-primary' },
@@ -121,6 +126,19 @@ export default function AdminDashboardPage() {
   const maxWeeklyHours = Math.max(...(analytics?.weeklyActivity.map((w) => w.studyHours) ?? [100]));
   const totalDomainItems = analytics?.domainsDistribution.reduce((s, d) => s + d.totalItems, 0) || 1;
 
+  if (!isAdmin) return (
+    <main className="w-full space-y-8">
+      <div><h2 className="text-3xl font-bold tracking-tight text-on-surface">Không gian giảng viên</h2><p className="mt-1 text-sm text-on-surface-variant">Quản lý nội dung giảng dạy và theo dõi học viên của bạn.</p></div>
+      {error && <div className="rounded-xl bg-error-container p-4 text-sm text-on-error-container">{error}</div>}
+      <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
+        {[['Bài học', stats?.totalLessons ?? 0, 'auto_stories'], ['Bài thi', stats?.totalExams ?? 0, 'quiz'], ['Từ vựng', stats?.totalVocab ?? 0, 'translate'], ['Nhóm học viên', stats?.totalGroups ?? 0, 'groups']].map(([label,value,icon]) => <div key={String(label)} className="rounded-2xl bg-white p-6 shadow-[0_8px_28px_rgba(15,23,42,0.05)]"><span className="material-symbols-outlined text-primary">{icon}</span><p className="mt-5 text-sm text-on-surface-variant">{label}</p><p className="mt-1 text-3xl font-bold">{loading ? '—' : value}</p></div>)}
+      </div>
+      <section><h3 className="mb-4 text-xl font-bold">Công việc giảng dạy</h3><div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        {[['Tạo bài học','/admin/lessons/editor','add_box'],['Thêm câu hỏi','/admin/questions/editor','post_add'],['Tạo bài kiểm tra','/admin/tests/builder','quiz'],['Quản lý nhóm','/admin/student-groups','groups'],['Xem kết quả thi','/admin/test-results','fact_check'],['Theo dõi tiến độ','/admin/progress','insights']].map(([label,href,icon]) => <Link key={href} href={href} className="flex items-center gap-4 rounded-2xl bg-white p-5 shadow-[0_8px_28px_rgba(15,23,42,0.05)] transition hover:-translate-y-0.5 hover:text-primary"><span className="material-symbols-outlined text-primary">{icon}</span><span className="font-semibold">{label}</span><span className="material-symbols-outlined ml-auto text-outline">chevron_right</span></Link>)}
+      </div></section>
+    </main>
+  );
+
   return (
     <main className="flex-1 overflow-y-auto p-gutter lg:px-xl xl:px-margin bg-background">
       <div className="flex flex-col md:flex-row justify-between items-start md:items-end mb-xl gap-md">
@@ -128,10 +146,6 @@ export default function AdminDashboardPage() {
           <h2 className="font-headline-h1 text-headline-h1 text-on-surface mb-xs">Chào buổi sáng, Quản trị viên.</h2>
           <p className="font-body-md text-body-md text-on-surface-variant">Hãy xem tình hình học tập hôm nay.</p>
         </div>
-        <button className="bg-primary-container text-on-primary font-interface-sb text-interface-sb px-lg py-sm rounded-lg flex items-center gap-sm hover:bg-primary transition-colors shadow-sm">
-          <span className="material-symbols-outlined">add</span>
-          Tạo bài học
-        </button>
       </div>
 
       {error && (
@@ -313,22 +327,22 @@ export default function AdminDashboardPage() {
           <div className="stat-card bg-surface-container-lowest p-lg rounded-lg border border-outline-variant hover:shadow-[0_1px_3px_rgba(15,23,24,0.06)] hover:-translate-y-0.5 transition-all">
             <h3 className="font-headline-h3 text-headline-h3 text-on-surface mb-md">Thao tác nhanh</h3>
             <div className="grid grid-cols-2 gap-md">
-              <button className="flex flex-col items-center justify-center p-md border border-outline-variant rounded-lg hover:border-primary hover:bg-surface-bright transition-all group">
+              <Link href="/admin/lessons/editor" className="flex flex-col items-center justify-center p-md border border-outline-variant rounded-lg hover:border-primary hover:bg-surface-bright transition-all group">
                 <span className="material-symbols-outlined text-outline group-hover:text-primary mb-xs">add_box</span>
                 <span className="font-interface-sb text-body-sm text-on-surface group-hover:text-primary">Tạo bài học</span>
-              </button>
-              <button className="flex flex-col items-center justify-center p-md border border-outline-variant rounded-lg hover:border-primary hover:bg-surface-bright transition-all group">
+              </Link>
+              <Link href="/admin/questions/editor" className="flex flex-col items-center justify-center p-md border border-outline-variant rounded-lg hover:border-primary hover:bg-surface-bright transition-all group">
                 <span className="material-symbols-outlined text-outline group-hover:text-primary mb-xs">post_add</span>
                 <span className="font-interface-sb text-body-sm text-on-surface group-hover:text-primary">Thêm câu hỏi</span>
-              </button>
-              <button className="flex flex-col items-center justify-center p-md border border-outline-variant rounded-lg hover:border-primary hover:bg-surface-bright transition-all group">
+              </Link>
+              <Link href="/admin/tests/builder" className="flex flex-col items-center justify-center p-md border border-outline-variant rounded-lg hover:border-primary hover:bg-surface-bright transition-all group">
                 <span className="material-symbols-outlined text-outline group-hover:text-primary mb-xs">quiz</span>
                 <span className="font-interface-sb text-body-sm text-on-surface group-hover:text-primary">Tạo bài kiểm tra</span>
-              </button>
-              <button className="flex flex-col items-center justify-center p-md border border-outline-variant rounded-lg hover:border-primary hover:bg-surface-bright transition-all group">
+              </Link>
+              <Link href="/admin/students" className="flex flex-col items-center justify-center p-md border border-outline-variant rounded-lg hover:border-primary hover:bg-surface-bright transition-all group">
                 <span className="material-symbols-outlined text-outline group-hover:text-primary mb-xs">person_search</span>
                 <span className="font-interface-sb text-body-sm text-on-surface group-hover:text-primary">Tìm người học</span>
-              </button>
+              </Link>
             </div>
           </div>
           

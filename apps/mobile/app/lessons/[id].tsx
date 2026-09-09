@@ -100,52 +100,55 @@ export default function MobileLessonDetailScreen() {
   return (
     <View style={styles.container}>
       <StatusBar style="dark" />
+      
       {/* Header */}
       <View style={styles.header}>
         <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
-          <MaterialIcons name="arrow-back" size={24} color={colors.text} />
+          <MaterialIcons name="arrow-back" size={24} color="#464555" />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>Chi tiết bài học</Text>
+        <Text style={styles.headerTitle} numberOfLines={1}>
+          {safeText(lesson.domain, 'Lesson Details')}
+        </Text>
         <View style={{ width: 40 }} />
       </View>
 
-      <ScrollView contentContainerStyle={styles.content}>
-        <View style={styles.domainTag}>
-          <Text style={styles.domainTagText}>{safeText(lesson.domain, 'Lĩnh vực khác')}</Text>
-        </View>
+      <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
         <Text style={styles.title}>{safeText(lesson.title, 'Bài học')}</Text>
-        <Text style={styles.meta}>
-          ⏱ {lesson.durationMinutes || lesson.duration || 15} phút · 📖 {lesson.vocabularyCount || lesson.termsCount || (lesson.vocabulary ? lesson.vocabulary.length : 0) || 0} thuật ngữ
-        </Text>
-
+        
         {lesson.description ? (
-          <Text style={styles.description}>{safeText(lesson.description)}</Text>
+          <View style={styles.descriptionBox}>
+            <Text style={styles.descriptionText}>{safeText(lesson.description)}</Text>
+          </View>
         ) : null}
 
-        <View style={styles.sectionsContainer}>
-          <Text style={styles.sectionTitle}>Các phần nội dung:</Text>
-          {(lesson.sections || []).map((sec: any, index: number) => (
-            <View key={sec.id || index} style={styles.sectionItem}>
-              <MaterialIcons name="label-outline" size={18} color={colors.primary} />
-              <Text style={styles.sectionText}>
-                {safeText(sec.title) || safeText(sec.content) || `Phần ${index + 1}`}
-              </Text>
-            </View>
-          ))}
-          {(!lesson.sections || lesson.sections.length === 0) && (
-            <Text style={{ color: colors.mutedText, marginTop: 8 }}>Không có dữ liệu phần nội dung.</Text>
-          )}
+        <View style={styles.article}>
+          <View style={styles.sectionsContainer}>
+            <Text style={styles.sectionTitle}>Nội dung bài học</Text>
+            {(lesson.sections || []).map((sec: any, index: number) => (
+              <View key={sec.id || index} style={styles.sectionItem}>
+                <View style={styles.sectionBullet}>
+                  <Text style={styles.sectionBulletText}>{index + 1}</Text>
+                </View>
+                <Text style={styles.sectionText}>
+                  {safeText(sec.title) || safeText(sec.content) || `Phần ${index + 1}`}
+                </Text>
+              </View>
+            ))}
+            {(!lesson.sections || lesson.sections.length === 0) && (
+              <Text style={{ color: '#464555', marginTop: 8 }}>Không có dữ liệu phần nội dung.</Text>
+            )}
+          </View>
         </View>
       </ScrollView>
 
-      {/* Bottom Actions */}
-      <View style={styles.bottomBar}>
+      {/* Bottom Actions Fixed */}
+      <View style={styles.bottomFixedArea}>
         <TouchableOpacity
           style={styles.btnStudy}
           onPress={() => router.push(`/lessons/vocabulary/${id}` as any)}
         >
-          <MaterialIcons name="local-library" size={20} color="#fff" style={{ marginRight: 8 }} />
-          <Text style={styles.btnStudyText}>Học từ vựng</Text>
+          <MaterialIcons name="menu-book" size={20} color={colors.primary} />
+          <Text style={styles.btnStudyText}>Học từ vựng ({lesson.vocabularyCount || lesson.termsCount || (lesson.vocabulary ? lesson.vocabulary.length : 0) || 0})</Text>
         </TouchableOpacity>
 
         <TouchableOpacity
@@ -158,10 +161,9 @@ export default function MobileLessonDetailScreen() {
           disabled={marking || isCompleted}
         >
           <MaterialIcons 
-            name={isCompleted ? "check-circle" : "check-circle-outline"} 
+            name="check-circle" 
             size={20} 
             color="#fff" 
-            style={{ marginRight: 8 }} 
           />
           <Text style={styles.btnCompleteText}>
             {marking ? 'Đang xử lý...' : (isCompleted ? 'Đã hoàn thành' : 'Đánh dấu hoàn thành')}
@@ -175,123 +177,138 @@ export default function MobileLessonDetailScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f8fafc'
+    backgroundColor: '#ffffff'
   },
   header: {
+    height: 64,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingHorizontal: spacing.lg,
-    paddingTop: 50,
-    paddingBottom: spacing.md,
+    paddingHorizontal: spacing.md,
+    paddingTop: 20, // adjust for safe area roughly
     backgroundColor: '#ffffff',
     borderBottomWidth: 1,
-    borderBottomColor: '#e2e8f0'
+    borderBottomColor: '#c7c4d8',
+    marginTop: 20 // safearea
   },
   backButton: {
     width: 40,
     height: 40,
-    borderRadius: 10,
+    borderRadius: 20,
     alignItems: 'center',
     justifyContent: 'center'
   },
   headerTitle: {
+    flex: 1,
+    textAlign: 'center',
     fontSize: 16,
-    fontWeight: '800',
-    color: colors.text
+    fontWeight: '600',
+    color: '#191c1e'
   },
   content: {
-    padding: spacing.lg
+    padding: spacing.md,
+    paddingTop: spacing.lg,
+    paddingBottom: 160 // Room for bottom bar
   },
-  domainTag: {
-    backgroundColor: '#ede9fe',
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-    borderRadius: 6,
-    alignSelf: 'flex-start',
-    marginBottom: spacing.md
+  title: {
+    fontSize: 30,
+    fontWeight: '700',
+    color: colors.primary,
+    marginBottom: spacing.md,
+    letterSpacing: -0.5,
+    lineHeight: 38
   },
-  domainTagText: {
+  descriptionBox: {
+    backgroundColor: '#f2f4f6',
+    borderWidth: 1,
+    borderColor: '#c7c4d8',
+    borderRadius: 8,
+    padding: spacing.md,
+    marginBottom: spacing.lg
+  },
+  descriptionText: {
+    fontSize: 14,
+    color: '#464555',
+    lineHeight: 22
+  },
+  article: {
+    gap: spacing.lg
+  },
+  sectionsContainer: {
+    marginTop: spacing.sm
+  },
+  sectionTitle: {
+    fontSize: 20,
+    fontWeight: '600',
+    color: '#191c1e',
+    marginBottom: spacing.sm
+  },
+  sectionItem: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    marginBottom: spacing.md,
+    gap: spacing.sm
+  },
+  sectionBullet: {
+    width: 24,
+    height: 24,
+    borderRadius: 12,
+    backgroundColor: '#e2dfff',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginTop: 2
+  },
+  sectionBulletText: {
     fontSize: 12,
     fontWeight: '700',
     color: colors.primary
   },
-  title: {
-    fontSize: 22,
-    fontWeight: '800',
-    color: colors.text,
-    marginBottom: spacing.sm
-  },
-  meta: {
-    fontSize: 13,
-    color: colors.mutedText,
-    marginBottom: spacing.lg
-  },
-  description: {
-    fontSize: 15,
-    color: colors.text,
-    lineHeight: 22,
-    marginBottom: spacing.xl,
-    padding: spacing.md,
-    backgroundColor: '#fff',
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: '#e2e8f0'
-  },
-  sectionsContainer: {
-    backgroundColor: '#fff',
-    borderRadius: 12,
-    padding: spacing.md,
-    borderWidth: 1,
-    borderColor: '#e2e8f0'
-  },
-  sectionTitle: {
-    fontSize: 16,
-    fontWeight: '700',
-    color: colors.text,
-    marginBottom: spacing.md
-  },
-  sectionItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: spacing.sm
-  },
   sectionText: {
-    fontSize: 14,
-    color: colors.text,
-    marginLeft: spacing.sm
+    flex: 1,
+    fontSize: 16,
+    color: '#191c1e',
+    lineHeight: 24
   },
-  bottomBar: {
-    padding: spacing.lg,
-    backgroundColor: '#ffffff',
+  bottomFixedArea: {
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
+    backgroundColor: 'rgba(255,255,255,0.95)',
+    padding: spacing.md,
+    paddingBottom: 32, // safe area
+    gap: spacing.sm,
     borderTopWidth: 1,
-    borderTopColor: '#e2e8f0',
-    gap: spacing.md
+    borderTopColor: '#f2f4f6'
   },
   btnStudy: {
     flexDirection: 'row',
-    backgroundColor: colors.primary,
-    height: 50,
-    borderRadius: 12,
+    backgroundColor: '#ffffff',
+    borderWidth: 1,
+    borderColor: colors.primary,
+    height: 48,
+    borderRadius: 10,
     alignItems: 'center',
-    justifyContent: 'center'
+    justifyContent: 'center',
+    gap: 8
   },
   btnStudyText: {
-    color: '#ffffff',
-    fontSize: 16,
-    fontWeight: '700'
+    color: colors.primary,
+    fontSize: 14,
+    fontWeight: '600'
   },
   btnComplete: {
     flexDirection: 'row',
-    backgroundColor: '#16a34a',
-    height: 50,
-    borderRadius: 12,
+    backgroundColor: colors.primary,
+    height: 48,
+    borderRadius: 10,
     alignItems: 'center',
-    justifyContent: 'center'
+    justifyContent: 'center',
+    gap: 8
   },
   btnCompleteText: {
     color: '#ffffff',
-    fontSize: 16,
-    fontWeight: '700'
+    fontSize: 14,
+    fontWeight: '600'
   }
 });

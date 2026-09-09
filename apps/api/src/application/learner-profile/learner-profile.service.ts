@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common'
+import { BadRequestException, ForbiddenException, Injectable, NotFoundException } from '@nestjs/common'
 import { LevelCode } from '@prisma/client'
 import { PrismaService } from '../../infrastructure/database/prisma.service'
 import { CompleteOnboardingDto } from '../../presentation/http-dto/content.dto'
@@ -8,22 +8,27 @@ export class LearnerProfilesService {
   constructor(private prisma: PrismaService) {}
 
   async findByUser(userId: string) {
+    await this.assertLearner(userId)
     const p = await this.prisma.learnerProfile.findUnique({ where: { userId }, include: { level: true, domains: { include: { domain: true } }, careerGoals: { include: { careerGoal: true } }, certGoals: { include: { certificate: true } } } })
     if (!p) throw new NotFoundException('Learner profile not found')
     return p
   }
 
   async upsert(userId: string, dto: any) {
+    await this.assertLearner(userId)
     const level = dto.levelCode ? await this.prisma.level.findUnique({ where: { code: dto.levelCode } }) : null
+    const fallbackLevel = level ?? await this.prisma.level.findFirst({ orderBy: { order: 'asc' } })
+    if (!fallbackLevel) throw new BadRequestException('Hệ thống chưa cấu hình cấp độ học tập')
     return this.prisma.learnerProfile.upsert({
       where: { userId },
       update: { bio: dto.bio, weeklyStudyTargetMinutes: dto.weeklyStudyTargetMinutes, onboardingCompleted: dto.onboardingCompleted, ...(level && { levelId: level.id }) },
-      create: { userId, levelId: level?.id ?? (await this.prisma.level.findFirst({ where: { code: 'beginner' } }))!.id, bio: dto.bio, weeklyStudyTargetMinutes: dto.weeklyStudyTargetMinutes ?? 180 },
+      create: { userId, levelId: fallbackLevel.id, bio: dto.bio, weeklyStudyTargetMinutes: dto.weeklyStudyTargetMinutes ?? 180 },
       include: { level: true, domains: { include: { domain: true } }, careerGoals: { include: { careerGoal: true } }, certGoals: { include: { certificate: true } } }
     })
   }
 
   async completeOnboarding(userId: string, dto: CompleteOnboardingDto) {
+    await this.assertLearner(userId)
     // 1. Tìm level
     const level = await this.prisma.level.findUnique({ where: { code: dto.levelCode as LevelCode } })
 
@@ -94,6 +99,14 @@ export class LearnerProfilesService {
       this.prisma.learnerProfile.count({ where })
     ])
     return { data, meta: { total, page, limit, totalPages: Math.ceil(total / limit) } }
+  }
+
+  private async assertLearner(userId: string) {
+    const learner = await this.prisma.user.findFirst({
+      where: { id: userId, userRoles: { some: { role: { code: 'learner', isActive: true } } } },
+      select: { id: true },
+    })
+    if (!learner) throw new ForbiddenException('Admin và giảng viên không có learner profile')
   }
 }
 

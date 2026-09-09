@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { StyleSheet, Text, View, ScrollView, TouchableOpacity, Modal, TextInput, ActivityIndicator } from 'react-native';
+import { Alert, StyleSheet, Text, View, ScrollView, TouchableOpacity, Modal, TextInput, ActivityIndicator } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
 import { useTheme } from '../../src/shared/store/theme-context';
 import { api } from '../../src/shared/api/api-client';
@@ -38,7 +38,7 @@ export default function CalendarScreen() {
   const addPlan = async () => {
     if (!newTitle.trim()) return;
     try {
-      await api.post('/planner/my', { title: newTitle, durationMinutes: parseInt(newTime), date: new Date(today.getFullYear(), today.getMonth(), selectedDate).toISOString() });
+      await api.post('/planner/my', { title: newTitle, durationMin: parseInt(newTime), plannedAt: new Date(today.getFullYear(), today.getMonth(), selectedDate).toISOString() });
       setShowModal(false);
       setNewTitle('');
       fetchPlans();
@@ -47,12 +47,37 @@ export default function CalendarScreen() {
     }
   };
 
+  const togglePlan = async (plan: any) => {
+    try {
+      await api.patch(`/planner/my/${plan.id}`, { isCompleted: !plan.isCompleted });
+      await fetchPlans();
+    } catch (err) {
+      console.log(err);
+    }
+  };
+
+  const deletePlan = (plan: any) => {
+    Alert.alert('Xóa kế hoạch', `Bạn có chắc muốn xóa "${plan.title}"?`, [
+      { text: 'Hủy', style: 'cancel' },
+      {
+        text: 'Xóa', style: 'destructive', onPress: async () => {
+          try {
+            await api.delete(`/planner/my/${plan.id}`);
+            await fetchPlans();
+          } catch (err) {
+            console.log(err);
+          }
+        },
+      },
+    ]);
+  };
+
   const daysInMonth = new Date(today.getFullYear(), today.getMonth() + 1, 0).getDate();
   const daysArray = Array.from({ length: daysInMonth }, (_, i) => i + 1);
   
   const selectedDayPlans = plans.filter(p => {
-    if (!p.date && !p.plannedFor) return false;
-    const d = new Date(p.date || p.plannedFor);
+    if (!p.plannedAt) return false;
+    const d = new Date(p.plannedAt);
     return d.getDate() === selectedDate;
   });
 
@@ -103,8 +128,8 @@ export default function CalendarScreen() {
         ))}
         {daysArray.map(day => {
           const hasPlan = plans.some(p => {
-            if (!p.date && !p.plannedFor) return false;
-            return new Date(p.date || p.plannedFor).getDate() === day;
+            if (!p.plannedAt) return false;
+            return new Date(p.plannedAt).getDate() === day;
           });
           return (
             <TouchableOpacity key={day} style={styles.dayCell} onPress={() => setSelectedDate(day)}>
@@ -122,13 +147,18 @@ export default function CalendarScreen() {
         {loading ? <ActivityIndicator color={colors.primary} /> : selectedDayPlans.length === 0 ? (
           <Text style={{ color: colors.textSecondary }}>Chưa có kế hoạch nào.</Text>
         ) : (
-          selectedDayPlans.map((p, i) => (
-            <View key={i} style={styles.planItem}>
-              <MaterialIcons name={p.isCompleted ? "check-circle" : "radio-button-unchecked"} size={24} color={p.isCompleted ? "#10b981" : colors.textSecondary} />
+          selectedDayPlans.map((p) => (
+            <View key={p.id} style={styles.planItem}>
+              <TouchableOpacity onPress={() => togglePlan(p)} accessibilityLabel="Đánh dấu hoàn thành">
+                <MaterialIcons name={p.isCompleted ? "check-circle" : "radio-button-unchecked"} size={24} color={p.isCompleted ? "#10b981" : colors.textSecondary} />
+              </TouchableOpacity>
               <View style={styles.planInfo}>
                 <Text style={styles.planTitle}>{p.title}</Text>
-                <Text style={styles.planTime}>{p.durationMinutes || 15} phút</Text>
+                <Text style={styles.planTime}>{p.durationMin || 30} phút</Text>
               </View>
+              <TouchableOpacity onPress={() => deletePlan(p)} accessibilityLabel="Xóa kế hoạch">
+                <MaterialIcons name="delete-outline" size={22} color="#ef4444" />
+              </TouchableOpacity>
             </View>
           ))
         )}

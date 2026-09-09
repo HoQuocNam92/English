@@ -21,6 +21,7 @@ export default function TestBuilderPage() {
 
   const [domains, setDomains] = React.useState<SelectOption[]>([]);
   const [levels, setLevels] = React.useState<SelectOption[]>([]);
+  const [certificates, setCertificates] = React.useState<SelectOption[]>([]);
   const [availableQuestions, setAvailableQuestions] = React.useState<QuestionItem[]>([]);
   const [selectedQuestionIds, setSelectedQuestionIds] = React.useState<string[]>([]);
 
@@ -31,6 +32,7 @@ export default function TestBuilderPage() {
   const [maxAttempts, setMaxAttempts] = React.useState('');
   const [domainId, setDomainId] = React.useState('');
   const [levelId, setLevelId] = React.useState('');
+  const [certificateId, setCertificateId] = React.useState(params.get('certificateId') || '');
   const [topics, setTopics] = React.useState('');
 
   const [qSearch, setQSearch] = React.useState('');
@@ -43,13 +45,15 @@ export default function TestBuilderPage() {
     const init = async () => {
       setLoading(true);
       try {
-        const [domainsRes, levelsRes, qRes] = await Promise.all<any>([
+        const [domainsRes, levelsRes, certificatesRes, qRes] = await Promise.all<any>([
           apiClient.get<any>('/domains'),
           apiClient.get<any>('/levels'),
+          apiClient.get<any>('/certificates'),
           apiClient.get<any>('/questions?limit=100'),
         ]);
         setDomains(domainsRes?.data ?? domainsRes ?? []);
         setLevels(levelsRes?.data ?? levelsRes ?? []);
+        setCertificates(certificatesRes?.data ?? certificatesRes ?? []);
         setAvailableQuestions(qRes?.data ?? qRes ?? []);
 
         if (isEdit) {
@@ -61,6 +65,7 @@ export default function TestBuilderPage() {
           setMaxAttempts(exam.maxAttempts ? String(exam.maxAttempts) : '');
           setDomainId(exam.domainId ?? '');
           setLevelId(exam.levelId ?? '');
+          setCertificateId(exam.certificateId ?? '');
           setTopics((exam.topics ?? []).join(', '));
           setSelectedQuestionIds((exam.questions ?? []).map((q: any) => q.id ?? q.questionId));
         }
@@ -112,6 +117,7 @@ export default function TestBuilderPage() {
         maxAttempts: maxAttempts ? Number(maxAttempts) : undefined,
         domainId: domainId || undefined,
         levelId: levelId || undefined,
+        certificateId: certificateId || undefined,
         topics: topics.trim() ? topics.split(',').map(t => t.trim()).filter(Boolean) : [],
         questions: selectedQuestionIds.map((id, idx) => ({ questionId: id, order: idx + 1 })),
       };
@@ -218,6 +224,9 @@ export default function TestBuilderPage() {
                 <FieldError msg={errors.levelId} />
               </div>
             </div>
+
+            {/* Duration & Pass score */}
+            <div><label className="block text-sm font-semibold text-on-surface mb-1">Chứng chỉ liên quan</label><select value={certificateId} onChange={event => setCertificateId(event.target.value)} className="w-full rounded-xl border border-outline-variant px-3 py-2 text-sm text-on-surface bg-surface-container-low"><option value="">Không gắn chứng chỉ</option>{certificates.map(cert => <option key={cert.id} value={cert.id}>{cert.name}</option>)}</select></div>
 
             {/* Duration & Pass score */}
             <div className="grid grid-cols-2 gap-3">

@@ -37,7 +37,7 @@ export function Modal({ open, onClose, children, maxWidth = 'max-w-lg' }: ModalP
       role="dialog"
       aria-modal="true"
       style={{ position: 'fixed', inset: 0, zIndex: 9999 }}
-      className="flex items-center justify-center p-4"
+      className="p-4"
     >
       {/* Backdrop */}
       <div
@@ -49,7 +49,15 @@ export function Modal({ open, onClose, children, maxWidth = 'max-w-lg' }: ModalP
       {/* Panel */}
       <div
         className={`relative w-full ${maxWidth} bg-surface-container-lowest rounded-2xl shadow-2xl border border-outline-variant max-h-[90vh] overflow-y-auto`}
-        style={{ zIndex: 1 }}
+        style={{
+          position: 'absolute',
+          zIndex: 1,
+          top: '50%',
+          left: '50%',
+          width: 'min(42rem, calc(100vw - 32px))',
+          maxWidth: 'none',
+          transform: 'translate(-50%, -50%)',
+        }}
       >
         {children}
       </div>

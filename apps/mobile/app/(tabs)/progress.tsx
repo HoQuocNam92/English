@@ -5,6 +5,7 @@ import { StyleSheet, Text, View, TouchableOpacity, ScrollView, ActivityIndicator
 import { MaterialIcons } from '@expo/vector-icons';
 import { colors, spacing } from '@techenglish/design-tokens';
 import { api } from '../../src/shared/api/api-client';
+import Svg, { Path } from 'react-native-svg';
 
 export default function MobileProgressScreen() {
   const router = useRouter();
@@ -34,104 +35,128 @@ export default function MobileProgressScreen() {
   }
 
   const summary = progress?.summary || {};
-  const streakDays = summary.studyStreakDays ?? 0;
-  const streakHours = ((summary.totalStudyMinutes || 0) / 60).toFixed(1);
-  const readinessPercent = summary.averageScorePercent ?? 0;
-  const readinessTarget = learnerProfile?.certGoals?.[0]?.certificate?.name ?? 'Chứng chỉ mục tiêu';
-  const readinessScore = summary.averageScorePercent ?? 0;
+  const progressItems = Array.isArray(progress?.progress) ? progress.progress : [];
+  const attempts = Array.isArray(progress?.recentAttempts) ? progress.recentAttempts : [];
+  const lessonProgress = progressItems.filter((item: any) => item.resourceType === 'lesson');
+  const completedLessons = lessonProgress.filter((item: any) => item.status === 'completed').length;
+  const overallPercent = Math.round(summary.overallCompletionPercent ?? (lessonProgress.length ? lessonProgress.reduce((sum: number, item: any) => sum + (item.completionPercent ?? 0), 0) / lessonProgress.length : 0));
+  const learnedCount = summary.wordsLearned ?? completedLessons;
+  const testCount = attempts.length;
+  const averagePercent = summary.averageScorePercent ?? (attempts.length ? attempts.reduce((sum: number, item: any) => sum + (item.scorePercent ?? 0), 0) / attempts.length : 0);
+  const averageScore = (averagePercent / 10).toFixed(1);
 
-  const domainSkills = learnerProfile?.domains?.map((d: any, index: number) => {
-    const domainProgress = progress?.progress?.find((p: any) => p.domainId === d.domain?.id) || {};
-    const colorsList = ['#4f46e5', '#16a34a', '#0284c7', '#7c3aed', '#d97706'];
-    return {
-      name: d.domain?.name || 'Unknown',
-      percent: domainProgress.completionPercent || 0,
-      color: colorsList[index % colorsList.length]
-    };
-  }) || [];
+  const certGoals = learnerProfile?.certGoals || [];
+  const mainCert = certGoals[0]?.certificate?.name || 'Chưa chọn chứng chỉ';
 
-  const recentTests = progress?.recentAttempts?.map((t: any) => ({
-    id: t.id,
-    title: t.exam?.title || 'Bài kiểm tra',
-    meta: `${new Date(t.submittedAt).toLocaleDateString('vi-VN')} · ${t.totalQuestions || 0} câu · Làm trong ${t.exam?.durationMinutes || 0} phút`,
-    scoreText: `${t.scorePercent || 0}% Đạt` // Simplification for now, UI just needs a string
-  })) || [];
+  const heatmapData = Array.from({ length: 28 }).map((_, index) => {
+    const target = new Date(); target.setHours(0, 0, 0, 0); target.setDate(target.getDate() - (27 - index));
+    const count = progressItems.filter((item: any) => { const date = new Date(item.updatedAt); date.setHours(0, 0, 0, 0); return date.getTime() === target.getTime(); }).length;
+    return count > 1 ? colors.primary : count === 1 ? '#c3c0ff' : '#e6e8ea';
+  });
 
   return (
-    <ScrollView style={styles.container} contentContainerStyle={styles.contentContainer} showsVerticalScrollIndicator={false}>
+    <View style={styles.container}>
       <StatusBar style="dark" />
-
-      {/* Header */}
-      <View style={styles.header}>
-        <Text style={styles.title}>Tiến độ học tập</Text>
-        <Text style={styles.subtitle}>Theo dõi mức độ thành thạo và năng lực thi chứng chỉ.</Text>
+      
+      {/* TopAppBar */}
+      <View style={styles.headerBar}>
+        <Text style={styles.headerTitle}>IT English Pro</Text>
+        <TouchableOpacity onPress={() => router.push('/calendar' as any)}><MaterialIcons name="more-vert" size={24} color={colors.primary} /></TouchableOpacity>
       </View>
 
-      {/* Streak Banner */}
-      <View style={styles.streakCard}>
-        <View style={styles.streakLeft}>
-          <Text style={styles.streakEmoji}>🔥</Text>
-          <View>
-            <Text style={styles.streakTitle}>Chuỗi {streakDays} Ngày liên tiếp</Text>
-            <Text style={styles.streakSub}>Học ít nhất 15 phút mỗi ngày</Text>
-          </View>
+      <ScrollView contentContainerStyle={styles.contentContainer} showsVerticalScrollIndicator={false}>
+        
+        {/* Header */}
+        <View style={styles.header}>
+          <Text style={styles.title}>Tiến độ học tập</Text>
+          <Text style={styles.subtitle}>Theo dõi hành trình chinh phục tiếng Anh IT của bạn.</Text>
         </View>
-        <View style={styles.hoursBadge}>
-          <Text style={styles.hoursText}>{streakHours} Giờ</Text>
-        </View>
-      </View>
 
-      {/* Target Cert Readiness Card */}
-      <View style={styles.certCard}>
-        <View style={styles.certHeader}>
-          <Text style={styles.certLabel}>Độ sẵn sàng thi chứng chỉ</Text>
-          <Text style={styles.certPercent}>{readinessPercent}%</Text>
-        </View>
-        <Text style={styles.certName}>{readinessTarget}</Text>
-        <View style={styles.progressBar}>
-          <View style={[styles.progressFill, { width: `${readinessPercent}%` }]} />
-        </View>
-        <Text style={styles.certAdvice}>
-          💡 Điểm trung bình thi thử của bạn là <Text style={styles.boldText}>{readinessScore}%</Text> (vượt chuẩn đỗ 70%). Bạn đã sẵn sàng đăng ký thi thật!
-        </Text>
-      </View>
-
-      {/* Domain Proficiency */}
-      <View style={styles.sectionCard}>
-        <Text style={styles.sectionTitle}>Mức độ thành thạo theo chuyên ngành</Text>
-        <View style={styles.skillsList}>
-          {domainSkills.length > 0 ? domainSkills.map((s: any) => (
-            <View key={s.name} style={styles.skillItem}>
-              <View style={styles.skillHeader}>
-                <Text style={styles.skillName}>{s.name}</Text>
-                <Text style={styles.skillPercent}>{s.percent}%</Text>
-              </View>
-              <View style={styles.skillBar}>
-                <View style={[styles.skillBarFill, { width: `${s.percent}%`, backgroundColor: s.color }]} />
-              </View>
+        {/* Overall Progress Donut Chart */}
+        <View style={styles.card}>
+          <Text style={styles.cardTitleCenter}>Tổng quan khóa học</Text>
+          <View style={styles.chartContainer}>
+            <Svg viewBox="0 0 36 36" width="100%" height="100%">
+              <Path
+                d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
+                fill="none"
+                stroke="#e2dfff"
+                strokeWidth="3.8"
+              />
+              <Path
+                d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
+                fill="none"
+                stroke={colors.primary}
+                strokeWidth="2.8"
+                strokeDasharray={`${overallPercent}, 100`}
+                strokeLinecap="round"
+              />
+            </Svg>
+            <View style={styles.chartTextContainer}>
+              <Text style={styles.chartPercent}>{overallPercent}%</Text>
+              <Text style={styles.chartLabel}>Hoàn thành</Text>
             </View>
-          )) : <Text style={{color: colors.mutedText}}>Chưa có dữ liệu chuyên ngành.</Text>}
+          </View>
         </View>
-      </View>
 
-      {/* Test History CTA */}
-      <TouchableOpacity 
-        style={[styles.sectionCard, { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingVertical: spacing.md }]}
-        onPress={() => router.push('/test-history' as any)}
-        activeOpacity={0.8}
-      >
-        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
-          <View style={{ width: 40, height: 40, borderRadius: 10, backgroundColor: '#ede9fe', alignItems: 'center', justifyContent: 'center' }}>
-            <MaterialIcons name="assignment" size={22} color={colors.primary} />
+        {/* Summary Cards Grid */}
+        <View style={styles.summaryGrid}>
+          <View style={styles.summaryCard}>
+            <View style={styles.summaryHeader}>
+              <MaterialIcons name="check-circle" size={20} color="#464555" />
+              <Text style={styles.summaryTitle}>Bài đã học</Text>
+            </View>
+            <Text style={styles.summaryValue}>{learnedCount}</Text>
           </View>
-          <View>
-            <Text style={{ fontSize: 15, fontWeight: '800', color: colors.text }}>Lịch sử thi & Bảng điểm chi tiết</Text>
-            <Text style={{ fontSize: 12, color: colors.mutedText, marginTop: 2 }}>Xem lại tất cả kết quả bài thi và đáp án từng câu</Text>
+
+          <View style={styles.summaryCard}>
+            <View style={styles.summaryHeader}>
+              <MaterialIcons name="quiz" size={20} color="#464555" />
+              <Text style={styles.summaryTitle}>Bài kiểm tra</Text>
+            </View>
+            <Text style={styles.summaryValue}>{testCount}</Text>
+          </View>
+
+          <View style={[styles.summaryCard, styles.summaryCardFull]}>
+            <View style={styles.summaryHeader}>
+              <MaterialIcons name="analytics" size={20} color="#464555" />
+              <Text style={styles.summaryTitle}>Điểm trung bình</Text>
+            </View>
+            <Text style={[styles.summaryValue, { color: colors.primary }]}>{averageScore}</Text>
           </View>
         </View>
-        <MaterialIcons name="chevron-right" size={22} color={colors.outline} />
-      </TouchableOpacity>
-    </ScrollView>
+
+        {/* Certification Progress */}
+        <View style={styles.card}>
+          <View style={styles.cardHeaderRow}>
+            <Text style={styles.cardTitle}>Tiến độ chứng chỉ</Text>
+            <MaterialIcons name="workspace-premium" size={24} color={colors.outline} />
+          </View>
+          
+          <View style={styles.certItem}>
+            <View style={styles.certRow}>
+              <Text style={styles.certName}>{mainCert}</Text>
+              <Text style={styles.certPercentText}>{overallPercent}%</Text>
+            </View>
+            <View style={styles.progressBarBg}>
+              <View style={[styles.progressBarFill, { width: `${overallPercent}%` }]} />
+            </View>
+            <Text style={styles.certTime}>{certGoals.length ? 'Dựa trên tiến độ học tập hiện tại' : 'Chọn chứng chỉ trong hồ sơ để theo dõi'}</Text>
+          </View>
+        </View>
+
+        {/* Activity Heatmap */}
+        <View style={styles.card}>
+          <Text style={styles.cardTitle}>Hoạt động 30 ngày qua</Text>
+          <View style={styles.heatmapGrid}>
+            {heatmapData.map((color, idx) => (
+              <View key={idx} style={[styles.heatmapCell, { backgroundColor: color }]} />
+            ))}
+          </View>
+        </View>
+
+      </ScrollView>
+    </View>
   );
 }
 
@@ -140,202 +165,174 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#f8fafc'
   },
+  headerBar: {
+    height: 64,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: spacing.md,
+    backgroundColor: '#ffffff',
+    borderBottomWidth: 1,
+    borderBottomColor: '#e0e3e5',
+    marginTop: 40 // safearea substitute
+  },
+  headerTitle: {
+    fontSize: 20,
+    fontWeight: '700',
+    color: colors.primary,
+  },
   contentContainer: {
-    padding: spacing.lg,
-    paddingTop: 50,
-    paddingBottom: 40,
+    padding: spacing.md,
+    paddingTop: spacing.lg,
+    paddingBottom: 80,
     gap: spacing.lg
   },
   header: {
-    gap: spacing.xs
+    marginBottom: spacing.xs
   },
   title: {
-    fontSize: 22,
-    fontWeight: '800',
-    color: colors.text
+    fontSize: 30,
+    fontWeight: '700',
+    color: '#191c1e',
+    marginBottom: 4,
+    letterSpacing: -0.5,
   },
   subtitle: {
-    fontSize: 13,
-    color: colors.mutedText,
-    lineHeight: 18
-  },
-  streakCard: {
-    backgroundColor: '#fff7ed',
-    borderRadius: 16,
-    padding: spacing.md,
-    borderWidth: 1,
-    borderColor: '#ffedd5',
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center'
-  },
-  streakLeft: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: spacing.sm
-  },
-  streakEmoji: {
-    fontSize: 32
-  },
-  streakTitle: {
     fontSize: 14,
-    fontWeight: '800',
-    color: '#9a3412'
+    color: '#464555',
   },
-  streakSub: {
-    fontSize: 11,
-    color: '#c2410c'
-  },
-  hoursBadge: {
-    backgroundColor: '#ffedd5',
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-    borderRadius: 8
-  },
-  hoursText: {
-    fontSize: 12,
-    fontWeight: '800',
-    color: '#9a3412'
-  },
-  certCard: {
+  card: {
     backgroundColor: '#ffffff',
-    borderRadius: 16,
-    padding: spacing.lg,
     borderWidth: 1,
     borderColor: '#e2e8f0',
-    gap: spacing.xs
+    borderRadius: 12,
+    padding: spacing.lg,
+    shadowColor: '#0f1718',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.05,
+    shadowRadius: 2,
+    elevation: 1,
   },
-  certHeader: {
+  cardTitleCenter: {
+    fontSize: 20,
+    fontWeight: '600',
+    color: '#191c1e',
+    textAlign: 'center',
+    marginBottom: spacing.md,
+  },
+  chartContainer: {
+    position: 'relative',
+    width: 192,
+    height: 192,
+    alignSelf: 'center',
+  },
+  chartTextContainer: {
+    position: 'absolute',
+    top: 0, left: 0, right: 0, bottom: 0,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  chartPercent: {
+    fontSize: 30,
+    fontWeight: '700',
+    color: colors.primary,
+    letterSpacing: -0.5,
+  },
+  chartLabel: {
+    fontSize: 12,
+    color: '#464555',
+  },
+  summaryGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: spacing.md,
+  },
+  summaryCard: {
+    width: '47.5%', // approx half width with gap
+    backgroundColor: '#ffffff',
+    borderWidth: 1,
+    borderColor: '#e2e8f0',
+    borderRadius: 12,
+    padding: spacing.md,
+    justifyContent: 'space-between',
+    minHeight: 100,
+  },
+  summaryCardFull: {
+    width: '100%',
+  },
+  summaryHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.sm,
+    marginBottom: spacing.sm,
+  },
+  summaryTitle: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#464555',
+  },
+  summaryValue: {
+    fontSize: 24,
+    fontWeight: '700',
+    color: '#191c1e',
+    marginTop: 'auto',
+  },
+  cardHeaderRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    alignItems: 'center'
+    alignItems: 'center',
+    marginBottom: spacing.md,
   },
-  certLabel: {
-    fontSize: 11,
-    fontWeight: '800',
-    color: colors.primary,
-    textTransform: 'uppercase'
+  cardTitle: {
+    fontSize: 20,
+    fontWeight: '600',
+    color: '#191c1e',
+    marginBottom: spacing.md,
   },
-  certPercent: {
-    fontSize: 18,
-    fontWeight: '800',
-    color: colors.primary
+  certItem: {
+    marginBottom: spacing.md,
+  },
+  certRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginBottom: 4,
   },
   certName: {
-    fontSize: 15,
-    fontWeight: '800',
-    color: colors.text,
-    marginTop: 2
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#191c1e',
   },
-  progressBar: {
-    height: 6,
-    backgroundColor: '#f1f5f9',
-    borderRadius: 3,
-    marginVertical: spacing.xs,
-    overflow: 'hidden'
+  certPercentText: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: colors.primary,
   },
-  progressFill: {
+  progressBarBg: {
+    width: '100%',
+    height: 8,
+    backgroundColor: '#e6e8ea',
+    borderRadius: 4,
+  },
+  progressBarFill: {
     height: '100%',
     backgroundColor: colors.primary,
-    borderRadius: 3
+    borderRadius: 4,
   },
-  certAdvice: {
+  certTime: {
     fontSize: 12,
-    color: colors.mutedText,
-    lineHeight: 16,
-    marginTop: 4
+    color: '#464555',
+    marginTop: spacing.sm,
   },
-  sectionCard: {
-    backgroundColor: '#ffffff',
-    borderRadius: 16,
-    padding: spacing.lg,
-    borderWidth: 1,
-    borderColor: '#e2e8f0',
-    gap: spacing.md
-  },
-  sectionHeader: {
+  heatmapGrid: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center'
+    flexWrap: 'wrap',
+    gap: 4,
+    height: 128,
   },
-  sectionTitle: {
-    fontSize: 15,
-    fontWeight: '800',
-    color: colors.text
-  },
-  seeAllText: {
-    fontSize: 12,
-    fontWeight: '600',
-    color: colors.primary
-  },
-  skillsList: {
-    gap: spacing.md
-  },
-  skillItem: {
-    gap: 4
-  },
-  skillHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between'
-  },
-  skillName: {
-    fontSize: 12,
-    fontWeight: '700',
-    color: colors.text
-  },
-  skillPercent: {
-    fontSize: 12,
-    fontWeight: '800',
-    color: colors.text
-  },
-  skillBar: {
-    height: 6,
-    backgroundColor: '#f1f5f9',
-    borderRadius: 3,
-    overflow: 'hidden'
-  },
-  skillBarFill: {
-    height: '100%',
-    borderRadius: 3
-  },
-  historyList: {
-    gap: spacing.sm
-  },
-  historyItem: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    padding: spacing.sm,
-    backgroundColor: '#f8fafc',
-    borderRadius: 10
-  },
-  historyLeft: {
-    flex: 1,
-    marginRight: spacing.sm
-  },
-  historyTitle: {
-    fontSize: 13,
-    fontWeight: '700',
-    color: colors.text
-  },
-  historyMeta: {
-    fontSize: 11,
-    color: colors.mutedText,
-    marginTop: 2
-  },
-  scoreBadgePass: {
-    backgroundColor: '#dcfce7',
-    paddingHorizontal: 8,
-    paddingVertical: 3,
-    borderRadius: 6
-  },
-  scorePassText: {
-    fontSize: 11,
-    fontWeight: '800',
-    color: '#15803d'
-  },
-  boldText: {
-    fontWeight: '700',
-    color: colors.text
+  heatmapCell: {
+    width: '12%', // Roughly 7 columns
+    aspectRatio: 1,
+    borderRadius: 4,
+    opacity: 0.8,
   }
 });

@@ -18,55 +18,14 @@ export default function NotificationsPage() {
           const data = res.data ?? res;
           const { notifications } = data.notifications ? data : { notifications: data };
           if (Array.isArray(notifications) && notifications.length > 0) {
-            setNotifications(notifications);
+            setNotifications(notifications.map((item: any) => ({ ...item, description: item.message, time: item.createdAt ? new Date(item.createdAt).toLocaleString('vi-VN') : '' })));
             return;
           }
         }
       } catch (error) {
         console.error(error);
       }
-      // Fallback static data mapping exactly to design
-      setNotifications([
-        {
-          id: 1,
-          type: 'warning',
-          title: 'Bạn chưa học trong 3 ngày',
-          description: 'Duy trì thói quen học tập để đạt kết quả tốt nhất. Hãy dành 15 phút hôm nay cho học phần Cybersecurity Basics.',
-          time: '10:30 AM',
-          dateGroup: 'Hôm nay',
-          isRead: false,
-          actionText: 'Tiếp tục học',
-        },
-        {
-          id: 2,
-          type: 'ai_recommendation',
-          title: 'Có bài luyện tập mới dành cho bạn',
-          description: 'AI của TechEnglish phân tích điểm yếu của bạn và đề xuất bài tập từ vựng Data Structures.',
-          time: '08:15 AM',
-          dateGroup: 'Hôm nay',
-          isRead: false,
-          actionText: 'Làm ngay',
-        },
-        {
-          id: 3,
-          type: 'success',
-          title: 'Bạn đạt 85% bài kiểm tra Networking',
-          description: 'Tuyệt vời! Bạn đã vượt qua bài kiểm tra Module 3. Xem lại chi tiết để cải thiện phần Subnetting.',
-          time: 'Hôm qua, 14:20',
-          dateGroup: 'Hôm qua',
-          isRead: true,
-          score: '85/100',
-        },
-        {
-          id: 4,
-          type: 'info',
-          title: 'Có bài học mới về Cloud Computing',
-          description: 'Chương 4: "AWS vs Azure: Terminology" đã được mở khóa trong lộ trình của bạn.',
-          time: 'Hôm qua, 09:00',
-          dateGroup: 'Hôm qua',
-          isRead: true,
-        }
-      ]);
+      setNotifications([]);
     };
     fetchNotifications();
   }, []);
@@ -80,7 +39,7 @@ export default function NotificationsPage() {
     setNotifications(notifications.map(n => ({ ...n, isRead: true })));
   };
 
-  const toggleRead = async (id: number) => {
+  const toggleRead = async (id: string) => {
     const notif = notifications.find(n => n.id === id);
     if (!notif) return;
     
@@ -94,9 +53,16 @@ export default function NotificationsPage() {
     setNotifications(notifications.map(n => n.id === id ? { ...n, isRead: true } : n));
   };
 
-  // Group by date
-  const groupedNotifications = notifications.reduce((acc, notif) => {
-    const group = notif.dateGroup || 'Hôm nay';
+  const categoryTypes: Record<string, string[]> = {
+    learning: ['lesson_complete', 'streak', 'reminder'],
+    test: ['exam', 'test_result'],
+    cert: ['achievement', 'certificate'],
+    system: ['system', 'flash_sale'],
+  };
+  const visibleNotifications = filter === 'all' ? notifications : notifications.filter((item) => categoryTypes[filter]?.includes(item.type));
+  const groupedNotifications = visibleNotifications.reduce((acc, notif) => {
+    const created = notif.createdAt ? new Date(notif.createdAt) : new Date();
+    const group = created.toDateString() === new Date().toDateString() ? 'Hôm nay' : created.toLocaleDateString('vi-VN');
     if (!acc[group]) acc[group] = [];
     acc[group].push(notif);
     return acc;

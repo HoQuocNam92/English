@@ -4,17 +4,19 @@ import React, { useEffect, useState } from 'react';
 import { LearnerShell } from '@/shared/layout';
 import { apiClient } from '@/shared/api/api-client';
 import { useI18n } from '@/shared/i18n';
+import { useRouter } from 'next/navigation';
 
 export default function RoadmapPage() {
   const { t } = useI18n();
+  const router = useRouter();
   const [loading, setLoading] = useState(true);
-  const [progress, setProgress] = useState<any>(null);
+  const [path, setPath] = useState<any>(null);
 
   useEffect(() => {
     async function fetchData() {
       try {
-        const progressRes = await apiClient.get('/progress/me');
-        setProgress((progressRes as any)?.data ?? progressRes ?? null);
+        const pathRes = await apiClient.get('/learning-paths/me');
+        setPath((pathRes as any)?.data ?? pathRes ?? null);
       } catch (err) {
         console.error(err);
       } finally {
@@ -34,25 +36,28 @@ export default function RoadmapPage() {
     );
   }
 
-  // Use provided design data
+  if (!path) {
+    return <LearnerShell><div className="rounded-2xl bg-surface-container-lowest p-12 text-center"><span className="material-symbols-outlined mb-3 text-5xl text-outline">route</span><h1 className="text-xl font-bold">Chưa có lộ trình học tập</h1><p className="mt-2 text-sm text-on-surface-variant">Hãy hoàn tất hồ sơ và tạo lộ trình phù hợp với mục tiêu của bạn.</p></div></LearnerShell>;
+  }
+
+  const modules = [...(path.modules ?? [])].sort((a: any, b: any) => a.order - b.order);
+  const completedModules = modules.filter((module: any) => module.status === 'completed').length;
+  const currentModule = modules.find((module: any) => ['current', 'active', 'in_progress'].includes(module.status)) ?? modules.find((module: any) => module.status !== 'completed' && module.currentLessonId) ?? modules.find((module: any) => module.currentLessonId) ?? modules[0];
   const roadmapData = {
-    title: 'AWS Certified Cloud Practitioner',
-    overallProgress: 40,
-    completedModules: 2,
-    totalModules: 6,
+    title: path.title,
+    overallProgress: Math.round(path.overallProgressPercent ?? 0),
+    completedModules,
+    totalModules: modules.length,
     currentModule: {
-      name: 'IAM',
-      fullName: 'Identity and Access Management',
+      name: currentModule?.title ?? 'Chưa bắt đầu',
+      fullName: currentModule?.description ?? path.careerGoal,
     },
-    estTime: '2 tuần',
-    modules: [
-      { id: 1, title: 'Cloud Fundamentals', status: 'completed' },
-      { id: 2, title: 'Global Infrastructure', status: 'completed' },
-      { id: 3, title: 'IAM', subtitle: 'Identity and Access Management', status: 'active' },
-      { id: 4, title: 'VPC', subtitle: 'Virtual Private Cloud', status: 'pending' },
-      { id: 5, title: 'Monitoring', subtitle: 'CloudWatch & CloudTrail', status: 'pending' },
-      { id: 6, title: 'Practice Test', status: 'locked', isExam: true },
-    ]
+    estTime: `${Math.max(modules.length - completedModules, 0)} học phần`,
+    modules: modules.map((module: any) => ({ id: module.order, lessonId: module.currentLessonId, title: module.title, subtitle: module.description, status: ['current', 'in_progress'].includes(module.status) ? 'active' : module.status, isExam: module.isCapstone })),
+  };
+
+  const continueLesson = () => {
+    if (currentModule?.currentLessonId) router.push(`/learn/lessons/${currentModule.currentLessonId}`);
   };
 
   return (
@@ -65,7 +70,7 @@ export default function RoadmapPage() {
             <p className="text-[20px] font-semibold text-on-surface-variant">{roadmapData.title}</p>
           </div>
           {/* Quick Actions */}
-          <button className="bg-primary hover:bg-primary-container text-white font-semibold text-[14px] py-2 px-6 rounded-[10px] transition-colors flex items-center gap-2">
+          <button type="button" onClick={continueLesson} disabled={!currentModule?.currentLessonId} className="bg-primary hover:bg-primary-container text-white font-semibold text-[14px] py-2 px-6 rounded-[10px] transition-colors flex items-center gap-2 disabled:cursor-not-allowed disabled:opacity-50">
             <span className="material-symbols-outlined" style={{ fontVariationSettings: "'FILL' 1" }}>play_arrow</span>
             Tiếp tục học
           </button>
@@ -165,19 +170,19 @@ export default function RoadmapPage() {
                   )}
 
                   {module.status === 'active' && (
-                    <div className="bg-ai-accent border border-secondary rounded-lg p-4 shadow-sm relative overflow-hidden">
+                    <div className="bg-gradient-to-r from-primary to-secondary rounded-lg p-4 shadow-sm relative overflow-hidden text-white">
                       <div className="absolute left-0 top-0 bottom-0 w-1 bg-secondary"></div>
                       <div className="flex justify-between items-center">
                         <div>
-                          <span className="text-[12px] font-bold tracking-[0.05em] text-secondary mb-1 flex items-center gap-1 uppercase">
+                          <span className="text-[12px] font-bold tracking-[0.05em] text-white mb-1 flex items-center gap-1 uppercase">
                             <span className="material-symbols-outlined text-[14px]">bolt</span>
                             Đang học
                           </span>
-                          <h3 className="text-[14px] font-semibold text-on-surface">
-                            {module.title} <span className="text-[12px] text-on-surface-variant font-normal">({module.subtitle})</span>
+                          <h3 className="text-[14px] font-semibold text-white">
+                            {module.title} <span className="text-[12px] text-white/80 font-normal">({module.subtitle})</span>
                           </h3>
                         </div>
-                        <button className="text-secondary font-semibold text-[14px] hover:underline">Tiếp tục</button>
+                        <button type="button" onClick={continueLesson} className="text-white font-semibold text-[14px] hover:underline">Tiếp tục</button>
                       </div>
                     </div>
                   )}

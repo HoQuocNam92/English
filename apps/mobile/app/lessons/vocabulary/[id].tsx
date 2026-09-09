@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
-import { StyleSheet, Text, View, TouchableOpacity, ActivityIndicator } from 'react-native';
+import { StyleSheet, Text, View, TouchableOpacity, ActivityIndicator, ScrollView } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
 import { colors, spacing } from '@techenglish/design-tokens';
 import { api } from '../../../src/shared/api/api-client';
@@ -13,7 +13,6 @@ export default function MobileVocabularyLessonScreen() {
   const router = useRouter();
   const [flashcards, setFlashcards] = useState<any[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
-  const [isFlipped, setIsFlipped] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
@@ -29,7 +28,6 @@ export default function MobileVocabularyLessonScreen() {
       const data = response.data || response;
       let items = Array.isArray(data) ? data : data.items || [];
       
-      // Fallback: If no vocabulary linked to this specific lesson, fetch general vocabulary list
       if (items.length === 0) {
         const fallbackRes = await api.get<any>('/vocabulary?limit=20');
         const fallbackData = fallbackRes.data || fallbackRes;
@@ -75,11 +73,9 @@ export default function MobileVocabularyLessonScreen() {
   const phonetic  = safeText(currentCard.pronunciationIpa ?? currentCard.phonetic ?? currentCard.pronunciation);
   const type      = safeText(currentCard.partOfSpeech ?? currentCard.type, 'word');
   const defVi     = safeText(currentCard.definitionVi ?? currentCard.meaningVi ?? currentCard.defVi, 'Chưa có nghĩa tiếng Việt');
-  const defEn     = safeText(currentCard.definitionEn ?? currentCard.meaningEn ?? currentCard.defEn ?? currentCard.definition);
   
   const exampleObj = Array.isArray(currentCard.examples) ? currentCard.examples[0] : currentCard.example;
   const exampleEn  = safeText(typeof exampleObj === 'object' ? (exampleObj?.sentenceEn ?? exampleObj?.sentence) : exampleObj);
-  const exampleVi  = safeText(typeof exampleObj === 'object' ? (exampleObj?.translationVi ?? exampleObj?.translation) : '');
 
   const playSound = () => {
     if (term && term !== 'No Term') {
@@ -88,13 +84,20 @@ export default function MobileVocabularyLessonScreen() {
   };
 
   const handleNextCard = () => {
-    setIsFlipped(false);
     if (currentIndex < total - 1) {
       setCurrentIndex(currentIndex + 1);
-    } else {
-      alert('Tuyệt vời! Bạn đã hoàn thành toàn bộ thẻ từ vựng của bài này!');
-      router.back();
     }
+  };
+
+  const handlePrevCard = () => {
+    if (currentIndex > 0) {
+      setCurrentIndex(currentIndex - 1);
+    }
+  };
+
+  const handleFinish = () => {
+    alert('Tuyệt vời! Bạn đã hoàn thành bài học từ vựng.');
+    router.back();
   };
 
   return (
@@ -103,75 +106,77 @@ export default function MobileVocabularyLessonScreen() {
       {/* Header */}
       <View style={styles.header}>
         <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
-          <MaterialIcons name="close" size={24} color={colors.text} />
+          <MaterialIcons name="arrow-back" size={24} color="#464555" />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>Thẻ từ vựng ({currentIndex + 1}/{total})</Text>
+        <View style={styles.headerCenter}>
+          <Text style={styles.headerTitle} numberOfLines={1}>Từ vựng bài học</Text>
+          <View style={styles.progressHeaderBar}>
+            <View style={[styles.progressHeaderFill, { width: `${((currentIndex + 1) / total) * 100}%` }]} />
+          </View>
+        </View>
         <View style={{ width: 40 }} />
       </View>
 
-      {/* Progress */}
-      <View style={styles.progressBar}>
-        <View style={[styles.progressFill, { width: `${((currentIndex + 1) / total) * 100}%` }]} />
-      </View>
+      <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
+        <View style={styles.tagBadge}>
+          <MaterialIcons name="code" size={16} color={colors.primary} />
+          <Text style={styles.tagBadgeText}>{type}</Text>
+        </View>
 
-      {/* Card Body */}
-      <View style={styles.cardContainer}>
-        <TouchableOpacity
-          style={styles.flashcard}
-          activeOpacity={0.9}
-          onPress={() => setIsFlipped(!isFlipped)}
-        >
-          <View style={styles.cardTop}>
-            <View style={styles.typeBadge}>
-              <Text style={styles.typeBadgeText}>{type}</Text>
-            </View>
-            <TouchableOpacity style={styles.soundButton} onPress={playSound}>
-              <MaterialIcons name="volume-up" size={24} color={colors.primary} />
-            </TouchableOpacity>
-          </View>
-
-          <View style={styles.cardMain}>
-            <TouchableOpacity onPress={playSound} activeOpacity={0.7} style={{ alignItems: 'center' }}>
-              <Text style={styles.termText}>{term}</Text>
+        <View style={styles.card}>
+          <View style={styles.cardHero}>
+            <Text style={styles.termText}>{term}</Text>
+            <View style={styles.phoneticRow}>
               {phonetic ? <Text style={styles.phoneticText}>{phonetic}</Text> : null}
-            </TouchableOpacity>
-
-            {isFlipped ? (
-              <View style={styles.flippedContent}>
-                <View style={styles.divider} />
-                <Text style={styles.defViText}>{defVi}</Text>
-                {defEn ? <Text style={styles.defEnText}>{defEn}</Text> : null}
-                {exampleEn ? (
-                  <View style={styles.exampleBox}>
-                    <Text style={styles.exampleText}>💬 {exampleEn}</Text>
-                    {exampleVi ? <Text style={[styles.exampleText, { color: colors.primary, marginTop: 4 }]}>👉 {exampleVi}</Text> : null}
-                  </View>
-                ) : null}
-              </View>
-            ) : (
-              <View style={styles.tapPrompt}>
-                <MaterialIcons name="touch-app" size={20} color={colors.outline} />
-                <Text style={styles.tapPromptText}>Chạm vào thẻ để xem nghĩa & ví dụ</Text>
-              </View>
-            )}
+              <TouchableOpacity style={styles.soundButton} onPress={playSound}>
+                <MaterialIcons name="volume-up" size={20} color={colors.primary} />
+              </TouchableOpacity>
+            </View>
           </View>
-        </TouchableOpacity>
-      </View>
 
-      {/* Bottom Rating Buttons */}
-      <View style={styles.bottomBar}>
-        <TouchableOpacity
-          style={[styles.ratingBtn, styles.btnAgain]}
-          onPress={handleNextCard}
-        >
-          <Text style={styles.btnAgainText}>Chưa nhớ</Text>
+          <View style={styles.cardMeaning}>
+            <Text style={styles.sectionLabel}>Ý NGHĨA</Text>
+            <Text style={styles.meaningText}>{defVi}</Text>
+          </View>
+
+          {exampleEn ? (
+            <View style={styles.cardExample}>
+              <Text style={styles.sectionLabel}>VÍ DỤ</Text>
+              <Text style={styles.exampleText}>"{exampleEn}"</Text>
+            </View>
+          ) : null}
+        </View>
+
+        <View style={styles.navControls}>
+          <TouchableOpacity 
+            style={[styles.navBtn, currentIndex === 0 && styles.navBtnDisabled]} 
+            onPress={handlePrevCard}
+            disabled={currentIndex === 0}
+          >
+            <MaterialIcons name="navigate-before" size={20} color={currentIndex === 0 ? '#c7c4d8' : '#191c1e'} />
+            <Text style={[styles.navBtnText, currentIndex === 0 && { color: '#c7c4d8' }]}>Từ trước</Text>
+          </TouchableOpacity>
+          <Text style={styles.navCountText}>{currentIndex + 1} / {total}</Text>
+          <TouchableOpacity 
+            style={[styles.navBtn, currentIndex === total - 1 && styles.navBtnDisabled]} 
+            onPress={handleNextCard}
+            disabled={currentIndex === total - 1}
+          >
+            <Text style={[styles.navBtnText, currentIndex === total - 1 && { color: '#c7c4d8' }]}>Từ tiếp</Text>
+            <MaterialIcons name="navigate-next" size={20} color={currentIndex === total - 1 ? '#c7c4d8' : '#191c1e'} />
+          </TouchableOpacity>
+        </View>
+      </ScrollView>
+
+      {/* Bottom Actions Fixed */}
+      <View style={styles.bottomFixedArea}>
+        <TouchableOpacity style={styles.btnSecondary} onPress={() => {}}>
+          <Text style={styles.btnSecondaryText}>Luyện tập ngay</Text>
         </TouchableOpacity>
 
-        <TouchableOpacity
-          style={[styles.ratingBtn, styles.btnGood]}
-          onPress={handleNextCard}
-        >
-          <Text style={styles.btnGoodText}>Đã thuộc (Dễ)</Text>
+        <TouchableOpacity style={styles.btnPrimary} onPress={handleFinish}>
+          <MaterialIcons name="check-circle" size={20} color="#ffffff" />
+          <Text style={styles.btnPrimaryText}>Đánh dấu đã học</Text>
         </TouchableOpacity>
       </View>
     </View>
@@ -181,169 +186,221 @@ export default function MobileVocabularyLessonScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f8fafc'
+    backgroundColor: '#f7f9fb'
   },
   header: {
+    height: 64,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingHorizontal: spacing.lg,
-    paddingTop: 50,
-    paddingBottom: spacing.sm,
-    backgroundColor: '#ffffff'
+    paddingHorizontal: spacing.md,
+    paddingTop: 20, // safe area
+    backgroundColor: '#ffffff',
+    borderBottomWidth: 1,
+    borderBottomColor: '#c7c4d8',
+    marginTop: 20
   },
   backButton: {
     width: 40,
     height: 40,
-    borderRadius: 10,
+    borderRadius: 20,
+    alignItems: 'center',
+    justifyContent: 'center'
+  },
+  headerCenter: {
+    flex: 1,
     alignItems: 'center',
     justifyContent: 'center'
   },
   headerTitle: {
-    fontSize: 15,
-    fontWeight: '800',
-    color: colors.text
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#191c1e',
+    marginBottom: 4
   },
-  progressBar: {
+  progressHeaderBar: {
+    width: '100%',
     height: 4,
-    backgroundColor: '#e2e8f0'
+    backgroundColor: '#e6e8ea',
+    borderRadius: 2,
+    overflow: 'hidden'
   },
-  progressFill: {
+  progressHeaderFill: {
     height: '100%',
-    backgroundColor: colors.primary
+    backgroundColor: colors.primary,
+    borderRadius: 2
   },
-  cardContainer: {
-    flex: 1,
-    padding: spacing.lg,
-    justifyContent: 'center'
-  },
-  flashcard: {
-    backgroundColor: '#ffffff',
-    borderRadius: 20,
-    padding: spacing.xl,
-    minHeight: 380,
-    borderWidth: 1.5,
-    borderColor: '#e2e8f0',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.08,
-    shadowRadius: 12,
-    elevation: 4,
-    justifyContent: 'space-between'
-  },
-  cardTop: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
+  content: {
+    padding: spacing.md,
+    paddingTop: spacing.lg,
+    paddingBottom: 160,
     alignItems: 'center'
   },
-  typeBadge: {
-    backgroundColor: '#ede9fe',
-    paddingHorizontal: 8,
-    paddingVertical: 2,
-    borderRadius: 6
-  },
-  typeBadgeText: {
-    fontSize: 11,
-    fontWeight: '700',
-    color: colors.primary,
-    textTransform: 'capitalize'
-  },
-  soundButton: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-    backgroundColor: '#f5f3ff',
-    alignItems: 'center',
-    justifyContent: 'center'
-  },
-  cardMain: {
-    alignItems: 'center',
-    marginVertical: spacing.lg
-  },
-  termText: {
-    fontSize: 26,
-    fontWeight: '800',
-    color: colors.text,
-    textAlign: 'center'
-  },
-  phoneticText: {
-    fontSize: 14,
-    color: colors.mutedText,
-    marginTop: 4,
-    fontFamily: 'monospace'
-  },
-  tapPrompt: {
+  tagBadge: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 4,
-    marginTop: 40
+    backgroundColor: '#eaddff',
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 16,
+    alignSelf: 'flex-start',
+    marginBottom: spacing.md
   },
-  tapPromptText: {
+  tagBadgeText: {
     fontSize: 12,
-    color: colors.outline
+    fontWeight: '700',
+    color: '#5c00ca',
+    textTransform: 'uppercase'
   },
-  flippedContent: {
+  card: {
     width: '100%',
-    marginTop: spacing.md,
-    gap: spacing.sm
+    backgroundColor: '#ffffff',
+    borderRadius: 16,
+    padding: spacing.xl,
+    borderWidth: 1,
+    borderColor: '#c7c4d8',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 8,
+    elevation: 2
   },
-  divider: {
-    height: 1,
-    backgroundColor: '#f1f5f9',
-    marginVertical: spacing.xs
+  cardHero: {
+    alignItems: 'center',
+    gap: spacing.sm,
+    marginBottom: spacing.lg
   },
-  defViText: {
-    fontSize: 15,
+  termText: {
+    fontSize: 32,
     fontWeight: '700',
     color: colors.primary,
-    textAlign: 'center'
+    textAlign: 'center',
+    letterSpacing: -0.5
   },
-  defEnText: {
-    fontSize: 13,
-    color: colors.text,
-    lineHeight: 18,
-    textAlign: 'center'
-  },
-  exampleBox: {
-    backgroundColor: '#f8fafc',
-    borderRadius: 8,
-    padding: spacing.sm,
-    marginTop: spacing.xs
-  },
-  exampleText: {
-    fontSize: 12,
-    color: colors.mutedText,
-    fontStyle: 'italic'
-  },
-  bottomBar: {
-    padding: spacing.lg,
-    backgroundColor: '#ffffff',
-    borderTopWidth: 1,
-    borderTopColor: '#e2e8f0',
+  phoneticRow: {
     flexDirection: 'row',
-    gap: spacing.md
+    alignItems: 'center',
+    gap: spacing.sm
   },
-  ratingBtn: {
-    flex: 1,
-    height: 50,
-    borderRadius: 12,
+  phoneticText: {
+    fontSize: 14,
+    color: '#464555',
+    fontFamily: 'monospace' // Or standard if preferred
+  },
+  soundButton: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: '#e2dfff',
     alignItems: 'center',
     justifyContent: 'center'
   },
-  btnAgain: {
-    backgroundColor: '#fee2e2'
+  sectionLabel: {
+    fontSize: 12,
+    fontWeight: '700',
+    color: '#777587',
+    marginBottom: spacing.xs,
+    textTransform: 'uppercase',
+    letterSpacing: 0.5
   },
-  btnAgainText: {
-    color: '#991b1b',
+  cardMeaning: {
+    borderTopWidth: 1,
+    borderTopColor: '#e6e8ea',
+    paddingTop: spacing.md,
+    marginBottom: spacing.md
+  },
+  meaningText: {
+    fontSize: 20,
+    fontWeight: '600',
+    color: '#191c1e'
+  },
+  cardExample: {
+    backgroundColor: '#f2f4f6',
+    borderRadius: 8,
+    padding: spacing.md,
+    borderWidth: 1,
+    borderColor: 'rgba(199, 196, 216, 0.5)'
+  },
+  exampleText: {
     fontSize: 14,
-    fontWeight: '700'
+    color: '#191c1e',
+    fontStyle: 'italic',
+    lineHeight: 20
   },
-  btnGood: {
-    backgroundColor: colors.primary
+  navControls: {
+    width: '100%',
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginTop: spacing.xl
   },
-  btnGoodText: {
+  navBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#c7c4d8',
+    backgroundColor: '#ffffff'
+  },
+  navBtnDisabled: {
+    borderColor: '#e6e8ea',
+    backgroundColor: '#f2f4f6'
+  },
+  navBtnText: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#191c1e'
+  },
+  navCountText: {
+    fontSize: 14,
+    color: '#464555',
+    fontWeight: '500'
+  },
+  bottomFixedArea: {
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
+    backgroundColor: 'rgba(255,255,255,0.95)',
+    padding: spacing.md,
+    paddingBottom: 32, // safe area
+    flexDirection: 'row',
+    gap: spacing.md,
+    borderTopWidth: 1,
+    borderTopColor: '#f2f4f6'
+  },
+  btnSecondary: {
+    flex: 1,
+    height: 48,
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: colors.primary,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#ffffff'
+  },
+  btnSecondaryText: {
+    color: colors.primary,
+    fontSize: 14,
+    fontWeight: '600'
+  },
+  btnPrimary: {
+    flex: 1,
+    height: 48,
+    borderRadius: 10,
+    backgroundColor: colors.primary,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8
+  },
+  btnPrimaryText: {
     color: '#ffffff',
     fontSize: 14,
-    fontWeight: '700'
+    fontWeight: '600'
   }
 });

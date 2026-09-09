@@ -12,7 +12,7 @@ export function AppShell({ children }: AppShellProps) {
   const [mobileMenuOpen, setMobileMenuOpen] = React.useState(false);
 
   return (
-    <div className="flex min-h-screen bg-background text-on-surface antialiased">
+    <div className="flex h-screen overflow-hidden bg-background text-on-surface antialiased">
       {/* Desktop sticky sidebar */}
       <Sidebar />
 
@@ -32,21 +32,9 @@ export function AppShell({ children }: AppShellProps) {
       ) : null}
 
       {/* Main content container */}
-      <div className="flex-1 min-w-0 flex flex-col min-h-screen">
+      <div className="flex min-w-0 w-full flex-col md:ml-[272px] md:w-[calc(100%-272px)] h-screen overflow-hidden">
         <Topbar onToggleMobileMenu={() => setMobileMenuOpen((prev) => !prev)} />
-        <main className="flex-1 p-5 md:p-8">{children}</main>
-        <footer className="py-3.5 px-6 border-t border-outline-variant/30 text-xs text-on-surface-variant flex flex-col sm:flex-row justify-between items-center gap-2 bg-surface-container-lowest mt-auto">
-          <div className="flex items-center gap-2">
-            <span className="font-bold text-primary">TechEnglish Pro</span>
-            <span className="text-outline">·</span>
-            <span>Cổng Quản trị & Giảng viên</span>
-          </div>
-          <div className="flex items-center gap-3 text-[11px] text-on-surface-variant/70">
-            <span>Phiên bản 1.0.0</span>
-            <span className="text-outline">·</span>
-            <span>Hệ thống bảo mật</span>
-          </div>
-        </footer>
+        <main className="admin-canvas flex-1 overflow-y-auto">{children}</main>
       </div>
     </div>
   );

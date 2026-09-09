@@ -4,6 +4,7 @@ import * as bcrypt from 'bcrypt'
 const prisma = new PrismaClient()
 
 async function main() {
+  const skipVocabularySeed = process.env.SKIP_VOCABULARY_SEED === '1'
   console.log('🌱 Bắt đầu seed TechEnglish Pro...')
 
   // ============================================================
@@ -116,6 +117,8 @@ async function main() {
     { code: 'exams:grade', name: 'Grade Exams', resource: 'exams', action: 'grade', description: 'Xem và quản lý kết quả thi' },
     { code: 'reports:read', name: 'Read Reports', resource: 'reports', action: 'read', description: 'Xem báo cáo tiến độ và analytics' },
     { code: 'groups:manage', name: 'Manage Groups', resource: 'groups', action: 'manage', description: 'Tạo và quản lý nhóm học viên' },
+    { code: 'certificates:manage', name: 'Manage Certificates', resource: 'certificates', action: 'manage', description: 'Tạo và cập nhật chứng chỉ' },
+    { code: 'community:manage', name: 'Manage Community', resource: 'community', action: 'manage', description: 'Khóa, mở khóa và xóa bài viết cộng đồng' },
   ]
   const permissions: Record<string, { id: string }> = {}
   for (const p of permissionData) {
@@ -194,7 +197,7 @@ async function main() {
   // ============================================================
   // 7. VOCABULARY (30 terms)
   // ============================================================
-  console.log('📚 Seed Vocabulary (30 terms)...')
+  console.log(skipVocabularySeed ? '⏭️  Skip Vocabulary seed (preserving restored data)...' : '📚 Seed Vocabulary (30 terms)...')
   const vocabData = [
     // === CLOUD (8) ===
     { term: 'autoscaling', ipa: '/ˈɔːtəʊˌskeɪlɪŋ/', pos: 'noun', en: 'The automatic adjustment of compute resources — such as servers or containers — based on current demand, without manual intervention.', vi: 'Tự động điều chỉnh tài nguyên tính toán (máy chủ, container) dựa trên nhu cầu hiện tại, không cần can thiệp thủ công.', domain: 'CLOUD', level: LevelCode.intermediate, tags: ['AWS','scaling','cloud','resource management'], examples: [{ e: 'AWS Auto Scaling automatically adds EC2 instances during peak traffic and removes them when demand drops, ensuring cost efficiency.', v: 'AWS Auto Scaling tự động thêm EC2 instances khi traffic tăng cao và xoá chúng khi nhu cầu giảm, đảm bảo hiệu quả chi phí.' }] },
@@ -231,22 +234,24 @@ async function main() {
     { term: 'supply chain attack', ipa: '/səˈplaɪ tʃeɪn əˈtæk/', pos: 'noun', en: 'A cyberattack that targets less-secure elements in the software supply chain — such as third-party libraries or build systems — to compromise a primary target.', vi: 'Cuộc tấn công mạng nhắm vào các yếu tố ít bảo mật hơn trong chuỗi cung ứng phần mềm — như thư viện bên thứ ba hoặc build systems — để xâm phạm mục tiêu chính.', domain: 'CYBERSEC', level: LevelCode.advanced, tags: ['security','software distribution','npm','SolarWinds'], examples: [{ e: 'The SolarWinds supply chain attack compromised a trusted software update mechanism, allowing attackers to silently install malware in 18,000 organizations.', v: 'Vụ tấn công chuỗi cung ứng SolarWinds đã xâm phạm cơ chế cập nhật phần mềm đáng tin cậy, cho phép kẻ tấn công cài đặt malware thầm lặng trong 18.000 tổ chức.' }] },
   ]
 
-  for (const v of vocabData) {
-    const existing = await prisma.vocabulary.findFirst({ where: { term: v.term, domainId: domains[v.domain].id } })
-    if (!existing) {
-      const lvlRecord = await prisma.level.findUnique({ where: { code: v.level } })
-      await prisma.vocabulary.create({
-        data: {
-          term: v.term, pronunciationIpa: v.ipa, partOfSpeech: v.pos,
-          definitionEn: v.en, definitionVi: v.vi,
-          domainId: domains[v.domain].id, levelId: lvlRecord!.id,
-          tags: v.tags, status: ContentStatus.published,
-          examples: { create: v.examples.map((ex, i) => ({ sentenceEn: ex.e, translationVi: ex.v, order: i + 1 })) },
-        },
-      })
+  if (!skipVocabularySeed) {
+    for (const v of vocabData) {
+      const existing = await prisma.vocabulary.findFirst({ where: { term: v.term, domainId: domains[v.domain].id } })
+      if (!existing) {
+        const lvlRecord = await prisma.level.findUnique({ where: { code: v.level } })
+        await prisma.vocabulary.create({
+          data: {
+            term: v.term, pronunciationIpa: v.ipa, partOfSpeech: v.pos,
+            definitionEn: v.en, definitionVi: v.vi,
+            domainId: domains[v.domain].id, levelId: lvlRecord!.id,
+            tags: v.tags, status: ContentStatus.published,
+            examples: { create: v.examples.map((ex, i) => ({ sentenceEn: ex.e, translationVi: ex.v, order: i + 1 })) },
+          },
+        })
+      }
     }
+    console.log(`   ✅ ${vocabData.length} vocabulary terms`)
   }
-  console.log(`   ✅ ${vocabData.length} vocabulary terms`)
 
   // ============================================================
   // 8. LESSONS (5 lessons)
@@ -357,28 +362,32 @@ async function main() {
   console.log('   ✅ 5 lessons seeded')
 
   // Link vocabularies to lessons
-  console.log('🔗 Link Vocabulary to Lessons...')
-  const allVocab = await prisma.vocabulary.findMany()
-  const seededLessons = await prisma.lesson.findMany()
-  for (const lesson of seededLessons) {
-    // Find vocabularies matching the lesson's domain or grab a sample
-    let matchingVocab = allVocab.filter(v => v.domainId === lesson.domainId)
-    if (matchingVocab.length === 0) matchingVocab = allVocab.slice(0, 6)
-    for (const v of matchingVocab) {
-      await prisma.lessonVocabulary.upsert({
-        where: { lessonId_vocabularyId: { lessonId: lesson.id, vocabularyId: v.id } },
-        update: {},
-        create: { lessonId: lesson.id, vocabularyId: v.id }
-      })
+  if (!skipVocabularySeed) {
+    console.log('🔗 Link Vocabulary to Lessons...')
+    const allVocab = await prisma.vocabulary.findMany()
+    const seededLessons = await prisma.lesson.findMany()
+    for (const lesson of seededLessons) {
+      // Find vocabularies matching the lesson's domain or grab a sample
+      let matchingVocab = allVocab.filter(v => v.domainId === lesson.domainId)
+      if (matchingVocab.length === 0) matchingVocab = allVocab.slice(0, 6)
+      for (const v of matchingVocab) {
+        await prisma.lessonVocabulary.upsert({
+          where: { lessonId_vocabularyId: { lessonId: lesson.id, vocabularyId: v.id } },
+          update: {},
+          create: { lessonId: lesson.id, vocabularyId: v.id }
+        })
+      }
     }
+    console.log('   ✅ Vocabulary linked to lessons')
   }
-  console.log('   ✅ Vocabulary linked to lessons')
 
   // ============================================================
   // 9. QUESTIONS (15)
   // ============================================================
   console.log('❓ Seed Questions (15)...')
 
+  const existingQuestionCount = await prisma.question.count()
+  if (existingQuestionCount === 0) {
   const makeQ = async (type: QuestionType, prompt: string, context: string | null, explanation: string, domainCode: string, levelCode: LevelCode, topics: string[], points: number, certCodes: string[], options: Array<{ key: string; text: string; correct: boolean; exp: string }>) => {
     const lvl = await prisma.level.findUnique({ where: { code: levelCode } })
     return prisma.question.create({
@@ -499,6 +508,9 @@ async function main() {
     { key: 'D', text: 'Check the firewall rules on the CI server', correct: false, exp: 'Tường lửa không làm cho unit test bị fail.' },
   ])
   console.log('   ✅ 15 questions seeded')
+  } else {
+    console.log(`   ⏭️  Skip Questions seed (${existingQuestionCount} restored records found)`)
+  }
 
   // ============================================================
   // 10. EXAMS (2)
@@ -540,33 +552,6 @@ async function main() {
   console.log('   ✅ 2 exams seeded')
 
   // ============================================================
-  // 11. LEARNER GROUPS (2)
-  // ============================================================
-  console.log('👨‍🎓 Seed Learner Groups...')
-
-  if (!await prisma.learnerGroup.findFirst({ where: { name: 'AWS SAA Fast-Track #2026-A' } })) {
-    await prisma.learnerGroup.create({
-      data: {
-        name: 'AWS SAA Fast-Track #2026-A', status: 'active',
-        description: 'Nhóm chuyên sâu dành cho IT professionals đang target chứng chỉ AWS Solutions Architect Associate trong vòng 3 tháng.',
-        teacherId: teacher1.id, domainId: domains['CLOUD'].id, certificateId: certs['AWS-SAA'].id,
-        startsAt: new Date('2026-09-01'), endsAt: new Date('2026-11-30'),
-        members: { create: [{ learnerId: learner1.id }, { learnerId: learner4.id }] },
-      },
-    })
-  }
-
-  if (!await prisma.learnerGroup.findFirst({ where: { name: 'CompTIA Security+ Intensive #2026-B' } })) {
-    await prisma.learnerGroup.create({
-      data: {
-        name: 'CompTIA Security+ Intensive #2026-B', status: 'active',
-        description: 'Chương trình học tập chuyên sâu về Cybersecurity, chuẩn bị cho kỳ thi CompTIA Security+ trong 4 tháng.',
-        teacherId: teacher2.id, domainId: domains['CYBERSEC'].id, certificateId: certs['COMPTIA-SECURITY-PLUS'].id,
-        startsAt: new Date('2026-10-01'), endsAt: new Date('2027-01-31'),
-        members: { create: [{ learnerId: learner3.id }, { learnerId: learner5.id }] },
-      },
-    })
-  }
   // Seed PRO Subscription for learner1@techenglish.pro
   const user1 = await prisma.user.findUnique({ where: { email: 'learner1@techenglish.pro' } });
   if (user1) {
@@ -939,6 +924,7 @@ async function main() {
   }
 
   // ─── SEED: MOCK INTERVIEWS ───────────────────────────────────────────────
+  /* Retired interview and writing features: intentionally kept out of seed execution.
   const interviewCount = await prisma.mockInterview.count();
   if (interviewCount === 0) {
     const l1 = await prisma.user.findFirst({ where: { email: 'learner1@techenglish.pro' } });
@@ -1010,6 +996,7 @@ async function main() {
   }
 
   // ─── SEED: DISCUSSION COMMENTS & VOTES ───────────────────────────────────
+  */
   const commentCount = await prisma.discussionComment.count();
   if (commentCount === 0) {
     const posts = await prisma.discussionPost.findMany({ take: 3 });
@@ -1036,33 +1023,6 @@ async function main() {
     }
   }
 
-  // ─── SEED: LEARNING PLAN ITEMS ───────────────────────────────────────────────
-  const planCount = await prisma.learningPlanItem.count();
-  if (planCount === 0) {
-    const l1 = await prisma.user.findFirst({ where: { email: 'learner1@techenglish.pro' } });
-    const allLessons = await prisma.lesson.findMany({ take: 6, where: { status: 'published' } });
-    if (l1 && allLessons.length > 0) {
-      const today = new Date();
-      const planData = allLessons.slice(0, 5).map((lesson, i) => ({
-        userId: l1.id,
-        lessonId: lesson.id,
-        title: lesson.title,
-        plannedAt: new Date(today.getTime() + i * 24 * 3600000),
-        durationMin: lesson.estimatedMinutes || 30,
-        isCompleted: i < 2,
-        note: i === 0 ? 'Ôn lại phần IAM policies' : null,
-      }));
-      await prisma.learningPlanItem.createMany({ data: planData });
-      // Add extra for learner2
-      const l2 = await prisma.user.findFirst({ where: { email: 'learner2@techenglish.pro' } });
-      if (l2 && allLessons[0]) {
-        await prisma.learningPlanItem.create({
-          data: { userId: l2.id, title: 'Kubernetes Architecture Overview', plannedAt: new Date(today.getTime() + 2 * 3600000), durationMin: 45, isCompleted: false },
-        });
-      }
-      console.log('   ✅ Seeded Learning Plan Items');
-    }
-  }
 
   // ─── SEED: EXTRA NOTIFICATIONS ──────────────────────────────────────────────────
   const notifCount = await prisma.notification.count();

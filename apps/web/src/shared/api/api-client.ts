@@ -38,7 +38,7 @@ async function request<T>(
 ): Promise<T> {
   const token = getAccessToken();
   const headers: Record<string, string> = {
-    'Content-Type': 'application/json',
+    ...(!(options.body instanceof FormData) ? { 'Content-Type': 'application/json' } : {}),
     ...(options.headers as Record<string, string>),
   };
   if (token) headers['Authorization'] = `Bearer ${token}`;
@@ -68,9 +68,12 @@ export const apiClient = {
   get: <T>(path: string) => request<T>(path),
   post: <T>(path: string, body: unknown) =>
     request<T>(path, { method: 'POST', body: JSON.stringify(body) }),
+  postWithHeaders: <T>(path: string, body: unknown, extraHeaders: Record<string, string>) =>
+    request<T>(path, { method: 'POST', body: JSON.stringify(body), headers: extraHeaders }),
   patch: <T>(path: string, body: unknown) =>
     request<T>(path, { method: 'PATCH', body: JSON.stringify(body) }),
   delete: <T>(path: string) => request<T>(path, { method: 'DELETE' }),
+  upload: <T>(path: string, body: FormData) => request<T>(path, { method: 'POST', body }),
 };
 
 // ============================================================
@@ -143,6 +146,8 @@ export interface QuestionItem {
   domain: { code: string; name: string } | null;
   level: { code: string; name: string } | null;
   options: Array<{ id: string; key: string; text: string; isCorrect: boolean; explanation: string | null }>;
+  certificates?: Array<{ certificate: { id: string; code: string; name: string } }>;
+  examQuestions?: Array<{ order: number; exam: { id: string; title: string } }>;
 }
 
 // Exams

@@ -1,6 +1,7 @@
 import {
   IsString, IsNotEmpty, IsOptional, IsEnum, IsInt, IsArray,
   IsBoolean, IsUrl, Min, Max, MaxLength, ValidateNested, ArrayNotEmpty,
+  IsUUID, ArrayMaxSize, MinLength,
 } from 'class-validator'
 import { Type } from 'class-transformer'
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger'
@@ -38,13 +39,13 @@ export class CreateLessonDto {
   @IsOptional() @IsEnum(['reading', 'vocabulary', 'mixed', 'scenario'])
   type?: string
 
-  @ApiPropertyOptional()
-  @IsOptional() @IsString()
-  domainId?: string
+  @ApiProperty()
+  @IsUUID('4', { message: 'domainId không hợp lệ' })
+  domainId: string
 
-  @ApiPropertyOptional()
-  @IsOptional() @IsString()
-  levelId?: string
+  @ApiProperty()
+  @IsUUID('4', { message: 'levelId không hợp lệ' })
+  levelId: string
 
   @ApiPropertyOptional()
   @IsOptional() @IsInt() @Min(1) @Max(480)
@@ -55,8 +56,12 @@ export class CreateLessonDto {
   sections?: LessonSectionDto[]
 
   @ApiPropertyOptional()
-  @IsOptional() @IsArray() @IsString({ each: true })
+  @IsOptional() @IsArray() @ArrayMaxSize(30) @IsString({ each: true }) @MaxLength(50, { each: true })
   tags?: string[]
+
+  @ApiPropertyOptional({ type: [String] })
+  @IsOptional() @IsArray() @ArrayMaxSize(20) @IsUUID('4', { each: true })
+  certificateIds?: string[]
 }
 
 export class UpdateLessonDto {
@@ -91,6 +96,10 @@ export class UpdateLessonDto {
   @ApiPropertyOptional()
   @IsOptional() @IsArray() @IsString({ each: true })
   tags?: string[]
+
+  @ApiPropertyOptional({ type: [String] })
+  @IsOptional() @IsArray() @ArrayMaxSize(20) @IsUUID('4', { each: true })
+  certificateIds?: string[]
 }
 
 // ─── Vocabulary ───────────────────────────────────────────────────────────────
@@ -133,15 +142,15 @@ export class CreateVocabularyDto {
   definitionVi?: string
 
   @ApiProperty()
-  @IsString() @IsNotEmpty({ message: 'Vui lòng chọn domain' })
+  @IsUUID('4', { message: 'domainId không hợp lệ' })
   domainId: string
 
   @ApiProperty()
-  @IsString() @IsNotEmpty({ message: 'Vui lòng chọn cấp độ' })
+  @IsUUID('4', { message: 'levelId không hợp lệ' })
   levelId: string
 
   @ApiPropertyOptional({ type: [String] })
-  @IsOptional() @IsArray() @IsString({ each: true })
+  @IsOptional() @IsArray() @ArrayMaxSize(30) @IsString({ each: true }) @MaxLength(50, { each: true })
   tags?: string[]
 
   @ApiPropertyOptional({ type: [VocabExampleDto] })
@@ -210,14 +219,15 @@ export class QuestionOptionDto {
 }
 
 export class CreateQuestionDto {
-  @ApiProperty({ enum: ['multiple_choice', 'true_false', 'fill_blank', 'ordering'] })
-  @IsEnum(['multiple_choice', 'true_false', 'fill_blank', 'ordering'], {
+  @ApiProperty({ enum: ['single_choice', 'multiple_choice', 'true_false', 'short_answer', 'scenario'] })
+  @IsEnum(['single_choice', 'multiple_choice', 'true_false', 'short_answer', 'scenario'], {
     message: 'Loại câu hỏi không hợp lệ',
   })
   type: string
 
   @ApiProperty({ example: 'What does "autoscaling" mean in cloud computing?' })
   @IsString() @IsNotEmpty({ message: 'Nội dung câu hỏi không được để trống' })
+  @MinLength(10, { message: 'Nội dung câu hỏi phải có ít nhất 10 ký tự' })
   @MaxLength(1000)
   prompt: string
 
@@ -234,26 +244,30 @@ export class CreateQuestionDto {
   points?: number
 
   @ApiProperty()
-  @IsString() @IsNotEmpty({ message: 'Vui lòng chọn domain' })
+  @IsUUID('4', { message: 'domainId không hợp lệ' })
   domainId: string
 
   @ApiProperty()
-  @IsString() @IsNotEmpty({ message: 'Vui lòng chọn cấp độ' })
+  @IsUUID('4', { message: 'levelId không hợp lệ' })
   levelId: string
 
   @ApiPropertyOptional()
-  @IsOptional() @IsArray() @IsString({ each: true })
+  @IsOptional() @IsArray() @ArrayMaxSize(30) @IsString({ each: true }) @MaxLength(50, { each: true })
   topics?: string[]
 
   @ApiProperty({ type: [QuestionOptionDto], description: 'Danh sách các đáp án' })
-  @IsArray() @ArrayNotEmpty({ message: 'Câu hỏi phải có ít nhất 1 đáp án' })
+  @IsArray() @ArrayNotEmpty({ message: 'Câu hỏi phải có ít nhất 1 đáp án' }) @ArrayMaxSize(10)
   @ValidateNested({ each: true }) @Type(() => QuestionOptionDto)
   options: QuestionOptionDto[]
+
+  @ApiPropertyOptional({ type: [String] })
+  @IsOptional() @IsArray() @ArrayMaxSize(20) @IsUUID('4', { each: true })
+  certificateIds?: string[]
 }
 
 export class UpdateQuestionDto {
-  @ApiPropertyOptional({ enum: ['multiple_choice', 'true_false', 'fill_blank', 'ordering'] })
-  @IsOptional() @IsEnum(['multiple_choice', 'true_false', 'fill_blank', 'ordering'])
+  @ApiPropertyOptional({ enum: ['single_choice', 'multiple_choice', 'true_false', 'short_answer', 'scenario'] })
+  @IsOptional() @IsEnum(['single_choice', 'multiple_choice', 'true_false', 'short_answer', 'scenario'])
   type?: string
 
   @ApiPropertyOptional()
@@ -287,13 +301,17 @@ export class UpdateQuestionDto {
   @ApiPropertyOptional({ type: [QuestionOptionDto] })
   @IsOptional() @IsArray() @ValidateNested({ each: true }) @Type(() => QuestionOptionDto)
   options?: QuestionOptionDto[]
+
+  @ApiPropertyOptional({ type: [String] })
+  @IsOptional() @IsArray() @ArrayMaxSize(20) @IsUUID('4', { each: true })
+  certificateIds?: string[]
 }
 
 // ─── Exam ─────────────────────────────────────────────────────────────────────
 
 export class ExamQuestionLinkDto {
   @ApiProperty()
-  @IsString() @IsNotEmpty()
+  @IsUUID('4', { message: 'questionId không hợp lệ' })
   questionId: string
 
   @ApiProperty()
@@ -324,19 +342,23 @@ export class CreateExamDto {
   maxAttempts?: number
 
   @ApiProperty()
-  @IsString() @IsNotEmpty({ message: 'Vui lòng chọn domain' })
+  @IsUUID('4', { message: 'domainId không hợp lệ' })
   domainId: string
 
   @ApiProperty()
-  @IsString() @IsNotEmpty({ message: 'Vui lòng chọn cấp độ' })
+  @IsUUID('4', { message: 'levelId không hợp lệ' })
   levelId: string
 
   @ApiPropertyOptional()
-  @IsOptional() @IsArray() @IsString({ each: true })
+  @IsOptional() @IsUUID('4')
+  certificateId?: string
+
+  @ApiPropertyOptional()
+  @IsOptional() @IsArray() @ArrayMaxSize(30) @IsString({ each: true }) @MaxLength(50, { each: true })
   topics?: string[]
 
   @ApiPropertyOptional({ type: [ExamQuestionLinkDto] })
-  @IsOptional() @IsArray() @ValidateNested({ each: true }) @Type(() => ExamQuestionLinkDto)
+  @IsOptional() @IsArray() @ArrayMaxSize(200) @ValidateNested({ each: true }) @Type(() => ExamQuestionLinkDto)
   questions?: ExamQuestionLinkDto[]
 }
 
@@ -368,6 +390,10 @@ export class UpdateExamDto {
   @ApiPropertyOptional()
   @IsOptional() @IsString()
   levelId?: string
+
+  @ApiPropertyOptional()
+  @IsOptional() @IsUUID('4')
+  certificateId?: string
 
   @ApiPropertyOptional()
   @IsOptional() @IsArray() @IsString({ each: true })
@@ -443,19 +469,28 @@ export class CompleteOnboardingDto {
 // ─── Progress ─────────────────────────────────────────────────────────────────
 
 export class TrackLessonProgressDto {
+  @ApiProperty({ enum: ['lesson', 'domain', 'certificate'] })
+  @IsEnum(['lesson', 'domain', 'certificate'], { message: 'resourceType không hợp lệ' })
+  resourceType: 'lesson' | 'domain' | 'certificate'
+
   @ApiProperty()
-  @IsString() @IsNotEmpty({ message: 'lessonId không được để trống' })
-  lessonId: string
+  @IsUUID('4', { message: 'resourceId không hợp lệ' })
+  resourceId: string
 
-  @ApiProperty({ enum: ['started', 'in_progress', 'completed'] })
-  @IsEnum(['started', 'in_progress', 'completed'])
-  status: string
+  @ApiPropertyOptional({ enum: ['not_started', 'in_progress', 'completed'] })
+  @IsOptional() @IsEnum(['not_started', 'in_progress', 'completed'])
+  status?: 'not_started' | 'in_progress' | 'completed'
 
-  @ApiPropertyOptional({ example: 75, description: 'Phần trăm hoàn thành (0-100)' })
-  @IsOptional() @IsInt() @Min(0) @Max(100)
-  progressPercent?: number
+  @ApiPropertyOptional({ example: 75 })
+  @IsOptional() @Min(0) @Max(100)
+  completionPercent?: number
 
-  @ApiPropertyOptional({ example: 1200, description: 'Thời gian học (giây)' })
-  @IsOptional() @IsInt() @Min(0)
-  timeSpentSeconds?: number
+  @ApiPropertyOptional() @IsOptional() @IsInt() @Min(0)
+  completedLessonCount?: number
+
+  @ApiPropertyOptional() @IsOptional() @IsInt() @Min(0)
+  totalLessonCount?: number
+
+  @ApiPropertyOptional() @IsOptional() @Min(0) @Max(100)
+  averageScorePercent?: number
 }

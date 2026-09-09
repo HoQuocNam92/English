@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { combinedNavigation, type NavigationGroup, type NavigationItem } from './navigation';
+import { combinedNavigation, teacherNavigation, type NavigationGroup, type NavigationItem } from './navigation';
 import { useAuth } from '@/features/auth/presentation';
 
 function NavItem({ item }: { item: NavigationItem }) {
@@ -14,15 +14,15 @@ function NavItem({ item }: { item: NavigationItem }) {
   return (
     <Link
       href={item.href}
-      className={`flex items-center gap-3 px-3.5 py-2.5 rounded-lg text-xs font-semibold transition-all ${
+      className={`group flex min-h-10 items-center gap-3 px-3.5 py-2.5 rounded-xl text-[13px] font-medium transition-all duration-200 ${
         isActive
-          ? 'text-primary bg-primary-fixed/50 font-bold shadow-xs'
-          : 'text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface'
+          ? 'text-primary bg-primary/10 font-semibold shadow-[inset_3px_0_0_var(--primary)]'
+          : 'text-on-surface-variant hover:bg-surface-container-low hover:text-on-surface'
       }`}
     >
       <span
-        className={`material-symbols-outlined text-[20px] ${
-          isActive ? 'text-primary fill-1' : 'text-outline'
+        className={`material-symbols-outlined text-[20px] transition-colors ${
+          isActive ? 'text-primary fill-1' : 'text-outline group-hover:text-primary'
         }`}
       >
         {item.icon}
@@ -43,8 +43,8 @@ function NavGroup({ group, isAdmin }: { group: NavigationGroup; isAdmin: boolean
   if (visibleItems.length === 0) return null;
 
   return (
-    <div className="mb-1">
-      <p className="px-3 mb-1 text-[10px] font-bold uppercase tracking-widest text-on-surface-variant/50">
+    <div className="mb-4">
+      <p className="px-3.5 mb-1.5 text-[10px] font-bold uppercase tracking-[0.12em] text-on-surface-variant/55">
         {group.group}
       </p>
       {visibleItems.map((item) => (
@@ -61,33 +61,32 @@ export interface SidebarProps {
 
 export function Sidebar({ isMobile = false, onClose }: SidebarProps) {
   const { session, signOut } = useAuth();
-  const role = session?.user?.role ?? 'admin';
-  const isAdmin = role === 'admin';
+  const roles = session?.user?.roles ?? (session?.user?.role ? [session.user.role] : []);
+  // Prefer the least-privileged core role if legacy data contains both roles.
+  const isAdmin = roles.includes('admin') && !roles.includes('teacher');
 
-  const portalLabel = isAdmin ? 'Admin Portal' : 'Teacher Portal';
-  const portalIcon = isAdmin ? 'terminal' : 'school';
   const roleDisplay = isAdmin ? 'Quản trị viên' : 'Giảng viên';
 
   // Lọc groups theo role: teacher không thấy adminOnly groups
-  const visibleGroups = combinedNavigation.filter((g) => isAdmin || !g.adminOnly);
+  const visibleGroups = isAdmin ? combinedNavigation : teacherNavigation;
 
   const containerClasses = isMobile
     ? 'w-full h-full bg-surface-container-lowest flex flex-col py-5'
-    : 'w-64 shrink-0 h-screen sticky top-0 border-r border-outline-variant/30 bg-surface-container-lowest z-40 hidden md:flex flex-col py-5';
+    : 'w-[272px] h-screen fixed left-0 top-0 border-r border-outline-variant/50 bg-surface-container-lowest z-40 hidden md:flex flex-col py-6 shadow-[4px_0_24px_rgba(15,23,42,0.025)]';
 
   return (
     <aside className={containerClasses}>
       {/* Brand Header */}
-      <div className="px-5 mb-5 flex items-center justify-between">
-        <Link href="/admin/dashboard" onClick={onClose} className="flex items-center gap-2.5">
-          <div className="w-8 h-8 rounded-lg text-white flex items-center justify-center shadow-xs bg-primary shrink-0">
-            <span className="material-symbols-outlined text-[19px] fill-1">{portalIcon}</span>
+      <div className="px-5 mb-7 flex items-center justify-between">
+        <Link href="/admin/dashboard" onClick={onClose} className="flex items-center gap-3 min-w-0">
+          <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-primary to-tertiary text-white shadow-[0_8px_18px_rgba(53,37,205,0.22)]">
+            <span className="material-symbols-outlined text-[24px] fill-1">school</span>
           </div>
-          <div>
-            <h1 className="text-sm font-bold tracking-tight text-primary leading-tight">
-              TechEnglish Pro
+          <div className="min-w-0">
+            <h1 className="text-[17px] font-bold tracking-tight text-on-surface leading-tight truncate">
+              {isAdmin ? 'TechEnglish Pro' : 'Teacher Workspace'}
             </h1>
-            <p className="text-[10px] text-on-surface-variant font-medium leading-tight">{portalLabel}</p>
+            <p className="text-[11px] text-on-surface-variant mt-1">{isAdmin ? 'Admin workspace' : 'Giảng viên'}</p>
           </div>
         </Link>
         {isMobile ? (
@@ -103,7 +102,7 @@ export function Sidebar({ isMobile = false, onClose }: SidebarProps) {
       </div>
 
       {/* Role badge */}
-      <div className="px-5 mb-3">
+      <div className="hidden">
         <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider bg-primary/10 text-primary">
           <span className="material-symbols-outlined text-[13px]">
             {isAdmin ? 'shield_person' : 'school'}
@@ -113,29 +112,17 @@ export function Sidebar({ isMobile = false, onClose }: SidebarProps) {
       </div>
 
       {/* Navigation Groups */}
-      <nav className="flex-1 px-3 space-y-2.5 overflow-y-auto custom-scrollbar">
+      <nav className="flex-1 px-3 space-y-1 overflow-y-auto custom-scrollbar">
         {visibleGroups.map((group) => (
           <NavGroup key={group.group} group={group} isAdmin={isAdmin} />
         ))}
       </nav>
 
-      {/* Switch to Learner View */}
-      <div className="px-3 mb-2">
-        <Link
-          href="/learn"
-          onClick={onClose}
-          className="flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-semibold text-on-surface-variant hover:bg-surface-container-high hover:text-primary transition-all"
-        >
-          <span className="material-symbols-outlined text-[18px]">school</span>
-          <span>Xem giao diện học viên</span>
-        </Link>
-      </div>
-
       {/* Bottom User Profile */}
-      <div className="px-3 mt-auto pt-3 border-t border-outline-variant/30">
-        <div className="flex items-center justify-between gap-2 p-2 rounded-lg bg-surface-container-low/60">
+      <div className="px-4 mt-auto pt-4 border-t border-outline-variant/50">
+        <div className="flex items-center justify-between gap-2 rounded-xl bg-surface-container-low px-3 py-2.5">
           <div className="flex items-center gap-2.5 overflow-hidden">
-            <div className="w-8 h-8 rounded-full font-bold text-xs flex items-center justify-center shrink-0 text-white bg-primary">
+            <div className="w-10 h-10 rounded-full font-bold text-sm flex items-center justify-center shrink-0 text-white bg-primary">
               {session?.user?.displayName ? session.user.displayName.charAt(0) : '?'}
             </div>
             <div className="overflow-hidden">

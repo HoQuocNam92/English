@@ -7,7 +7,7 @@ export class VocabularyService {
 
   async findAll(params: any) {
     const page = Math.max(1, Number(params.page) || 1)
-    const limit = Math.min(Math.max(1, Number(params.limit) || 20), 100)
+    const limit = Math.min(Math.max(1, Number(params.limit) || 20), 3000)
     const { search, domainCode, levelCode, status, lessonId } = params
     const skip = (page - 1) * limit
     const where: any = {}

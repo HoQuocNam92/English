@@ -3,53 +3,57 @@
 import React, { useState, useEffect } from 'react';
 import { LearnerShell } from '@/shared/layout';
 import { apiClient } from '@/shared/api/api-client';
-import { useI18n } from '@/shared/i18n';
+import { Modal } from '@/shared/ui';
 
 export default function CommunityPage() {
-  const { t } = useI18n();
   const [view, setView] = useState<'list' | 'detail'>('list');
   const [posts, setPosts] = useState<any[]>([]);
   const [selectedPost, setSelectedPost] = useState<any>(null);
   const [activeTag, setActiveTag] = useState('Tất cả');
   const [showModal, setShowModal] = useState(false);
   const [newPost, setNewPost] = useState({ title: '', content: '', tags: '' });
+  const [posting, setPosting] = useState(false);
+  const [postError, setPostError] = useState('');
 
   useEffect(() => {
     const fetchPosts = async () => {
       try {
         const res: any = await apiClient.get('/discussion/posts');
-        const items = res?.data ?? res ?? [];
-        if (Array.isArray(items) && items.length > 0) {
-          setPosts(items);
-        } else {
-          setPosts([
-            { id: 1, title: 'How to memorize AWS services effectively?', content: 'I am struggling to remember all the different AWS services for my Cloud Practitioner exam. Does anyone have tips or flashcards they recommend?', tags: ['cloud', 'tips'], author: 'David Tran', initial: 'D', voteCount: 24, commentCount: 5, timeAgo: '2 hours ago', pinned: true },
-            { id: 2, title: 'Difference between TCP and UDP', content: 'Can someone explain the real-world use cases for TCP vs UDP? I know the theoretical differences but want practical examples.', tags: ['networking'], author: 'Sarah Lee', initial: 'S', voteCount: 15, commentCount: 3, timeAgo: '5 hours ago', pinned: false },
-            { id: 3, title: 'Best resources for DevOps automation', content: 'Looking for good tutorials on setting up CI/CD with GitHub Actions and Terraform.', tags: ['devops', 'tools'], author: 'Mike Nguyen', initial: 'M', voteCount: 32, commentCount: 8, timeAgo: '1 day ago', pinned: false },
-          ]);
-        }
+        const items = res?.posts ?? res?.data ?? [];
+        setPosts(Array.isArray(items) ? items.map((post: any) => ({ ...post, author: post.authorName ?? 'Ẩn danh', initial: (post.authorName ?? '?').slice(0, 1).toUpperCase(), voteCount: post._count?.votes ?? 0, commentCount: post._count?.comments ?? 0, pinned: post.isPinned, timeAgo: post.createdAt ? new Date(post.createdAt).toLocaleString('vi-VN') : '' })) : []);
       } catch (error) {
-        setPosts([
-          { id: 1, title: 'How to memorize AWS services effectively?', content: 'I am struggling to remember all the different AWS services for my Cloud Practitioner exam. Does anyone have tips or flashcards they recommend?', tags: ['cloud', 'tips'], author: 'David Tran', initial: 'D', voteCount: 24, commentCount: 5, timeAgo: '2 hours ago', pinned: true },
-        ]);
+        setPosts([]);
       }
     };
     fetchPosts();
   }, []);
 
-  const handlePostClick = (post: any) => {
-    setSelectedPost({
-      ...post,
-      comments: [
-        { id: 101, author: 'Alex V.', initial: 'A', content: 'Try associating each service with a real-world object. It helps a lot!', timeAgo: '1 hour ago' },
-        { id: 102, author: 'Linda K.', initial: 'L', content: 'I used the flashcards here on TechEnglish and they were great.', timeAgo: '45 mins ago' }
-      ]
-    });
+  const handlePostClick = async (post: any) => {
+    const detail: any = await apiClient.get(`/discussion/posts/${post.id}`).catch(() => null);
+    const authorName = detail?.user?.userDetail?.displayName ?? post.author;
+    setSelectedPost(detail ? { ...post, ...detail, author: authorName, initial: authorName?.slice(0, 1).toUpperCase(), voteCount: detail._count?.votes ?? 0, commentCount: detail._count?.comments ?? 0, comments: (detail.comments ?? []).map((comment: any) => ({ ...comment, author: comment.user?.userDetail?.displayName ?? 'Ẩn danh', initial: (comment.user?.userDetail?.displayName ?? '?').slice(0, 1).toUpperCase(), timeAgo: new Date(comment.createdAt).toLocaleString('vi-VN') })) } : post);
     setView('detail');
   };
 
   const tags = ['Tất cả', 'networking', 'cloud', 'security', 'devops', 'tips'];
   const filteredPosts = activeTag === 'Tất cả' ? posts : posts.filter(p => p.tags.includes(activeTag));
+
+  const submitPost = async (event: React.FormEvent) => {
+    event.preventDefault();
+    const title = newPost.title.trim();
+    const content = newPost.content.trim();
+    if (title.length < 5) { setPostError('Tiêu đề cần có ít nhất 5 ký tự.'); return; }
+    if (content.length < 10) { setPostError('Nội dung cần có ít nhất 10 ký tự.'); return; }
+    setPosting(true); setPostError('');
+    try {
+      const response: any = await apiClient.post('/discussion/posts', { title, content, tags: newPost.tags.split(',').map((tag) => tag.trim().toLowerCase()).filter(Boolean).slice(0, 10) });
+      const created = response?.data ?? response;
+      setPosts((current) => [{ ...created, author: created.authorName ?? 'Bạn', initial: (created.authorName ?? 'B').slice(0, 1).toUpperCase(), voteCount: created._count?.votes ?? 0, commentCount: created._count?.comments ?? 0, timeAgo: new Date(created.createdAt ?? Date.now()).toLocaleString('vi-VN') }, ...current]);
+      setNewPost({ title: '', content: '', tags: '' }); setShowModal(false);
+    } catch (error: any) {
+      setPostError(error?.message ?? 'Không thể đăng câu hỏi. Vui lòng thử lại.');
+    } finally { setPosting(false); }
+  };
 
   return (
     <LearnerShell>
@@ -61,7 +65,7 @@ export default function CommunityPage() {
               <p className="text-on-surface-variant text-sm">Hỏi đáp, chia sẻ kiến thức chuyên ngành</p>
             </div>
             <button 
-              onClick={() => setShowModal(true)}
+              onClick={() => { setPostError(''); setShowModal(true); }}
               className="bg-primary !text-white font-semibold rounded-xl px-5 py-2.5 hover:opacity-90 transition-opacity flex items-center gap-2 whitespace-nowrap"
             >
               <span className="material-symbols-outlined">edit_square</span>
@@ -206,13 +210,12 @@ export default function CommunityPage() {
         </div>
       )}
 
-      {showModal && (
-        <div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4">
-          <div className="bg-surface-container-lowest rounded-2xl w-full max-w-2xl overflow-hidden shadow-2xl flex flex-col">
+      <Modal open={showModal} onClose={() => !posting && setShowModal(false)} maxWidth="max-w-2xl">
+          <form onSubmit={submitPost} className="flex flex-col">
             <div className="p-6 border-b border-outline-variant/30 flex items-center justify-between">
-              <h2 className="text-xl font-bold">Tạo bài viết mới</h2>
-              <button onClick={() => setShowModal(false)} className="text-on-surface-variant hover:text-on-surface">
-                <span className="material-symbols-outlined">{t.community.title || 'close'}</span>
+              <div><h2 className="text-xl font-bold">Đặt câu hỏi</h2><p className="mt-1 text-sm text-on-surface-variant">Chia sẻ vấn đề để cộng đồng cùng hỗ trợ bạn.</p></div>
+              <button type="button" disabled={posting} onClick={() => setShowModal(false)} aria-label="Đóng" className="text-on-surface-variant hover:text-on-surface disabled:opacity-50">
+                <span className="material-symbols-outlined">close</span>
               </button>
             </div>
             <div className="p-6 flex flex-col gap-4">
@@ -220,6 +223,9 @@ export default function CommunityPage() {
                 <label className="block text-sm font-semibold mb-2">Tiêu đề</label>
                 <input 
                   type="text" 
+                  required
+                  minLength={5}
+                  maxLength={200}
                   value={newPost.title}
                   onChange={e => setNewPost({...newPost, title: e.target.value})}
                   className="w-full border border-outline-variant/60 rounded-xl px-4 py-3 bg-surface-container-lowest text-on-surface focus:outline-none focus:ring-2 focus:ring-primary/40"
@@ -229,6 +235,9 @@ export default function CommunityPage() {
               <div>
                 <label className="block text-sm font-semibold mb-2">Nội dung</label>
                 <textarea 
+                  required
+                  minLength={10}
+                  maxLength={5000}
                   value={newPost.content}
                   onChange={e => setNewPost({...newPost, content: e.target.value})}
                   className="w-full border border-outline-variant/60 rounded-xl px-4 py-3 bg-surface-container-lowest text-on-surface focus:outline-none focus:ring-2 focus:ring-primary/40 min-h-[150px] resize-y"
@@ -245,24 +254,27 @@ export default function CommunityPage() {
                   placeholder="vd: networking, cloud, exam"
                 />
               </div>
+              {postError && <div role="alert" className="rounded-xl bg-error-container px-4 py-3 text-sm font-semibold text-on-error-container">{postError}</div>}
             </div>
             <div className="p-6 border-t border-outline-variant/30 flex justify-end gap-3 bg-surface-container/30">
               <button 
+                type="button"
+                disabled={posting}
                 onClick={() => setShowModal(false)}
                 className="px-5 py-2.5 rounded-xl font-semibold text-on-surface-variant hover:bg-surface-container transition-colors"
               >
                 Hủy
               </button>
               <button 
-                onClick={() => setShowModal(false)}
-                className="bg-primary !text-white font-semibold rounded-xl px-5 py-2.5 hover:opacity-90 transition-opacity"
+                type="submit"
+                disabled={posting}
+                className="bg-primary !text-white font-semibold rounded-xl px-5 py-2.5 hover:opacity-90 transition-opacity disabled:cursor-not-allowed disabled:opacity-50"
               >
-                Đăng bài
+                {posting ? 'Đang đăng…' : 'Đăng câu hỏi'}
               </button>
             </div>
-          </div>
-        </div>
-      )}
+          </form>
+      </Modal>
     </LearnerShell>
   );
 }

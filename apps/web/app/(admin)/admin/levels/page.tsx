@@ -51,7 +51,7 @@ export default function AdminLevelsPage() {
     <div>
       <PageHeader
         title="Cấp độ học tập"
-        description="Quản lý và theo dõi các cấp độ năng lực tiếng Anh IT (CEFR & Tech Framework)"
+        description="Thống kê nội dung theo 4 cấp độ chuẩn của hệ thống (CEFR & Tech Framework)"
       />
 
       {error && (
@@ -69,7 +69,7 @@ export default function AdminLevelsPage() {
           { label: 'Tổng từ vựng', value: loading ? '—' : String(levels.reduce((s, l) => s + (l._count?.vocabularies ?? 0), 0)), icon: 'translate', color: 'text-tertiary' },
           { label: 'Ngân hàng câu hỏi', value: loading ? '—' : String(levels.reduce((s, l) => s + (l._count?.questions ?? 0), 0)), icon: 'quiz', color: 'text-error' },
         ].map((stat) => (
-          <div key={stat.label} className="rounded-2xl bg-surface-container-low border border-outline-variant/30 p-5">
+          <div key={stat.label} className="rounded-2xl bg-surface-container-lowest p-5 shadow-[0_8px_28px_rgba(15,23,42,0.05)]">
             <div className="flex items-center justify-between mb-3">
               <p className="text-xs font-medium text-on-surface-variant">{stat.label}</p>
               <span className={`material-symbols-outlined text-[22px] ${stat.color}`}>{stat.icon}</span>
@@ -86,7 +86,7 @@ export default function AdminLevelsPage() {
         {loading ? (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {[1, 2, 3, 4].map((i) => (
-              <div key={i} className="rounded-2xl border border-outline-variant/30 bg-surface-container-low p-6 space-y-3 animate-pulse">
+              <div key={i} className="rounded-2xl bg-surface-container-lowest p-6 space-y-3 shadow-[0_8px_28px_rgba(15,23,42,0.05)] animate-pulse">
                 <div className="h-6 w-1/3 rounded bg-outline-variant/20" />
                 <div className="h-4 w-full rounded bg-outline-variant/10" />
                 <div className="h-10 w-full rounded bg-outline-variant/10" />
@@ -94,7 +94,7 @@ export default function AdminLevelsPage() {
             ))}
           </div>
         ) : levels.length === 0 ? (
-          <div className="rounded-2xl bg-surface-container-low border border-outline-variant/30 p-12 text-center">
+          <div className="rounded-2xl bg-surface-container-lowest p-12 text-center shadow-[0_8px_28px_rgba(15,23,42,0.05)]">
             <span className="material-symbols-outlined text-[48px] text-outline mb-3 block">stairs</span>
             <p className="text-sm text-on-surface-variant">Chưa có dữ liệu cấp độ</p>
           </div>
@@ -110,7 +110,7 @@ export default function AdminLevelsPage() {
               return (
                 <div
                   key={lvl.id}
-                  className="rounded-2xl bg-surface-container-low border border-outline-variant/30 p-6 flex flex-col justify-between hover:shadow-sm transition-all"
+                  className="rounded-2xl bg-surface-container-lowest p-6 flex flex-col justify-between shadow-[0_8px_28px_rgba(15,23,42,0.05)] hover:shadow-md transition-all"
                 >
                   <div>
                     {/* Header */}

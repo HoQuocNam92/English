@@ -14,6 +14,8 @@ export default function MobileRegisterScreen() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   
   const [nameError, setNameError] = useState('');
   const [emailError, setEmailError] = useState('');
@@ -67,102 +69,113 @@ export default function MobileRegisterScreen() {
   };
 
   return (
-    <ScrollView style={styles.container} contentContainerStyle={styles.contentContainer} keyboardShouldPersistTaps="handled">
+    <View style={styles.container}>
       <StatusBar style="dark" />
-      <View style={styles.header}>
-        <TouchableOpacity style={styles.backButton} onPress={() => router.back()} disabled={isLoading}>
-          <MaterialIcons name="arrow-back" size={24} color={colors.text} />
+      {/* Header Bar */}
+      <View style={styles.headerBar}>
+        <TouchableOpacity style={styles.headerBackButton} onPress={() => router.back()} disabled={isLoading}>
+          <MaterialIcons name="arrow-back" size={24} color={colors.primary} />
         </TouchableOpacity>
-        <Text style={styles.title}>Tạo tài khoản mới</Text>
-        <Text style={styles.subtitle}>Bắt đầu hành trình nâng cao tiếng Anh chuyên ngành CNTT</Text>
+        <Text style={styles.headerTitle}>IT English Pro</Text>
+        <View style={{ width: 40 }} /> {/* Spacer */}
       </View>
 
-      <View style={styles.card}>
-        {registerError ? <Text style={styles.errorText}>{registerError}</Text> : null}
-
-        <View style={styles.inputGroup}>
-          <Text style={styles.label}>Họ và tên</Text>
-          <View style={[styles.inputWrapper, nameError ? styles.inputError : null]}>
-            <MaterialIcons name="person-outline" size={20} color={colors.outline} style={styles.inputIcon} />
-            <TextInput
-              style={styles.input}
-              placeholder="Nguyễn Văn A"
-              value={displayName}
-              onChangeText={setDisplayName}
-              editable={!isLoading}
-            />
-          </View>
-          {nameError ? <Text style={styles.errorTextSmall}>{nameError}</Text> : null}
+      <ScrollView contentContainerStyle={styles.contentContainer} keyboardShouldPersistTaps="handled">
+        <View style={styles.titleSection}>
+          <Text style={styles.title}>Tạo tài khoản mới</Text>
+          <Text style={styles.subtitle}>Tham gia cộng đồng IT English Pro ngay hôm nay.</Text>
         </View>
 
-        <View style={styles.inputGroup}>
-          <Text style={styles.label}>Email</Text>
-          <View style={[styles.inputWrapper, emailError ? styles.inputError : null]}>
-            <MaterialIcons name="mail-outline" size={20} color={colors.outline} style={styles.inputIcon} />
-            <TextInput
-              style={styles.input}
-              placeholder="email@example.com"
-              value={email}
-              onChangeText={setEmail}
-              autoCapitalize="none"
-              keyboardType="email-address"
-              editable={!isLoading}
-            />
+        <View style={styles.card}>
+          {registerError ? <Text style={styles.errorText}>{registerError}</Text> : null}
+
+          <View style={styles.inputGroup}>
+            <Text style={styles.label}>Họ và tên</Text>
+            <View style={[styles.inputWrapper, nameError ? styles.inputError : null]}>
+              <MaterialIcons name="person-outline" size={20} color={colors.outline} style={styles.inputIcon} />
+              <TextInput
+                style={styles.input}
+                placeholder="Nhập họ và tên của bạn"
+                value={displayName}
+                onChangeText={setDisplayName}
+                editable={!isLoading}
+              />
+            </View>
+            {nameError ? <Text style={styles.errorTextSmall}>{nameError}</Text> : null}
           </View>
-          {emailError ? <Text style={styles.errorTextSmall}>{emailError}</Text> : null}
-        </View>
 
-        <View style={styles.inputGroup}>
-          <Text style={styles.label}>Mật khẩu</Text>
-          <View style={[styles.inputWrapper, passwordError ? styles.inputError : null]}>
-            <MaterialIcons name="lock-outline" size={20} color={colors.outline} style={styles.inputIcon} />
-            <TextInput
-              style={styles.input}
-              placeholder="Tối thiểu 8 ký tự"
-              value={password}
-              onChangeText={setPassword}
-              secureTextEntry
-              editable={!isLoading}
-            />
+          <View style={styles.inputGroup}>
+            <Text style={styles.label}>Email</Text>
+            <View style={[styles.inputWrapper, emailError ? styles.inputError : null]}>
+              <MaterialIcons name="mail-outline" size={20} color={colors.outline} style={styles.inputIcon} />
+              <TextInput
+                style={styles.input}
+                placeholder="example@email.com"
+                value={email}
+                onChangeText={setEmail}
+                autoCapitalize="none"
+                keyboardType="email-address"
+                editable={!isLoading}
+              />
+            </View>
+            {emailError ? <Text style={styles.errorTextSmall}>{emailError}</Text> : null}
           </View>
-          {passwordError ? <Text style={styles.errorTextSmall}>{passwordError}</Text> : null}
-        </View>
 
-        <View style={styles.inputGroup}>
-          <Text style={styles.label}>Xác nhận mật khẩu</Text>
-          <View style={[styles.inputWrapper, confirmError ? styles.inputError : null]}>
-            <MaterialIcons name="lock-outline" size={20} color={colors.outline} style={styles.inputIcon} />
-            <TextInput
-              style={styles.input}
-              placeholder="Nhập lại mật khẩu"
-              value={confirmPassword}
-              onChangeText={setConfirmPassword}
-              secureTextEntry
-              editable={!isLoading}
-            />
+          <View style={styles.inputGroup}>
+            <Text style={styles.label}>Mật khẩu</Text>
+            <View style={[styles.inputWrapper, passwordError ? styles.inputError : null]}>
+              <MaterialIcons name="lock-outline" size={20} color={colors.outline} style={styles.inputIcon} />
+              <TextInput
+                style={styles.input}
+                placeholder="Tối thiểu 8 ký tự"
+                value={password}
+                onChangeText={setPassword}
+                secureTextEntry={!showPassword}
+                editable={!isLoading}
+              />
+              <TouchableOpacity onPress={() => setShowPassword(!showPassword)} style={styles.eyeIcon} disabled={isLoading}>
+                <MaterialIcons name={showPassword ? 'visibility-off' : 'visibility'} size={20} color={colors.outline} />
+              </TouchableOpacity>
+            </View>
+            {passwordError ? <Text style={styles.errorTextSmall}>{passwordError}</Text> : null}
           </View>
-          {confirmError ? <Text style={styles.errorTextSmall}>{confirmError}</Text> : null}
-        </View>
 
-        <TouchableOpacity style={styles.registerButton} activeOpacity={0.8} onPress={handleRegister} disabled={isLoading}>
-          {isLoading ? (
-            <ActivityIndicator color="#ffffff" size="small" />
-          ) : (
-            <>
-              <Text style={styles.registerButtonText}>Đăng ký tài khoản</Text>
-              <MaterialIcons name="arrow-forward" size={18} color="#ffffff" />
-            </>
-          )}
-        </TouchableOpacity>
+          <View style={styles.inputGroup}>
+            <Text style={styles.label}>Xác nhận mật khẩu</Text>
+            <View style={[styles.inputWrapper, confirmError ? styles.inputError : null]}>
+              <MaterialIcons name="lock-outline" size={20} color={colors.outline} style={styles.inputIcon} />
+              <TextInput
+                style={styles.input}
+                placeholder="Nhập lại mật khẩu"
+                value={confirmPassword}
+                onChangeText={setConfirmPassword}
+                secureTextEntry={!showConfirmPassword}
+                editable={!isLoading}
+              />
+              <TouchableOpacity onPress={() => setShowConfirmPassword(!showConfirmPassword)} style={styles.eyeIcon} disabled={isLoading}>
+                <MaterialIcons name={showConfirmPassword ? 'visibility-off' : 'visibility'} size={20} color={colors.outline} />
+              </TouchableOpacity>
+            </View>
+            {confirmError ? <Text style={styles.errorTextSmall}>{confirmError}</Text> : null}
+          </View>
 
-        <View style={styles.footerRow}>
-          <Text style={styles.footerText}>Đã có tài khoản? </Text>
-          <TouchableOpacity onPress={() => router.push('/(auth)/login' as any)} disabled={isLoading}>
-            <Text style={styles.loginLink}>Đăng nhập</Text>
+          <TouchableOpacity style={styles.registerButton} activeOpacity={0.8} onPress={handleRegister} disabled={isLoading}>
+            {isLoading ? (
+              <ActivityIndicator color="#ffffff" size="small" />
+            ) : (
+              <Text style={styles.registerButtonText}>Đăng ký</Text>
+            )}
           </TouchableOpacity>
+
+          <View style={styles.footerRow}>
+            <Text style={styles.footerText}>Đã có tài khoản? </Text>
+            <TouchableOpacity onPress={() => router.push('/(auth)/login' as any)} disabled={isLoading}>
+              <Text style={styles.loginLink}>Đăng nhập</Text>
+            </TouchableOpacity>
+          </View>
         </View>
-      </View>
-    </ScrollView>
+      </ScrollView>
+    </View>
   );
 }
 
@@ -171,49 +184,59 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#f8fafc'
   },
-  contentContainer: {
-    padding: spacing.lg,
-    paddingTop: 50,
-    paddingBottom: 40
+  headerBar: {
+    height: 64,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: spacing.lg,
+    backgroundColor: '#ffffff',
+    borderBottomWidth: 1,
+    borderBottomColor: '#e2e8f0',
+    marginTop: 40 // simple offset for statusbar, or use safeareaview
   },
-  header: {
-    marginBottom: spacing.lg
-  },
-  backButton: {
+  headerBackButton: {
     width: 40,
     height: 40,
-    borderRadius: 10,
-    backgroundColor: '#ffffff',
+    borderRadius: 20,
     alignItems: 'center',
     justifyContent: 'center',
-    marginBottom: spacing.md,
-    borderWidth: 1,
-    borderColor: '#e2e8f0'
+  },
+  headerTitle: {
+    fontSize: 20,
+    fontWeight: '700',
+    color: colors.primary,
+  },
+  contentContainer: {
+    padding: spacing.lg,
+    paddingTop: spacing.xl,
+    paddingBottom: 40
+  },
+  titleSection: {
+    alignItems: 'center',
+    marginBottom: spacing.lg
   },
   title: {
-    fontSize: 22,
-    fontWeight: '800',
+    fontSize: 24,
+    fontWeight: '700',
     color: colors.text,
     marginBottom: spacing.xs
   },
   subtitle: {
-    fontSize: 13,
-    color: colors.mutedText
+    fontSize: 14,
+    color: colors.mutedText,
+    textAlign: 'center'
   },
   card: {
-    backgroundColor: '#ffffff',
-    borderRadius: 16,
-    padding: spacing.lg,
-    borderWidth: 1,
-    borderColor: '#e2e8f0',
+    backgroundColor: '#f8fafc',
     gap: spacing.md
   },
   inputGroup: {
     gap: spacing.xs
   },
   label: {
-    fontSize: 13,
-    fontWeight: '700',
+    fontSize: 14,
+    fontWeight: '600',
     color: colors.text
   },
   inputWrapper: {
@@ -224,7 +247,12 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     backgroundColor: '#ffffff',
     paddingHorizontal: spacing.sm,
-    height: 48
+    height: 48,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.05,
+    shadowRadius: 2,
+    elevation: 1
   },
   inputIcon: {
     marginRight: spacing.xs
@@ -234,6 +262,9 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: colors.text
   },
+  eyeIcon: {
+    padding: spacing.xs
+  },
   registerButton: {
     backgroundColor: colors.primary,
     height: 48,
@@ -241,30 +272,31 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    gap: spacing.xs,
-    marginTop: spacing.xs
+    marginTop: spacing.sm,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.1,
+    shadowRadius: 2,
+    elevation: 2
   },
   registerButtonText: {
     color: colors.onPrimary,
-    fontSize: 15,
-    fontWeight: '700'
+    fontSize: 14,
+    fontWeight: '600'
   },
   footerRow: {
     flexDirection: 'row',
     justifyContent: 'center',
     alignItems: 'center',
-    marginTop: spacing.xs,
-    paddingTop: spacing.md,
-    borderTopWidth: 1,
-    borderTopColor: '#f1f5f9'
+    marginTop: spacing.md
   },
   footerText: {
-    fontSize: 13,
+    fontSize: 14,
     color: colors.mutedText
   },
   loginLink: {
-    fontSize: 13,
-    fontWeight: '700',
+    fontSize: 14,
+    fontWeight: '600',
     color: colors.primary
   },
   errorText: {

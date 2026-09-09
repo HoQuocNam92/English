@@ -13,43 +13,27 @@ export default function MobileAnswerReviewScreen() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [reviewedQuestions, setReviewedQuestions] = useState<any[]>([]);
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const [score, setScore] = useState(0);
+  const [total, setTotal] = useState(0);
 
   useEffect(() => {
     if (!id) return;
     setLoading(true);
     api.get(`/exams/attempts/${id}`)
       .then((data: any) => {
+        setScore(data.score || 0);
         const snapshot = data.questionsSnapshot || [];
+        setTotal(snapshot.length);
         const mapped = snapshot.map((q: any, index: number) => {
           const userSelectedIds = q.userSelectedOptionIds || [];
           
-          // User selected options
-          const selectedOpts = q.options?.filter((o: any) => userSelectedIds.includes(o.id) || userSelectedIds.includes(o.key)) || [];
-          const userText = selectedOpts.length > 0
-            ? selectedOpts.map((o: any) => `${o.key ? o.key + '. ' : ''}${o.text}`).join(', ')
-            : 'Không trả lời';
-
-          // Correct options
-          const correctOpts = q.options?.filter((o: any) => o.isCorrect) || [];
-          const correctText = correctOpts.map((o: any) => `${o.key ? o.key + '. ' : ''}${o.text}`).join(', ');
-
-          // Check correctness
-          const isCorrect = q.isUserCorrect ?? (
-            selectedOpts.length > 0 && 
-            selectedOpts.length === correctOpts.length && 
-            selectedOpts.every((o: any) => o.isCorrect)
-          );
-
-          // Detailed explanation
-          const explanationText = q.explanation || correctOpts[0]?.explanation || 'Giải thích kiến thức chi tiết cho câu hỏi này.';
-
           return {
             id: String(index),
             prompt: q.prompt || '',
-            userAnswer: userText,
-            correctAnswer: correctText,
-            isCorrect,
-            explanation: explanationText
+            options: q.options || [],
+            userSelectedIds,
+            explanation: q.explanation || 'Không có giải thích chi tiết.'
           };
         });
         setReviewedQuestions(mapped);
@@ -66,91 +50,323 @@ export default function MobileAnswerReviewScreen() {
     );
   }
 
-  if (error) {
+  if (error || reviewedQuestions.length === 0) {
     return (
       <View style={[styles.container, { justifyContent: 'center', alignItems: 'center' }]}>
-        <Text style={{ color: '#ef4444' }}>{error}</Text>
+        <Text style={{ color: '#ba1a1a' }}>{error || 'Không có dữ liệu'}</Text>
       </View>
     );
   }
 
+  const currentQ = reviewedQuestions[currentIndex];
+  // Calculate score base 10
+  const scoreBase10 = (score / 100) * 10;
+
   return (
     <View style={styles.container}>
       <StatusBar style="dark" />
+      {/* Header */}
       <View style={styles.header}>
-        <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
-          <MaterialIcons name="arrow-back" size={24} color={colors.text} />
+        <TouchableOpacity style={styles.headerIconBtn} onPress={() => router.back()}>
+          <MaterialIcons name="close" size={24} color="#464555" />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>Chi tiết kết quả</Text>
+        <Text style={styles.headerTitle}>Review Test</Text>
         <View style={{ width: 40 }} />
       </View>
 
       <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
-        {reviewedQuestions.map((q, idx) => (
-          <View key={q.id} style={styles.card}>
-            <View style={styles.cardHeader}>
-              <View style={[styles.badge, q.isCorrect ? styles.badgeCorrect : styles.badgeWrong]}>
-                <MaterialIcons
-                  name={q.isCorrect ? 'check' : 'close'}
-                  size={16}
-                  color={q.isCorrect ? '#15803d' : '#991b1b'}
-                />
-                <Text style={[styles.badgeText, q.isCorrect ? styles.textCorrect : styles.textWrong]}>
-                  {q.isCorrect ? 'Chính xác' : 'Chưa đúng'}
-                </Text>
-              </View>
-              <Text style={styles.qNum}>Câu #{idx + 1}</Text>
-            </View>
-
-            <Text style={styles.prompt}>{safeText(q.prompt)}</Text>
-
-            <View style={styles.answersBox}>
-              <View style={styles.answerRow}>
-                <Text style={styles.ansLabel}>Bạn đã chọn:</Text>
-                <Text style={[styles.ansVal, q.isCorrect ? styles.textCorrect : styles.textWrong]}>
-                  {safeText(q.userAnswer)}
-                </Text>
-              </View>
-              {!q.isCorrect && (
-                <View style={styles.answerRow}>
-                  <Text style={styles.ansLabel}>Đáp án đúng:</Text>
-                  <Text style={[styles.ansVal, styles.textCorrect]}>{safeText(q.correctAnswer)}</Text>
-                </View>
-              )}
-            </View>
-
-            <View style={styles.expBox}>
-              <Text style={styles.expLabel}>💡 Giải thích kiến thức:</Text>
-              <Text style={styles.expText}>{safeText(q.explanation)}</Text>
-            </View>
+        {/* Score & Progress Header */}
+        <View style={styles.progressBox}>
+          <View style={styles.progressCol}>
+            <Text style={styles.progressLabel}>Your Score</Text>
+            <Text style={styles.progressValuePrimary}>{scoreBase10.toFixed(1)}/10</Text>
           </View>
-        ))}
+          <View style={[styles.progressCol, { alignItems: 'flex-end' }]}>
+            <Text style={styles.progressLabel}>Question</Text>
+            <Text style={styles.progressValueDark}>{currentIndex + 1} / {total}</Text>
+          </View>
+        </View>
+
+        {/* Question Content */}
+        <View style={styles.questionSection}>
+          <Text style={styles.questionText}>{safeText(currentQ.prompt)}</Text>
+          
+          <View style={styles.optionsList}>
+            {currentQ.options.map((opt: any) => {
+              const isUserSelected = currentQ.userSelectedIds.includes(opt.id) || currentQ.userSelectedIds.includes(opt.key);
+              const isCorrect = opt.isCorrect;
+              
+              if (isCorrect) {
+                // Correct Option
+                return (
+                  <View key={opt.id || opt.key} style={[styles.optionCard, styles.optionCorrect]}>
+                    <View style={styles.optionContentRow}>
+                      <MaterialIcons name="check-circle" size={20} color="#166534" />
+                      <Text style={styles.optionTextCorrect}>{safeText(opt.text)}</Text>
+                    </View>
+                    <Text style={styles.optionTagCorrect}>Correct Answer</Text>
+                  </View>
+                );
+              }
+              
+              if (isUserSelected && !isCorrect) {
+                // Incorrect Option (Learner's Choice)
+                return (
+                  <View key={opt.id || opt.key} style={[styles.optionCard, styles.optionIncorrect]}>
+                    <View style={styles.optionContentRow}>
+                      <MaterialIcons name="cancel" size={20} color="#ba1a1a" />
+                      <Text style={styles.optionTextIncorrect}>{safeText(opt.text)}</Text>
+                    </View>
+                    <Text style={styles.optionTagIncorrect}>Your Answer</Text>
+                  </View>
+                );
+              }
+
+              // Other Options (Neutral)
+              return (
+                <View key={opt.id || opt.key} style={[styles.optionCard, styles.optionNeutral]}>
+                  <Text style={styles.optionTextNeutral}>{safeText(opt.text)}</Text>
+                </View>
+              );
+            })}
+          </View>
+        </View>
+
+        {/* Detailed Explanation Card */}
+        <View style={styles.explanationCard}>
+          <View style={styles.expHeader}>
+            <MaterialIcons name="lightbulb" size={20} color={colors.primary} />
+            <Text style={styles.expTitle}>Explanation</Text>
+          </View>
+          <Text style={styles.expText}>{safeText(currentQ.explanation)}</Text>
+        </View>
       </ScrollView>
+
+      {/* Bottom Action Bar */}
+      <View style={styles.bottomFixedArea}>
+        <TouchableOpacity 
+          style={styles.navBtnSecondary} 
+          disabled={currentIndex === 0}
+          onPress={() => setCurrentIndex(prev => Math.max(0, prev - 1))}
+        >
+          <MaterialIcons name="chevron-left" size={20} color={currentIndex === 0 ? '#c7c4d8' : '#191c1e'} />
+          <Text style={[styles.navBtnSecondaryText, currentIndex === 0 && { color: '#c7c4d8' }]}>Previous</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity 
+          style={styles.navBtnPrimary} 
+          disabled={currentIndex === total - 1}
+          onPress={() => setCurrentIndex(prev => Math.min(total - 1, prev + 1))}
+        >
+          <Text style={styles.navBtnPrimaryText}>Next</Text>
+          <MaterialIcons name="chevron-right" size={20} color="#ffffff" />
+        </TouchableOpacity>
+      </View>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#f8fafc' },
-  header: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: spacing.lg, paddingTop: 50, paddingBottom: spacing.md, backgroundColor: '#ffffff', borderBottomWidth: 1, borderBottomColor: '#e2e8f0' },
-  backButton: { width: 40, height: 40, borderRadius: 10, alignItems: 'center', justifyContent: 'center' },
-  headerTitle: { fontSize: 16, fontWeight: '800', color: colors.text },
-  scrollContent: { padding: spacing.lg, gap: spacing.lg, paddingBottom: 40 },
-  card: { backgroundColor: '#ffffff', borderRadius: 16, padding: spacing.lg, borderWidth: 1, borderColor: '#e2e8f0', gap: spacing.sm },
-  cardHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
-  badge: { flexDirection: 'row', alignItems: 'center', gap: 4, paddingHorizontal: 8, paddingVertical: 2, borderRadius: 6 },
-  badgeCorrect: { backgroundColor: '#dcfce7' },
-  badgeWrong: { backgroundColor: '#fee2e2' },
-  badgeText: { fontSize: 11, fontWeight: '800' },
-  textCorrect: { color: '#15803d' },
-  textWrong: { color: '#991b1b' },
-  qNum: { fontSize: 12, color: colors.mutedText, fontWeight: '700' },
-  prompt: { fontSize: 14, fontWeight: '700', color: colors.text, lineHeight: 20 },
-  answersBox: { backgroundColor: '#f8fafc', borderRadius: 10, padding: spacing.sm, gap: 4 },
-  answerRow: { flexDirection: 'row', gap: spacing.xs },
-  ansLabel: { fontSize: 12, color: colors.mutedText },
-  ansVal: { fontSize: 12, fontWeight: '700', flex: 1 },
-  expBox: { backgroundColor: '#f5f3ff', borderRadius: 10, padding: spacing.sm, gap: 2 },
-  expLabel: { fontSize: 11, fontWeight: '800', color: colors.primary },
-  expText: { fontSize: 12, color: colors.text, lineHeight: 16 }
+  container: { 
+    flex: 1, 
+    backgroundColor: '#f7f9fb' 
+  },
+  header: { 
+    height: 64,
+    flexDirection: 'row', 
+    alignItems: 'center', 
+    justifyContent: 'space-between', 
+    paddingHorizontal: spacing.md, 
+    paddingTop: 20, 
+    backgroundColor: '#ffffff', 
+    borderBottomWidth: 1, 
+    borderBottomColor: '#c7c4d8',
+    marginTop: 20
+  },
+  headerIconBtn: { 
+    width: 40, 
+    height: 40, 
+    borderRadius: 20, 
+    alignItems: 'center', 
+    justifyContent: 'center' 
+  },
+  headerTitle: { 
+    fontSize: 20, 
+    fontWeight: '600', 
+    color: colors.primary 
+  },
+  scrollContent: { 
+    padding: spacing.md, 
+    gap: spacing.lg, 
+    paddingBottom: 120 
+  },
+  progressBox: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    backgroundColor: '#ffffff',
+    padding: spacing.md,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: '#c7c4d8'
+  },
+  progressCol: {
+    flexDirection: 'col' as any
+  },
+  progressLabel: {
+    fontSize: 12,
+    color: '#464555',
+    marginBottom: 2
+  },
+  progressValuePrimary: {
+    fontSize: 24,
+    fontWeight: '700',
+    color: colors.primary
+  },
+  progressValueDark: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#191c1e',
+    marginTop: 6
+  },
+  questionSection: {
+    gap: spacing.md
+  },
+  questionText: {
+    fontSize: 20,
+    fontWeight: '600',
+    color: '#191c1e',
+    lineHeight: 28
+  },
+  optionsList: {
+    gap: spacing.sm,
+    marginTop: spacing.md
+  },
+  optionCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    padding: spacing.md,
+    borderRadius: 10,
+    borderWidth: 1
+  },
+  optionCorrect: {
+    borderColor: '#166534',
+    backgroundColor: '#dcfce3'
+  },
+  optionIncorrect: {
+    borderColor: '#ba1a1a',
+    backgroundColor: '#ffdad6'
+  },
+  optionNeutral: {
+    borderColor: '#c7c4d8',
+    backgroundColor: '#ffffff',
+    opacity: 0.7
+  },
+  optionContentRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.sm
+  },
+  optionTextCorrect: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#166534'
+  },
+  optionTextIncorrect: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#ba1a1a'
+  },
+  optionTextNeutral: {
+    fontSize: 14,
+    color: '#464555'
+  },
+  optionTagCorrect: {
+    fontSize: 12,
+    fontWeight: '700',
+    color: '#166534',
+    letterSpacing: 0.5,
+    textTransform: 'uppercase'
+  },
+  optionTagIncorrect: {
+    fontSize: 12,
+    fontWeight: '700',
+    color: '#ba1a1a',
+    letterSpacing: 0.5,
+    textTransform: 'uppercase'
+  },
+  explanationCard: {
+    marginTop: spacing.sm,
+    padding: spacing.lg,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: '#c7c4d8',
+    backgroundColor: '#f2f4f6',
+    gap: spacing.sm
+  },
+  expHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.sm
+  },
+  expTitle: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: colors.primary
+  },
+  expText: {
+    fontSize: 14,
+    color: '#464555',
+    lineHeight: 22
+  },
+  bottomFixedArea: {
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
+    backgroundColor: '#ffffff',
+    borderTopWidth: 1,
+    borderTopColor: '#c7c4d8',
+    padding: spacing.md,
+    paddingBottom: 32, // safe area
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    gap: spacing.md
+  },
+  navBtnSecondary: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: spacing.xs,
+    paddingVertical: spacing.md,
+    paddingHorizontal: spacing.lg,
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: '#c7c4d8',
+    backgroundColor: 'transparent'
+  },
+  navBtnSecondaryText: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#191c1e'
+  },
+  navBtnPrimary: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: spacing.xs,
+    paddingVertical: spacing.md,
+    paddingHorizontal: spacing.lg,
+    borderRadius: 10,
+    backgroundColor: colors.primary
+  },
+  navBtnPrimaryText: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#ffffff'
+  }
 });

@@ -25,6 +25,8 @@ interface Attempt {
   exam: { durationMinutes: number };
 }
 
+const ALPHABET = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H'];
+
 export default function MobileQuizScreen() {
   const { id } = useLocalSearchParams();
   const router = useRouter();
@@ -126,13 +128,14 @@ export default function MobileQuizScreen() {
     return (
       <View style={[styles.container, { justifyContent: 'center', alignItems: 'center' }]}>
         <ActivityIndicator size="large" color={colors.primary} />
-        <Text style={{ marginTop: spacing.md }}>Đang chuẩn bị đề thi...</Text>
+        <Text style={{ marginTop: spacing.md, color: '#464555' }}>Đang chuẩn bị đề thi...</Text>
       </View>
     );
   }
 
   const currentQuestion = questions[currentIndex];
   const isMultipleChoice = currentQuestion?.type === 'MULTIPLE_CHOICE_MULTIPLE_ANSWERS';
+  const total = questions.length || 1;
 
   const formatTime = (seconds: number) => {
     const m = Math.floor(seconds / 60);
@@ -146,34 +149,33 @@ export default function MobileQuizScreen() {
       
       {/* Header */}
       <View style={styles.header}>
-        <TouchableOpacity onPress={() => router.back()} disabled={submitting}>
-          <MaterialIcons name="close" size={24} color={colors.text} />
+        <TouchableOpacity style={styles.headerIconBtn} onPress={() => router.back()} disabled={submitting}>
+          <MaterialIcons name="close" size={24} color="#464555" />
         </TouchableOpacity>
-        <Text style={styles.timerText}>
-          {timeLeft !== null ? formatTime(timeLeft) : '--:--'}
-        </Text>
-        <TouchableOpacity onPress={confirmSubmit} disabled={submitting}>
-          <Text style={styles.submitText}>Nộp</Text>
-        </TouchableOpacity>
-      </View>
-
-      {/* Progress */}
-      <View style={styles.progressContainer}>
-        <View style={styles.progressBar}>
-          <View style={[styles.progressFill, { width: `${((currentIndex + 1) / (questions.length || 1)) * 100}%` }]} />
+        
+        <View style={styles.headerCenter}>
+          <Text style={styles.progressText}>{currentIndex + 1} / {total}</Text>
+          <View style={styles.progressBarBg}>
+            <View style={[styles.progressBarFill, { width: `${((currentIndex + 1) / total) * 100}%` }]} />
+          </View>
         </View>
-        <Text style={styles.progressText}>Câu {currentIndex + 1} / {questions.length}</Text>
+
+        <View style={styles.headerRight}>
+          <Text style={styles.timerText}>
+            {timeLeft !== null ? formatTime(timeLeft) : '--:--'}
+          </Text>
+        </View>
       </View>
 
       {/* Question Content */}
-      <ScrollView contentContainerStyle={styles.content}>
+      <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
         {currentQuestion && (
-          <View style={styles.questionCard}>
-            <Text style={styles.questionTypeTag}>
-              {isMultipleChoice ? 'CHỌN NHIỀU ĐÁP ÁN' : 'CHỌN 1 ĐÁP ÁN'}
-            </Text>
-            <Text style={styles.prompt}>
+          <View style={styles.questionSection}>
+            <Text style={styles.questionTitle}>
               {safeText((currentQuestion as any).prompt || currentQuestion.text)}
+            </Text>
+            <Text style={styles.questionSubtitle}>
+              {isMultipleChoice ? 'Chọn các đáp án đúng bên dưới.' : 'Chọn một đáp án đúng bên dưới.'}
             </Text>
 
             {/* Options */}
@@ -182,21 +184,27 @@ export default function MobileQuizScreen() {
                 const optId = option.id || option.key || String(optIdx);
                 const selected = answers[currentQuestion.id]?.includes(optId);
                 const rawText = safeText(option.text || option.content || option.value || option.label || option);
-                const displayText = option.key && !rawText.startsWith(`${option.key}.`) ? `${option.key}. ${rawText}` : rawText;
+                const letter = ALPHABET[optIdx % ALPHABET.length];
 
                 return (
                   <TouchableOpacity
                     key={optId}
                     style={[styles.optionItem, selected && styles.optionItemSelected]}
                     onPress={() => toggleOption(currentQuestion.id, optId, isMultipleChoice)}
-                    activeOpacity={0.7}
+                    activeOpacity={0.8}
                   >
-                    <View style={[styles.radio, isMultipleChoice && styles.checkbox, selected && styles.radioSelected]}>
-                      {selected && <MaterialIcons name="check" size={14} color="#fff" />}
+                    <View style={styles.optionContentRow}>
+                      <View style={[styles.optionLetterBox, selected && styles.optionLetterBoxSelected]}>
+                        <Text style={[styles.optionLetterText, selected && styles.optionLetterTextSelected]}>{letter}</Text>
+                      </View>
+                      <Text style={styles.optionText}>
+                        {rawText}
+                      </Text>
                     </View>
-                    <Text style={[styles.optionText, selected && styles.optionTextSelected]}>
-                      {displayText}
-                    </Text>
+                    
+                    <View style={[styles.radioCircle, selected && styles.radioCircleSelected]}>
+                      {selected && <MaterialIcons name="check" size={16} color="#fff" />}
+                    </View>
                   </TouchableOpacity>
                 );
               })}
@@ -206,29 +214,39 @@ export default function MobileQuizScreen() {
       </ScrollView>
 
       {/* Footer Navigation */}
-      <View style={styles.footer}>
-        <TouchableOpacity 
-          style={[styles.navBtn, currentIndex === 0 && styles.navBtnDisabled]} 
-          onPress={() => setCurrentIndex(prev => Math.max(0, prev - 1))}
-          disabled={currentIndex === 0 || submitting}
-        >
-          <Text style={[styles.navBtnText, currentIndex === 0 && styles.navBtnTextDisabled]}>Trước</Text>
-        </TouchableOpacity>
+      <View style={styles.bottomFixedArea}>
+        {currentIndex > 0 && (
+          <TouchableOpacity 
+            style={styles.btnSecondary} 
+            onPress={() => setCurrentIndex(prev => Math.max(0, prev - 1))}
+            disabled={submitting}
+          >
+            <Text style={styles.btnSecondaryText}>Trước</Text>
+          </TouchableOpacity>
+        )}
 
         {currentIndex === questions.length - 1 ? (
           <TouchableOpacity 
-            style={[styles.navBtn, styles.navBtnPrimary]} 
+            style={styles.btnPrimary} 
             onPress={confirmSubmit}
             disabled={submitting}
           >
-            {submitting ? <ActivityIndicator size="small" color="#fff" /> : <Text style={styles.navBtnTextPrimary}>Nộp bài</Text>}
+            {submitting ? (
+              <ActivityIndicator size="small" color="#fff" />
+            ) : (
+              <>
+                <Text style={styles.btnPrimaryText}>Nộp bài</Text>
+                <MaterialIcons name="done-all" size={20} color="#ffffff" />
+              </>
+            )}
           </TouchableOpacity>
         ) : (
           <TouchableOpacity 
-            style={[styles.navBtn, styles.navBtnPrimary]} 
+            style={styles.btnPrimary} 
             onPress={() => setCurrentIndex(prev => Math.min(questions.length - 1, prev + 1))}
           >
-            <Text style={styles.navBtnTextPrimary}>Sau</Text>
+            <Text style={styles.btnPrimaryText}>Tiếp tục</Text>
+            <MaterialIcons name="arrow-forward" size={20} color="#ffffff" />
           </TouchableOpacity>
         )}
       </View>
@@ -291,169 +309,195 @@ export default function MobileQuizScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff'
+    backgroundColor: '#f7f9fb' // surface
   },
   header: {
+    height: 64,
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingHorizontal: spacing.lg,
-    paddingTop: 50,
-    paddingBottom: spacing.md,
+    paddingHorizontal: spacing.md,
+    paddingTop: 20, // safe area approx
+    backgroundColor: '#ffffff', // surface lowest
     borderBottomWidth: 1,
-    borderBottomColor: '#e2e8f0'
+    borderBottomColor: '#c7c4d8', // outline-variant
+    marginTop: 20
   },
-  timerText: {
-    fontSize: 18,
-    fontWeight: '700',
-    color: '#b45309'
+  headerIconBtn: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    alignItems: 'center',
+    justifyContent: 'center'
   },
-  submitText: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: colors.primary
-  },
-  progressContainer: {
-    paddingHorizontal: spacing.lg,
-    paddingVertical: spacing.md,
-    backgroundColor: '#f8fafc',
-    borderBottomWidth: 1,
-    borderBottomColor: '#e2e8f0'
-  },
-  progressBar: {
-    height: 6,
-    backgroundColor: '#e2e8f0',
-    borderRadius: 3,
-    overflow: 'hidden',
-    marginBottom: spacing.xs
-  },
-  progressFill: {
-    height: '100%',
-    backgroundColor: colors.primary
+  headerCenter: {
+    flex: 1,
+    paddingHorizontal: spacing.md,
+    alignItems: 'center'
   },
   progressText: {
-    fontSize: 12,
-    color: colors.mutedText,
-    textAlign: 'right'
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#464555',
+    marginBottom: 4
+  },
+  progressBarBg: {
+    width: '100%',
+    height: 6,
+    backgroundColor: '#e6e8ea',
+    borderRadius: 3,
+    overflow: 'hidden'
+  },
+  progressBarFill: {
+    height: '100%',
+    backgroundColor: colors.primary,
+    borderRadius: 3
+  },
+  headerRight: {
+    width: 60,
+    alignItems: 'flex-end',
+    justifyContent: 'center'
+  },
+  timerText: {
+    fontSize: 14,
+    fontWeight: '700',
+    color: '#191c1e'
   },
   content: {
-    flex: 1
-  },
-  contentContainer: {
-    padding: spacing.lg,
-    paddingBottom: spacing.xl
-  },
-  questionCard: {
-    backgroundColor: '#ffffff',
-    borderRadius: 16,
     padding: spacing.md,
-    marginBottom: spacing.md
+    paddingTop: spacing.xl,
+    paddingBottom: 160 // room for bottom bar
   },
-  questionTypeTag: {
-    fontSize: 11,
-    fontWeight: '800',
-    color: colors.primary,
-    marginBottom: spacing.xs,
-    textTransform: 'uppercase'
+  questionSection: {
+    marginBottom: spacing.xl
   },
-  prompt: {
-    fontSize: 16,
+  questionTitle: {
+    fontSize: 24,
     fontWeight: '700',
-    color: colors.text,
-    lineHeight: 24,
-    marginBottom: spacing.lg
+    color: '#191c1e',
+    marginBottom: spacing.md,
+    lineHeight: 32,
+    letterSpacing: -0.2
   },
-  questionType: {
-    fontSize: 12,
-    fontWeight: '700',
-    color: colors.mutedText,
-    marginBottom: spacing.xs,
-    textTransform: 'uppercase'
-  },
-  questionText: {
-    fontSize: 18,
-    fontWeight: '700',
-    color: colors.text,
-    lineHeight: 26,
+  questionSubtitle: {
+    fontSize: 14,
+    color: '#464555',
     marginBottom: spacing.xl
   },
   optionsList: {
-    gap: spacing.md
+    gap: spacing.sm
   },
   optionItem: {
     flexDirection: 'row',
     alignItems: 'center',
+    justifyContent: 'space-between',
     padding: spacing.md,
     borderRadius: 12,
     borderWidth: 1,
-    borderColor: '#e2e8f0',
-    backgroundColor: '#fff'
+    borderColor: '#c7c4d8',
+    backgroundColor: '#f7f9fb'
   },
   optionItemSelected: {
     borderColor: colors.primary,
-    backgroundColor: '#eef2ff'
-  },
-  radio: {
-    width: 22,
-    height: 22,
-    borderRadius: 11,
+    backgroundColor: '#eef2ff', // approx primary-fixed/20
     borderWidth: 2,
-    borderColor: '#cbd5e1',
-    marginRight: spacing.md,
-    justifyContent: 'center',
-    alignItems: 'center'
+    padding: spacing.md - 1 // offset border width to avoid jumping
   },
-  checkbox: {
-    borderRadius: 6
+  optionContentRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    flex: 1,
+    gap: spacing.md,
+    paddingRight: spacing.md
   },
-  radioSelected: {
-    borderColor: colors.primary,
-    backgroundColor: colors.primary
+  optionLetterBox: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: '#c7c4d8',
+    alignItems: 'center',
+    justifyContent: 'center'
+  },
+  optionLetterBoxSelected: {
+    backgroundColor: colors.primary,
+    borderColor: colors.primary
+  },
+  optionLetterText: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#464555'
+  },
+  optionLetterTextSelected: {
+    color: '#ffffff'
   },
   optionText: {
     flex: 1,
-    fontSize: 15,
-    color: colors.text,
-    lineHeight: 22
-  },
-  optionTextSelected: {
+    fontSize: 14,
     fontWeight: '600',
-    color: colors.primary
+    color: '#191c1e',
+    lineHeight: 20
   },
-  footer: {
-    flexDirection: 'row',
-    padding: spacing.lg,
-    borderTopWidth: 1,
-    borderTopColor: '#e2e8f0',
-    backgroundColor: '#fff',
-    gap: spacing.md
-  },
-  navBtn: {
-    flex: 1,
-    paddingVertical: 14,
-    borderRadius: 10,
-    alignItems: 'center',
+  radioCircle: {
+    width: 24,
+    height: 24,
+    borderRadius: 12,
+    borderWidth: 2,
+    borderColor: '#c7c4d8',
     justifyContent: 'center',
-    backgroundColor: '#f1f5f9'
+    alignItems: 'center'
   },
-  navBtnPrimary: {
+  radioCircleSelected: {
+    borderColor: colors.primary,
     backgroundColor: colors.primary
   },
-  navBtnDisabled: {
-    opacity: 0.5
+  bottomFixedArea: {
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
+    backgroundColor: 'rgba(255,255,255,0.95)',
+    padding: spacing.md,
+    paddingBottom: 32, // safe area approx
+    borderTopWidth: 1,
+    borderTopColor: '#e6e8ea',
+    flexDirection: 'row',
+    gap: spacing.sm
   },
-  navBtnText: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: colors.text
+  btnPrimary: {
+    flex: 1,
+    height: 52,
+    backgroundColor: colors.primary,
+    borderRadius: 10,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 2
   },
-  navBtnTextPrimary: {
-    color: '#fff',
-    fontSize: 16,
+  btnPrimaryText: {
+    color: '#ffffff',
+    fontSize: 15,
     fontWeight: '600'
   },
-  navBtnTextDisabled: {
-    color: colors.mutedText
+  btnSecondary: {
+    width: 80,
+    height: 52,
+    backgroundColor: '#ffffff',
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: '#c7c4d8',
+    alignItems: 'center',
+    justifyContent: 'center'
+  },
+  btnSecondaryText: {
+    color: '#464555',
+    fontSize: 15,
+    fontWeight: '600'
   },
   modalOverlay: {
     flex: 1,
@@ -472,7 +516,7 @@ const styles = StyleSheet.create({
   modalTitle: {
     fontSize: 18,
     fontWeight: '800',
-    color: colors.text,
+    color: '#191c1e',
     textAlign: 'center'
   },
   unansweredBox: {
@@ -490,7 +534,7 @@ const styles = StyleSheet.create({
   },
   modalMessage: {
     fontSize: 14,
-    color: colors.text,
+    color: '#191c1e',
     textAlign: 'center',
     lineHeight: 20
   },
@@ -507,7 +551,7 @@ const styles = StyleSheet.create({
     alignItems: 'center'
   },
   modalCancelText: {
-    color: colors.text,
+    color: '#191c1e',
     fontWeight: '700',
     fontSize: 15
   },

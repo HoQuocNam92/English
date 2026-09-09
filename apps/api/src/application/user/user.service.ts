@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException, ConflictException } from '@nestjs/common'
+import { BadRequestException, Injectable, NotFoundException, ConflictException } from '@nestjs/common'
 import { PrismaService } from '../../infrastructure/database/prisma.service'
 import * as bcrypt from 'bcrypt'
 
@@ -64,6 +64,14 @@ export class UsersService {
     if (exists) throw new ConflictException('Email already in use')
 
     const passwordHash = await bcrypt.hash(dto.password, 12)
+    const roleToAssign = dto.roleCode || dto.role || 'learner'
+    const role = await this.prisma.role.findUnique({ where: { code: roleToAssign } })
+    if (!role) throw new BadRequestException('Vai trò không tồn tại')
+    const defaultLevel = roleToAssign === 'learner'
+      ? await this.prisma.level.findFirst({ orderBy: { order: 'asc' } })
+      : null
+    if (roleToAssign === 'learner' && !defaultLevel) throw new BadRequestException('Hệ thống chưa cấu hình cấp độ mặc định')
+
     const user = await this.prisma.user.create({
       data: {
         email: dto.email,
@@ -78,30 +86,14 @@ export class UsersService {
             locale: dto.locale ?? 'vi',
             timezone: dto.timezone ?? 'Asia/Ho_Chi_Minh',
           }
-        }
+        },
+        userRoles: { create: { roleId: role.id } },
+        ...(roleToAssign === 'learner' && defaultLevel && {
+          learnerProfile: { create: { levelId: defaultLevel.id, weeklyStudyTargetMinutes: 180, onboardingCompleted: false } },
+        }),
       },
       include: { userDetail: true, userRoles: { include: { role: true } } }
     })
-
-    const roleToAssign = dto.roleCode || dto.role || 'learner'
-    const role = await this.prisma.role.findUnique({ where: { code: roleToAssign } })
-    if (role) {
-      await this.prisma.userRole.create({ data: { userId: user.id, roleId: role.id } })
-    }
-
-    if (roleToAssign === 'learner') {
-      const defaultLevel = await this.prisma.level.findFirst({ orderBy: { order: 'asc' } })
-      if (defaultLevel) {
-        await this.prisma.learnerProfile.create({
-          data: {
-            userId: user.id,
-            levelId: defaultLevel.id,
-            weeklyStudyTargetMinutes: 180,
-            onboardingCompleted: false,
-          },
-        }).catch(() => {})
-      }
-    }
 
     return this.toResponse(await this.prisma.user.findUnique({
       where: { id: user.id },

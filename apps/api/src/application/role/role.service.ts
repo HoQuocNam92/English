@@ -73,26 +73,80 @@ export class RolesService {
   async assignRoleToUser(dto: { userId: string; roleId: string; expiresAt?: string; grantedById?: string }) {
     const user = await this.prisma.user.findUnique({ where: { id: dto.userId } })
     if (!user) throw new NotFoundException('User not found')
-    await this.findOne(dto.roleId)
-    await this.prisma.userRole.upsert({
-      where: { userId_roleId: { userId: dto.userId, roleId: dto.roleId } },
-      update: { expiresAt: dto.expiresAt ? new Date(dto.expiresAt) : null },
-      create: {
-        userId: dto.userId, roleId: dto.roleId,
-        expiresAt: dto.expiresAt ? new Date(dto.expiresAt) : undefined,
-        grantedById: dto.grantedById,
-      },
+    const role = await this.findOne(dto.roleId)
+    const coreRoleCodes = ['admin', 'teacher', 'learner']
+    const defaultLevel = role.code === 'learner'
+      ? await this.prisma.level.findFirst({ orderBy: { order: 'asc' } })
+      : null
+    if (role.code === 'learner' && !defaultLevel) throw new ConflictException('Hệ thống chưa cấu hình cấp độ mặc định')
+
+    await this.prisma.$transaction(async (tx) => {
+      if (coreRoleCodes.includes(role.code)) {
+        const otherCoreRoles = await tx.role.findMany({
+          where: { code: { in: coreRoleCodes.filter(code => code !== role.code) } },
+          select: { id: true },
+        })
+        await tx.userRole.deleteMany({
+          where: { userId: dto.userId, roleId: { in: otherCoreRoles.map(item => item.id) } },
+        })
+      }
+
+      await tx.userRole.upsert({
+        where: { userId_roleId: { userId: dto.userId, roleId: dto.roleId } },
+        update: { expiresAt: dto.expiresAt ? new Date(dto.expiresAt) : null },
+        create: {
+          userId: dto.userId, roleId: dto.roleId,
+          expiresAt: dto.expiresAt ? new Date(dto.expiresAt) : undefined,
+          grantedById: dto.grantedById,
+        },
+      })
+
+      if (role.code === 'learner') {
+        await tx.learnerProfile.upsert({
+          where: { userId: dto.userId },
+          update: {},
+          create: { userId: dto.userId, levelId: defaultLevel!.id, onboardingCompleted: false },
+        })
+      } else if (role.code === 'admin' || role.code === 'teacher') {
+        await tx.learnerProfile.deleteMany({ where: { userId: dto.userId } })
+      }
     })
   }
 
   async revokeRoleFromUser(userId: string, roleId: string) {
-    await this.prisma.userRole.deleteMany({ where: { userId, roleId } })
+    const role = await this.findOne(roleId)
+    await this.prisma.$transaction(async (tx) => {
+      await tx.userRole.deleteMany({ where: { userId, roleId } })
+      if (role.code === 'learner') await tx.learnerProfile.deleteMany({ where: { userId } })
+    })
   }
 
   async findAllPermissions() {
     return this.prisma.permission.findMany({
       orderBy: [{ resource: 'asc' }, { action: 'asc' }],
     })
+  }
+
+  async createPermission(dto: { code: string; name: string; resource: string; action: string; description?: string }) {
+    const exists = await this.prisma.permission.findUnique({ where: { code: dto.code } })
+    if (exists) throw new ConflictException('Permission ' + dto.code + ' already exists')
+    return this.prisma.permission.create({ data: dto })
+  }
+
+  async updatePermission(id: string, dto: { code?: string; name?: string; resource?: string; action?: string; description?: string }) {
+    const permission = await this.prisma.permission.findUnique({ where: { id } })
+    if (!permission) throw new NotFoundException('Permission not found')
+    if (dto.code && dto.code !== permission.code) {
+      const duplicate = await this.prisma.permission.findUnique({ where: { code: dto.code } })
+      if (duplicate) throw new ConflictException('Permission ' + dto.code + ' already exists')
+    }
+    return this.prisma.permission.update({ where: { id }, data: dto })
+  }
+
+  async deletePermission(id: string) {
+    const permission = await this.prisma.permission.findUnique({ where: { id } })
+    if (!permission) throw new NotFoundException('Permission not found')
+    await this.prisma.permission.delete({ where: { id } })
   }
 
   async findUsersByRole(roleId: string, pageParam: any = 1, limitParam: any = 20) {

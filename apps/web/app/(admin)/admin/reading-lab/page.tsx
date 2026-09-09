@@ -1,5 +1,6 @@
 'use client';
 import * as React from 'react';
+import { Pagination } from '@/shared/ui';
 import { apiClient } from '@/shared/api/api-client';
 
 function Spinner() {
@@ -17,8 +18,9 @@ export default function AdminReadingLabPage() {
     setLoading(true);
     apiClient.get<any>(`/reading-lab/articles?page=${page}&limit=20`)
       .then(res => {
-        setArticles(res?.data ?? res ?? []);
-        setTotal(res?.meta?.total ?? (Array.isArray(res) ? res.length : 0));
+        const list = Array.isArray(res) ? res : Array.isArray(res?.data) ? res.data : Array.isArray(res?.items) ? res.items : [];
+        setArticles(list);
+        setTotal(res?.meta?.total ?? res?.total ?? list.length);
       })
       .catch(() => {})
       .finally(() => setLoading(false));
@@ -31,10 +33,7 @@ export default function AdminReadingLabPage() {
           <h1 className="text-2xl font-bold text-on-surface tracking-tight">Phòng đọc IT</h1>
           <p className="text-sm text-on-surface-variant mt-1">Quản lý bài đọc kỹ thuật tiếng Anh chuyên ngành.</p>
         </div>
-        <button className="bg-primary text-on-primary font-semibold text-sm px-4 py-2 rounded-xl flex items-center gap-2 hover:opacity-90 transition-all">
-          <span className="material-symbols-outlined text-[20px]">add</span>
-          Thêm bài đọc
-        </button>
+        <span className="rounded-xl bg-primary/5 px-3 py-2 text-xs font-medium text-primary">Nội dung bài đọc được quản lý từ Bài học</span>
       </div>
 
       {loading ? (
@@ -70,13 +69,7 @@ export default function AdminReadingLabPage() {
               </div>
             ))}
           </div>
-          <div className="flex justify-between items-center">
-            <span className="text-sm text-on-surface-variant">Tổng {total} bài đọc</span>
-            <div className="flex gap-2">
-              <button disabled={page <= 1} onClick={() => setPage(p => p - 1)} className="px-3 py-1 border border-outline-variant rounded text-sm hover:bg-surface-container disabled:opacity-50">Trước</button>
-              <button disabled={page >= totalPages} onClick={() => setPage(p => p + 1)} className="px-3 py-1 border border-outline-variant rounded text-sm hover:bg-surface-container disabled:opacity-50">Sau</button>
-            </div>
-          </div>
+          <Pagination page={page} limit={20} total={total} totalPages={totalPages} onPageChange={setPage} className="rounded-xl" />
         </>
       )}
     </div>

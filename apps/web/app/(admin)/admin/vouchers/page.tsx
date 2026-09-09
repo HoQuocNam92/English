@@ -1,7 +1,6 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
-import { AppShell } from '@/shared/layout/AppShell';
 import { apiClient } from '@/shared/api/api-client';
 
 interface Voucher {
@@ -130,18 +129,18 @@ export default function AdminVouchersPage() {
   const now = new Date();
 
   return (
-    <div className="space-y-6">
+    <div className="p-6 space-y-6">
       {/* Header */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
-          <h1 className="text-2xl font-black text-slate-900 tracking-tight">
+          <h1 className="text-2xl font-bold text-on-surface tracking-tight mb-1">
             Mã giảm giá (Voucher)
           </h1>
-          <p className="text-sm text-slate-500 mt-1">{total} voucher trong hệ thống</p>
+          <p className="text-sm text-on-surface-variant">{total} voucher trong hệ thống</p>
         </div>
         <button
           onClick={openCreate}
-          className="flex items-center gap-2 px-5 py-2.5 bg-primary text-white font-bold text-sm rounded-xl hover:bg-indigo-700 transition-colors shadow-sm"
+          className="flex items-center gap-2 px-5 py-2.5 bg-primary text-white font-bold text-sm rounded-lg hover:bg-primary/90 transition-colors shadow-sm"
         >
           <span className="material-symbols-outlined text-[20px]">add</span>
           Tạo Voucher
@@ -150,99 +149,105 @@ export default function AdminVouchersPage() {
 
       {/* Search */}
       <div className="flex gap-3">
-        <div className="relative flex-1 max-w-sm">
-          <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-[20px]">search</span>
+        <div className="relative flex-1 max-w-md">
+          <span className="material-symbols-outlined absolute left-3.5 top-1/2 -translate-y-1/2 text-on-surface-variant text-[20px]">search</span>
           <input
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="Tìm theo mã hoặc tên..."
-            className="w-full pl-9 pr-4 py-2 text-sm border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/30"
+            className="w-full pl-11 pr-4 py-2.5 text-sm border border-outline-variant rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/50 bg-white text-on-surface"
           />
         </div>
       </div>
 
       {/* Table */}
-      {error && <p className="text-red-500 text-sm">{error}</p>}
-      <div className="bg-white rounded-2xl border border-slate-200 shadow-xs overflow-hidden">
+      {error && <div className="p-4 rounded-xl bg-error-container text-on-error-container text-sm font-semibold border border-error/20">{error}</div>}
+      <div className="bg-white rounded-xl border border-outline-variant shadow-sm overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
-            <thead className="bg-slate-50 border-b border-slate-200">
+            <thead className="bg-surface-container-low border-b border-outline-variant">
               <tr>
-                <th className="text-left px-4 py-3 text-xs font-bold text-slate-500 uppercase tracking-wider">Mã</th>
-                <th className="text-left px-4 py-3 text-xs font-bold text-slate-500 uppercase tracking-wider">Tên</th>
-                <th className="text-left px-4 py-3 text-xs font-bold text-slate-500 uppercase tracking-wider">Giảm giá</th>
-                <th className="text-left px-4 py-3 text-xs font-bold text-slate-500 uppercase tracking-wider">Lượt dùng</th>
-                <th className="text-left px-4 py-3 text-xs font-bold text-slate-500 uppercase tracking-wider">Hiệu lực</th>
-                <th className="text-left px-4 py-3 text-xs font-bold text-slate-500 uppercase tracking-wider">Trạng thái</th>
-                <th className="text-right px-4 py-3 text-xs font-bold text-slate-500 uppercase tracking-wider">Hành động</th>
+                <th className="text-left px-5 py-4 font-semibold text-on-surface-variant">Mã</th>
+                <th className="text-left px-5 py-4 font-semibold text-on-surface-variant">Tên</th>
+                <th className="text-left px-5 py-4 font-semibold text-on-surface-variant">Giảm giá</th>
+                <th className="text-left px-5 py-4 font-semibold text-on-surface-variant">Lượt dùng</th>
+                <th className="text-left px-5 py-4 font-semibold text-on-surface-variant">Hiệu lực</th>
+                <th className="text-left px-5 py-4 font-semibold text-on-surface-variant">Trạng thái</th>
+                <th className="text-right px-5 py-4 font-semibold text-on-surface-variant">Hành động</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-100">
+            <tbody className="divide-y divide-outline-variant">
               {loading ? (
-                <tr><td colSpan={7} className="text-center py-12 text-slate-400">Đang tải...</td></tr>
+                <tr><td colSpan={7} className="text-center py-12 text-on-surface-variant font-medium">Đang tải...</td></tr>
               ) : vouchers.length === 0 ? (
-                <tr><td colSpan={7} className="text-center py-12 text-slate-400">Chưa có voucher nào.</td></tr>
+                <tr><td colSpan={7} className="text-center py-12 text-on-surface-variant font-medium">Chưa có voucher nào.</td></tr>
               ) : vouchers.map((v) => {
                 const isExpired = new Date(v.endDate) < now;
                 const isNotStarted = new Date(v.startDate) > now;
                 return (
-                  <tr key={v.id} className="hover:bg-slate-50 transition-colors">
-                    <td className="px-4 py-3">
-                      <span className="font-mono font-bold text-primary bg-indigo-50 px-2 py-0.5 rounded text-xs">
+                  <tr key={v.id} className="hover:bg-surface-container-low/50 transition-colors">
+                    <td className="px-5 py-4">
+                      <span className="font-mono font-bold text-primary bg-primary/10 px-2.5 py-1 rounded-md text-sm border border-primary/20">
                         {v.code}
                       </span>
                     </td>
-                    <td className="px-4 py-3 text-slate-700 font-medium">{v.name}</td>
-                    <td className="px-4 py-3">
-                      <span className="font-bold text-slate-900">
+                    <td className="px-5 py-4 text-on-surface font-semibold">{v.name}</td>
+                    <td className="px-5 py-4">
+                      <div className="font-bold text-on-surface text-base">
                         {v.discountType === 'percentage'
                           ? `${v.discountValue}%`
                           : `${v.discountValue.toLocaleString('vi-VN')}đ`}
-                      </span>
+                      </div>
                       {v.maxDiscountAmount && (
-                        <span className="text-xs text-slate-400 block">tối đa {v.maxDiscountAmount.toLocaleString('vi-VN')}đ</span>
+                        <div className="text-xs text-on-surface-variant mt-1">tối đa {v.maxDiscountAmount.toLocaleString('vi-VN')}đ</div>
                       )}
                     </td>
-                    <td className="px-4 py-3 text-slate-600">
+                    <td className="px-5 py-4 text-on-surface font-medium">
                       {v.usedCount}
-                      {v.usageLimit && <span className="text-slate-400">/{v.usageLimit}</span>}
+                      {v.usageLimit && <span className="text-on-surface-variant"> / {v.usageLimit}</span>}
                     </td>
-                    <td className="px-4 py-3 text-xs text-slate-500">
-                      <div>{new Date(v.startDate).toLocaleDateString('vi-VN')}</div>
-                      <div>→ {new Date(v.endDate).toLocaleDateString('vi-VN')}</div>
+                    <td className="px-5 py-4 text-sm font-medium text-on-surface-variant space-y-1">
+                      <div className="flex items-center gap-1.5">
+                        <span className="material-symbols-outlined text-[16px]">calendar_today</span>
+                        {new Date(v.startDate).toLocaleDateString('vi-VN')}
+                      </div>
+                      <div className="flex items-center gap-1.5">
+                        <span className="material-symbols-outlined text-[16px]">arrow_forward</span>
+                        {new Date(v.endDate).toLocaleDateString('vi-VN')}
+                      </div>
                     </td>
-                    <td className="px-4 py-3">
-                      <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-bold ${
-                        !v.isActive ? 'bg-slate-100 text-slate-500'
-                          : isExpired ? 'bg-red-50 text-red-600'
-                          : isNotStarted ? 'bg-amber-50 text-amber-700'
-                          : 'bg-green-50 text-green-700'
+                    <td className="px-5 py-4">
+                      <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold ${
+                        !v.isActive ? 'bg-surface-container-low text-on-surface-variant border border-outline-variant'
+                          : isExpired ? 'bg-error-container text-on-error-container border border-error/20'
+                          : isNotStarted ? 'bg-[#fff8e1] text-[#f57f17] border border-[#ffe082]'
+                          : 'bg-[#e6f4ea] text-[#137333] border border-[#ceead6]'
                       }`}>
-                        <span className="material-symbols-outlined text-[13px]">
+                        <span className="material-symbols-outlined text-[14px]">
                           {!v.isActive ? 'block' : isExpired ? 'timer_off' : isNotStarted ? 'schedule' : 'check_circle'}
                         </span>
                         {!v.isActive ? 'Đã tắt' : isExpired ? 'Hết hạn' : isNotStarted ? 'Chưa bắt đầu' : 'Đang hoạt động'}
                       </span>
                     </td>
-                    <td className="px-4 py-3">
+                    <td className="px-5 py-4">
                       <div className="flex items-center justify-end gap-2">
                         <button
                           onClick={() => openEdit(v)}
-                          className="p-1.5 rounded-lg hover:bg-slate-100 text-slate-500 hover:text-primary transition-colors"
+                          className="p-2 rounded-lg hover:bg-surface-container-low text-on-surface-variant hover:text-primary transition-colors border border-transparent hover:border-outline-variant"
                           title="Chỉnh sửa"
                         >
                           <span className="material-symbols-outlined text-[18px]">edit</span>
                         </button>
                         <button
                           onClick={() => handleToggle(v)}
-                          className={`p-1.5 rounded-lg transition-colors ${v.isActive ? 'hover:bg-red-50 text-slate-500 hover:text-red-600' : 'hover:bg-green-50 text-slate-500 hover:text-green-600'}`}
+                          className={`p-2 rounded-lg transition-colors border border-transparent hover:border-outline-variant ${v.isActive ? 'hover:bg-error-container text-on-surface-variant hover:text-error' : 'hover:bg-[#e6f4ea] text-on-surface-variant hover:text-[#137333]'}`}
                           title={v.isActive ? 'Tắt voucher' : 'Bật voucher'}
                         >
                           <span className="material-symbols-outlined text-[18px]">{v.isActive ? 'toggle_off' : 'toggle_on'}</span>
                         </button>
                         <button
                           onClick={() => handleDelete(v)}
-                          className="p-1.5 rounded-lg hover:bg-red-50 text-slate-500 hover:text-red-600 transition-colors"
+                          className="p-2 rounded-lg hover:bg-error-container text-on-surface-variant hover:text-error transition-colors border border-transparent hover:border-outline-variant"
                           title="Xóa"
                         >
                           <span className="material-symbols-outlined text-[18px]">delete</span>
@@ -259,54 +264,55 @@ export default function AdminVouchersPage() {
 
       {/* Create/Edit Modal */}
       {showModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
-          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto">
-            <div className="flex items-center justify-between p-6 border-b border-slate-200">
-              <h2 className="text-lg font-bold text-slate-900">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm">
+          <div className="bg-white rounded-xl shadow-xl w-full max-w-lg max-h-[90vh] overflow-y-auto border border-outline-variant">
+            <div className="flex items-center justify-between p-6 border-b border-outline-variant bg-surface-container-low/50">
+              <h2 className="text-xl font-bold text-on-surface flex items-center gap-2">
+                <span className="material-symbols-outlined text-primary">local_offer</span>
                 {editId ? 'Chỉnh sửa Voucher' : 'Tạo Voucher mới'}
               </h2>
-              <button onClick={() => setShowModal(false)} className="p-2 hover:bg-slate-100 rounded-lg">
+              <button onClick={() => setShowModal(false)} className="p-2 hover:bg-surface-container-low rounded-lg text-on-surface-variant transition-colors border border-transparent hover:border-outline-variant">
                 <span className="material-symbols-outlined text-[22px]">close</span>
               </button>
             </div>
-            <div className="p-6 space-y-4">
-              <div className="grid grid-cols-2 gap-4">
+            <div className="p-6 space-y-5">
+              <div className="grid grid-cols-2 gap-5">
                 <div>
-                  <label className="block text-xs font-bold text-slate-700 mb-1">Mã Voucher *</label>
+                  <label className="block text-sm font-semibold text-on-surface mb-2">Mã Voucher <span className="text-error">*</span></label>
                   <input
                     value={form.code}
                     onChange={(e) => setForm(f => ({ ...f, code: e.target.value.toUpperCase() }))}
                     disabled={!!editId}
                     placeholder="VD: SUMMER30"
-                    className="w-full px-3 py-2 text-sm border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/30 disabled:bg-slate-50 font-mono"
+                    className="w-full px-3 py-2.5 text-sm border border-outline-variant rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/50 disabled:bg-surface-container-low disabled:text-on-surface-variant font-mono text-on-surface"
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-bold text-slate-700 mb-1">Tên hiển thị *</label>
+                  <label className="block text-sm font-semibold text-on-surface mb-2">Tên hiển thị <span className="text-error">*</span></label>
                   <input
                     value={form.name}
                     onChange={(e) => setForm(f => ({ ...f, name: e.target.value }))}
                     placeholder="VD: Giảm 30% mùa hè"
-                    className="w-full px-3 py-2 text-sm border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/30"
+                    className="w-full px-3 py-2.5 text-sm border border-outline-variant rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/50 text-on-surface"
                   />
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-2 gap-5">
                 <div>
-                  <label className="block text-xs font-bold text-slate-700 mb-1">Loại giảm giá *</label>
+                  <label className="block text-sm font-semibold text-on-surface mb-2">Loại giảm giá <span className="text-error">*</span></label>
                   <select
                     value={form.discountType}
                     onChange={(e) => setForm(f => ({ ...f, discountType: e.target.value as any }))}
-                    className="w-full px-3 py-2 text-sm border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/30"
+                    className="w-full px-3 py-2.5 text-sm border border-outline-variant rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/50 text-on-surface bg-white"
                   >
                     <option value="percentage">Phần trăm (%)</option>
                     <option value="fixed">Số tiền cố định (VNĐ)</option>
                   </select>
                 </div>
                 <div>
-                  <label className="block text-xs font-bold text-slate-700 mb-1">
-                    Giá trị giảm * {form.discountType === 'percentage' ? '(%)' : '(VNĐ)'}
+                  <label className="block text-sm font-semibold text-on-surface mb-2">
+                    Giá trị giảm <span className="text-error">*</span> {form.discountType === 'percentage' ? '(%)' : '(VNĐ)'}
                   </label>
                   <input
                     type="number"
@@ -314,95 +320,100 @@ export default function AdminVouchersPage() {
                     onChange={(e) => setForm(f => ({ ...f, discountValue: Number(e.target.value) }))}
                     min={1}
                     max={form.discountType === 'percentage' ? 100 : undefined}
-                    className="w-full px-3 py-2 text-sm border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/30"
+                    className="w-full px-3 py-2.5 text-sm border border-outline-variant rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/50 text-on-surface"
                   />
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-2 gap-5">
                 <div>
-                  <label className="block text-xs font-bold text-slate-700 mb-1">Đơn hàng tối thiểu (VNĐ)</label>
+                  <label className="block text-sm font-semibold text-on-surface mb-2">Đơn hàng tối thiểu (VNĐ)</label>
                   <input
                     type="number"
                     value={form.minOrderAmount}
                     onChange={(e) => setForm(f => ({ ...f, minOrderAmount: Number(e.target.value) }))}
                     min={0}
-                    className="w-full px-3 py-2 text-sm border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/30"
+                    className="w-full px-3 py-2.5 text-sm border border-outline-variant rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/50 text-on-surface"
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-bold text-slate-700 mb-1">Giảm tối đa (VNĐ)</label>
+                  <label className="block text-sm font-semibold text-on-surface mb-2">Giảm tối đa (VNĐ)</label>
                   <input
                     type="number"
                     value={form.maxDiscountAmount}
                     onChange={(e) => setForm(f => ({ ...f, maxDiscountAmount: e.target.value }))}
                     min={0}
                     placeholder="Không giới hạn"
-                    className="w-full px-3 py-2 text-sm border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/30"
+                    className="w-full px-3 py-2.5 text-sm border border-outline-variant rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/50 text-on-surface"
                   />
                 </div>
               </div>
 
               <div>
-                <label className="block text-xs font-bold text-slate-700 mb-1">Giới hạn lượt dùng</label>
+                <label className="block text-sm font-semibold text-on-surface mb-2">Giới hạn lượt dùng</label>
                 <input
                   type="number"
                   value={form.usageLimit}
                   onChange={(e) => setForm(f => ({ ...f, usageLimit: e.target.value }))}
                   min={1}
                   placeholder="Không giới hạn"
-                  className="w-full px-3 py-2 text-sm border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/30"
+                  className="w-full px-3 py-2.5 text-sm border border-outline-variant rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/50 text-on-surface"
                 />
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-2 gap-5">
                 <div>
-                  <label className="block text-xs font-bold text-slate-700 mb-1">Ngày bắt đầu *</label>
+                  <label className="block text-sm font-semibold text-on-surface mb-2">Ngày bắt đầu <span className="text-error">*</span></label>
                   <input
                     type="datetime-local"
                     value={form.startDate}
                     onChange={(e) => setForm(f => ({ ...f, startDate: e.target.value }))}
-                    className="w-full px-3 py-2 text-sm border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/30"
+                    className="w-full px-3 py-2.5 text-sm border border-outline-variant rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/50 text-on-surface"
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-bold text-slate-700 mb-1">Ngày kết thúc *</label>
+                  <label className="block text-sm font-semibold text-on-surface mb-2">Ngày kết thúc <span className="text-error">*</span></label>
                   <input
                     type="datetime-local"
                     value={form.endDate}
                     onChange={(e) => setForm(f => ({ ...f, endDate: e.target.value }))}
-                    className="w-full px-3 py-2 text-sm border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/30"
+                    className="w-full px-3 py-2.5 text-sm border border-outline-variant rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/50 text-on-surface"
                   />
                 </div>
               </div>
 
-              <div className="flex items-center gap-3">
+              <div className="flex items-center gap-3 pt-2">
                 <input
                   id="isActive"
                   type="checkbox"
                   checked={form.isActive}
                   onChange={(e) => setForm(f => ({ ...f, isActive: e.target.checked }))}
-                  className="w-4 h-4 rounded text-primary focus:ring-primary"
+                  className="w-4 h-4 rounded text-primary focus:ring-primary border-outline-variant"
                 />
-                <label htmlFor="isActive" className="text-sm font-semibold text-slate-700">
+                <label htmlFor="isActive" className="text-sm font-semibold text-on-surface cursor-pointer">
                   Kích hoạt ngay sau khi tạo
                 </label>
               </div>
             </div>
 
-            <div className="flex items-center justify-end gap-3 px-6 py-4 border-t border-slate-200">
+            <div className="flex items-center justify-end gap-3 px-6 py-4 border-t border-outline-variant bg-surface-container-low/50">
               <button
                 onClick={() => setShowModal(false)}
-                className="px-4 py-2 text-sm font-semibold text-slate-600 hover:bg-slate-100 rounded-xl transition-colors"
+                className="px-5 py-2.5 text-sm font-bold text-on-surface-variant hover:bg-white rounded-lg border border-transparent hover:border-outline-variant transition-colors shadow-sm"
               >
                 Hủy
               </button>
               <button
                 onClick={handleSave}
                 disabled={saving}
-                className="px-5 py-2 bg-primary text-white text-sm font-bold rounded-xl hover:bg-indigo-700 transition-colors disabled:opacity-50"
+                className="px-5 py-2.5 bg-primary text-white text-sm font-bold rounded-lg hover:bg-primary/90 transition-colors disabled:opacity-50 shadow-sm flex items-center gap-2"
               >
-                {saving ? 'Đang lưu...' : editId ? 'Cập nhật' : 'Tạo Voucher'}
+                {saving ? (
+                  <>
+                    <span className="material-symbols-outlined animate-spin text-[18px]">progress_activity</span>
+                    Đang lưu...
+                  </>
+                ) : editId ? 'Cập nhật' : 'Tạo Voucher'}
               </button>
             </div>
           </div>

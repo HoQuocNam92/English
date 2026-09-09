@@ -6,28 +6,29 @@ import { MaterialIcons } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
 import { colors, spacing } from '@techenglish/design-tokens';
 import { api, getTokens, API_BASE } from '../../src/shared/api/api-client';
-import { validateDisplayName, validatePhone } from '../../src/shared/utils/validators';
+import { validateDisplayName } from '../../src/shared/utils/validators';
 import { useAuth } from '../../src/shared/store/auth-context';
 
 export default function MobileEditProfileScreen() {
   const router = useRouter();
   const { fetchUser } = useAuth();
   const [displayName, setDisplayName] = useState('');
-  const [email, setEmail] = useState('');
-  const [phone, setPhone] = useState('');
-  const [bio, setBio] = useState('');
+  
+  // Mock states for the new dropdowns
+  const [englishLevel, setEnglishLevel] = useState('Intermediate (B1-B2)');
+  const [itField, setItField] = useState('Frontend Development');
+  const [careerGoal, setCareerGoal] = useState('Remote Work for US/EU Clients');
+  const [certification, setCertification] = useState('IELTS 6.5+');
+  
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState(false);
 
   useEffect(() => {
-    api.get('/auth/me')
+    api.get('/users/me')
       .then((data: any) => {
-        setDisplayName(data.displayName || '');
-        setEmail(data.email || '');
-        setPhone(data.phone || '');
-        setBio(data.bio || '');
+        setDisplayName(data.displayName || 'Nguyen Van A');
         setAvatarUrl(data.avatarUrl || data.userDetail?.avatarUrl || null);
       })
       .catch(err => Alert.alert('Lỗi', 'Không thể tải thông tin'))
@@ -57,7 +58,7 @@ export default function MobileEditProfileScreen() {
       const tokens = await getTokens();
       
       const formData = new FormData();
-      // @ts-ignore - React Native FormData expects this shape
+      // @ts-ignore
       formData.append('file', {
         uri: asset.uri,
         name: asset.fileName || 'avatar.jpg',
@@ -69,22 +70,19 @@ export default function MobileEditProfileScreen() {
         headers: {
           'Authorization': `Bearer ${tokens?.accessToken}`,
           'Accept': 'application/json',
-          // Note: Do not set Content-Type for FormData in fetch, browser/RN will set it with boundary
         },
         body: formData,
       });
 
       if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
-        throw new Error(errorData.message || 'Upload failed');
+        throw new Error('Upload failed');
       }
 
       const data = await response.json();
       setAvatarUrl(data.url);
       
-      // Update profile with new avatar URL
-      await api.patch('/auth/me', { avatarUrl: data.url });
-      await fetchUser(); // Update global auth context
+      await api.patch('/users/me', { avatarUrl: data.url });
+      await fetchUser();
       Alert.alert('Thành công', 'Đã cập nhật ảnh đại diện');
     } catch (error: any) {
       Alert.alert('Lỗi', error.message || 'Không thể tải ảnh lên');
@@ -96,12 +94,10 @@ export default function MobileEditProfileScreen() {
   const handleSave = async () => {
     const nameErr = validateDisplayName(displayName);
     if (nameErr) return Alert.alert('Lỗi', nameErr);
-    const phoneErr = validatePhone(phone);
-    if (phoneErr) return Alert.alert('Lỗi', phoneErr);
 
     setSaving(true);
     try {
-      await api.patch('/auth/me', { displayName, phone, bio });
+      await api.patch('/users/me', { displayName });
       await fetchUser();
       Alert.alert('Thành công', 'Đã cập nhật thông tin cá nhân thành công!', [
         { text: 'OK', onPress: () => router.back() }
@@ -123,19 +119,29 @@ export default function MobileEditProfileScreen() {
 
   const avatarLetter = displayName ? displayName.charAt(0).toUpperCase() : 'N';
 
+  const renderDropdown = (label: string, value: string) => (
+    <View style={styles.inputGroup}>
+      <Text style={styles.label}>{label}</Text>
+      <TouchableOpacity style={styles.dropdownButton} activeOpacity={0.8}>
+        <Text style={styles.dropdownText}>{value}</Text>
+        <MaterialIcons name="expand-more" size={24} color="#464555" />
+      </TouchableOpacity>
+    </View>
+  );
+
   return (
     <View style={styles.container}>
       <StatusBar style="dark" />
       {/* Header */}
       <View style={styles.header}>
-        <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
-          <MaterialIcons name="arrow-back" size={24} color={colors.text} />
+        <TouchableOpacity style={styles.headerIconBtn} onPress={() => router.back()}>
+          <MaterialIcons name="arrow-back" size={24} color="#464555" />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>Chỉnh sửa hồ sơ</Text>
+        <Text style={styles.headerTitle}>Edit Profile</Text>
         <View style={{ width: 40 }} />
       </View>
 
-      <ScrollView contentContainerStyle={styles.scrollContent} keyboardShouldPersistTaps="handled">
+      <ScrollView contentContainerStyle={styles.scrollContent} keyboardShouldPersistTaps="handled" showsVerticalScrollIndicator={false}>
         {/* Avatar Section */}
         <View style={styles.avatarSection}>
           <TouchableOpacity onPress={handlePickImage} disabled={uploading}>
@@ -143,64 +149,41 @@ export default function MobileEditProfileScreen() {
               {uploading ? (
                 <ActivityIndicator color="#ffffff" />
               ) : avatarUrl ? (
-                <Image source={{ uri: avatarUrl }} style={{ width: 72, height: 72, borderRadius: 36 }} />
+                <Image source={{ uri: avatarUrl }} style={{ width: 96, height: 96, borderRadius: 48 }} />
               ) : (
                 <Text style={styles.avatarText}>{avatarLetter}</Text>
               )}
+              <View style={styles.editAvatarIcon}>
+                <MaterialIcons name="edit" size={16} color="#ffffff" />
+              </View>
             </View>
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.changeAvatarBtn} onPress={handlePickImage} disabled={uploading}>
-            <Text style={styles.changeAvatarText}>{uploading ? 'Đang tải lên...' : 'Đổi ảnh đại diện'}</Text>
           </TouchableOpacity>
         </View>
 
         {/* Form Fields */}
-        <View style={styles.formCard}>
+        <View style={styles.formContainer}>
           <View style={styles.inputGroup}>
-            <Text style={styles.label}>Họ và tên</Text>
+            <Text style={styles.label}>Full Name</Text>
             <TextInput
               style={styles.input}
               value={displayName}
               onChangeText={setDisplayName}
+              placeholder="Nguyen Van A"
+              placeholderTextColor="#777587"
             />
           </View>
 
-          <View style={styles.inputGroup}>
-            <Text style={styles.label}>Email (Không thể thay đổi)</Text>
-            <TextInput
-              style={[styles.input, styles.inputDisabled]}
-              value={email}
-              editable={false}
-            />
-          </View>
-
-          <View style={styles.inputGroup}>
-            <Text style={styles.label}>Số điện thoại</Text>
-            <TextInput
-              style={styles.input}
-              value={phone}
-              onChangeText={setPhone}
-              keyboardType="phone-pad"
-            />
-          </View>
-
-          <View style={styles.inputGroup}>
-            <Text style={styles.label}>Giới thiệu ngắn (Bio)</Text>
-            <TextInput
-              style={[styles.input, styles.textArea]}
-              value={bio}
-              onChangeText={setBio}
-              multiline
-              numberOfLines={3}
-            />
-          </View>
+          {renderDropdown('Current English Level', englishLevel)}
+          {renderDropdown('Primary IT Field', itField)}
+          {renderDropdown('Career Goal', careerGoal)}
+          {renderDropdown('Target Certification (Optional)', certification)}
         </View>
       </ScrollView>
 
-      {/* Bottom Bar */}
+      {/* Fixed Bottom CTA */}
       <View style={styles.bottomBar}>
         <TouchableOpacity style={styles.saveBtn} onPress={handleSave} disabled={saving}>
-          {saving ? <ActivityIndicator color="#fff" /> : <Text style={styles.saveBtnText}>Lưu thay đổi</Text>}
+          {saving ? <ActivityIndicator color="#ffffff" /> : <Text style={styles.saveBtnText}>Lưu thay đổi</Text>}
         </TouchableOpacity>
       </View>
     </View>
@@ -210,96 +193,107 @@ export default function MobileEditProfileScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f8fafc'
+    backgroundColor: '#f7f9fb'
   },
   header: {
+    height: 64,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingHorizontal: spacing.lg,
-    paddingTop: 50,
-    paddingBottom: spacing.md,
+    paddingHorizontal: spacing.md,
+    paddingTop: 20,
     backgroundColor: '#ffffff',
     borderBottomWidth: 1,
-    borderBottomColor: '#e2e8f0'
+    borderBottomColor: '#c7c4d8',
+    marginTop: 20
   },
-  backButton: {
+  headerIconBtn: {
     width: 40,
     height: 40,
-    borderRadius: 10,
+    borderRadius: 20,
     alignItems: 'center',
     justifyContent: 'center'
   },
   headerTitle: {
-    fontSize: 16,
-    fontWeight: '800',
-    color: colors.text
+    fontSize: 20,
+    fontWeight: '600',
+    color: colors.primary
   },
   scrollContent: {
-    padding: spacing.lg,
-    gap: spacing.lg,
-    paddingBottom: 110
+    padding: spacing.md,
+    paddingTop: spacing.lg,
+    paddingBottom: 100
   },
   avatarSection: {
     alignItems: 'center',
-    gap: spacing.xs
+    marginBottom: spacing.xl
   },
   avatarBox: {
-    width: 72,
-    height: 72,
-    borderRadius: 36,
+    width: 96,
+    height: 96,
+    borderRadius: 48,
     backgroundColor: colors.primary,
     alignItems: 'center',
-    justifyContent: 'center'
+    justifyContent: 'center',
+    borderWidth: 2,
+    borderColor: '#e0e3e5'
   },
   avatarText: {
-    fontSize: 28,
+    fontSize: 32,
     fontWeight: '800',
     color: '#ffffff'
   },
-  changeAvatarBtn: {
-    marginTop: 4,
-    padding: spacing.xs
+  editAvatarIcon: {
+    position: 'absolute',
+    bottom: 0,
+    right: 0,
+    backgroundColor: colors.primary,
+    width: 28,
+    height: 28,
+    borderRadius: 14,
+    alignItems: 'center',
+    justifyContent: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 2
   },
-  changeAvatarText: {
-    fontSize: 13,
-    fontWeight: '700',
-    color: colors.primary
-  },
-  formCard: {
-    backgroundColor: '#ffffff',
-    borderRadius: 16,
-    padding: spacing.lg,
-    borderWidth: 1,
-    borderColor: '#e2e8f0',
+  formContainer: {
     gap: spacing.md
   },
   inputGroup: {
     gap: spacing.xs
   },
   label: {
-    fontSize: 12,
-    fontWeight: '700',
-    color: colors.text
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#464555'
   },
   input: {
     borderWidth: 1,
-    borderColor: '#cbd5e1',
-    borderRadius: 10,
-    paddingHorizontal: spacing.sm,
-    height: 46,
+    borderColor: '#c7c4d8',
+    borderRadius: 8,
+    paddingHorizontal: spacing.md,
+    height: 48,
     fontSize: 14,
-    color: colors.text,
+    color: '#191c1e',
     backgroundColor: '#ffffff'
   },
-  inputDisabled: {
-    backgroundColor: '#f1f5f9',
-    color: colors.outline
+  dropdownButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    borderWidth: 1,
+    borderColor: '#c7c4d8',
+    borderRadius: 8,
+    paddingHorizontal: spacing.md,
+    height: 48,
+    backgroundColor: '#ffffff'
   },
-  textArea: {
-    height: 80,
-    paddingTop: spacing.xs,
-    textAlignVertical: 'top'
+  dropdownText: {
+    fontSize: 14,
+    color: '#191c1e'
   },
   bottomBar: {
     position: 'absolute',
@@ -307,21 +301,27 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     backgroundColor: '#ffffff',
-    padding: spacing.lg,
+    padding: spacing.md,
+    paddingBottom: 32, // Safe area inset
     borderTopWidth: 1,
-    borderTopColor: '#e2e8f0'
+    borderTopColor: '#c7c4d8',
+    shadowColor: '#0f1718',
+    shadowOffset: { width: 0, height: -4 },
+    shadowOpacity: 0.05,
+    shadowRadius: 6,
+    elevation: 4
   },
   saveBtn: {
     backgroundColor: colors.primary,
-    height: 50,
-    borderRadius: 12,
+    height: 52,
+    borderRadius: 8,
     alignItems: 'center',
     justifyContent: 'center'
   },
   saveBtnText: {
-    color: colors.onPrimary,
-    fontSize: 15,
-    fontWeight: '700'
+    color: '#ffffff',
+    fontSize: 14,
+    fontWeight: '600'
   }
 });
 

@@ -7,7 +7,7 @@
 //   - Enum: PascalCase (Prisma) → snake_case (PostgreSQL)
 // RBAC: users (auth only) + user_details (profile) + roles + permissions
 //       + role_permissions (N:N) + user_roles (N:N, multi-role per user)
-// Total: 37 tables
+// Total: 67 application tables (plus Prisma's _prisma_migrations system table)
 // =============================================================================
 
 generator client {
@@ -134,10 +134,10 @@ enum LevelCode {
 }
 
 enum OrderStatus {
-  pending   // chờ thanh toán
-  paid      // đã thanh toán thành công
-  failed    // thất bại / hết hạn
-  expired   // hết thời gian (15 phút)
+  pending // chờ thanh toán
+  paid // đã thanh toán thành công
+  failed // thất bại / hết hạn
+  expired // hết thời gian (15 phút)
   cancelled // user huỷ
 
   @@map("order_status")
@@ -191,12 +191,14 @@ model User {
   subscription  UserSubscription?
 
   // Gamification
-  userStreak UserStreak?
-  userBadges UserBadge[]
-  notifications    Notification[]
-  learningPlanItems LearningPlanItem[]
-  mockInterviews     MockInterview[]
-  writingSubmissions WritingSubmission[]
+  userStreak         UserStreak?
+  userBadges         UserBadge[]
+  notifications      Notification[]
+  learningPlanItems  LearningPlanItem[]
+  learningSessions   LearningSession[]
+  learningPaths      LearningPath[]
+  aiConversations    AiConversation[]
+  aiSavedVocabulary  AiSavedVocabulary[]
   discussionPosts    DiscussionPost[]
   discussionComments DiscussionComment[]
   discussionVotes    DiscussionVote[]
@@ -373,6 +375,7 @@ model Level {
   lessons         Lesson[]
   questions       Question[]
   exams           Exam[]
+  handsOnLabs     HandsOnLab[]
 
   @@map("levels")
 }
@@ -388,6 +391,7 @@ model CareerGoal {
   updatedAt   DateTime @updatedAt @map("updated_at") @db.Timestamptz(6)
 
   profileCareerGoals LearnerProfileCareerGoal[]
+  skills             CareerGoalSkill[]
 
   @@index([code])
   @@map("career_goals")
@@ -405,13 +409,15 @@ model Certificate {
   createdAt   DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
   updatedAt   DateTime @updatedAt @map("updated_at") @db.Timestamptz(6)
 
-  domains          CertificateDomain[]
-  profileGoals     LearnerCertificateGoal[]
-  lessonCerts      LessonCertificate[]
-  questionCerts    QuestionCertificate[]
-  exams            Exam[]
-  learnerGroups    LearnerGroup[]
-  certContent      CertificationContent[]
+  domains       CertificateDomain[]
+  profileGoals  LearnerCertificateGoal[]
+  lessonCerts   LessonCertificate[]
+  questionCerts QuestionCertificate[]
+  exams         Exam[]
+  learnerGroups LearnerGroup[]
+  certContent   CertificationContent[]
+  objectives    CertificationObjective[]
+  handsOnLabs   HandsOnLab[]
 
   @@index([code])
   @@map("certificates")
@@ -448,9 +454,10 @@ model LearnerProfile {
   user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
   level Level @relation(fields: [levelId], references: [id])
 
-  domains     LearnerProfileDomain[]
-  careerGoals LearnerProfileCareerGoal[]
-  certGoals   LearnerCertificateGoal[]
+  domains          LearnerProfileDomain[]
+  careerGoals      LearnerProfileCareerGoal[]
+  certGoals        LearnerCertificateGoal[]
+  objectiveMastery LearnerObjectiveMastery[]
 
   @@index([levelId])
   @@map("learner_profiles")
@@ -502,6 +509,7 @@ model LearnerCertificateGoal {
 /// Lớp/Nhóm học viên do giảng viên phụ trách.
 model LearnerGroup {
   id            String             @id @default(uuid()) @db.Uuid
+  code          String             @unique @db.VarChar(40)
   name          String             @db.VarChar(150)
   description   String?            @db.VarChar(1000)
   teacherId     String             @map("teacher_id") @db.Uuid
@@ -562,8 +570,10 @@ model Vocabulary {
   domain Domain @relation(fields: [domainId], references: [id])
   level  Level  @relation(fields: [levelId], references: [id])
 
-  examples     VocabularyExample[]
-  lessonVocabs LessonVocabulary[]
+  examples       VocabularyExample[]
+  lessonVocabs   LessonVocabulary[]
+  sources        VocabularySource[]
+  objectiveLinks ObjectiveVocabulary[]
 
   @@unique([term, domainId])
   @@index([domainId])
@@ -602,6 +612,7 @@ model Lesson {
   estimatedMinutes Int           @map("estimated_minutes")
   thumbnailUrl     String?       @map("thumbnail_url") @db.VarChar(2048)
   isProOnly        Boolean       @default(false) @map("is_pro_only")
+  keyConcepts      String[]      @default([]) @map("key_concepts")
   status           ContentStatus @default(draft)
   publishedAt      DateTime?     @map("published_at") @db.Timestamptz(6)
   createdById      String        @map("created_by_id") @db.Uuid
@@ -612,11 +623,14 @@ model Lesson {
   level     Level  @relation(fields: [levelId], references: [id])
   createdBy User   @relation("LessonCreatedBy", fields: [createdById], references: [id])
 
-  sections      LessonSection[]
-  vocabularies  LessonVocabulary[]
-  certificates  LessonCertificate[]
-  progressItems LearningProgress[]
+  sections          LessonSection[]
+  vocabularies      LessonVocabulary[]
+  certificates      LessonCertificate[]
+  progressItems     LearningProgress[]
   learningPlanItems LearningPlanItem[]
+  careerGoalSkills  CareerGoalSkill[]
+  learningSessions  LearningSession[]
+  objectiveLinks    ObjectiveLesson[]
 
   @@index([domainId])
   @@index([levelId])
@@ -711,9 +725,10 @@ model Question {
   domain Domain @relation(fields: [domainId], references: [id])
   level  Level  @relation(fields: [levelId], references: [id])
 
-  options       QuestionOption[]
-  certificates  QuestionCertificate[]
-  examQuestions ExamQuestion[]
+  options        QuestionOption[]
+  certificates   QuestionCertificate[]
+  examQuestions  ExamQuestion[]
+  objectiveLinks ObjectiveQuestion[]
 
   @@index([domainId])
   @@index([levelId])
@@ -766,10 +781,10 @@ model Exam {
   certificateId       String?       @map("certificate_id") @db.Uuid
   topics              String[]      @default([])
   durationMinutes     Int           @map("duration_minutes")
-  passingScorePercent Float         @map("passing_score_percent") @default(70.0)
-  maxAttempts         Int           @map("max_attempts") @default(1)
-  shuffleQuestions    Boolean       @map("shuffle_questions") @default(false)
-  isProOnly           Boolean       @map("is_pro_only") @default(false)
+  passingScorePercent Float         @default(70.0) @map("passing_score_percent")
+  maxAttempts         Int           @default(1) @map("max_attempts")
+  shuffleQuestions    Boolean       @default(false) @map("shuffle_questions")
+  isProOnly           Boolean       @default(false) @map("is_pro_only")
   availableFrom       DateTime?     @map("available_from") @db.Timestamptz(6)
   availableUntil      DateTime?     @map("available_until") @db.Timestamptz(6)
   status              ContentStatus @default(draft)
@@ -909,7 +924,7 @@ model LearningProgress {
 model ProgressSummaryCache {
   learnerId                String   @id @map("learner_id") @db.Uuid
   overallCompletionPercent Float    @default(0.0) @map("overall_completion_percent")
-  studyStreakDays           Int      @default(0) @map("study_streak_days")
+  studyStreakDays          Int      @default(0) @map("study_streak_days")
   totalStudyMinutes        Int      @default(0) @map("total_study_minutes")
   completedLessons         Int      @default(0) @map("completed_lessons")
   totalAttempts            Int      @default(0) @map("total_attempts")
@@ -970,93 +985,102 @@ model RecommendationFeedback {
 /// Đơn hàng thanh toán — mỗi lần user mua gói PRO.
 /// idempotency_key đảm bảo không tạo đơn trùng lặp dù client retry nhiều lần.
 model PaymentOrder {
-id                 String      @id @default(uuid()) @db.Uuid
-userId             String      @map("user_id") @db.Uuid
-planId             String      @map("plan_id") @db.VarChar(50)
-amount             Int         // VND, không có decimal cho tiền VN
-originalAmount     Int?        @map("original_amount")
-discountAmount     Int?        @default(0) @map("discount_amount")
-voucherId          String?     @map("voucher_id") @db.Uuid
-voucherCode        String?     @map("voucher_code") @db.VarChar(50)
-idempotencyKey     String      @unique @map("idempotency_key") @db.VarChar(128)
-status             OrderStatus @default(pending)
-sepayTransactionId String?     @unique @map("sepay_transaction_id") @db.VarChar(100)
-webhookPayload     Json?       @map("webhook_payload")   // raw payload từ SePay
-webhookReceivedAt  DateTime?   @map("webhook_received_at") @db.Timestamptz(6)
-paidAt             DateTime?   @map("paid_at") @db.Timestamptz(6)
-expiresAt          DateTime    @map("expires_at") @db.Timestamptz(6)  // 15 phút
-createdAt          DateTime    @default(now()) @map("created_at") @db.Timestamptz(6)
-updatedAt          DateTime    @updatedAt @map("updated_at") @db.Timestamptz(6)
-user         User              @relation(fields: [userId], references: [id], onDelete: Cascade)
-voucher      Voucher?          @relation(fields: [voucherId], references: [id], onDelete: SetNull)
-subscription UserSubscription?
-@@index([userId])
-@@index([status])
-@@index([sepayTransactionId])
-@@map("payment_orders")
+  id                 String            @id @default(uuid()) @db.Uuid
+  userId             String            @map("user_id") @db.Uuid
+  planId             String            @map("plan_id") @db.VarChar(50)
+  amount             Int // VND, không có decimal cho tiền VN
+  originalAmount     Int?              @map("original_amount")
+  discountAmount     Int?              @default(0) @map("discount_amount")
+  voucherId          String?           @map("voucher_id") @db.Uuid
+  voucherCode        String?           @map("voucher_code") @db.VarChar(50)
+  idempotencyKey     String            @unique @map("idempotency_key") @db.VarChar(128)
+  status             OrderStatus       @default(pending)
+  sepayTransactionId String?           @unique @map("sepay_transaction_id") @db.VarChar(100)
+  webhookPayload     Json?             @map("webhook_payload") // raw payload từ SePay
+  webhookReceivedAt  DateTime?         @map("webhook_received_at") @db.Timestamptz(6)
+  paidAt             DateTime?         @map("paid_at") @db.Timestamptz(6)
+  expiresAt          DateTime          @map("expires_at") @db.Timestamptz(6) // 15 phút
+  createdAt          DateTime          @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt          DateTime          @updatedAt @map("updated_at") @db.Timestamptz(6)
+  user               User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  voucher            Voucher?          @relation(fields: [voucherId], references: [id], onDelete: SetNull)
+  subscription       UserSubscription?
+
+  @@index([userId])
+  @@index([status])
+  @@index([sepayTransactionId])
+  @@map("payment_orders")
 }
+
 /// Subscription đang active của user — mỗi user chỉ có 1 subscription (upsert).
 model UserSubscription {
-id        String             @id @default(uuid()) @db.Uuid
-userId    String             @unique @map("user_id") @db.Uuid
-planId    String             @map("plan_id") @db.VarChar(50)
-orderId   String             @unique @map("order_id") @db.Uuid
-status    SubscriptionStatus @default(active)
-startedAt DateTime           @map("started_at") @db.Timestamptz(6)
-expiresAt DateTime           @map("expires_at") @db.Timestamptz(6)
-createdAt DateTime           @default(now()) @map("created_at") @db.Timestamptz(6)
-updatedAt DateTime           @updatedAt @map("updated_at") @db.Timestamptz(6)
-user  User         @relation(fields: [userId], references: [id], onDelete: Cascade)
-order PaymentOrder @relation(fields: [orderId], references: [id])
-@@index([status])
-@@index([expiresAt])
-@@map("user_subscriptions")
+  id        String             @id @default(uuid()) @db.Uuid
+  userId    String             @unique @map("user_id") @db.Uuid
+  planId    String             @map("plan_id") @db.VarChar(50)
+  orderId   String             @unique @map("order_id") @db.Uuid
+  status    SubscriptionStatus @default(active)
+  startedAt DateTime           @map("started_at") @db.Timestamptz(6)
+  expiresAt DateTime           @map("expires_at") @db.Timestamptz(6)
+  createdAt DateTime           @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt DateTime           @updatedAt @map("updated_at") @db.Timestamptz(6)
+  user      User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+  order     PaymentOrder       @relation(fields: [orderId], references: [id])
+
+  @@index([status])
+  @@index([expiresAt])
+  @@map("user_subscriptions")
 }
+
 /// Quota / giới hạn slot bán của từng plan (early-bird, limited seats).
 /// maxSlots = null nghĩa là unlimited.
 model PlanQuota {
-planId    String @id @db.VarChar(50)
-maxSlots  Int?   @map("max_slots")    // null = unlimited
-soldSlots Int    @default(0) @map("sold_slots")
-updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamptz(6)
-@@map("plan_quotas")
+  planId    String   @id @db.VarChar(50)
+  maxSlots  Int?     @map("max_slots") // null = unlimited
+  soldSlots Int      @default(0) @map("sold_slots")
+  updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  @@map("plan_quotas")
 }
+
 /// Mã giảm giá Voucher áp dụng khi nâng cấp gói PRO.
 model Voucher {
-id                String   @id @default(uuid()) @db.Uuid
-code              String   @unique @db.VarChar(50)
-name              String   @db.VarChar(150)
-discountType      String   @default("percentage") @map("discount_type") @db.VarChar(20) // "percentage", "fixed"
-discountValue     Int      @map("discount_value")
-minOrderAmount    Int      @default(0) @map("min_order_amount")
-maxDiscountAmount Int?     @map("max_discount_amount")
-usageLimit        Int?     @map("usage_limit")
-usedCount         Int      @default(0) @map("used_count")
-startDate         DateTime @map("start_date") @db.Timestamptz(6)
-endDate           DateTime @map("end_date") @db.Timestamptz(6)
-isActive          Boolean  @default(true) @map("is_active")
-createdAt         DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
-updatedAt         DateTime @updatedAt @map("updated_at") @db.Timestamptz(6)
-paymentOrders PaymentOrder[]
-@@index([code])
-@@index([isActive])
-@@map("vouchers")
+  id                String         @id @default(uuid()) @db.Uuid
+  code              String         @unique @db.VarChar(50)
+  name              String         @db.VarChar(150)
+  discountType      String         @default("percentage") @map("discount_type") @db.VarChar(20) // "percentage", "fixed"
+  discountValue     Int            @map("discount_value")
+  minOrderAmount    Int            @default(0) @map("min_order_amount")
+  maxDiscountAmount Int?           @map("max_discount_amount")
+  usageLimit        Int?           @map("usage_limit")
+  usedCount         Int            @default(0) @map("used_count")
+  startDate         DateTime       @map("start_date") @db.Timestamptz(6)
+  endDate           DateTime       @map("end_date") @db.Timestamptz(6)
+  isActive          Boolean        @default(true) @map("is_active")
+  createdAt         DateTime       @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt         DateTime       @updatedAt @map("updated_at") @db.Timestamptz(6)
+  paymentOrders     PaymentOrder[]
+
+  @@index([code])
+  @@index([isActive])
+  @@map("vouchers")
 }
+
 /// Chương trình khuyến mãi Flash Sale cho các gói PRO.
 model FlashSale {
-id              String   @id @default(uuid()) @db.Uuid
-title           String   @db.VarChar(150)
-description     String?  @db.VarChar(500)
-planId          String   @map("plan_id") @db.VarChar(50)
-discountPercent Int      @map("discount_percent")
-startTime       DateTime @map("start_time") @db.Timestamptz(6)
-endTime         DateTime @map("end_time") @db.Timestamptz(6)
-isActive        Boolean  @default(true) @map("is_active")
-createdAt       DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
-updatedAt       DateTime @updatedAt @map("updated_at") @db.Timestamptz(6)
-@@index([planId])
-@@index([isActive])
-@@map("flash_sales")
+  id              String   @id @default(uuid()) @db.Uuid
+  title           String   @db.VarChar(150)
+  description     String?  @db.VarChar(500)
+  planId          String   @map("plan_id") @db.VarChar(50)
+  discountPercent Int      @map("discount_percent")
+  startTime       DateTime @map("start_time") @db.Timestamptz(6)
+  endTime         DateTime @map("end_time") @db.Timestamptz(6)
+  isActive        Boolean  @default(true) @map("is_active")
+  createdAt       DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt       DateTime @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  @@index([planId])
+  @@index([isActive])
+  @@map("flash_sales")
 }
 
 /// Chuỗi ngày học liên tiếp Daily Streak & Điểm kinh nghiệm EXP của Học viên.
@@ -1096,79 +1120,24 @@ model UserBadge {
   @@map("user_badges")
 }
 
-
 // ─── AI Mock Interview ────────────────────────────────────────────────────────
-model MockInterview {
-  id          String              @id @default(uuid()) @db.Uuid
-  userId      String              @db.Uuid
-  topic       String              @db.VarChar(200)
-  difficulty  String              @default("intermediate") @db.VarChar(50)
-  status      MockInterviewStatus @default(in_progress)
-  score       Float?
-  feedback    String?             @db.Text
-  createdAt   DateTime            @default(now()) @map("created_at") @db.Timestamptz(6)
-  completedAt DateTime?           @map("completed_at") @db.Timestamptz(6)
-
-  user  User                  @relation(fields: [userId], references: [id], onDelete: Cascade)
-  turns MockInterviewTurn[]
-
-  @@index([userId])
-  @@map("mock_interviews")
-}
-
-enum MockInterviewStatus {
-  in_progress
-  completed
-  abandoned
-}
-
-model MockInterviewTurn {
-  id          String   @id @default(uuid()) @db.Uuid
-  interviewId String   @map("interview_id") @db.Uuid
-  turnIndex   Int      @map("turn_index")
-  question    String   @db.Text
-  userAnswer  String?  @map("user_answer") @db.Text
-  aiFeedback  String?  @map("ai_feedback") @db.Text
-  score       Float?
-  createdAt   DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
-
-  interview MockInterview @relation(fields: [interviewId], references: [id], onDelete: Cascade)
-
-  @@index([interviewId])
-  @@map("mock_interview_turns")
-}
 
 // ─── AI Writing Practice ──────────────────────────────────────────────────────
-model WritingSubmission {
-  id          String   @id @default(uuid()) @db.Uuid
-  userId      String   @db.Uuid
-  prompt      String   @db.Text
-  topic       String   @db.VarChar(200)
-  userText    String   @map("user_text") @db.Text
-  aiFeedback  String?  @map("ai_feedback") @db.Text
-  grammarScore Float?  @map("grammar_score")
-  clarityScore Float?  @map("clarity_score")
-  vocabScore  Float?   @map("vocab_score")
-  overallScore Float?  @map("overall_score")
-  createdAt   DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
-
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  @@index([userId])
-  @@map("writing_submissions")
-}
 
 // ─── Community Discussion ─────────────────────────────────────────────────────
 model DiscussionPost {
-  id        String   @id @default(uuid()) @db.Uuid
-  userId    String   @db.Uuid
-  title     String   @db.VarChar(300)
-  content   String   @db.Text
-  tags      String[] @db.Text
-  isPinned  Boolean  @default(false) @map("is_pinned")
-  viewCount Int      @default(0) @map("view_count")
-  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
-  updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamptz(6)
+  id               String    @id @default(uuid()) @db.Uuid
+  userId           String    @db.Uuid
+  title            String    @db.VarChar(300)
+  content          String    @db.Text
+  tags             String[]  @db.Text
+  isPinned         Boolean   @default(false) @map("is_pinned")
+  isLocked         Boolean   @default(false) @map("is_locked")
+  lockedAt         DateTime? @map("locked_at") @db.Timestamptz(6)
+  moderationReason String?   @map("moderation_reason") @db.VarChar(500)
+  viewCount        Int       @default(0) @map("view_count")
+  createdAt        DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt        DateTime  @updatedAt @map("updated_at") @db.Timestamptz(6)
 
   user     User                @relation(fields: [userId], references: [id], onDelete: Cascade)
   comments DiscussionComment[]
@@ -1207,14 +1176,14 @@ model DiscussionVote {
 }
 
 model Notification {
-  id          String           @id @default(uuid()) @db.Uuid
-  userId      String?          @db.Uuid
-  type        NotificationType @default(system)
-  title       String           @db.VarChar(200)
-  message     String           @db.Text
-  isRead      Boolean          @default(false) @map("is_read")
-  actionUrl   String?          @map("action_url") @db.VarChar(500)
-  createdAt   DateTime         @default(now()) @map("created_at") @db.Timestamptz(6)
+  id        String           @id @default(uuid()) @db.Uuid
+  userId    String?          @db.Uuid
+  type      NotificationType @default(system)
+  title     String           @db.VarChar(200)
+  message   String           @db.Text
+  isRead    Boolean          @default(false) @map("is_read")
+  actionUrl String?          @map("action_url") @db.VarChar(500)
+  createdAt DateTime         @default(now()) @map("created_at") @db.Timestamptz(6)
 
   user User? @relation(fields: [userId], references: [id], onDelete: Cascade)
 
@@ -1232,16 +1201,186 @@ enum NotificationType {
   reminder
 }
 
+enum AiChatMode {
+  qa
+  correction
+  it_conversation
+  vocabulary
+
+  @@map("ai_chat_mode")
+}
+
+enum AiMessageRole {
+  user
+  assistant
+
+  @@map("ai_message_role")
+}
+
+model AiConversation {
+  id        String            @id @default(uuid()) @db.Uuid
+  userId    String            @map("user_id") @db.Uuid
+  mode      AiChatMode        @default(qa)
+  title     String            @default("Cuộc trò chuyện mới") @db.VarChar(200)
+  createdAt DateTime          @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt DateTime          @updatedAt @map("updated_at") @db.Timestamptz(6)
+  user      User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  messages  AiMessage[]
+  errors    AiLearningError[]
+
+  @@index([userId, updatedAt])
+  @@map("ai_conversations")
+}
+
+model AiMessage {
+  id             String            @id @default(uuid()) @db.Uuid
+  conversationId String            @map("conversation_id") @db.Uuid
+  role           AiMessageRole
+  content        String            @db.Text
+  metadata       Json              @default("{}")
+  createdAt      DateTime          @default(now()) @map("created_at") @db.Timestamptz(6)
+  conversation   AiConversation    @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  errors         AiLearningError[]
+
+  @@index([conversationId, createdAt])
+  @@map("ai_messages")
+}
+
+model AiLearningError {
+  id             String         @id @default(uuid()) @db.Uuid
+  conversationId String         @map("conversation_id") @db.Uuid
+  messageId      String?        @map("message_id") @db.Uuid
+  category       String         @db.VarChar(50)
+  original       String         @db.Text
+  corrected      String         @db.Text
+  explanationVi  String         @map("explanation_vi") @db.Text
+  createdAt      DateTime       @default(now()) @map("created_at") @db.Timestamptz(6)
+  conversation   AiConversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  message        AiMessage?     @relation(fields: [messageId], references: [id], onDelete: SetNull)
+
+  @@index([conversationId, createdAt])
+  @@map("ai_learning_errors")
+}
+
+model AiSavedVocabulary {
+  id            String   @id @default(uuid()) @db.Uuid
+  userId        String   @map("user_id") @db.Uuid
+  term          String   @db.VarChar(150)
+  phrase        String?  @db.VarChar(250)
+  meaningVi     String   @map("meaning_vi") @db.VarChar(1000)
+  pronunciation String?  @db.VarChar(100)
+  partOfSpeech  String?  @map("part_of_speech") @db.VarChar(50)
+  level         String?  @db.VarChar(10)
+  example       String?  @db.Text
+  note          String?  @db.Text
+  createdAt     DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, term, phrase])
+  @@index([userId, createdAt])
+  @@map("ai_saved_vocabulary")
+}
+
+model LandingBanner {
+  id              String    @id @default(uuid()) @db.Uuid
+  placement       String    @default("hero") @db.VarChar(30)
+  displayMode     String    @default("background_text") @map("display_mode") @db.VarChar(30)
+  eyebrow         String?   @db.VarChar(100)
+  title           String    @db.VarChar(200)
+  description     String?   @db.Text
+  imageUrl        String?   @map("image_url") @db.VarChar(1000)
+  imagePublicId   String?   @map("image_public_id") @db.VarChar(500)
+  ctaLabel        String?   @map("cta_label") @db.VarChar(80)
+  ctaUrl          String?   @map("cta_url") @db.VarChar(1000)
+  accentColor     String    @default("#4F46E5") @map("accent_color") @db.VarChar(20)
+  backgroundColor String    @default("#EEF2FF") @map("background_color") @db.VarChar(20)
+  bulletPoints    Json      @default("[]") @map("bullet_points")
+  textX           Float     @default(8) @map("text_x")
+  textY           Float     @default(18) @map("text_y")
+  textWidth       Float     @default(46) @map("text_width")
+  textAlign       String    @default("left") @map("text_align") @db.VarChar(10)
+  titleColor      String    @default("#0F172A") @map("title_color") @db.VarChar(20)
+  titleSize       Int       @default(56) @map("title_size")
+  sortOrder       Int       @default(0) @map("sort_order")
+  isActive        Boolean   @default(true) @map("is_active")
+  startsAt        DateTime? @map("starts_at") @db.Timestamptz(6)
+  endsAt          DateTime? @map("ends_at") @db.Timestamptz(6)
+  createdAt       DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt       DateTime  @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  @@index([placement, isActive, sortOrder])
+  @@map("landing_banners")
+}
+
+model LearningSession {
+  id              String    @id @default(uuid()) @db.Uuid
+  userId          String    @map("user_id") @db.Uuid
+  lessonId        String?   @map("lesson_id") @db.Uuid
+  sessionType     String    @map("session_type") @db.VarChar(50)
+  startedAt       DateTime  @default(now()) @map("started_at") @db.Timestamptz(6)
+  endedAt         DateTime? @map("ended_at") @db.Timestamptz(6)
+  durationSeconds Int       @default(0) @map("duration_seconds")
+  studyDate       DateTime  @default(now()) @map("study_date") @db.Date
+  timeOfDay       String    @map("time_of_day") @db.VarChar(20)
+  user            User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  lesson          Lesson?   @relation(fields: [lessonId], references: [id], onDelete: SetNull)
+
+  @@index([userId, studyDate])
+  @@map("learning_sessions")
+}
+
+model CareerGoalSkill {
+  id           String     @id @default(uuid()) @db.Uuid
+  careerGoalId String     @map("career_goal_id") @db.Uuid
+  lessonId     String?    @map("lesson_id") @db.Uuid
+  name         String     @db.VarChar(150)
+  careerGoal   CareerGoal @relation(fields: [careerGoalId], references: [id], onDelete: Cascade)
+  lesson       Lesson?    @relation(fields: [lessonId], references: [id], onDelete: SetNull)
+
+  @@index([careerGoalId])
+  @@map("career_goal_skills")
+}
+
+model LearningPath {
+  id           String               @id @default(uuid()) @db.Uuid
+  userId       String               @map("user_id") @db.Uuid
+  careerGoal   String               @map("career_goal") @db.VarChar(150)
+  currentLevel String               @map("current_level") @db.VarChar(50)
+  title        String               @db.VarChar(200)
+  createdAt    DateTime             @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt    DateTime             @updatedAt @map("updated_at") @db.Timestamptz(6)
+  user         User                 @relation(fields: [userId], references: [id], onDelete: Cascade)
+  modules      LearningPathModule[]
+
+  @@index([userId, createdAt])
+  @@map("learning_paths")
+}
+
+model LearningPathModule {
+  id              String       @id @default(uuid()) @db.Uuid
+  learningPathId  String       @map("learning_path_id") @db.Uuid
+  order           Int
+  title           String       @db.VarChar(200)
+  description     String       @db.Text
+  status          String       @db.VarChar(30)
+  progressPercent Float        @default(0) @map("progress_percent")
+  currentLessonId String?      @map("current_lesson_id") @db.Uuid
+  learningPath    LearningPath @relation(fields: [learningPathId], references: [id], onDelete: Cascade)
+
+  @@index([learningPathId, order])
+  @@map("learning_path_modules")
+}
+
 model LearningPlanItem {
-  id         String   @id @default(uuid()) @db.Uuid
-  userId     String   @db.Uuid
-  lessonId   String?  @db.Uuid
-  title      String   @db.VarChar(200)
-  note       String?  @db.Text
-  plannedAt  DateTime @map("planned_at") @db.Timestamptz(6)
-  durationMin Int     @default(30) @map("duration_min")
-  isCompleted Boolean @default(false) @map("is_completed")
-  createdAt  DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  id          String   @id @default(uuid()) @db.Uuid
+  userId      String   @db.Uuid
+  lessonId    String?  @db.Uuid
+  title       String   @db.VarChar(200)
+  note        String?  @db.Text
+  plannedAt   DateTime @map("planned_at") @db.Timestamptz(6)
+  durationMin Int      @default(30) @map("duration_min")
+  isCompleted Boolean  @default(false) @map("is_completed")
+  createdAt   DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
 
   user   User    @relation(fields: [userId], references: [id], onDelete: Cascade)
   lesson Lesson? @relation(fields: [lessonId], references: [id], onDelete: SetNull)
@@ -1249,4 +1388,150 @@ model LearningPlanItem {
   @@index([userId])
   @@index([plannedAt])
   @@map("learning_plan_items")
+}
+
+// =============================================================================
+// CERTIFICATION OBJECTIVES & HANDS-ON LABS
+// Restored database tables, now fully represented in Prisma.
+// =============================================================================
+
+model CertificationObjective {
+  id               String   @id @db.Uuid
+  certificateId    String   @map("certificate_id") @db.Uuid
+  code             String   @db.VarChar(40)
+  title            String   @db.VarChar(300)
+  description      String   @db.Text
+  parentId         String?  @map("parent_id") @db.Uuid
+  weightMinPercent Decimal? @map("weight_min_percent") @db.Decimal
+  weightMaxPercent Decimal? @map("weight_max_percent") @db.Decimal
+  assessmentKind   String   @map("assessment_kind") @db.VarChar(20)
+  minVocabularies  Int      @default(5) @map("min_vocabularies")
+  minLessons       Int      @default(1) @map("min_lessons")
+  minQuestions     Int      @default(5) @map("min_questions")
+  minLabs          Int      @default(0) @map("min_labs")
+  sourceUrl        String   @map("source_url") @db.Text
+  sourceVersion    String   @map("source_version") @db.VarChar(80)
+  sourceCheckedAt  DateTime @map("source_checked_at") @db.Timestamptz(6)
+  order            Int      @default(0)
+  isActive         Boolean  @default(true) @map("is_active")
+  createdAt        DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt        DateTime @default(now()) @map("updated_at") @db.Timestamptz(6)
+
+  certificate    Certificate               @relation(fields: [certificateId], references: [id], onDelete: Cascade)
+  parent         CertificationObjective?   @relation("ObjectiveTree", fields: [parentId], references: [id], onDelete: Cascade)
+  children       CertificationObjective[]  @relation("ObjectiveTree")
+  lessons        ObjectiveLesson[]
+  questions      ObjectiveQuestion[]
+  vocabularies   ObjectiveVocabulary[]
+  labs           ObjectiveLab[]
+  learnerMastery LearnerObjectiveMastery[]
+
+  @@unique([certificateId, code])
+  @@index([certificateId])
+  @@index([parentId])
+  @@map("certification_objectives")
+}
+
+model HandsOnLab {
+  id               String        @id @db.Uuid
+  certificateId    String        @map("certificate_id") @db.Uuid
+  levelId          String        @map("level_id") @db.Uuid
+  title            String        @db.VarChar(200)
+  slug             String        @unique @db.VarChar(220)
+  summary          String        @db.VarChar(1000)
+  instructions     Json
+  validationRules  Json          @map("validation_rules")
+  estimatedMinutes Int           @map("estimated_minutes")
+  status           ContentStatus @default(draft)
+  sourceUrl        String        @map("source_url") @db.Text
+  createdAt        DateTime      @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt        DateTime      @default(now()) @map("updated_at") @db.Timestamptz(6)
+
+  certificate Certificate    @relation(fields: [certificateId], references: [id], onDelete: Cascade)
+  level       Level          @relation(fields: [levelId], references: [id])
+  objectives  ObjectiveLab[]
+
+  @@index([certificateId])
+  @@index([levelId])
+  @@map("hands_on_labs")
+}
+
+model LearnerObjectiveMastery {
+  learnerId             String    @map("learner_id") @db.Uuid
+  objectiveId           String    @map("objective_id") @db.Uuid
+  knowledgeScorePercent Float?    @map("knowledge_score_percent")
+  practicalScorePercent Float?    @map("practical_score_percent")
+  attempts              Int       @default(0)
+  lastAssessedAt        DateTime? @map("last_assessed_at") @db.Timestamptz(6)
+  updatedAt             DateTime  @default(now()) @map("updated_at") @db.Timestamptz(6)
+
+  learner   LearnerProfile         @relation(fields: [learnerId], references: [id], onDelete: Cascade)
+  objective CertificationObjective @relation(fields: [objectiveId], references: [id], onDelete: Cascade)
+
+  @@id([learnerId, objectiveId])
+  @@index([objectiveId])
+  @@map("learner_objective_mastery")
+}
+
+model ObjectiveLab {
+  objectiveId String @map("objective_id") @db.Uuid
+  labId       String @map("lab_id") @db.Uuid
+
+  objective CertificationObjective @relation(fields: [objectiveId], references: [id], onDelete: Cascade)
+  lab       HandsOnLab             @relation(fields: [labId], references: [id], onDelete: Cascade)
+
+  @@id([objectiveId, labId])
+  @@index([labId])
+  @@map("objective_labs")
+}
+
+model ObjectiveLesson {
+  objectiveId String @map("objective_id") @db.Uuid
+  lessonId    String @map("lesson_id") @db.Uuid
+
+  objective CertificationObjective @relation(fields: [objectiveId], references: [id], onDelete: Cascade)
+  lesson    Lesson                 @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+
+  @@id([objectiveId, lessonId])
+  @@index([lessonId])
+  @@map("objective_lessons")
+}
+
+model ObjectiveQuestion {
+  objectiveId String @map("objective_id") @db.Uuid
+  questionId  String @map("question_id") @db.Uuid
+
+  objective CertificationObjective @relation(fields: [objectiveId], references: [id], onDelete: Cascade)
+  question  Question               @relation(fields: [questionId], references: [id], onDelete: Cascade)
+
+  @@id([objectiveId, questionId])
+  @@index([questionId])
+  @@map("objective_questions")
+}
+
+model ObjectiveVocabulary {
+  objectiveId  String @map("objective_id") @db.Uuid
+  vocabularyId String @map("vocabulary_id") @db.Uuid
+
+  objective  CertificationObjective @relation(fields: [objectiveId], references: [id], onDelete: Cascade)
+  vocabulary Vocabulary             @relation(fields: [vocabularyId], references: [id], onDelete: Cascade)
+
+  @@id([objectiveId, vocabularyId])
+  @@index([vocabularyId])
+  @@map("objective_vocabularies")
+}
+
+model VocabularySource {
+  vocabularyId String   @map("vocabulary_id") @db.Uuid
+  source       String   @db.Text
+  sourceUrl    String   @map("source_url") @db.Text
+  sourceTitle  String   @map("source_title") @db.Text
+  contentHash  String   @map("content_hash") @db.Char(64)
+  crawledAt    DateTime @map("crawled_at") @db.Timestamptz(6)
+  metadata     Json     @default("{}")
+
+  vocabulary Vocabulary @relation(fields: [vocabularyId], references: [id], onDelete: Cascade)
+
+  @@id([vocabularyId, source, sourceUrl])
+  @@map("vocabulary_sources")
 }

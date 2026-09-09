@@ -1,7 +1,7 @@
 'use client';
 
 import * as React from 'react';
-import { PageHeader, SearchInput } from '@/shared/ui';
+import { Modal, PageHeader, Pagination, SearchInput } from '@/shared/ui';
 import { apiClient, ApiClientError } from '@/shared/api/api-client';
 import type { UserItem, PaginatedResponse } from '@/shared/api/api-client';
 
@@ -164,15 +164,8 @@ function CreateUserModal({ onClose, onCreated }: CreateUserModalProps) {
     }`;
 
   return (
-    <div
-      className="fixed inset-0 z-50 flex items-center justify-center p-4"
-      style={{ backgroundColor: 'rgba(0,0,0,0.45)' }}
-      onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}
-    >
-      <div
-        className="relative w-full rounded-2xl bg-surface-container-low border border-outline-variant/30 shadow-xl overflow-hidden"
-        style={{ width: '100%', maxWidth: '480px' }}
-      >
+    <Modal open onClose={onClose} maxWidth="max-w-[520px]">
+      <div className="w-full overflow-hidden bg-surface-container-lowest">
         {/* Header */}
         <div className="flex items-center justify-between px-6 py-4 border-b border-outline-variant/30">
           <h2 className="text-base font-semibold text-on-surface">Tạo tài khoản mới</h2>
@@ -279,7 +272,7 @@ function CreateUserModal({ onClose, onCreated }: CreateUserModalProps) {
           </div>
         </form>
       </div>
-    </div>
+    </Modal>
   );
 }
 
@@ -357,16 +350,16 @@ export default function AdminUsersPage() {
   };
 
   return (
-    <main className="flex-1 p-margin flex flex-col gap-xl max-w-[1200px] mx-auto w-full">
+    <main className="flex-1 p-6 lg:p-9 flex flex-col gap-7 w-full">
       {/* Page Header & Actions */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-md">
         <div>
-          <h2 className="font-headline-h1 text-headline-h1 text-on-surface">Quản lý người dùng</h2>
-          <p className="font-body-md text-body-md text-on-surface-variant mt-xs">Quản lý danh sách học viên, giảng viên và quản trị viên.</p>
+          <h2 className="text-[28px] leading-9 font-bold tracking-[-0.025em] text-on-surface">Quản lý người dùng</h2>
+          <p className="text-sm text-on-surface-variant mt-1.5">Quản lý danh sách học viên, giảng viên và quản trị viên.</p>
         </div>
         <button
           onClick={() => setShowCreateModal(true)}
-          className="flex items-center justify-center gap-sm text-on-primary px-lg py-sm rounded-lg font-interface-sb hover:bg-primary-container transition-colors shadow-sm whitespace-nowrap bg-primary"
+          className="flex h-11 items-center justify-center gap-2 text-on-primary px-5 rounded-xl text-sm font-semibold hover:bg-primary-container transition-all shadow-[0_8px_18px_rgba(53,37,205,0.18)] hover:-translate-y-0.5 whitespace-nowrap bg-primary"
         >
           <span className="material-symbols-outlined">add</span>
           Thêm người dùng
@@ -393,9 +386,9 @@ export default function AdminUsersPage() {
       )}
 
       {/* Content Area - Bento/Card Style */}
-      <div className="bg-surface-container-lowest rounded-xl border border-outline-variant overflow-hidden flex flex-col">
+      <div className="bg-surface-container-lowest rounded-2xl border border-outline-variant/55 overflow-hidden flex flex-col shadow-[0_12px_40px_rgba(15,23,42,0.055)]">
         {/* Tabs */}
-        <div className="flex border-b border-outline-variant overflow-x-auto px-md">
+        <div className="flex border-b border-outline-variant/50 overflow-x-auto px-5 pt-1">
           <button
             onClick={() => { setRoleFilter(''); setPage(1); }}
             className={`px-md py-md font-interface-sb text-interface-sb whitespace-nowrap ${roleFilter === '' ? 'border-b-2 border-primary-container text-primary-container' : 'text-on-surface-variant hover:text-on-surface transition-colors'}`}
@@ -423,14 +416,14 @@ export default function AdminUsersPage() {
         </div>
 
         {/* Toolbar */}
-        <div className="p-md flex flex-col md:flex-row gap-md justify-between items-center bg-surface-bright">
+        <div className="p-5 flex flex-col md:flex-row gap-4 justify-between items-center bg-surface-container-low/55">
           <div className="relative w-full">
             <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-outline">search</span>
             <input
               value={searchInput}
               onChange={(e) => setSearchInput(e.target.value)}
               onKeyDown={(e) => { if (e.key === 'Enter') { setPage(1); setSearch(searchInput); } }}
-              className="w-full md:w-64 pl-10 pr-4 py-2 bg-surface-container-lowest rounded-lg border border-outline-variant focus:border-primary focus:ring-2 focus:ring-primary-container focus:outline-none transition-all font-body-md text-body-md"
+              className="w-full md:w-80 h-10 pl-10 pr-4 bg-surface-container-lowest rounded-xl border border-outline-variant/70 focus:border-primary focus:ring-4 focus:ring-primary/10 focus:outline-none transition-all text-sm"
               placeholder="Tìm theo tên, email..."
               type="text"
             />
@@ -439,7 +432,7 @@ export default function AdminUsersPage() {
             <select
               value={statusFilter}
               onChange={(e) => { setStatusFilter(e.target.value); setPage(1); }}
-              className="flex items-center gap-sm px-md py-2 border border-outline-variant rounded-lg font-interface-sb text-interface-sb text-on-surface hover:bg-surface-container-low transition-colors bg-surface-container-lowest focus:outline-none"
+              className="h-10 px-4 border border-outline-variant/70 rounded-xl text-sm font-medium text-on-surface hover:bg-surface-container-low transition-colors bg-surface-container-lowest focus:outline-none focus:ring-4 focus:ring-primary/10"
             >
               {STATUS_OPTS.map((s) => <option key={s.value} value={s.value}>{s.label}</option>)}
             </select>
@@ -450,7 +443,7 @@ export default function AdminUsersPage() {
         <div className="overflow-x-auto w-full">
           <table className="w-full text-left border-collapse">
             <thead>
-              <tr className="bg-surface-container-low border-y border-outline-variant">
+              <tr className="bg-surface-container-low/75 border-y border-outline-variant/50">
                 <th className="p-md font-interface-sb text-interface-sb text-on-surface-variant">Người dùng</th>
                 <th className="p-md font-interface-sb text-interface-sb text-on-surface-variant">Email</th>
                 <th className="p-md font-interface-sb text-interface-sb text-on-surface-variant">Vai trò</th>
@@ -472,7 +465,7 @@ export default function AdminUsersPage() {
               ) : (
                 users.map((user) => (
                   <tr key={user.id} className="hover:bg-surface-bright transition-colors group">
-                    <td className="p-md">
+                    <td className="px-5 py-4">
                       <div className="flex items-center gap-md">
                         <div className="w-10 h-10 rounded-full bg-primary-fixed flex items-center justify-center text-on-primary-fixed font-interface-sb shrink-0">
                           {(user.displayName ?? user.email).charAt(0).toUpperCase()}
@@ -480,8 +473,8 @@ export default function AdminUsersPage() {
                         <span className="font-interface-sb text-interface-sb text-on-surface truncate">{user.displayName ?? '—'}</span>
                       </div>
                     </td>
-                    <td className="p-md font-body-md text-body-md text-on-surface-variant">{user.email}</td>
-                    <td className="p-md">
+                    <td className="px-5 py-4 text-sm text-on-surface-variant">{user.email}</td>
+                    <td className="px-5 py-4">
                       <div className="flex flex-wrap gap-1">
                         {user.roles?.map((r) => {
                           let cls = 'bg-surface-container-highest text-outline border-outline-variant';
@@ -497,7 +490,7 @@ export default function AdminUsersPage() {
                         }) ?? <span className="text-on-surface-variant text-xs">—</span>}
                       </div>
                     </td>
-                    <td className="p-md">
+                    <td className="px-5 py-4">
                       <span className={`inline-flex items-center px-2 py-1 rounded-full font-label-caps text-label-caps border ${
                         user.status === 'active' ? 'bg-[#E6F4EA] text-[#137333] border-[#CEEAD6]' :
                         user.status === 'suspended' ? 'bg-[#FCE8E6] text-[#C5221F] border-[#FAD2CF]' :
@@ -506,10 +499,10 @@ export default function AdminUsersPage() {
                         {user.status === 'active' ? 'Active' : user.status === 'suspended' ? 'Suspended' : 'Inactive'}
                       </span>
                     </td>
-                    <td className="p-md font-body-md text-body-md text-on-surface-variant">
+                    <td className="px-5 py-4 text-sm text-on-surface-variant">
                       {new Date(user.createdAt).toLocaleDateString('vi-VN')}
                     </td>
-                    <td className="p-md text-right">
+                    <td className="px-5 py-4 text-right">
                       {!user.roles?.includes('admin') && (
                         <button
                           disabled={actionLoading === user.id}
@@ -532,32 +525,7 @@ export default function AdminUsersPage() {
         </div>
 
         {/* Pagination */}
-        {totalPages > 0 && (
-          <div className="p-md border-t border-outline-variant flex flex-col sm:flex-row items-center justify-between bg-surface-container-lowest gap-3">
-            <span className="font-body-sm text-body-sm text-on-surface-variant">
-              Hiển thị {(page - 1) * limit + 1}-{Math.min(page * limit, total)} của {total} người dùng
-            </span>
-            <div className="flex gap-sm">
-              <button
-                disabled={page <= 1}
-                onClick={() => setPage(p => p - 1)}
-                className="w-8 h-8 flex items-center justify-center rounded border border-outline-variant text-outline hover:bg-surface-container-low transition-colors disabled:opacity-50"
-              >
-                <span className="material-symbols-outlined text-[20px]">chevron_left</span>
-              </button>
-              <button className="w-8 h-8 flex items-center justify-center rounded bg-primary text-on-primary font-body-sm transition-colors">
-                {page}
-              </button>
-              <button
-                disabled={page >= totalPages}
-                onClick={() => setPage(p => p + 1)}
-                className="w-8 h-8 flex items-center justify-center rounded border border-outline-variant text-outline hover:bg-surface-container-low transition-colors disabled:opacity-50"
-              >
-                <span className="material-symbols-outlined text-[20px]">chevron_right</span>
-              </button>
-            </div>
-          </div>
-        )}
+        {totalPages > 0 && <Pagination page={page} limit={limit} total={total} totalPages={totalPages} onPageChange={setPage} />}
       </div>
 
       {showCreateModal && (

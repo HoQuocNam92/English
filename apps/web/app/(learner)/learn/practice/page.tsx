@@ -4,30 +4,31 @@ import Link from 'next/link';
 import { useState, useEffect } from 'react';
 import { LearnerShell } from '@/shared/layout';
 import { apiClient } from '@/shared/api/api-client';
+import { LoadingSpinner } from '@/shared/ui';
 
 export default function LearnerPracticePage() {
-  const [data, setData] = useState<any>({ exams: [], vocabCount: 0, lessons: [] });
+  const [data, setData] = useState<any>({ exams: [], vocabCount: 0, lessons: [], readingCount: 0, progress: [] });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
-  // filters state
-  const [field, setField] = useState('');
-  const [level, setLevel] = useState('');
-  const [cert, setCert] = useState('');
 
   useEffect(() => {
     async function loadData() {
       try {
-        const [examsRes, vocabRes, lessonsRes] = await Promise.all<any>([
+        const [examsRes, vocabRes, lessonsRes, readingRes, progressRes] = await Promise.all<any>([
           apiClient.get('/exams?limit=4&status=published'),
           apiClient.get('/vocabulary?limit=1'), 
-          apiClient.get('/lessons?limit=1')
+          apiClient.get('/lessons?limit=100&status=published'),
+          apiClient.get('/reading-lab/articles?limit=1'),
+          apiClient.get('/progress/me'),
         ]);
         
         setData({
           exams: examsRes?.data || examsRes || [],
-          vocabCount: vocabRes?.total || (vocabRes?.data || vocabRes || []).length,
-          lessons: lessonsRes?.data || lessonsRes || []
+          vocabCount: vocabRes?.meta?.total ?? 0,
+          lessons: lessonsRes?.data || [],
+          readingCount: readingRes?.total ?? 0,
+          progress: progressRes?.progress || [],
         });
       } catch (err) {
         setError('Failed to load practice data');
@@ -38,19 +39,13 @@ export default function LearnerPracticePage() {
     loadData();
   }, []);
 
-  if (loading) return <LearnerShell><div className="flex justify-center p-10"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div></div></LearnerShell>;
-
-  const clearFilters = () => {
-    setField('');
-    setLevel('');
-    setCert('');
-  };
+  if (loading) return <LearnerShell><LoadingSpinner /></LearnerShell>;
 
   const practiceCategories = [
     {
       id: 'vocab',
       title: 'Từ vựng chuyên ngành',
-      badge: '24 BÀI TẬP',
+      badge: `${data.vocabCount} TỪ`,
       description: 'Luyện tập từ vựng kỹ thuật, thuật ngữ và cụm từ thông dụng trong IT.',
       icon: 'sort_by_alpha',
       bgIcon: 'bg-primary-light text-primary group-hover:bg-primary-container group-hover:text-surface-white',
@@ -60,7 +55,7 @@ export default function LearnerPracticePage() {
     {
       id: 'reading',
       title: 'Đọc tài liệu',
-      badge: '18 BÀI TẬP',
+      badge: `${data.readingCount} BÀI ĐỌC`,
       description: 'Cải thiện kỹ năng đọc hiểu tài liệu kỹ thuật, API docs và release notes.',
       icon: 'menu_book',
       bgIcon: 'bg-primary-light text-primary group-hover:bg-primary-container group-hover:text-surface-white',
@@ -69,9 +64,9 @@ export default function LearnerPracticePage() {
     },
     {
       id: 'tech-understanding',
-      title: 'Hiểu biết kỹ thuật',
-      badge: '12 BÀI TẬP',
-      description: 'Giải thích khái niệm phức tạp, code review và thảo luận kiến trúc.',
+      title: 'Bài thi & kiểm tra',
+      badge: `${data.exams.length} BÀI KIỂM TRA`,
+      description: 'Làm bài kiểm tra thông thường hoặc đề luyện thi chứng chỉ và nhận kết quả chấm điểm.',
       icon: 'integration_instructions',
       bgIcon: 'bg-primary-light text-primary group-hover:bg-primary-container group-hover:text-surface-white',
       badgeClass: 'text-tertiary bg-tertiary-fixed',
@@ -89,6 +84,11 @@ export default function LearnerPracticePage() {
       isAi: true
     }
   ];
+  const lessonById = new Map(data.lessons.map((lesson: any) => [lesson.id, lesson]));
+  const recentActivities = data.progress
+    .filter((item: any) => item.resourceType === 'lesson' && lessonById.has(item.resourceId))
+    .slice(0, 5)
+    .map((item: any) => ({ ...item, lesson: lessonById.get(item.resourceId) }));
 
   return (
     <LearnerShell>
@@ -99,51 +99,6 @@ export default function LearnerPracticePage() {
           <p className="text-[14px] leading-[20px] text-on-surface-variant">Củng cố kiến thức tiếng Anh chuyên ngành CNTT của bạn.</p>
         </header>
 
-        {/* Filters */}
-        <section className="flex flex-wrap gap-4 items-center bg-surface-white p-4 rounded-xl border border-border-subtle">
-          <div className="flex items-center gap-2">
-            <span className="material-symbols-outlined text-on-surface-variant">filter_list</span>
-            <span className="text-[14px] leading-[20px] font-semibold text-on-background">Bộ lọc:</span>
-          </div>
-          
-          <select 
-            value={field} 
-            onChange={(e) => setField(e.target.value)}
-            className="bg-surface-container-low border border-border-subtle text-on-background text-[14px] rounded-lg px-4 py-2 focus:ring-2 focus:ring-primary focus:border-primary outline-none"
-          >
-            <option value="">Lĩnh vực IT</option>
-            <option value="software">Phát triển phần mềm</option>
-            <option value="network">Mạng máy tính</option>
-            <option value="data">Dữ liệu & AI</option>
-          </select>
-          
-          <select 
-            value={level} 
-            onChange={(e) => setLevel(e.target.value)}
-            className="bg-surface-container-low border border-border-subtle text-on-background text-[14px] rounded-lg px-4 py-2 focus:ring-2 focus:ring-primary focus:border-primary outline-none"
-          >
-            <option value="">Trình độ</option>
-            <option value="beginner">Sơ cấp (A1-A2)</option>
-            <option value="intermediate">Trung cấp (B1-B2)</option>
-            <option value="advanced">Cao cấp (C1-C2)</option>
-          </select>
-
-          <select 
-            value={cert} 
-            onChange={(e) => setCert(e.target.value)}
-            className="bg-surface-container-low border border-border-subtle text-on-background text-[14px] rounded-lg px-4 py-2 focus:ring-2 focus:ring-primary focus:border-primary outline-none"
-          >
-            <option value="">Chứng chỉ</option>
-            <option value="toeic">TOEIC</option>
-            <option value="ielts">IELTS IT</option>
-            <option value="aws">AWS Cloud Practitioner</option>
-          </select>
-
-          <button onClick={clearFilters} className="ml-auto text-primary text-[14px] font-semibold hover:underline">
-            Xóa bộ lọc
-          </button>
-        </section>
-
         {/* Categories Grid */}
         <section className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           {practiceCategories.map((cat) => (
@@ -153,7 +108,7 @@ export default function LearnerPracticePage() {
             >
               {cat.isAi && (
                 <div className="absolute top-0 right-0 bg-violet-100 text-violet-700 text-[10px] font-bold leading-[16px] tracking-[0.05em] px-2 py-1 rounded-bl-lg">
-                  AI-POWERED
+                  KHÔNG GIỚI HẠN
                 </div>
               )}
               <div className={`w-12 h-12 rounded-lg flex items-center justify-center mb-4 transition-colors ${cat.bgIcon}`}>
@@ -178,72 +133,11 @@ export default function LearnerPracticePage() {
         <section>
           <h2 className="text-[24px] leading-[32px] tracking-[-0.01em] font-bold text-on-background mb-6">Hoạt động gần đây</h2>
           <div className="bg-surface-white rounded-xl border border-border-subtle overflow-hidden">
-            {/* Item 1 */}
-            <div className="flex items-center justify-between p-4 border-b border-border-subtle hover:bg-surface-container-low transition-colors">
-              <div className="flex items-center gap-4">
-                <div className="w-10 h-10 rounded-full bg-green-100 flex items-center justify-center text-green-700">
-                  <span className="material-symbols-outlined">check_circle</span>
-                </div>
-                <div>
-                  <h4 className="text-[14px] font-semibold text-on-background">Đọc tài liệu: RESTful API Principles</h4>
-                  <p className="text-[12px] text-on-surface-variant">Lĩnh vực: Phát triển phần mềm</p>
-                </div>
-              </div>
-              <div className="flex items-center gap-6">
-                <div className="text-right hidden md:block">
-                  <div className="text-[20px] font-semibold text-green-600">85%</div>
-                  <div className="text-[12px] text-on-surface-variant">Điểm số</div>
-                </div>
-                <button className="px-4 py-2 border border-border-subtle rounded-lg text-[14px] font-semibold text-on-background hover:bg-surface-dim transition-colors">
-                  Làm lại
-                </button>
-              </div>
-            </div>
-
-            {/* Item 2 */}
-            <div className="flex items-center justify-between p-4 border-b border-border-subtle hover:bg-surface-container-low transition-colors">
-              <div className="flex items-center gap-4">
-                <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center text-blue-700">
-                  <span className="material-symbols-outlined">pending</span>
-                </div>
-                <div>
-                  <h4 className="text-[14px] font-semibold text-on-background">Từ vựng: Cloud Computing Basics</h4>
-                  <p className="text-[12px] text-on-surface-variant">Lĩnh vực: Hạ tầng mạng</p>
-                </div>
-              </div>
-              <div className="flex items-center gap-6">
-                <div className="text-right hidden md:block">
-                  <div className="text-[20px] font-semibold text-blue-600">--</div>
-                  <div className="text-[12px] text-on-surface-variant">Đang làm</div>
-                </div>
-                <button className="px-4 py-2 bg-primary text-white rounded-lg text-[14px] font-semibold hover:bg-primary-container transition-colors">
-                  Tiếp tục
-                </button>
-              </div>
-            </div>
-
-            {/* Item 3 */}
-            <div className="flex items-center justify-between p-4 hover:bg-surface-container-low transition-colors">
-              <div className="flex items-center gap-4">
-                <div className="w-10 h-10 rounded-full bg-green-100 flex items-center justify-center text-green-700">
-                  <span className="material-symbols-outlined">check_circle</span>
-                </div>
-                <div>
-                  <h4 className="text-[14px] font-semibold text-on-background">Tình huống: Báo cáo bug cho QA</h4>
-                  <p className="text-[12px] text-on-surface-variant">Lĩnh vực: Kiểm thử phần mềm</p>
-                </div>
-              </div>
-              <div className="flex items-center gap-6">
-                <div className="text-right hidden md:block">
-                  <div className="text-[20px] font-semibold text-green-600">92%</div>
-                  <div className="text-[12px] text-on-surface-variant">Điểm số</div>
-                </div>
-                <button className="px-4 py-2 border border-border-subtle rounded-lg text-[14px] font-semibold text-on-background hover:bg-surface-dim transition-colors">
-                  Làm lại
-                </button>
-              </div>
-            </div>
-
+            {!recentActivities.length && <p className="p-6 text-center text-[14px] text-on-surface-variant">Chưa có hoạt động học nào được ghi nhận.</p>}
+            {recentActivities.map((activity: any) => <div key={activity.id} className="flex items-center justify-between border-b border-border-subtle p-4 last:border-b-0 hover:bg-surface-container-low">
+              <div className="flex min-w-0 items-center gap-4"><div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-full ${activity.status === 'completed' ? 'bg-green-100 text-green-700' : 'bg-blue-100 text-blue-700'}`}><span className="material-symbols-outlined">{activity.status === 'completed' ? 'check_circle' : 'pending'}</span></div><div className="min-w-0"><h4 className="truncate text-[14px] font-semibold">{activity.lesson.title}</h4><p className="text-[12px] text-on-surface-variant">{activity.lesson.domain?.name || 'CNTT'} · cập nhật {new Date(activity.updatedAt).toLocaleDateString('vi-VN')}</p></div></div>
+              <div className="ml-4 flex shrink-0 items-center gap-4"><strong className="text-primary">{Math.round(activity.averageScorePercent ?? activity.completionPercent ?? 0)}%</strong><Link href={`/learn/lessons/${activity.resourceId}`} className="rounded-lg border border-border-subtle px-4 py-2 text-[14px] font-semibold">{activity.status === 'completed' ? 'Học lại' : 'Tiếp tục'}</Link></div>
+            </div>)}
           </div>
         </section>
       </div>

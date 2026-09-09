@@ -50,6 +50,7 @@ export const adminNavigation: NavigationGroup[] = [
     items: [
       { label: 'Mã giảm giá (Voucher)', href: '/admin/vouchers', icon: 'local_offer' },
       { label: 'Flash Sale', href: '/admin/flash-sales', icon: 'flash_on' },
+      { label: 'Banner landing', href: '/admin/banners', icon: 'view_carousel' },
     ],
   },
   {
@@ -104,6 +105,7 @@ export const combinedNavigation: NavigationGroup[] = [
     items: [
       { label: 'Mã giảm giá (Voucher)', href: '/admin/vouchers', icon: 'local_offer', adminOnly: true },
       { label: 'Flash Sale', href: '/admin/flash-sales', icon: 'flash_on', adminOnly: true },
+      { label: 'Banner landing', href: '/admin/banners', icon: 'view_carousel', adminOnly: true },
     ],
   },
   {
@@ -122,6 +124,34 @@ export const combinedNavigation: NavigationGroup[] = [
       { label: 'Báo cáo thống kê', href: '/admin/reports', icon: 'analytics', adminOnly: true },
     ],
   },
+  {
+    group: 'Công cụ học tập',
+    items: [
+      { label: 'Lộ trình học', href: '/admin/learning-paths', icon: 'route' },
+    ],
+  },
+  {
+    group: 'Tương tác',
+    items: [
+      { label: 'Cộng đồng', href: '/admin/community', icon: 'forum' },
+      { label: 'Thông báo', href: '/admin/notifications', icon: 'notifications' },
+    ],
+  },
+];
+
+export const teacherNavigation: NavigationGroup[] = [
+  { group: 'Tổng quan', items: [{ label: 'Dashboard', href: '/admin/dashboard', icon: 'dashboard' }] },
+  { group: 'Giảng dạy', items: [
+    { label: 'Nội dung học tập', href: '/admin/learning-content', icon: 'menu_book' },
+    { label: 'Bài học', href: '/admin/lessons', icon: 'auto_stories' },
+    { label: 'Ngân hàng câu hỏi', href: '/admin/questions', icon: 'help' },
+    { label: 'Bài thi', href: '/admin/tests', icon: 'quiz' },
+  ] },
+  { group: 'Học viên phụ trách', items: [
+    { label: 'Nhóm học viên', href: '/admin/student-groups', icon: 'groups' },
+    { label: 'Kết quả bài thi', href: '/admin/test-results', icon: 'fact_check' },
+    { label: 'Tiến độ học tập', href: '/admin/progress', icon: 'insights' },
+  ] },
 ];
 
 // Legacy export (kept for backward compatibility)

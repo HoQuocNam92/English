@@ -29,6 +29,8 @@ export default function QuestionEditorPage() {
 
   const [domains, setDomains] = React.useState<SelectOption[]>([]);
   const [levels, setLevels] = React.useState<SelectOption[]>([]);
+  const [certificates, setCertificates] = React.useState<SelectOption[]>([]);
+  const [certificateIds, setCertificateIds] = React.useState<string[]>(params.get('certificateId') ? [params.get('certificateId')!] : []);
 
   const [type, setType] = React.useState('multiple_choice');
   const [prompt, setPrompt] = React.useState('');
@@ -54,12 +56,14 @@ export default function QuestionEditorPage() {
     const init = async () => {
       setLoading(true);
       try {
-        const [domainsRes, levelsRes] = await Promise.all<any>([
+        const [domainsRes, levelsRes, certificatesRes] = await Promise.all<any>([
           apiClient.get<any>('/domains'),
           apiClient.get<any>('/levels'),
+          apiClient.get<any>('/certificates'),
         ]);
         setDomains(domainsRes?.data ?? domainsRes ?? []);
         setLevels(levelsRes?.data ?? levelsRes ?? []);
+        setCertificates(certificatesRes?.data ?? certificatesRes ?? []);
 
         if (isEdit) {
           const q = await apiClient.get<any>(`/questions/${questionId}`);
@@ -71,6 +75,7 @@ export default function QuestionEditorPage() {
           setDomainId(q.domainId ?? '');
           setLevelId(q.levelId ?? '');
           setTopics((q.topics ?? []).join(', '));
+          setCertificateIds(q.certificates?.map((item: any) => item.certificateId ?? item.certificate?.id) ?? []);
           if (q.options?.length) {
             setOptions(q.options.map((o: any) => ({
               key: o.key,
@@ -94,19 +99,24 @@ export default function QuestionEditorPage() {
   };
 
   const toggleCorrect = (idx: number) => {
-    setOptions(prev => prev.map((o, i) => ({ ...o, isCorrect: i === idx })));
+    setOptions(prev => prev.map((o, i) => ({ ...o, isCorrect: type === 'multiple_choice' ? (i === idx ? !o.isCorrect : o.isCorrect) : i === idx })));
   };
 
   const validate = (): boolean => {
     const errs: Record<string, string> = {};
     if (!prompt.trim()) errs.prompt = 'Nội dung câu hỏi không được để trống';
+    else if (prompt.trim().length < 10) errs.prompt = 'Nội dung câu hỏi phải có ít nhất 10 ký tự';
     else if (prompt.trim().length > 1000) errs.prompt = 'Câu hỏi tối đa 1000 ký tự';
     if (!domainId) errs.domainId = 'Vui lòng chọn lĩnh vực';
     if (!levelId) errs.levelId = 'Vui lòng chọn cấp độ';
     if (options.some(o => !o.text.trim())) errs.options = 'Tất cả các đáp án phải có nội dung';
+    if (new Set(options.map(o => o.text.trim().toLocaleLowerCase())).size !== options.length) errs.options = 'Các đáp án không được trùng nhau';
     if (!options.some(o => o.isCorrect)) errs.options = 'Phải chọn ít nhất 1 đáp án đúng';
     const pts = Number(points);
     if (isNaN(pts) || pts < 1 || pts > 100) errs.points = 'Điểm phải từ 1 đến 100';
+    const topicList = topics.split(',').map(t => t.trim()).filter(Boolean);
+    if (topicList.length > 30) errs.topics = 'Tối đa 30 chủ đề';
+    else if (topicList.some(t => t.length > 50)) errs.topics = 'Mỗi chủ đề tối đa 50 ký tự';
     setErrors(errs);
     return Object.keys(errs).length === 0;
   };
@@ -133,6 +143,7 @@ export default function QuestionEditorPage() {
           isCorrect: o.isCorrect,
           explanation: o.explanation.trim() || undefined,
         })),
+        certificateIds,
       };
 
       if (isEdit) {
@@ -166,7 +177,7 @@ export default function QuestionEditorPage() {
         description="Tạo câu hỏi trắc nghiệm để đưa vào bài thi hoặc flashcard"
       />
 
-      <form onSubmit={handleSubmit} className="mt-6 space-y-6 max-w-2xl">
+      <form onSubmit={handleSubmit} className="mt-6 w-full max-w-[900px] space-y-6 rounded-2xl bg-surface-container-lowest p-6 shadow-[0_8px_28px_rgba(15,23,42,0.05)]">
         {globalError && (
           <div className="p-3 rounded-xl bg-error-container text-on-error-container text-sm flex gap-2 items-center">
             <span className="material-symbols-outlined text-[18px]">error</span>
@@ -182,9 +193,11 @@ export default function QuestionEditorPage() {
             onChange={e => setType(e.target.value)}
             className="w-full rounded-xl border border-outline-variant px-4 py-2.5 text-sm text-on-surface bg-surface-container-low focus:outline-none focus:border-primary"
           >
-            <option value="multiple_choice">Trắc nghiệm một đáp án</option>
+            <option value="single_choice">Trắc nghiệm một đáp án</option>
+            <option value="multiple_choice">Trắc nghiệm nhiều đáp án</option>
             <option value="true_false">Đúng / Sai</option>
-            <option value="fill_blank">Điền vào chỗ trống</option>
+            <option value="short_answer">Trả lời ngắn</option>
+            <option value="scenario">Tình huống kỹ thuật</option>
           </select>
         </div>
 
@@ -247,6 +260,12 @@ export default function QuestionEditorPage() {
         </div>
 
         {/* Points & Topics */}
+        <div>
+          <label className="block text-sm font-semibold text-on-surface mb-2">Chứng chỉ liên quan</label>
+          <div className="grid gap-2 rounded-xl border border-outline-variant bg-surface-container-low p-3 sm:grid-cols-2">{certificates.map(cert => <label key={cert.id} className="flex items-center gap-2 text-sm"><input type="checkbox" checked={certificateIds.includes(cert.id)} onChange={event => setCertificateIds(current => event.target.checked ? [...current, cert.id] : current.filter(id => id !== cert.id))} className="accent-primary" />{cert.name}</label>)}{!certificates.length && <p className="text-sm text-on-surface-variant">Chưa có chứng chỉ.</p>}</div>
+        </div>
+
+        {/* Points & Topics */}
         <div className="grid grid-cols-2 gap-4">
           <div>
             <label className="block text-sm font-semibold text-on-surface mb-1">Điểm</label>
@@ -258,6 +277,7 @@ export default function QuestionEditorPage() {
               max={100}
               className="w-full rounded-xl border border-outline-variant px-4 py-2.5 text-sm text-on-surface bg-surface-container-low focus:outline-none focus:border-primary"
             />
+            <FieldError msg={errors.topics} />
             <FieldError msg={errors.points} />
           </div>
           <div>
@@ -283,7 +303,7 @@ export default function QuestionEditorPage() {
               <div key={opt.key} className={`rounded-xl border p-3 ${opt.isCorrect ? 'border-primary bg-primary/5' : 'border-outline-variant bg-surface-container-low'}`}>
                 <div className="flex items-start gap-3">
                   <input
-                    type="radio"
+                    type={type === 'multiple_choice' ? 'checkbox' : 'radio'}
                     name="correctOption"
                     checked={opt.isCorrect}
                     onChange={() => toggleCorrect(i)}

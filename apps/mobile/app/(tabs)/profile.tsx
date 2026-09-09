@@ -48,167 +48,167 @@ export default function MobileProfileScreen() {
 
   const displayName = profile?.displayName || user?.displayName || 'Người dùng';
   const email = profile?.email || user?.email || '';
-  const role = profile?.role || user?.role || 'learner';
   const avatarLetter = displayName.charAt(0).toUpperCase();
   const avatarUrl = profile?.avatarUrl || profile?.userDetail?.avatarUrl || user?.avatarUrl;
-  const certGoal = profile?.certGoal || 'AWS Cloud Practitioner';
-  const mainDomain = profile?.mainDomain || 'Cloud Computing';
+  
+  const currentLevelRaw = profile?.learnerProfile?.currentLevel;
+  const currentLevel = typeof currentLevelRaw === 'object' && currentLevelRaw !== null
+    ? (currentLevelRaw.name ?? currentLevelRaw.code ?? 'Intermediate (B1)')
+    : (currentLevelRaw || 'Intermediate (B1)');
+  const mainDomain = profile?.learnerProfile?.mainDomain || 'Software Engineering';
+  const careerGoal = profile?.learnerProfile?.careerGoal || 'Full-stack Dev';
+  const certGoal = profile?.certGoal || profile?.learnerProfile?.certGoal || 'AWS Solutions Architect';
 
   return (
-    <ScrollView style={[styles.container, { backgroundColor: colors.background }]} contentContainerStyle={styles.contentContainer} showsVerticalScrollIndicator={false}>
+    <View style={[styles.container, { backgroundColor: colors.background }]}>
       <StatusBar style={isDark ? "light" : "dark"} />
-
-      {/* Profile Header Card */}
-      <View style={[styles.profileCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
-        <View style={styles.avatarRow}>
-          {avatarUrl ? (
-            <Image source={{ uri: avatarUrl }} style={styles.avatar} />
-          ) : (
-            <View style={[styles.avatar, { backgroundColor: colors.primary }]}>
-              <Text style={styles.avatarText}>{avatarLetter}</Text>
-            </View>
-          )}
-          <View style={styles.userInfo}>
-            <View style={styles.nameRow}>
-              <Text style={[styles.displayName, { color: colors.text }]}>{displayName}</Text>
-              {role === 'pro' && (
-                <View style={styles.proBadge}>
-                  <Text style={styles.proBadgeText}>PRO</Text>
-                </View>
-              )}
-            </View>
-            <Text style={[styles.userEmail, { color: colors.textSecondary }]}>{email}</Text>
-          </View>
-        </View>
-
-        {/* Current Plan & Goal */}
-        <View style={[styles.goalBox, { backgroundColor: colors.surfaceContainer }]}>
-          <View style={styles.goalRow}>
-            <Text style={[styles.goalLabel, { color: colors.textSecondary }]}>Mục tiêu chứng chỉ</Text>
-            <Text style={[styles.goalValue, { color: colors.primary }]}>{certGoal}</Text>
-          </View>
-          <View style={styles.goalRow}>
-            <Text style={[styles.goalLabel, { color: colors.textSecondary }]}>Chuyên ngành chính</Text>
-            <Text style={[styles.goalValue, { color: colors.primary }]}>{mainDomain}</Text>
-          </View>
-        </View>
+      
+      {/* TopAppBar */}
+      <View style={[styles.header, { backgroundColor: colors.surface }]}>
+        <View style={styles.headerButton} />
+        <Text style={[styles.headerTitle, { color: colors.primary }]}>Cá nhân</Text>
+        <TouchableOpacity style={styles.headerButton} onPress={() => router.push('/community' as any)}>
+          <MaterialIcons name="more-vert" size={24} color={colors.onSurface} />
+        </TouchableOpacity>
       </View>
 
-      {/* Menu Settings */}
-      <View style={[styles.menuCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
-        <TouchableOpacity
-          style={[styles.menuItem, { borderBottomColor: colors.border }]}
-          onPress={() => router.push('/profile/edit' as any)}
-        >
-          <View style={styles.menuLeft}>
-            <MaterialIcons name="person-outline" size={22} color={colors.primary} />
-            <Text style={[styles.menuText, { color: colors.text }]}>Chỉnh sửa thông tin cá nhân</Text>
-          </View>
-          <MaterialIcons name="chevron-right" size={20} color={colors.outline} />
-        </TouchableOpacity>
-
-        <TouchableOpacity
-          style={[styles.menuItem, { borderBottomColor: colors.border }]}
-          onPress={() => router.push('/profile/change-password' as any)}
-        >
-          <View style={styles.menuLeft}>
-            <MaterialIcons name="lock-outline" size={22} color={colors.primary} />
-            <Text style={[styles.menuText, { color: colors.text }]}>Đổi mật khẩu</Text>
-          </View>
-          <MaterialIcons name="chevron-right" size={20} color={colors.outline} />
-        </TouchableOpacity>
+      <ScrollView contentContainerStyle={styles.contentContainer} showsVerticalScrollIndicator={false}>
         
-        <TouchableOpacity
-          style={[styles.menuItem, { borderBottomColor: colors.border }]}
-          onPress={() => router.push('/payment/history' as any)}
-        >
-          <View style={styles.menuLeft}>
-            <MaterialIcons name="workspace-premium" size={22} color={colors.primary} />
-            <Text style={[styles.menuText, { color: colors.text }]}>Gói dịch vụ & Lịch sử thanh toán</Text>
+        {/* Profile Header */}
+        <View style={styles.profileSection}>
+          <View style={styles.avatarContainer}>
+            {avatarUrl ? (
+              <Image source={{ uri: avatarUrl }} style={styles.avatarLarge} />
+            ) : (
+              <View style={[styles.avatarLarge, { backgroundColor: colors.primary }]}>
+                <Text style={styles.avatarTextLarge}>{avatarLetter}</Text>
+              </View>
+            )}
+            <TouchableOpacity style={[styles.editAvatarButton, { backgroundColor: '#4F46E5' }]} onPress={() => router.push('/profile/edit' as any)}>
+              <MaterialIcons name="edit" size={16} color="#ffffff" />
+            </TouchableOpacity>
           </View>
-          <MaterialIcons name="chevron-right" size={20} color={colors.outline} />
-        </TouchableOpacity>
+          <Text style={[styles.userName, { color: colors.onSurface }]}>{displayName}</Text>
+          <Text style={[styles.userEmail, { color: colors.onSurfaceVariant }]}>{email}</Text>
+        </View>
 
-        {/* Nâng cấp PRO menu item */}
-        {role !== 'pro' && (
+        {/* Academic & Career Info - 4 Bento Cards */}
+        <View style={styles.bentoGrid}>
+          {/* English Level */}
+          <View style={[styles.bentoCard, { backgroundColor: colors.surfaceContainerLowest, borderColor: colors.outlineVariant }]}>
+            <View style={[styles.bentoIconBox, { backgroundColor: '#dbeafe' }]}>
+              <MaterialIcons name="language" size={20} color="#1d4ed8" />
+            </View>
+            <View style={styles.bentoContent}>
+              <Text style={[styles.bentoLabel, { color: colors.onSurfaceVariant }]}>ENGLISH LEVEL</Text>
+              <Text style={[styles.bentoValue, { color: colors.onSurface }]}>{currentLevel}</Text>
+            </View>
+          </View>
+
+          {/* IT Field */}
+          <View style={[styles.bentoCard, { backgroundColor: colors.surfaceContainerLowest, borderColor: colors.outlineVariant }]}>
+            <View style={[styles.bentoIconBox, { backgroundColor: '#f5f3ff' }]}>
+              <MaterialIcons name="terminal" size={20} color="#5c00ca" />
+            </View>
+            <View style={styles.bentoContent}>
+              <Text style={[styles.bentoLabel, { color: colors.onSurfaceVariant }]}>IT FIELD</Text>
+              <Text style={[styles.bentoValue, { color: colors.onSurface }]}>{mainDomain}</Text>
+            </View>
+          </View>
+
+          {/* Career Goal */}
+          <View style={[styles.bentoCard, { backgroundColor: colors.surfaceContainerLowest, borderColor: colors.outlineVariant }]}>
+            <View style={[styles.bentoIconBox, { backgroundColor: '#EEF2FF' }]}>
+              <MaterialIcons name="rocket-launch" size={20} color="#4F46E5" />
+            </View>
+            <View style={styles.bentoContent}>
+              <Text style={[styles.bentoLabel, { color: colors.onSurfaceVariant }]}>CAREER GOAL</Text>
+              <Text style={[styles.bentoValue, { color: colors.onSurface }]}>{careerGoal}</Text>
+            </View>
+          </View>
+
+          {/* Target Certification */}
+          <View style={[styles.bentoCard, { backgroundColor: colors.surfaceContainerLowest, borderColor: colors.outlineVariant }]}>
+            <View style={[styles.bentoIconBox, { backgroundColor: '#e0e3e5' }]}>
+              <MaterialIcons name="workspace-premium" size={20} color={colors.onSurface} />
+            </View>
+            <View style={styles.bentoContent}>
+              <Text style={[styles.bentoLabel, { color: colors.onSurfaceVariant }]}>TARGET CERTIFICATION</Text>
+              <Text style={[styles.bentoValue, { color: colors.onSurface }]}>{certGoal}</Text>
+            </View>
+          </View>
+        </View>
+
+        {/* Action List */}
+        <View style={[styles.menuList, { backgroundColor: colors.surfaceContainerLowest, borderColor: colors.outlineVariant }]}>
           <TouchableOpacity
-            style={[styles.menuItem, { borderBottomColor: colors.border }]}
-            onPress={() => router.push('/payment' as any)}
+            style={[styles.menuListItem, { borderBottomColor: colors.outlineVariant }]}
+            onPress={() => router.push('/profile/edit' as any)}
           >
-            <View style={styles.menuLeft}>
-              <MaterialIcons name="star-outline" size={22} color={colors.primary} />
-              <Text style={[styles.menuText, { color: colors.text }]}>Nâng cấp tài khoản PRO</Text>
+            <View style={styles.menuListLeft}>
+              <MaterialIcons name="person" size={22} color={colors.onSurfaceVariant} />
+              <Text style={[styles.menuListText, { color: colors.onSurface }]}>Chỉnh sửa hồ sơ</Text>
             </View>
-            <MaterialIcons name="chevron-right" size={20} color={colors.outline} />
+            <MaterialIcons name="chevron-right" size={24} color={colors.outlineVariant} />
           </TouchableOpacity>
-        )}
 
-        <TouchableOpacity
-          style={[styles.menuItem, { borderBottomColor: colors.border }]}
-          onPress={() => router.push('/(onboarding)/level' as any)}
-        >
-          <View style={styles.menuLeft}>
-            <MaterialIcons name="tune" size={22} color={colors.primary} />
-            <Text style={[styles.menuText, { color: colors.text }]}>Thiết lập lại mục tiêu & trình độ</Text>
-          </View>
-          <MaterialIcons name="chevron-right" size={20} color={colors.outline} />
-        </TouchableOpacity>
-
-        <TouchableOpacity
-          style={styles.menuItem}
-          onPress={() => router.push('/test-history' as any)}
-        >
-          <View style={styles.menuLeft}>
-            <MaterialIcons name="history" size={22} color={colors.primary} />
-            <Text style={[styles.menuText, { color: colors.text }]}>Lịch sử thi & bảng điểm</Text>
-          </View>
-          <MaterialIcons name="chevron-right" size={20} color={colors.outline} />
-        </TouchableOpacity>
-      </View>
-
-      {/* Settings Section */}
-      <View style={[styles.menuCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
-        <Text style={[styles.sectionTitle, { color: colors.onSurface }]}>{t.settings}</Text>
-        
-        {/* Theme Toggle */}
-        <View style={[styles.settingRow, { borderBottomColor: colors.border }]}>
-          <View style={styles.settingLeft}>
-            <Text style={styles.settingIcon}>🌙</Text>
-            <Text style={[styles.settingLabel, { color: colors.onSurface }]}>
-              {isDark ? t.lightMode : t.darkMode}
-            </Text>
-          </View>
-          <Switch
-            value={isDark}
-            onValueChange={toggleTheme}
-            trackColor={{ false: colors.outlineVariant, true: colors.primary }}
-            thumbColor={colors.onPrimary}
-          />
+          <TouchableOpacity
+            style={[styles.menuListItem, { borderBottomWidth: 0 }]}
+            onPress={() => router.push('/profile/change-password' as any)}
+          >
+            <View style={styles.menuListLeft}>
+              <MaterialIcons name="lock-reset" size={22} color={colors.onSurfaceVariant} />
+              <Text style={[styles.menuListText, { color: colors.onSurface }]}>Đổi mật khẩu</Text>
+            </View>
+            <MaterialIcons name="chevron-right" size={24} color={colors.outlineVariant} />
+          </TouchableOpacity>
         </View>
-        
-        {/* Language Toggle */}
-        <TouchableOpacity
-          style={styles.settingRow}
-          onPress={() => setLocale(locale === 'vi' ? 'en' : 'vi')}
-        >
-          <View style={styles.settingLeft}>
-            <Text style={styles.settingIcon}>🌐</Text>
-            <Text style={[styles.settingLabel, { color: colors.onSurface }]}>{t.language}</Text>
-          </View>
-          <View style={[styles.langBadge, { backgroundColor: colors.primary }]}>
-            <Text style={{ color: colors.onPrimary, fontWeight: '700', fontSize: 12 }}>
-              {locale === 'vi' ? 'VI' : 'EN'}
-            </Text>
-          </View>
-        </TouchableOpacity>
-      </View>
 
-      {/* Logout Button */}
-      <TouchableOpacity style={[styles.logoutButton, { borderColor: colors.error + '50', backgroundColor: colors.error + '10' }]} onPress={handleLogout} activeOpacity={0.8}>
-        <MaterialIcons name="logout" size={20} color={colors.error} />
-        <Text style={[styles.logoutText, { color: colors.error }]}>Đăng xuất tài khoản</Text>
-      </TouchableOpacity>
-    </ScrollView>
+        {/* Settings - Theme & Language (Keep existing but style to match) */}
+        <View style={[styles.menuList, { backgroundColor: colors.surfaceContainerLowest, borderColor: colors.outlineVariant }]}>
+          <View style={[styles.menuListItem, { borderBottomColor: colors.outlineVariant, paddingVertical: spacing.sm }]}>
+            <View style={styles.menuListLeft}>
+              <Text style={{ fontSize: 18 }}>🌙</Text>
+              <Text style={[styles.menuListText, { color: colors.onSurface }]}>{isDark ? t.lightMode : t.darkMode}</Text>
+            </View>
+            <Switch
+              value={isDark}
+              onValueChange={toggleTheme}
+              trackColor={{ false: colors.outlineVariant, true: colors.primary }}
+              thumbColor={colors.onPrimary}
+            />
+          </View>
+          
+          <TouchableOpacity
+            style={[styles.menuListItem, { borderBottomWidth: 0 }]}
+            onPress={() => setLocale(locale === 'vi' ? 'en' : 'vi')}
+          >
+            <View style={styles.menuListLeft}>
+              <Text style={{ fontSize: 18 }}>🌐</Text>
+              <Text style={[styles.menuListText, { color: colors.onSurface }]}>{t.language}</Text>
+            </View>
+            <View style={[styles.langBadge, { backgroundColor: colors.primary }]}>
+              <Text style={{ color: colors.onPrimary, fontWeight: '700', fontSize: 12 }}>
+                {locale === 'vi' ? 'VI' : 'EN'}
+              </Text>
+            </View>
+          </TouchableOpacity>
+        </View>
+
+        {/* Logout Action */}
+        <View style={styles.logoutContainer}>
+          <TouchableOpacity 
+            style={[styles.logoutButtonNew, { borderColor: colors.error, backgroundColor: 'transparent' }]} 
+            onPress={handleLogout}
+            activeOpacity={0.8}
+          >
+            <MaterialIcons name="logout" size={20} color={colors.error} />
+            <Text style={[styles.logoutTextNew, { color: colors.error }]}>Đăng xuất</Text>
+          </TouchableOpacity>
+        </View>
+
+      </ScrollView>
+    </View>
   );
 }
 
@@ -217,145 +217,159 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#f8fafc'
   },
+  header: {
+    height: 64,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: spacing.lg,
+    borderBottomWidth: 1,
+    borderBottomColor: '#e0e3e5',
+    marginTop: 40 // safearea substitute
+  },
+  headerButton: {
+    padding: spacing.xs,
+  },
+  headerTitle: {
+    fontSize: 20,
+    fontWeight: '600',
+  },
   contentContainer: {
-    padding: spacing.lg,
-    paddingTop: 50,
-    paddingBottom: 40,
-    gap: spacing.lg
+    padding: spacing.md,
+    paddingTop: spacing.lg,
+    paddingBottom: 80,
+    gap: spacing.xl
   },
-  profileCard: {
-    backgroundColor: '#ffffff',
+  profileSection: {
+    alignItems: 'center',
+  },
+  avatarContainer: {
+    position: 'relative',
+    width: 96,
+    height: 96,
+    marginBottom: spacing.md,
+  },
+  avatarLarge: {
+    width: '100%',
+    height: '100%',
+    borderRadius: 48,
+    borderWidth: 4,
+    borderColor: '#e0e3e5', // surface-container-highest
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  avatarTextLarge: {
+    fontSize: 36,
+    fontWeight: '800',
+    color: '#ffffff',
+  },
+  editAvatarButton: {
+    position: 'absolute',
+    bottom: 0,
+    right: 0,
+    width: 32,
+    height: 32,
     borderRadius: 16,
-    padding: spacing.lg,
-    borderWidth: 1,
-    borderColor: '#e2e8f0',
-    gap: spacing.md
-  },
-  avatarRow: {
-    flexDirection: 'row',
     alignItems: 'center',
-    gap: spacing.md
+    justifyContent: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
   },
-  avatar: {
-    width: 56,
-    height: 56,
-    borderRadius: 28,
-    alignItems: 'center',
-    justifyContent: 'center'
-  },
-  avatarText: {
-    fontSize: 22,
-    fontWeight: '800',
-    color: '#ffffff'
-  },
-  userInfo: {
-    flex: 1
-  },
-  nameRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: spacing.xs
-  },
-  displayName: {
-    fontSize: 16,
-    fontWeight: '800'
-  },
-  proBadge: {
-    backgroundColor: '#fef3c7',
-    paddingHorizontal: 6,
-    paddingVertical: 1,
-    borderRadius: 4,
-    borderWidth: 1,
-    borderColor: '#fde68a'
-  },
-  proBadgeText: {
-    fontSize: 9,
-    fontWeight: '800',
-    color: '#92400e'
+  userName: {
+    fontSize: 24,
+    fontWeight: '700',
+    marginBottom: 4,
   },
   userEmail: {
-    fontSize: 12,
-    marginTop: 2
+    fontSize: 14,
+    fontWeight: '400',
   },
-  goalBox: {
-    borderRadius: 10,
-    padding: spacing.sm,
-    gap: 6
-  },
-  goalRow: {
+  bentoGrid: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center'
+    flexWrap: 'wrap',
+    gap: spacing.md,
   },
-  goalLabel: {
-    fontSize: 12
-  },
-  goalValue: {
-    fontSize: 12,
-    fontWeight: '700'
-  },
-  menuCard: {
-    borderRadius: 16,
+  bentoCard: {
+    width: '47.5%', // close to 50% minus gap
     borderWidth: 1,
-    overflow: 'hidden'
+    borderRadius: 12,
+    padding: spacing.md,
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    gap: spacing.sm,
+    shadowColor: '#0f1718',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.06,
+    shadowRadius: 3,
+    elevation: 1,
   },
-  menuItem: {
+  bentoIconBox: {
+    width: 36,
+    height: 36,
+    borderRadius: 8,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  bentoContent: {
+    flex: 1,
+  },
+  bentoLabel: {
+    fontSize: 10,
+    fontWeight: '700',
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
+    marginBottom: 4,
+  },
+  bentoValue: {
+    fontSize: 13,
+    fontWeight: '600',
+  },
+  menuList: {
+    borderWidth: 1,
+    borderRadius: 12,
+    overflow: 'hidden',
+  },
+  menuListItem: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
     padding: spacing.md,
     borderBottomWidth: 1,
-    borderBottomColor: '#f1f5f9'
   },
-  menuLeft: {
+  menuListLeft: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: spacing.sm
+    gap: spacing.md,
   },
-  menuText: {
-    fontSize: 13,
-    fontWeight: '600'
-  },
-  sectionTitle: {
-    fontSize: 16,
-    fontWeight: '700',
-    padding: spacing.md,
-    paddingBottom: 0
-  },
-  settingRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    padding: spacing.md,
-    borderBottomWidth: 1
-  },
-  settingLeft: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 10
-  },
-  settingLabel: {
-    fontSize: 15
-  },
-  settingIcon: {
-    fontSize: 20
+  menuListText: {
+    fontSize: 14,
+    fontWeight: '600',
   },
   langBadge: {
     paddingHorizontal: 10,
     paddingVertical: 4,
     borderRadius: 12
   },
-  logoutButton: {
-    height: 48,
-    borderRadius: 12,
+  logoutContainer: {
+    alignItems: 'center',
+    marginTop: spacing.sm,
+  },
+  logoutButtonNew: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    gap: spacing.xs,
-    borderWidth: 1
+    gap: spacing.sm,
+    paddingHorizontal: spacing.xl,
+    paddingVertical: spacing.sm,
+    borderRadius: 8,
+    borderWidth: 1,
+    minWidth: 160,
   },
-  logoutText: {
+  logoutTextNew: {
     fontSize: 14,
-    fontWeight: '700'
+    fontWeight: '600',
   }
 });

@@ -88,26 +88,26 @@ export function PromotionsBanner() {
 
             {/* Countdown Badge */}
             {timeLeft && (
-              <div className="flex items-center gap-2 text-xs font-bold text-on-surface-variant">
+              <div className="flex items-center gap-2 rounded-xl border border-primary/15 bg-primary/5 px-3 py-2 text-xs font-bold text-on-surface-variant">
                 <span>Thời gian còn lại:</span>
                 <div className="flex items-center gap-1 font-mono font-bold">
                   {timeLeft.days > 0 && (
                     <>
-                      <span className="bg-inverse-surface text-green-400 px-2 py-0.5 rounded text-xs">
+                      <span className="min-w-9 rounded-md bg-white px-2 py-1 text-center text-primary shadow-sm ring-1 ring-primary/15">
                         {timeLeft.days}d
                       </span>
                       <span>:</span>
                     </>
                   )}
-                  <span className="bg-inverse-surface text-green-400 px-2 py-0.5 rounded text-xs">
+                  <span className="min-w-9 rounded-md bg-white px-2 py-1 text-center text-primary shadow-sm ring-1 ring-primary/15">
                     {String(timeLeft.hours).padStart(2, '0')}h
                   </span>
                   <span>:</span>
-                  <span className="bg-inverse-surface text-green-400 px-2 py-0.5 rounded text-xs">
+                  <span className="min-w-9 rounded-md bg-white px-2 py-1 text-center text-primary shadow-sm ring-1 ring-primary/15">
                     {String(timeLeft.minutes).padStart(2, '0')}m
                   </span>
                   <span>:</span>
-                  <span className="bg-inverse-surface text-green-400 px-2 py-0.5 rounded text-xs">
+                  <span className="min-w-9 rounded-md bg-white px-2 py-1 text-center text-primary shadow-sm ring-1 ring-primary/15">
                     {String(timeLeft.seconds).padStart(2, '0')}s
                   </span>
                 </div>

@@ -22,6 +22,8 @@ export default function LessonEditorPage() {
 
   const [domains, setDomains] = React.useState<SelectOption[]>([]);
   const [levels, setLevels] = React.useState<SelectOption[]>([]);
+  const [certificates, setCertificates] = React.useState<SelectOption[]>([]);
+  const [certificateIds, setCertificateIds] = React.useState<string[]>(params.get('certificateId') ? [params.get('certificateId')!] : []);
 
   const [title, setTitle] = React.useState('');
   const [summary, setSummary] = React.useState('');
@@ -41,12 +43,14 @@ export default function LessonEditorPage() {
     const init = async () => {
       setLoading(true);
       try {
-        const [domainsRes, levelsRes] = await Promise.all<any>([
+        const [domainsRes, levelsRes, certificatesRes] = await Promise.all<any>([
           apiClient.get<any>('/domains'),
           apiClient.get<any>('/levels'),
+          apiClient.get<any>('/certificates'),
         ]);
         setDomains(domainsRes?.data ?? domainsRes ?? []);
         setLevels(levelsRes?.data ?? levelsRes ?? []);
+        setCertificates(certificatesRes?.data ?? certificatesRes ?? []);
 
         if (isEdit) {
           const lesson = await apiClient.get<LessonDetail>(`/lessons/${lessonId}`);
@@ -57,6 +61,7 @@ export default function LessonEditorPage() {
           setLevelId((lesson as any).levelId ?? '');
           setEstimatedMinutes(String(lesson.estimatedMinutes ?? ''));
           setTags(((lesson as any).tags as string[] ?? []).join(', '));
+          setCertificateIds((lesson as any).certificates?.map((item: any) => item.certificateId ?? item.certificate?.id) ?? []);
         }
       } catch (e) {
         setGlobalError(e instanceof ApiClientError ? e.message : 'Không thể tải dữ liệu');
@@ -71,8 +76,12 @@ export default function LessonEditorPage() {
   const validate = (): boolean => {
     const errs: Record<string, string> = {};
     if (!title.trim()) errs.title = 'Tiêu đề không được để trống';
+    else if (title.trim().length < 5) errs.title = 'Tiêu đề phải có ít nhất 5 ký tự';
     else if (title.trim().length > 200) errs.title = 'Tiêu đề tối đa 200 ký tự';
     if (summary.trim().length > 500) errs.summary = 'Tóm tắt tối đa 500 ký tự';
+    const tagList = tags.split(',').map((tag) => tag.trim()).filter(Boolean);
+    if (tagList.length > 30) errs.tags = 'Tối đa 30 tags';
+    else if (tagList.some((tag) => tag.length > 50)) errs.tags = 'Mỗi tag tối đa 50 ký tự';
     if (!domainId) errs.domainId = 'Vui lòng chọn lĩnh vực';
     if (!levelId) errs.levelId = 'Vui lòng chọn cấp độ';
     if (estimatedMinutes && (isNaN(Number(estimatedMinutes)) || Number(estimatedMinutes) < 1 || Number(estimatedMinutes) > 480)) {
@@ -97,6 +106,7 @@ export default function LessonEditorPage() {
         levelId: levelId || undefined,
         estimatedMinutes: estimatedMinutes ? Number(estimatedMinutes) : undefined,
         tags: tags.trim() ? tags.split(',').map((t) => t.trim()).filter(Boolean) : [],
+        certificateIds,
       };
 
       if (isEdit) {
@@ -130,7 +140,7 @@ export default function LessonEditorPage() {
         description={isEdit ? `Đang chỉnh sửa lesson ID: ${lessonId}` : 'Tạo bài học mới cho hệ thống'}
       />
 
-      <form onSubmit={handleSubmit} className="mt-6 space-y-6 max-w-2xl">
+      <form onSubmit={handleSubmit} className="mt-6 w-full max-w-[900px] space-y-6 rounded-2xl bg-surface-container-lowest p-6 shadow-[0_8px_28px_rgba(15,23,42,0.05)]">
         {globalError && (
           <div className="p-3 rounded-xl bg-error-container text-on-error-container text-sm flex gap-2 items-center">
             <span className="material-symbols-outlined text-[18px]">error</span>
@@ -151,6 +161,7 @@ export default function LessonEditorPage() {
             placeholder="Ví dụ: Understanding REST APIs in Production"
             className="w-full rounded-xl border border-outline-variant px-4 py-2.5 text-sm text-on-surface bg-surface-container-low focus:outline-none focus:border-primary"
           />
+          <FieldError msg={errors.tags} />
           <FieldError msg={errors.title} />
         </div>
 
@@ -221,6 +232,12 @@ export default function LessonEditorPage() {
             </select>
             <FieldError msg={errors.levelId} />
           </div>
+        </div>
+
+        {/* Estimated Minutes */}
+        <div>
+          <label className="block text-sm font-semibold text-on-surface mb-2">Chứng chỉ liên quan</label>
+          <div className="grid gap-2 rounded-xl border border-outline-variant bg-surface-container-low p-3 sm:grid-cols-2">{certificates.map(cert => <label key={cert.id} className="flex items-center gap-2 text-sm"><input type="checkbox" checked={certificateIds.includes(cert.id)} onChange={event => setCertificateIds(current => event.target.checked ? [...current, cert.id] : current.filter(id => id !== cert.id))} className="accent-primary" />{cert.name}</label>)}{!certificates.length && <p className="text-sm text-on-surface-variant">Chưa có chứng chỉ.</p>}</div>
         </div>
 
         {/* Estimated Minutes */}

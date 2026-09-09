@@ -12,6 +12,7 @@ interface AnalyticsData {
     totalExams: number;
     totalVocab: number;
     passRate: number;
+    averageScore: number;
   };
   domainsDistribution: Array<{
     code: string;
@@ -73,6 +74,7 @@ export default function AdminReportsPage() {
 
   const totalDomainItems = analytics?.domainsDistribution.reduce((s, d) => s + d.totalItems, 0) || 1;
   const maxWeeklyHours = Math.max(...(analytics?.weeklyActivity.map((w) => w.studyHours) ?? [100]));
+  const completionRate = Math.min(100, Math.max(0, analytics?.overview.passRate ?? 0));
 
   const filteredDomains = analytics?.domainsDistribution.filter(
     (d) => !search || d.name.toLowerCase().includes(search.toLowerCase()) || d.code.toLowerCase().includes(search.toLowerCase())
@@ -133,7 +135,7 @@ export default function AdminReportsPage() {
               <div className="font-headline-h1 text-headline-h1 text-on-surface">{loading ? '...' : analytics?.overview.totalUsers.toLocaleString()}</div>
               <div className="flex items-center gap-xs mt-xs text-[#16a34a] font-body-sm text-body-sm">
                 <span className="material-symbols-outlined text-[14px]" data-icon="trending_up">trending_up</span>
-                <span>+5.2% so với tháng trước</span>
+                <span>Dữ liệu tài khoản hiện tại</span>
               </div>
             </div>
           </div>
@@ -147,7 +149,7 @@ export default function AdminReportsPage() {
               <div className="font-headline-h1 text-headline-h1 text-on-surface">{loading ? '...' : analytics?.overview.activeUsers.toLocaleString()}</div>
               <div className="flex items-center gap-xs mt-xs text-[#16a34a] font-body-sm text-body-sm">
                 <span className="material-symbols-outlined text-[14px]" data-icon="trending_up">trending_up</span>
-                <span>+2.1% so với tháng trước</span>
+                <span>Dữ liệu hoạt động hiện tại</span>
               </div>
             </div>
           </div>
@@ -158,9 +160,9 @@ export default function AdminReportsPage() {
               <span className="material-symbols-outlined text-tertiary" data-icon="task_alt">task_alt</span>
             </div>
             <div>
-              <div className="font-headline-h1 text-headline-h1 text-on-surface">{loading ? '...' : Math.round((analytics?.overview.passRate || 0)*100)}%</div>
+              <div className="font-headline-h1 text-headline-h1 text-on-surface">{loading ? '...' : Math.round(completionRate)}%</div>
               <div className="w-full bg-surface-container-high h-2 rounded-full mt-sm overflow-hidden">
-                <div className="bg-tertiary h-full rounded-full" style={{ width: `${Math.round((analytics?.overview.passRate || 0)*100)}%` }}></div>
+                <div className="bg-tertiary h-full rounded-full" style={{ width: `${completionRate}%` }}></div>
               </div>
             </div>
           </div>
@@ -171,11 +173,8 @@ export default function AdminReportsPage() {
               <span className="material-symbols-outlined text-primary-container" data-icon="school">school</span>
             </div>
             <div>
-              <div className="font-headline-h1 text-headline-h1 text-on-surface">7.8<span className="text-headline-h3 text-on-surface-variant">/10</span></div>
-              <div className="flex items-center gap-xs mt-xs text-[#dc2626] font-body-sm text-body-sm">
-                <span className="material-symbols-outlined text-[14px]" data-icon="trending_down">trending_down</span>
-                <span>-0.1 so với tháng trước</span>
-              </div>
+              <div className="font-headline-h1 text-headline-h1 text-on-surface">{loading ? '...' : ((analytics?.overview.averageScore ?? 0) / 10).toFixed(1)}<span className="text-headline-h3 text-on-surface-variant">/10</span></div>
+              <div className="mt-xs font-body-sm text-body-sm text-on-surface-variant">Tính từ các lượt thi thực tế</div>
             </div>
           </div>
         </div>
@@ -190,15 +189,7 @@ export default function AdminReportsPage() {
             </div>
             <div className="flex-1 relative w-full h-[300px] flex items-end">
               <div className="flex items-end justify-between gap-3 h-full w-full px-2">
-                {(analytics?.weeklyActivity ?? [
-                  { day: 'T2', studyHours: 42, activeUsers: 28 },
-                  { day: 'T3', studyHours: 58, activeUsers: 35 },
-                  { day: 'T4', studyHours: 65, activeUsers: 40 },
-                  { day: 'T5', studyHours: 72, activeUsers: 46 },
-                  { day: 'T6', studyHours: 85, activeUsers: 52 },
-                  { day: 'T7', studyHours: 94, activeUsers: 59 },
-                  { day: 'CN', studyHours: 76, activeUsers: 48 },
-                ]).map((item) => {
+                {(analytics?.weeklyActivity ?? []).map((item) => {
                   const heightPercent = Math.round((item.studyHours / (maxWeeklyHours || 100)) * 100);
                   return (
                     <div key={item.day} className="flex-1 flex flex-col items-center gap-1.5 group h-full justify-end">
@@ -254,13 +245,12 @@ export default function AdminReportsPage() {
             </div>
             <div className="flex-1 relative w-full h-[300px]">
               <div className="flex items-end justify-between gap-6 h-full w-full px-2 pt-6">
-                 {['AWS Architect', 'Azure Fund.', 'CompTIA Sec+', 'CCNA', 'CISSP', 'GCP Data Eng'].map((label, i) => {
-                    const scores = [7.2, 8.5, 7.8, 6.9, 8.1, 7.5];
-                    const heightPercent = Math.round((scores[i] / 10) * 100);
+                 {analytics && [{ label: 'Toàn hệ thống', score: (analytics.overview.averageScore ?? 0) / 10 }].map(({ label, score }) => {
+                    const heightPercent = Math.round((score / 10) * 100);
                     return (
                       <div key={label} className="flex-1 flex flex-col items-center gap-2 group h-full justify-end">
                         <span className="text-xs font-bold text-on-surface opacity-0 group-hover:opacity-100 transition-opacity">
-                          {scores[i]}
+                          {score.toFixed(1)}
                         </span>
                         <div className="w-full bg-surface-container h-[80%] flex items-end">
                           <div

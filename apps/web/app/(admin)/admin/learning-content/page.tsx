@@ -77,7 +77,7 @@ function validateForm(form: FormState): FormErrors {
 
 function SkeletonCard() {
   return (
-    <div className="rounded-2xl border border-outline-variant/30 bg-surface-container-low p-5 space-y-3 animate-pulse">
+    <div className="rounded-2xl border border-outline-variant/50 bg-surface-container-lowest p-5 space-y-3 animate-pulse">
       <div className="h-5 w-2/3 rounded bg-outline-variant/20" />
       <div className="h-3 w-1/4 rounded bg-outline-variant/20" />
       <div className="h-4 w-full rounded bg-outline-variant/20" />
@@ -513,7 +513,7 @@ export default function AdminLearningContentPage() {
         <select
           value={status}
           onChange={(e) => { setStatus(e.target.value); setPage(1); }}
-          className="rounded-xl border border-outline-variant/60 bg-surface-container-low px-3 py-2 text-sm text-on-surface focus:outline-none"
+          className="rounded-xl border border-outline-variant/60 bg-surface-container-lowest px-3 py-2 text-sm text-on-surface focus:outline-none"
         >
           {STATUSES.map((s) => <option key={s.value} value={s.value}>{s.label}</option>)}
         </select>
@@ -544,7 +544,7 @@ export default function AdminLearningContentPage() {
           </div>
         ) : (
           items.map((v) => (
-            <div key={v.id} className="rounded-2xl border border-outline-variant/30 bg-surface-container-low p-5 hover:shadow-sm transition-shadow flex flex-col justify-between">
+            <div key={v.id} className="rounded-2xl border border-outline-variant/50 bg-surface-container-lowest p-5 shadow-[0_8px_28px_rgba(15,23,42,0.035)] hover:shadow-md transition-shadow flex flex-col justify-between">
               <div>
                 {/* Header */}
                 <div className="flex items-start justify-between gap-2">

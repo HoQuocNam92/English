@@ -244,6 +244,66 @@ body {
   min-height: 100%;
 }
 
+/* Admin references use one 32px canvas gutter. Pages that already provide their
+   own full-page canvas opt out automatically, preventing the old double gutter. */
+.admin-canvas {
+  padding: 36px;
+  background:
+    radial-gradient(circle at 100% 0%, rgba(79, 70, 229, 0.045), transparent 28rem),
+    var(--background);
+}
+
+.admin-canvas > main {
+  margin: 0;
+  padding: 0 !important;
+  max-width: none;
+}
+
+.admin-canvas > .p-6,
+.admin-canvas > .p-margin {
+  padding: 0 !important;
+}
+
+@media (max-width: 767px) {
+  .admin-canvas { padding: 16px; }
+  .admin-canvas > main { margin: 0; }
+}
+
+.admin-canvas table tbody tr {
+  border-color: color-mix(in srgb, var(--outline-variant) 52%, transparent);
+}
+
+.admin-canvas table tbody tr:hover {
+  background-color: color-mix(in srgb, var(--primary) 3%, var(--surface-container-lowest));
+}
+
+/* Unified admin surfaces: content cards are white and separated by elevation,
+   not by the heavy grey outlines from the raw reference export. */
+.admin-canvas div.rounded-xl.border,
+.admin-canvas div.rounded-2xl.border {
+  border-color: transparent;
+  box-shadow: 0 8px 28px rgba(15, 23, 42, 0.045);
+}
+
+.admin-canvas div.rounded-xl.bg-surface-container-low,
+.admin-canvas div.rounded-2xl.bg-surface-container-low {
+  background-color: var(--surface-container-lowest);
+}
+
+/* Legacy page-local dialogs must not be allowed to collapse as flex items.
+   New dialogs use the shared body portal, this keeps every existing add/edit
+   popup usable until it is migrated. */
+.admin-canvas .fixed.inset-0.items-center.justify-center > div {
+  flex-shrink: 0 !important;
+  min-width: min(440px, calc(100vw - 32px));
+}
+
+@media (max-width: 520px) {
+  .admin-canvas .fixed.inset-0.items-center.justify-center > div {
+    min-width: calc(100vw - 32px);
+  }
+}
+
 body {
   margin: 0;
   background-color: var(--background);
@@ -273,7 +333,6 @@ body {
 }
 
 a {
-  color: inherit;
   text-decoration: none;
 }
 
@@ -341,4 +400,30 @@ a {
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.06em;
+}
+
+.landing-difference-card {
+  position: sticky;
+  overflow: hidden;
+  box-shadow: 0 -8px 32px -16px rgb(15 23 42 / 8%), 0 18px 45px rgb(15 23 42 / 12%);
+  transition: transform 400ms cubic-bezier(.2, .8, .2, 1), filter 400ms ease;
+}
+.landing-difference-card:first-child { top: 80px; z-index: 1; }
+.landing-difference-card:nth-child(2) { top: 96px; z-index: 2; }
+.landing-difference-card:nth-child(3) { top: 112px; z-index: 3; }
+
+@supports (animation-timeline: view()) {
+  .landing-difference-card {
+    animation: landing-difference-recede linear both;
+    animation-timeline: view();
+    animation-range: exit 0 exit 90%;
+  }
+  @keyframes landing-difference-recede {
+    to { transform: scale(.97); filter: saturate(.85) brightness(.97); }
+  }
+}
+
+@media (max-width: 720px) {
+  .landing-difference-card { position: relative; top: auto !important; }
+  .landing-difference-card:nth-child(2) { margin-top: 0; }
 }

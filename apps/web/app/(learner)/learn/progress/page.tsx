@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { LearnerShell } from '@/shared/layout';
 import { apiClient } from '@/shared/api/api-client';
+import { LoadingSpinner } from '@/shared/ui';
 
 export default function LearnerPersonalProgressPage() {
   const [data, setData] = useState<any>({ progress: null, profile: null });
@@ -30,7 +31,7 @@ export default function LearnerPersonalProgressPage() {
     loadData();
   }, []);
 
-  if (loading) return <LearnerShell><div className="p-8 text-center"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto"></div></div></LearnerShell>;
+  if (loading) return <LearnerShell><LoadingSpinner /></LearnerShell>;
   if (error) return <LearnerShell><div className="p-8 text-center text-error">{error}</div></LearnerShell>;
 
   const { progress, profile } = data;
@@ -46,7 +47,7 @@ export default function LearnerPersonalProgressPage() {
         <div>
           <h2 className="text-2xl font-bold text-on-surface tracking-tight">Báo cáo Năng lực & Tiến độ Cá nhân</h2>
           <p className="text-sm text-on-surface-variant mt-1">
-            Theo dõi sự tiến bộ, tỷ lệ ghi nhớ thuật ngữ và mức độ sẵn sàng thi chứng chỉ quốc tế.
+            Theo dõi sự tiến bộ, tỷ lệ ghi nhớ thuật ngữ và kết quả học tập của bạn.
           </p>
         </div>
 

@@ -3,8 +3,10 @@
 import * as React from 'react';
 import Link from 'next/link';
 import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { LearnerShell } from '@/shared/layout';
 import { apiClient } from '@/shared/api/api-client';
+import { LoadingSpinner } from '@/shared/ui';
 
 // ─── Section Renderer ──────────────────────────────────────────────────────────
 function renderSectionContent(sec: any) {
@@ -107,16 +109,24 @@ export default function LearnerLessonDetailPage({ params }: { params: Promise<{ 
   const unwrappedParams = React.use(params);
   const lessonId = unwrappedParams.id;
 
+  const router = useRouter();
   const [lesson, setLesson] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [marked, setMarked] = useState(false);
+  const [allLessons, setAllLessons] = useState<any[]>([]);
+  const [activeSectionIndex, setActiveSectionIndex] = useState(0);
 
   useEffect(() => {
     async function fetchLesson() {
       try {
-        const res = await apiClient.get(`/lessons/${lessonId}`);
+        const [res, listRes] = await Promise.all<any>([
+          apiClient.get(`/lessons/${lessonId}`),
+          apiClient.get('/lessons?status=published&limit=200'),
+        ]);
         setLesson(res);
+        const listData = listRes?.data ?? listRes ?? [];
+        setAllLessons(Array.isArray(listData) ? listData : []);
       } catch {
         setError('Không thể tải bài học. Vui lòng thử lại.');
       } finally {
@@ -124,25 +134,25 @@ export default function LearnerLessonDetailPage({ params }: { params: Promise<{ 
       }
     }
     if (lessonId) fetchLesson();
+    setActiveSectionIndex(0);
   }, [lessonId]);
 
   const markComplete = async () => {
     try {
       await apiClient.post(`/progress/mark-lesson/${lessonId}`, {});
       setMarked(true);
+      setActiveSectionIndex(Math.max(sections.length - 1, 0));
     } catch {
       alert('Không thể đánh dấu hoàn thành.');
     }
   };
 
-  if (loading)
-    return (
-      <LearnerShell>
-        <div className="flex items-center justify-center h-64">
-          <div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin" />
-        </div>
-      </LearnerShell>
-    );
+  if (loading) return <LearnerShell><LoadingSpinner /></LearnerShell>;
+
+  const sortedLessons = [...allLessons].sort((a, b) => new Date(a.createdAt ?? 0).getTime() - new Date(b.createdAt ?? 0).getTime());
+  const currentLessonIdx = sortedLessons.findIndex((l) => l.id === lessonId);
+  const prevLesson = currentLessonIdx > 0 ? sortedLessons[currentLessonIdx - 1] : null;
+  const nextLesson = currentLessonIdx >= 0 && currentLessonIdx < sortedLessons.length - 1 ? sortedLessons[currentLessonIdx + 1] : null;
 
   if (error || !lesson)
     return (
@@ -163,7 +173,9 @@ export default function LearnerLessonDetailPage({ params }: { params: Promise<{ 
 
   const levelBadge = lesson.level?.name ?? lesson.level?.code ?? 'Intermediate';
   const domainBadge = lesson.domain?.name ?? lesson.domain?.code ?? 'Software Engineering';
-  const progressVal = 35; // Example progress
+  const progressVal = marked ? 100 : sections.length ? Math.round(((activeSectionIndex + 1) / sections.length) * 100) : 0;
+  const activeSection = sections[activeSectionIndex];
+  const sectionTitle = (section: any, index: number) => section?.title || section?.content?.heading || section?.content?.title || section?.content?.text?.slice(0, 55) || `Nội dung phần ${index + 1}`;
 
   return (
     <LearnerShell>
@@ -210,10 +222,8 @@ export default function LearnerLessonDetailPage({ params }: { params: Promise<{ 
           {/* Learning Canvas (Ambient Card) */}
           <div className="bg-surface-container-lowest border border-outline-variant rounded-xl p-6 md:p-8 mt-4 hover:shadow-[0_4px_12px_rgba(15,23,24,0.08)] transition-all">
             <div className="learning-content">
-              {sections.length > 0 ? (
-                sections.map((sec: any, idx: number) => (
-                  <div key={sec.id ?? idx}>{renderSectionContent(sec)}</div>
-                ))
+              {activeSection ? (
+                <div key={activeSection.id ?? activeSectionIndex}>{renderSectionContent(activeSection)}</div>
               ) : (
                 <>
                   <h2 className="text-[24px] font-bold text-on-surface mt-[2.5rem] mb-[1rem]" style={{ lineHeight: '1.4' }}>What is an API?</h2>
@@ -234,20 +244,30 @@ export default function LearnerLessonDetailPage({ params }: { params: Promise<{ 
 
           {/* Bottom Navigation (Lesson context) */}
           <div className="flex justify-between items-center mt-8 border-t border-outline-variant pt-6">
-            <button className="flex items-center gap-2 px-4 py-2 border border-outline-variant rounded-lg text-on-surface hover:bg-surface-container-low transition-colors font-semibold text-[14px] group">
-              <span className="material-symbols-outlined text-on-surface-variant group-hover:text-primary transition-colors">arrow_back</span>
-              <div>
-                <div className="text-[12px] text-on-surface-variant text-left">Bài trước</div>
-                <div>HTTP Basics</div>
-              </div>
-            </button>
-            <button className="flex items-center gap-2 px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary/90 transition-colors font-semibold text-[14px] group">
-              <div className="text-right">
-                <div className="text-[12px] text-white/80">Tiếp theo</div>
-                <div>JSON Data Structures</div>
-              </div>
-              <span className="material-symbols-outlined text-white">arrow_forward</span>
-            </button>
+            {prevLesson ? (
+              <button
+                onClick={() => router.push(`/learn/lessons/${prevLesson.id}`)}
+                className="flex items-center gap-2 px-4 py-2 border border-outline-variant rounded-lg text-on-surface hover:bg-surface-container-low transition-colors font-semibold text-[14px] group"
+              >
+                <span className="material-symbols-outlined text-on-surface-variant group-hover:text-primary transition-colors">arrow_back</span>
+                <div>
+                  <div className="text-[12px] text-on-surface-variant text-left">Bài trước</div>
+                  <div className="line-clamp-1 max-w-[180px]">{prevLesson.title}</div>
+                </div>
+              </button>
+            ) : <div />}
+            {nextLesson ? (
+              <button
+                onClick={() => router.push(`/learn/lessons/${nextLesson.id}`)}
+                className="flex items-center gap-2 px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary/90 transition-colors font-semibold text-[14px] group"
+              >
+                <div className="text-right">
+                  <div className="text-[12px] text-white/80">Tiếp theo</div>
+                  <div className="line-clamp-1 max-w-[180px]">{nextLesson.title}</div>
+                </div>
+                <span className="material-symbols-outlined text-white">arrow_forward</span>
+              </button>
+            ) : <div />}
           </div>
 
         </div>
@@ -278,47 +298,20 @@ export default function LearnerLessonDetailPage({ params }: { params: Promise<{ 
                 <h3 className="font-semibold text-[14px] text-on-surface">Nội dung bài học</h3>
               </div>
               <div className="flex flex-col">
-                <a className="flex items-start gap-2 p-4 hover:bg-surface-container-low transition-colors border-l-2 border-transparent" href="#">
-                  <span className="material-symbols-outlined text-green-600 text-[20px] mt-[2px]" style={{ fontVariationSettings: "'FILL' 1" }}>check_circle</span>
-                  <div>
-                    <div className="text-[12px] text-on-surface-variant">Phần 1</div>
-                    <div className="font-semibold text-[14px] text-on-surface">What is an API?</div>
-                  </div>
-                </a>
-                <a className="flex items-start gap-2 p-4 bg-primary/10 border-l-2 border-primary transition-colors" href="#">
-                  <span className="material-symbols-outlined text-primary text-[20px] mt-[2px]" style={{ fontVariationSettings: "'FILL' 1" }}>play_circle</span>
-                  <div>
-                    <div className="text-[12px] text-primary">Phần 2</div>
-                    <div className="font-semibold text-[14px] text-primary">The Fundamentals of REST</div>
-                  </div>
-                </a>
-                <a className="flex items-start gap-2 p-4 hover:bg-surface-container-low transition-colors border-l-2 border-transparent opacity-70" href="#">
-                  <span className="material-symbols-outlined text-outline text-[20px] mt-[2px]">lock</span>
-                  <div>
-                    <div className="text-[12px] text-on-surface-variant">Phần 3</div>
-                    <div className="font-semibold text-[14px] text-on-surface">Endpoints & Methods</div>
-                  </div>
-                </a>
-                <a className="flex items-start gap-2 p-4 hover:bg-surface-container-low transition-colors border-l-2 border-transparent opacity-70" href="#">
-                  <span className="material-symbols-outlined text-outline text-[20px] mt-[2px]">lock</span>
-                  <div>
-                    <div className="text-[12px] text-on-surface-variant">Phần 4</div>
-                    <div className="font-semibold text-[14px] text-on-surface">Quiz: API Vocabulary</div>
-                  </div>
-                </a>
+                {sections.map((section, index) => {
+                  const active = index === activeSectionIndex;
+                  const visited = index < activeSectionIndex || marked;
+                  return <button key={section.id ?? index} type="button" onClick={() => setActiveSectionIndex(index)} className={`flex items-start gap-2 border-l-2 p-4 text-left transition-colors ${active ? 'border-primary bg-primary/10' : 'border-transparent hover:bg-surface-container-low'}`}>
+                    <span className={`material-symbols-outlined mt-[2px] text-[20px] ${active ? 'text-primary' : visited ? 'text-green-600' : 'text-on-surface-variant'}`} style={{ fontVariationSettings: "'FILL' 1" }}>{active ? 'play_circle' : visited ? 'check_circle' : 'radio_button_unchecked'}</span>
+                    <div><div className={`text-[12px] ${active ? 'text-primary' : 'text-on-surface-variant'}`}>Phần {index + 1}</div><div className={`font-semibold text-[14px] ${active ? 'text-primary' : 'text-on-surface'}`}>{sectionTitle(section, index)}</div></div>
+                  </button>;
+                })}
+                {!sections.length && <p className="p-4 text-sm text-on-surface-variant">Bài học chưa chia thành từng phần.</p>}
               </div>
-            </div>
-
-            {/* AI Context Widget */}
-            <div className="border border-secondary bg-secondary/10 rounded-xl p-4">
-              <div className="flex items-center gap-2 mb-2">
-                <span className="material-symbols-outlined text-secondary">psychology</span>
-                <span className="font-bold text-[12px] uppercase tracking-[0.05em] text-secondary">AI ASSISTANT</span>
-              </div>
-              <p className="text-[12px] text-on-surface-variant">
-                Bạn đang gặp khó khăn với thuật ngữ <span className="font-mono text-primary">Endpoint</span>? 
-              </p>
-              <button className="mt-2 text-secondary font-semibold text-[14px] hover:underline">Xem giải thích đơn giản hơn</button>
+              {sections.length > 1 && <div className="flex gap-2 border-t border-outline-variant p-3">
+                <button type="button" disabled={activeSectionIndex === 0} onClick={() => setActiveSectionIndex(index => Math.max(0, index - 1))} className="flex-1 rounded-lg border border-outline-variant px-2 py-2 text-xs font-semibold disabled:opacity-40">Phần trước</button>
+                <button type="button" disabled={activeSectionIndex === sections.length - 1} onClick={() => setActiveSectionIndex(index => Math.min(sections.length - 1, index + 1))} className="flex-1 rounded-lg bg-primary px-2 py-2 text-xs font-semibold text-white disabled:opacity-40">Phần sau</button>
+              </div>}
             </div>
 
           </div>

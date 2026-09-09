@@ -51,9 +51,12 @@ export class NotificationController {
     
     const notifications = await this.prisma.notification.findMany({
       where: {
-        OR: [
+        AND: [
+          { OR: [
           { userId: user.sub },
           { userId: null }, // broadcast
+          ] },
+          ...(unreadOnly === 'true' ? [{ isRead: false }] : []),
         ],
       },
       orderBy: { createdAt: 'desc' },

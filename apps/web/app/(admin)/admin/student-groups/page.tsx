@@ -11,8 +11,8 @@ interface StudentGroupItem {
   code: string;
   description: string | null;
   status: string;
-  startDate: string | null;
-  endDate: string | null;
+  startsAt: string | null;
+  endsAt: string | null;
   teacher?: { userDetail: { displayName: string } | null; email: string } | null;
   domain?: { code: string; name: string } | null;
   certificate?: { code: string; name: string } | null;
@@ -199,20 +199,20 @@ export default function AdminStudentGroupsPage() {
       <div className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-5">
         {loading ? (
           Array.from({ length: 4 }).map((_, i) => (
-            <div key={i} className="rounded-2xl border border-outline-variant/30 bg-surface-container-low p-5 space-y-3 animate-pulse">
+            <div key={i} className="rounded-2xl bg-surface-container-lowest p-5 space-y-3 shadow-[0_8px_28px_rgba(15,23,42,0.05)] animate-pulse">
               <div className="h-5 w-2/3 rounded bg-outline-variant/20" />
               <div className="h-4 w-full rounded bg-outline-variant/10" />
               <div className="h-8 w-full rounded bg-outline-variant/10" />
             </div>
           ))
         ) : groups.length === 0 ? (
-          <div className="col-span-full py-16 text-center bg-surface-container-low rounded-2xl border border-outline-variant/30">
+          <div className="col-span-full py-16 text-center bg-surface-container-lowest rounded-2xl shadow-[0_8px_28px_rgba(15,23,42,0.05)]">
             <span className="material-symbols-outlined text-[48px] text-outline mb-3 block">groups</span>
             <p className="text-sm text-on-surface-variant">Không tìm thấy nhóm học viên nào</p>
           </div>
         ) : (
           groups.map((grp) => (
-            <div key={grp.id} className="rounded-2xl border border-outline-variant/30 bg-surface-container-low p-5 flex flex-col justify-between hover:shadow-sm transition-all">
+            <div key={grp.id} className="rounded-2xl bg-surface-container-lowest p-5 flex flex-col justify-between shadow-[0_8px_28px_rgba(15,23,42,0.05)] hover:shadow-md transition-all">
               <div>
                 <div className="flex items-start justify-between gap-2 mb-2">
                   <div>
@@ -270,10 +270,10 @@ export default function AdminStudentGroupsPage() {
               {/* Dates */}
               <div className="mt-4 pt-3 border-t border-outline-variant/20 flex items-center justify-between text-[11px] text-on-surface-variant">
                 <span>
-                  Bắt đầu: {grp.startDate ? new Date(grp.startDate).toLocaleDateString('vi-VN') : '—'}
+                  Bắt đầu: {grp.startsAt ? new Date(grp.startsAt).toLocaleDateString('vi-VN') : '—'}
                 </span>
                 <span>
-                  Kết thúc: {grp.endDate ? new Date(grp.endDate).toLocaleDateString('vi-VN') : '—'}
+                  Kết thúc: {grp.endsAt ? new Date(grp.endsAt).toLocaleDateString('vi-VN') : '—'}
                 </span>
               </div>
             </div>

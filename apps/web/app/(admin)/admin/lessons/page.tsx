@@ -1,6 +1,7 @@
 'use client';
 
 import * as React from 'react';
+import Link from 'next/link';
 import { PageHeader, SearchInput } from '@/shared/ui';
 import { apiClient, ApiClientError } from '@/shared/api/api-client';
 import type { LessonItem, PaginatedResponse } from '@/shared/api/api-client';
@@ -66,9 +67,18 @@ export default function AdminLessonsPage() {
 
   React.useEffect(() => { void load(); }, [load]);
 
+  const removeLesson = async (lesson: LessonItem) => {
+    if (!window.confirm(`Xóa bài học “${lesson.title}”? Hành động này không thể hoàn tác.`)) return;
+    try { await apiClient.delete(`/lessons/${lesson.id}`); await load(); }
+    catch (e) { setError(e instanceof ApiClientError ? e.message : 'Không thể xóa bài học'); }
+  };
+
   return (
     <div>
-      <PageHeader title="Quản lý bài học" description="Toàn bộ bài giảng và học liệu trên toàn hệ thống" />
+      <div className="flex items-start justify-between gap-4">
+        <PageHeader title="Quản lý bài học" description="Toàn bộ bài giảng và học liệu trên toàn hệ thống" />
+        <Link href="/admin/lessons/editor" className="inline-flex shrink-0 items-center gap-2 rounded-xl bg-primary px-4 py-2.5 text-sm font-semibold !text-white shadow-sm"><span className="material-symbols-outlined text-[19px]">add</span>Thêm bài học</Link>
+      </div>
 
       {/* Filters */}
       <div className="mt-6 flex flex-col sm:flex-row gap-3">
@@ -85,7 +95,7 @@ export default function AdminLessonsPage() {
         <select
           value={status}
           onChange={(e) => { setStatus(e.target.value); setPage(1); }}
-          className="rounded-xl border border-outline-variant/60 bg-surface-container-low px-3 py-2 text-sm text-on-surface focus:outline-none"
+          className="rounded-xl border border-outline-variant/60 bg-surface-container-lowest px-3 py-2 text-sm text-on-surface focus:outline-none"
         >
           {STATUSES.map((s) => (
             <option key={s.value} value={s.value}>{s.label}</option>
@@ -108,17 +118,18 @@ export default function AdminLessonsPage() {
       )}
 
       {/* Table */}
-      <div className="mt-4 rounded-2xl bg-surface-container-low border border-outline-variant/30 overflow-hidden">
+      <div className="mt-4 rounded-2xl bg-surface-container-lowest border border-outline-variant/50 overflow-hidden shadow-[0_8px_28px_rgba(15,23,42,0.04)]">
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
-              <tr className="border-b border-outline-variant/30 text-xs text-on-surface-variant bg-surface-container/50">
+              <tr className="border-b border-outline-variant/30 text-xs text-on-surface-variant bg-surface-container-low/65">
                 <th className="px-4 py-3 text-left font-medium">Tiêu đề bài giảng</th>
                 <th className="px-4 py-3 text-left font-medium">Loại bài</th>
                 <th className="px-4 py-3 text-left font-medium">Lĩnh vực</th>
                 <th className="px-4 py-3 text-left font-medium">Cấp độ</th>
                 <th className="px-4 py-3 text-left font-medium">Người tạo</th>
                 <th className="px-4 py-3 text-left font-medium">Trạng thái</th>
+                <th className="px-4 py-3 text-right font-medium">Thao tác</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-outline-variant/20">
@@ -134,7 +145,7 @@ export default function AdminLessonsPage() {
                 ))
               ) : lessons.length === 0 ? (
                 <tr>
-                  <td colSpan={6} className="py-16 text-center">
+                  <td colSpan={7} className="py-16 text-center">
                     <span className="material-symbols-outlined text-[40px] text-outline mb-2 block">auto_stories</span>
                     <p className="text-on-surface-variant text-sm">Không tìm thấy bài học nào</p>
                   </td>
@@ -157,6 +168,7 @@ export default function AdminLessonsPage() {
                       {lesson.createdBy?.userDetail?.displayName ?? 'Hệ thống'}
                     </td>
                     <td className="px-4 py-3"><StatusBadge status={lesson.status} /></td>
+                    <td className="px-4 py-3"><div className="flex justify-end gap-1"><Link href={`/admin/lessons/editor?id=${lesson.id}`} title="Sửa bài học" className="rounded-lg p-2 text-primary hover:bg-primary/10"><span className="material-symbols-outlined text-[18px]">edit</span></Link><button type="button" title="Xóa bài học" onClick={() => void removeLesson(lesson)} className="rounded-lg p-2 text-error hover:bg-error-container"><span className="material-symbols-outlined text-[18px]">delete</span></button></div></td>
                   </tr>
                 ))
               )}

@@ -11,37 +11,38 @@ interface LevelOption {
   name: string;
   tag: string;
   desc: string;
-  icon: keyof typeof MaterialIcons.glyphMap;
 }
 
 const levels: LevelOption[] = [
   {
     id: 'beginner',
     name: 'Beginner',
-    tag: 'A1 - A2',
-    desc: 'Mới bắt đầu, cần xây dựng nền tảng từ vựng IT cơ bản và ngữ pháp nhập môn.',
-    icon: 'school'
+    tag: '(Mới bắt đầu)',
+    desc: 'Chưa có nền tảng tiếng Anh hoặc mất gốc hoàn toàn.',
+  },
+  {
+    id: 'elementary',
+    name: 'Elementary',
+    tag: '(Sơ cấp)',
+    desc: 'Đọc được từ vựng IT cơ bản, câu tài liệu đơn giản.',
   },
   {
     id: 'intermediate',
     name: 'Intermediate',
-    tag: 'B1 - B2',
-    desc: 'Đã có thể đọc tài liệu kỹ thuật, cần nâng cao kỹ năng đọc hiểu API & viết pull request.',
-    icon: 'menu-book'
+    tag: '(Trung cấp)',
+    desc: 'Đọc hiểu tài liệu kỹ thuật, API docs nhưng thỉnh thoảng vẫn cần tra từ.',
+  },
+  {
+    id: 'upper_intermediate',
+    name: 'Upper Intermediate',
+    tag: '(Khá)',
+    desc: 'Tự tin giao tiếp kỹ thuật, đọc hiểu RFC, spec chuyên sâu.',
   },
   {
     id: 'advanced',
     name: 'Advanced',
-    tag: 'C1',
-    desc: 'Thành thạo tiếng Anh nói chung, cần đọc hiểu System Design & kiến trúc phân tán.',
-    icon: 'architecture'
-  },
-  {
-    id: 'professional',
-    name: 'Professional',
-    tag: 'C2 / Specialist',
-    desc: 'Luyện thi chứng chỉ quốc tế cấp cao (AWS SAA, CompTIA) và xử lý case study thực tế.',
-    icon: 'workspace-premium'
+    tag: '(Thành thạo)',
+    desc: 'Tự tin thảo luận kiến trúc hệ thống, tự tin phỏng vấn quốc tế.',
   }
 ];
 
@@ -58,17 +59,35 @@ export default function OnboardingLevelScreen() {
   return (
     <View style={styles.container}>
       <StatusBar style="dark" />
-      <ScrollView contentContainerStyle={styles.scrollContent}>
+      
+      {/* Top Bar Header */}
+      <View style={styles.headerBar}>
+        <TouchableOpacity style={styles.iconButton} onPress={() => router.back()}>
+          <MaterialIcons name="arrow-back" size={24} color={colors.text} />
+        </TouchableOpacity>
+        <View style={styles.logoTitle}>
+          <MaterialIcons name="terminal" size={20} color={colors.primary} />
+          <Text style={styles.logoText}>TechEnglish Pro</Text>
+        </View>
+        <TouchableOpacity>
+          <Text style={styles.skipButtonText}>Bỏ qua</Text>
+        </TouchableOpacity>
+      </View>
+
+      <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
         {/* Progress header */}
         <View style={styles.progressHeader}>
-          <Text style={styles.stepIndicator}>Bước 1 / 4</Text>
+          <View style={styles.progressHeaderRow}>
+            <Text style={styles.stepIndicator}>BƯỚC 1/4</Text>
+            <Text style={styles.progressPercent}>25%</Text>
+          </View>
           <View style={styles.progressBar}>
             <View style={[styles.progressFill, { width: '25%' }]} />
           </View>
         </View>
 
-        <Text style={styles.title}>Trình độ hiện tại của bạn?</Text>
-        <Text style={styles.subtitle}>Giúp hệ thống cá nhân hóa bài học và ngân hàng câu hỏi phù hợp nhất với bạn.</Text>
+        <Text style={styles.title}>Trình độ tiếng Anh của bạn?</Text>
+        <Text style={styles.subtitle}>Chọn mức độ phù hợp nhất để TechEnglish cá nhân hóa lộ trình học tiếng Anh CNTT.</Text>
 
         <View style={styles.optionsList}>
           {levels.map((lvl) => {
@@ -80,15 +99,18 @@ export default function OnboardingLevelScreen() {
                 onPress={() => setSelectedLevel(lvl.id)}
                 activeOpacity={0.8}
               >
-                <View style={[styles.iconBox, isSelected && styles.iconBoxSelected]}>
-                  <MaterialIcons name={lvl.icon} size={24} color={isSelected ? colors.primary : colors.mutedText} />
+                <View style={styles.radioOuter}>
+                  {isSelected && <View style={styles.radioInner} />}
                 </View>
                 <View style={styles.optionContent}>
                   <View style={styles.titleRow}>
                     <Text style={[styles.levelName, isSelected && styles.levelNameSelected]}>{lvl.name}</Text>
-                    <View style={styles.tagBadge}>
-                      <Text style={styles.tagText}>{lvl.tag}</Text>
-                    </View>
+                    <Text style={[styles.tagText, isSelected && styles.tagTextSelected]}>{lvl.tag}</Text>
+                    {isSelected && (
+                      <View style={{ marginLeft: 'auto' }}>
+                        <MaterialIcons name="check-circle" size={18} color={colors.primary} />
+                      </View>
+                    )}
                   </View>
                   <Text style={styles.levelDesc}>{lvl.desc}</Text>
                 </View>
@@ -96,6 +118,21 @@ export default function OnboardingLevelScreen() {
             );
           })}
         </View>
+
+        {/* Quick AI Placement Test Banner */}
+        <View style={styles.aiBanner}>
+          <View style={styles.aiIconBox}>
+            <MaterialIcons name="auto-awesome" size={20} color="#ffffff" />
+          </View>
+          <View style={styles.aiContent}>
+            <Text style={styles.aiTitle}>Chưa chắc chắn trình độ?</Text>
+            <Text style={styles.aiDesc}>Làm bài test nhanh 3 phút phân loại chuẩn Dev.</Text>
+          </View>
+          <TouchableOpacity>
+            <Text style={styles.aiTestLink}>Test ngay</Text>
+          </TouchableOpacity>
+        </View>
+
       </ScrollView>
 
       {/* Bottom Action */}
@@ -110,31 +147,119 @@ export default function OnboardingLevelScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#f8fafc' },
-  scrollContent: { padding: spacing.lg, paddingTop: 50, paddingBottom: 100 },
-  progressHeader: { marginBottom: spacing.lg },
-  stepIndicator: { fontSize: 12, fontWeight: '700', color: colors.primary, marginBottom: spacing.xs },
-  progressBar: { height: 4, backgroundColor: '#e2e8f0', borderRadius: 2 },
-  progressFill: { height: 4, backgroundColor: colors.primary, borderRadius: 2 },
-  title: { fontSize: 22, fontWeight: '800', color: colors.text, marginBottom: spacing.xs },
-  subtitle: { fontSize: 13, color: colors.mutedText, marginBottom: spacing.lg, lineHeight: 18 },
-  optionsList: { gap: spacing.md },
-  optionCard: {
-    backgroundColor: '#ffffff', borderRadius: 14, padding: spacing.md,
-    borderWidth: 1.5, borderColor: '#e2e8f0', flexDirection: 'row', alignItems: 'flex-start', gap: spacing.md
+  container: { flex: 1, backgroundColor: '#ffffff' },
+  headerBar: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: spacing.lg,
+    paddingTop: 50,
+    paddingBottom: spacing.sm,
+    backgroundColor: '#ffffff'
   },
-  optionCardSelected: { borderColor: colors.primary, backgroundColor: '#f5f3ff' },
-  iconBox: { width: 44, height: 44, borderRadius: 12, backgroundColor: '#f1f5f9', alignItems: 'center', justifyContent: 'center' },
-  iconBoxSelected: { backgroundColor: '#ede9fe' },
+  iconButton: {
+    width: 40, height: 40,
+    alignItems: 'center', justifyContent: 'center',
+    borderRadius: 20,
+  },
+  logoTitle: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4
+  },
+  logoText: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#191c1e',
+    letterSpacing: -0.2
+  },
+  skipButtonText: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: colors.outline
+  },
+  scrollContent: { padding: spacing.lg, paddingTop: spacing.xs, paddingBottom: 100 },
+  progressHeader: { marginBottom: spacing.md },
+  progressHeaderRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginBottom: spacing.xs
+  },
+  stepIndicator: { fontSize: 12, fontWeight: '700', color: colors.primary, letterSpacing: 0.5 },
+  progressPercent: { fontSize: 12, fontWeight: '500', color: colors.outline },
+  progressBar: { height: 8, backgroundColor: '#e6e8ea', borderRadius: 4 },
+  progressFill: { height: 8, backgroundColor: colors.primary, borderRadius: 4 },
+  title: { fontSize: 24, fontWeight: '700', color: '#191c1e', marginBottom: spacing.xs, letterSpacing: -0.2 },
+  subtitle: { fontSize: 14, color: '#464555', marginBottom: spacing.lg, lineHeight: 20 },
+  optionsList: { gap: spacing.sm },
+  optionCard: {
+    backgroundColor: '#ffffff', borderRadius: 12, padding: spacing.md,
+    borderWidth: 1, borderColor: '#e6e8ea', flexDirection: 'row', alignItems: 'flex-start', minHeight: 68
+  },
+  optionCardSelected: { borderColor: colors.primary, backgroundColor: '#eef2ff', borderWidth: 2 },
+  radioOuter: {
+    width: 20, height: 20,
+    borderRadius: 10,
+    borderWidth: 2,
+    borderColor: '#c7c4d8',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginTop: 2,
+    marginRight: spacing.md
+  },
+  radioInner: {
+    width: 10, height: 10,
+    borderRadius: 5,
+    backgroundColor: colors.primary
+  },
   optionContent: { flex: 1 },
-  titleRow: { flexDirection: 'row', alignItems: 'center', gap: spacing.xs, marginBottom: 4 },
-  levelName: { fontSize: 15, fontWeight: '700', color: colors.text },
-  levelNameSelected: { color: colors.primary },
-  tagBadge: { backgroundColor: '#e0e7ff', paddingHorizontal: 6, paddingVertical: 2, borderRadius: 6 },
-  tagText: { fontSize: 10, fontWeight: '700', color: colors.primary },
-  levelDesc: { fontSize: 12, color: colors.mutedText, lineHeight: 16 },
-  bottomBar: { position: 'absolute', bottom: 0, left: 0, right: 0, backgroundColor: '#ffffff', padding: spacing.lg, borderTopWidth: 1, borderTopColor: '#e2e8f0' },
-  nextButton: { backgroundColor: colors.primary, height: 50, borderRadius: 12, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: spacing.xs },
-  nextButtonText: { color: colors.onPrimary, fontSize: 15, fontWeight: '700' }
+  titleRow: { flexDirection: 'row', alignItems: 'center', gap: 4, marginBottom: 2 },
+  levelName: { fontSize: 14, fontWeight: '600', color: '#191c1e' },
+  levelNameSelected: { color: colors.primary, fontWeight: '700' },
+  tagText: { fontSize: 12, fontWeight: '500', color: '#464555' },
+  tagTextSelected: { color: colors.primary },
+  levelDesc: { fontSize: 12, color: '#464555', lineHeight: 18 },
+  aiBanner: {
+    marginTop: spacing.md,
+    padding: spacing.md,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: 'rgba(124, 58, 237, 0.3)',
+    backgroundColor: '#f5f3ff',
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.md
+  },
+  aiIconBox: {
+    width: 32, height: 32,
+    borderRadius: 8,
+    backgroundColor: '#7531e6',
+    alignItems: 'center',
+    justifyContent: 'center'
+  },
+  aiContent: { flex: 1 },
+  aiTitle: { fontSize: 14, fontWeight: '600', color: '#191c1e' },
+  aiDesc: { fontSize: 12, color: '#464555', marginTop: 2 },
+  aiTestLink: { fontSize: 14, fontWeight: '600', color: colors.primary },
+  bottomBar: {
+    position: 'absolute', bottom: 0, left: 0, right: 0,
+    backgroundColor: 'transparent',
+    padding: spacing.lg,
+    paddingBottom: 32 // for safearea
+  },
+  nextButton: {
+    backgroundColor: colors.primary,
+    height: 48,
+    borderRadius: 10,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: spacing.xs,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.1,
+    shadowRadius: 2,
+    elevation: 2
+  },
+  nextButtonText: { color: '#ffffff', fontSize: 14, fontWeight: '600' }
 });
-

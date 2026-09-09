@@ -1,6 +1,7 @@
 'use client';
 
 import * as React from 'react';
+import Link from 'next/link';
 import { PageHeader, SearchInput } from '@/shared/ui';
 import { apiClient, ApiClientError } from '@/shared/api/api-client';
 import type { ExamItem, PaginatedResponse } from '@/shared/api/api-client';
@@ -24,7 +25,7 @@ function StatusBadge({ status }: { status: string }) {
 
 function SkeletonCard() {
   return (
-    <div className="rounded-2xl border border-outline-variant/30 bg-surface-container-low p-5 space-y-3 animate-pulse">
+    <div className="rounded-2xl border border-outline-variant/50 bg-surface-container-lowest p-5 space-y-3 animate-pulse">
       <div className="h-5 w-3/4 rounded bg-outline-variant/20" />
       <div className="h-3 w-1/2 rounded bg-outline-variant/20" />
       <div className="h-4 w-full rounded bg-outline-variant/20" />
@@ -67,9 +68,18 @@ export default function AdminTestsPage() {
 
   React.useEffect(() => { void load(); }, [load]);
 
+  const removeExam = async (exam: ExamItem) => {
+    if (!window.confirm(`Xóa bài thi “${exam.title}”? Hành động này không thể hoàn tác.`)) return;
+    try { await apiClient.delete(`/exams/${exam.id}`); await load(); }
+    catch (e) { setError(e instanceof ApiClientError ? e.message : 'Không thể xóa bài thi'); }
+  };
+
   return (
     <div>
-      <PageHeader title="Quản lý bài thi & Mock Exam" description="Toàn bộ đề thi chứng chỉ quốc tế và bài đánh giá năng lực" />
+      <div className="flex items-start justify-between gap-4">
+        <PageHeader title="Quản lý bài thi & Mock Exam" description="Toàn bộ đề thi chứng chỉ quốc tế và bài đánh giá năng lực" />
+        <Link href="/admin/tests/builder" className="inline-flex shrink-0 items-center gap-2 rounded-xl bg-primary px-4 py-2.5 text-sm font-semibold !text-white shadow-sm"><span className="material-symbols-outlined text-[19px]">add</span>Tạo bài thi</Link>
+      </div>
 
       {/* Filters */}
       <div className="mt-6 flex flex-col sm:flex-row gap-3">
@@ -86,7 +96,7 @@ export default function AdminTestsPage() {
         <select
           value={status}
           onChange={(e) => { setStatus(e.target.value); setPage(1); }}
-          className="rounded-xl border border-outline-variant/60 bg-surface-container-low px-3 py-2 text-sm text-on-surface focus:outline-none"
+          className="rounded-xl border border-outline-variant/60 bg-surface-container-lowest px-3 py-2 text-sm text-on-surface focus:outline-none"
         >
           {STATUSES.map((s) => <option key={s.value} value={s.value}>{s.label}</option>)}
         </select>
@@ -116,7 +126,7 @@ export default function AdminTestsPage() {
           </div>
         ) : (
           items.map((exam) => (
-            <div key={exam.id} className="rounded-2xl border border-outline-variant/30 bg-surface-container-low p-5 hover:shadow-sm transition-shadow flex flex-col justify-between">
+            <div key={exam.id} className="rounded-2xl border border-outline-variant/50 bg-surface-container-lowest p-5 shadow-[0_8px_28px_rgba(15,23,42,0.035)] hover:shadow-md transition-shadow flex flex-col justify-between">
               <div>
                 <div className="flex items-start justify-between gap-2 mb-2">
                   <h3 className="font-bold text-on-surface text-base line-clamp-2 flex-1">{exam.title}</h3>
@@ -170,6 +180,10 @@ export default function AdminTestsPage() {
               <div className="mt-4 pt-3 border-t border-outline-variant/20 flex items-center justify-between text-xs text-on-surface-variant">
                 <span>Tạo bởi: <strong className="text-on-surface">{exam.createdBy?.userDetail?.displayName ?? 'Admin'}</strong></span>
                 <span>{new Date(exam.createdAt).toLocaleDateString('vi-VN')}</span>
+              </div>
+              <div className="mt-3 flex justify-end gap-2">
+                <Link href={`/admin/tests/builder?id=${exam.id}`} className="inline-flex items-center gap-1 rounded-lg bg-primary/10 px-3 py-2 text-xs font-semibold text-primary"><span className="material-symbols-outlined text-[16px]">edit</span>Sửa</Link>
+                <button type="button" onClick={() => void removeExam(exam)} className="inline-flex items-center gap-1 rounded-lg bg-error-container px-3 py-2 text-xs font-semibold text-error"><span className="material-symbols-outlined text-[16px]">delete</span>Xóa</button>
               </div>
             </div>
           ))

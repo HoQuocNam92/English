@@ -1,9 +1,10 @@
 'use client';
 
 import * as React from 'react';
-import { PageHeader, SearchInput } from '@/shared/ui';
+import Link from 'next/link';
+import { PageHeader, Pagination, SearchInput } from '@/shared/ui';
 import { apiClient, ApiClientError } from '@/shared/api/api-client';
-import type { QuestionItem, PaginatedResponse } from '@/shared/api/api-client';
+import type { ExamItem, QuestionItem, PaginatedResponse } from '@/shared/api/api-client';
 
 const QUESTION_TYPES: Record<string, { label: string; icon: string; color: string }> = {
   single_choice: { label: 'Chọn một đáp án', icon: 'radio_button_checked', color: 'text-blue-600' },
@@ -18,6 +19,8 @@ const STATUSES = [
   { value: 'published', label: 'Đã xuất bản' },
   { value: 'draft', label: 'Bản nháp' },
 ];
+
+type FilterOption = { id: string; code?: string; name?: string; title?: string };
 
 function SkeletonRow() {
   return (
@@ -35,9 +38,15 @@ export default function AdminQuestionsPage() {
   const [searchInput, setSearchInput] = React.useState('');
   const [search, setSearch] = React.useState('');
   const [status, setStatus] = React.useState('');
+  const [type, setType] = React.useState('');
+  const [domainCode, setDomainCode] = React.useState('');
+  const [examId, setExamId] = React.useState('');
+  const [domains, setDomains] = React.useState<FilterOption[]>([]);
+  const [exams, setExams] = React.useState<FilterOption[]>([]);
   const [expanded, setExpanded] = React.useState<string | null>(null);
   const [loading, setLoading] = React.useState(true);
   const [error, setError] = React.useState<string | null>(null);
+  const [deletingId, setDeletingId] = React.useState<string | null>(null);
   const limit = 10;
 
   const totalPages = Math.ceil(total / limit);
@@ -51,6 +60,9 @@ export default function AdminQuestionsPage() {
         limit: String(limit),
         ...(search && { search }),
         ...(status && { status }),
+        ...(type && { type }),
+        ...(domainCode && { domainCode }),
+        ...(examId && { examId }),
       });
       const res = await apiClient.get<PaginatedResponse<QuestionItem>>(`/questions?${params}`);
       setItems(res.data);
@@ -60,16 +72,54 @@ export default function AdminQuestionsPage() {
     } finally {
       setLoading(false);
     }
-  }, [page, search, status]);
+  }, [page, search, status, type, domainCode, examId]);
 
   React.useEffect(() => { void load(); }, [load]);
 
+  React.useEffect(() => {
+    void Promise.all([
+      apiClient.get<{ data: FilterOption[] } | FilterOption[]>('/domains'),
+      apiClient.get<PaginatedResponse<ExamItem>>('/exams?page=1&limit=100'),
+    ]).then(([domainResult, examResult]) => {
+      setDomains(Array.isArray(domainResult) ? domainResult : domainResult.data);
+      setExams(examResult.data);
+    }).catch(() => undefined);
+  }, []);
+
+  const handleDelete = async (question: QuestionItem) => {
+    if (!window.confirm(`Xóa câu hỏi “${question.prompt.slice(0, 80)}${question.prompt.length > 80 ? '…' : ''}”? Câu hỏi cũng sẽ được gỡ khỏi các bộ đề liên quan.`)) return;
+    setDeletingId(question.id);
+    setError(null);
+    try {
+      await apiClient.delete(`/questions/${question.id}`);
+      if (items.length === 1 && page > 1) setPage((current) => current - 1);
+      else await load();
+    } catch (e) {
+      setError(e instanceof ApiClientError ? e.message : 'Không thể xóa câu hỏi');
+    } finally {
+      setDeletingId(null);
+    }
+  };
+
   return (
     <div>
-      <PageHeader title="Ngân hàng câu hỏi" description="Quản lý toàn bộ câu hỏi luyện tập và thi trắc nghiệm IT" />
+      <div className="flex items-start justify-between gap-4">
+        <PageHeader title="Ngân hàng câu hỏi" description="Quản lý toàn bộ câu hỏi luyện tập và thi trắc nghiệm IT" />
+        <Link href="/admin/questions/editor" className="inline-flex shrink-0 items-center gap-2 rounded-xl bg-primary px-4 py-2.5 text-sm font-semibold !text-white shadow-sm"><span className="material-symbols-outlined text-[19px]">add</span>Thêm câu hỏi</Link>
+      </div>
 
       {/* Filters */}
-      <div className="mt-6 flex flex-col sm:flex-row gap-3">
+      <div className="mt-5 rounded-2xl bg-surface-container-lowest p-4 shadow-[0_8px_28px_rgba(15,23,42,0.05)]">
+        <div className="mb-4 flex flex-wrap items-center gap-x-5 gap-y-2 text-xs text-on-surface-variant">
+          <span className="font-semibold text-on-surface">Chú giải loại câu hỏi:</span>
+          {Object.entries(QUESTION_TYPES).map(([key, item]) => (
+            <span key={key} className="flex items-center gap-1.5">
+              <span className={`material-symbols-outlined text-[17px] ${item.color}`}>{item.icon}</span>
+              {item.label}
+            </span>
+          ))}
+        </div>
+        <div className="grid gap-3 xl:grid-cols-[minmax(280px,1fr)_190px_190px_240px_180px]">
         <SearchInput
           value={searchInput}
           onChange={setSearchInput}
@@ -81,12 +131,40 @@ export default function AdminQuestionsPage() {
           maxLength={100}
         />
         <select
+          value={type}
+          onChange={(e) => { setType(e.target.value); setPage(1); }}
+          className="rounded-xl bg-surface-container-lowest px-3 py-2 text-sm text-on-surface shadow-[inset_0_0_0_1px_rgba(99,102,241,0.16)] focus:outline-none"
+          aria-label="Lọc theo loại câu hỏi"
+        >
+          <option value="">Tất cả loại câu hỏi</option>
+          {Object.entries(QUESTION_TYPES).map(([value, item]) => <option key={value} value={value}>{item.label}</option>)}
+        </select>
+        <select
+          value={domainCode}
+          onChange={(e) => { setDomainCode(e.target.value); setPage(1); }}
+          className="rounded-xl bg-surface-container-lowest px-3 py-2 text-sm text-on-surface shadow-[inset_0_0_0_1px_rgba(99,102,241,0.16)] focus:outline-none"
+          aria-label="Lọc theo chuyên ngành"
+        >
+          <option value="">Tất cả chuyên ngành</option>
+          {domains.map((domain) => <option key={domain.id} value={domain.code}>{domain.name}</option>)}
+        </select>
+        <select
+          value={examId}
+          onChange={(e) => { setExamId(e.target.value); setPage(1); }}
+          className="rounded-xl bg-surface-container-lowest px-3 py-2 text-sm text-on-surface shadow-[inset_0_0_0_1px_rgba(99,102,241,0.16)] focus:outline-none"
+          aria-label="Lọc theo bộ đề"
+        >
+          <option value="">Tất cả bộ đề</option>
+          {exams.map((exam) => <option key={exam.id} value={exam.id}>{exam.title}</option>)}
+        </select>
+        <select
           value={status}
           onChange={(e) => { setStatus(e.target.value); setPage(1); }}
-          className="rounded-xl border border-outline-variant/60 bg-surface-container-low px-3 py-2 text-sm text-on-surface focus:outline-none"
+          className="rounded-xl bg-surface-container-lowest px-3 py-2 text-sm text-on-surface shadow-[inset_0_0_0_1px_rgba(99,102,241,0.16)] focus:outline-none"
         >
           {STATUSES.map((s) => <option key={s.value} value={s.value}>{s.label}</option>)}
         </select>
+        </div>
       </div>
 
       {!loading && (
@@ -103,7 +181,7 @@ export default function AdminQuestionsPage() {
       )}
 
       {/* Question list */}
-      <div className="mt-4 rounded-2xl bg-surface-container-low border border-outline-variant/30 overflow-hidden">
+      <div className="mt-4 rounded-2xl bg-surface-container-lowest overflow-hidden shadow-[0_8px_28px_rgba(15,23,42,0.05)]">
         {loading ? (
           Array.from({ length: 5 }).map((_, i) => <SkeletonRow key={i} />)
         ) : items.length === 0 ? (
@@ -145,6 +223,14 @@ export default function AdminQuestionsPage() {
                               {q.level.name}
                             </span>
                           )}
+                          {(q.examQuestions?.length ?? 0) > 0 ? (
+                            <span className="inline-flex items-center gap-1 rounded bg-indigo-50 px-2 py-0.5 text-xs font-medium text-indigo-700">
+                              <span className="material-symbols-outlined text-[14px]">assignment</span>
+                              {q.examQuestions!.length} bộ đề
+                            </span>
+                          ) : (
+                            <span className="text-xs text-on-surface-variant">Chưa xếp bộ đề</span>
+                          )}
                           <span className="text-xs text-on-surface-variant">· {q.points} điểm</span>
                           {q.status === 'published' ? (
                             <span className="text-xs text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full font-medium">Đã đăng</span>
@@ -162,6 +248,32 @@ export default function AdminQuestionsPage() {
                   {/* Expanded content */}
                   {isExpanded && (
                     <div className="px-14 pb-5 space-y-4">
+                      <div className="flex justify-end gap-2">
+                        <Link href={`/admin/questions/editor?id=${q.id}`} className="inline-flex items-center gap-1.5 rounded-lg bg-primary/10 px-3 py-2 text-xs font-semibold text-primary"><span className="material-symbols-outlined text-[16px]">edit</span>Sửa câu hỏi</Link>
+                        <button type="button" disabled={deletingId === q.id} onClick={() => void handleDelete(q)} className="inline-flex items-center gap-1.5 rounded-lg bg-error-container px-3 py-2 text-xs font-semibold text-error disabled:opacity-50"><span className="material-symbols-outlined text-[16px]">delete</span>{deletingId === q.id ? 'Đang xóa...' : 'Xóa câu hỏi'}</button>
+                      </div>
+                      <div className="grid gap-3 md:grid-cols-2">
+                        <div className="rounded-xl bg-primary/5 p-3.5">
+                          <p className="mb-2 text-xs font-semibold text-on-surface-variant">Thuộc bộ đề</p>
+                          <div className="flex flex-wrap gap-2">
+                            {q.examQuestions?.length ? q.examQuestions.map(({ exam, order }) => (
+                              <span key={exam.id} className="rounded-full bg-surface-container-lowest px-2.5 py-1 text-xs font-medium text-primary">
+                                {exam.title} · câu {order}
+                              </span>
+                            )) : <span className="text-sm text-on-surface-variant">Chưa được đưa vào bộ đề nào</span>}
+                          </div>
+                        </div>
+                        <div className="rounded-xl bg-secondary/5 p-3.5">
+                          <p className="mb-2 text-xs font-semibold text-on-surface-variant">Chứng chỉ liên quan</p>
+                          <div className="flex flex-wrap gap-2">
+                            {q.certificates?.length ? q.certificates.map(({ certificate }) => (
+                              <span key={certificate.id} className="rounded-full bg-surface-container-lowest px-2.5 py-1 text-xs font-medium text-secondary">
+                                {certificate.name}
+                              </span>
+                            )) : <span className="text-sm text-on-surface-variant">Chưa gắn chứng chỉ</span>}
+                          </div>
+                        </div>
+                      </div>
                       {q.context && (
                         <div className="bg-surface-container rounded-xl p-3.5 border border-outline-variant/20">
                           <p className="text-xs font-semibold text-on-surface-variant mb-1">Ngữ cảnh bài tập:</p>
@@ -215,25 +327,7 @@ export default function AdminQuestionsPage() {
 
       {/* Pagination */}
       {totalPages > 1 && (
-        <div className="mt-4 flex items-center justify-between">
-          <p className="text-xs text-on-surface-variant">Trang {page}/{totalPages}</p>
-          <div className="flex gap-2">
-            <button
-              disabled={page <= 1}
-              onClick={() => setPage((p) => p - 1)}
-              className="px-4 py-2 rounded-xl text-sm border border-outline-variant disabled:opacity-40 hover:bg-surface-container transition-colors"
-            >
-              ← Trước
-            </button>
-            <button
-              disabled={page >= totalPages}
-              onClick={() => setPage((p) => p + 1)}
-              className="px-4 py-2 rounded-xl text-sm border border-outline-variant disabled:opacity-40 hover:bg-surface-container transition-colors"
-            >
-              Sau →
-            </button>
-          </div>
-        </div>
+        <Pagination className="mt-4 rounded-2xl" page={page} limit={limit} total={total} totalPages={totalPages} onPageChange={setPage} />
       )}
     </div>
   );

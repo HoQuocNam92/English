@@ -5,6 +5,7 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { LearnerShell } from '@/shared/layout';
 import { apiClient } from '@/shared/api/api-client';
+import { LoadingSpinner } from '@/shared/ui';
 
 export default function LearnerScenarioSolverPage({ params }: { params: Promise<{ id: string }> }) {
   const unwrappedParams = React.use(params);
@@ -43,7 +44,7 @@ export default function LearnerScenarioSolverPage({ params }: { params: Promise<
     if (questionId) loadQuestion();
   }, [questionId]);
 
-  if (loading) return <LearnerShell><div className="p-8 text-center"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto"></div></div></LearnerShell>;
+  if (loading) return <LearnerShell><LoadingSpinner /></LearnerShell>;
   if (error || !question) return <LearnerShell><div className="p-8 text-center text-error">{error || 'Not found'}</div></LearnerShell>;
 
   const options = question.options || [];

@@ -26,7 +26,8 @@ export function RouteGuard({ children, allowedRoles = [], redirectTo }: RouteGua
     }
 
     // Wrong role → redirect to own dashboard
-    if (allowedRoles.length > 0 && !allowedRoles.includes(session.user.role)) {
+    const userRoles = session.user.roles ?? (session.user.role ? [session.user.role] : []);
+    if (allowedRoles.length > 0 && !allowedRoles.some((role) => userRoles.includes(role))) {
       const fallback = redirectTo ?? '/admin/dashboard';
       router.replace(fallback);
     }
@@ -48,7 +49,8 @@ export function RouteGuard({ children, allowedRoles = [], redirectTo }: RouteGua
 
   // Not authed / wrong role — render nothing while redirect is in flight
   if (!session) return null;
-  if (allowedRoles.length > 0 && !allowedRoles.includes(session.user.role)) return null;
+  const userRoles = session.user.roles ?? (session.user.role ? [session.user.role] : []);
+  if (allowedRoles.length > 0 && !allowedRoles.some((role) => userRoles.includes(role))) return null;
 
   return <>{children}</>;
 }
