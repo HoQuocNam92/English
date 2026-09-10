@@ -5,53 +5,31 @@ import { MaterialIcons } from '@expo/vector-icons';
 import { colors, spacing } from '@techenglish/design-tokens';
 import { api } from '../../src/shared/api/api-client';
 
-type Message = { id: string; role: 'user' | 'assistant'; content: string; citations?: any[] };
+type Mode = 'qa' | 'vocabulary';
+type Action = 'grammar_check' | 'translate' | undefined;
+type Message = { id: string; role: 'user' | 'assistant'; content: string; citations?: any[]; vocabulary?: any[] };
 
 export default function AiTutorScreen() {
-  const { lessonId } = useLocalSearchParams<{ lessonId?: string }>();
-  const router = useRouter();
-  const scroll = useRef<ScrollView>(null);
-  const [conversationId, setConversationId] = useState('');
-  const [messages, setMessages] = useState<Message[]>([]);
-  const [input, setInput] = useState('');
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
+  const { lessonId } = useLocalSearchParams<{ lessonId?: string }>(); const router = useRouter(); const scroll = useRef<ScrollView>(null);
+  const [conversationId, setConversationId] = useState(''); const [messages, setMessages] = useState<Message[]>([]); const [input, setInput] = useState(''); const [loading, setLoading] = useState(true); const [error, setError] = useState('');
+  const [mode, setMode] = useState<Mode>('qa'); const [action, setAction] = useState<Action>(); const [quiz, setQuiz] = useState<any>(null); const [saved, setSaved] = useState<Record<string, boolean>>({});
 
-  useEffect(() => {
-    api.post<any>('/ai-chat/conversations', { mode: 'qa', lessonId })
-      .then((conversation) => setConversationId(conversation.id))
-      .catch((err) => setError(err.message || 'Không thể mở AI Tutor.'))
-      .finally(() => setLoading(false));
-  }, [lessonId]);
+  useEffect(() => { api.post<any>('/ai-chat/conversations', { mode: 'qa', lessonId }).then(c => setConversationId(c.id)).catch(e => setError(e.message || 'Không thể mở AI Tutor.')).finally(() => setLoading(false)); }, [lessonId]);
+  async function send() { const content = input.trim(); if (!content || !conversationId || loading) return; setMessages(v => [...v, { id: `local-${Date.now()}`, role: 'user', content }]); setInput(''); setLoading(true); setError(''); try { const response = await api.post<any>(`/ai-chat/conversations/${conversationId}/messages`, { content, mode, action }); setMessages(v => [...v, { ...response.message, citations: response.result?.citations ?? [], vocabulary: response.result?.vocabulary ?? [] }]); setTimeout(() => scroll.current?.scrollToEnd({ animated: true }), 50); } catch (e: any) { setError(e.message || 'Không thể nhận câu trả lời.'); } finally { setLoading(false); } }
+  async function feedback(id: string, helpful: boolean) { try { await api.post(`/ai-chat/messages/${id}/feedback`, { helpful }); } catch { setError('Không thể gửi phản hồi.'); } }
+  async function createQuiz() { if (!conversationId || loading) return; setLoading(true); try { setQuiz(await api.post(`/ai-chat/conversations/${conversationId}/quiz`, {})); } catch (e: any) { setError(e.message || 'Không thể tạo quiz.'); } finally { setLoading(false); } }
+  async function saveWord(word: any) { const key = `${word.term}-${word.phrase || ''}`; try { await api.post('/ai-chat/saved-vocabulary', word); setSaved(v => ({ ...v, [key]: true })); } catch (e: any) { setError(e.message || 'Không thể lưu từ.'); } }
 
-  async function send() {
-    const content = input.trim();
-    if (!content || !conversationId || loading) return;
-    setMessages((current) => [...current, { id: `local-${Date.now()}`, role: 'user', content }]);
-    setInput(''); setLoading(true); setError('');
-    try {
-      const response = await api.post<any>(`/ai-chat/conversations/${conversationId}/messages`, { content, mode: 'qa' });
-      setMessages((current) => [...current, { ...response.message, citations: response.result?.citations ?? [] }]);
-      setTimeout(() => scroll.current?.scrollToEnd({ animated: true }), 50);
-    } catch (err: any) { setError(err.message || 'Không thể nhận câu trả lời.'); }
-    finally { setLoading(false); }
-  }
-
-  async function feedback(messageId: string, helpful: boolean) {
-    try { await api.post(`/ai-chat/messages/${messageId}/feedback`, { helpful }); } catch { setError('Không thể gửi phản hồi.'); }
-  }
-
-  return <View style={styles.container}>
-    <View style={styles.header}><TouchableOpacity onPress={() => router.back()}><MaterialIcons name="arrow-back" size={24} color="#374151" /></TouchableOpacity><View style={{ flex: 1 }}><Text style={styles.title}>AI Tutor RAG</Text><Text style={styles.subtitle}>{lessonId ? 'Đang giới hạn trong bài học hiện tại' : 'Kho kiến thức TechEnglish'}</Text></View></View>
-    <ScrollView ref={scroll} contentContainerStyle={styles.messages}>
-      {!messages.length && !loading && <Text style={styles.empty}>Hãy hỏi về nội dung bài học. Câu trả lời sẽ kèm nguồn đã được duyệt.</Text>}
-      {messages.map((message) => <View key={message.id} style={[styles.bubble, message.role === 'user' ? styles.user : styles.assistant]}><Text style={message.role === 'user' ? styles.userText : styles.assistantText}>{message.content}</Text>{message.citations?.map((citation) => <TouchableOpacity key={`${citation.sourceType}-${citation.sourceId}`} onPress={() => citation.lessonId && router.push(`/lessons/${citation.lessonId}` as any)} style={styles.citation}><Text style={styles.citationTitle}>[{citation.rank}] {citation.title}</Text><Text numberOfLines={2} style={styles.citationText}>{citation.excerpt}</Text></TouchableOpacity>)}{message.role === 'assistant' && !!message.citations?.length && <View style={styles.feedback}><TouchableOpacity onPress={() => feedback(message.id, true)}><Text>👍 Hữu ích</Text></TouchableOpacity><TouchableOpacity onPress={() => feedback(message.id, false)}><Text>👎 Chưa đúng</Text></TouchableOpacity></View>}</View>)}
-      {loading && <ActivityIndicator color={colors.primary} />}{error ? <Text style={styles.error}>{error}</Text> : null}
-    </ScrollView>
-    <View style={styles.composer}><TextInput value={input} onChangeText={setInput} multiline maxLength={4000} placeholder="Hỏi về lesson hoặc thuật ngữ IT..." style={styles.input} /><TouchableOpacity disabled={!input.trim() || loading || !conversationId} onPress={send} style={styles.send}><MaterialIcons name="send" size={20} color="#fff" /></TouchableOpacity></View>
+  return <View style={s.container}><View style={s.header}><TouchableOpacity onPress={() => router.back()}><MaterialIcons name="arrow-back" size={24} color="#374151" /></TouchableOpacity><View style={{ flex: 1 }}><Text style={s.title}>AI Tutor RAG</Text><Text style={s.subtitle}>{lessonId ? 'Giới hạn trong bài học hiện tại' : 'Kho kiến thức TechEnglish'}</Text></View><TouchableOpacity onPress={() => router.push('/saved' as any)}><MaterialIcons name="bookmark" size={24} color={colors.primary} /></TouchableOpacity></View>
+    <ScrollView ref={scroll} contentContainerStyle={s.messages}>
+      <View style={s.tools}>{[['Hỏi đáp', 'qa', undefined], ['Từ vựng', 'vocabulary', undefined], ['Sửa ngữ pháp', 'qa', 'grammar_check'], ['Dịch', 'qa', 'translate']].map(([label, nextMode, nextAction]) => { const active = mode === nextMode && action === nextAction; return <TouchableOpacity key={String(label)} onPress={() => { setMode(nextMode as Mode); setAction(nextAction as Action); }} style={[s.tool, active && s.toolActive]}><Text style={active ? s.toolTextActive : s.toolText}>{label}</Text></TouchableOpacity>; })}</View>
+      {!messages.length && !loading ? <Text style={s.empty}>Chọn công cụ rồi nhập nội dung. Câu trả lời dựa trên học liệu đã duyệt và kèm nguồn.</Text> : null}
+      {messages.map(message => <View key={message.id} style={[s.bubble, message.role === 'user' ? s.user : s.assistant]}><Text style={message.role === 'user' ? s.userText : s.assistantText}>{message.content}</Text>{message.vocabulary?.map(word => { const key = `${word.term}-${word.phrase || ''}`; return <View key={key} style={s.word}><Text style={{ fontWeight: '800' }}>{word.term} {word.pronunciation}</Text><Text>{word.meaningVi}</Text><TouchableOpacity disabled={saved[key]} onPress={() => saveWord(word)}><Text style={s.link}>{saved[key] ? '✓ Đã lưu' : '+ Lưu từ'}</Text></TouchableOpacity></View>; })}{message.citations?.map(c => <TouchableOpacity key={`${c.sourceType}-${c.sourceId}`} onPress={() => c.lessonId && router.push(`/lessons/${c.lessonId}` as any)} style={s.citation}><Text style={s.citationTitle}>[{c.rank}] {c.title}</Text><Text numberOfLines={2} style={s.citationText}>{c.excerpt}</Text></TouchableOpacity>)}{message.role === 'assistant' ? <View style={s.feedback}><TouchableOpacity onPress={() => feedback(message.id, true)}><Text>👍 Hữu ích</Text></TouchableOpacity><TouchableOpacity onPress={() => feedback(message.id, false)}><Text>👎 Chưa đúng</Text></TouchableOpacity></View> : null}</View>)}
+      {messages.length > 1 && !quiz ? <TouchableOpacity onPress={createQuiz} style={s.quizButton}><Text style={{ color: '#fff', fontWeight: '800' }}>Tạo quiz từ cuộc trò chuyện</Text></TouchableOpacity> : null}
+      {quiz ? <View style={s.quiz}><Text style={{ fontSize: 17, fontWeight: '900' }}>{quiz.title}</Text>{(quiz.questions ?? []).map((q: any, i: number) => <View key={q.id ?? i} style={{ marginTop: 12 }}><Text style={{ fontWeight: '700' }}>{i + 1}. {q.prompt ?? q.question}</Text>{(q.options ?? []).map((o: any, j: number) => <Text key={o.id ?? j} style={{ marginTop: 5 }}>{o.key ?? String.fromCharCode(65 + j)}. {o.text ?? o}</Text>)}</View>)}</View> : null}
+      {loading ? <ActivityIndicator color={colors.primary} /> : null}{error ? <Text style={s.error}>{error}</Text> : null}
+    </ScrollView><View style={s.composer}><TextInput value={input} onChangeText={setInput} multiline maxLength={4000} placeholder={action === 'grammar_check' ? 'Nhập câu cần sửa...' : action === 'translate' ? 'Nhập nội dung cần dịch...' : mode === 'vocabulary' ? 'Nhập từ hoặc cụm từ...' : 'Hỏi về bài học hoặc thuật ngữ IT...'} style={s.input} /><TouchableOpacity disabled={!input.trim() || loading || !conversationId} onPress={send} style={s.send}><MaterialIcons name="send" size={20} color="#fff" /></TouchableOpacity></View>
   </View>;
 }
 
-const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#f8fafc' }, header: { paddingTop: 48, paddingHorizontal: spacing.md, paddingBottom: 12, flexDirection: 'row', alignItems: 'center', gap: 12, backgroundColor: '#fff', borderBottomWidth: 1, borderBottomColor: '#e5e7eb' }, title: { fontSize: 18, fontWeight: '800' }, subtitle: { fontSize: 12, color: '#64748b' }, messages: { padding: spacing.md, gap: 12, flexGrow: 1 }, empty: { marginTop: 80, textAlign: 'center', color: '#64748b', lineHeight: 22 }, bubble: { maxWidth: '88%', padding: 12, borderRadius: 14 }, user: { alignSelf: 'flex-end', backgroundColor: colors.primary }, assistant: { alignSelf: 'flex-start', backgroundColor: '#fff', borderWidth: 1, borderColor: '#e2e8f0' }, userText: { color: '#fff', lineHeight: 21 }, assistantText: { color: '#1f2937', lineHeight: 21 }, citation: { marginTop: 10, padding: 10, borderRadius: 8, backgroundColor: '#f1f5f9' }, citationTitle: { color: colors.primary, fontWeight: '700', fontSize: 12 }, citationText: { color: '#64748b', fontSize: 11, marginTop: 3 }, feedback: { flexDirection: 'row', gap: 18, marginTop: 10 }, error: { color: '#b91c1c', textAlign: 'center' }, composer: { flexDirection: 'row', gap: 10, alignItems: 'flex-end', padding: spacing.md, backgroundColor: '#fff', borderTopWidth: 1, borderTopColor: '#e5e7eb' }, input: { flex: 1, maxHeight: 120, borderWidth: 1, borderColor: '#cbd5e1', borderRadius: 12, padding: 12 }, send: { backgroundColor: colors.primary, width: 46, height: 46, borderRadius: 12, alignItems: 'center', justifyContent: 'center' },
-});
+const s = StyleSheet.create({ container: { flex: 1, backgroundColor: '#f8fafc' }, header: { paddingTop: 48, paddingHorizontal: spacing.md, paddingBottom: 12, flexDirection: 'row', alignItems: 'center', gap: 12, backgroundColor: '#fff', borderBottomWidth: 1, borderBottomColor: '#e5e7eb' }, title: { fontSize: 18, fontWeight: '800' }, subtitle: { fontSize: 12, color: '#64748b' }, messages: { padding: spacing.md, gap: 12, flexGrow: 1 }, tools: { flexDirection: 'row', flexWrap: 'wrap', gap: 7 }, tool: { paddingHorizontal: 10, paddingVertical: 7, borderRadius: 20, backgroundColor: '#e2e8f0' }, toolActive: { backgroundColor: colors.primary }, toolText: { color: '#334155' }, toolTextActive: { color: '#fff', fontWeight: '800' }, empty: { marginTop: 70, textAlign: 'center', color: '#64748b', lineHeight: 22 }, bubble: { maxWidth: '88%', padding: 12, borderRadius: 14 }, user: { alignSelf: 'flex-end', backgroundColor: colors.primary }, assistant: { alignSelf: 'flex-start', backgroundColor: '#fff', borderWidth: 1, borderColor: '#e2e8f0' }, userText: { color: '#fff', lineHeight: 21 }, assistantText: { color: '#1f2937', lineHeight: 21 }, word: { marginTop: 10, padding: 10, backgroundColor: '#f5f3ff', borderRadius: 9 }, link: { color: colors.primary, fontWeight: '800', marginTop: 5 }, citation: { marginTop: 10, padding: 10, borderRadius: 8, backgroundColor: '#f1f5f9' }, citationTitle: { color: colors.primary, fontWeight: '700', fontSize: 12 }, citationText: { color: '#64748b', fontSize: 11, marginTop: 3 }, feedback: { flexDirection: 'row', gap: 18, marginTop: 10 }, quizButton: { alignSelf: 'center', backgroundColor: colors.primary, paddingHorizontal: 16, paddingVertical: 11, borderRadius: 10 }, quiz: { padding: 14, borderRadius: 12, backgroundColor: '#fff', borderWidth: 1, borderColor: '#cbd5e1' }, error: { color: '#b91c1c', textAlign: 'center' }, composer: { flexDirection: 'row', gap: 10, alignItems: 'flex-end', padding: spacing.md, backgroundColor: '#fff', borderTopWidth: 1, borderTopColor: '#e5e7eb' }, input: { flex: 1, maxHeight: 120, borderWidth: 1, borderColor: '#cbd5e1', borderRadius: 12, padding: 12 }, send: { backgroundColor: colors.primary, width: 46, height: 46, borderRadius: 12, alignItems: 'center', justifyContent: 'center' } });

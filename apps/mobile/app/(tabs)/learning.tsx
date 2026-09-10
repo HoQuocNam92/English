@@ -41,7 +41,7 @@ const CATEGORIES = [
     iconBg: '#F5F3FF',
     iconColor: '#7C3AED',
     wide: true,
-    route: '/lessons?type=technical_reading',
+    route: '/reading-lab',
   },
   {
     id: 'api-docs',

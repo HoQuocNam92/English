@@ -141,6 +141,25 @@ export default function MobileProfileScreen() {
 
         {/* Action List */}
         <View style={[styles.menuList, { backgroundColor: colors.surfaceContainerLowest, borderColor: colors.outlineVariant }]}>
+          {[
+            ['route', 'Lộ trình học', '/roadmap'],
+            ['auto-awesome', 'Tạo lộ trình cá nhân', '/path-generator'],
+            ['analytics', 'Phân tích học tập', '/analytics'],
+            ['military-tech', 'Thành tích', '/achievements'],
+            ['workspace-premium', 'Chứng chỉ', '/certifications'],
+            ['notifications', 'Thông báo', '/notifications'],
+            ['bookmark', 'Từ đã lưu', '/saved'],
+            ['style', 'Flashcards', '/flashcards'],
+            ['article', 'Reading Lab', '/reading-lab'],
+          ].map(([icon, label, route], index, list) => (
+            <TouchableOpacity key={route} style={[styles.menuListItem, { borderBottomColor: colors.outlineVariant, borderBottomWidth: index === list.length - 1 ? 0 : 1 }]} onPress={() => router.push(route as any)}>
+              <View style={styles.menuListLeft}><MaterialIcons name={icon as any} size={22} color={colors.primary} /><Text style={[styles.menuListText, { color: colors.onSurface }]}>{label}</Text></View>
+              <MaterialIcons name="chevron-right" size={24} color={colors.outlineVariant} />
+            </TouchableOpacity>
+          ))}
+        </View>
+
+        <View style={[styles.menuList, { backgroundColor: colors.surfaceContainerLowest, borderColor: colors.outlineVariant }]}>
           <TouchableOpacity
             style={[styles.menuListItem, { borderBottomColor: colors.outlineVariant }]}
             onPress={() => router.push('/profile/edit' as any)}

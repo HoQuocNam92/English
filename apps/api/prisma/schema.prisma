@@ -7,7 +7,10 @@
 //   - Enum: PascalCase (Prisma) → snake_case (PostgreSQL)
 // RBAC: users (auth only) + user_details (profile) + roles + permissions
 //       + role_permissions (N:N) + user_roles (N:N, multi-role per user)
-// Total: 67 application tables (plus Prisma's _prisma_migrations system table)
+// Total in PostgreSQL: 74 tables
+//   - 73 application tables: 72 Prisma models + 1 knowledge_vectors table
+//     managed by raw SQL migration (pgvector)
+//   - 1 _prisma_migrations system table managed by Prisma
 // =============================================================================
 
 generator client {

@@ -3,6 +3,7 @@ import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { AuthProvider } from '../src/shared/store/auth-context';
 import { ThemeProvider } from '../src/shared/store/theme-context';
 import { I18nProvider } from '../src/shared/store/i18n-context';
+import { AiChatBubble } from '../src/shared/ui/AiChatBubble';
 
 export default function RootLayout() {
   return (
@@ -18,6 +19,7 @@ export default function RootLayout() {
                 }
               }}
             />
+            <AiChatBubble />
           </AuthProvider>
         </I18nProvider>
       </ThemeProvider>

@@ -1,0 +1,12 @@
+import { useCallback, useEffect, useState } from 'react';
+import { Text, TouchableOpacity, View } from 'react-native';
+import { useRouter } from 'expo-router';
+import { api } from '../../src/shared/api/api-client';
+import { useTheme } from '../../src/shared/store/theme-context';
+import { EmptyState, FeatureScreen, featureStyles as s } from '../../src/shared/ui/FeatureScreen';
+
+export default function RoadmapScreen() {
+  const router = useRouter(); const { colors } = useTheme(); const [path, setPath] = useState<any>(null); const [loading, setLoading] = useState(true); const [error, setError] = useState('');
+  const load = useCallback(async () => { setLoading(true); try { const raw: any = await api.get('/learning-paths/me'); setPath(raw.data ?? raw); setError(''); } catch (e: any) { setError(e.message || 'Không thể tải lộ trình.'); } finally { setLoading(false); } }, []); useEffect(() => { load(); }, [load]);
+  return <FeatureScreen title="Lộ trình học" subtitle={path?.careerGoal || 'Lộ trình cá nhân hóa'} loading={loading} error={error} onRetry={load}>{!path ? <View><EmptyState icon="route" title="Bạn chưa có lộ trình" detail="Tạo lộ trình dựa trên trình độ và mục tiêu nghề nghiệp." /><TouchableOpacity onPress={() => router.push('/path-generator' as any)} style={[s.button, { backgroundColor: colors.primary }]}><Text style={{ color: '#fff', fontWeight: '800' }}>Tạo lộ trình</Text></TouchableOpacity></View> : <><Text style={{ fontSize: 22, fontWeight: '900', color: colors.onSurface, marginBottom: 16 }}>{path.title}</Text>{(path.modules ?? []).map((m: any, i: number) => <TouchableOpacity key={m.id} disabled={!m.currentLessonId} onPress={() => router.push(`/lessons/${m.currentLessonId}` as any)} style={[s.card, { backgroundColor: colors.surface, borderColor: m.status === 'current' ? colors.primary : colors.outlineVariant }]}><Text style={{ color: colors.primary, fontWeight: '800' }}>Bước {i + 1} · {m.progressPercent ?? 0}%</Text><Text style={[s.cardTitle, { color: colors.onSurface, marginTop: 5 }]}>{m.title}</Text><Text style={[s.muted, { color: colors.onSurfaceVariant }]}>{m.description}</Text></TouchableOpacity>)}<TouchableOpacity onPress={() => router.push('/path-generator' as any)} style={[s.button, { borderWidth: 1, borderColor: colors.primary }]}><Text style={{ color: colors.primary, fontWeight: '800' }}>Tạo lộ trình mới</Text></TouchableOpacity></>}</FeatureScreen>;
+}
