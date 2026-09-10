@@ -4,7 +4,6 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { LearnerShell } from '@/shared/layout';
 import { apiClient } from '@/shared/api/api-client';
-import { PromotionsBanner } from '@/features/promotions/PromotionsBanner';
 import { useI18n } from '@/shared/i18n';
 import { LoadingSpinner } from '@/shared/ui';
 
@@ -72,10 +71,10 @@ export default function LearnerHomePage() {
   const attempts: any[] = data?.attempts ?? [];
   const lessonProgressById = new Map((progress?.progress || []).filter((item: any) => item.resourceType === 'lesson').map((item: any) => [item.resourceId, item]));
 
-  const level = profile?.level?.name ?? profile?.level ?? 'Intermediate';
-  const domain = profile?.domain?.name ?? profile?.itField ?? 'Cloud Computing';
-  const cert = profile?.targetCertification?.name ?? profile?.targetCert ?? 'AWS';
-  const overallProgress = progress?.summary?.overallCompletionPercent ?? progress?.overallPercent ?? 68;
+  const level = profile?.level?.name ?? profile?.level ?? 'Chưa thiết lập';
+  const domain = profile?.domains?.[0]?.domain?.name ?? profile?.domain?.name ?? profile?.itField ?? 'Chưa thiết lập';
+  const cert = profile?.certGoals?.[0]?.certificate?.name ?? profile?.targetCertification?.name ?? profile?.targetCert ?? 'Chưa thiết lập';
+  const overallProgress = progress?.summary?.overallCompletionPercent ?? progress?.overallPercent ?? 0;
 
   return (
     <LearnerShell>
@@ -111,8 +110,6 @@ export default function LearnerHomePage() {
         </div>
 
 
-        {/* ⚡ Promos & Flash Sale Section */}
-        <PromotionsBanner />
       </section>
 
       {/* ─── Main Grid: 8-col content + 4-col sidebar ────────────── */}

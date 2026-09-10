@@ -38,7 +38,7 @@ function TreeBranch({ node, depth, selectedIds, busyId, onToggle, renderMeta }: 
   node: TreeNode; depth: number; selectedIds?: Set<string>; busyId?: string | null;
   onToggle?: (permission: Permission) => void; renderMeta?: (permission: Permission) => React.ReactNode;
 }) {
-  const [open, setOpen] = React.useState(true);
+  const [open, setOpen] = React.useState(false);
   const isLeaf = node.kind === 'permission';
   const descendants = (current: TreeNode): Permission[] => current.permission ? [current.permission] : current.children.flatMap(descendants);
   const childPermissions = descendants(node);

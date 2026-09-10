@@ -119,7 +119,11 @@ export class RagService {
     const ranked = reranked.map((item) => ({ document: vectorResults[item.index][0], vectorScore: vectorResults[item.index][1], rerankScore: item.relevanceScore }))
     const chunkIds = ranked.map((item) => String(item.document.metadata.chunkId))
     const chunksById = new Map((await this.prisma.knowledgeChunk.findMany({ where: { id: { in: chunkIds } }, include: { source: true } })).map((chunk) => [chunk.id, chunk]))
-    const minimumScore = Number(this.config.get('RAG_MIN_SCORE', 0.2))
+    // A vector store always returns the nearest rows, even when none is relevant.
+    // Require independent rerank evidence and a strong combined score before a
+    // chunk is allowed to ground an answer.
+    const minimumRerankScore = Math.max(0.35, Number(this.config.get('RAG_MIN_SCORE', 0.35)))
+    const minimumCombinedScore = Math.max(0.4, Number(this.config.get('RAG_MIN_COMBINED_SCORE', 0.4)))
     return ranked.map((item) => {
       const chunk = chunksById.get(String(item.document.metadata.chunkId))
       if (!chunk) return null
@@ -129,7 +133,11 @@ export class RagService {
       const lexicalScore = terms.length ? (matches + phraseBoost) / (terms.length + 2) : 0
       const score = item.rerankScore * 0.6 + item.vectorScore * 0.3 + lexicalScore * 0.1
       return { ...chunk, score, semanticScore: item.vectorScore, rerankScore: item.rerankScore, lexicalScore }
-    }).filter((item): item is NonNullable<typeof item> => Boolean(item && item.rerankScore >= minimumScore)).sort((a, b) => b.score - a.score).slice(0, limit)
+    }).filter((item): item is NonNullable<typeof item> => Boolean(
+      item
+      && item.rerankScore >= minimumRerankScore
+      && item.score >= minimumCombinedScore,
+    )).sort((a, b) => b.score - a.score).slice(0, limit)
   }
 
   async health() {

@@ -3,9 +3,7 @@ import { ApiTags, ApiBearerAuth, ApiOperation } from '@nestjs/swagger'
 import { TaxonomyService } from '../application/taxonomy/taxonomy.service'
 import { JwtAuthGuard } from '../infrastructure/auth/jwt-auth.guard'
 import { PermissionsGuard } from '../infrastructure/auth/permissions.guard'
-import { CurrentUser, JwtPayload } from './decorators/current-user.decorator'
 import { RequirePermissions } from './decorators/require-permissions.decorator'
-import { AddGroupMemberDto, CreateStudentGroupDto, UpdateStudentGroupDto } from './http-dto/group-planner.dto'
 
 @ApiTags('Taxonomy & Metadata')
 @ApiBearerAuth()
@@ -63,6 +61,24 @@ export class TaxonomyController {
     return this.svc.updateCertificateLinks(id, dto)
   }
 
+  @Post('certificates/:id/contents')
+  @RequirePermissions('certificates:manage')
+  createCertificationContent(@Param('id') id: string, @Body() dto: any) {
+    return this.svc.createCertificationContent(id, dto)
+  }
+
+  @Patch('certification-contents/:contentId')
+  @RequirePermissions('certificates:manage')
+  updateCertificationContent(@Param('contentId') contentId: string, @Body() dto: any) {
+    return this.svc.updateCertificationContent(contentId, dto)
+  }
+
+  @Delete('certification-contents/:contentId')
+  @RequirePermissions('certificates:manage')
+  deleteCertificationContent(@Param('contentId') contentId: string) {
+    return this.svc.deleteCertificationContent(contentId)
+  }
+
   @Delete('certificates/:id')
   @RequirePermissions('certificates:manage')
   deleteCertificate(@Param('id') id: string) {
@@ -74,50 +90,6 @@ export class TaxonomyController {
   @ApiOperation({ summary: 'List all students/learners (for teachers and admins)' })
   getStudents(@Query() q: any) {
     return this.svc.getStudents(q)
-  }
-
-  @Get('student-groups')
-  @RequirePermissions('groups:manage')
-  @ApiOperation({ summary: 'List student groups' })
-  getStudentGroups(@Query() q: any, @CurrentUser() user: JwtPayload) {
-    return this.svc.getStudentGroups(q, user)
-  }
-
-  @Post('student-groups')
-  @RequirePermissions('groups:manage')
-  @ApiOperation({ summary: 'Create student group' })
-  createStudentGroup(@Body() dto: CreateStudentGroupDto, @CurrentUser() user: JwtPayload) {
-    return this.svc.createStudentGroup(dto, user)
-  }
-
-  @Get('student-groups/:id')
-  @RequirePermissions('groups:manage')
-  getStudentGroup(@Param('id') id: string, @CurrentUser() user: JwtPayload) {
-    return this.svc.getStudentGroup(id, user)
-  }
-
-  @Patch('student-groups/:id')
-  @RequirePermissions('groups:manage')
-  updateStudentGroup(@Param('id') id: string, @Body() dto: UpdateStudentGroupDto, @CurrentUser() user: JwtPayload) {
-    return this.svc.updateStudentGroup(id, dto, user)
-  }
-
-  @Delete('student-groups/:id')
-  @RequirePermissions('groups:manage')
-  deleteStudentGroup(@Param('id') id: string, @CurrentUser() user: JwtPayload) {
-    return this.svc.deleteStudentGroup(id, user)
-  }
-
-  @Post('student-groups/:id/members')
-  @RequirePermissions('groups:manage')
-  addStudentGroupMember(@Param('id') id: string, @Body() dto: AddGroupMemberDto, @CurrentUser() user: JwtPayload) {
-    return this.svc.addStudentGroupMember(id, dto.learnerId, user)
-  }
-
-  @Delete('student-groups/:id/members/:learnerId')
-  @RequirePermissions('groups:manage')
-  removeStudentGroupMember(@Param('id') id: string, @Param('learnerId') learnerId: string, @CurrentUser() user: JwtPayload) {
-    return this.svc.removeStudentGroupMember(id, learnerId, user)
   }
 
   @Get('test-results')

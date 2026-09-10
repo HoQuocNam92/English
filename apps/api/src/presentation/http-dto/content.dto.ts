@@ -196,6 +196,32 @@ export class UpdateVocabularyDto {
   examples?: VocabExampleDto[]
 }
 
+export class BulkUpdateVocabularyStatusDto {
+  @ApiProperty({ enum: ['draft', 'published', 'archived'] })
+  @IsEnum(['draft', 'published', 'archived'])
+  status: string
+
+  @ApiPropertyOptional({ type: [String], description: 'Chỉ cập nhật các từ vựng được chọn' })
+  @IsOptional() @IsArray() @ArrayNotEmpty() @ArrayMaxSize(3000) @IsUUID('4', { each: true })
+  ids?: string[]
+
+  @ApiPropertyOptional()
+  @IsOptional() @IsString() @MaxLength(30)
+  domainCode?: string
+
+  @ApiPropertyOptional({ enum: ['draft', 'published', 'archived'] })
+  @IsOptional() @IsEnum(['draft', 'published', 'archived'])
+  currentStatus?: string
+
+  @ApiPropertyOptional()
+  @IsOptional() @IsString() @MaxLength(100)
+  search?: string
+
+  @ApiPropertyOptional({ description: 'Bắt buộc khi cập nhật toàn bộ kho mà không có bộ lọc' })
+  @IsOptional() @IsBoolean()
+  confirmAll?: boolean
+}
+
 // ─── Question ─────────────────────────────────────────────────────────────────
 
 export class QuestionOptionDto {

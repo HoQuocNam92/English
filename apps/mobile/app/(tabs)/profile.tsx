@@ -150,7 +150,6 @@ export default function MobileProfileScreen() {
             ['notifications', 'Thông báo', '/notifications'],
             ['bookmark', 'Từ đã lưu', '/saved'],
             ['style', 'Flashcards', '/flashcards'],
-            ['article', 'Reading Lab', '/reading-lab'],
           ].map(([icon, label, route], index, list) => (
             <TouchableOpacity key={route} style={[styles.menuListItem, { borderBottomColor: colors.outlineVariant, borderBottomWidth: index === list.length - 1 ? 0 : 1 }]} onPress={() => router.push(route as any)}>
               <View style={styles.menuListLeft}><MaterialIcons name={icon as any} size={22} color={colors.primary} /><Text style={[styles.menuListText, { color: colors.onSurface }]}>{label}</Text></View>

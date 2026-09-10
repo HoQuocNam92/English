@@ -1,8 +1,5 @@
-import { BadRequestException, ForbiddenException, Injectable, NotFoundException } from '@nestjs/common'
-import { randomBytes } from 'crypto'
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common'
 import { PrismaService } from '../../infrastructure/database/prisma.service'
-import { JwtPayload } from '../../presentation/decorators/current-user.decorator'
-import { CreateStudentGroupDto, UpdateStudentGroupDto } from '../../presentation/http-dto/group-planner.dto'
 
 @Injectable()
 export class TaxonomyService {
@@ -71,7 +68,7 @@ export class TaxonomyService {
   async getStudents(params: any) {
     const page = Math.max(1, Number(params?.page) || 1)
     const limit = Math.min(Math.max(1, Number(params?.limit) || 20), 100)
-    const { search, status } = params || {}
+    const { search, status, domainId, careerGoalId } = params || {}
     const skip = (page - 1) * limit
 
     const where: any = {
@@ -85,6 +82,13 @@ export class TaxonomyService {
     }
     if (status) {
       where.status = status
+    }
+    if (domainId) {
+      where.learnerProfile = { is: { domains: { some: { domainId } } } }
+    }
+    if (careerGoalId) {
+      const profileFilter = where.learnerProfile?.is ?? {}
+      where.learnerProfile = { is: { ...profileFilter, careerGoals: { some: { careerGoalId } } } }
     }
 
     const [users, total] = await Promise.all([
@@ -101,9 +105,6 @@ export class TaxonomyService {
               careerGoals: { include: { careerGoal: true } },
               certGoals: { include: { certificate: true } },
             },
-          },
-          groupMemberships: {
-            include: { group: true },
           },
         },
         orderBy: { createdAt: 'desc' },
@@ -124,56 +125,8 @@ export class TaxonomyService {
         weeklyTarget: u.learnerProfile?.weeklyStudyTargetMinutes ?? 180,
         domains: u.learnerProfile?.domains?.map((d) => d.domain.name) ?? [],
         certGoals: u.learnerProfile?.certGoals?.map((c) => c.certificate.name) ?? [],
-        groupName: u.groupMemberships?.[0]?.group?.name ?? 'Chưa tham gia nhóm',
+        careerGoals: u.learnerProfile?.careerGoals?.map((c) => c.careerGoal.name) ?? [],
       })),
-      meta: { total, page, limit, totalPages: Math.ceil(total / limit) },
-    }
-  }
-
-  async getStudentGroups(params: any, user: JwtPayload) {
-    const page = Math.max(1, Number(params?.page) || 1)
-    const limit = Math.min(Math.max(1, Number(params?.limit) || 20), 100)
-    const { search, domainCode, status } = params || {}
-    const skip = (page - 1) * limit
-
-    const where: any = {}
-    if (!user.roles?.includes('admin')) where.teacherId = user.sub
-    if (search) {
-      where.OR = [
-        { name: { contains: search, mode: 'insensitive' } },
-        { code: { contains: search, mode: 'insensitive' } },
-      ]
-    }
-    if (domainCode) {
-      where.domain = { code: domainCode }
-    }
-    if (status) {
-      where.status = status
-    }
-
-    const [groups, total] = await Promise.all([
-      this.prisma.learnerGroup.findMany({
-        where,
-        skip,
-        take: limit,
-        include: {
-          teacher: { include: { userDetail: true } },
-          domain: true,
-          certificate: true,
-          members: {
-            include: {
-              learner: { include: { userDetail: true } },
-            },
-          },
-          _count: { select: { members: true } },
-        },
-        orderBy: { createdAt: 'desc' },
-      }),
-      this.prisma.learnerGroup.count({ where }),
-    ])
-
-    return {
-      data: groups,
       meta: { total, page, limit, totalPages: Math.ceil(total / limit) },
     }
   }
@@ -275,7 +228,7 @@ export class TaxonomyService {
   }
 
   async getDashboardAnalytics() {
-    const [domains, levels, totalUsers, activeUsers, totalLessons, totalExams, totalVocab, attempts] =
+    const [domains, levels, careerGoals, totalUsers, activeUsers, totalLessons, totalExams, totalVocab, attempts] =
       await Promise.all([
         this.prisma.domain.findMany({
           include: {
@@ -291,6 +244,11 @@ export class TaxonomyService {
             },
           },
           orderBy: { order: 'asc' },
+        }),
+        this.prisma.careerGoal.findMany({
+          where: { isActive: true },
+          include: { _count: { select: { profileCareerGoals: true } } },
+          orderBy: { name: 'asc' },
         }),
         this.prisma.user.count(),
         this.prisma.user.count({ where: { status: 'active' } }),
@@ -366,137 +324,14 @@ export class TaxonomyService {
         questions: l._count.questions,
         exams: l._count.exams,
       })),
+      careerGoalsDistribution: careerGoals.map((goal) => ({
+        id: goal.id,
+        code: goal.code,
+        name: goal.name,
+        learners: goal._count.profileCareerGoals,
+      })),
       weeklyActivity,
     }
-  }
-
-  async createStudentGroup(dto: CreateStudentGroupDto, user: JwtPayload) {
-    const teacherId = dto.teacherId || user.sub
-    if (!user.roles?.includes('admin') && teacherId !== user.sub) {
-      throw new ForbiddenException('Teachers can only create their own groups')
-    }
-    await this.validateGroupReferences(dto.domainId, dto.certificateId, teacherId)
-    this.validateGroupDates(dto.startsAt, dto.endsAt)
-
-    const group = await this.prisma.learnerGroup.create({
-      data: {
-        code: await this.nextGroupCode(),
-        name: dto.name.trim(),
-        description: dto.description?.trim() || null,
-        domainId: dto.domainId,
-        certificateId: dto.certificateId,
-        teacherId,
-        startsAt: dto.startsAt ? new Date(dto.startsAt) : null,
-        endsAt: dto.endsAt ? new Date(dto.endsAt) : null,
-      },
-      include: {
-        teacher: { include: { userDetail: true } },
-        domain: true,
-        certificate: true,
-        members: { include: { learner: { include: { userDetail: true } } } },
-        _count: { select: { members: true } },
-      },
-    })
-    return group
-  }
-
-  async getStudentGroup(id: string, user: JwtPayload) {
-    await this.assertGroupAccess(id, user)
-    return this.prisma.learnerGroup.findUnique({
-      where: { id },
-      include: {
-        teacher: { include: { userDetail: true } }, domain: true, certificate: true,
-        members: { include: { learner: { include: { userDetail: true } } }, orderBy: { joinedAt: 'asc' } },
-        _count: { select: { members: true } },
-      },
-    })
-  }
-
-  async updateStudentGroup(id: string, dto: UpdateStudentGroupDto, user: JwtPayload) {
-    const current = await this.assertGroupAccess(id, user)
-    const teacherId = dto.teacherId || current.teacherId
-    if (!user.roles?.includes('admin') && teacherId !== user.sub) {
-      throw new ForbiddenException('Teachers cannot transfer group ownership')
-    }
-    await this.validateGroupReferences(dto.domainId || current.domainId, dto.certificateId || current.certificateId, teacherId)
-    this.validateGroupDates(dto.startsAt, dto.endsAt, current.startsAt, current.endsAt)
-    return this.prisma.learnerGroup.update({
-      where: { id },
-      data: {
-        ...(dto.name !== undefined ? { name: dto.name.trim() } : {}),
-        ...(dto.description !== undefined ? { description: dto.description.trim() || null } : {}),
-        ...(dto.domainId !== undefined ? { domainId: dto.domainId } : {}),
-        ...(dto.certificateId !== undefined ? { certificateId: dto.certificateId } : {}),
-        ...(dto.teacherId !== undefined ? { teacherId: dto.teacherId } : {}),
-        ...(dto.status !== undefined ? { status: dto.status } : {}),
-        ...(dto.startsAt !== undefined ? { startsAt: new Date(dto.startsAt) } : {}),
-        ...(dto.endsAt !== undefined ? { endsAt: new Date(dto.endsAt) } : {}),
-      },
-      include: { teacher: { include: { userDetail: true } }, domain: true, certificate: true, members: true, _count: { select: { members: true } } },
-    })
-  }
-
-  async deleteStudentGroup(id: string, user: JwtPayload) {
-    await this.assertGroupAccess(id, user)
-    await this.prisma.learnerGroup.delete({ where: { id } })
-    return { deleted: true }
-  }
-
-  async addStudentGroupMember(id: string, learnerId: string, user: JwtPayload) {
-    await this.assertGroupAccess(id, user)
-    const learner = await this.prisma.user.findFirst({
-      where: { id: learnerId, status: 'active', userRoles: { some: { role: { code: 'learner' } } } },
-      select: { id: true },
-    })
-    if (!learner) throw new BadRequestException('Active learner not found')
-    return this.prisma.learnerGroupMember.upsert({
-      where: { groupId_learnerId: { groupId: id, learnerId } }, update: {}, create: { groupId: id, learnerId },
-      include: { learner: { include: { userDetail: true } } },
-    })
-  }
-
-  async removeStudentGroupMember(id: string, learnerId: string, user: JwtPayload) {
-    await this.assertGroupAccess(id, user)
-    const deleted = await this.prisma.learnerGroupMember.deleteMany({ where: { groupId: id, learnerId } })
-    if (!deleted.count) throw new NotFoundException('Learner is not a member of this group')
-    return { deleted: true }
-  }
-
-  private async assertGroupAccess(id: string, user: JwtPayload) {
-    const group = await this.prisma.learnerGroup.findUnique({ where: { id } })
-    if (!group) throw new NotFoundException('Student group not found')
-    if (!user.roles?.includes('admin') && group.teacherId !== user.sub) {
-      throw new ForbiddenException('You can only manage your own groups')
-    }
-    return group
-  }
-
-  private async validateGroupReferences(domainId: string, certificateId: string, teacherId: string) {
-    const [domain, certificate, teacher] = await Promise.all([
-      this.prisma.domain.findFirst({ where: { id: domainId, isActive: true }, select: { id: true } }),
-      this.prisma.certificate.findFirst({ where: { id: certificateId, isActive: true }, select: { id: true } }),
-      this.prisma.user.findFirst({
-        where: { id: teacherId, status: 'active', userRoles: { some: { role: { code: { in: ['teacher', 'admin'] } } } } },
-        select: { id: true },
-      }),
-    ])
-    if (!domain) throw new BadRequestException('Active domain not found')
-    if (!certificate) throw new BadRequestException('Active certificate not found')
-    if (!teacher) throw new BadRequestException('Teacher or admin not found')
-  }
-
-  private validateGroupDates(startsAt?: string, endsAt?: string, currentStart?: Date | null, currentEnd?: Date | null) {
-    const start = startsAt !== undefined ? new Date(startsAt) : currentStart
-    const end = endsAt !== undefined ? new Date(endsAt) : currentEnd
-    if (start && end && start > end) throw new BadRequestException('Start date must be before or equal to end date')
-  }
-
-  private async nextGroupCode() {
-    for (let attempt = 0; attempt < 5; attempt += 1) {
-      const code = `GRP-${randomBytes(4).toString('hex').toUpperCase()}`
-      if (!(await this.prisma.learnerGroup.findUnique({ where: { code }, select: { id: true } }))) return code
-    }
-    throw new BadRequestException('Could not generate a unique group code')
   }
 
   async createCertificate(dto: any) {
@@ -575,6 +410,43 @@ export class TaxonomyService {
       }
     })
     return this.getCertificate(id)
+  }
+
+  async createCertificationContent(certificateId: string, dto: any) {
+    const certificate = await this.prisma.certificate.findUnique({ where: { id: certificateId }, select: { id: true } })
+    if (!certificate) throw new NotFoundException('Chứng chỉ không tồn tại')
+    if (!dto.title?.trim() || !dto.body?.trim()) throw new BadRequestException('Tiêu đề và nội dung là bắt buộc')
+    return this.prisma.certificationContent.create({
+      data: {
+        certificateId,
+        title: dto.title.trim(),
+        body: dto.body.trim(),
+        topic: dto.topic?.trim() || null,
+        order: Number(dto.order) || 0,
+        status: dto.status ?? 'draft',
+      },
+    })
+  }
+
+  async updateCertificationContent(id: string, dto: any) {
+    const exists = await this.prisma.certificationContent.findUnique({ where: { id }, select: { id: true } })
+    if (!exists) throw new NotFoundException('Nội dung ôn tập không tồn tại')
+    return this.prisma.certificationContent.update({
+      where: { id },
+      data: {
+        ...(dto.title !== undefined ? { title: dto.title.trim() } : {}),
+        ...(dto.body !== undefined ? { body: dto.body.trim() } : {}),
+        ...(dto.topic !== undefined ? { topic: dto.topic.trim() || null } : {}),
+        ...(dto.order !== undefined ? { order: Number(dto.order) || 0 } : {}),
+        ...(dto.status !== undefined ? { status: dto.status } : {}),
+      },
+    })
+  }
+
+  async deleteCertificationContent(id: string) {
+    const deleted = await this.prisma.certificationContent.deleteMany({ where: { id } })
+    if (!deleted.count) throw new NotFoundException('Nội dung ôn tập không tồn tại')
+    return { deleted: true }
   }
 
   async updateCertificate(id: string, dto: any) {

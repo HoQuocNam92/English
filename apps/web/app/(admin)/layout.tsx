@@ -7,7 +7,7 @@ import { useAuth } from '@/features/auth/presentation';
 
 const TEACHER_ROUTES = [
   '/admin/dashboard', '/admin/learning-content', '/admin/lessons',
-  '/admin/questions', '/admin/tests', '/admin/student-groups',
+  '/admin/questions', '/admin/tests',
   '/admin/test-results', '/admin/progress', '/admin/learning-paths',
   '/admin/community', '/admin/notifications',
 ];

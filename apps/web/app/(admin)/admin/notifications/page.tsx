@@ -93,7 +93,6 @@ export default function NotificationsAdminPage() {
                   <option value="system">Hệ thống (system)</option>
                   <option value="lesson_complete">Hoàn thành bài học (lesson_complete)</option>
                   <option value="streak">Chuỗi ngày (streak)</option>
-                  <option value="flash_sale">Flash Sale (flash_sale)</option>
                   <option value="achievement">Thành tựu (achievement)</option>
                   <option value="reminder">Nhắc nhở (reminder)</option>
                 </select>

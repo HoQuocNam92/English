@@ -105,7 +105,7 @@ export default function MobilePracticeScreen() {
           </TouchableOpacity>
 
           {/* Technical Reading (Half Width) */}
-          <TouchableOpacity style={styles.bentoCard} onPress={() => router.push('/lessons?type=technical_reading' as any)}>
+          <TouchableOpacity style={styles.bentoCard} onPress={() => router.push('/reading-lab' as any)}>
             <View style={[styles.bentoIconBox, { backgroundColor: '#d8e2ff', marginBottom: spacing.md }]}>
               <MaterialIcons name="menu-book" size={24} color="#0058be" />
             </View>

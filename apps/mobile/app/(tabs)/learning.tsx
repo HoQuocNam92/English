@@ -34,16 +34,6 @@ const CATEGORIES = [
     route: '/lessons?type=terminology',
   },
   {
-    id: 'reading',
-    title: 'Technical Reading',
-    desc: 'Luyện kỹ năng đọc hiểu tài liệu tiếng Anh công nghệ.',
-    icon: 'menu-book',
-    iconBg: '#F5F3FF',
-    iconColor: '#7C3AED',
-    wide: true,
-    route: '/reading-lab',
-  },
-  {
     id: 'api-docs',
     title: 'API Documentation',
     desc: 'Phân tích và hiểu tài liệu API chuẩn.',

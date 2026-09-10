@@ -74,7 +74,6 @@ export default function AdminDashboardPage() {
     totalLessons: number;
     totalExams: number;
     totalVocab: number;
-    totalGroups: number;
   } | null>(null);
   const [analytics, setAnalytics] = React.useState<AnalyticsData | null>(null);
   const [recentUsers, setRecentUsers] = React.useState<UserItem[]>([]);
@@ -85,12 +84,11 @@ export default function AdminDashboardPage() {
   React.useEffect(() => {
     async function load() {
       try {
-        const [allUsers, allLessons, allExams, allVocab, allGroups, analyticsRes] = await Promise.all<any>([
+        const [allUsers, allLessons, allExams, allVocab, analyticsRes] = await Promise.all<any>([
           isAdmin ? apiClient.get<PaginatedResponse<UserItem>>('/users?limit=5') : Promise.resolve({ data: [], meta: { total: 0 } }),
           apiClient.get<PaginatedResponse<LessonItem>>('/lessons?limit=4'),
           apiClient.get<PaginatedResponse<ExamItem>>('/exams?limit=1'),
           apiClient.get<PaginatedResponse<unknown>>('/vocabulary?limit=1'),
-          apiClient.get<PaginatedResponse<unknown>>('/student-groups?limit=1'),
           isAdmin ? apiClient.get<AnalyticsData>('/analytics/dashboard').catch(() => null) : Promise.resolve(null),
         ]);
 
@@ -102,7 +100,6 @@ export default function AdminDashboardPage() {
           totalLessons: allLessons.meta.total,
           totalExams: allExams.meta.total,
           totalVocab: allVocab.meta.total,
-          totalGroups: allGroups.meta.total,
         });
         setRecentUsers(allUsers.data.slice(0, 5));
         setRecentLessons(allLessons.data.slice(0, 4));
@@ -131,10 +128,10 @@ export default function AdminDashboardPage() {
       <div><h2 className="text-3xl font-bold tracking-tight text-on-surface">Không gian giảng viên</h2><p className="mt-1 text-sm text-on-surface-variant">Quản lý nội dung giảng dạy và theo dõi học viên của bạn.</p></div>
       {error && <div className="rounded-xl bg-error-container p-4 text-sm text-on-error-container">{error}</div>}
       <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
-        {[['Bài học', stats?.totalLessons ?? 0, 'auto_stories'], ['Bài thi', stats?.totalExams ?? 0, 'quiz'], ['Từ vựng', stats?.totalVocab ?? 0, 'translate'], ['Nhóm học viên', stats?.totalGroups ?? 0, 'groups']].map(([label,value,icon]) => <div key={String(label)} className="rounded-2xl bg-white p-6 shadow-[0_8px_28px_rgba(15,23,42,0.05)]"><span className="material-symbols-outlined text-primary">{icon}</span><p className="mt-5 text-sm text-on-surface-variant">{label}</p><p className="mt-1 text-3xl font-bold">{loading ? '—' : value}</p></div>)}
+        {[['Bài học', stats?.totalLessons ?? 0, 'auto_stories'], ['Bài thi', stats?.totalExams ?? 0, 'quiz'], ['Từ vựng', stats?.totalVocab ?? 0, 'translate']].map(([label,value,icon]) => <div key={String(label)} className="rounded-2xl bg-white p-6 shadow-[0_8px_28px_rgba(15,23,42,0.05)]"><span className="material-symbols-outlined text-primary">{icon}</span><p className="mt-5 text-sm text-on-surface-variant">{label}</p><p className="mt-1 text-3xl font-bold">{loading ? '—' : value}</p></div>)}
       </div>
       <section><h3 className="mb-4 text-xl font-bold">Công việc giảng dạy</h3><div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-        {[['Tạo bài học','/admin/lessons/editor','add_box'],['Thêm câu hỏi','/admin/questions/editor','post_add'],['Tạo bài kiểm tra','/admin/tests/builder','quiz'],['Quản lý nhóm','/admin/student-groups','groups'],['Xem kết quả thi','/admin/test-results','fact_check'],['Theo dõi tiến độ','/admin/progress','insights']].map(([label,href,icon]) => <Link key={href} href={href} className="flex items-center gap-4 rounded-2xl bg-white p-5 shadow-[0_8px_28px_rgba(15,23,42,0.05)] transition hover:-translate-y-0.5 hover:text-primary"><span className="material-symbols-outlined text-primary">{icon}</span><span className="font-semibold">{label}</span><span className="material-symbols-outlined ml-auto text-outline">chevron_right</span></Link>)}
+        {[['Tạo bài học','/admin/lessons/editor','add_box'],['Thêm câu hỏi','/admin/questions/editor','post_add'],['Tạo bài kiểm tra','/admin/tests/builder','quiz'],['Xem kết quả thi','/admin/test-results','fact_check'],['Theo dõi tiến độ','/admin/progress','insights']].map(([label,href,icon]) => <Link key={href} href={href} className="flex items-center gap-4 rounded-2xl bg-white p-5 shadow-[0_8px_28px_rgba(15,23,42,0.05)] transition hover:-translate-y-0.5 hover:text-primary"><span className="material-symbols-outlined text-primary">{icon}</span><span className="font-semibold">{label}</span><span className="material-symbols-outlined ml-auto text-outline">chevron_right</span></Link>)}
       </div></section>
     </main>
   );

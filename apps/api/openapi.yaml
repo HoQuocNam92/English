@@ -323,129 +323,6 @@ paths:
         '403':
           $ref: '#/components/responses/Forbidden'
 
-  /learner-groups:
-    get:
-      tags: [Learner Groups]
-      summary: Danh sách nhóm học viên
-      operationId: listLearnerGroups
-      parameters:
-        - $ref: '#/components/parameters/Page'
-        - $ref: '#/components/parameters/Limit'
-        - $ref: '#/components/parameters/Search'
-        - $ref: '#/components/parameters/DomainFilter'
-        - name: certificateId
-          in: query
-          schema: { type: string, format: uuid }
-        - name: teacherId
-          in: query
-          schema: { type: string, format: uuid }
-        - name: status
-          in: query
-          schema: { $ref: '#/components/schemas/LearnerGroupStatus' }
-      responses:
-        '200':
-          description: Danh sách nhóm học viên và tiến độ tổng hợp.
-          content:
-            application/json:
-              schema: { $ref: '#/components/schemas/LearnerGroupListResponse' }
-        '403':
-          $ref: '#/components/responses/Forbidden'
-    post:
-      tags: [Learner Groups]
-      summary: Tạo nhóm học viên
-      operationId: createLearnerGroup
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema: { $ref: '#/components/schemas/LearnerGroupWriteRequest' }
-      responses:
-        '201':
-          description: Nhóm học viên đã tạo.
-          content:
-            application/json:
-              schema: { $ref: '#/components/schemas/LearnerGroupResponse' }
-        '403':
-          $ref: '#/components/responses/Forbidden'
-        '422':
-          $ref: '#/components/responses/ValidationError'
-
-  /learner-groups/{learnerGroupId}:
-    parameters:
-      - $ref: '#/components/parameters/LearnerGroupId'
-    get:
-      tags: [Learner Groups]
-      summary: Chi tiết nhóm và thành viên
-      operationId: getLearnerGroup
-      responses:
-        '200':
-          description: Chi tiết nhóm học viên.
-          content:
-            application/json:
-              schema: { $ref: '#/components/schemas/LearnerGroupResponse' }
-        '403':
-          $ref: '#/components/responses/Forbidden'
-        '404':
-          $ref: '#/components/responses/NotFound'
-    patch:
-      tags: [Learner Groups]
-      summary: Cập nhật nhóm học viên
-      operationId: updateLearnerGroup
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema: { $ref: '#/components/schemas/LearnerGroupWriteRequest' }
-      responses:
-        '200':
-          description: Nhóm sau cập nhật.
-          content:
-            application/json:
-              schema: { $ref: '#/components/schemas/LearnerGroupResponse' }
-        '403':
-          $ref: '#/components/responses/Forbidden'
-        '404':
-          $ref: '#/components/responses/NotFound'
-        '422':
-          $ref: '#/components/responses/ValidationError'
-    delete:
-      tags: [Learner Groups]
-      summary: Lưu trữ nhóm học viên
-      operationId: archiveLearnerGroup
-      responses:
-        '204':
-          description: Nhóm học viên đã được lưu trữ.
-        '403':
-          $ref: '#/components/responses/Forbidden'
-        '404':
-          $ref: '#/components/responses/NotFound'
-
-  /learner-groups/{learnerGroupId}/members:
-    parameters:
-      - $ref: '#/components/parameters/LearnerGroupId'
-    put:
-      tags: [Learner Groups]
-      summary: Thay thế danh sách thành viên nhóm
-      description: Idempotent; learnerIds phải thuộc các tài khoản có vai trò learner.
-      operationId: replaceLearnerGroupMembers
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema: { $ref: '#/components/schemas/ReplaceGroupMembersRequest' }
-      responses:
-        '200':
-          description: Nhóm cùng danh sách thành viên mới.
-          content:
-            application/json:
-              schema: { $ref: '#/components/schemas/LearnerGroupResponse' }
-        '403':
-          $ref: '#/components/responses/Forbidden'
-        '404':
-          $ref: '#/components/responses/NotFound'
-        '422':
-          $ref: '#/components/responses/ValidationError'
-
   /learner-profiles/me:
     get:
       tags: [Learner Profiles]
@@ -1654,27 +1531,6 @@ paths:
         '401':
           $ref: '#/components/responses/Unauthorized'
 
-  /recommendations/{recommendationId}/feedback:
-    parameters:
-      - $ref: '#/components/parameters/RecommendationId'
-    post:
-      tags: [Recommendations]
-      summary: Gửi phản hồi cho gợi ý
-      operationId: submitRecommendationFeedback
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/RecommendationFeedbackRequest'
-      responses:
-        '204':
-          description: Đã ghi nhận phản hồi.
-        '404':
-          $ref: '#/components/responses/NotFound'
-        '422':
-          $ref: '#/components/responses/ValidationError'
-
 components:
   securitySchemes:
     bearerAuth:
@@ -1763,11 +1619,6 @@ components:
       in: path
       required: true
       schema: { type: string, format: uuid }
-    LearnerGroupId:
-      name: learnerGroupId
-      in: path
-      required: true
-      schema: { type: string, format: uuid }
     DomainId:
       name: domainId
       in: path
@@ -1813,12 +1664,6 @@ components:
       in: path
       required: true
       schema: { type: string, format: uuid }
-    RecommendationId:
-      name: recommendationId
-      in: path
-      required: true
-      schema: { type: string, format: uuid }
-
   requestBodies:
     DomainWriteBody:
       required: true
@@ -1885,10 +1730,6 @@ components:
     ProgressStatus:
       type: string
       enum: [not_started, in_progress, completed]
-    LearnerGroupStatus:
-      type: string
-      enum: [active, completed, archived]
-
     PaginationMeta:
       type: object
       required: [page, limit, totalItems, totalPages, hasNextPage, hasPreviousPage]
@@ -2119,62 +1960,6 @@ components:
       properties:
         success: { type: boolean, enum: [true] }
         data: { type: array, items: { $ref: '#/components/schemas/LearnerProfile' } }
-        meta: { $ref: '#/components/schemas/PaginationMeta' }
-
-    LearnerGroup:
-      type: object
-      required: [id, name, domain, certificate, teacher, status, members, memberCount, progressPercent, averageScorePercent, createdAt, updatedAt]
-      properties:
-        id: { type: string, format: uuid }
-        name: { type: string, minLength: 3, maxLength: 150, example: 'AWS Solutions Architect Fast-Track #01' }
-        description: { type: string, nullable: true, maxLength: 1000 }
-        domain: { $ref: '#/components/schemas/Domain' }
-        certificate: { $ref: '#/components/schemas/Certificate' }
-        teacher: { $ref: '#/components/schemas/User' }
-        status: { $ref: '#/components/schemas/LearnerGroupStatus' }
-        members: { type: array, items: { $ref: '#/components/schemas/User' } }
-        memberCount: { type: integer, minimum: 0, readOnly: true }
-        progressPercent: { type: number, format: float, minimum: 0, maximum: 100, readOnly: true }
-        averageScorePercent: { type: number, format: float, minimum: 0, maximum: 100, nullable: true, readOnly: true }
-        startsAt: { type: string, format: date-time, nullable: true }
-        endsAt: { type: string, format: date-time, nullable: true }
-        createdAt: { type: string, format: date-time }
-        updatedAt: { type: string, format: date-time }
-    LearnerGroupWriteRequest:
-      type: object
-      additionalProperties: false
-      required: [name, domainId, certificateId, teacherId, status]
-      properties:
-        name: { type: string, minLength: 3, maxLength: 150 }
-        description: { type: string, nullable: true, maxLength: 1000 }
-        domainId: { type: string, format: uuid }
-        certificateId: { type: string, format: uuid }
-        teacherId: { type: string, format: uuid, description: Tài khoản phải có vai trò teacher. }
-        status: { $ref: '#/components/schemas/LearnerGroupStatus' }
-        startsAt: { type: string, format: date-time, nullable: true }
-        endsAt: { type: string, format: date-time, nullable: true }
-    ReplaceGroupMembersRequest:
-      type: object
-      additionalProperties: false
-      required: [learnerIds]
-      properties:
-        learnerIds:
-          type: array
-          uniqueItems: true
-          maxItems: 500
-          items: { type: string, format: uuid }
-    LearnerGroupResponse:
-      type: object
-      required: [success, data]
-      properties:
-        success: { type: boolean, enum: [true] }
-        data: { $ref: '#/components/schemas/LearnerGroup' }
-    LearnerGroupListResponse:
-      type: object
-      required: [success, data, meta]
-      properties:
-        success: { type: boolean, enum: [true] }
-        data: { type: array, items: { $ref: '#/components/schemas/LearnerGroup' } }
         meta: { $ref: '#/components/schemas/PaginationMeta' }
 
     Domain:
@@ -2850,13 +2635,5 @@ components:
       properties:
         success: { type: boolean, enum: [true] }
         data: { type: array, items: { $ref: '#/components/schemas/Recommendation' } }
-    RecommendationFeedbackRequest:
-      type: object
-      additionalProperties: false
-      required: [action]
-      properties:
-        action: { type: string, enum: [helpful, not_helpful, dismissed, opened] }
-        comment: { type: string, nullable: true, maxLength: 500 }
-
 security:
   - bearerAuth: []

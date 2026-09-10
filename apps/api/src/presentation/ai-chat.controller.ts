@@ -36,7 +36,10 @@ export class PublicAiChatController {
     }
     publicChatUsage.set(key, usage && usage.resetsAt > now ? { ...usage, count: usage.count + 1 } : { count: 1, resetsAt: now + 10 * 60_000 });
     const retrieved = await this.rag.retrieve(undefined, dto.content.trim(), undefined, 5);
-    if (!retrieved.length) return { answer: 'Mình chưa tìm thấy thông tin phù hợp trong kho kiến thức đã được duyệt.', citations: [] };
+    if (!retrieved.length) return {
+      answer: 'Mình chỉ trả lời dựa trên học liệu tiếng Anh CNTT đã được duyệt và chưa tìm thấy nguồn đủ liên quan cho câu này. Bạn có thể hỏi cụ thể như “REST API là gì?”, “Giải thích rate limiting” hoặc mở một bài học để hỏi theo nội dung bài.',
+      citations: [],
+    };
     const result = await this.groq.chat({
       mode: 'qa',
       input: dto.content.trim(),

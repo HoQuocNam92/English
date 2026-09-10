@@ -50,7 +50,7 @@ export class AiChatService {
     if (!retrieved.length) {
       const [, assistant] = await this.prisma.$transaction([
         this.prisma.aiMessage.create({ data: { conversationId: id, role: 'user', content: input } }),
-        this.prisma.aiMessage.create({ data: { conversationId: id, role: 'assistant', content: 'Mình chưa tìm thấy nội dung đủ liên quan trong kho kiến thức đã được duyệt. Bạn hãy thử hỏi cụ thể hơn hoặc mở một bài học rồi hỏi lại.', metadata: { grounded: true, insufficientEvidence: true } } }),
+        this.prisma.aiMessage.create({ data: { conversationId: id, role: 'assistant', content: 'Câu hỏi này nằm ngoài phạm vi học liệu tiếng Anh CNTT hiện có, hoặc chưa có nguồn đủ tin cậy để trả lời. Bạn hãy hỏi về bài học, thuật ngữ hay tình huống giao tiếp IT; nếu đang hỏi về sức khỏe, hãy liên hệ người có chuyên môn phù hợp.', metadata: { grounded: true, insufficientEvidence: true } } }),
       ]);
       return { message: assistant, result: { answer: assistant.content, citations: [] } };
     }

@@ -17,7 +17,9 @@ async function main() {
   const vectorStore = new RagVectorStoreService(embedding, config); const rag = new RagService(prisma, embedding, vectorStore, config)
   await prisma.$connect()
   try {
-    const results = await rag.retrieve(undefined, 'Giải thích thuật ngữ API trong phát triển phần mềm', undefined, 3)
+    const query = process.argv.slice(2).filter((argument) => argument !== '--').join(' ').trim()
+      || 'Giải thích thuật ngữ API trong phát triển phần mềm'
+    const results = await rag.retrieve(undefined, query, undefined, 3)
     console.log(JSON.stringify(results.map((item) => ({ title: item.source.title, sourceType: item.source.sourceType, score: Number(item.score.toFixed(4)), rerankScore: Number(item.rerankScore.toFixed(4)) }))))
   } finally { await vectorStore.onModuleDestroy(); await prisma.$disconnect() }
 }

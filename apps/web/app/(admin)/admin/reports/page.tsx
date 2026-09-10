@@ -32,6 +32,12 @@ interface AnalyticsData {
     questions: number;
     exams: number;
   }>;
+  careerGoalsDistribution: Array<{
+    id: string;
+    code: string;
+    name: string;
+    learners: number;
+  }>;
   weeklyActivity: Array<{
     day: string;
     studyHours: number;
@@ -180,6 +186,20 @@ export default function AdminReportsPage() {
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-gutter">
+          <div className="lg:col-span-3 rounded-xl border border-outline-variant bg-surface-container-lowest p-lg">
+            <h3 className="font-headline-h3 text-headline-h3 text-on-surface">Phân nhóm người học theo mục tiêu nghề nghiệp</h3>
+            <p className="mt-1 text-sm text-on-surface-variant">Số liệu được lấy trực tiếp từ mục tiêu nghề nghiệp trong hồ sơ học viên.</p>
+            <div className="mt-5 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+              {(analytics?.careerGoalsDistribution ?? []).map(goal => (
+                <div key={goal.id} className="rounded-xl border border-outline-variant bg-surface-container-low p-4">
+                  <p className="text-sm font-bold text-on-surface">{goal.name}</p>
+                  <p className="mt-3 text-3xl font-black text-primary">{goal.learners}</p>
+                  <p className="mt-1 text-xs text-on-surface-variant">người học</p>
+                </div>
+              ))}
+              {!loading && !(analytics?.careerGoalsDistribution?.length) && <p className="text-sm text-on-surface-variant">Chưa có học viên chọn mục tiêu nghề nghiệp.</p>}
+            </div>
+          </div>
           <div className="lg:col-span-2 bg-surface-container-lowest p-lg rounded-xl border border-outline-variant hover:shadow-[0_1px_3px_rgba(15,23,24,0.06)] transition-all flex flex-col">
             <div className="flex items-center justify-between mb-lg">
               <h3 className="font-headline-h3 text-headline-h3 text-on-surface">Tiến độ học tập theo tuần</h3>

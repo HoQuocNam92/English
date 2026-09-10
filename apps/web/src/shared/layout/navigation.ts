@@ -30,7 +30,6 @@ export const adminNavigation: NavigationGroup[] = [
       { label: 'Người dùng', href: '/admin/users', icon: 'manage_accounts' },
       { label: 'Phân quyền (Roles)', href: '/admin/roles', icon: 'admin_panel_settings' },
       { label: 'Hồ sơ học viên', href: '/admin/students', icon: 'badge' },
-      { label: 'Nhóm học viên', href: '/admin/student-groups', icon: 'groups' },
     ],
   },
   {
@@ -42,21 +41,13 @@ export const adminNavigation: NavigationGroup[] = [
       { label: 'Chứng chỉ', href: '/admin/certifications', icon: 'workspace_premium', adminOnly: true },
       { label: 'Ngân hàng câu hỏi', href: '/admin/questions', icon: 'help' },
       { label: 'Bài thi', href: '/admin/tests', icon: 'quiz' },
-    ],
-  },
-  {
-    group: 'Khuyến mãi',
-    adminOnly: true,
-    items: [
-      { label: 'Mã giảm giá (Voucher)', href: '/admin/vouchers', icon: 'local_offer' },
-      { label: 'Flash Sale', href: '/admin/flash-sales', icon: 'flash_on' },
-      { label: 'Banner landing', href: '/admin/banners', icon: 'view_carousel' },
+      { label: 'AI RAG & cá nhân hóa', href: '/admin/ai-rag', icon: 'psychology' },
+      { label: 'Banner landing', href: '/admin/banners', icon: 'view_carousel', adminOnly: true },
     ],
   },
   {
     group: 'Học viên',
     items: [
-      { label: 'Nhóm học viên', href: '/admin/student-groups', icon: 'groups' },
       { label: 'Hồ sơ học viên', href: '/admin/students', icon: 'badge' },
       { label: 'Kết quả bài thi', href: '/admin/test-results', icon: 'fact_check' },
       { label: 'Tiến độ học tập', href: '/admin/progress', icon: 'insights' },
@@ -97,21 +88,13 @@ export const combinedNavigation: NavigationGroup[] = [
       { label: 'Chứng chỉ', href: '/admin/certifications', icon: 'workspace_premium', adminOnly: true },
       { label: 'Ngân hàng câu hỏi', href: '/admin/questions', icon: 'help' },
       { label: 'Bài thi', href: '/admin/tests', icon: 'quiz' },
-    ],
-  },
-  {
-    group: 'Khuyến mãi',
-    adminOnly: true,
-    items: [
-      { label: 'Mã giảm giá (Voucher)', href: '/admin/vouchers', icon: 'local_offer', adminOnly: true },
-      { label: 'Flash Sale', href: '/admin/flash-sales', icon: 'flash_on', adminOnly: true },
+      { label: 'AI RAG & cá nhân hóa', href: '/admin/ai-rag', icon: 'psychology' },
       { label: 'Banner landing', href: '/admin/banners', icon: 'view_carousel', adminOnly: true },
     ],
   },
   {
     group: 'Học viên',
     items: [
-      { label: 'Nhóm học viên', href: '/admin/student-groups', icon: 'groups' },
       { label: 'Hồ sơ học viên', href: '/admin/students', icon: 'badge' },
       { label: 'Kết quả bài thi', href: '/admin/test-results', icon: 'fact_check' },
       { label: 'Tiến độ học tập', href: '/admin/progress', icon: 'insights' },
@@ -146,9 +129,9 @@ export const teacherNavigation: NavigationGroup[] = [
     { label: 'Bài học', href: '/admin/lessons', icon: 'auto_stories' },
     { label: 'Ngân hàng câu hỏi', href: '/admin/questions', icon: 'help' },
     { label: 'Bài thi', href: '/admin/tests', icon: 'quiz' },
+    { label: 'AI RAG & cá nhân hóa', href: '/admin/ai-rag', icon: 'psychology' },
   ] },
   { group: 'Học viên phụ trách', items: [
-    { label: 'Nhóm học viên', href: '/admin/student-groups', icon: 'groups' },
     { label: 'Kết quả bài thi', href: '/admin/test-results', icon: 'fact_check' },
     { label: 'Tiến độ học tập', href: '/admin/progress', icon: 'insights' },
   ] },

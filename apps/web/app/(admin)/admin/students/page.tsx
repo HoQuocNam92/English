@@ -27,6 +27,10 @@ export default function AdminStudentsPage() {
   const [searchInput, setSearchInput] = React.useState('');
   const [search, setSearch] = React.useState('');
   const [status, setStatus] = React.useState('');
+  const [domainId, setDomainId] = React.useState('');
+  const [careerGoalId, setCareerGoalId] = React.useState('');
+  const [domains, setDomains] = React.useState<Array<{ id: string; name: string }>>([]);
+  const [careerGoals, setCareerGoals] = React.useState<Array<{ id: string; name: string }>>([]);
   const [loading, setLoading] = React.useState(true);
   const [error, setError] = React.useState<string | null>(null);
   const limit = 12;
@@ -43,8 +47,10 @@ export default function AdminStudentsPage() {
         role: 'learner',
         ...(search && { search }),
         ...(status && { status }),
+        ...(domainId && { domainId }),
+        ...(careerGoalId && { careerGoalId }),
       });
-      const res = await apiClient.get<PaginatedResponse<UserItem>>(`/users?${params}`);
+      const res = await apiClient.get<PaginatedResponse<UserItem>>(`/students?${params}`);
       setStudents(res.data);
       setTotal(res.meta.total);
     } catch (e) {
@@ -52,9 +58,17 @@ export default function AdminStudentsPage() {
     } finally {
       setLoading(false);
     }
-  }, [page, search, status]);
+  }, [page, search, status, domainId, careerGoalId]);
 
   React.useEffect(() => { void load(); }, [load]);
+  React.useEffect(() => {
+    Promise.all([apiClient.get<any>('/domains'), apiClient.get<any>('/career-goals')])
+      .then(([domainResult, goalResult]) => {
+        setDomains(domainResult?.data ?? domainResult ?? []);
+        setCareerGoals(goalResult?.data ?? goalResult ?? []);
+      })
+      .catch(() => {});
+  }, []);
 
   return (
     <main className="flex-1 p-margin overflow-y-auto">
@@ -92,16 +106,14 @@ export default function AdminStudentsPage() {
           <option value="suspended">Tạm khoá</option>
           <option value="inactive">Chưa kích hoạt</option>
         </select>
-        <select className="rounded-lg border border-outline-variant bg-surface-bright py-sm pl-sm pr-xl font-body-md text-on-surface focus:border-primary focus:ring-1 focus:ring-primary focus:outline-none min-w-[150px]">
-          <option value="">Lĩnh vực CNTT</option>
-          <option value="se">Software Engineering</option>
-          <option value="cc">Cloud Computing</option>
-          <option value="ai">Artificial Intelligence</option>
+        <select value={domainId} onChange={(e) => { setDomainId(e.target.value); setPage(1); }} className="rounded-lg border border-outline-variant bg-surface-bright py-sm pl-sm pr-xl font-body-md text-on-surface focus:border-primary focus:ring-1 focus:ring-primary focus:outline-none min-w-[170px]">
+          <option value="">Tất cả lĩnh vực</option>
+          {domains.map(item => <option key={item.id} value={item.id}>{item.name}</option>)}
         </select>
-        <button className="bg-surface-container hover:bg-surface-container-high text-on-surface font-interface-sb py-sm px-md rounded-lg border border-outline-variant transition-colors flex items-center gap-xs">
-          <span className="material-symbols-outlined text-[20px]">filter_list</span>
-          Lọc
-        </button>
+        <select value={careerGoalId} onChange={(e) => { setCareerGoalId(e.target.value); setPage(1); }} className="rounded-lg border border-outline-variant bg-surface-bright py-sm pl-sm pr-xl font-body-md text-on-surface focus:border-primary focus:ring-1 focus:ring-primary focus:outline-none min-w-[190px]">
+          <option value="">Tất cả mục tiêu nghề nghiệp</option>
+          {careerGoals.map(item => <option key={item.id} value={item.id}>{item.name}</option>)}
+        </select>
       </div>
 
       <div className="bg-surface-container-lowest rounded-xl border border-outline-variant overflow-hidden shadow-[0_1px_3px_rgba(15,23,24,0.06)]">
@@ -112,15 +124,16 @@ export default function AdminStudentsPage() {
                 <th className="p-md font-bold">Học viên</th>
                 <th className="p-md font-bold">Trạng thái / Cấp độ</th>
                 <th className="p-md font-bold">Lĩnh vực CNTT</th>
+                <th className="p-md font-bold">Mục tiêu nghề nghiệp</th>
                 <th className="p-md font-bold">Ngày đăng ký</th>
                 <th className="p-md font-bold text-center">Thao tác</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-outline-variant font-body-md text-on-surface">
               {loading ? (
-                 <tr><td colSpan={5} className="text-center py-8">Đang tải...</td></tr>
+                 <tr><td colSpan={6} className="text-center py-8">Đang tải...</td></tr>
               ) : students.length === 0 ? (
-                 <tr><td colSpan={5} className="text-center py-8 text-on-surface-variant">Không tìm thấy người học nào.</td></tr>
+                 <tr><td colSpan={6} className="text-center py-8 text-on-surface-variant">Không tìm thấy người học nào.</td></tr>
               ) : (
                 students.map((u) => (
                   <tr key={u.id} className="hover:bg-surface-bright transition-colors group">
@@ -144,12 +157,13 @@ export default function AdminStudentsPage() {
                         }`}>
                           {u.status === 'active' ? 'Đang học' : u.status === 'suspended' ? 'Tạm khoá' : 'Chưa kích hoạt'}
                         </span>
-                        <span className="inline-flex items-center px-2 py-1 rounded-full bg-secondary-fixed text-on-secondary-fixed font-interface-sb text-[12px]">Trung cấp (Intermediate)</span>
+                        <span className="inline-flex items-center px-2 py-1 rounded-full bg-secondary-fixed text-on-secondary-fixed font-interface-sb text-[12px]">{u.level ?? 'Chưa thiết lập'}</span>
                       </div>
                     </td>
                     <td className="p-md">
-                      <span className="inline-flex items-center px-2 py-1 rounded-md border border-outline-variant bg-surface text-on-surface-variant font-body-sm text-[12px]">Cloud Computing</span>
+                      <span className="inline-flex items-center px-2 py-1 rounded-md border border-outline-variant bg-surface text-on-surface-variant font-body-sm text-[12px]">{u.domains?.join(', ') || 'Chưa thiết lập'}</span>
                     </td>
+                    <td className="p-md text-on-surface-variant">{u.careerGoals?.join(', ') || 'Chưa thiết lập'}</td>
                     <td className="p-md text-on-surface-variant">
                       {new Date(u.createdAt).toLocaleDateString('vi-VN')}
                     </td>

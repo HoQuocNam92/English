@@ -116,7 +116,6 @@ async function main() {
     { code: 'exams:publish', name: 'Publish Exams', resource: 'exams', action: 'publish', description: 'Publish hoặc archive bài thi' },
     { code: 'exams:grade', name: 'Grade Exams', resource: 'exams', action: 'grade', description: 'Xem và quản lý kết quả thi' },
     { code: 'reports:read', name: 'Read Reports', resource: 'reports', action: 'read', description: 'Xem báo cáo tiến độ và analytics' },
-    { code: 'groups:manage', name: 'Manage Groups', resource: 'groups', action: 'manage', description: 'Tạo và quản lý nhóm học viên' },
     { code: 'certificates:manage', name: 'Manage Certificates', resource: 'certificates', action: 'manage', description: 'Tạo và cập nhật chứng chỉ' },
     { code: 'community:manage', name: 'Manage Community', resource: 'community', action: 'manage', description: 'Khóa, mở khóa và xóa bài viết cộng đồng' },
   ]
@@ -138,7 +137,7 @@ async function main() {
     }
   }
   await rolePerm('admin', Object.keys(permissions))
-  await rolePerm('teacher', ['lessons:read','lessons:create','lessons:update','lessons:delete','lessons:publish','vocabulary:read','vocabulary:manage','questions:read','questions:manage','exams:read','exams:create','exams:publish','exams:grade','groups:manage','reports:read'])
+  await rolePerm('teacher', ['lessons:read','lessons:create','lessons:update','lessons:delete','lessons:publish','vocabulary:read','vocabulary:manage','questions:read','questions:manage','exams:read','exams:create','exams:publish','exams:grade','reports:read'])
   await rolePerm('learner', ['lessons:read','vocabulary:read','exams:read','questions:read'])
   console.log('   ✅ Role permissions assigned')
 
@@ -775,20 +774,6 @@ async function main() {
   // ============================================================
   console.log('💳 Seed Pro Plans & Subscriptions...')
   
-  // Plan quotas
-  const planQuotas = [
-    { planId: 'pro_monthly', maxSlots: 500, soldSlots: 45 },
-    { planId: 'pro_yearly', maxSlots: 200, soldSlots: 88 },
-    { planId: 'pro_lifetime', maxSlots: 50, soldSlots: 12 },
-  ]
-  for (const pq of planQuotas) {
-    await prisma.planQuota.upsert({
-      where: { planId: pq.planId },
-      update: {},
-      create: pq,
-    })
-  }
-
   // Active Pro Subscription for learner1 & adminUser
   const proUsers = [
     { user: learner1, planId: 'pro_yearly', amount: 1290000, days: 365 },
@@ -823,35 +808,6 @@ async function main() {
       })
     }
   }
-  // Vouchers
-  const voucherData = [
-    { code: 'WELCOME50K', name: 'Giảm 50.000 VNĐ mừng học viên mới', discountType: 'fixed', discountValue: 50000, minOrderAmount: 100000, startDate: new Date(Date.now() - 24 * 60 * 60 * 1000), endDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), isActive: true },
-    { code: 'FLASH30', name: 'Ưu đãi Flash Sale 30% Gói PRO', discountType: 'percentage', discountValue: 30, minOrderAmount: 0, startDate: new Date(Date.now() - 24 * 60 * 60 * 1000), endDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), isActive: true },
-    { code: 'PRO2026', name: 'Mã giảm giá Khóa học TechEnglish 2026', discountType: 'percentage', discountValue: 20, minOrderAmount: 100000, startDate: new Date(Date.now() - 24 * 60 * 60 * 1000), endDate: new Date(Date.now() + 60 * 24 * 60 * 60 * 1000), isActive: true },
-  ]
-
-  for (const v of voucherData) {
-    await prisma.voucher.upsert({
-      where: { code: v.code },
-      update: { startDate: v.startDate, endDate: v.endDate, isActive: true },
-      create: v,
-    })
-  }
-
-  // Flash Sales
-  const flashSaleData = [
-    { title: '⚡ Flash Sale Nâng Cấp Pro Hàng Tuần - Giảm 30%', description: 'Áp dụng giảm 30% cho gói PRO Năm khi đăng ký trong tuần này!', planId: 'pro_yearly', discountPercent: 30, startTime: new Date(Date.now() - 24 * 60 * 60 * 1000), endTime: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), isActive: true },
-  ]
-
-  for (const fs of flashSaleData) {
-    const existing = await prisma.flashSale.findFirst({ where: { title: fs.title } })
-    if (!existing) {
-      await prisma.flashSale.create({ data: fs })
-    } else {
-      await prisma.flashSale.update({ where: { id: existing.id }, data: { startTime: fs.startTime, endTime: fs.endTime, isActive: true } })
-    }
-  }
-
   // Gamification (User Streaks & EXP Points for Leaderboard)
   const allLearners = await prisma.user.findMany({
     where: { email: { startsWith: 'learner' } }
@@ -1031,7 +987,6 @@ async function main() {
     if (l1) {
       await prisma.notification.createMany({
         data: [
-          { userId: null, type: 'flash_sale', title: '⚡ Flash Sale Gói PRO - Giảm 30%!', message: 'Cơ hội vàng! Nâng cấp gói PRO ngay hôm nay với mã FLASH30 để tiết kiệm 30%. Chỉ còn 5 giờ!', actionUrl: '/learn/pricing', isRead: false },
           { userId: l1.id, type: 'streak', title: '🔥 Chuỗi 14 ngày học liên tiếp!', message: 'Tuyệt vời! Bạn đã duy trì chuỗi học 14 ngày. Hãy tiếp tục để đạt badge "Học viên kiên trì"!', actionUrl: '/learn/achievements', isRead: false },
           { userId: l1.id, type: 'lesson_complete', title: '✅ Hoàn thành bài học AWS S3', message: 'Chúc mừng! Bạn đã hoàn thành bài học AWS S3 Storage Basics. +50 EXP!', actionUrl: '/learn/lessons', isRead: true },
           { userId: l1.id, type: 'reminder', title: '📚 Nhắc nhở học tập hôm nay', message: 'Bạn chưa học hôm nay. Hãy dành 15 phút để ôn tập từ vựng Cloud Computing nhé!', actionUrl: '/learn/lessons', isRead: false },

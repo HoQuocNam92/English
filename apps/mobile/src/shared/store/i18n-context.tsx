@@ -32,8 +32,6 @@ const translations = {
     todayGoal: 'Mục tiêu hôm nay',
     streak: 'ngày liên tiếp',
     exp: 'EXP',
-    flashSale: 'Flash Sale',
-    voucher: 'Mã giảm giá',
     // Learning
     lessons: 'Bài học',
     completed: 'Đã hoàn thành',
@@ -87,8 +85,6 @@ const translations = {
     todayGoal: "Today's goal",
     streak: 'day streak',
     exp: 'EXP',
-    flashSale: 'Flash Sale',
-    voucher: 'Voucher',
     // Learning
     lessons: 'Lessons',
     completed: 'Completed',

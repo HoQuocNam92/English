@@ -79,7 +79,6 @@ export default function LandingPage() {
           </Link>
 
           <nav className="hidden md:flex items-center gap-6 text-sm font-semibold text-on-surface-variant">
-            <a href="#features" className="hover:text-primary transition-colors">Tính năng</a>
             <a href="#plans" className="hover:text-primary transition-colors">Gói học</a>
             <a href="#about" className="hover:text-primary transition-colors">Về chúng tôi</a>
           </nav>
@@ -133,7 +132,7 @@ export default function LandingPage() {
       <div className="fixed bottom-5 right-5 z-[70] flex flex-col items-end gap-3">
         {chatOpen && <section className="flex h-[min(620px,calc(100vh-110px))] w-[min(390px,calc(100vw-32px))] flex-col overflow-hidden rounded-[26px] border border-blue-200 bg-white shadow-2xl">
           <header className="flex items-center justify-between bg-gradient-to-r from-blue-600 to-cyan-500 px-5 py-4 text-white">
-            <div><p className="font-black">TechEnglish AI</p><p className="text-xs text-blue-50">Hỏi đáp tiếng Anh CNTT bằng Groq</p></div>
+            <div><p className="font-black">TechEnglish AI</p><p className="text-xs text-blue-50">RAG theo học liệu đã duyệt</p></div>
             <button type="button" onClick={() => setChatOpen(false)} aria-label="Đóng trợ lý AI" className="flex h-9 w-9 items-center justify-center rounded-full bg-white/15 hover:bg-white/25"><span className="material-symbols-outlined !text-white">close</span></button>
           </header>
           <div className="flex-1 space-y-3 overflow-y-auto bg-[linear-gradient(#eef2ff_1px,transparent_1px),linear-gradient(90deg,#eef2ff_1px,transparent_1px)] bg-[size:32px_32px] p-4">
@@ -141,7 +140,7 @@ export default function LandingPage() {
             {chatMessages.map((message, index) => <div key={index} className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}><div className={`max-w-[88%] whitespace-pre-wrap rounded-2xl px-4 py-3 text-sm leading-6 ${message.role === 'user' ? 'rounded-br-md bg-blue-600 text-white' : 'rounded-bl-md border border-blue-100 bg-white text-on-surface shadow-sm'}`}>{message.content}</div></div>)}
             {chatLoading && <div className="w-fit rounded-2xl rounded-bl-md border border-blue-100 bg-white px-4 py-3 text-sm text-on-surface-variant">AI đang suy nghĩ…</div>}
           </div>
-          {!chatMessages.length && <div className="flex flex-wrap gap-2 border-t border-outline-variant/40 px-4 py-3">{['Học tiếng Anh IT thế nào?', 'Sửa câu tiếng Anh', 'Giải thích từ deploy'].map(item => <button type="button" key={item} onClick={() => void sendLandingChat(undefined, item)} className="rounded-full border border-blue-300 px-3 py-2 text-xs font-semibold text-blue-700 hover:bg-blue-50">{item}</button>)}</div>}
+          {!chatMessages.length && <div className="flex flex-wrap gap-2 border-t border-outline-variant/40 px-4 py-3">{['REST API là gì?', 'Giải thích rate limiting', 'Giải thích từ deploy'].map(item => <button type="button" key={item} onClick={() => void sendLandingChat(undefined, item)} className="rounded-full border border-blue-300 px-3 py-2 text-xs font-semibold text-blue-700 hover:bg-blue-50">{item}</button>)}</div>}
           {chatError && <p className="px-4 pt-2 text-xs text-red-600">{chatError}</p>}
           <form onSubmit={sendLandingChat} className="flex gap-2 border-t border-outline-variant/40 bg-white p-4"><input required minLength={2} maxLength={600} value={chatInput} onChange={event => setChatInput(event.target.value)} placeholder="Nhập câu hỏi…" className="min-w-0 flex-1 rounded-2xl border border-outline-variant px-4 py-3 text-sm outline-none focus:border-blue-500" /><button disabled={chatLoading || chatInput.trim().length < 2} aria-label="Gửi câu hỏi" className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-blue-600 text-white disabled:opacity-40"><span className="material-symbols-outlined !text-white">send</span></button></form>
         </section>}
@@ -245,12 +244,6 @@ export default function LandingPage() {
               </div>
             </div>
 
-            {/* Floating badge — Flash Sale */}
-            <div className="absolute -top-4 -right-4 bg-purple-600 !text-white text-xs font-black px-3 py-2 rounded-2xl shadow-lg flex items-center gap-1.5 border border-purple-400">
-              <span className="material-symbols-outlined text-[16px] fill-1 !text-white">flash_on</span>
-              <span className="!text-white">Flash Sale -40%</span>
-            </div>
-
             {/* Floating badge — Completion */}
             <div className="absolute -bottom-4 -left-4 bg-surface-container-lowest border border-outline-variant/40 shadow-xl rounded-2xl px-4 py-3 flex items-center gap-3">
               <div className="w-8 h-8 rounded-full bg-indigo-100 flex items-center justify-center">
@@ -261,34 +254,6 @@ export default function LandingPage() {
                 <p className="text-[10px] text-on-surface-variant">+50 EXP kiếm được</p>
               </div>
             </div>
-          </div>
-        </div>
-      </section>
-
-      {/* ─── Features ─────────────────────────────────────────────── */}
-      <section id="features" className="bg-surface-container-low py-20">
-        <div className="mx-auto px-4 sm:px-6" style={{ maxWidth: '1152px' }}>
-          <div className="text-center mb-14">
-            <h2 className="text-3xl font-black text-on-surface tracking-tight">Tại sao chọn TechEnglish Pro?</h2>
-            <p className="text-on-surface-variant mt-3 mx-auto" style={{ maxWidth: '576px' }}>Mọi tính năng được thiết kế dành riêng cho người học tiếng Anh IT</p>
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {[
-              { icon: 'menu_book', title: 'Lộ trình học có cấu trúc', desc: 'Từ vocabulary → technical reading → API docs theo cấp độ Beginner đến Professional' },
-              { icon: 'quiz', title: 'Bài thi & Luyện tập', desc: 'Ngân hàng câu hỏi đa dạng: trắc nghiệm, scenario-based, short answer theo từng lĩnh vực IT' },
-              { icon: 'psychology', title: 'Gợi ý theo tiến độ', desc: 'Hệ thống phân tích kết quả và đề xuất bài học phù hợp với trình độ và mục tiêu của bạn' },
-              { icon: 'workspace_premium', title: 'Chứng chỉ mục tiêu', desc: 'Theo dõi tiến độ theo chứng chỉ AWS, Azure, IELTS Technical, CKA và nhiều hơn nữa' },
-              { icon: 'style', title: 'Flashcard thông minh', desc: 'Hệ thống Spaced Repetition giúp ghi nhớ từ vựng kỹ thuật lâu dài và hiệu quả' },
-              { icon: 'trending_up', title: 'Theo dõi tiến độ', desc: 'Dashboard chi tiết, streak hàng ngày, leaderboard và badge thành tích để luôn có động lực' },
-            ].map((f) => (
-              <div key={f.title} className="bg-surface-container-lowest rounded-2xl p-6 border border-outline-variant/40 shadow-2xs hover:shadow-md transition-shadow space-y-3">
-                <div className="w-11 h-11 rounded-xl bg-indigo-100 flex items-center justify-center">
-                  <span className="material-symbols-outlined text-[24px] text-primary">{f.icon}</span>
-                </div>
-                <h3 className="font-bold text-on-surface">{f.title}</h3>
-                <p className="text-sm text-on-surface-variant leading-relaxed">{f.desc}</p>
-              </div>
-            ))}
           </div>
         </div>
       </section>
@@ -381,6 +346,36 @@ export default function LandingPage() {
               <ul className="space-y-2 text-sm text-on-surface-variant">{['Quyền truy cập PRO trong 180 ngày', 'Toàn bộ bài học & nội dung', 'Luyện tập không giới hạn', 'Flashcard nâng cao'].map(f => <li key={f} className="flex items-center gap-2"><span className="material-symbols-outlined text-[16px] text-primary">check</span>{f}</li>)}</ul>
               <Link href="/login" className="block w-full py-3 text-center bg-primary !text-white font-bold rounded-xl hover:opacity-90 text-sm"><span className="!text-white">Chọn gói 6 tháng</span></Link>
             </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ─── About ───────────────────────────────────────────────── */}
+      <section id="about" className="bg-surface-container-low py-20 scroll-mt-16">
+        <div className="mx-auto grid items-center gap-10 px-4 sm:px-6 md:grid-cols-2" style={{ maxWidth: '1152px' }}>
+          <div>
+            <p className="text-xs font-black uppercase tracking-[0.16em] text-primary">Về chúng tôi</p>
+            <h2 className="mt-3 text-3xl font-black tracking-tight text-on-surface">Tiếng Anh thực tế dành riêng cho người làm công nghệ</h2>
+            <p className="mt-5 text-sm leading-7 text-on-surface-variant">
+              TechEnglish Pro giúp sinh viên và kỹ sư công nghệ học tiếng Anh ngay trong ngữ cảnh họ sử dụng mỗi ngày: tài liệu kỹ thuật, thuật ngữ chuyên ngành, tình huống công việc và chứng chỉ quốc tế.
+            </p>
+            <p className="mt-3 text-sm leading-7 text-on-surface-variant">
+              Nội dung được tổ chức theo trình độ và lĩnh vực IT, kết hợp theo dõi tiến độ để mỗi người có một hành trình học rõ ràng, thực tế và phù hợp với mục tiêu nghề nghiệp.
+            </p>
+          </div>
+          <div className="grid grid-cols-2 gap-4">
+            {[
+              { icon: 'terminal', title: 'Đúng chuyên ngành', desc: 'Học qua ngữ cảnh phần mềm và CNTT.' },
+              { icon: 'route', title: 'Có lộ trình', desc: 'Nội dung nối tiếp theo mục tiêu cá nhân.' },
+              { icon: 'auto_stories', title: 'Học từ thực tế', desc: 'Tài liệu, từ vựng và tình huống công việc.' },
+              { icon: 'monitoring', title: 'Theo dõi rõ ràng', desc: 'Biết mình đang ở đâu và cần học gì tiếp.' },
+            ].map(item => (
+              <article key={item.title} className="rounded-2xl border border-outline-variant/40 bg-surface-container-lowest p-5 shadow-sm">
+                <span className="material-symbols-outlined text-[28px] text-primary">{item.icon}</span>
+                <h3 className="mt-3 text-sm font-bold text-on-surface">{item.title}</h3>
+                <p className="mt-2 text-xs leading-5 text-on-surface-variant">{item.desc}</p>
+              </article>
+            ))}
           </div>
         </div>
       </section>

@@ -21,7 +21,6 @@ export function LearnerShell({ children }: LearnerShellProps) {
 
   const navLinks = [
     { href: '/learn', label: t.nav.home, exactMatch: true },
-    { href: '/learn/lessons', label: t.nav.learning, exactMatch: false },
     { href: '/learn/practice', label: t.nav.practice, exactMatch: false },
     { href: '/learn/quiz/tech', label: 'Thi thử', exactMatch: false },
     { href: '/learn/progress', label: t.nav.progress, exactMatch: false },
@@ -53,8 +52,14 @@ export function LearnerShell({ children }: LearnerShellProps) {
 
           {/* Left: Brand + Nav */}
           <div className="flex items-center gap-6">
-            <Link href="/learn" className="text-[20px] font-bold text-primary tracking-tight leading-tight whitespace-nowrap">
-              TechEnglish Pro
+            <Link href="/learn" className="flex items-center gap-2.5 whitespace-nowrap">
+              <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-primary shadow-sm">
+                <span className="material-symbols-outlined text-[22px] !text-white fill-1">terminal</span>
+              </div>
+              <div>
+                <span className="block text-base font-black leading-tight tracking-tight text-primary">TechEnglish Pro</span>
+                <span className="block text-[10px] font-semibold uppercase leading-none tracking-wider text-on-surface-variant">IT English Platform</span>
+              </div>
             </Link>
 
             <div className="hidden md:flex items-center h-full gap-4">
@@ -91,9 +96,7 @@ export function LearnerShell({ children }: LearnerShellProps) {
                 {moreOpen && (
                   <div className="absolute top-full left-0 mt-1 w-52 bg-surface-container-lowest border border-outline-variant/50 rounded-xl shadow-lg z-50 py-1 overflow-hidden">
                     {[
-                      { href: '/learn/ai-coach', label: 'AI English Coach', icon: 'smart_toy' },
                       { href: '/learn/achievements', label: t.nav.achievements, icon: 'military_tech' },
-                      { href: '/learn/reading-lab', label: t.nav.readingLab, icon: 'menu_book' },
                       { href: '/learn/community', label: t.nav.community, icon: 'forum' },
                       { href: '/learn/path-generator', label: t.nav.pathGenerator, icon: 'route' },
                     ].map((item) => (

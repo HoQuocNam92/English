@@ -34,7 +34,7 @@ const PARTS_OF_SPEECH: Record<string, string> = {
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
-interface DomainOption { id: string; name: string; }
+interface DomainOption { id: string; code: string; name: string; }
 interface LevelOption  { id: string; name: string; }
 
 interface FormState {
@@ -427,6 +427,9 @@ export default function AdminLearningContentPage() {
   const [searchInput, setSearchInput] = React.useState('');
   const [search, setSearch]           = React.useState('');
   const [status, setStatus]           = React.useState('');
+  const [domainCode, setDomainCode]   = React.useState('');
+  const [selectedIds, setSelectedIds] = React.useState<Set<string>>(new Set());
+  const [bulkBusy, setBulkBusy]       = React.useState(false);
   const [loading, setLoading]         = React.useState(true);
   const [error, setError]             = React.useState<string | null>(null);
   const limit = 12;
@@ -461,6 +464,7 @@ export default function AdminLearningContentPage() {
         limit: String(limit),
         ...(search && { search }),
         ...(status && { status }),
+        ...(domainCode && { domainCode }),
       });
       const res = await apiClient.get<PaginatedResponse<VocabularyItem>>(`/vocabulary?${params}`);
       setItems(res.data);
@@ -470,7 +474,7 @@ export default function AdminLearningContentPage() {
     } finally {
       setLoading(false);
     }
-  }, [page, search, status]);
+  }, [page, search, status, domainCode]);
 
   React.useEffect(() => { void load(); }, [load]);
 
@@ -479,6 +483,32 @@ export default function AdminLearningContentPage() {
   const closeModal = () => setModalMode(null);
   const handleModalSuccess  = () => { closeModal();       void load(); };
   const handleDeleteSuccess = () => { setDeleteTarget(null); void load(); };
+
+  React.useEffect(() => { setSelectedIds(new Set()); }, [page, search, status, domainCode]);
+
+  const toggleSelected = (id: string) => setSelectedIds((current) => {
+    const next = new Set(current);
+    if (next.has(id)) next.delete(id); else next.add(id);
+    return next;
+  });
+
+  const bulkUpdate = async (targetStatus: 'draft' | 'published', scope: 'selected' | 'filtered') => {
+    const selectedCount = selectedIds.size;
+    if (scope === 'selected' && selectedCount === 0) return;
+    const affected = scope === 'selected' ? `${selectedCount} từ đã chọn` : `${total} kết quả đang lọc`;
+    const action = targetStatus === 'published' ? 'xuất bản' : 'chuyển về bản nháp';
+    if (!window.confirm(`Bạn có chắc muốn ${action} ${affected}?`)) return;
+    setBulkBusy(true); setError(null);
+    try {
+      await apiClient.patch('/vocabulary/bulk-status', scope === 'selected'
+        ? { ids: [...selectedIds], status: targetStatus }
+        : { domainCode: domainCode || undefined, currentStatus: status || undefined, search: search || undefined, status: targetStatus, confirmAll: !domainCode && !status && !search });
+      setSelectedIds(new Set());
+      await load();
+    } catch (e) {
+      setError(e instanceof ApiClientError ? e.message : 'Không thể cập nhật hàng loạt');
+    } finally { setBulkBusy(false); }
+  };
 
   return (
     <div>
@@ -511,6 +541,14 @@ export default function AdminLearningContentPage() {
           maxLength={100}
         />
         <select
+          value={domainCode}
+          onChange={(e) => { setDomainCode(e.target.value); setPage(1); }}
+          className="rounded-xl border border-outline-variant/60 bg-surface-container-lowest px-3 py-2 text-sm text-on-surface focus:outline-none"
+        >
+          <option value="">Tất cả lĩnh vực</option>
+          {domains.map((domain) => <option key={domain.id} value={domain.code}>{domain.name}</option>)}
+        </select>
+        <select
           value={status}
           onChange={(e) => { setStatus(e.target.value); setPage(1); }}
           className="rounded-xl border border-outline-variant/60 bg-surface-container-lowest px-3 py-2 text-sm text-on-surface focus:outline-none"
@@ -524,6 +562,18 @@ export default function AdminLearningContentPage() {
         <p className="mt-3 text-xs text-on-surface-variant">
           Tổng cộng {total} thuật ngữ IT {search && `— kết quả cho "${search}"`}
         </p>
+      )}
+
+      {!loading && items.length > 0 && (
+        <div className="mt-4 rounded-xl border border-outline-variant/50 bg-surface-container-lowest p-3 flex flex-wrap items-center gap-2">
+          <label className="mr-auto flex cursor-pointer items-center gap-2 text-sm font-semibold text-on-surface">
+            <input type="checkbox" className="h-4 w-4 accent-primary" checked={items.every((item) => selectedIds.has(item.id))} onChange={(e) => setSelectedIds((current) => { const next = new Set(current); items.forEach((item) => e.target.checked ? next.add(item.id) : next.delete(item.id)); return next; })} />
+            Chọn trang này {selectedIds.size > 0 && `(${selectedIds.size})`}
+          </label>
+          {selectedIds.size > 0 && <><button disabled={bulkBusy} onClick={() => void bulkUpdate('published', 'selected')} className="rounded-lg bg-emerald-600 px-3 py-2 text-xs font-bold text-white disabled:opacity-50">Xuất bản đã chọn</button><button disabled={bulkBusy} onClick={() => void bulkUpdate('draft', 'selected')} className="rounded-lg bg-amber-500 px-3 py-2 text-xs font-bold text-white disabled:opacity-50">Đưa về nháp</button></>}
+          <button disabled={bulkBusy || total === 0} onClick={() => void bulkUpdate('published', 'filtered')} className="rounded-lg border border-emerald-600 px-3 py-2 text-xs font-bold text-emerald-700 disabled:opacity-50">Xuất bản tất cả kết quả lọc</button>
+          <button disabled={bulkBusy || total === 0} onClick={() => void bulkUpdate('draft', 'filtered')} className="rounded-lg border border-amber-500 px-3 py-2 text-xs font-bold text-amber-700 disabled:opacity-50">Cho tất cả kết quả lọc về nháp</button>
+        </div>
       )}
 
       {error && (
@@ -548,6 +598,7 @@ export default function AdminLearningContentPage() {
               <div>
                 {/* Header */}
                 <div className="flex items-start justify-between gap-2">
+                  <input aria-label={`Chọn ${v.term}`} type="checkbox" checked={selectedIds.has(v.id)} onChange={() => toggleSelected(v.id)} className="mt-1 h-4 w-4 shrink-0 accent-primary" />
                   <div className="flex-1 min-w-0">
                     <h3 className="font-bold text-on-surface text-base">{v.term}</h3>
                     {v.pronunciationIpa && (

@@ -203,7 +203,6 @@ export default function LearnerLessonDetailPage({ params }: { params: Promise<{ 
               </div>
               <h1 className="text-[30px] font-bold text-on-surface mt-2" style={{ lineHeight: '38px', letterSpacing: '-0.02em' }}>{lesson.title}</h1>
               {(lesson.summary || lesson.description) && <p className="text-[14px] text-on-surface-variant mt-2 max-w-[600px]">{lesson.summary || lesson.description}</p>}
-              <Link href={`/learn/ai-coach?lessonId=${lesson.id}`} className="mt-4 inline-flex items-center gap-2 rounded-xl bg-primary px-4 py-2 text-sm font-bold !text-white"><span className="material-symbols-outlined text-[18px]">forum</span>Hỏi AI Tutor về bài này</Link>
             </div>
             
             {/* Progress Bar (Hero) */}

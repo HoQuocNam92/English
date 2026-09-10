@@ -4,7 +4,7 @@ import { VocabularyService } from '../application/vocabulary/vocabulary.service'
 import { JwtAuthGuard } from '../infrastructure/auth/jwt-auth.guard';
 import { PermissionsGuard } from '../infrastructure/auth/permissions.guard';
 import { RequirePermissions } from './decorators/require-permissions.decorator';
-import { CreateVocabularyDto, UpdateVocabularyDto } from './http-dto/content.dto';
+import { BulkUpdateVocabularyStatusDto, CreateVocabularyDto, UpdateVocabularyDto } from './http-dto/content.dto';
 
 @ApiTags('Vocabulary')
 @Controller('vocabulary')
@@ -30,6 +30,15 @@ export class VocabularyController {
   @ApiOperation({ summary: 'Create vocabulary term' })
   create(@Body() dto: CreateVocabularyDto) {
     return this.svc.create(dto);
+  }
+
+  @Patch('bulk-status')
+  @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard, PermissionsGuard)
+  @RequirePermissions('vocabulary:manage')
+  @ApiOperation({ summary: 'Bulk publish or move filtered vocabulary back to draft' })
+  bulkUpdateStatus(@Body() dto: BulkUpdateVocabularyStatusDto) {
+    return this.svc.bulkUpdateStatus(dto);
   }
 
   @Patch(':id')

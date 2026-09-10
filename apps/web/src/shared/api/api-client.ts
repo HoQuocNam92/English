@@ -18,6 +18,40 @@ function getAccessToken(): string | null {
   }
 }
 
+let refreshPromise: Promise<string | null> | null = null;
+
+async function refreshAccessToken(): Promise<string | null> {
+  if (typeof window === 'undefined') return null;
+  if (refreshPromise) return refreshPromise;
+
+  refreshPromise = (async () => {
+    try {
+      const raw = localStorage.getItem(SESSION_KEY);
+      if (!raw) return null;
+      const session = JSON.parse(raw);
+      if (!session?.refreshToken) return null;
+
+      const response = await fetch(`${API_BASE}/auth/refresh`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ refreshToken: session.refreshToken }),
+      });
+      if (!response.ok) return null;
+
+      const data = await response.json();
+      if (!data?.accessToken) return null;
+      localStorage.setItem(SESSION_KEY, JSON.stringify({ ...session, accessToken: data.accessToken }));
+      return data.accessToken as string;
+    } catch {
+      return null;
+    } finally {
+      refreshPromise = null;
+    }
+  })();
+
+  return refreshPromise;
+}
+
 interface ApiError {
   message: string;
   statusCode?: number;
@@ -35,6 +69,7 @@ export class ApiClientError extends Error {
 async function request<T>(
   path: string,
   options: RequestInit = {},
+  canRetry = true,
 ): Promise<T> {
   const token = getAccessToken();
   const headers: Record<string, string> = {
@@ -44,6 +79,14 @@ async function request<T>(
   if (token) headers['Authorization'] = `Bearer ${token}`;
 
   const res = await fetch(`${API_BASE}${path}`, { ...options, headers });
+
+  if (res.status === 401 && canRetry && token && path !== '/auth/refresh') {
+    const refreshedToken = await refreshAccessToken();
+    if (refreshedToken) return request<T>(path, options, false);
+
+    localStorage.removeItem(SESSION_KEY);
+    if (window.location.pathname !== '/login') window.location.assign('/login');
+  }
 
   if (!res.ok) {
     const err: ApiError = await res.json().catch(() => ({ message: 'Lỗi không xác định' }));
@@ -179,6 +222,10 @@ export interface UserItem {
   roles: string[];
   createdAt: string;
   updatedAt: string;
+  level?: string;
+  domains?: string[];
+  careerGoals?: string[];
+  certGoals?: string[];
 }
 
 // Roles

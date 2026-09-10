@@ -43,9 +43,6 @@ export default function LearnerProfilePage() {
   const [purchasingPlan, setPurchasingPlan] = useState<string | null>(null);
   const [qrTimeLeft, setQrTimeLeft] = useState(900);
   const [checkingPayment, setCheckingPayment] = useState(false);
-  const [voucherInput, setVoucherInput] = useState('');
-  const [appliedVoucher, setAppliedVoucher] = useState<any>(null);
-  const [applyingVoucher, setApplyingVoucher] = useState(false);
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // Form states
@@ -199,27 +196,11 @@ export default function LearnerProfilePage() {
   }
 
   // ── Payment Handlers ──────────────────────────────────────────────────────
-  const handleApplyVoucher = async () => {
-    if (!voucherInput.trim()) return;
-    setApplyingVoucher(true);
-    try {
-      const res = await apiClient.post('/vouchers/apply', { code: voucherInput.trim(), planId: 'pro_yearly' });
-      const data = (res as any)?.data ?? res;
-      if (data?.valid) setAppliedVoucher(data);
-    } catch (err: any) {
-      alert(err?.message || 'Mã voucher không hợp lệ hoặc đã hết hạn.');
-    } finally {
-      setApplyingVoucher(false);
-    }
-  };
-
   const handleSelectPlan = async (planId: string) => {
     setPurchasingPlan(planId);
     try {
       const key = `idem-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;
-      const payload: any = { planId };
-      if (voucherInput.trim()) payload.voucherCode = voucherInput.trim();
-      const res = await apiClient.postWithHeaders('/payment/create-order', payload, { 'Idempotency-Key': key });
+      const res = await apiClient.postWithHeaders('/payment/create-order', { planId }, { 'Idempotency-Key': key });
       const data = (res as any)?.data ?? res;
       if (data && (data.qrUrl || data.orderId)) {
         setOrderData(data);
@@ -598,35 +579,6 @@ export default function LearnerProfilePage() {
                   <p className="text-xs text-on-surface-variant">Nâng cấp PRO để mở khóa toàn bộ nội dung và tính năng cao cấp.</p>
                 </div>
               )
-            )}
-
-            {/* Voucher input (for non-PRO users) */}
-            {!isPro && (
-              <div className="space-y-2">
-                <div className="flex items-center gap-2">
-                  <input
-                    type="text"
-                    value={voucherInput}
-                    onChange={(e) => setVoucherInput(e.target.value.toUpperCase())}
-                    placeholder="Nhập mã giảm giá (tuỳ chọn)..."
-                    className="flex-1 px-3.5 py-2.5 rounded-xl border border-outline-variant/60 bg-surface-bright text-xs text-on-surface outline-none focus:border-primary font-semibold"
-                  />
-                  <button
-                    type="button"
-                    onClick={handleApplyVoucher}
-                    disabled={applyingVoucher || !voucherInput.trim()}
-                    className="px-4 py-2.5 bg-primary !text-white text-xs font-bold rounded-xl hover:opacity-90 disabled:opacity-40 transition-colors cursor-pointer"
-                  >
-                    {applyingVoucher ? '...' : 'Áp dụng'}
-                  </button>
-                </div>
-                {appliedVoucher && (
-                  <div className="flex items-center gap-2 p-2.5 bg-green-50 border border-green-200 rounded-xl text-xs text-green-700 font-semibold">
-                    <span className="material-symbols-outlined text-[16px]">check_circle</span>
-                    <span>{appliedVoucher.message}</span>
-                  </div>
-                )}
-              </div>
             )}
 
             {/* All 4 Available PRO Packages Grid */}
