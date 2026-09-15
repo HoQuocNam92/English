@@ -1,6 +1,6 @@
 import { Controller, Get, Post, Patch, Delete, Body, Param, Query, UseGuards, HttpCode, HttpStatus } from '@nestjs/common'
 import { ApiTags, ApiBearerAuth, ApiOperation } from '@nestjs/swagger'
-import { IsString, IsOptional, IsBoolean, IsDateString } from 'class-validator'
+import { IsString, IsOptional, IsBoolean, IsDateString, Matches, MinLength, MaxLength } from 'class-validator'
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger'
 import { RolesService } from '../application/role/role.service'
 import { JwtAuthGuard } from '../infrastructure/auth/jwt-auth.guard'
@@ -9,9 +9,9 @@ import { RequirePermissions } from './decorators/require-permissions.decorator'
 import { CurrentUser, JwtPayload } from './decorators/current-user.decorator'
 
 class CreateRoleDto {
-  @ApiProperty() @IsString() code: string
-  @ApiProperty() @IsString() name: string
-  @ApiPropertyOptional() @IsOptional() @IsString() description?: string
+  @ApiProperty() @IsString() @MinLength(2) @MaxLength(50) @Matches(/^[a-z0-9_]+$/) code: string
+  @ApiProperty() @IsString() @MinLength(2) @MaxLength(100) name: string
+  @ApiPropertyOptional() @IsOptional() @IsString() @MaxLength(500) description?: string
 }
 class UpdateRoleDto {
   @ApiPropertyOptional() @IsOptional() @IsString() name?: string

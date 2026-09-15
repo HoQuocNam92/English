@@ -36,7 +36,7 @@ interface AnalyticsData {
   }>;
   weeklyActivity: Array<{
     day: string;
-    studyHours: number;
+    activityCount: number;
     activeUsers: number;
   }>;
 }
@@ -120,7 +120,7 @@ export default function AdminDashboardPage() {
     { label: 'Kho thuật ngữ IT', value: stats?.totalVocab ?? 0, sub: 'Thuật ngữ có IPA & ví dụ', icon: 'translate', color: 'text-emerald-600' },
   ];
 
-  const maxWeeklyHours = Math.max(...(analytics?.weeklyActivity.map((w) => w.studyHours) ?? [100]));
+  const maxWeeklyActivity = Math.max(...(analytics?.weeklyActivity.map((w) => w.activityCount) ?? [100]));
   const totalDomainItems = analytics?.domainsDistribution.reduce((s, d) => s + d.totalItems, 0) || 1;
 
   if (!isAdmin) return (
@@ -254,15 +254,15 @@ export default function AdminDashboardPage() {
               </div>
               <div className="relative w-full h-[80%] ml-xl z-10 flex items-end gap-2 justify-between">
                 {(analytics?.weeklyActivity ?? [
-                  { day: 'T2', studyHours: 42, activeUsers: 28 },
-                  { day: 'T3', studyHours: 58, activeUsers: 35 },
-                  { day: 'T4', studyHours: 65, activeUsers: 40 },
-                  { day: 'T5', studyHours: 72, activeUsers: 46 },
-                  { day: 'T6', studyHours: 85, activeUsers: 52 },
-                  { day: 'T7', studyHours: 94, activeUsers: 59 },
-                  { day: 'CN', studyHours: 76, activeUsers: 48 },
+                  { day: 'T2', activityCount: 0, activeUsers: 0 },
+                  { day: 'T3', activityCount: 0, activeUsers: 0 },
+                  { day: 'T4', activityCount: 0, activeUsers: 0 },
+                  { day: 'T5', activityCount: 0, activeUsers: 0 },
+                  { day: 'T6', activityCount: 0, activeUsers: 0 },
+                  { day: 'T7', activityCount: 0, activeUsers: 0 },
+                  { day: 'CN', activityCount: 0, activeUsers: 0 },
                 ]).map((item, idx) => {
-                  const heightPercent = Math.round((item.studyHours / (maxWeeklyHours || 100)) * 100);
+                  const heightPercent = Math.round((item.activityCount / (maxWeeklyActivity || 100)) * 100);
                   const isMax = heightPercent >= 90;
                   return (
                     <div key={item.day} className="w-2 bg-primary/20 rounded-t-sm relative group" style={{ height: `${Math.max(15, heightPercent)}%` }}>

@@ -469,9 +469,9 @@ export class UpdateLearnerProfileDto {
 }
 
 export class CompleteOnboardingDto {
-  @ApiProperty({ description: 'Level code (beginner/intermediate/advanced/professional)' })
+  @ApiProperty({ description: 'Level code (beginner/intermediate/advanced)' })
   @IsString() @IsNotEmpty()
-  @IsEnum(['beginner', 'intermediate', 'advanced', 'professional'])
+  @IsEnum(['beginner', 'intermediate', 'advanced'])
   levelCode: string
 
   @ApiProperty({ type: [String], description: 'Mảng domain codes (CLOUD, DEVOPS, ...)' })

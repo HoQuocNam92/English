@@ -162,7 +162,7 @@ export default function MobileHomeScreen() {
           </View>
           
           <View style={styles.quickPracticeGrid}>
-            <TouchableOpacity style={styles.quickPracticeCard} onPress={() => router.push('/lessons?type=vocabulary' as any)}>
+            <TouchableOpacity style={styles.quickPracticeCard} onPress={() => router.push('/flashcards' as any)}>
               <View style={styles.quickPracticeCardHeader}>
                 <View style={[styles.quickPracticeIconBox, { backgroundColor: '#eff6ff' }]}>
                   <MaterialIcons name="menu-book" size={18} color="#2563eb" />

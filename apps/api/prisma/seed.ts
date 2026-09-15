@@ -14,7 +14,6 @@ async function main() {
     prisma.level.upsert({ where: { code: LevelCode.beginner }, update: {}, create: { code: LevelCode.beginner, name: 'Beginner', order: 1, description: 'Phù hợp với người mới bắt đầu học tiếng Anh IT. Bao gồm từ vựng cơ bản và đọc hiểu tài liệu kỹ thuật đơn giản.', isActive: true } }),
     prisma.level.upsert({ where: { code: LevelCode.intermediate }, update: {}, create: { code: LevelCode.intermediate, name: 'Intermediate', order: 2, description: 'Dành cho người đã quen với IT cơ bản. Bao gồm tài liệu kỹ thuật trung cấp và nội dung dựa trên tình huống.', isActive: true } }),
     prisma.level.upsert({ where: { code: LevelCode.advanced }, update: {}, create: { code: LevelCode.advanced, name: 'Advanced', order: 3, description: 'Cho kỹ sư có kinh nghiệm. Tài liệu API phức tạp, kiến trúc hệ thống và nội dung chuẩn bị chứng chỉ.', isActive: true } }),
-    prisma.level.upsert({ where: { code: LevelCode.professional }, update: {}, create: { code: LevelCode.professional, name: 'Professional', order: 4, description: 'Cấp chuyên gia. System design nâng cao, enterprise architecture và chuẩn bị chứng chỉ quốc tế.', isActive: true } }),
   ])
   console.log(`   ✅ ${levels.length} levels`)
 
@@ -83,6 +82,13 @@ async function main() {
     { code: 'admin', name: 'Administrator', description: 'Toàn quyền quản trị hệ thống.', isSystem: true },
     { code: 'teacher', name: 'Teacher', description: 'Tạo và quản lý bài học, câu hỏi, bài thi. Theo dõi tiến độ học viên.', isSystem: true },
     { code: 'learner', name: 'Learner', description: 'Truy cập nội dung học, làm bài thi và theo dõi tiến độ cá nhân.', isSystem: true },
+    { code: 'content_editor', name: 'Biên tập nội dung', description: 'Soạn bài học và quản lý kho từ vựng nhưng không tự xuất bản.', isSystem: false },
+    { code: 'content_reviewer', name: 'Người duyệt nội dung', description: 'Kiểm tra và xuất bản bài học sau khi biên tập.', isSystem: false },
+    { code: 'exam_manager', name: 'Quản lý khảo thí', description: 'Quản lý ngân hàng câu hỏi, đề thi, xuất bản và chấm điểm.', isSystem: false },
+    { code: 'certificate_manager', name: 'Quản lý chứng chỉ', description: 'Quản lý chứng chỉ và nội dung ôn tập theo chứng chỉ.', isSystem: false },
+    { code: 'community_moderator', name: 'Kiểm duyệt cộng đồng', description: 'Theo dõi và xử lý nội dung vi phạm trong cộng đồng.', isSystem: false },
+    { code: 'report_analyst', name: 'Chuyên viên báo cáo', description: 'Xem người dùng và phân tích báo cáo học tập.', isSystem: false },
+    { code: 'learner_support', name: 'Hỗ trợ học viên', description: 'Tra cứu tài khoản, nội dung học và tiến độ để hỗ trợ học viên.', isSystem: false },
   ]
   const roles: Record<string, { id: string }> = {}
   for (const r of roleData) {
@@ -139,6 +145,13 @@ async function main() {
   await rolePerm('admin', Object.keys(permissions))
   await rolePerm('teacher', ['lessons:read','lessons:create','lessons:update','lessons:delete','lessons:publish','vocabulary:read','vocabulary:manage','questions:read','questions:manage','exams:read','exams:create','exams:publish','exams:grade','reports:read'])
   await rolePerm('learner', ['lessons:read','vocabulary:read','exams:read','questions:read'])
+  await rolePerm('content_editor', ['lessons:read','lessons:create','lessons:update','vocabulary:read','vocabulary:manage'])
+  await rolePerm('content_reviewer', ['lessons:read','lessons:update','lessons:publish','vocabulary:read','questions:read'])
+  await rolePerm('exam_manager', ['questions:read','questions:manage','exams:read','exams:create','exams:publish','exams:grade'])
+  await rolePerm('certificate_manager', ['certificates:manage','lessons:read','vocabulary:read','reports:read'])
+  await rolePerm('community_moderator', ['community:manage','users:read'])
+  await rolePerm('report_analyst', ['reports:read','users:read'])
+  await rolePerm('learner_support', ['users:read','lessons:read','vocabulary:read','reports:read'])
   console.log('   ✅ Role permissions assigned')
 
   // ============================================================
@@ -808,59 +821,6 @@ async function main() {
       })
     }
   }
-  // Gamification (User Streaks & EXP Points for Leaderboard)
-  const allLearners = await prisma.user.findMany({
-    where: { email: { startsWith: 'learner' } }
-  });
-
-  const expData = [
-    { email: 'learner1@techenglish.pro', streak: 14, exp: 1250, weekly: 350, monthly: 920, badges: [{ code: 'STREAK_14', name: '🔥 14 Ngày Liên Tiếp', desc: 'Học tập kiên trì 14 ngày không gián đoạn.' }, { code: 'AWS_PRO', name: '☁️ Cloud Master', desc: 'Hoàn thành bộ đề thi AWS-SAA.' }] },
-    { email: 'learner2@techenglish.pro', streak: 9, exp: 980, weekly: 280, monthly: 710, badges: [{ code: 'STREAK_7', name: '🔥 7 Ngày Liên Tiếp', desc: 'Duy trì chuỗi học 7 ngày.' }] },
-    { email: 'learner3@techenglish.pro', streak: 5, exp: 740, weekly: 210, monthly: 540, badges: [{ code: 'VOCAB_EXPERT', name: '📚 Kho Từ Vựng', desc: 'Thạo hơn 100 từ vựng CNTT.' }] },
-    { email: 'learner4@techenglish.pro', streak: 3, exp: 460, weekly: 150, monthly: 360, badges: [] },
-    { email: 'learner5@techenglish.pro', streak: 1, exp: 220, weekly: 90, monthly: 220, badges: [] },
-  ];
-
-  for (const item of expData) {
-    const u = allLearners.find(x => x.email === item.email);
-    if (u) {
-      await prisma.userStreak.upsert({
-        where: { userId: u.id },
-        update: {
-          currentStreak: item.streak,
-          maxStreak: Math.max(item.streak, 15),
-          totalExpPoints: item.exp,
-          weeklyPoints: item.weekly,
-          monthlyPoints: item.monthly,
-          lastStudyDate: new Date(),
-        },
-        create: {
-          userId: u.id,
-          currentStreak: item.streak,
-          maxStreak: Math.max(item.streak, 15),
-          totalExpPoints: item.exp,
-          weeklyPoints: item.weekly,
-          monthlyPoints: item.monthly,
-          lastStudyDate: new Date(),
-        }
-      });
-
-      for (const b of item.badges) {
-        await prisma.userBadge.upsert({
-          where: { userId_badgeCode: { userId: u.id, badgeCode: b.code } },
-          update: {},
-          create: {
-            userId: u.id,
-            badgeCode: b.code,
-            badgeName: b.name,
-            description: b.desc,
-          }
-        });
-      }
-    }
-  }
-  console.log('   ✅ Seed Gamification Streaks & Leaderboard EXP Points for 5 Learners')
-
   // Seed Discussion Posts
   const learnerUser = await prisma.user.findFirst({ where: { email: 'learner1@techenglish.pro' } });
   if (learnerUser) {

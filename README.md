@@ -36,9 +36,7 @@
 | 📚 Technical Dictionary | Từ điển kỹ thuật IT chuyên ngành, tìm kiếm nhanh |
 | 🗓️ Learning Calendar | Quản lý lịch học, kế hoạch theo ngày/tuần/tháng |
 | 👥 Community Discussion | Thảo luận, đặt câu hỏi, chia sẻ kinh nghiệm IT |
-| 🏆 Leaderboard & Gamification | Bảng xếp hạng EXP, streak hàng ngày, badge, thành tích |
 | 🔔 Notification Center | Thông báo hệ thống, nhắc nhở học tập, flash sale |
-| 📊 Learning Analytics | Phân tích tiến độ, biểu đồ học tập chi tiết |
 | 🎯 Certification Objectives | Quản lý mục tiêu kiến thức, nội dung và mức độ thành thạo theo chứng chỉ |
 | 🗺️ AI Learning Path Generator | AI tạo lộ trình học cá nhân hóa theo mục tiêu |
 | 🌙 Dark / Light Mode | Hỗ trợ cả 2 theme, mặc định Light, nhớ lựa chọn |
@@ -386,12 +384,9 @@ GET    /vocabulary            Danh sách từ vựng (có search, filter)
 GET    /vocabulary/:id        Chi tiết từ vựng
 ```
 
-### Progress & Gamification
+### Progress
 ```
 GET  /progress/me             Tiến độ học tập của tôi
-GET  /leaderboard/top         Top learners (weekly/monthly/all)
-GET  /leaderboard/streaks/me  Streak & EXP của tôi
-POST /leaderboard/streaks/check-in  Điểm danh nhận EXP
 ```
 
 ### AI Tutor RAG
@@ -582,12 +577,10 @@ Quy ước quan hệ:
 | `payment_orders` | Đơn mua gói, idempotency, giao dịch SePay và webhook. | N–1 với user; 1–1 với subscription. |
 | `user_subscriptions` | Gói hiện tại và thời hạn của user. | 1–1 với user và payment order. |
 
-### 8. Gamification và thông báo — 3 bảng
+### 8. Thông báo — 1 bảng
 
 | Bảng | Vai trò | Quan hệ chính |
 |---|---|---|
-| `user_streaks` | Streak, EXP, điểm tuần và tháng. | 1–1 với user. |
-| `user_badges` | Huy hiệu đã mở khóa. | N–1 với user; unique theo user–badge code. |
 | `notifications` | Thông báo cá nhân hoặc toàn hệ thống. | N–1 tùy chọn với user; `user_id = null` là broadcast. |
 
 ### 9. Cộng đồng — 3 bảng
@@ -613,11 +606,10 @@ Quy ước quan hệ:
 | `ai_feedback` | Đánh giá hữu ích/chưa đúng của người học. | N–1 với AI message; unique theo message–user. |
 | `ai_usage_daily` | Request và token AI theo ngày để kiểm soát quota. | Unique theo user–ngày. |
 
-### 11. Lộ trình, planner và analytics — 5 bảng
+### 11. Lộ trình và planner — 4 bảng
 
 | Bảng | Vai trò | Quan hệ chính |
 |---|---|---|
-| `learning_sessions` | Phiên học, thời lượng, ngày và khung giờ. | N–1 với user; tùy chọn N–1 với lesson. |
 | `career_goal_skills` | Kỹ năng cần cho mục tiêu nghề nghiệp. | N–1 với career goal; tùy chọn N–1 với lesson. |
 | `learning_paths` | Lộ trình cá nhân hóa của user. | N–1 với user; 1–N với module. |
 | `learning_path_modules` | Các chặng theo thứ tự và phần trăm tiến độ. | N–1 với learning path; `current_lesson_id` là tham chiếu logic. |

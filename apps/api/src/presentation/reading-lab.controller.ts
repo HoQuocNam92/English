@@ -55,13 +55,6 @@ export class ReadingLabController {
         ...(percent >= 100 ? { completedAt: new Date() } : {}),
       },
     });
-    await this.prisma.learningSession.create({
-      data: {
-        userId: req.user.sub, sessionType: 'reading', lessonId: id,
-        endedAt: new Date(), durationSeconds: Math.max(0, Number(body.timeSpentSeconds) || 0),
-        timeOfDay: new Date().getHours() < 12 ? 'morning' : new Date().getHours() < 18 ? 'afternoon' : 'evening',
-      },
-    });
     return progress;
   }
 

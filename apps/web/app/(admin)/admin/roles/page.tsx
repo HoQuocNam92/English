@@ -115,11 +115,38 @@ export default function AdminRolesPage() {
   const [loading, setLoading] = React.useState(true);
   const [error, setError] = React.useState<string | null>(null);
   const [permissionModal, setPermissionModal] = React.useState(false);
+  const [roleModal, setRoleModal] = React.useState(false);
   const [activeTab, setActiveTab] = React.useState<'roles' | 'permissions'>('roles');
   const [editingPermission, setEditingPermission] = React.useState<PermissionItem | null>(null);
   const [savingPermission, setSavingPermission] = React.useState(false);
   const [permissionError, setPermissionError] = React.useState<string | null>(null);
   const [permissionForm, setPermissionForm] = React.useState({ resource: '', action: 'read', name: '', description: '' });
+  const [roleForm, setRoleForm] = React.useState({ name: '', code: '', description: '' });
+  const [savingRole, setSavingRole] = React.useState(false);
+  const [roleError, setRoleError] = React.useState<string | null>(null);
+
+  const roleCodeFromName = (value: string) => value
+    .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase().trim().replace(/[^a-z0-9]+/g, '_').replace(/^_+|_+$/g, '');
+
+  const saveRole = async (event: React.FormEvent) => {
+    event.preventDefault(); setSavingRole(true); setRoleError(null);
+    try {
+      const saved = await apiClient.post<RoleItem>('/roles', {
+        name: roleForm.name.trim(),
+        code: roleForm.code.trim().toLowerCase(),
+        description: roleForm.description.trim() || undefined,
+      });
+      setRoles((current) => [...current, { ...saved, permissions: saved.permissions ?? [], userCount: saved.userCount ?? 0 }]);
+      setRoleModal(false); setRoleForm({ name: '', code: '', description: '' });
+    } catch (e) { setRoleError(e instanceof ApiClientError ? e.message : 'Không thể tạo nhóm quyền'); }
+    finally { setSavingRole(false); }
+  };
+
+  const openCreateRole = () => {
+    setRoleForm({ name: '', code: '', description: '' });
+    setRoleError(null); setRoleModal(true);
+  };
 
   const savePermission = async (event: React.FormEvent) => {
     event.preventDefault(); setSavingPermission(true); setPermissionError(null);
@@ -206,7 +233,7 @@ export default function AdminRolesPage() {
 
       {/* Roles grid */}
       {activeTab === 'roles' && <div className="mb-8">
-        <h2 className="text-lg font-bold text-on-surface mb-4">Chọn một nhóm để phân quyền</h2>
+        <div className="mb-4 flex flex-wrap items-center justify-between gap-3"><div><h2 className="text-lg font-bold text-on-surface">Chọn một nhóm để phân quyền</h2><p className="mt-1 text-sm text-on-surface-variant">Một người có thể có role chính và nhiều role nghiệp vụ bổ sung.</p></div><button type="button" onClick={openCreateRole} className="inline-flex h-10 items-center gap-2 rounded-xl bg-primary px-4 text-sm font-semibold !text-white"><span className="material-symbols-outlined text-[18px]">add</span>Thêm nhóm quyền</button></div>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {loading ? (
             [1, 2, 3].map((i) => <SkeletonCard key={i} />)
@@ -253,6 +280,19 @@ export default function AdminRolesPage() {
             {permissionError && <div className="rounded-lg bg-error-container p-3 text-sm text-on-error-container sm:col-span-2"><strong>Không thể tạo quyền:</strong> {permissionError}</div>}
           </div>
           <div className="flex justify-end gap-3 border-t border-outline-variant/20 px-6 py-4"><button type="button" onClick={() => setPermissionModal(false)} className="h-10 cursor-pointer rounded-xl px-4 text-sm font-semibold">Huỷ</button><button type="submit" disabled={savingPermission} className="h-10 cursor-pointer rounded-xl bg-primary px-5 text-sm font-semibold !text-white disabled:opacity-50">{savingPermission ? 'Đang lưu...' : editingPermission ? 'Lưu thay đổi' : 'Tạo quyền'}</button></div>
+        </form>
+      </Modal>
+      <Modal open={roleModal} onClose={() => setRoleModal(false)} maxWidth="max-w-lg">
+        <form onSubmit={saveRole}>
+          <div className="flex items-center justify-between border-b border-outline-variant/20 px-6 py-5"><div><h2 className="text-xl font-bold">Thêm nhóm quyền</h2><p className="mt-1 text-xs text-on-surface-variant">Tạo role nghiệp vụ, sau đó chọn người dùng và các quyền được làm.</p></div><button type="button" onClick={() => setRoleModal(false)}><span className="material-symbols-outlined">close</span></button></div>
+          <div className="grid gap-4 p-6">
+            <label className="text-sm font-semibold">Tên nhóm quyền<input required minLength={2} maxLength={100} value={roleForm.name} onChange={e => { const name = e.target.value; setRoleForm(current => ({ ...current, name, code: roleCodeFromName(name) })); }} className="mt-2 h-11 w-full rounded-xl border border-outline-variant/50 px-3" placeholder="Ví dụ: Người duyệt nội dung" /></label>
+            <label className="text-sm font-semibold">Mã role<input required pattern="[a-z0-9_]+" minLength={2} maxLength={50} value={roleForm.code} onChange={e => setRoleForm({...roleForm, code: roleCodeFromName(e.target.value)})} className="mt-2 h-11 w-full rounded-xl border border-outline-variant/50 px-3 font-mono" placeholder="content_reviewer" /><span className="mt-1 block text-xs font-normal text-on-surface-variant">Chỉ dùng chữ thường, số và dấu gạch dưới; mã không đổi sau khi tạo.</span></label>
+            <label className="text-sm font-semibold">Mô tả nhiệm vụ<textarea required minLength={5} maxLength={500} value={roleForm.description} onChange={e => setRoleForm({...roleForm, description:e.target.value})} className="mt-2 min-h-24 w-full rounded-xl border border-outline-variant/50 p-3" placeholder="Mô tả phạm vi trách nhiệm của nhóm..." /></label>
+            <div className="rounded-lg bg-primary/5 p-3 text-sm text-primary">Role mới chưa có quyền và người dùng. Sau khi tạo, chọn <strong>“Chọn người và quyền được làm”</strong> để cấu hình.</div>
+            {roleError && <div className="rounded-lg bg-error-container p-3 text-sm text-on-error-container">{roleError}</div>}
+          </div>
+          <div className="flex justify-end gap-3 border-t border-outline-variant/20 px-6 py-4"><button type="button" onClick={() => setRoleModal(false)} className="h-10 rounded-xl px-4 text-sm font-semibold">Huỷ</button><button type="submit" disabled={savingRole} className="h-10 rounded-xl bg-primary px-5 text-sm font-semibold !text-white disabled:opacity-50">{savingRole ? 'Đang tạo...' : 'Tạo nhóm quyền'}</button></div>
         </form>
       </Modal>
     </div>

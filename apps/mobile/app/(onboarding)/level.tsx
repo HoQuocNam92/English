@@ -21,22 +21,10 @@ const levels: LevelOption[] = [
     desc: 'Chưa có nền tảng tiếng Anh hoặc mất gốc hoàn toàn.',
   },
   {
-    id: 'elementary',
-    name: 'Elementary',
-    tag: '(Sơ cấp)',
-    desc: 'Đọc được từ vựng IT cơ bản, câu tài liệu đơn giản.',
-  },
-  {
     id: 'intermediate',
     name: 'Intermediate',
     tag: '(Trung cấp)',
     desc: 'Đọc hiểu tài liệu kỹ thuật, API docs nhưng thỉnh thoảng vẫn cần tra từ.',
-  },
-  {
-    id: 'upper_intermediate',
-    name: 'Upper Intermediate',
-    tag: '(Khá)',
-    desc: 'Tự tin giao tiếp kỹ thuật, đọc hiểu RFC, spec chuyên sâu.',
   },
   {
     id: 'advanced',

@@ -10,28 +10,28 @@ import { colors, spacing } from '@techenglish/design-tokens';
 import { api } from '../../src/shared/api/api-client';
 
 const DOMAIN_CHIPS = ['Tất cả', 'Cloud', 'Security', 'Networking', 'Data', 'Software', 'DevOps'];
-const DOMAIN_CODES: Record<string, string> = { Cloud: 'CLOUD', Security: 'CYBERSEC', Networking: 'NETWORKING', Data: 'DATA_AI', Software: 'SOFTWARE_ENG', DevOps: 'DEVOPS' };
+const DOMAIN_CODES: Record<string, string> = { Cloud: 'CLOUD', Security: 'CYBERSEC', Networking: 'NETWORKING', Data: 'DATA_ENG', Software: 'SOFTWARE_ENG', DevOps: 'DEVOPS' };
 
 const CATEGORIES = [
   {
     id: 'vocabulary',
-    title: 'Vocabulary',
-    desc: 'Xây dựng vốn từ vựng nền tảng IT.',
+    title: 'Kho từ vựng IT',
+    desc: 'Học nghĩa, phát âm và ví dụ từ kho từ vựng đã xuất bản.',
     icon: 'sort',
     iconBg: '#EEF2FF',
     iconColor: '#4F46E5',
     wide: false,
-    route: '/lessons?type=vocabulary',
+    route: '/vocabulary',
   },
   {
-    id: 'terminology',
-    title: 'Technical Terminology',
-    desc: 'Hiểu sâu các thuật ngữ chuyên ngành cốt lõi.',
-    icon: 'terminal',
+    id: 'lessons',
+    title: 'Bài học theo lĩnh vực',
+    desc: 'Học nội dung có cấu trúc theo trình độ và lĩnh vực IT.',
+    icon: 'menu-book',
     iconBg: '#F0F9FF',
     iconColor: '#0058be',
     wide: false,
-    route: '/lessons?type=terminology',
+    route: '/lessons',
   },
   {
     id: 'api-docs',

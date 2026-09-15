@@ -47,7 +47,7 @@ export class PlacementTestController {
       return total + (question.options.some((option) => option.id === answer?.optionId && option.isCorrect) ? 1 : 0)
     }, 0)
     const percent = Math.round((correct / questions.length) * 100)
-    const levelCode = percent < 40 ? 'beginner' : percent < 70 ? 'intermediate' : percent < 90 ? 'advanced' : 'professional'
+    const levelCode = percent < 40 ? 'beginner' : percent < 70 ? 'intermediate' : 'advanced'
     const level = await this.prisma.level.findUnique({ where: { code: levelCode } })
     if (level) {
       await this.prisma.learnerProfile.updateMany({ where: { userId: req.user.sub }, data: { levelId: level.id } })

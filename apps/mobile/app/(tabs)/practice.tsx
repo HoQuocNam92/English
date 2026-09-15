@@ -89,7 +89,7 @@ export default function MobilePracticeScreen() {
         {/* Bento Grid */}
         <View style={styles.bentoGrid}>
           {/* Vocabulary Practice (Full Width) */}
-          <TouchableOpacity style={[styles.bentoCard, styles.bentoCardFull]} onPress={() => router.push('/lessons?type=vocabulary' as any)}>
+          <TouchableOpacity style={[styles.bentoCard, styles.bentoCardFull]} onPress={() => router.push('/flashcards' as any)}>
             <View style={styles.bentoHeaderRow}>
               <View style={[styles.bentoIconBox, { backgroundColor: '#e2dfff' }]}>
                 <MaterialIcons name="style" size={24} color="#3525cd" />
@@ -160,7 +160,7 @@ export default function MobilePracticeScreen() {
                 <Text style={styles.activityMeta}>{recentAttempt ? `Bài kiểm tra • ${Math.round(recentAttempt.scorePercent ?? 0)} điểm` : 'Hãy bắt đầu một bài kiểm tra'}</Text>
               </View>
             </View>
-            <TouchableOpacity style={styles.continueBtn} onPress={() => recentAttempt?.id ? router.push(`/test-result/${recentAttempt.id}` as any) : router.push('/lessons?type=vocabulary' as any)}>
+            <TouchableOpacity style={styles.continueBtn} onPress={() => recentAttempt?.id ? router.push(`/test-result/${recentAttempt.id}` as any) : router.push('/flashcards' as any)}>
               <Text style={styles.continueBtnText}>Tiếp tục</Text>
             </TouchableOpacity>
           </View>

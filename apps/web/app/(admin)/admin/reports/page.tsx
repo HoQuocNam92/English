@@ -40,7 +40,7 @@ interface AnalyticsData {
   }>;
   weeklyActivity: Array<{
     day: string;
-    studyHours: number;
+    activityCount: number;
     activeUsers: number;
   }>;
 }
@@ -79,7 +79,7 @@ export default function AdminReportsPage() {
   }, []);
 
   const totalDomainItems = analytics?.domainsDistribution.reduce((s, d) => s + d.totalItems, 0) || 1;
-  const maxWeeklyHours = Math.max(...(analytics?.weeklyActivity.map((w) => w.studyHours) ?? [100]));
+  const maxWeeklyActivity = Math.max(...(analytics?.weeklyActivity.map((w) => w.activityCount) ?? [100]));
   const completionRate = Math.min(100, Math.max(0, analytics?.overview.passRate ?? 0));
 
   const filteredDomains = analytics?.domainsDistribution.filter(
@@ -210,11 +210,11 @@ export default function AdminReportsPage() {
             <div className="flex-1 relative w-full h-[300px] flex items-end">
               <div className="flex items-end justify-between gap-3 h-full w-full px-2">
                 {(analytics?.weeklyActivity ?? []).map((item) => {
-                  const heightPercent = Math.round((item.studyHours / (maxWeeklyHours || 100)) * 100);
+                  const heightPercent = Math.round((item.activityCount / (maxWeeklyActivity || 100)) * 100);
                   return (
                     <div key={item.day} className="flex-1 flex flex-col items-center gap-1.5 group h-full justify-end">
                       <span className="text-[10px] font-bold text-on-surface opacity-0 group-hover:opacity-100 transition-opacity">
-                        {item.studyHours}h
+                        {item.activityCount} hoạt động
                       </span>
                       <div className="w-full bg-surface-container rounded-t-lg h-[80%] flex items-end overflow-hidden">
                         <div

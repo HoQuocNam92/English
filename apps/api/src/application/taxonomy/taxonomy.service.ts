@@ -277,21 +277,15 @@ export class TaxonomyService {
       const startOfDay = new Date(date.setHours(0,0,0,0));
       const endOfDay = new Date(date.setHours(23,59,59,999));
       
-      const [activeUsers, studyMinutes] = await Promise.all([
-        this.prisma.learningSession.findMany({
-          where: { studyDate: { gte: startOfDay, lte: endOfDay } },
-          select: { userId: true },
-          distinct: ['userId']
-        }).then(r => r.length),
-        this.prisma.learningSession.aggregate({
-          where: { studyDate: { gte: startOfDay, lte: endOfDay } },
-          _sum: { durationSeconds: true },
-        }).then(result => (result._sum.durationSeconds ?? 0) / 60)
-      ]);
+      const activity = await this.prisma.learningProgress.findMany({
+        where: { updatedAt: { gte: startOfDay, lte: endOfDay } },
+        select: { learnerId: true },
+      });
+      const activeUsers = new Set(activity.map(item => item.learnerId)).size;
       
       weeklyActivity.push({
         day: days[new Date(startOfDay).getDay()],
-        studyHours: Math.round(studyMinutes / 60 * 10) / 10,
+        activityCount: activity.length,
         activeUsers
       });
     }

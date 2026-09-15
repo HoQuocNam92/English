@@ -36,9 +36,10 @@ export class RolesService {
   }
 
   async create(dto: { code: string; name: string; description?: string }) {
-    const exists = await this.prisma.role.findUnique({ where: { code: dto.code } })
-    if (exists) throw new ConflictException('Role ' + dto.code + ' already exists')
-    return this.prisma.role.create({ data: { ...dto, isSystem: false } })
+    const code = dto.code.trim().toLowerCase()
+    const exists = await this.prisma.role.findUnique({ where: { code } })
+    if (exists) throw new ConflictException('Role ' + code + ' already exists')
+    return this.prisma.role.create({ data: { code, name: dto.name.trim(), description: dto.description?.trim(), isSystem: false } })
   }
 
   async update(id: string, dto: { name?: string; description?: string; isActive?: boolean }) {

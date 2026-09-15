@@ -18,7 +18,6 @@ import { UploadModule } from './modules/upload.module'
 import { PaymentModule } from './modules/payment.module'
 import { RedisCacheModule } from './infrastructure/cache/redis.module'
 
-import { AnalyticsController } from './presentation/analytics.controller';
 import { LearningPathController } from './presentation/learning-path.controller';
 import { ReadingLabController } from './presentation/reading-lab.controller';
 import { AiChatModule } from './modules/ai-chat.module';
@@ -31,7 +30,6 @@ import { RecommendationModule } from './modules/recommendation.module';
   controllers: [
     NotificationController,
     DiscussionController,
-    AnalyticsController,
     LearningPathController,
     ReadingLabController,
     LandingBannerController,

@@ -23,7 +23,6 @@ const LEVEL_COLOR_MAP: Record<string, { bg: string; text: string; icon: string }
   beginner: { bg: 'bg-emerald-100 text-emerald-800 border-emerald-200', text: 'text-emerald-700', icon: 'signal_cellular_alt_1_bar' },
   intermediate: { bg: 'bg-blue-100 text-blue-800 border-blue-200', text: 'text-blue-700', icon: 'signal_cellular_alt_2_bar' },
   advanced: { bg: 'bg-purple-100 text-purple-800 border-purple-200', text: 'text-purple-700', icon: 'signal_cellular_alt' },
-  professional: { bg: 'bg-amber-100 text-amber-800 border-amber-200', text: 'text-amber-700', icon: 'workspace_premium' },
 };
 
 export default function AdminLevelsPage() {

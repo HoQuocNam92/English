@@ -48,7 +48,7 @@ export default function OnboardingFieldScreen() {
             <MaterialIcons name="arrow-back" size={24} color={colors.text} />
           </TouchableOpacity>
           <Text style={styles.stepText}>Bước 2 / 4</Text>
-          <View style={{ width: 40 }} /> {/* Spacer */}
+          <View style={styles.headerSpacer} />
         </View>
         <View style={styles.progressBarBg}>
           <View style={[styles.progressBarFill, { width: '50%' }]} />
@@ -112,6 +112,9 @@ const styles = StyleSheet.create({
     alignItems: 'center', justifyContent: 'center',
     backgroundColor: '#f2f4f6',
     borderRadius: 20
+  },
+  headerSpacer: {
+    width: 40,
   },
   stepText: {
     fontSize: 14,

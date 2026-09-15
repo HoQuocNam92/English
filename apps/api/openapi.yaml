@@ -2003,7 +2003,7 @@ components:
       required: [id, code, name, order, description, isActive]
       properties:
         id: { type: string, format: uuid }
-        code: { type: string, enum: [beginner, intermediate, advanced, professional] }
+        code: { type: string, enum: [beginner, intermediate, advanced] }
         name: { type: string, minLength: 2, maxLength: 50 }
         order: { type: integer, minimum: 1, maximum: 100 }
         description: { type: string, maxLength: 500 }
@@ -2013,7 +2013,7 @@ components:
       additionalProperties: false
       required: [code, name, order, description]
       properties:
-        code: { type: string, enum: [beginner, intermediate, advanced, professional] }
+        code: { type: string, enum: [beginner, intermediate, advanced] }
         name: { type: string, minLength: 2, maxLength: 50 }
         order: { type: integer, minimum: 1, maximum: 100 }
         description: { type: string, minLength: 1, maxLength: 500 }

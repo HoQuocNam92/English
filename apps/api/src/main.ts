@@ -15,6 +15,7 @@ async function bootstrap() {
 
   const configService = app.get(ConfigService)
   const port = configService.get<number>('PORT', 8080)
+  const host = configService.get<string>('HOST', '0.0.0.0')
 
   app.use(helmet())
   app.enableCors({
@@ -38,8 +39,8 @@ async function bootstrap() {
   const document = SwaggerModule.createDocument(app, doc)
   SwaggerModule.setup('api/docs', app, document)
 
-  await app.listen(port)
-  console.log('API running on http://localhost:' + port + '/api/v1')
+  await app.listen(port, host)
+  console.log('API running on http://' + host + ':' + port + '/api/v1')
   console.log('Swagger docs: http://localhost:' + port + '/api/docs')
 }
 

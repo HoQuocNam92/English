@@ -77,7 +77,7 @@ export default function MobileRegisterScreen() {
           <MaterialIcons name="arrow-back" size={24} color={colors.primary} />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>IT English Pro</Text>
-        <View style={{ width: 40 }} /> {/* Spacer */}
+        <View style={styles.headerSpacer} />
       </View>
 
       <ScrollView contentContainerStyle={styles.contentContainer} keyboardShouldPersistTaps="handled">
@@ -201,6 +201,9 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     alignItems: 'center',
     justifyContent: 'center',
+  },
+  headerSpacer: {
+    width: 40,
   },
   headerTitle: {
     fontSize: 20,
