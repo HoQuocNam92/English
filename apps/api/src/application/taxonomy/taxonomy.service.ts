@@ -359,7 +359,6 @@ export class TaxonomyService {
         lessonCerts: { include: { lesson: { include: { domain: true, level: true } } } },
         questionCerts: { include: { question: { include: { domain: true, level: true } } } },
         exams: { include: { domain: true, level: true, _count: { select: { questions: true, attempts: true } } } },
-        certContent: { orderBy: { order: 'asc' } },
         profileGoals: true,
       },
     })
@@ -404,43 +403,6 @@ export class TaxonomyService {
       }
     })
     return this.getCertificate(id)
-  }
-
-  async createCertificationContent(certificateId: string, dto: any) {
-    const certificate = await this.prisma.certificate.findUnique({ where: { id: certificateId }, select: { id: true } })
-    if (!certificate) throw new NotFoundException('Chứng chỉ không tồn tại')
-    if (!dto.title?.trim() || !dto.body?.trim()) throw new BadRequestException('Tiêu đề và nội dung là bắt buộc')
-    return this.prisma.certificationContent.create({
-      data: {
-        certificateId,
-        title: dto.title.trim(),
-        body: dto.body.trim(),
-        topic: dto.topic?.trim() || null,
-        order: Number(dto.order) || 0,
-        status: dto.status ?? 'draft',
-      },
-    })
-  }
-
-  async updateCertificationContent(id: string, dto: any) {
-    const exists = await this.prisma.certificationContent.findUnique({ where: { id }, select: { id: true } })
-    if (!exists) throw new NotFoundException('Nội dung ôn tập không tồn tại')
-    return this.prisma.certificationContent.update({
-      where: { id },
-      data: {
-        ...(dto.title !== undefined ? { title: dto.title.trim() } : {}),
-        ...(dto.body !== undefined ? { body: dto.body.trim() } : {}),
-        ...(dto.topic !== undefined ? { topic: dto.topic.trim() || null } : {}),
-        ...(dto.order !== undefined ? { order: Number(dto.order) || 0 } : {}),
-        ...(dto.status !== undefined ? { status: dto.status } : {}),
-      },
-    })
-  }
-
-  async deleteCertificationContent(id: string) {
-    const deleted = await this.prisma.certificationContent.deleteMany({ where: { id } })
-    if (!deleted.count) throw new NotFoundException('Nội dung ôn tập không tồn tại')
-    return { deleted: true }
   }
 
   async updateCertificate(id: string, dto: any) {

@@ -146,7 +146,6 @@ model User {
   // Roles granted by this user
   grantedRoles UserRole[] @relation("RoleGrantedBy")
 
-  learningPaths LearningPath[]
 
   @@index([email])
   @@index([status])
@@ -356,7 +355,6 @@ model Certificate {
   lessonCerts   LessonCertificate[]
   questionCerts QuestionCertificate[]
   exams         Exam[]
-  certContent   CertificationContent[]
 
   @@index([code])
   @@map("certificates")
@@ -567,28 +565,6 @@ model LessonCertificate {
 }
 
 // =============================================================================
-// CONTENT — Certification Content
-// =============================================================================
-
-/// Nội dung ôn tập dành riêng cho từng chứng chỉ.
-model CertificationContent {
-  id            String        @id @default(uuid()) @db.Uuid
-  certificateId String        @map("certificate_id") @db.Uuid
-  title         String        @db.VarChar(200)
-  body          String
-  topic         String?       @db.VarChar(100)
-  order         Int           @default(0)
-  status        ContentStatus @default(draft)
-  createdAt     DateTime      @default(now()) @map("created_at") @db.Timestamptz(6)
-  updatedAt     DateTime      @updatedAt @map("updated_at") @db.Timestamptz(6)
-
-  certificate Certificate @relation(fields: [certificateId], references: [id], onDelete: Cascade)
-
-  @@index([certificateId])
-  @@map("certification_contents")
-}
-
-// =============================================================================
 // QUESTION BANK
 // =============================================================================
 
@@ -635,7 +611,6 @@ model QuestionOption {
 
   question Question @relation(fields: [questionId], references: [id], onDelete: Cascade)
 
-  selectedInAnswers AttemptAnswerOption[]
 
   @@index([questionId])
   @@map("question_options")
@@ -757,23 +732,11 @@ model AttemptAnswer {
 
   attempt ExamAttempt @relation(fields: [attemptId], references: [id], onDelete: Cascade)
 
-  selectedOptions AttemptAnswerOption[]
+  selectedOptionIds String[] @default([]) @map("selected_option_ids") @db.Uuid
 
   @@unique([attemptId, questionId])
   @@index([attemptId])
   @@map("attempt_answers")
-}
-
-/// Các option được chọn trong từng câu trả lời.
-model AttemptAnswerOption {
-  answerId String @map("answer_id") @db.Uuid
-  optionId String @map("option_id") @db.Uuid
-
-  answer AttemptAnswer  @relation(fields: [answerId], references: [id], onDelete: Cascade)
-  option QuestionOption @relation(fields: [optionId], references: [id], onDelete: Restrict)
-
-  @@id([answerId, optionId])
-  @@map("attempt_answer_options")
 }
 
 // =============================================================================
@@ -833,36 +796,6 @@ model Recommendation {
 // ─── AI Mock Interview ────────────────────────────────────────────────────────
 
 // ─── AI Writing Practice ──────────────────────────────────────────────────────
-
-model LearningPath {
-  id           String               @id @default(uuid()) @db.Uuid
-  userId       String               @map("user_id") @db.Uuid
-  careerGoal   String               @map("career_goal") @db.VarChar(150)
-  currentLevel String               @map("current_level") @db.VarChar(50)
-  title        String               @db.VarChar(200)
-  createdAt    DateTime             @default(now()) @map("created_at") @db.Timestamptz(6)
-  updatedAt    DateTime             @updatedAt @map("updated_at") @db.Timestamptz(6)
-  user         User                 @relation(fields: [userId], references: [id], onDelete: Cascade)
-  modules      LearningPathModule[]
-
-  @@index([userId, createdAt])
-  @@map("learning_paths")
-}
-
-model LearningPathModule {
-  id              String       @id @default(uuid()) @db.Uuid
-  learningPathId  String       @map("learning_path_id") @db.Uuid
-  order           Int
-  title           String       @db.VarChar(200)
-  description     String       @db.Text
-  status          String       @db.VarChar(30)
-  progressPercent Float        @default(0) @map("progress_percent")
-  currentLessonId String?      @map("current_lesson_id") @db.Uuid
-  learningPath    LearningPath @relation(fields: [learningPathId], references: [id], onDelete: Cascade)
-
-  @@index([learningPathId, order])
-  @@map("learning_path_modules")
-}
 
 model VocabularySource {
   vocabularyId String   @map("vocabulary_id") @db.Uuid

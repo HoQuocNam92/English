@@ -38,7 +38,6 @@
 | 👥 Community Discussion | Thảo luận, đặt câu hỏi, chia sẻ kinh nghiệm IT |
 | 🔔 Notification Center | Thông báo hệ thống, nhắc nhở học tập, flash sale |
 | 🎯 Certification Objectives | Quản lý mục tiêu kiến thức, nội dung và mức độ thành thạo theo chứng chỉ |
-| 🗺️ AI Learning Path Generator | AI tạo lộ trình học cá nhân hóa theo mục tiêu |
 | 🌙 Dark / Light Mode | Hỗ trợ cả 2 theme, mặc định Light, nhớ lựa chọn |
 | 🌐 Tiếng Việt / English | Chuyển đổi ngôn ngữ giao diện hoàn toàn (20+ trang) |
 | 💳 Subscription Plans | Gói 1/3/6/12 tháng PRO, tích hợp SePay |
@@ -50,18 +49,17 @@
 
 ## 🧭 Luồng học tập sản phẩm
 
-`Placement Test → IT Field → Career Goal → Personal Roadmap → Foundation → IT Core → Specialized → Lesson → Vocabulary / Reading / Listening → Practice → Scenario → Mini Test → Review → Spaced Repetition`
+`Placement Test → IT Field → Career Goal → Lesson → Vocabulary / Reading / Listening → Practice → Scenario → Mini Test → Review → Spaced Repetition`
 
 - Placement Test lấy câu hỏi `published` có topic `placement` và chấm tại API; client không nhận đáp án đúng.
 - IT Field và Career Goal đọc từ `domains` và `career_goals`, không gán cứng trong giao diện.
-- Personal Roadmap chỉ chọn lesson `published` phù hợp trình độ, domain và mục tiêu nghề nghiệp.
 - Scenario là dạng câu hỏi tình huống, không phải Mock Interview hoặc Writing Practice.
 
 ### Phân chia chức năng Web và Mobile
 
-- **Mobile dành cho học viên:** onboarding, hồ sơ mục tiêu nghề nghiệp, bài học, từ vựng/flashcard, đọc tài liệu trong Luyện tập, bài thi, lịch sử làm bài, tiến độ, lộ trình cá nhân hóa, chứng chỉ, thông báo, cộng đồng và AI Tutor RAG có dẫn nguồn.
+- **Mobile dành cho học viên:** onboarding, hồ sơ mục tiêu nghề nghiệp, bài học, từ vựng/flashcard, đọc tài liệu trong Luyện tập, bài thi, lịch sử làm bài, tiến độ, chứng chỉ, thông báo và cộng đồng.
 - **Web dành cho học viên:** cung cấp các luồng học tương ứng trên màn hình lớn; mục Đọc tài liệu nằm trong Luyện tập để tránh trùng với Học tập.
-- **Web Admin/Teacher:** quản trị nội dung, câu hỏi, đề thi, nội dung ôn tập theo chứng chỉ, lọc/thống kê học viên theo `career_goal`, báo cáo và vận hành kho tri thức RAG.
+- **Web Admin/Teacher:** quản trị bài học ôn tập gắn chứng chỉ, câu hỏi, đề thi, lọc/thống kê học viên theo `career_goal` và báo cáo.
 - Mobile không chứa các màn quản trị vì đây là ứng dụng học viên theo đúng phạm vi đề tài.
 
 ## 🤖 AI Tutor RAG
@@ -309,8 +307,6 @@ CLOUDINARY_CLOUD_NAME="xxx"
 CLOUDINARY_API_KEY="xxx"
 CLOUDINARY_API_SECRET="xxx"
 SEPAY_API_KEY="xxx"
-GROQ_API_KEY="gsk_your_key_here"
-GROQ_MODEL="openai/gpt-oss-20b"
 COHERE_API_KEY="your-cohere-key"
 EMBEDDING_PROVIDER="cohere"
 EMBEDDING_MODEL="embed-v4.0"
@@ -537,7 +533,7 @@ Quy ước quan hệ:
 | `domains` | Lĩnh vực CNTT như Cloud, DevOps, Security. | 1–N với bài học, từ vựng, câu hỏi và đề thi; N–N với certificate và learner profile. |
 | `levels` | Cấp độ Beginner–Professional. | 1–N với profile, content, assessment và lab. |
 | `career_goals` | Mục tiêu nghề nghiệp. | N–N với profile; 1–N với `career_goal_skills`. |
-| `certificates` | Chứng chỉ CNTT và nhà cung cấp. | 1–N với nội dung ôn tập và đề thi; N–N với domain, lesson và question. |
+| `certificates` | Chứng chỉ CNTT và nhà cung cấp. | 1–N với đề thi; N–N với domain, lesson và question. |
 | `certificate_domains` | Bảng nối certificate–domain. | Quan hệ N–N, PK ghép. |
 | `learner_profiles` | Trình độ, mục tiêu học hàng tuần và onboarding. | 1–1 với user; N–N với domain/career goal; 1–N với certificate goal. |
 | `learner_profile_domains` | Lĩnh vực học viên quan tâm. | Bảng nối N–N profile–domain. |
@@ -553,16 +549,15 @@ Quy ước quan hệ:
 | `lesson_vocabularies` | Từ vựng xuất hiện trong bài học. | Bảng nối N–N lesson–vocabulary. |
 | `vocabulary_sources` | Nguồn, URL, tiêu đề, hash, metadata và thời điểm thu thập. | N–1 với vocabulary; PK ghép `vocabulary_id + source + source_url`. |
 
-### 4. Bài học và nội dung chứng chỉ — 4 bảng
+### 4. Bài học và nội dung chứng chỉ — 3 bảng
 
 | Bảng | Vai trò | Quan hệ chính |
 |---|---|---|
 | `lessons` | Bài học, loại bài, thời lượng, domain, level và tác giả. | 1–N với section/progress/session; N–N với vocabulary và certificate. |
 | `lesson_sections` | Các khối text, media, code, callout hoặc quiz theo thứ tự. | N–1 với lesson. |
 | `lesson_certificates` | Bài học phục vụ chứng chỉ nào. | Bảng nối N–N. |
-| `certification_contents` | Nội dung tham khảo riêng của chứng chỉ. | N–1 với certificate. |
 
-### 5. Ngân hàng câu hỏi, đề thi và bài làm — 8 bảng
+### 5. Ngân hàng câu hỏi, đề thi và bài làm — 7 bảng
 
 | Bảng | Vai trò | Quan hệ chính |
 |---|---|---|
@@ -572,8 +567,7 @@ Quy ước quan hệ:
 | `exams` | Đề thi, thời lượng, điểm đạt và phạm vi nội dung. | N–1 với domain/level/certificate/tác giả; N–N với question; 1–N với attempt. |
 | `exam_questions` | Câu hỏi trong đề, thứ tự và trọng số. | Bảng nối N–N exam–question. |
 | `exam_attempts` | Một lần học viên làm đề, điểm và trạng thái. | N–1 với user/exam; 1–N với answer. |
-| `attempt_answers` | Câu trả lời cho một question trong attempt. | N–1 với attempt/question; 1–N với option đã chọn. |
-| `attempt_answer_options` | Lựa chọn cụ thể trong câu trả lời nhiều đáp án. | Bảng nối answer–question option. |
+| `attempt_answers` | Câu trả lời cho một question trong attempt, gồm `selected_option_ids` của các phương án đã chọn. | N–1 với attempt/question. |
 
 ### 6. Tiến độ và gợi ý cá nhân hóa — 3 bảng
 
@@ -619,13 +613,11 @@ Quy ước quan hệ:
 | `ai_feedback` | Đánh giá hữu ích/chưa đúng của người học. | N–1 với AI message; unique theo message–user. |
 | `ai_usage_daily` | Request và token AI theo ngày để kiểm soát quota. | Unique theo user–ngày. |
 
-### 11. Lộ trình và planner — 4 bảng
+### 11. Mục tiêu nghề nghiệp và planner — 2 bảng
 
 | Bảng | Vai trò | Quan hệ chính |
 |---|---|---|
 | `career_goal_skills` | Kỹ năng cần cho mục tiêu nghề nghiệp. | N–1 với career goal; tùy chọn N–1 với lesson. |
-| `learning_paths` | Lộ trình cá nhân hóa của user. | N–1 với user; 1–N với module. |
-| `learning_path_modules` | Các chặng theo thứ tự và phần trăm tiến độ. | N–1 với learning path; `current_lesson_id` là tham chiếu logic. |
 | `learning_plan_items` | Kế hoạch học theo ngày, thời lượng và trạng thái hoàn thành. | N–1 với user; tùy chọn N–1 với lesson. |
 
 ### 12. Landing page — 1 bảng
@@ -659,7 +651,7 @@ Quy ước quan hệ:
 | Exams | 2 |
 | Subscription plans | 5 (1/3/6/12 tháng + Lifetime) |
 | DiscussionPosts | 5 + comments + votes |
-| Certification content | Nội dung ôn tập được quản lý theo từng chứng chỉ |
+| Certification lessons | Nội dung ôn tập dùng `lessons`, `lesson_sections` và `lesson_certificates` |
 | VocabularySources | 2.577 nguồn từ vựng |
 | Notifications | 6 (đa loại) |
 

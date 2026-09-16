@@ -15,16 +15,13 @@ import { UploadModule } from './modules/upload.module'
 
 import { RedisCacheModule } from './infrastructure/cache/redis.module'
 
-import { LearningPathController } from './presentation/learning-path.controller';
 import { ReadingLabController } from './presentation/reading-lab.controller';
-import { AiCoreModule } from './modules/ai-core.module';
 import { PlacementTestController } from './presentation/placement-test.controller';
 import { RecommendationModule } from './modules/recommendation.module';
 import { CareerPrepController } from './presentation/career-prep.controller';
 
 @Module({
   controllers: [
-    LearningPathController,
     ReadingLabController,
     PlacementTestController,
     CareerPrepController,
@@ -44,7 +41,6 @@ import { CareerPrepController } from './presentation/career-prep.controller';
     LearnerProfileModule,
     TaxonomyModule,
     UploadModule,
-    AiCoreModule,
     RecommendationModule,
   ],
 })

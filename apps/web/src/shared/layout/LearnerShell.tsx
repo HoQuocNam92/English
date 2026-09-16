@@ -23,7 +23,6 @@ export function LearnerShell({ children }: LearnerShellProps) {
     { href: '/learn/practice', label: t.nav.practice, exactMatch: false },
     { href: '/learn/quiz/tech', label: 'Thi thử', exactMatch: false },
     { href: '/learn/progress', label: t.nav.progress, exactMatch: false },
-    { href: '/learn/roadmap', label: t.nav.roadmap, exactMatch: false },
   ];
   
   const [moreOpen, setMoreOpen] = useState(false);
@@ -96,7 +95,6 @@ export function LearnerShell({ children }: LearnerShellProps) {
                   <div className="absolute top-full left-0 mt-1 w-52 bg-surface-container-lowest border border-outline-variant/50 rounded-xl shadow-lg z-50 py-1 overflow-hidden">
                     {[
                       { href: '/learn/community', label: t.nav.community, icon: 'forum' },
-                      { href: '/learn/path-generator', label: t.nav.pathGenerator, icon: 'route' },
                     ].map((item) => (
                       <Link
                         key={item.href}
