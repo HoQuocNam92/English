@@ -67,9 +67,7 @@ export default function MobileProfileScreen() {
       <View style={[styles.header, { backgroundColor: colors.surface }]}>
         <View style={styles.headerButton} />
         <Text style={[styles.headerTitle, { color: colors.primary }]}>Cá nhân</Text>
-        <TouchableOpacity style={styles.headerButton} onPress={() => router.push('/community' as any)}>
-          <MaterialIcons name="more-vert" size={24} color={colors.onSurface} />
-        </TouchableOpacity>
+        <View style={styles.headerButton} />
       </View>
 
       <ScrollView contentContainerStyle={styles.contentContainer} showsVerticalScrollIndicator={false}>
@@ -145,7 +143,6 @@ export default function MobileProfileScreen() {
             ['route', 'Lộ trình học', '/roadmap'],
             ['auto-awesome', 'Tạo lộ trình cá nhân', '/path-generator'],
             ['workspace-premium', 'Chứng chỉ', '/certifications'],
-            ['notifications', 'Thông báo', '/notifications'],
             ['style', 'Flashcards', '/flashcards'],
           ].map(([icon, label, route], index, list) => (
             <TouchableOpacity key={route} style={[styles.menuListItem, { borderBottomColor: colors.outlineVariant, borderBottomWidth: index === list.length - 1 ? 0 : 1 }]} onPress={() => router.push(route as any)}>

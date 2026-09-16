@@ -46,10 +46,6 @@ export function Topbar({ onToggleMobileMenu }: TopbarProps) {
       {/* Right actions */}
       <div className="flex items-center gap-3">
         <ThemeLanguageToggle />
-        <button className="p-2 rounded-lg text-on-surface-variant hover:text-primary hover:bg-surface-container-high transition-colors relative">
-          <span className="material-symbols-outlined text-[22px]">notifications</span>
-          <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-error rounded-full" />
-        </button>
         <button className="p-2 rounded-lg text-on-surface-variant hover:text-primary hover:bg-surface-container-high transition-colors hidden sm:block">
           <span className="material-symbols-outlined text-[22px]">help_outline</span>
         </button>

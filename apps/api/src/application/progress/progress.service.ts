@@ -9,11 +9,21 @@ export class ProgressService {
 
   async getMyProgress(learnerId: string) {
     await this.assertLearner(learnerId)
-    const [progress, summary, recentAttempts] = await Promise.all([
+    const [progress, recentAttempts] = await Promise.all([
       this.prisma.learningProgress.findMany({ where: { learnerId }, orderBy: { updatedAt: 'desc' } }),
-      this.prisma.progressSummaryCache.findUnique({ where: { learnerId } }),
       this.prisma.examAttempt.findMany({ where: { learnerId, status: { in: ['graded', 'submitted'] } }, include: { exam: { select: { title: true } } }, orderBy: { startedAt: 'desc' }, take: 10 }),
     ])
+    const lessonProgress = progress.filter((item) => item.resourceType === 'lesson')
+    const completedLessons = lessonProgress.filter((item) => item.status === 'completed').length
+    const scoredAttempts = recentAttempts.filter((item) => item.scorePercent !== null)
+    const summary = {
+      overallCompletionPercent: lessonProgress.length ? Math.round(lessonProgress.reduce((sum, item) => sum + item.completionPercent, 0) / lessonProgress.length) : 0,
+      completedLessons,
+      totalAttempts: recentAttempts.length,
+      averageScorePercent: scoredAttempts.length ? scoredAttempts.reduce((sum, item) => sum + (item.scorePercent ?? 0), 0) / scoredAttempts.length : null,
+      weakTopics: [],
+      calculatedAt: new Date(),
+    }
     return { progress, summary, recentAttempts }
   }
 

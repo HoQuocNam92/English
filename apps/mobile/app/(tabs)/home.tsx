@@ -87,9 +87,7 @@ export default function MobileHomeScreen() {
             <Text style={styles.greetingSubtitle}>Sẵn sàng học bài mới chưa?</Text>
           </View>
         </View>
-        <TouchableOpacity style={styles.notificationButton} onPress={() => router.push('/notifications' as any)} accessibilityLabel="Thông báo">
-          <MaterialIcons name="notifications-none" size={22} color={colors.primary} />
-        </TouchableOpacity>
+        <View style={styles.notificationButton} />
       </View>
 
       <ScrollView contentContainerStyle={styles.contentContainer} showsVerticalScrollIndicator={false}>

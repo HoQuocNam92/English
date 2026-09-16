@@ -710,21 +710,6 @@ async function main() {
       }
     }
 
-    const pscExists = await prisma.progressSummaryCache.findUnique({ where: { learnerId: learner.id } });
-    if (!pscExists) {
-      await prisma.progressSummaryCache.create({
-        data: {
-          learnerId: learner.id,
-          overallCompletionPercent: Math.floor(Math.random() * 40) + 40,
-          studyStreakDays: Math.floor(Math.random() * 10) + 1,
-          totalStudyMinutes: Math.floor(Math.random() * 800) + 200,
-          completedLessons: Math.floor(Math.random() * 4) + 2,
-          totalAttempts: 2,
-          averageScorePercent: Math.floor(Math.random() * 25) + 65,
-        }
-      });
-    }
-
     const recCount = await prisma.recommendation.count({ where: { learnerId: learner.id } });
     if (recCount === 0 && allLessons.length > 0 && allExams.length > 0) {
        for (let i = 0; i < 4; i++) {
@@ -745,24 +730,6 @@ async function main() {
            }
          });
        }
-    }
-  }
-
-  // Seed Discussion Posts
-  const learnerUser = await prisma.user.findFirst({ where: { email: 'learner1@techenglish.pro' } });
-  if (learnerUser) {
-    const postCount = await prisma.discussionPost.count();
-    if (postCount === 0) {
-      await prisma.discussionPost.createMany({
-        data: [
-          { userId: learnerUser.id, title: 'Làm thế nào để nhớ lâu các thuật ngữ networking?', content: 'Mình đang học về TCP/IP và OSI model nhưng hay quên lắm. Mọi người có tips gì không?', tags: ['networking', 'tips', 'memory'], isPinned: true },
-          { userId: learnerUser.id, title: 'AWS vs Azure - chứng chỉ nào dễ tìm việc hơn ở VN?', content: 'Mình đang cân nhắc giữa AWS Solutions Architect và Azure Administrator. Ai có kinh nghiệm thì cho mình biết với!', tags: ['aws', 'azure', 'career', 'certification'] },
-          { userId: learnerUser.id, title: 'Tài liệu học Docker và Kubernetes tốt nhất', content: 'Share resources học Docker/K8s mà mọi người thấy hữu ích nhé. Mình đang cần tài liệu tiếng Việt hoặc có subtitles.', tags: ['docker', 'kubernetes', 'devops', 'resources'] },
-          { userId: learnerUser.id, title: 'Kinh nghiệm thi AWS SAA-C03 lần đầu', content: 'Hôm qua mình vừa pass AWS SAA với 820/1000! Chia sẻ kinh nghiệm ôn thi cho những bạn đang chuẩn bị...', tags: ['aws', 'certification', 'exam-tips'] },
-          { userId: learnerUser.id, title: 'SQL Injection thực tế trông như thế nào?', content: 'Mình muốn hiểu SQL Injection không chỉ lý thuyết. Ai có ví dụ thực tế hoặc lab practice không?', tags: ['security', 'sql', 'practice'] },
-        ],
-      });
-      console.log('✅ Seeded discussion posts');
     }
   }
 
@@ -840,50 +807,6 @@ async function main() {
 
   // ─── SEED: DISCUSSION COMMENTS & VOTES ───────────────────────────────────
   */
-  const commentCount = await prisma.discussionComment.count();
-  if (commentCount === 0) {
-    const posts = await prisma.discussionPost.findMany({ take: 3 });
-    const learners = await prisma.user.findMany({ where: { email: { in: ['learner2@techenglish.pro', 'learner3@techenglish.pro', 'learner4@techenglish.pro'] } } });
-    if (posts.length > 0 && learners.length > 0) {
-      for (const post of posts.slice(0, 3)) {
-        const shuffled = learners.sort(() => Math.random() - 0.5);
-        await prisma.discussionComment.createMany({
-          data: [
-            { postId: post.id, userId: shuffled[0].id, content: 'Mình cũng đang gặp vấn đề này! Cảm ơn bạn đã hỏi. Mình thường dùng Anki flashcard và làm lab thực hành để nhớ lâu hơn.' },
-            { postId: post.id, userId: shuffled[1 % shuffled.length].id, content: 'Tips của mình: đọc documentation gốc của AWS/RFC rất hữu ích. Và cứ thực hành truyền tán trên Cisco Packet Tracer.' },
-          ],
-        });
-        // Add votes
-        for (const learner of learners.slice(0, 2)) {
-          await prisma.discussionVote.upsert({
-            where: { postId_userId: { postId: post.id, userId: learner.id } },
-            update: {},
-            create: { postId: post.id, userId: learner.id, value: 1 },
-          });
-        }
-      }
-      console.log('   ✅ Seeded Discussion Comments & Votes');
-    }
-  }
-
-
-  // ─── SEED: EXTRA NOTIFICATIONS ──────────────────────────────────────────────────
-  const notifCount = await prisma.notification.count();
-  if (notifCount === 0) {
-    const l1 = await prisma.user.findFirst({ where: { email: 'learner1@techenglish.pro' } });
-    if (l1) {
-      await prisma.notification.createMany({
-        data: [
-          { userId: l1.id, type: 'streak', title: '🔥 Chuỗi 14 ngày học liên tiếp!', message: 'Tuyệt vời! Bạn đã duy trì chuỗi học 14 ngày. Hãy tiếp tục để đạt badge "Học viên kiên trì"!', actionUrl: '/learn/achievements', isRead: false },
-          { userId: l1.id, type: 'lesson_complete', title: '✅ Hoàn thành bài học AWS S3', message: 'Chúc mừng! Bạn đã hoàn thành bài học AWS S3 Storage Basics. +50 EXP!', actionUrl: '/learn/lessons', isRead: true },
-          { userId: l1.id, type: 'reminder', title: '📚 Nhắc nhở học tập hôm nay', message: 'Bạn chưa học hôm nay. Hãy dành 15 phút để ôn tập từ vựng Cloud Computing nhé!', actionUrl: '/learn/lessons', isRead: false },
-          { userId: null, type: 'achievement', title: '🏆 Badge mới: AWS Expert!', message: 'TechEnglish vừa thêm huy hiệu "AWS Expert". Hoàn thành lộ trình Cloud Computing để mở khóa ngay!', actionUrl: '/learn/achievements', isRead: false },
-        ],
-      });
-      console.log('   ✅ Seeded Notifications');
-    }
-  }
-
   console.log('\n✨ Seed hoàn tất!')
   console.log('\n📌 Tài khoản demo:')
   console.log('   Admin:    admin@techenglish.pro         / Demo@123456')

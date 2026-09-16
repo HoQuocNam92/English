@@ -43,7 +43,7 @@ export class TaxonomyService {
     const goals = await this.prisma.careerGoal.findMany({
       where: { isActive: true },
       orderBy: { name: 'asc' },
-      include: { _count: { select: { skills: true, profileCareerGoals: true } } },
+      include: { _count: { select: { profileCareerGoals: true } } },
     })
     return { data: goals }
   }

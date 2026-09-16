@@ -32,12 +32,7 @@ export default function TechQuizListPage() {
     <LearnerShell>
       <div className="max-w-[1280px] mx-auto flex flex-col gap-8 pb-8">
         <header>
-          <div className="flex items-center gap-2 mb-2">
-            <Link href="/learn/practice" className="text-[14px] text-on-surface-variant hover:text-primary flex items-center gap-1">
-              <span className="material-symbols-outlined text-[16px]">arrow_back</span>
-              Luyện tập
-            </Link>
-          </div>
+
           <h1 className="text-[30px] leading-[38px] tracking-[-0.02em] font-bold text-on-background mb-2">Hiểu biết kỹ thuật</h1>
           <p className="text-[14px] leading-[20px] text-on-surface-variant">Kiểm tra kiến thức qua các bài thi mô phỏng chuyên ngành IT.</p>
         </header>

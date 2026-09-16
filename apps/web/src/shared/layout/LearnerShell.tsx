@@ -129,11 +129,6 @@ export function LearnerShell({ children }: LearnerShellProps) {
 
             <ThemeLanguageToggle />
 
-            <button aria-label="notifications" onClick={() => router.push('/learn/notifications')} className="p-2 text-on-surface-variant hover:text-primary transition-colors relative">
-              <span className="material-symbols-outlined">notifications</span>
-              <span className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full"></span>
-            </button>
-
             {isAdminOrTeacher && (
               <Link
                 href="/admin/dashboard"

@@ -41,7 +41,6 @@ export const adminNavigation: NavigationGroup[] = [
       { label: 'Chứng chỉ', href: '/admin/certifications', icon: 'workspace_premium', adminOnly: true },
       { label: 'Ngân hàng câu hỏi', href: '/admin/questions', icon: 'help' },
       { label: 'Bài thi', href: '/admin/tests', icon: 'quiz' },
-      { label: 'Banner landing', href: '/admin/banners', icon: 'view_carousel', adminOnly: true },
     ],
   },
   {
@@ -87,7 +86,6 @@ export const combinedNavigation: NavigationGroup[] = [
       { label: 'Chứng chỉ', href: '/admin/certifications', icon: 'workspace_premium', adminOnly: true },
       { label: 'Ngân hàng câu hỏi', href: '/admin/questions', icon: 'help' },
       { label: 'Bài thi', href: '/admin/tests', icon: 'quiz' },
-      { label: 'Banner landing', href: '/admin/banners', icon: 'view_carousel', adminOnly: true },
     ],
   },
   {
@@ -109,13 +107,6 @@ export const combinedNavigation: NavigationGroup[] = [
     group: 'Công cụ học tập',
     items: [
       { label: 'Lộ trình học', href: '/admin/learning-paths', icon: 'route' },
-    ],
-  },
-  {
-    group: 'Tương tác',
-    items: [
-      { label: 'Cộng đồng', href: '/admin/community', icon: 'forum' },
-      { label: 'Thông báo', href: '/admin/notifications', icon: 'notifications' },
     ],
   },
 ];

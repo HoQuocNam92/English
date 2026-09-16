@@ -16,14 +16,16 @@ export class CareerPrepController {
   async getMe(@Request() req: any) {
     const profile = await this.prisma.learnerProfile.findUnique({
       where: { userId: req.user.sub },
-      include: { level: true, domains: { include: { domain: true } }, careerGoals: { include: { careerGoal: { include: { skills: { include: { lesson: true } } } } } } },
+      include: { level: true, domains: { include: { domain: true } }, careerGoals: { include: { careerGoal: true } } },
     });
     if (!profile) throw new NotFoundException('Chưa có hồ sơ học tập.');
     const target = profile.careerGoals[0]?.careerGoal;
-    const lessonIds = target?.skills.flatMap((skill) => skill.lessonId ? [skill.lessonId] : []) ?? [];
+    const domainIds = profile.domains.map((item) => item.domainId);
+    const lessons = await this.prisma.lesson.findMany({ where: { status: 'published', ...(domainIds.length ? { domainId: { in: domainIds } } : {}) }, orderBy: { title: 'asc' }, take: 12 });
+    const lessonIds = lessons.map((lesson) => lesson.id);
     const progress = lessonIds.length ? await this.prisma.learningProgress.findMany({ where: { learnerId: req.user.sub, resourceType: 'lesson', resourceId: { in: lessonIds } } }) : [];
     const progressByLesson = new Map(progress.map((item) => [item.resourceId, item.completionPercent]));
-    const skills = (target?.skills ?? []).map((skill) => ({ id: skill.id, name: skill.name, lessonId: skill.lessonId, lessonTitle: skill.lesson?.title ?? null, completionPercent: skill.lessonId ? progressByLesson.get(skill.lessonId) ?? 0 : 0 }));
+    const skills = lessons.map((lesson) => ({ id: lesson.id, name: lesson.title, lessonId: lesson.id, lessonTitle: lesson.title, completionPercent: progressByLesson.get(lesson.id) ?? 0 }));
     const readinessScore = skills.length ? Math.round(skills.reduce((sum, skill) => sum + skill.completionPercent, 0) / skills.length) : 0;
     return { profile: { level: profile.level, domains: profile.domains.map((item) => item.domain), targetCareerGoal: target ? { id: target.id, code: target.code, name: target.name, description: target.description } : null }, skills, readinessScore, evidence: { requiredSkills: skills.length, measuredLessons: progress.length } };
   }

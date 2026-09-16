@@ -1,5 +1,3 @@
-import { NotificationController } from './presentation/notification.controller';
-import { DiscussionController } from './presentation/discussion.controller';
 import { Module } from '@nestjs/common'
 import { ConfigModule } from '@nestjs/config'
 import { PrismaModule } from './infrastructure/database/prisma.module'
@@ -20,18 +18,14 @@ import { RedisCacheModule } from './infrastructure/cache/redis.module'
 import { LearningPathController } from './presentation/learning-path.controller';
 import { ReadingLabController } from './presentation/reading-lab.controller';
 import { AiCoreModule } from './modules/ai-core.module';
-import { LandingBannerController } from './presentation/landing-banner.controller';
 import { PlacementTestController } from './presentation/placement-test.controller';
 import { RecommendationModule } from './modules/recommendation.module';
 import { CareerPrepController } from './presentation/career-prep.controller';
 
 @Module({
   controllers: [
-    NotificationController,
-    DiscussionController,
     LearningPathController,
     ReadingLabController,
-    LandingBannerController,
     PlacementTestController,
     CareerPrepController,
   ],

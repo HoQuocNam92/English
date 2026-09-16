@@ -5,13 +5,10 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/features/auth/presentation';
 import { Footer } from '@/shared/layout/Footer';
-import { apiClient } from '@/shared/api/api-client';
 
 export default function LandingPage() {
   const router = useRouter();
   const { session, loading } = useAuth();
-  const [landingContent, setLandingContent] = useState<any[]>([]);
-  const [activeBanner, setActiveBanner] = useState(0);
 
   // Nếu đã đăng nhập → chuyển thẳng vào dashboard tương ứng
   useEffect(() => {
@@ -25,13 +22,13 @@ export default function LandingPage() {
     }
   }, [session, loading, router]);
 
-  useEffect(() => { apiClient.get<any[]>('/landing-banners/active').then(setLandingContent).catch(() => setLandingContent([])); }, []);
-  const heroBanners = landingContent.filter((item) => item.placement === 'hero');
-  const freeFeatures = landingContent.filter((item) => item.placement === 'free_feature');
-  const differences = landingContent.filter((item) => item.placement === 'difference');
-  const footerBanners = landingContent.filter((item) => item.placement === 'footer');
-  const banner = heroBanners[activeBanner % Math.max(1, heroBanners.length)];
-  const footerBanner = footerBanners[0];
+  const heroBanners: any[] = [];
+  const activeBanner = 0;
+  const setActiveBanner = (_index: number) => undefined;
+  const freeFeatures: any[] = [];
+  const differences: any[] = [];
+  const banner: any = null;
+  const footerBanner: any = null;
 
   if (loading) {
     return (

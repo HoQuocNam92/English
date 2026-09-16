@@ -146,12 +146,7 @@ model User {
   // Roles granted by this user
   grantedRoles UserRole[] @relation("RoleGrantedBy")
 
-  notifications      Notification[]
-  notificationReads  NotificationRead[]
-  learningPaths      LearningPath[]
-  discussionPosts    DiscussionPost[]
-  discussionComments DiscussionComment[]
-  discussionVotes    DiscussionVote[]
+  learningPaths LearningPath[]
 
   @@index([email])
   @@index([status])
@@ -339,7 +334,6 @@ model CareerGoal {
   updatedAt   DateTime @updatedAt @map("updated_at") @db.Timestamptz(6)
 
   profileCareerGoals LearnerProfileCareerGoal[]
-  skills             CareerGoalSkill[]
 
   @@index([code])
   @@map("career_goals")
@@ -520,11 +514,10 @@ model Lesson {
   level     Level  @relation(fields: [levelId], references: [id])
   createdBy User   @relation("LessonCreatedBy", fields: [createdById], references: [id])
 
-  sections         LessonSection[]
-  vocabularies     LessonVocabulary[]
-  certificates     LessonCertificate[]
-  progressItems    LearningProgress[]
-  careerGoalSkills CareerGoalSkill[]
+  sections      LessonSection[]
+  vocabularies  LessonVocabulary[]
+  certificates  LessonCertificate[]
+  progressItems LearningProgress[]
 
   @@index([domainId])
   @@index([levelId])
@@ -812,21 +805,6 @@ model LearningProgress {
   @@map("learning_progress")
 }
 
-/// Bảng tổng hợp tiến độ cá nhân (cache).
-model ProgressSummaryCache {
-  learnerId                String   @id @map("learner_id") @db.Uuid
-  overallCompletionPercent Float    @default(0.0) @map("overall_completion_percent")
-  studyStreakDays          Int      @default(0) @map("study_streak_days")
-  totalStudyMinutes        Int      @default(0) @map("total_study_minutes")
-  completedLessons         Int      @default(0) @map("completed_lessons")
-  totalAttempts            Int      @default(0) @map("total_attempts")
-  averageScorePercent      Float?   @map("average_score_percent")
-  weakTopics               Json     @default("[]") @map("weak_topics")
-  calculatedAt             DateTime @default(now()) @map("calculated_at") @db.Timestamptz(6)
-
-  @@map("progress_summary_cache")
-}
-
 // =============================================================================
 // AI RECOMMENDATIONS
 // =============================================================================
@@ -855,141 +833,6 @@ model Recommendation {
 // ─── AI Mock Interview ────────────────────────────────────────────────────────
 
 // ─── AI Writing Practice ──────────────────────────────────────────────────────
-
-// ─── Community Discussion ─────────────────────────────────────────────────────
-model DiscussionPost {
-  id               String    @id @default(uuid()) @db.Uuid
-  userId           String    @db.Uuid
-  title            String    @db.VarChar(300)
-  content          String    @db.Text
-  tags             String[]  @db.Text
-  isPinned         Boolean   @default(false) @map("is_pinned")
-  isLocked         Boolean   @default(false) @map("is_locked")
-  lockedAt         DateTime? @map("locked_at") @db.Timestamptz(6)
-  moderationReason String?   @map("moderation_reason") @db.VarChar(500)
-  viewCount        Int       @default(0) @map("view_count")
-  createdAt        DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
-  updatedAt        DateTime  @updatedAt @map("updated_at") @db.Timestamptz(6)
-
-  user     User                @relation(fields: [userId], references: [id], onDelete: Cascade)
-  comments DiscussionComment[]
-  votes    DiscussionVote[]
-
-  @@index([userId])
-  @@index([createdAt])
-  @@map("discussion_posts")
-}
-
-model DiscussionComment {
-  id        String   @id @default(uuid()) @db.Uuid
-  postId    String   @map("post_id") @db.Uuid
-  userId    String   @db.Uuid
-  content   String   @db.Text
-  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
-
-  post DiscussionPost @relation(fields: [postId], references: [id], onDelete: Cascade)
-  user User           @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  @@index([postId])
-  @@map("discussion_comments")
-}
-
-model DiscussionVote {
-  id     String @id @default(uuid()) @db.Uuid
-  postId String @map("post_id") @db.Uuid
-  userId String @db.Uuid
-  value  Int    @default(1) // 1 = upvote, -1 = downvote
-
-  post DiscussionPost @relation(fields: [postId], references: [id], onDelete: Cascade)
-  user User           @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  @@unique([postId, userId])
-  @@map("discussion_votes")
-}
-
-model Notification {
-  id        String           @id @default(uuid()) @db.Uuid
-  userId    String?          @db.Uuid
-  type      NotificationType @default(system)
-  title     String           @db.VarChar(200)
-  message   String           @db.Text
-  isRead    Boolean          @default(false) @map("is_read")
-  actionUrl String?          @map("action_url") @db.VarChar(500)
-  createdAt DateTime         @default(now()) @map("created_at") @db.Timestamptz(6)
-
-  user  User?              @relation(fields: [userId], references: [id], onDelete: Cascade)
-  reads NotificationRead[]
-
-  @@index([userId])
-  @@index([createdAt])
-  @@map("notifications")
-}
-
-/// Trạng thái đọc riêng của từng người nhận, kể cả thông báo broadcast.
-model NotificationRead {
-  id             String       @id @default(uuid()) @db.Uuid
-  notificationId String       @map("notification_id") @db.Uuid
-  userId         String       @map("user_id") @db.Uuid
-  readAt         DateTime     @default(now()) @map("read_at") @db.Timestamptz(6)
-  notification   Notification @relation(fields: [notificationId], references: [id], onDelete: Cascade)
-  user           User         @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  @@unique([notificationId, userId])
-  @@index([userId, readAt])
-  @@map("notification_reads")
-}
-
-enum NotificationType {
-  system
-  lesson_complete
-  streak
-  flash_sale
-  achievement
-  reminder
-}
-
-model LandingBanner {
-  id              String    @id @default(uuid()) @db.Uuid
-  placement       String    @default("hero") @db.VarChar(30)
-  displayMode     String    @default("background_text") @map("display_mode") @db.VarChar(30)
-  eyebrow         String?   @db.VarChar(100)
-  title           String    @db.VarChar(200)
-  description     String?   @db.Text
-  imageUrl        String?   @map("image_url") @db.VarChar(1000)
-  imagePublicId   String?   @map("image_public_id") @db.VarChar(500)
-  ctaLabel        String?   @map("cta_label") @db.VarChar(80)
-  ctaUrl          String?   @map("cta_url") @db.VarChar(1000)
-  accentColor     String    @default("#4F46E5") @map("accent_color") @db.VarChar(20)
-  backgroundColor String    @default("#EEF2FF") @map("background_color") @db.VarChar(20)
-  bulletPoints    Json      @default("[]") @map("bullet_points")
-  textX           Float     @default(8) @map("text_x")
-  textY           Float     @default(18) @map("text_y")
-  textWidth       Float     @default(46) @map("text_width")
-  textAlign       String    @default("left") @map("text_align") @db.VarChar(10)
-  titleColor      String    @default("#0F172A") @map("title_color") @db.VarChar(20)
-  titleSize       Int       @default(56) @map("title_size")
-  sortOrder       Int       @default(0) @map("sort_order")
-  isActive        Boolean   @default(true) @map("is_active")
-  startsAt        DateTime? @map("starts_at") @db.Timestamptz(6)
-  endsAt          DateTime? @map("ends_at") @db.Timestamptz(6)
-  createdAt       DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
-  updatedAt       DateTime  @updatedAt @map("updated_at") @db.Timestamptz(6)
-
-  @@index([placement, isActive, sortOrder])
-  @@map("landing_banners")
-}
-
-model CareerGoalSkill {
-  id           String     @id @default(uuid()) @db.Uuid
-  careerGoalId String     @map("career_goal_id") @db.Uuid
-  lessonId     String?    @map("lesson_id") @db.Uuid
-  name         String     @db.VarChar(150)
-  careerGoal   CareerGoal @relation(fields: [careerGoalId], references: [id], onDelete: Cascade)
-  lesson       Lesson?    @relation(fields: [lessonId], references: [id], onDelete: SetNull)
-
-  @@index([careerGoalId])
-  @@map("career_goal_skills")
-}
 
 model LearningPath {
   id           String               @id @default(uuid()) @db.Uuid

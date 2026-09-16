@@ -73,23 +73,17 @@ export class LearningPathController {
           { name: { equals: body.careerGoal, mode: 'insensitive' } },
         ],
       },
-      include: { skills: true },
     });
 
-    // 3. Fetch candidate lessons (matching career goal skills + learner domains)
+    // 3. Fetch candidate lessons matching the learner domains.
     const domainIds = profile?.domains.map((d) => d.domainId) ?? [];
-    const skillLessonIds = careerGoal?.skills
-      .map((s) => s.lessonId)
-      .filter((id): id is string => Boolean(id)) ?? [];
-
     const lessons = await this.prisma.lesson.findMany({
       where: {
         status: 'published',
         OR: [
-          ...(skillLessonIds.length ? [{ id: { in: skillLessonIds } }] : []),
           ...(domainIds.length ? [{ domainId: { in: domainIds } }] : []),
           // Fallback: any published lesson if no match
-          ...(skillLessonIds.length === 0 && domainIds.length === 0 ? [{ status: 'published' as const }] : []),
+          ...(domainIds.length === 0 ? [{ status: 'published' as const }] : []),
         ],
       },
       include: { domain: true, level: true },
