@@ -1,6 +1,5 @@
 import { Module, Global } from '@nestjs/common';
 import { CacheModule } from '@nestjs/cache-manager';
-import { RedisLockService } from './redis-lock.service';
 
 @Global()
 @Module({
@@ -26,7 +25,6 @@ import { RedisLockService } from './redis-lock.service';
       isGlobal: true,
     }),
   ],
-  providers: [RedisLockService],
-  exports: [CacheModule, RedisLockService],
+  exports: [CacheModule],
 })
 export class RedisCacheModule {}

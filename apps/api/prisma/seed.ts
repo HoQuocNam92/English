@@ -294,11 +294,11 @@ async function main() {
   const lesson2 = await prisma.lesson.upsert({
     where: { slug: 'aws-high-availability-architecture' }, update: {},
     create: {
-      title: 'AWS Solutions Architect — Designing for High Availability (PRO)',
+      title: 'AWS Solutions Architect — Designing for High Availability',
       slug: 'aws-high-availability-architecture',
-      summary: 'Tìm hiểu cách thiết kế kiến trúc AWS có tính sẵn sàng cao sử dụng Multi-AZ deployments, ELB và Auto Scaling — dành riêng cho tài khoản PRO.',
+      summary: 'Tìm hiểu cách thiết kế kiến trúc AWS có tính sẵn sàng cao sử dụng Multi-AZ deployments, ELB và Auto Scaling.',
       type: 'technical_reading', domainId: domains['CLOUD'].id, levelId: levels[1].id,
-      estimatedMinutes: 50, isProOnly: true, status: ContentStatus.published, publishedAt: new Date(), createdById: teacher1.id,
+      estimatedMinutes: 50, status: ContentStatus.published, publishedAt: new Date(), createdById: teacher1.id,
       certificates: { create: [{ certificateId: certs['AWS-SAA'].id }] },
       sections: {
         create: [
@@ -316,11 +316,11 @@ async function main() {
   const lesson3 = await prisma.lesson.upsert({
     where: { slug: 'kubernetes-pod-troubleshooting' }, update: {},
     create: {
-      title: 'Kubernetes Troubleshooting — Common Pod Issues (PRO)',
+      title: 'Kubernetes Troubleshooting — Common Pod Issues',
       slug: 'kubernetes-pod-troubleshooting',
-      summary: 'Hướng dẫn thực tế để chẩn đoán và giải quyết các vấn đề pod Kubernetes phổ biến: CrashLoopBackOff, OOMKilled, ImagePullBackOff và Pending — dành riêng cho tài khoản PRO.',
+      summary: 'Hướng dẫn thực tế để chẩn đoán và giải quyết các vấn đề pod Kubernetes phổ biến: CrashLoopBackOff, OOMKilled, ImagePullBackOff và Pending.',
       type: 'case_study', domainId: domains['DEVOPS'].id, levelId: levels[2].id,
-      estimatedMinutes: 40, isProOnly: true, status: ContentStatus.published, publishedAt: new Date(), createdById: teacher2.id,
+      estimatedMinutes: 40, status: ContentStatus.published, publishedAt: new Date(), createdById: teacher2.id,
       certificates: { create: [{ certificateId: certs['CKA'].id }] },
       sections: {
         create: [
@@ -337,11 +337,11 @@ async function main() {
   const lesson4 = await prisma.lesson.upsert({
     where: { slug: 'network-security-fundamentals' }, update: {},
     create: {
-      title: 'CompTIA Security+ — Network Security Fundamentals (PRO)',
+      title: 'CompTIA Security+ — Network Security Fundamentals',
       slug: 'network-security-fundamentals',
-      summary: 'Các khái niệm bảo mật mạng thiết yếu cho kỳ thi CompTIA Security+: firewall types, VPN protocols, IDS vs IPS và kiến trúc zero-trust — dành riêng cho tài khoản PRO.',
+      summary: 'Các khái niệm bảo mật mạng thiết yếu cho kỳ thi CompTIA Security+: firewall types, VPN protocols, IDS vs IPS và kiến trúc zero-trust.',
       type: 'technical_reading', domainId: domains['CYBERSEC'].id, levelId: levels[1].id,
-      estimatedMinutes: 45, isProOnly: true, status: ContentStatus.published, publishedAt: new Date(), createdById: teacher2.id,
+      estimatedMinutes: 45, status: ContentStatus.published, publishedAt: new Date(), createdById: teacher2.id,
       certificates: { create: [{ certificateId: certs['COMPTIA-SECURITY-PLUS'].id }] },
       sections: {
         create: [
@@ -537,11 +537,11 @@ async function main() {
   if (!await prisma.exam.findFirst({ where: { title: 'AWS SAA Mock Exam — High Availability & Networking' } })) {
     await prisma.exam.create({
       data: {
-        title: 'AWS SAA Mock Exam — High Availability & Networking (PRO)',
-        description: 'Bài kiểm tra thực hành phong cách AWS SAA-C03, tập trung vào high availability, networking và database design. Dành riêng cho tài khoản PRO.',
+        title: 'AWS SAA Mock Exam — High Availability & Networking',
+        description: 'Bài kiểm tra thực hành phong cách AWS SAA-C03, tập trung vào high availability, networking và database design.',
         domainId: domains['CLOUD'].id, levelId: levels[1].id, certificateId: certs['AWS-SAA'].id,
         topics: ['Multi-AZ','Load Balancing','NAT Gateway','ElastiCache','RDS'], durationMinutes: 20,
-        passingScorePercent: 70.0, maxAttempts: 3, shuffleQuestions: true, isProOnly: true,
+        passingScorePercent: 70.0, maxAttempts: 3, shuffleQuestions: true,
         status: ContentStatus.published, publishedAt: new Date(), createdById: teacher1.id,
         questions: { create: awsQuestions.slice(0, 5).map((q, i) => ({ questionId: q.id, order: i + 1, weight: 1.0 })) },
       },
@@ -562,41 +562,6 @@ async function main() {
     })
   }
   console.log('   ✅ 2 exams seeded')
-
-  // ============================================================
-  // Seed PRO Subscription for learner1@techenglish.pro
-  const user1 = await prisma.user.findUnique({ where: { email: 'learner1@techenglish.pro' } });
-  if (user1) {
-    const order1 = await prisma.paymentOrder.upsert({
-      where: { idempotencyKey: 'seed-idem-learner1' },
-      update: { status: 'paid', paidAt: new Date() },
-      create: {
-        userId: user1.id,
-        planId: 'pro_yearly',
-        amount: 799000,
-        idempotencyKey: 'seed-idem-learner1',
-        shortRef: 'TESEEDLEARNER001',
-        status: 'paid',
-        paidAt: new Date(),
-        expiresAt: new Date(Date.now() + 365 * 86400000),
-      }
-    });
-
-    await prisma.userSubscription.upsert({
-      where: { userId: user1.id },
-      update: { status: 'active', expiresAt: new Date(Date.now() + 365 * 86400000) },
-      create: {
-        userId: user1.id,
-        planId: 'pro_yearly',
-        orderId: order1.id,
-        status: 'active',
-        startedAt: new Date(),
-        expiresAt: new Date(Date.now() + 365 * 86400000),
-      }
-    });
-  }
-
-  console.log('   ✅ PRO Subscription seeded for learner1@techenglish.pro');
 
   // ============================================================
   // 12. PHASE 3: SEED EXAM ATTEMPTS, PROGRESS, CACHE, RECOMMENDATIONS
@@ -783,46 +748,6 @@ async function main() {
     }
   }
 
-  // ============================================================
-  // 11. PAYMENT & PRO SUBSCRIPTIONS SEED
-  // ============================================================
-  console.log('💳 Seed Pro Plans & Subscriptions...')
-  
-  // Active Pro Subscription for learner1 & adminUser
-  const proUsers = [
-    { user: learner1, planId: 'pro_yearly', amount: 1290000, days: 365 },
-    { user: adminUser, planId: 'pro_lifetime', amount: 2990000, days: 3650 },
-  ]
-
-  for (const pu of proUsers) {
-    const existingSub = await prisma.userSubscription.findUnique({ where: { userId: pu.user.id } })
-    if (!existingSub) {
-      const order = await prisma.paymentOrder.create({
-        data: {
-          userId: pu.user.id,
-          planId: pu.planId,
-          amount: pu.amount,
-          idempotencyKey: `seed-order-${pu.user.id}`,
-          shortRef: `TE${pu.user.id.replace(/-/g, '').slice(0, 16).toUpperCase()}`,
-          status: 'paid',
-          sepayTransactionId: `SEPAY_${pu.user.id.slice(0, 8).toUpperCase()}`,
-          paidAt: new Date(),
-          expiresAt: new Date(Date.now() + 15 * 60 * 1000),
-        }
-      })
-
-      await prisma.userSubscription.create({
-        data: {
-          userId: pu.user.id,
-          planId: pu.planId,
-          orderId: order.id,
-          status: 'active',
-          startedAt: new Date(),
-          expiresAt: new Date(Date.now() + pu.days * 24 * 60 * 60 * 1000),
-        }
-      })
-    }
-  }
   // Seed Discussion Posts
   const learnerUser = await prisma.user.findFirst({ where: { email: 'learner1@techenglish.pro' } });
   if (learnerUser) {
@@ -953,7 +878,6 @@ async function main() {
           { userId: l1.id, type: 'lesson_complete', title: '✅ Hoàn thành bài học AWS S3', message: 'Chúc mừng! Bạn đã hoàn thành bài học AWS S3 Storage Basics. +50 EXP!', actionUrl: '/learn/lessons', isRead: true },
           { userId: l1.id, type: 'reminder', title: '📚 Nhắc nhở học tập hôm nay', message: 'Bạn chưa học hôm nay. Hãy dành 15 phút để ôn tập từ vựng Cloud Computing nhé!', actionUrl: '/learn/lessons', isRead: false },
           { userId: null, type: 'achievement', title: '🏆 Badge mới: AWS Expert!', message: 'TechEnglish vừa thêm huy hiệu "AWS Expert". Hoàn thành lộ trình Cloud Computing để mở khóa ngay!', actionUrl: '/learn/achievements', isRead: false },
-          { userId: l1.id, type: 'system', title: '🎉 Tài khoản PRO đã được kích hoạt!', message: 'Chúc mừng bạn đã nâng cấp lên PRO Yearly. Tận hưởng đầy đủ tính năng premium!', actionUrl: '/learn/profile', isRead: true },
         ],
       });
       console.log('   ✅ Seeded Notifications');
@@ -962,10 +886,10 @@ async function main() {
 
   console.log('\n✨ Seed hoàn tất!')
   console.log('\n📌 Tài khoản demo:')
-  console.log('   Admin:    admin@techenglish.pro         / Demo@123456  [PRO Lifetime]')
+  console.log('   Admin:    admin@techenglish.pro         / Demo@123456')
   console.log('   Teacher1: nguyen.thanh@techenglish.pro  / Demo@123456  (Cloud & DevOps)')
   console.log('   Teacher2: tran.minh@techenglish.pro     / Demo@123456  (Security & Networking)')
-  console.log('   Learner1: learner1@techenglish.pro      / Demo@123456  [PRO Yearly] (Backend dev, AWS-SAA)')
+  console.log('   Learner1: learner1@techenglish.pro      / Demo@123456  (Backend dev, AWS-SAA)')
   console.log('   Learner2: learner2@techenglish.pro      / Demo@123456  (DevOps intern, CKA)')
   console.log('   Learner3: learner3@techenglish.pro      / Demo@123456  (Security analyst, Security+)')
   console.log('   Learner4: learner4@techenglish.pro      / Demo@123456  (Data engineer, GCP-ACE)')

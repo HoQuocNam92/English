@@ -41,7 +41,6 @@ export const adminNavigation: NavigationGroup[] = [
       { label: 'Chứng chỉ', href: '/admin/certifications', icon: 'workspace_premium', adminOnly: true },
       { label: 'Ngân hàng câu hỏi', href: '/admin/questions', icon: 'help' },
       { label: 'Bài thi', href: '/admin/tests', icon: 'quiz' },
-      { label: 'AI RAG & cá nhân hóa', href: '/admin/ai-rag', icon: 'psychology' },
       { label: 'Banner landing', href: '/admin/banners', icon: 'view_carousel', adminOnly: true },
     ],
   },
@@ -88,7 +87,6 @@ export const combinedNavigation: NavigationGroup[] = [
       { label: 'Chứng chỉ', href: '/admin/certifications', icon: 'workspace_premium', adminOnly: true },
       { label: 'Ngân hàng câu hỏi', href: '/admin/questions', icon: 'help' },
       { label: 'Bài thi', href: '/admin/tests', icon: 'quiz' },
-      { label: 'AI RAG & cá nhân hóa', href: '/admin/ai-rag', icon: 'psychology' },
       { label: 'Banner landing', href: '/admin/banners', icon: 'view_carousel', adminOnly: true },
     ],
   },
@@ -129,7 +127,6 @@ export const teacherNavigation: NavigationGroup[] = [
     { label: 'Bài học', href: '/admin/lessons', icon: 'auto_stories' },
     { label: 'Ngân hàng câu hỏi', href: '/admin/questions', icon: 'help' },
     { label: 'Bài thi', href: '/admin/tests', icon: 'quiz' },
-    { label: 'AI RAG & cá nhân hóa', href: '/admin/ai-rag', icon: 'psychology' },
   ] },
   { group: 'Học viên phụ trách', items: [
     { label: 'Kết quả bài thi', href: '/admin/test-results', icon: 'fact_check' },

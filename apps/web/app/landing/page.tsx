@@ -2,7 +2,6 @@
 
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
-import type { FormEvent } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/features/auth/presentation';
 import { Footer } from '@/shared/layout/Footer';
@@ -13,24 +12,6 @@ export default function LandingPage() {
   const { session, loading } = useAuth();
   const [landingContent, setLandingContent] = useState<any[]>([]);
   const [activeBanner, setActiveBanner] = useState(0);
-  const [chatOpen, setChatOpen] = useState(false);
-  const [chatInput, setChatInput] = useState('');
-  const [chatLoading, setChatLoading] = useState(false);
-  const [chatError, setChatError] = useState('');
-  const [chatMessages, setChatMessages] = useState<Array<{ role: 'user' | 'assistant'; content: string }>>([]);
-
-  async function sendLandingChat(event?: FormEvent, suggestion?: string) {
-    event?.preventDefault();
-    const content = (suggestion ?? chatInput).trim();
-    if (!content || chatLoading) return;
-    setChatMessages(current => [...current, { role: 'user', content }]);
-    setChatInput(''); setChatError(''); setChatLoading(true);
-    try {
-      const response = await apiClient.post<{ answer: string }>('/ai-chat/public', { content });
-      setChatMessages(current => [...current, { role: 'assistant', content: response.answer }]);
-    } catch (error: any) { setChatError(error.message || 'AI chưa thể phản hồi. Vui lòng thử lại.'); }
-    finally { setChatLoading(false); }
-  }
 
   // Nếu đã đăng nhập → chuyển thẳng vào dashboard tương ứng
   useEffect(() => {
@@ -79,7 +60,6 @@ export default function LandingPage() {
           </Link>
 
           <nav className="hidden md:flex items-center gap-6 text-sm font-semibold text-on-surface-variant">
-            <a href="#plans" className="hover:text-primary transition-colors">Gói học</a>
             <a href="#about" className="hover:text-primary transition-colors">Về chúng tôi</a>
           </nav>
 
@@ -128,24 +108,6 @@ export default function LandingPage() {
           </article>)}</div>
         </div>
       </section>}
-
-      <div className="fixed bottom-5 right-5 z-[70] flex flex-col items-end gap-3">
-        {chatOpen && <section className="flex h-[min(620px,calc(100vh-110px))] w-[min(390px,calc(100vw-32px))] flex-col overflow-hidden rounded-[26px] border border-blue-200 bg-white shadow-2xl">
-          <header className="flex items-center justify-between bg-gradient-to-r from-blue-600 to-cyan-500 px-5 py-4 text-white">
-            <div><p className="font-black">TechEnglish AI</p><p className="text-xs text-blue-50">RAG theo học liệu đã duyệt</p></div>
-            <button type="button" onClick={() => setChatOpen(false)} aria-label="Đóng trợ lý AI" className="flex h-9 w-9 items-center justify-center rounded-full bg-white/15 hover:bg-white/25"><span className="material-symbols-outlined !text-white">close</span></button>
-          </header>
-          <div className="flex-1 space-y-3 overflow-y-auto bg-[linear-gradient(#eef2ff_1px,transparent_1px),linear-gradient(90deg,#eef2ff_1px,transparent_1px)] bg-[size:32px_32px] p-4">
-            {!chatMessages.length && <div className="flex h-full flex-col items-center justify-center text-center"><div className="flex h-16 w-16 items-center justify-center rounded-full bg-cyan-100 text-blue-600"><span className="material-symbols-outlined text-[32px]">smart_toy</span></div><h3 className="mt-4 text-lg font-black">Mình giúp được gì cho bạn?</h3><p className="mt-2 max-w-64 text-sm text-on-surface-variant">Hỏi về cách học tiếng Anh IT, sửa câu hoặc từ vựng chuyên ngành.</p></div>}
-            {chatMessages.map((message, index) => <div key={index} className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}><div className={`max-w-[88%] whitespace-pre-wrap rounded-2xl px-4 py-3 text-sm leading-6 ${message.role === 'user' ? 'rounded-br-md bg-blue-600 text-white' : 'rounded-bl-md border border-blue-100 bg-white text-on-surface shadow-sm'}`}>{message.content}</div></div>)}
-            {chatLoading && <div className="w-fit rounded-2xl rounded-bl-md border border-blue-100 bg-white px-4 py-3 text-sm text-on-surface-variant">AI đang suy nghĩ…</div>}
-          </div>
-          {!chatMessages.length && <div className="flex flex-wrap gap-2 border-t border-outline-variant/40 px-4 py-3">{['REST API là gì?', 'Giải thích rate limiting', 'Giải thích từ deploy'].map(item => <button type="button" key={item} onClick={() => void sendLandingChat(undefined, item)} className="rounded-full border border-blue-300 px-3 py-2 text-xs font-semibold text-blue-700 hover:bg-blue-50">{item}</button>)}</div>}
-          {chatError && <p className="px-4 pt-2 text-xs text-red-600">{chatError}</p>}
-          <form onSubmit={sendLandingChat} className="flex gap-2 border-t border-outline-variant/40 bg-white p-4"><input required minLength={2} maxLength={600} value={chatInput} onChange={event => setChatInput(event.target.value)} placeholder="Nhập câu hỏi…" className="min-w-0 flex-1 rounded-2xl border border-outline-variant px-4 py-3 text-sm outline-none focus:border-blue-500" /><button disabled={chatLoading || chatInput.trim().length < 2} aria-label="Gửi câu hỏi" className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-blue-600 text-white disabled:opacity-40"><span className="material-symbols-outlined !text-white">send</span></button></form>
-        </section>}
-        <button type="button" onClick={() => setChatOpen(value => !value)} aria-label={chatOpen ? 'Đóng trợ lý AI' : 'Mở trợ lý AI'} className="flex h-14 w-14 items-center justify-center rounded-full bg-blue-600 text-white shadow-xl ring-4 ring-white transition hover:scale-105"><span className="material-symbols-outlined text-[28px] !text-white">{chatOpen ? 'close' : 'chat_bubble'}</span></button>
-      </div>
 
       {/* ─── Hero ─────────────────────────────────────────────────── */}
       <section className="hidden mx-auto px-4 sm:px-6 pt-20 pb-24 flex-col lg:flex-row items-center gap-12 lg:gap-16" style={{ maxWidth: '1152px' }}>
@@ -253,98 +215,6 @@ export default function LandingPage() {
                 <p className="text-xs font-black text-on-surface">Hoàn thành bài!</p>
                 <p className="text-[10px] text-on-surface-variant">+50 EXP kiếm được</p>
               </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* ─── Plans ────────────────────────────────────────────────── */}
-      <section id="plans" className="bg-background py-20">
-        <div className="mx-auto px-4 sm:px-6" style={{ maxWidth: '1152px' }}>
-          <div className="text-center mb-14">
-            <h2 className="text-3xl font-black text-on-surface tracking-tight">Gói học phù hợp với bạn</h2>
-            <p className="text-on-surface-variant mt-3">Bắt đầu miễn phí hoặc chọn một trong 4 thời hạn PRO đang có trong hệ thống</p>
-          </div>
-
-          <div className="grid grid-cols-1 gap-5 mx-auto md:grid-cols-2 lg:grid-cols-5" style={{ maxWidth: '1200px' }}>
-            {/* Free */}
-            <div className="bg-surface-container-lowest rounded-2xl border border-outline-variant/40 p-6 space-y-4">
-              <div>
-                <p className="text-xs font-bold text-on-surface-variant uppercase tracking-wider">Miễn phí</p>
-                <p className="text-4xl font-black text-on-surface mt-1">0đ</p>
-                <p className="text-sm text-on-surface-variant mt-0.5">Mãi mãi</p>
-              </div>
-              <ul className="space-y-2 text-sm text-on-surface-variant">
-                {['5 bài học cơ bản', '20 câu hỏi luyện tập/ngày', 'Flashcard từ vựng cơ bản', 'Theo dõi tiến độ cơ bản'].map(f => (
-                  <li key={f} className="flex items-center gap-2">
-                    <span className="material-symbols-outlined text-[16px] text-primary">check</span>
-                    {f}
-                  </li>
-                ))}
-              </ul>
-              <Link href="/login" className="block w-full py-3 text-center border-2 border-outline-variant text-on-surface font-bold rounded-xl hover:border-primary hover:text-primary transition-colors text-sm">
-                Bắt đầu miễn phí
-              </Link>
-            </div>
-
-            {/* PRO Yearly — featured */}
-            <div className="bg-primary rounded-2xl p-6 space-y-4 relative shadow-xl shadow-primary/25 md:-mt-4 md:-mb-4">
-              <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-purple-700 !text-white text-[10px] font-black px-3 py-1 rounded-full uppercase tracking-wider border border-purple-400 whitespace-nowrap">
-                Phổ biến nhất
-              </div>
-              <div>
-                <p className="text-xs font-bold text-indigo-200 uppercase tracking-wider">PRO Năm</p>
-                <div className="flex items-baseline gap-2 mt-1">
-                  <p className="text-4xl font-black !text-white">799k</p>
-                  <p className="text-indigo-200">/năm</p>
-                </div>
-                <p className="text-sm text-indigo-200 mt-0.5">~66k/tháng · Tiết kiệm 33%</p>
-              </div>
-              <ul className="space-y-2 text-sm !text-white">
-                {['Toàn bộ bài học & nội dung', 'Luyện tập & thi thử không giới hạn', 'Gợi ý theo tiến độ học', 'Tất cả flashcard nâng cao', 'Chứng chỉ hoàn thành lộ trình', 'Ưu tiên hỗ trợ'].map(f => (
-                  <li key={f} className="flex items-center gap-2">
-                    <span className="material-symbols-outlined text-[16px] text-indigo-200">check</span>
-                    <span className="!text-white">{f}</span>
-                  </li>
-                ))}
-              </ul>
-              <Link href="/login" className="block w-full py-3 text-center bg-white text-primary font-bold rounded-xl hover:bg-indigo-50 transition-colors text-sm">
-                Đăng ký PRO Năm
-              </Link>
-            </div>
-
-            {/* PRO Monthly */}
-            <div className="bg-surface-container-lowest rounded-2xl border border-outline-variant/40 p-6 space-y-4">
-              <div>
-                <p className="text-xs font-bold text-on-surface-variant uppercase tracking-wider">PRO Tháng</p>
-                <p className="text-4xl font-black text-on-surface mt-1">99k</p>
-                <p className="text-sm text-on-surface-variant mt-0.5">/tháng</p>
-              </div>
-              <ul className="space-y-2 text-sm text-on-surface-variant">
-                {['Toàn bộ bài học & nội dung', 'Luyện tập không giới hạn', 'Gợi ý theo tiến độ học', 'Flashcard nâng cao'].map(f => (
-                  <li key={f} className="flex items-center gap-2">
-                    <span className="material-symbols-outlined text-[16px] text-primary">check</span>
-                    {f}
-                  </li>
-                ))}
-              </ul>
-              <Link href="/login" className="block w-full py-3 text-center bg-primary !text-white font-bold rounded-xl hover:opacity-90 transition-colors text-sm">
-                <span className="!text-white">Đăng ký PRO</span>
-              </Link>
-            </div>
-
-            {/* PRO Quarterly */}
-            <div className="bg-surface-container-lowest rounded-2xl border border-outline-variant/40 p-6 space-y-4">
-              <div><p className="text-xs font-bold text-on-surface-variant uppercase tracking-wider">PRO 3 Tháng</p><p className="text-4xl font-black text-on-surface mt-1">249k</p><p className="text-sm text-on-surface-variant mt-0.5">~83k/tháng · Tiết kiệm 16%</p></div>
-              <ul className="space-y-2 text-sm text-on-surface-variant">{['Quyền truy cập PRO trong 90 ngày', 'Toàn bộ bài học & nội dung', 'Luyện tập không giới hạn', 'Flashcard nâng cao'].map(f => <li key={f} className="flex items-center gap-2"><span className="material-symbols-outlined text-[16px] text-primary">check</span>{f}</li>)}</ul>
-              <Link href="/login" className="block w-full py-3 text-center bg-primary !text-white font-bold rounded-xl hover:opacity-90 text-sm"><span className="!text-white">Chọn gói 3 tháng</span></Link>
-            </div>
-
-            {/* PRO Half-year */}
-            <div className="bg-surface-container-lowest rounded-2xl border border-outline-variant/40 p-6 space-y-4">
-              <div><p className="text-xs font-bold text-on-surface-variant uppercase tracking-wider">PRO 6 Tháng</p><p className="text-4xl font-black text-on-surface mt-1">449k</p><p className="text-sm text-on-surface-variant mt-0.5">~75k/tháng · Tiết kiệm 24%</p></div>
-              <ul className="space-y-2 text-sm text-on-surface-variant">{['Quyền truy cập PRO trong 180 ngày', 'Toàn bộ bài học & nội dung', 'Luyện tập không giới hạn', 'Flashcard nâng cao'].map(f => <li key={f} className="flex items-center gap-2"><span className="material-symbols-outlined text-[16px] text-primary">check</span>{f}</li>)}</ul>
-              <Link href="/login" className="block w-full py-3 text-center bg-primary !text-white font-bold rounded-xl hover:opacity-90 text-sm"><span className="!text-white">Chọn gói 6 tháng</span></Link>
             </div>
           </div>
         </div>

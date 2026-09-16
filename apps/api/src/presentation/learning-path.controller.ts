@@ -2,7 +2,7 @@ import { Controller, Get, Post, Body, UseGuards, Request } from '@nestjs/common'
 import { JwtAuthGuard } from '../infrastructure/auth/jwt-auth.guard';
 import { PermissionsGuard } from '../infrastructure/auth/permissions.guard';
 import { PrismaService } from '../infrastructure/database/prisma.service';
-import { GroqService } from '../application/ai-chat/groq.service';
+import { LearningPathAiService } from '../application/learning-path/learning-path-ai.service';
 import { RequirePermissions } from './decorators/require-permissions.decorator';
 import { IsIn, IsInt, IsOptional, IsString, IsUUID, Max, MaxLength, Min, MinLength } from 'class-validator';
 
@@ -22,7 +22,7 @@ class AdminGeneratePathDto extends GeneratePathDto {
 export class LearningPathController {
   constructor(
     private prisma: PrismaService,
-    private groq: GroqService,
+    private groq: LearningPathAiService,
   ) {}
 
   @Post('generate')

@@ -7,7 +7,6 @@ import { useAuth } from '@/features/auth/presentation';
 import { useI18n } from '../i18n';
 import { Footer } from './Footer';
 import { ThemeLanguageToggle } from '../ui/ThemeLanguageToggle';
-import { LearnerChatWidget } from './LearnerChatWidget';
 
 interface LearnerShellProps {
   children: React.ReactNode;
@@ -162,7 +161,6 @@ export function LearnerShell({ children }: LearnerShellProps) {
 
       {/* ── Shared Footer ──────────────────────────────────────────── */}
       <Footer />
-      <LearnerChatWidget />
     </div>
   );
 }

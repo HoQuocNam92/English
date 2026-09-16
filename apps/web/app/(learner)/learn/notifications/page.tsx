@@ -126,15 +126,6 @@ export default function NotificationsPage() {
               </button>
             </nav>
 
-            {/* Contextual Graphic/Ad space */}
-            <div className="hidden md:block bg-gradient-to-br from-secondary-fixed to-primary-light border border-border-subtle rounded-xl p-6 mt-4">
-              <span className="material-symbols-outlined text-primary text-3xl mb-2">rocket_launch</span>
-              <h3 className="font-semibold text-[14px] text-on-surface">Nâng cấp Pro</h3>
-              <p className="text-[12px] text-on-surface-variant mt-1 mb-4">Mở khóa toàn bộ bài tập thực hành Networking.</p>
-              <button className="w-full bg-primary text-white py-2 rounded-[10px] font-semibold text-[14px] hover:bg-primary-container transition-colors shadow-sm">
-                Tìm hiểu thêm
-              </button>
-            </div>
           </aside>
 
           {/* Notification List Area */}

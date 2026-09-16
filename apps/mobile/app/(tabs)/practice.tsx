@@ -13,7 +13,6 @@ interface Exam {
   durationMinutes: number;
   questionCount: number;
   domain?: { name: string };
-  isProOnly?: boolean;
   status: string;
 }
 
@@ -21,17 +20,10 @@ export default function MobilePracticeScreen() {
   const router = useRouter();
   const [exams, setExams] = useState<Exam[]>([]);
   const [loading, setLoading] = useState(true);
-  const [isPro, setIsPro] = useState(false);
   const [recentAttempt, setRecentAttempt] = useState<any>(null);
 
   useEffect(() => {
     fetchExams();
-    api.get<any>('/payment/subscription/me')
-      .then(res => {
-        const sub = res?.data || res;
-        setIsPro(sub?.isPro ?? false);
-      })
-      .catch(() => {});
     api.get<any>('/exams/attempts/my').then(response => {
       const items = response?.data || response || [];
       setRecentAttempt(Array.isArray(items) ? items[0] : null);
@@ -51,17 +43,6 @@ export default function MobilePracticeScreen() {
   };
 
   const handleExamPress = (exam: Exam) => {
-    if (exam.isProOnly && !isPro) {
-      Alert.alert(
-        '🌟 Gói PRO Chuyên Nghiệp',
-        `Đề thi "${exam.title}" dành riêng cho tài khoản PRO. Bạn có muốn nâng cấp PRO để mở khóa toàn bộ bài học & đề thi không?`,
-        [
-          { text: 'Để sau', style: 'cancel' },
-          { text: '🚀 Nâng cấp PRO', onPress: () => router.push('/payment') }
-        ]
-      );
-      return;
-    }
     router.push(`/quiz/${exam.id}` as any);
   };
 

@@ -61,7 +61,7 @@ export default function MobileProgressScreen() {
       {/* TopAppBar */}
       <View style={styles.headerBar}>
         <Text style={styles.headerTitle}>IT English Pro</Text>
-        <TouchableOpacity onPress={() => router.push('/calendar' as any)}><MaterialIcons name="more-vert" size={24} color={colors.primary} /></TouchableOpacity>
+        <View style={{ width: 24 }} />
       </View>
 
       <ScrollView contentContainerStyle={styles.contentContainer} showsVerticalScrollIndicator={false}>

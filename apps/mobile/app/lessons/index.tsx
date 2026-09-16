@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
-import { StyleSheet, Text, View, TouchableOpacity, ScrollView, TextInput, ActivityIndicator, Alert, Image } from 'react-native';
+import { StyleSheet, Text, View, TouchableOpacity, ScrollView, TextInput, ActivityIndicator, Image } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
 import { colors, spacing } from '@techenglish/design-tokens';
 import { api } from '../../src/shared/api/api-client';
@@ -16,16 +16,9 @@ export default function MobileLessonListScreen() {
   const [activeFilter, setActiveFilter] = useState('Tất cả');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
-  const [isPro, setIsPro] = useState(false);
 
   useEffect(() => {
     fetchData();
-    api.get<any>('/payment/subscription/me')
-      .then(res => {
-        const sub = res?.data || res;
-        setIsPro(sub?.isPro ?? false);
-      })
-      .catch(() => {});
   }, []);
 
   const fetchData = async () => {
@@ -47,17 +40,6 @@ export default function MobileLessonListScreen() {
   };
 
   const handleLessonPress = (item: any) => {
-    if (item.isProOnly && !isPro) {
-      Alert.alert(
-        '🌟 Gói PRO Chuyên Nghiệp',
-        `Bài học "${item.title}" dành riêng cho tài khoản PRO. Bạn có muốn nâng cấp PRO để mở khóa toàn bộ bài học & đề thi không?`,
-        [
-          { text: 'Để sau', style: 'cancel' },
-          { text: '🚀 Nâng cấp PRO', onPress: () => router.push('/payment') }
-        ]
-      );
-      return;
-    }
     router.push(`/lessons/${item._id || item.id}` as any);
   };
 
@@ -136,7 +118,7 @@ export default function MobileLessonListScreen() {
             return (
               <TouchableOpacity
                 key={item._id || item.id}
-                style={[styles.card, item.isProOnly && { borderColor: '#f59e0b', backgroundColor: '#fffbeb' }]}
+                style={styles.card}
                 activeOpacity={0.8}
                 onPress={() => handleLessonPress(item)}
               >
@@ -161,11 +143,6 @@ export default function MobileLessonListScreen() {
                     <View style={styles.levelTag}>
                       <Text style={styles.levelTagText}>{typeof item.level === 'object' && item.level !== null ? (item.level.name ?? item.level.code ?? 'Beginner') : (item.level || 'Beginner')}</Text>
                     </View>
-                    {item.isProOnly && (
-                      <View style={{ backgroundColor: '#fef3c7', paddingHorizontal: 4, paddingVertical: 2, borderRadius: 4 }}>
-                        <Text style={{ fontSize: 10, fontWeight: '800', color: '#b45309' }}>PRO</Text>
-                      </View>
-                    )}
                   </View>
 
                   <Text style={styles.cardTitle} numberOfLines={1}>{item.title}</Text>

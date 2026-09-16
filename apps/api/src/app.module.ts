@@ -15,14 +15,12 @@ import { LearnerProfileModule } from './modules/learner-profile.module'
 import { TaxonomyModule } from './modules/taxonomy.module'
 import { UploadModule } from './modules/upload.module'
 
-import { PaymentModule } from './modules/payment.module'
 import { RedisCacheModule } from './infrastructure/cache/redis.module'
 
 import { LearningPathController } from './presentation/learning-path.controller';
 import { ReadingLabController } from './presentation/reading-lab.controller';
-import { AiChatModule } from './modules/ai-chat.module';
+import { AiCoreModule } from './modules/ai-core.module';
 import { LandingBannerController } from './presentation/landing-banner.controller';
-import { PlannerController } from './presentation/planner.controller';
 import { PlacementTestController } from './presentation/placement-test.controller';
 import { RecommendationModule } from './modules/recommendation.module';
 import { CareerPrepController } from './presentation/career-prep.controller';
@@ -34,7 +32,6 @@ import { CareerPrepController } from './presentation/career-prep.controller';
     LearningPathController,
     ReadingLabController,
     LandingBannerController,
-    PlannerController,
     PlacementTestController,
     CareerPrepController,
   ],
@@ -52,9 +49,8 @@ import { CareerPrepController } from './presentation/career-prep.controller';
     ProgressModule,
     LearnerProfileModule,
     TaxonomyModule,
-    PaymentModule,
     UploadModule,
-    AiChatModule,
+    AiCoreModule,
     RecommendationModule,
   ],
 })

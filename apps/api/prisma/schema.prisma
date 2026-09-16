@@ -7,10 +7,7 @@
 //   - Enum: PascalCase (Prisma) → snake_case (PostgreSQL)
 // RBAC: users (auth only) + user_details (profile) + roles + permissions
 //       + role_permissions (N:N) + user_roles (N:N, multi-role per user)
-// Total in PostgreSQL: 61 tables
-//   - 60 application tables: 59 Prisma models + 1 knowledge_vectors table
-//     managed by raw SQL migration (pgvector)
-//   - 1 _prisma_migrations system table managed by Prisma
+// Database tables are managed by Prisma migrations.
 // =============================================================================
 
 generator client {
@@ -118,24 +115,6 @@ enum LevelCode {
   @@map("level_code")
 }
 
-enum OrderStatus {
-  pending // chờ thanh toán
-  paid // đã thanh toán thành công
-  failed // thất bại / hết hạn
-  expired // hết thời gian (15 phút)
-  cancelled // user huỷ
-
-  @@map("order_status")
-}
-
-enum SubscriptionStatus {
-  active
-  expired
-  cancelled
-
-  @@map("subscription_status")
-}
-
 // =============================================================================
 // AUTH & USERS — Enterprise RBAC
 // =============================================================================
@@ -167,16 +146,9 @@ model User {
   // Roles granted by this user
   grantedRoles UserRole[] @relation("RoleGrantedBy")
 
-  // Payment
-  paymentOrders PaymentOrder[]
-  subscription  UserSubscription?
-
   notifications      Notification[]
   notificationReads  NotificationRead[]
-  learningPlanItems  LearningPlanItem[]
   learningPaths      LearningPath[]
-  aiConversations    AiConversation[]
-  aiSavedVocabulary  AiSavedVocabulary[]
   discussionPosts    DiscussionPost[]
   discussionComments DiscussionComment[]
   discussionVotes    DiscussionVote[]
@@ -537,7 +509,6 @@ model Lesson {
   levelId          String        @map("level_id") @db.Uuid
   estimatedMinutes Int           @map("estimated_minutes")
   thumbnailUrl     String?       @map("thumbnail_url") @db.VarChar(2048)
-  isProOnly        Boolean       @default(false) @map("is_pro_only")
   keyConcepts      String[]      @default([]) @map("key_concepts")
   status           ContentStatus @default(draft)
   publishedAt      DateTime?     @map("published_at") @db.Timestamptz(6)
@@ -549,12 +520,11 @@ model Lesson {
   level     Level  @relation(fields: [levelId], references: [id])
   createdBy User   @relation("LessonCreatedBy", fields: [createdById], references: [id])
 
-  sections          LessonSection[]
-  vocabularies      LessonVocabulary[]
-  certificates      LessonCertificate[]
-  progressItems     LearningProgress[]
-  learningPlanItems LearningPlanItem[]
-  careerGoalSkills  CareerGoalSkill[]
+  sections         LessonSection[]
+  vocabularies     LessonVocabulary[]
+  certificates     LessonCertificate[]
+  progressItems    LearningProgress[]
+  careerGoalSkills CareerGoalSkill[]
 
   @@index([domainId])
   @@index([levelId])
@@ -707,7 +677,6 @@ model Exam {
   passingScorePercent Float         @default(70.0) @map("passing_score_percent")
   maxAttempts         Int           @default(1) @map("max_attempts")
   shuffleQuestions    Boolean       @default(false) @map("shuffle_questions")
-  isProOnly           Boolean       @default(false) @map("is_pro_only")
   availableFrom       DateTime?     @map("available_from") @db.Timestamptz(6)
   availableUntil      DateTime?     @map("available_until") @db.Timestamptz(6)
   status              ContentStatus @default(draft)
@@ -883,55 +852,6 @@ model Recommendation {
   @@map("recommendations")
 }
 
-// =============================================================================
-// PAYMENT & SUBSCRIPTIONS
-// =============================================================================
-
-/// Đơn hàng thanh toán — mỗi lần user mua gói PRO.
-/// idempotency_key đảm bảo không tạo đơn trùng lặp dù client retry nhiều lần.
-model PaymentOrder {
-  id                 String            @id @default(uuid()) @db.Uuid
-  userId             String            @map("user_id") @db.Uuid
-  planId             String            @map("plan_id") @db.VarChar(50)
-  amount             Int // VND, không có decimal cho tiền VN
-  idempotencyKey     String            @unique @map("idempotency_key") @db.VarChar(128)
-  shortRef           String            @unique @map("short_ref") @db.VarChar(24)
-  status             OrderStatus       @default(pending)
-  sepayTransactionId String?           @unique @map("sepay_transaction_id") @db.VarChar(100)
-  webhookPayload     Json?             @map("webhook_payload") // raw payload từ SePay
-  webhookReceivedAt  DateTime?         @map("webhook_received_at") @db.Timestamptz(6)
-  paidAt             DateTime?         @map("paid_at") @db.Timestamptz(6)
-  expiresAt          DateTime          @map("expires_at") @db.Timestamptz(6) // 15 phút
-  createdAt          DateTime          @default(now()) @map("created_at") @db.Timestamptz(6)
-  updatedAt          DateTime          @updatedAt @map("updated_at") @db.Timestamptz(6)
-  user               User              @relation(fields: [userId], references: [id], onDelete: Cascade)
-  subscription       UserSubscription?
-
-  @@index([userId])
-  @@index([status])
-  @@index([sepayTransactionId])
-  @@map("payment_orders")
-}
-
-/// Subscription đang active của user — mỗi user chỉ có 1 subscription (upsert).
-model UserSubscription {
-  id        String             @id @default(uuid()) @db.Uuid
-  userId    String             @unique @map("user_id") @db.Uuid
-  planId    String             @map("plan_id") @db.VarChar(50)
-  orderId   String             @unique @map("order_id") @db.Uuid
-  status    SubscriptionStatus @default(active)
-  startedAt DateTime           @map("started_at") @db.Timestamptz(6)
-  expiresAt DateTime           @map("expires_at") @db.Timestamptz(6)
-  createdAt DateTime           @default(now()) @map("created_at") @db.Timestamptz(6)
-  updatedAt DateTime           @updatedAt @map("updated_at") @db.Timestamptz(6)
-  user      User               @relation(fields: [userId], references: [id], onDelete: Cascade)
-  order     PaymentOrder       @relation(fields: [orderId], references: [id])
-
-  @@index([status])
-  @@index([expiresAt])
-  @@map("user_subscriptions")
-}
-
 // ─── AI Mock Interview ────────────────────────────────────────────────────────
 
 // ─── AI Writing Practice ──────────────────────────────────────────────────────
@@ -1028,190 +948,6 @@ enum NotificationType {
   reminder
 }
 
-enum AiChatMode {
-  qa
-  correction
-  it_conversation
-  vocabulary
-
-  @@map("ai_chat_mode")
-}
-
-enum AiMessageRole {
-  user
-  assistant
-
-  @@map("ai_message_role")
-}
-
-model AiConversation {
-  id        String            @id @default(uuid()) @db.Uuid
-  userId    String            @map("user_id") @db.Uuid
-  mode      AiChatMode        @default(qa)
-  title     String            @default("Cuộc trò chuyện mới") @db.VarChar(200)
-  lessonId  String?           @map("lesson_id") @db.Uuid
-  createdAt DateTime          @default(now()) @map("created_at") @db.Timestamptz(6)
-  updatedAt DateTime          @updatedAt @map("updated_at") @db.Timestamptz(6)
-  user      User              @relation(fields: [userId], references: [id], onDelete: Cascade)
-  messages  AiMessage[]
-  errors    AiLearningError[]
-
-  @@index([userId, updatedAt])
-  @@map("ai_conversations")
-}
-
-model AiMessage {
-  id             String              @id @default(uuid()) @db.Uuid
-  conversationId String              @map("conversation_id") @db.Uuid
-  role           AiMessageRole
-  content        String              @db.Text
-  metadata       Json                @default("{}")
-  createdAt      DateTime            @default(now()) @map("created_at") @db.Timestamptz(6)
-  conversation   AiConversation      @relation(fields: [conversationId], references: [id], onDelete: Cascade)
-  errors         AiLearningError[]
-  citations      AiMessageCitation[]
-  feedback       AiFeedback[]
-
-  @@index([conversationId, createdAt])
-  @@map("ai_messages")
-}
-
-model AiLearningError {
-  id             String         @id @default(uuid()) @db.Uuid
-  conversationId String         @map("conversation_id") @db.Uuid
-  messageId      String?        @map("message_id") @db.Uuid
-  category       String         @db.VarChar(50)
-  original       String         @db.Text
-  corrected      String         @db.Text
-  explanationVi  String         @map("explanation_vi") @db.Text
-  createdAt      DateTime       @default(now()) @map("created_at") @db.Timestamptz(6)
-  conversation   AiConversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
-  message        AiMessage?     @relation(fields: [messageId], references: [id], onDelete: SetNull)
-
-  @@index([conversationId, createdAt])
-  @@map("ai_learning_errors")
-}
-
-model AiSavedVocabulary {
-  id            String   @id @default(uuid()) @db.Uuid
-  userId        String   @map("user_id") @db.Uuid
-  term          String   @db.VarChar(150)
-  phrase        String?  @db.VarChar(250)
-  meaningVi     String   @map("meaning_vi") @db.VarChar(1000)
-  pronunciation String?  @db.VarChar(100)
-  partOfSpeech  String?  @map("part_of_speech") @db.VarChar(50)
-  level         String?  @db.VarChar(10)
-  example       String?  @db.Text
-  note          String?  @db.Text
-  createdAt     DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
-  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  @@unique([userId, term, phrase])
-  @@index([userId, createdAt])
-  @@map("ai_saved_vocabulary")
-}
-
-enum KnowledgeSourceType {
-  lesson
-  lesson_section
-  vocabulary
-
-  @@map("knowledge_source_type")
-}
-
-enum KnowledgeIndexStatus {
-  pending
-  indexed
-  failed
-  stale
-
-  @@map("knowledge_index_status")
-}
-
-model KnowledgeSource {
-  id             String               @id @default(uuid()) @db.Uuid
-  sourceType     KnowledgeSourceType  @map("source_type")
-  sourceId       String               @map("source_id") @db.Uuid
-  title          String               @db.VarChar(300)
-  contentVersion String               @map("content_version") @db.VarChar(100)
-  status         KnowledgeIndexStatus @default(pending)
-  errorMessage   String?              @map("error_message") @db.Text
-  indexedAt      DateTime?            @map("indexed_at") @db.Timestamptz(6)
-  createdAt      DateTime             @default(now()) @map("created_at") @db.Timestamptz(6)
-  updatedAt      DateTime             @updatedAt @map("updated_at") @db.Timestamptz(6)
-  chunks         KnowledgeChunk[]
-
-  @@unique([sourceType, sourceId])
-  @@index([status])
-  @@map("knowledge_sources")
-}
-
-model KnowledgeChunk {
-  id             String              @id @default(uuid()) @db.Uuid
-  sourceId       String              @map("source_id") @db.Uuid
-  chunkIndex     Int                 @map("chunk_index")
-  content        String              @db.Text
-  tokenCount     Int                 @default(0) @map("token_count")
-  lessonId       String?             @map("lesson_id") @db.Uuid
-  domainId       String?             @map("domain_id") @db.Uuid
-  levelId        String?             @map("level_id") @db.Uuid
-  certificateId  String?             @map("certificate_id") @db.Uuid
-  language       String              @default("mixed") @db.VarChar(20)
-  embedding      Float[]             @default([])
-  embeddingModel String?             @map("embedding_model") @db.VarChar(100)
-  isActive       Boolean             @default(true) @map("is_active")
-  source         KnowledgeSource     @relation(fields: [sourceId], references: [id], onDelete: Cascade)
-  citations      AiMessageCitation[]
-
-  @@unique([sourceId, chunkIndex])
-  @@index([lessonId])
-  @@index([domainId, levelId])
-  @@index([isActive])
-  @@map("knowledge_chunks")
-}
-
-model AiMessageCitation {
-  messageId String         @map("message_id") @db.Uuid
-  chunkId   String         @map("chunk_id") @db.Uuid
-  rank      Int
-  score     Float
-  message   AiMessage      @relation(fields: [messageId], references: [id], onDelete: Cascade)
-  chunk     KnowledgeChunk @relation(fields: [chunkId], references: [id], onDelete: Restrict)
-
-  @@id([messageId, chunkId])
-  @@index([chunkId])
-  @@map("ai_message_citations")
-}
-
-model AiFeedback {
-  id        String    @id @default(uuid()) @db.Uuid
-  messageId String    @map("message_id") @db.Uuid
-  userId    String    @map("user_id") @db.Uuid
-  helpful   Boolean
-  reason    String?   @db.VarChar(500)
-  createdAt DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
-  message   AiMessage @relation(fields: [messageId], references: [id], onDelete: Cascade)
-
-  @@unique([messageId, userId])
-  @@index([userId, createdAt])
-  @@map("ai_feedback")
-}
-
-model AiUsageDaily {
-  id           String   @id @default(uuid()) @db.Uuid
-  userId       String   @map("user_id") @db.Uuid
-  usageDate    DateTime @map("usage_date") @db.Date
-  requestCount Int      @default(0) @map("request_count")
-  inputTokens  Int      @default(0) @map("input_tokens")
-  outputTokens Int      @default(0) @map("output_tokens")
-  createdAt    DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
-  updatedAt    DateTime @updatedAt @map("updated_at") @db.Timestamptz(6)
-
-  @@unique([userId, usageDate])
-  @@index([usageDate])
-  @@map("ai_usage_daily")
-}
-
 model LandingBanner {
   id              String    @id @default(uuid()) @db.Uuid
   placement       String    @default("hero") @db.VarChar(30)
@@ -1283,25 +1019,6 @@ model LearningPathModule {
 
   @@index([learningPathId, order])
   @@map("learning_path_modules")
-}
-
-model LearningPlanItem {
-  id          String   @id @default(uuid()) @db.Uuid
-  userId      String   @db.Uuid
-  lessonId    String?  @db.Uuid
-  title       String   @db.VarChar(200)
-  note        String?  @db.Text
-  plannedAt   DateTime @map("planned_at") @db.Timestamptz(6)
-  durationMin Int      @default(30) @map("duration_min")
-  isCompleted Boolean  @default(false) @map("is_completed")
-  createdAt   DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
-
-  user   User    @relation(fields: [userId], references: [id], onDelete: Cascade)
-  lesson Lesson? @relation(fields: [lessonId], references: [id], onDelete: SetNull)
-
-  @@index([userId])
-  @@index([plannedAt])
-  @@map("learning_plan_items")
 }
 
 model VocabularySource {
