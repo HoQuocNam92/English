@@ -68,6 +68,9 @@ export class PaymentService {
 
     const existing = await this.prisma.paymentOrder.findUnique({ where: { idempotencyKey } });
     if (existing) {
+      if (existing.userId !== userId) {
+        throw new ConflictException('Idempotency-Key đã được sử dụng');
+      }
       this.logger.log(`Idempotency hit: key=${idempotencyKey} → orderId=${existing.id}`);
       return this.formatOrderResponse(existing);
     }
@@ -94,7 +97,7 @@ export class PaymentService {
   ) {
     const expiresAt = new Date(Date.now() + ORDER_TTL_MS);
     const orderId = crypto.randomUUID();
-    const shortRef = `TE${Date.now().toString(36).toUpperCase()}`;
+    const shortRef = `TE${crypto.randomBytes(8).toString('hex').toUpperCase()}`;
 
     const finalAmount = plan.amount;
 
@@ -115,6 +118,7 @@ export class PaymentService {
         planId,
         amount: finalAmount,
         idempotencyKey,
+        shortRef,
         status: 'pending',
         expiresAt,
       },
@@ -189,17 +193,20 @@ export class PaymentService {
 
     // ── 2. Parse key fields từ SePay payload ─────────────────────────────────
     // SePay webhook format (theo docs): transaction_id, transfer_amount, transfer_type, ...
-    const transId: string = String(payload.transaction_id ?? payload.id ?? '');
-    const status: string  = String(payload.status ?? payload.transfer_type ?? '');
-    const amount: number  = Number(payload.transfer_amount ?? payload.amount ?? 0);
+    const transId: string = String(payload.transaction_id ?? payload.id ?? payload.referenceCode ?? '');
+    const status: string  = String(payload.status ?? payload.transfer_type ?? payload.transferType ?? '').toUpperCase();
+    const amount: number  = Number(payload.transfer_amount ?? payload.transferAmount ?? payload.amount ?? 0);
 
     if (!transId) {
       this.logger.warn('SePay webhook missing transaction_id', payload);
-      return { received: true, processed: false, reason: 'missing_transaction_id' };
+      return { success: true, received: true, processed: false, reason: 'missing_transaction_id' };
     }
 
     // Chỉ xử lý khi thanh toán thành công
-    const isSuccess = ['success', 'completed', 'paid', 'IN'].includes(status);
+    const isSuccess = ['SUCCESS', 'COMPLETED', 'PAID', 'IN'].includes(status);
+    if (!isSuccess) {
+      return { success: true, received: true, processed: false, reason: 'not_incoming_payment' };
+    }
 
     // ── 3. Idempotency check — đã xử lý rồi thì trả về ngay ─────────────────
     const existingOrder = await this.prisma.paymentOrder.findUnique({
@@ -207,7 +214,7 @@ export class PaymentService {
     });
     if (existingOrder?.status === 'paid') {
       this.logger.log(`Webhook idempotent: transId=${transId} already paid`);
-      return { received: true, processed: false, reason: 'already_processed' };
+      return { success: true, received: true, processed: false, reason: 'already_processed' };
     }
 
     // ── 4. Redis distributed lock (TTL 30s) ───────────────────────────────────
@@ -216,52 +223,42 @@ export class PaymentService {
     if (!acquired) {
       this.logger.log(`Webhook lock busy: transId=${transId} — another process is handling`);
       // Trả 200 để SePay không retry (idempotent)
-      return { received: true, processed: false, reason: 'processing_by_another_instance' };
+      return { success: true, received: true, processed: false, reason: 'processing_by_another_instance' };
     }
 
     try {
       // ── 5. DB lookup theo content (nếu không match transId, tìm theo amount+time) ──
       // SePay gửi content dạng "TE<shortRef>" hoặc orderId
-      const content: string = String(payload.content ?? payload.description ?? '');
-      let order = await this.prisma.paymentOrder.findFirst({
-        where: {
-          status: 'pending',
-          OR: [
-            { idempotencyKey: content },
-            // match theo shortRef trong content
-          ],
-        },
-      });
+      const content: string = String(payload.content ?? payload.description ?? '').toUpperCase();
+      const paymentCode = String(payload.code ?? '').toUpperCase();
+      const shortRef = paymentCode.match(/^TE[A-F0-9]{12,22}$/)?.[0]
+        ?? content.match(/TE[A-F0-9]{12,22}/)?.[0];
+      const orderId = content.match(/[0-9A-F]{8}-[0-9A-F]{4}-[1-5][0-9A-F]{3}-[89AB][0-9A-F]{3}-[0-9A-F]{12}/)?.[0];
+      const order = shortRef
+        ? await this.prisma.paymentOrder.findFirst({ where: { shortRef, status: 'pending' } })
+        : orderId
+          ? await this.prisma.paymentOrder.findFirst({ where: { id: orderId.toLowerCase(), status: 'pending' } })
+          : null;
 
       if (!order) {
         this.logger.warn(`Webhook: no pending order matched for transId=${transId}, content=${content}`);
-        return { received: true, processed: false, reason: 'order_not_found' };
+        return { success: true, received: true, processed: false, reason: 'order_not_found' };
       }
 
       // ── 6. Kiểm tra số tiền khớp ─────────────────────────────────────────────
-      if (isSuccess && amount < order.amount) {
+      if (amount < order.amount) {
         this.logger.warn(`Webhook: amount mismatch — expected ${order.amount}, got ${amount}`);
-        return { received: true, processed: false, reason: 'amount_mismatch' };
+        return { success: true, received: true, processed: false, reason: 'amount_mismatch' };
       }
 
       // ── 7. DB transaction: mark paid + upsert subscription ────────────────────
-      if (isSuccess) {
-        await this.processSuccessfulPayment(order, transId, payload);
-        this.logger.log(`Payment success: orderId=${order.id}, transId=${transId}, userId=${order.userId}`);
-      } else {
-        // Thanh toán thất bại
-        await this.prisma.paymentOrder.update({
-          where: { id: order.id },
-          data: {
-            status: 'failed',
-            sepayTransactionId: transId,
-            webhookPayload: payload,
-            webhookReceivedAt: new Date(),
-          },
-        });
+      const processed = await this.processSuccessfulPayment(order, transId, payload);
+      if (!processed) {
+        return { success: true, received: true, processed: false, reason: 'already_processed' };
       }
+      this.logger.log(`Payment success: orderId=${order.id}, transId=${transId}, userId=${order.userId}`);
 
-      return { received: true, processed: true, orderId: order.id };
+      return { success: true, received: true, processed: true, orderId: order.id };
     } finally {
       await this.redisLock.releaseLock(lockKey);
     }
@@ -272,10 +269,10 @@ export class PaymentService {
     const now = new Date();
     const subExpiry = new Date(now.getTime() + (plan?.durationDays ?? 30) * 24 * 60 * 60 * 1000);
 
-    await this.prisma.$transaction(async (tx) => {
-      // Cập nhật order sang paid
-      const updatedOrder = await tx.paymentOrder.update({
-        where: { id: order.id },
+    return this.prisma.$transaction(async (tx) => {
+      // Chỉ một webhook được quyền chuyển đơn từ pending sang paid.
+      const claimed = await tx.paymentOrder.updateMany({
+        where: { id: order.id, status: 'pending' },
         data: {
           status: 'paid',
           sepayTransactionId: transId,
@@ -284,6 +281,9 @@ export class PaymentService {
           paidAt: now,
         },
       });
+      if (claimed.count === 0) return false;
+
+      const updatedOrder = await tx.paymentOrder.findUniqueOrThrow({ where: { id: order.id } });
 
       // Upsert subscription — nếu đã có subscription active → gia hạn thêm từ ngày hết hạn cũ
       const existingSub = await tx.userSubscription.findUnique({
@@ -312,6 +312,7 @@ export class PaymentService {
           expiresAt: newExpiry,
         },
       });
+      return true;
     });
   }
 
@@ -319,9 +320,9 @@ export class PaymentService {
   // ORDER STATUS
   // ═══════════════════════════════════════════════════════════════════════════
 
-  async getOrderStatus(orderId: string) {
-    const order = await this.prisma.paymentOrder.findUnique({
-      where: { id: orderId },
+  async getOrderStatus(orderId: string, userId: string) {
+    const order = await this.prisma.paymentOrder.findFirst({
+      where: { id: orderId, userId },
       include: { subscription: true },
     });
     if (!order) throw new BadRequestException('Order không tìm thấy');
@@ -332,11 +333,12 @@ export class PaymentService {
         where: { id: orderId },
         data: { status: 'expired' },
       });
-      return { orderId, status: 'expired', amount: order.amount, planId: order.planId };
+      return { orderId, shortRef: order.shortRef, status: 'expired', amount: order.amount, planId: order.planId };
     }
 
     return {
       orderId: order.id,
+      shortRef: order.shortRef,
       status: order.status,
       planId: order.planId,
       amount: order.amount,
@@ -430,7 +432,7 @@ export class PaymentService {
       const bankAcc = process.env.SEPAY_BANK_ACC || '0901234567';
       const bankName = process.env.SEPAY_BANK_NAME || 'MBBank';
       const accountName = process.env.SEPAY_ACCOUNT_NAME || 'HO QUOC NAM';
-      const ref = o.sepayTransactionId || `TE${o.id.slice(0, 6).toUpperCase()}`;
+      const ref = o.shortRef;
 
       return {
         id: o.id,

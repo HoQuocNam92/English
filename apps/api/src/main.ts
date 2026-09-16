@@ -18,8 +18,34 @@ async function bootstrap() {
   const host = configService.get<string>('HOST', '0.0.0.0')
 
   app.use(helmet())
+  const configuredOrigins = configService
+    .get<string>('CORS_ORIGIN', 'http://localhost:3000')
+    .split(',')
+    .map((origin) => origin.trim())
+    .filter(Boolean)
+  const isDevelopment = configService.get<string>('NODE_ENV', 'development') !== 'production'
+
   app.enableCors({
-    origin: configService.get('CORS_ORIGIN', 'http://localhost:3000'),
+    origin(origin, callback) {
+      // Requests without an Origin header are server-to-server or local tools.
+      if (!origin || configuredOrigins.includes(origin)) return callback(null, true)
+
+      if (isDevelopment) {
+        try {
+          const { hostname } = new URL(origin)
+          const isLocalHost = hostname === 'localhost' || hostname === '127.0.0.1'
+          const isPrivateNetwork =
+            /^10\./.test(hostname) ||
+            /^192\.168\./.test(hostname) ||
+            /^172\.(1[6-9]|2\d|3[01])\./.test(hostname)
+          if (isLocalHost || isPrivateNetwork) return callback(null, true)
+        } catch {
+          // Invalid origins are rejected below.
+        }
+      }
+
+      return callback(new Error(`Origin ${origin} is not allowed by CORS`), false)
+    },
     credentials: true,
   })
 

@@ -144,8 +144,6 @@ export default function MobileProfileScreen() {
           {[
             ['route', 'Lộ trình học', '/roadmap'],
             ['auto-awesome', 'Tạo lộ trình cá nhân', '/path-generator'],
-            ['analytics', 'Phân tích học tập', '/analytics'],
-            ['military-tech', 'Thành tích', '/achievements'],
             ['workspace-premium', 'Chứng chỉ', '/certifications'],
             ['notifications', 'Thông báo', '/notifications'],
             ['bookmark', 'Từ đã lưu', '/saved'],

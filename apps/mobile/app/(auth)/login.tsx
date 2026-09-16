@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
-import { StyleSheet, Text, View, TextInput, TouchableOpacity, ScrollView, ActivityIndicator, Alert } from 'react-native';
+import { StyleSheet, Text, View, TextInput, TouchableOpacity, ScrollView, ActivityIndicator, Alert, Platform } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
 import Svg, { Path } from 'react-native-svg';
 import { colors, spacing } from '@techenglish/design-tokens';
@@ -10,11 +10,13 @@ import { validateEmail } from '../../src/shared/utils/validators';
 import * as WebBrowser from 'expo-web-browser';
 import * as Google from 'expo-auth-session/providers/google';
 import { api } from '../../src/shared/api/api-client';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 
 WebBrowser.maybeCompleteAuthSession();
 
 const GOOGLE_CLIENT_ID = process.env.EXPO_PUBLIC_GOOGLE_CLIENT_ID;
+const GOOGLE_ANDROID_CLIENT_ID = process.env.EXPO_PUBLIC_GOOGLE_ANDROID_CLIENT_ID;
+const GOOGLE_IOS_CLIENT_ID = process.env.EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID;
+const GOOGLE_WEB_CLIENT_ID = process.env.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID ?? GOOGLE_CLIENT_ID;
 
 function GoogleIcon() {
   return (
@@ -29,7 +31,7 @@ function GoogleIcon() {
 
 export default function MobileLoginScreen() {
   const router = useRouter();
-  const { login } = useAuth();
+  const { login, loginWithTokens } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
@@ -41,7 +43,13 @@ export default function MobileLoginScreen() {
 
   const [request, response, promptAsync] = Google.useAuthRequest(
     GOOGLE_CLIENT_ID
-      ? { clientId: GOOGLE_CLIENT_ID }
+      ? {
+          clientId: GOOGLE_CLIENT_ID,
+          androidClientId: GOOGLE_ANDROID_CLIENT_ID ?? GOOGLE_CLIENT_ID,
+          iosClientId: GOOGLE_IOS_CLIENT_ID ?? GOOGLE_CLIENT_ID,
+          webClientId: GOOGLE_WEB_CLIENT_ID,
+          scopes: ['openid', 'profile', 'email'],
+        }
       : null as any
   );
 
@@ -65,11 +73,7 @@ export default function MobileLoginScreen() {
     setIsLoading(true);
     try {
       const result = await api.post<any>('/auth/google/mobile', { idToken });
-      // Lưu token vào AsyncStorage
-      await Promise.all([
-        AsyncStorage.setItem('access_token', result.accessToken),
-        AsyncStorage.setItem('refresh_token', result.refreshToken ?? ''),
-      ]);
+      await loginWithTokens(result);
       router.replace('/(tabs)/home' as any);
     } catch (err: any) {
       Alert.alert('Lỗi đăng nhập Google', err.message ?? 'Không thể xác thực với Google.');
@@ -198,7 +202,7 @@ export default function MobileLoginScreen() {
             <TouchableOpacity
               style={styles.googleButton}
               activeOpacity={0.8}
-              onPress={() => promptAsync()}
+              onPress={() => promptAsync({ showInRecents: Platform.OS === 'android' })}
               disabled={!request || isLoading}
             >
               <GoogleIcon />

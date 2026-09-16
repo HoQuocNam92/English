@@ -8,7 +8,7 @@ import { apiClient } from '@/shared/api/api-client';
 import { useAuth } from '@/features/auth/presentation';
 import { useI18n } from '@/shared/i18n';
 
-type ProfileTab = 'info' | 'plans' | 'history' | 'payments' | 'badges';
+type ProfileTab = 'info' | 'plans' | 'history' | 'payments';
 
 const PLANS_META = {
   pro_monthly:   { name: 'TechEnglish PRO 1 Tháng',  label: 'PRO 1 Tháng',  price: '99.000đ',  period: '/tháng',   save: '',              badge: 'Cơ bản',      amount: 99000 },
@@ -32,7 +32,6 @@ export default function LearnerProfilePage() {
   const [profileData, setProfileData] = useState<any>(null);
   const [historyData, setHistoryData] = useState<any[]>([]);
   const [paymentData, setPaymentData] = useState<any[]>([]);
-  const [streakData, setStreakData] = useState<any>(null);
   // Real subscription from API
   const [subscription, setSubscription] = useState<any>(null);
   const [subLoading, setSubLoading] = useState(true);
@@ -82,12 +81,11 @@ export default function LearnerProfilePage() {
   useEffect(() => {
     async function loadAllProfileInfo() {
       try {
-        const [meRes, profileRes, historyRes, paymentRes, streakRes, subRes] = await Promise.allSettled([
+        const [meRes, profileRes, historyRes, paymentRes, subRes] = await Promise.allSettled([
           apiClient.get('/auth/me'),
           apiClient.get('/learner-profiles/me'),
           apiClient.get('/progress/me'),
           apiClient.get('/payment/history/me'),
-          apiClient.get('/leaderboard/streaks/me'),
           apiClient.get('/payment/subscription/me'),
         ]);
 
@@ -111,14 +109,12 @@ export default function LearnerProfilePage() {
         const prof = getVal(profileRes);
         const history = getVal(historyRes)?.history ?? getVal(historyRes)?.progress ?? getVal(historyRes) ?? [];
         const payments = getVal(paymentRes)?.orders ?? getVal(paymentRes) ?? [];
-        const streak = getVal(streakRes);
         const sub = getVal(subRes);
 
         setUserData(user);
         setProfileData(prof);
         setHistoryData(Array.isArray(history) ? history : []);
         setPaymentData(Array.isArray(payments) ? payments : []);
-        setStreakData(streak);
         setSubscription(sub);
 
         setFormData({
@@ -260,14 +256,6 @@ export default function LearnerProfilePage() {
                 </span>
               </div>
               <p className="text-xs text-on-surface-variant mt-0.5">{formData.email}</p>
-              <div className="flex items-center gap-4 mt-2 text-xs text-on-surface-variant font-semibold">
-                <span className="flex items-center gap-1">
-                  🔥 Chuỗi học: <strong className="text-orange-600">{streakData?.currentStreak ?? 0} ngày</strong>
-                </span>
-                <span className="flex items-center gap-1">
-                  ⚡ EXP: <strong className="text-primary">{streakData?.totalExpPoints ?? 0} điểm</strong>
-                </span>
-              </div>
             </div>
           </div>
 
@@ -299,7 +287,6 @@ export default function LearnerProfilePage() {
             { id: 'plans', label: t.profile.activePlan, icon: 'workspace_premium' },
             { id: 'history', label: t.profile.learningHistory, icon: 'history' },
             { id: 'payments', label: t.profile.paymentHistory, icon: 'receipt_long' },
-            { id: 'badges', label: t.profile.achievements, icon: 'military_tech' },
           ].map((tab) => (
             <button
               key={tab.id}
@@ -711,61 +698,6 @@ export default function LearnerProfilePage() {
           </div>
         )}
 
-        {/* Tab 5: Badges & Gamification */}
-        {activeTab === 'badges' && (
-          <div className="p-6 rounded-2xl bg-surface-container-lowest border border-outline-variant/40 shadow-2xs space-y-4">
-            <div className="flex items-center justify-between pb-2 border-b border-outline-variant/30">
-              <h3 className="text-sm font-bold text-on-surface">Badge & Huy hiệu thành tích</h3>
-              <span className="px-2.5 py-0.5 bg-indigo-50 text-primary border border-indigo-200 text-xs font-bold rounded-full">
-                {streakData?.badges?.length ?? 0} huy hiệu
-              </span>
-            </div>
-
-            {/* Streak summary */}
-            <div className="grid grid-cols-3 gap-3">
-              <div className="p-3 rounded-xl bg-orange-50 border border-orange-200 text-center">
-                <p className="text-lg font-black text-orange-600">{streakData?.currentStreak ?? 0}</p>
-                <p className="text-[11px] text-orange-700 font-semibold">Chuỗi học hiện tại</p>
-              </div>
-              <div className="p-3 rounded-xl bg-amber-50 border border-amber-200 text-center">
-                <p className="text-lg font-black text-amber-600">{streakData?.maxStreak ?? 0}</p>
-                <p className="text-[11px] text-amber-700 font-semibold">Chuỗi dài nhất</p>
-              </div>
-              <div className="p-3 rounded-xl bg-indigo-50 border border-indigo-200 text-center">
-                <p className="text-lg font-black text-primary">{streakData?.totalExpPoints ?? 0}</p>
-                <p className="text-[11px] text-indigo-700 font-semibold">Tổng EXP</p>
-              </div>
-            </div>
-
-            {/* Badges */}
-            {(streakData?.badges?.length ?? 0) === 0 ? (
-              <div className="text-center py-8 text-on-surface-variant text-xs space-y-2">
-                <span className="material-symbols-outlined text-[48px] text-outline block">military_tech</span>
-                <p className="font-semibold">Bạn chưa mở khóa huy hiệu nào.</p>
-                <p>Tiếp tục học mỗi ngày để nhận huy hiệu đặc biệt!</p>
-              </div>
-            ) : (
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                {(streakData.badges as any[]).map((b: any) => (
-                  <div key={b.badgeCode} className="p-4 rounded-xl border bg-indigo-50/60 border-indigo-200 space-y-1.5">
-                    <p className="text-xs font-bold text-on-surface">{b.badgeName}</p>
-                    <p className="text-[11px] text-on-surface-variant leading-relaxed">{b.description}</p>
-                    <div className="flex items-center justify-between mt-1">
-                      <span className="inline-block text-[10px] font-extrabold uppercase px-2 py-0.5 rounded bg-indigo-200 text-primary">
-                        Đã đạt được
-                      </span>
-                      {b.unlockedAt && (
-                        <span className="text-[10px] text-on-surface-variant">
-                          {new Date(b.unlockedAt).toLocaleDateString('vi-VN')}
-                        </span>
-                      )}
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-        )}
       </div>
 
       {/* ── QR Payment Modal (Portal — renders at document.body to escape stacking contexts) */}

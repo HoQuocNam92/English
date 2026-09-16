@@ -1,4 +1,4 @@
-import { BadGatewayException, Injectable, ServiceUnavailableException } from '@nestjs/common';
+import { BadGatewayException, GatewayTimeoutException, Injectable, ServiceUnavailableException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import axios from 'axios';
 
@@ -75,11 +75,18 @@ const PATH_SCHEMA = {
 export class GroqService {
   constructor(private config: ConfigService) {}
 
+  isConfigured() {
+    const key = this.config.get<string>('GROQ_API_KEY');
+    return Boolean(key && key.trim() && !/placeholder|your[_-]?key/i.test(key));
+  }
+
   private async complete(messages: Array<{ role: string; content: string }>, schemaName: string, schema: object, maxTokens = 1800) {
     const apiKey = this.config.get<string>('GROQ_API_KEY');
-    if (!apiKey) throw new ServiceUnavailableException('GROQ_API_KEY chưa được cấu hình ở backend.');
+    if (!this.isConfigured()) throw new ServiceUnavailableException('Dịch vụ AI chưa được cấu hình. Vui lòng liên hệ quản trị viên.');
     const model = this.config.get<string>('GROQ_MODEL', 'openai/gpt-oss-20b');
-    for (let attempt = 0; attempt < 3; attempt++) {
+    const configuredTimeout = Number(this.config.get('AI_REQUEST_TIMEOUT_MS', 30000));
+    const timeoutMs = Number.isFinite(configuredTimeout) ? Math.min(45000, Math.max(5000, configuredTimeout)) : 30000;
+    for (let attempt = 0; attempt < 2; attempt++) {
       try {
         const response = await axios.post(
           'https://api.groq.com/openai/v1/chat/completions',
@@ -87,7 +94,7 @@ export class GroqService {
             model, messages, temperature: 0.2, max_completion_tokens: maxTokens,
             response_format: { type: 'json_schema', json_schema: { name: schemaName, strict: true, schema } },
           },
-          { headers: { Authorization: `Bearer ${apiKey}`, 'Content-Type': 'application/json' }, timeout: 30000 },
+          { headers: { Authorization: `Bearer ${apiKey}`, 'Content-Type': 'application/json' }, timeout: timeoutMs },
         );
         const content = response.data?.choices?.[0]?.message?.content;
         if (!content) throw new Error('Groq returned an empty response');
@@ -107,15 +114,23 @@ export class GroqService {
             // The provider sometimes returns a truncated JSON draft; retry below.
           }
         }
-        if (isRateLimit && attempt < 2) {
+        if (isRateLimit && attempt < 1) {
           const retryAfter = Number(error.response?.headers?.['retry-after']);
-          const delayMs = Number.isFinite(retryAfter) ? Math.min(12000, Math.max(1000, retryAfter * 1000)) : 7000;
+          const delayMs = Number.isFinite(retryAfter) ? Math.min(5000, Math.max(1000, retryAfter * 1000)) : 3000;
           await new Promise((resolve) => setTimeout(resolve, delayMs));
           continue;
         }
-        if (failedGeneration && attempt < 2) continue;
-        const detail = error?.response?.data?.error?.message || error?.message || 'Unknown Groq error';
-        throw new BadGatewayException(`Không thể nhận phản hồi từ Groq: ${detail}`);
+        if (failedGeneration && attempt < 1) continue;
+        if (error?.code === 'ECONNABORTED' || error?.code === 'ETIMEDOUT') {
+          throw new GatewayTimeoutException('AI phản hồi quá thời gian. Vui lòng thử lại.');
+        }
+        if (error?.response?.status === 401 || error?.response?.status === 403) {
+          throw new ServiceUnavailableException('Cấu hình dịch vụ AI không hợp lệ. Vui lòng liên hệ quản trị viên.');
+        }
+        if (error?.response?.status === 429) {
+          throw new ServiceUnavailableException('Dịch vụ AI đang quá tải. Vui lòng thử lại sau ít phút.');
+        }
+        throw new BadGatewayException('Không thể nhận phản hồi từ dịch vụ AI. Vui lòng thử lại.');
       }
     }
   }
@@ -128,7 +143,7 @@ export class GroqService {
     const modeGuide: Record<AiChatMode, string> = {
       qa: 'Giải thích bằng tiếng Việt dễ hiểu, cho ví dụ tiếng Anh ngành IT và kết thúc bằng một bài tập ngắn.',
       correction: 'Sửa câu tiếng Anh, chỉ rõ từng lỗi bằng tiếng Việt và cung cấp phiên bản tự nhiên hơn.',
-      it_conversation: 'Đóng vai đồng nghiệp hoặc nhà tuyển dụng IT. Trò chuyện chủ yếy bằng tiếng Anh, sửa lỗi ngắn gọn rồi hỏi tiếp một câu.',
+      it_conversation: 'Đóng vai đồng nghiệp hoặc nhà tuyển dụng IT. Trò chuyện chủ yếu bằng tiếng Anh, sửa lỗi ngắn gọn rồi hỏi tiếp một câu.',
       vocabulary: 'Giải thích từ theo cụm/collocation. Trả IPA, loại từ, CEFR A2/B1/B2/C1, nghĩa Việt, ví dụ IT và các từ thường đi cùng.',
     };
     const actionGuide = params.action === 'translate'

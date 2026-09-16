@@ -270,10 +270,6 @@ export default function LearnerLessonDetailPage({ params }: { params: Promise<{ 
                 <span className="material-symbols-outlined" style={{ fontVariationSettings: marked ? "'FILL' 1" : "'FILL' 0" }}>check_circle</span>
                 {marked ? 'Đã hoàn thành' : 'Đánh dấu hoàn thành'}
               </button>
-              <button className="w-full flex justify-center items-center gap-2 border border-outline-variant text-on-surface py-3 px-4 rounded-lg font-semibold text-[14px] hover:bg-surface-container-low transition-all">
-                <span className="material-symbols-outlined">bookmark_add</span>
-                Lưu từ vựng
-              </button>
             </div>
             
             {/* Lesson Index / Sections */}

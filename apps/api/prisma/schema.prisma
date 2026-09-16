@@ -172,6 +172,7 @@ model User {
   subscription  UserSubscription?
 
   notifications      Notification[]
+  notificationReads  NotificationRead[]
   learningPlanItems  LearningPlanItem[]
   learningPaths      LearningPath[]
   aiConversations    AiConversation[]
@@ -894,6 +895,7 @@ model PaymentOrder {
   planId             String            @map("plan_id") @db.VarChar(50)
   amount             Int // VND, không có decimal cho tiền VN
   idempotencyKey     String            @unique @map("idempotency_key") @db.VarChar(128)
+  shortRef           String            @unique @map("short_ref") @db.VarChar(24)
   status             OrderStatus       @default(pending)
   sepayTransactionId String?           @unique @map("sepay_transaction_id") @db.VarChar(100)
   webhookPayload     Json?             @map("webhook_payload") // raw payload từ SePay
@@ -995,11 +997,26 @@ model Notification {
   actionUrl String?          @map("action_url") @db.VarChar(500)
   createdAt DateTime         @default(now()) @map("created_at") @db.Timestamptz(6)
 
-  user User? @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user  User?              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  reads NotificationRead[]
 
   @@index([userId])
   @@index([createdAt])
   @@map("notifications")
+}
+
+/// Trạng thái đọc riêng của từng người nhận, kể cả thông báo broadcast.
+model NotificationRead {
+  id             String       @id @default(uuid()) @db.Uuid
+  notificationId String       @map("notification_id") @db.Uuid
+  userId         String       @map("user_id") @db.Uuid
+  readAt         DateTime     @default(now()) @map("read_at") @db.Timestamptz(6)
+  notification   Notification @relation(fields: [notificationId], references: [id], onDelete: Cascade)
+  user           User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([notificationId, userId])
+  @@index([userId, readAt])
+  @@map("notification_reads")
 }
 
 enum NotificationType {
@@ -1142,12 +1159,14 @@ model KnowledgeChunk {
   language       String              @default("mixed") @db.VarChar(20)
   embedding      Float[]             @default([])
   embeddingModel String?             @map("embedding_model") @db.VarChar(100)
+  isActive       Boolean             @default(true) @map("is_active")
   source         KnowledgeSource     @relation(fields: [sourceId], references: [id], onDelete: Cascade)
   citations      AiMessageCitation[]
 
   @@unique([sourceId, chunkIndex])
   @@index([lessonId])
   @@index([domainId, levelId])
+  @@index([isActive])
   @@map("knowledge_chunks")
 }
 

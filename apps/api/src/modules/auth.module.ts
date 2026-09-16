@@ -8,6 +8,7 @@ import { JwtAuthGuard } from '../infrastructure/auth/jwt-auth.guard'
 import { PermissionsGuard } from '../infrastructure/auth/permissions.guard'
 import { AuthController } from '../presentation/auth.controller'
 import { EmailModule } from './email.module'
+import { GoogleStrategy } from '../infrastructure/auth/google.strategy'
 
 @Module({
   imports: [
@@ -22,7 +23,7 @@ import { EmailModule } from './email.module'
       }),
     }),
   ],
-  providers: [AuthService, JwtStrategy, JwtAuthGuard, PermissionsGuard],
+  providers: [AuthService, JwtStrategy, GoogleStrategy, JwtAuthGuard, PermissionsGuard],
   controllers: [AuthController],
   exports: [AuthService, JwtAuthGuard, PermissionsGuard],
 })

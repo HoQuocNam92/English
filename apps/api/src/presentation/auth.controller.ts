@@ -1,4 +1,7 @@
-import { Controller, Post, Body, HttpCode, HttpStatus, UseGuards, Get } from '@nestjs/common'
+import { Controller, Post, Body, HttpCode, HttpStatus, UseGuards, Get, Request, Res } from '@nestjs/common'
+import { AuthGuard } from '@nestjs/passport'
+import { ConfigService } from '@nestjs/config'
+import type { Response } from 'express'
 import { ApiTags, ApiBearerAuth, ApiOperation } from '@nestjs/swagger'
 import { LoginDto, RegisterDto, RefreshTokenDto, AuthChangePasswordDto, GoogleMobileDto, ForgotPasswordDto, ResetPasswordDto } from './http-dto/auth.dto'
 import { AuthService } from '../application/auth/auth.service'
@@ -8,7 +11,21 @@ import { CurrentUser, JwtPayload } from './decorators/current-user.decorator'
 @ApiTags('Auth')
 @Controller('auth')
 export class AuthController {
-  constructor(private readonly authService: AuthService) {}
+  constructor(private readonly authService: AuthService, private readonly config: ConfigService) {}
+
+  @Get('google')
+  @UseGuards(AuthGuard('google'))
+  @ApiOperation({ summary: 'Bắt đầu Google Login trên web' })
+  googleAuth() {}
+
+  @Get('google/callback')
+  @UseGuards(AuthGuard('google'))
+  @ApiOperation({ summary: 'Google OAuth callback trên web' })
+  googleCallback(@Request() req: any, @Res() response: Response) {
+    const webUrl = this.config.get<string>('WEB_URL', 'http://localhost:3000').replace(/\/$/, '')
+    const params = new URLSearchParams({ access_token: req.user.accessToken, refresh_token: req.user.refreshToken, user: JSON.stringify(req.user.user) })
+    return response.redirect(`${webUrl}/google/callback?${params.toString()}`)
+  }
 
   @Post('login')
   @HttpCode(HttpStatus.OK)

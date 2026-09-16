@@ -1,15 +1,15 @@
 import { Body, Controller, Get, HttpException, HttpStatus, Param, Post, Request, UseGuards } from '@nestjs/common';
-import { IsIn, IsOptional, IsString, MaxLength, MinLength } from 'class-validator';
+import { IsBoolean, IsIn, IsOptional, IsString, IsUUID, MaxLength, MinLength } from 'class-validator';
 import { AiChatService } from '../application/ai-chat/ai-chat.service';
 import { AiChatMode, GroqService } from '../application/ai-chat/groq.service';
 import { JwtAuthGuard } from '../infrastructure/auth/jwt-auth.guard';
 import { RagService } from '../application/ai-chat/rag.service';
 
-const MODES = ['qa', 'vocabulary'] as const;
+const MODES = ['qa', 'correction', 'it_conversation', 'vocabulary'] as const;
 
 class CreateConversationDto {
   @IsOptional() @IsIn(MODES) mode?: AiChatMode;
-  @IsOptional() @IsString() lessonId?: string;
+  @IsOptional() @IsUUID() lessonId?: string;
 }
 class SendMessageDto {
   @IsString() @MinLength(1) @MaxLength(4000) content!: string;
@@ -60,6 +60,13 @@ class SaveVocabularyDto {
   @IsOptional() @IsString() example?: string;
   @IsOptional() @IsString() @MaxLength(2000) note?: string;
 }
+class VocabularyNoteDto {
+  @IsOptional() @IsString() @MaxLength(2000) note?: string;
+}
+class FeedbackDto {
+  @IsBoolean() helpful!: boolean;
+  @IsOptional() @IsString() @MaxLength(500) reason?: string;
+}
 
 @Controller('ai-chat')
 @UseGuards(JwtAuthGuard)
@@ -67,12 +74,13 @@ export class AiChatController {
   constructor(private service: AiChatService) {}
 
   @Post('conversations') create(@Request() req: any, @Body() dto: CreateConversationDto) { return this.service.create(req.user.sub, dto.mode, dto.lessonId); }
+  @Get('status') status(@Request() req: any) { return this.service.status(req.user.sub); }
   @Get('conversations') list(@Request() req: any) { return this.service.list(req.user.sub); }
   @Get('conversations/:id/messages') messages(@Request() req: any, @Param('id') id: string) { return this.service.messages(id, req.user.sub); }
   @Post('conversations/:id/messages') send(@Request() req: any, @Param('id') id: string, @Body() dto: SendMessageDto) { return this.service.send(id, req.user.sub, dto.content, dto.mode, dto.action); }
   @Post('conversations/:id/quiz') quiz(@Request() req: any, @Param('id') id: string) { return this.service.createQuiz(id, req.user.sub); }
   @Post('saved-vocabulary') save(@Request() req: any, @Body() dto: SaveVocabularyDto) { return this.service.saveVocabulary(req.user.sub, dto); }
   @Get('saved-vocabulary') saved(@Request() req: any) { return this.service.savedVocabulary(req.user.sub); }
-  @Post('saved-vocabulary/:id/note') note(@Request() req: any, @Param('id') id: string, @Body() body: { note?: string }) { return this.service.noteVocabulary(id, req.user.sub, body.note || ''); }
-  @Post('messages/:id/feedback') feedback(@Request() req: any, @Param('id') id: string, @Body() body: { helpful: boolean; reason?: string }) { return this.service.feedback(id, req.user.sub, body.helpful, body.reason); }
+  @Post('saved-vocabulary/:id/note') note(@Request() req: any, @Param('id') id: string, @Body() body: VocabularyNoteDto) { return this.service.noteVocabulary(id, req.user.sub, body.note || ''); }
+  @Post('messages/:id/feedback') feedback(@Request() req: any, @Param('id') id: string, @Body() body: FeedbackDto) { return this.service.feedback(id, req.user.sub, body.helpful, body.reason); }
 }

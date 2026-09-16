@@ -118,7 +118,7 @@ Answer + citations + feedback + usage tracking
 - Chỉ dữ liệu `published` được gửi sang Cohere để embedding/rerank.
 - Không index tài khoản, tiến độ, hội thoại, thanh toán hoặc dữ liệu quản trị.
 - Không tiết lộ đáp án của bài kiểm tra đang diễn ra.
-- Có giới hạn số câu hỏi theo người dùng/ngày qua `AI_DAILY_MESSAGE_LIMIT`.
+- Có hạn mức riêng theo người dùng/ngày: mặc định 10 lượt cho tài khoản thường và 50 lượt cho PRO.
 - Trial Cohere phù hợp phát triển/thử nghiệm; production phải dùng key và điều khoản production.
 - Không được trộn vector từ hai embedding model hoặc hai kích thước trong cùng bảng.
 
@@ -297,6 +297,10 @@ JWT_REFRESH_SECRET="your-refresh-secret"
 GOOGLE_CLIENT_ID="xxx.apps.googleusercontent.com"
 GOOGLE_CLIENT_SECRET="xxx"
 GOOGLE_CALLBACK_URL="http://localhost:8080/api/v1/auth/google/callback"
+GOOGLE_WEB_CLIENT_ID="xxx.apps.googleusercontent.com"
+GOOGLE_ANDROID_CLIENT_ID="xxx.apps.googleusercontent.com"
+GOOGLE_IOS_CLIENT_ID="xxx.apps.googleusercontent.com"
+WEB_URL="http://localhost:3000"
 SMTP_HOST="smtp.gmail.com"
 SMTP_PORT=587
 SMTP_USER="your@gmail.com"
@@ -316,11 +320,20 @@ RAG_TOP_K=20
 RAG_FINAL_K=6
 RAG_MIN_SCORE=0.35
 RAG_MIN_COMBINED_SCORE=0.4
-AI_DAILY_MESSAGE_LIMIT=30
+AI_FREE_DAILY_MESSAGE_LIMIT=10
+AI_PRO_DAILY_MESSAGE_LIMIT=50
+AI_REQUEST_TIMEOUT_MS=30000
 SEPAY_BANK_ACCOUNT="xxx"
 
 # apps/web/.env.local
 NEXT_PUBLIC_API_URL="http://localhost:8080/api/v1"
+
+# apps/mobile/.env
+EXPO_PUBLIC_API_URL="http://10.0.2.2:8080/api/v1"
+EXPO_PUBLIC_GOOGLE_CLIENT_ID="xxx.apps.googleusercontent.com"
+EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID="xxx.apps.googleusercontent.com"
+EXPO_PUBLIC_GOOGLE_ANDROID_CLIENT_ID="xxx.apps.googleusercontent.com"
+EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID="xxx.apps.googleusercontent.com"
 ```
 
 ### 3. Database & Seed

@@ -33,11 +33,10 @@ export class RagService {
 
   private async saveSource(sourceType: 'lesson' | 'lesson_section' | 'vocabulary', sourceId: string, title: string, versionSource: string, chunks: ChunkInput[]) {
     const contentVersion = createHash('sha256').update(versionSource).digest('hex')
-    const existing = await this.prisma.knowledgeSource.findUnique({ where: { sourceType_sourceId: { sourceType, sourceId } }, include: { chunks: { select: { embeddingModel: true, embedding: true } } } })
+    const existing = await this.prisma.knowledgeSource.findUnique({ where: { sourceType_sourceId: { sourceType, sourceId } }, include: { chunks: { where: { isActive: true }, select: { id: true, embeddingModel: true } } } })
     if (existing?.contentVersion === contentVersion && existing.status === 'indexed' && existing.chunks.length && existing.chunks.every((chunk) => chunk.embeddingModel === this.embeddings.model())) return false
     const prepared = chunks.flatMap((chunk) => this.chunks(chunk.content).map((content) => ({ ...chunk, content })))
     const vectorStore = await this.vectors.store()
-    if (existing?.chunks.length) await vectorStore.delete({ ids: existing.chunks.map((chunk: any) => chunk.id) })
     let sourceDbId = ''
     let createdChunks: Array<{ id: string; content: string; lessonId: string | null; domainId: string | null; levelId: string | null }> = []
     try {
@@ -47,18 +46,21 @@ export class RagService {
           create: { sourceType, sourceId, title, contentVersion, status: 'pending' },
           update: { title, contentVersion, status: 'pending', errorMessage: null },
         })
-        await tx.knowledgeChunk.deleteMany({ where: { sourceId: source.id } })
+        await tx.knowledgeChunk.updateMany({ where: { sourceId: source.id }, data: { isActive: false } })
         const rows = []
         for (let chunkIndex = 0; chunkIndex < prepared.length; chunkIndex++) {
           const chunk = prepared[chunkIndex]
-          rows.push(await tx.knowledgeChunk.create({ data: {
-            sourceId: source.id, chunkIndex, content: chunk.content, tokenCount: Math.ceil(chunk.content.length / 4), lessonId: chunk.lessonId,
-            domainId: chunk.domainId, levelId: chunk.levelId, embeddingModel: this.embeddings.model(),
-          }, select: { id: true, content: true, lessonId: true, domainId: true, levelId: true } }))
+          rows.push(await tx.knowledgeChunk.upsert({
+            where: { sourceId_chunkIndex: { sourceId: source.id, chunkIndex } },
+            create: { sourceId: source.id, chunkIndex, content: chunk.content, tokenCount: Math.ceil(chunk.content.length / 4), lessonId: chunk.lessonId, domainId: chunk.domainId, levelId: chunk.levelId, embeddingModel: this.embeddings.model(), isActive: true },
+            update: { content: chunk.content, tokenCount: Math.ceil(chunk.content.length / 4), lessonId: chunk.lessonId, domainId: chunk.domainId, levelId: chunk.levelId, embeddingModel: this.embeddings.model(), isActive: true },
+            select: { id: true, content: true, lessonId: true, domainId: true, levelId: true },
+          }))
         }
         return { sourceId: source.id, rows }
       })
       sourceDbId = result.sourceId; createdChunks = result.rows
+      if (existing?.chunks.length) await vectorStore.delete({ ids: existing.chunks.map((chunk) => chunk.id) })
       await vectorStore.addDocuments(createdChunks.map((chunk) => ({ pageContent: chunk.content, metadata: {
         chunkId: chunk.id, sourceType, sourceId, title, lessonId: chunk.lessonId || '', domainId: chunk.domainId || '', levelId: chunk.levelId || '', contentStatus: 'published',
       } })), { ids: createdChunks.map((chunk) => chunk.id) })
@@ -103,8 +105,12 @@ export class RagService {
     if (staleIds.length) {
       const staleVectorIds = known.filter((item) => staleIds.includes(item.id)).flatMap((item) => item.chunks.map((chunk) => chunk.id))
       if (staleVectorIds.length) await (await this.vectors.store()).delete({ ids: staleVectorIds })
-      await this.prisma.knowledgeSource.deleteMany({ where: { id: { in: staleIds } } })
+      await this.prisma.$transaction([
+        this.prisma.knowledgeChunk.updateMany({ where: { sourceId: { in: staleIds } }, data: { isActive: false } }),
+        this.prisma.knowledgeSource.updateMany({ where: { id: { in: staleIds } }, data: { status: 'stale' } }),
+      ])
     }
+    await this.prisma.$executeRawUnsafe('DELETE FROM knowledge_vectors v WHERE NOT EXISTS (SELECT 1 FROM knowledge_chunks c WHERE c.id = v.id::uuid AND c.is_active = TRUE)')
     return { indexed, unchanged: lessons.length + lessons.reduce((sum, lesson) => sum + lesson.sections.length, 0) + vocabularies.length - indexed, removed: staleIds.length }
   }
 
@@ -118,7 +124,7 @@ export class RagService {
     const terms = [...new Set(query.toLocaleLowerCase('vi').split(/[^\p{L}\p{N}_+#.-]+/u).filter((term) => term.length > 1))]
     const ranked = reranked.map((item) => ({ document: vectorResults[item.index][0], vectorScore: vectorResults[item.index][1], rerankScore: item.relevanceScore }))
     const chunkIds = ranked.map((item) => String(item.document.metadata.chunkId))
-    const chunksById = new Map((await this.prisma.knowledgeChunk.findMany({ where: { id: { in: chunkIds } }, include: { source: true } })).map((chunk) => [chunk.id, chunk]))
+    const chunksById = new Map((await this.prisma.knowledgeChunk.findMany({ where: { id: { in: chunkIds }, isActive: true, source: { status: 'indexed' } }, include: { source: true } })).map((chunk) => [chunk.id, chunk]))
     // A vector store always returns the nearest rows, even when none is relevant.
     // Require independent rerank evidence and a strong combined score before a
     // chunk is allowed to ground an answer.
@@ -143,8 +149,8 @@ export class RagService {
   async health() {
     const [sources, totalChunks, vectorCountRows] = await Promise.all([
       this.prisma.knowledgeSource.groupBy({ by: ['sourceType', 'status'], _count: true }),
-      this.prisma.knowledgeChunk.count(),
-      this.prisma.$queryRawUnsafe<Array<{ count: bigint }>>('SELECT COUNT(*)::bigint AS count FROM knowledge_vectors'),
+      this.prisma.knowledgeChunk.count({ where: { isActive: true, source: { status: 'indexed' } } }),
+      this.prisma.$queryRawUnsafe<Array<{ count: bigint }>>('SELECT COUNT(*)::bigint AS count FROM knowledge_vectors v JOIN knowledge_chunks c ON c.id = v.id::uuid WHERE c.is_active = TRUE'),
     ])
     const embeddedChunks = Number(vectorCountRows[0]?.count ?? 0)
     return { sources, chunks: { total: totalChunks, embedded: embeddedChunks, missingEmbedding: totalChunks - embeddedChunks }, embeddingModel: this.embeddings.model(), vectorStore: 'pgvector', reranker: this.config.get('COHERE_RERANK_MODEL', 'rerank-v4.0-fast'), ready: totalChunks > 0 && totalChunks === embeddedChunks }

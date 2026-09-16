@@ -243,13 +243,12 @@ export default function LearnerHomePage() {
           <div>
             <h3 className="text-[14px] font-semibold text-on-surface mb-2 flex items-center gap-1">
               <span className="material-symbols-outlined text-on-surface-variant text-[18px]">history</span>
-              {t.analytics.recentActivity}
+              Hoạt động gần đây
             </h3>
             <div className="bg-surface-container border border-outline-variant rounded-lg p-4">
               <ul className="relative border-l border-outline-variant ml-2 pb-2 space-y-4">
                 {[
                   { text: t.lessons.lessonComplete, bold: 'IAM Policies', when: '2 giờ trước', done: true },
-                  { text: 'Mở khoá huy hiệu', bold: 'Cloud Novice', when: 'Hôm qua', done: false },
                   { text: 'Đăng nhập từ thiết bị mới', bold: '', when: '4 ngày trước', done: false },
                 ].map((item, i) => (
                   <li key={i} className="relative pl-4">

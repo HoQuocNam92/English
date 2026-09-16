@@ -54,9 +54,9 @@ export default function NotificationsPage() {
   };
 
   const categoryTypes: Record<string, string[]> = {
-    learning: ['lesson_complete', 'streak', 'reminder'],
+    learning: ['lesson_complete', 'reminder'],
     test: ['exam', 'test_result'],
-    cert: ['achievement', 'certificate'],
+    cert: ['certificate'],
     system: ['system', 'flash_sale'],
   };
   const visibleNotifications = filter === 'all' ? notifications : notifications.filter((item) => categoryTypes[filter]?.includes(item.type));

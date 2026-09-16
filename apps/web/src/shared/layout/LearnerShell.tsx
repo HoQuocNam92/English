@@ -96,7 +96,6 @@ export function LearnerShell({ children }: LearnerShellProps) {
                 {moreOpen && (
                   <div className="absolute top-full left-0 mt-1 w-52 bg-surface-container-lowest border border-outline-variant/50 rounded-xl shadow-lg z-50 py-1 overflow-hidden">
                     {[
-                      { href: '/learn/achievements', label: t.nav.achievements, icon: 'military_tech' },
                       { href: '/learn/community', label: t.nav.community, icon: 'forum' },
                       { href: '/learn/path-generator', label: t.nav.pathGenerator, icon: 'route' },
                     ].map((item) => (

@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Patch, Delete, Body, Param, Query, UseGuards } from '@nestjs/common';
+import { Controller, Get, Post, Patch, Delete, Body, Param, Query, UseGuards, NotFoundException } from '@nestjs/common';
 import { ApiTags, ApiBearerAuth, ApiOperation } from '@nestjs/swagger';
 import { JwtAuthGuard } from '../infrastructure/auth/jwt-auth.guard';
 import { PermissionsGuard } from '../infrastructure/auth/permissions.guard';
@@ -46,24 +46,26 @@ export class NotificationController {
     @CurrentUser() user: JwtPayload,
     @Query('unreadOnly') unreadOnly?: string,
   ) {
-    const where: any = { userId: user.sub };
-    if (unreadOnly === 'true') where.isRead = false;
-    
-    const notifications = await this.prisma.notification.findMany({
-      where: {
-        AND: [
-          { OR: [
-          { userId: user.sub },
-          { userId: null }, // broadcast
-          ] },
-          ...(unreadOnly === 'true' ? [{ isRead: false }] : []),
-        ],
-      },
-      orderBy: { createdAt: 'desc' },
-      take: 50,
-    });
+    const recipientWhere = { OR: [{ userId: user.sub }, { userId: null }] };
+    const unreadWhere = { reads: { none: { userId: user.sub } } };
+    const where = unreadOnly === 'true'
+      ? { AND: [recipientWhere, unreadWhere] }
+      : recipientWhere;
 
-    const unreadCount = notifications.filter(n => !n.isRead).length;
+    const [rows, unreadCount] = await Promise.all([
+      this.prisma.notification.findMany({
+        where,
+        include: { reads: { where: { userId: user.sub }, select: { id: true } } },
+        orderBy: { createdAt: 'desc' },
+        take: 50,
+      }),
+      this.prisma.notification.count({ where: { AND: [recipientWhere, unreadWhere] } }),
+    ]);
+
+    const notifications = rows.map(({ reads, ...notification }) => ({
+      ...notification,
+      isRead: reads.length > 0,
+    }));
     return { notifications, unreadCount };
   }
 
@@ -72,9 +74,15 @@ export class NotificationController {
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Đánh dấu 1 thông báo đã đọc' })
   async markRead(@Param('id') id: string, @CurrentUser() user: JwtPayload) {
-    await this.prisma.notification.updateMany({
+    const notification = await this.prisma.notification.findFirst({
       where: { id, OR: [{ userId: user.sub }, { userId: null }] },
-      data: { isRead: true },
+    });
+    if (!notification) throw new NotFoundException('Thông báo không tồn tại');
+
+    await this.prisma.notificationRead.upsert({
+      where: { notificationId_userId: { notificationId: id, userId: user.sub } },
+      create: { notificationId: id, userId: user.sub },
+      update: { readAt: new Date() },
     });
     return { success: true };
   }
@@ -84,11 +92,22 @@ export class NotificationController {
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Đánh dấu tất cả thông báo đã đọc' })
   async markAllRead(@CurrentUser() user: JwtPayload) {
-    await this.prisma.notification.updateMany({
-      where: { OR: [{ userId: user.sub }, { userId: null }], isRead: false },
-      data: { isRead: true },
+    const unread = await this.prisma.notification.findMany({
+      where: {
+        AND: [
+          { OR: [{ userId: user.sub }, { userId: null }] },
+          { reads: { none: { userId: user.sub } } },
+        ],
+      },
+      select: { id: true },
     });
-    return { success: true };
+    if (unread.length) {
+      await this.prisma.notificationRead.createMany({
+        data: unread.map(({ id }) => ({ notificationId: id, userId: user.sub })),
+        skipDuplicates: true,
+      });
+    }
+    return { success: true, updated: unread.length };
   }
 
   // ─── Admin: manage notifications ─────────────────────────────────────────────

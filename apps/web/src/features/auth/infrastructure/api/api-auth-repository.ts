@@ -9,15 +9,25 @@ export class ApiAuthRepository implements AuthRepository {
   constructor(private readonly storage: StoragePort) {}
 
   async login(input: LoginInput): Promise<Session> {
-    const res = await fetch(`${API_BASE}/auth/login`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email: input.email, password: input.password }),
-    });
+    let res: Response;
+    try {
+      res = await fetch(`${API_BASE}/auth/login`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: input.email, password: input.password }),
+      });
+    } catch {
+      throw new Error('Không thể kết nối đến máy chủ. Vui lòng kiểm tra backend và địa chỉ API.');
+    }
 
     if (!res.ok) {
       const err = await res.json().catch(() => ({}));
-      throw new Error((err as any)?.message ?? 'Email hoặc mật khẩu không đúng.');
+      const message = (err as any)?.message;
+      throw new Error(
+        Array.isArray(message)
+          ? message.join(', ')
+          : message ?? (res.status === 401 ? 'Email hoặc mật khẩu không đúng.' : `Đăng nhập thất bại (HTTP ${res.status}).`),
+      );
     }
 
     const data = await res.json();

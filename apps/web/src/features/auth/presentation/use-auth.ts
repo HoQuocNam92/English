@@ -35,7 +35,9 @@ export function useAuth() {
       setSession(nextSession);
       return nextSession;
     } catch (nextError) {
-      setError(nextError instanceof Error ? nextError.message : 'Unable to sign in.');
+      const normalizedError = nextError instanceof Error ? nextError : new Error('Không thể đăng nhập.');
+      setError(normalizedError.message);
+      throw normalizedError;
     } finally {
       setSubmitting(false);
     }

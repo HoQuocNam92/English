@@ -25,6 +25,7 @@ import { LandingBannerController } from './presentation/landing-banner.controlle
 import { PlannerController } from './presentation/planner.controller';
 import { PlacementTestController } from './presentation/placement-test.controller';
 import { RecommendationModule } from './modules/recommendation.module';
+import { CareerPrepController } from './presentation/career-prep.controller';
 
 @Module({
   controllers: [
@@ -34,7 +35,8 @@ import { RecommendationModule } from './modules/recommendation.module';
     ReadingLabController,
     LandingBannerController,
     PlannerController,
-    PlacementTestController
+    PlacementTestController,
+    CareerPrepController,
   ],
   imports: [
     ConfigModule.forRoot({ isGlobal: true }),

@@ -1,4 +1,4 @@
-import { Injectable, UnauthorizedException, ConflictException, BadRequestException, NotFoundException } from '@nestjs/common'
+import { Injectable, UnauthorizedException, ConflictException, BadRequestException, NotFoundException, ServiceUnavailableException } from '@nestjs/common'
 import { JwtService } from '@nestjs/jwt'
 import { ConfigService } from '@nestjs/config'
 import { PrismaService } from '../../infrastructure/database/prisma.service'
@@ -139,9 +139,10 @@ export class AuthService {
           learnerProfile: { create: { levelId: defaultLevel.id, onboardingCompleted: false } },
         },
       })
-    } else if (profile.avatarUrl) {
-      const full = await this.getUserWithPermissions(user.id)
-      if (!full?.userDetail?.avatarUrl) {
+    } else {
+      if (user.status !== 'active') throw new UnauthorizedException('Tài khoản đã bị vô hiệu hóa')
+      const full = profile.avatarUrl ? await this.getUserWithPermissions(user.id) : null
+      if (profile.avatarUrl && !full?.userDetail?.avatarUrl) {
         await this.prisma.userDetail.update({
           where: { userId: user.id },
           data: { avatarUrl: profile.avatarUrl },
@@ -154,16 +155,28 @@ export class AuthService {
   }
 
   async verifyGoogleIdToken(idToken: string) {
-    const response = await fetch(`https://oauth2.googleapis.com/tokeninfo?id_token=${idToken}`)
+    const controller = new AbortController()
+    const timeout = setTimeout(() => controller.abort(), 10000)
+    let response: globalThis.Response
+    try {
+      response = await fetch(`https://oauth2.googleapis.com/tokeninfo?id_token=${encodeURIComponent(idToken)}`, { signal: controller.signal })
+    } catch {
+      throw new ServiceUnavailableException('Không thể kết nối Google để xác thực. Vui lòng thử lại.')
+    } finally {
+      clearTimeout(timeout)
+    }
     if (!response.ok) throw new UnauthorizedException('Invalid Google token')
     const payload = await response.json() as any
-    
+
+    const allowedAudiences = [this.config.get<string>('GOOGLE_CLIENT_ID'), this.config.get<string>('GOOGLE_ANDROID_CLIENT_ID'), this.config.get<string>('GOOGLE_IOS_CLIENT_ID'), this.config.get<string>('GOOGLE_WEB_CLIENT_ID')].filter(Boolean)
+    if (!allowedAudiences.length || !allowedAudiences.includes(payload.aud)) throw new UnauthorizedException('Google token không dành cho ứng dụng này')
+    if (String(payload.email_verified) !== 'true') throw new UnauthorizedException('Email Google chưa được xác minh')
     const email = payload.email
     const displayName = payload.name ?? email
     const avatarUrl = payload.picture
     const googleId = payload.sub
     
-    if (!email) throw new UnauthorizedException('No email in Google token')
+    if (!email || !googleId) throw new UnauthorizedException('Google token thiếu thông tin tài khoản')
     
     return this.findOrCreateGoogleUser({ googleId, email, displayName, avatarUrl })
   }

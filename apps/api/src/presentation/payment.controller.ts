@@ -74,16 +74,16 @@ Nếu gọi lại với cùng key → server trả về đơn cũ, không tạo 
   @ApiBearerAuth()
   @UseGuards(JwtAuthGuard)
   @ApiOperation({ summary: 'Kiểm tra trạng thái đơn hàng' })
-  getOrderStatus(@Param('orderId') orderId: string) {
-    return this.svc.getOrderStatus(orderId);
+  getOrderStatus(@Param('orderId') orderId: string, @CurrentUser() user: JwtPayload) {
+    return this.svc.getOrderStatus(orderId, user.sub);
   }
 
   @Get('status/:orderId')
   @ApiBearerAuth()
   @UseGuards(JwtAuthGuard)
   @ApiOperation({ summary: 'Alias cho /orders/:orderId (backward compat)' })
-  getStatus(@Param('orderId') orderId: string) {
-    return this.svc.getOrderStatus(orderId);
+  getStatus(@Param('orderId') orderId: string, @CurrentUser() user: JwtPayload) {
+    return this.svc.getOrderStatus(orderId, user.sub);
   }
 
   @Get('subscription/me')

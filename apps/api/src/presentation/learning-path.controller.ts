@@ -4,6 +4,18 @@ import { PermissionsGuard } from '../infrastructure/auth/permissions.guard';
 import { PrismaService } from '../infrastructure/database/prisma.service';
 import { GroqService } from '../application/ai-chat/groq.service';
 import { RequirePermissions } from './decorators/require-permissions.decorator';
+import { IsIn, IsInt, IsOptional, IsString, IsUUID, Max, MaxLength, Min, MinLength } from 'class-validator';
+
+class GeneratePathDto {
+  @IsString() @MinLength(2) @MaxLength(150) careerGoal!: string;
+  @IsString() @MinLength(1) @MaxLength(50) currentLevel!: string;
+  @IsOptional() @IsInt() @Min(10) @Max(240) minutesPerDay?: number;
+  @IsOptional() @IsIn(['system', 'ai']) generationMode?: 'system' | 'ai';
+}
+
+class AdminGeneratePathDto extends GeneratePathDto {
+  @IsUUID() userId!: string;
+}
 
 @Controller('learning-paths')
 @UseGuards(JwtAuthGuard)
@@ -16,7 +28,7 @@ export class LearningPathController {
   @Post('generate')
   async generatePath(
     @Request() req: any,
-    @Body() body: { careerGoal: string; currentLevel: string; minutesPerDay?: number; generationMode?: 'system' | 'ai' },
+    @Body() body: GeneratePathDto,
   ) {
     return this.generateForUser(req.user.sub, body);
   }
@@ -24,7 +36,7 @@ export class LearningPathController {
   @Post('admin/generate')
   @UseGuards(PermissionsGuard)
   @RequirePermissions('users:manage')
-  async generatePathForLearner(@Body() body: { userId: string; careerGoal: string; currentLevel: string; minutesPerDay?: number }) {
+  async generatePathForLearner(@Body() body: AdminGeneratePathDto) {
     return this.generateForUser(body.userId, body);
   }
 
@@ -38,7 +50,7 @@ export class LearningPathController {
     });
   }
 
-  private async generateForUser(userId: string, body: { careerGoal: string; currentLevel: string; minutesPerDay?: number; generationMode?: 'system' | 'ai' }) {
+  private async generateForUser(userId: string, body: GeneratePathDto) {
     const minutesPerDay = body.minutesPerDay ?? 30;
 
     // 1. Fetch learner profile with full context
@@ -137,9 +149,7 @@ export class LearningPathController {
         })),
       });
     } catch (err) {
-      if ((err as Error).message !== 'SYSTEM_PATH_SELECTED') {
-        console.error('[LearningPath] Groq generatePath failed, falling back to rule-based order:', err);
-      }
+      if ((err as Error).message !== 'SYSTEM_PATH_SELECTED') throw err;
     }
 
     // 8. Build ordered module list from AI plan (or fallback to original DB order)

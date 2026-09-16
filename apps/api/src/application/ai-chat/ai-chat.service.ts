@@ -22,8 +22,33 @@ export class AiChatService {
     return `Trình độ ${profile.level.name}; lĩnh vực ${profile.domains.map((item) => item.domain.name).join(', ') || 'chưa chọn'}; mục tiêu ${profile.careerGoals.map((item) => item.careerGoal.name).join(', ') || 'chưa chọn'}.`;
   }
 
-  create(userId: string, mode: AiChatMode = 'qa', lessonId?: string) {
+  async create(userId: string, mode: AiChatMode = 'qa', lessonId?: string) {
+    if (lessonId) {
+      const lesson = await this.prisma.lesson.findFirst({ where: { id: lessonId, status: 'published' }, select: { id: true } });
+      if (!lesson) throw new NotFoundException('Bài học không tồn tại hoặc chưa được xuất bản.');
+    }
     return this.prisma.aiConversation.create({ data: { userId, mode, lessonId } });
+  }
+
+  async status(userId: string) {
+    const usageDate = new Date(); usageDate.setHours(0, 0, 0, 0);
+    const [usage, subscription, rag] = await Promise.all([
+      this.prisma.aiUsageDaily.findUnique({ where: { userId_usageDate: { userId, usageDate } } }),
+      this.prisma.userSubscription.findUnique({ where: { userId } }),
+      this.rag.health(),
+    ]);
+    const isPro = subscription?.status === 'active' && subscription.expiresAt > new Date();
+    const limit = Number(this.config.get(isPro ? 'AI_PRO_DAILY_MESSAGE_LIMIT' : 'AI_FREE_DAILY_MESSAGE_LIMIT', isPro ? 50 : 10));
+    return { available: this.groq.isConfigured(), ragAvailable: rag.ready, providerConfigured: this.groq.isConfigured(), rag, plan: isPro ? 'pro' : 'free', usage: { used: usage?.requestCount ?? 0, limit, remaining: Math.max(0, limit - (usage?.requestCount ?? 0)) } };
+  }
+
+  private async consumeRequest(userId: string, usageDate: Date) {
+    const subscription = await this.prisma.userSubscription.findUnique({ where: { userId } });
+    const isPro = subscription?.status === 'active' && subscription.expiresAt > new Date();
+    const dailyLimit = Number(this.config.get(isPro ? 'AI_PRO_DAILY_MESSAGE_LIMIT' : 'AI_FREE_DAILY_MESSAGE_LIMIT', isPro ? 50 : 10));
+    const usage = await this.prisma.aiUsageDaily.findUnique({ where: { userId_usageDate: { userId, usageDate } } });
+    if ((usage?.requestCount ?? 0) >= dailyLimit) throw new HttpException(`Bạn đã dùng hết ${dailyLimit} lượt AI hôm nay.`, HttpStatus.TOO_MANY_REQUESTS);
+    await this.prisma.aiUsageDaily.upsert({ where: { userId_usageDate: { userId, usageDate } }, create: { userId, usageDate, requestCount: 1 }, update: { requestCount: { increment: 1 } } });
   }
 
   list(userId: string) {
@@ -41,13 +66,12 @@ export class AiChatService {
   async send(id: string, userId: string, input: string, mode?: AiChatMode, action?: string) {
     const conversation = await this.ownedConversation(id, userId);
     const usageDate = new Date(); usageDate.setHours(0, 0, 0, 0);
-    const usage = await this.prisma.aiUsageDaily.findUnique({ where: { userId_usageDate: { userId, usageDate } } });
-    const dailyLimit = Number(this.config.get('AI_DAILY_MESSAGE_LIMIT', 30));
-    if ((usage?.requestCount ?? 0) >= dailyLimit) throw new HttpException('Bạn đã dùng hết lượt hỏi AI hôm nay.', HttpStatus.TOO_MANY_REQUESTS);
+    await this.consumeRequest(userId, usageDate);
     const activeMode = mode ?? conversation.mode;
     const recent = await this.prisma.aiMessage.findMany({ where: { conversationId: id }, orderBy: { createdAt: 'desc' }, take: 8 });
-    const retrieved = await this.rag.retrieve(userId, input, conversation.lessonId ?? undefined);
-    if (!retrieved.length) {
+    const requiresGrounding = activeMode === 'qa' && !action;
+    const retrieved = requiresGrounding ? await this.rag.retrieve(userId, input, conversation.lessonId ?? undefined) : [];
+    if (requiresGrounding && !retrieved.length) {
       const [, assistant] = await this.prisma.$transaction([
         this.prisma.aiMessage.create({ data: { conversationId: id, role: 'user', content: input } }),
         this.prisma.aiMessage.create({ data: { conversationId: id, role: 'assistant', content: 'Câu hỏi này nằm ngoài phạm vi học liệu tiếng Anh CNTT hiện có, hoặc chưa có nguồn đủ tin cậy để trả lời. Bạn hãy hỏi về bài học, thuật ngữ hay tình huống giao tiếp IT; nếu đang hỏi về sức khỏe, hãy liên hệ người có chuyên môn phù hợp.', metadata: { grounded: true, insufficientEvidence: true } } }),
@@ -67,7 +91,7 @@ export class AiChatService {
     ]);
     await this.prisma.$transaction([
       this.prisma.aiMessageCitation.createMany({ data: retrieved.map((item, index) => ({ messageId: assistant.id, chunkId: item.id, rank: index + 1, score: item.score })) }),
-      this.prisma.aiUsageDaily.upsert({ where: { userId_usageDate: { userId, usageDate } }, create: { userId, usageDate, requestCount: 1, inputTokens: Math.ceil((input.length + knowledgeContext.length) / 4), outputTokens: Math.ceil(result.answer.length / 4) }, update: { requestCount: { increment: 1 }, inputTokens: { increment: Math.ceil((input.length + knowledgeContext.length) / 4) }, outputTokens: { increment: Math.ceil(result.answer.length / 4) } } }),
+      this.prisma.aiUsageDaily.update({ where: { userId_usageDate: { userId, usageDate } }, data: { inputTokens: { increment: Math.ceil((input.length + knowledgeContext.length) / 4) }, outputTokens: { increment: Math.ceil(result.answer.length / 4) } } }),
     ]);
     if (result.errors?.length) {
       await this.prisma.aiLearningError.createMany({ data: result.errors.map((item: any) => ({
@@ -90,6 +114,11 @@ export class AiChatService {
       this.prisma.aiLearningError.findMany({ where: { conversationId: id }, orderBy: { createdAt: 'desc' }, take: 20 }),
       this.prisma.aiMessage.findMany({ where: { conversationId: id }, orderBy: { createdAt: 'desc' }, take: 12 }),
     ]);
+    if (history.filter((message) => message.role === 'user').length < 2) {
+      throw new HttpException('Hãy trao đổi với AI ít nhất 2 câu trước khi tạo quiz.', HttpStatus.BAD_REQUEST);
+    }
+    const usageDate = new Date(); usageDate.setHours(0, 0, 0, 0);
+    await this.consumeRequest(userId, usageDate);
     const quiz = await this.groq.quiz({ learnerContext: await this.learnerContext(userId), errors, history: history.reverse().map((message) => ({ role: message.role, content: message.content })) });
     const message = await this.prisma.aiMessage.create({ data: { conversationId: id, role: 'assistant', content: quiz.title, metadata: { type: 'quiz', quiz } } });
     return { messageId: message.id, ...quiz };

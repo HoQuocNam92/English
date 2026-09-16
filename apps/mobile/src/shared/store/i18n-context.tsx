@@ -30,8 +30,6 @@ const translations = {
     greeting: 'Xin chào',
     continueLearn: 'Tiếp tục học',
     todayGoal: 'Mục tiêu hôm nay',
-    streak: 'ngày liên tiếp',
-    exp: 'EXP',
     // Learning
     lessons: 'Bài học',
     completed: 'Đã hoàn thành',
@@ -55,7 +53,6 @@ const translations = {
     progress: 'Tiến độ',
     overallProgress: 'Tổng tiến độ',
     weeklyGoal: 'Mục tiêu tuần',
-    badges: 'Huy hiệu',
   },
   en: {
     // Bottom tabs
@@ -83,8 +80,6 @@ const translations = {
     greeting: 'Hello',
     continueLearn: 'Continue learning',
     todayGoal: "Today's goal",
-    streak: 'day streak',
-    exp: 'EXP',
     // Learning
     lessons: 'Lessons',
     completed: 'Completed',
@@ -108,7 +103,6 @@ const translations = {
     progress: 'Progress',
     overallProgress: 'Overall progress',
     weeklyGoal: 'Weekly goal',
-    badges: 'Badges',
   },
 };
 

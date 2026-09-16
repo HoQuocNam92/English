@@ -1,9 +1,10 @@
-import { Injectable, ServiceUnavailableException } from '@nestjs/common'
+import { GatewayTimeoutException, Injectable, Logger, ServiceUnavailableException } from '@nestjs/common'
 import { ConfigService } from '@nestjs/config'
 import axios from 'axios'
 
 @Injectable()
 export class EmbeddingService {
+  private readonly logger = new Logger(EmbeddingService.name)
   constructor(private readonly config: ConfigService) {}
 
   model() { return this.config.get<string>('EMBEDDING_MODEL', 'embed-v4.0') }
@@ -12,9 +13,17 @@ export class EmbeddingService {
     if (!inputs.length) return []
     if (!this.config.get<string>('COHERE_API_KEY')) throw new ServiceUnavailableException('COHERE_API_KEY chưa được cấu hình.')
     const outputDimension = Number(this.config.get('EMBEDDING_DIMENSIONS', 1024)) as 256 | 512 | 1024 | 1536
-    const response = await axios.post('https://api.cohere.com/v2/embed', {
-      model: this.model(), texts: inputs, input_type: inputType, embedding_types: ['float'], output_dimension: outputDimension,
-    }, { headers: { Authorization: `Bearer ${this.config.get<string>('COHERE_API_KEY')}`, 'Content-Type': 'application/json' }, timeout: 60_000 })
+    let response
+    try {
+      response = await axios.post('https://api.cohere.com/v2/embed', {
+        model: this.model(), texts: inputs, input_type: inputType, embedding_types: ['float'], output_dimension: outputDimension,
+      }, { headers: { Authorization: `Bearer ${this.config.get<string>('COHERE_API_KEY')}`, 'Content-Type': 'application/json' }, timeout: 45_000 })
+    } catch (error: any) {
+      if (error?.code === 'ECONNABORTED' || error?.code === 'ETIMEDOUT') throw new GatewayTimeoutException('Dịch vụ tìm kiếm học liệu phản hồi quá thời gian.')
+      this.logger.error(`Cohere embedding failed: status=${error?.response?.status ?? 'network'} code=${error?.code ?? 'unknown'} message=${error?.response?.data?.message ?? error?.message ?? 'unknown'}`)
+      if (error?.response?.status === 429) throw new ServiceUnavailableException('Dịch vụ tìm kiếm học liệu đang đạt giới hạn tạm thời. Vui lòng thử lại sau một phút.')
+      throw new ServiceUnavailableException('Không thể kết nối dịch vụ tìm kiếm học liệu. Vui lòng thử lại.')
+    }
     const vectors = response.data?.embeddings?.float as number[][]
     if (!Array.isArray(vectors) || vectors.length !== inputs.length) throw new ServiceUnavailableException('Cohere không trả đủ embedding.')
     if (vectors.some((vector) => vector.length !== outputDimension)) throw new ServiceUnavailableException('Cohere trả vector sai số chiều cấu hình.')

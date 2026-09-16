@@ -66,7 +66,6 @@ export default function MobileHomeScreen() {
   const goalTitle = userData?.certGoals?.[0]?.certificate?.name || userData?.learnerProfile?.certGoals?.[0]?.certificate?.name || 'Chứng chỉ tiếng Anh CNTT';
 
   const summary = progressData?.summary || progressData || {};
-  const streakDays = summary.studyStreakDays ?? summary.streak ?? (progressData?.progress?.length > 0 ? 3 : 1);
   const wordsCount = summary.wordsLearned ?? ((progressData?.progress?.filter((p: any) => p.completedAt)?.length ?? 0) * 8 || 12);
   const progressPercent = summary.overallCompletionPercent ?? summary.completionPercent ?? (progressData?.progress?.length > 0 ? 65 : 65);
   
@@ -88,9 +87,8 @@ export default function MobileHomeScreen() {
             <Text style={styles.greetingSubtitle}>Sẵn sàng học bài mới chưa?</Text>
           </View>
         </View>
-        <TouchableOpacity style={styles.streakBadge} onPress={() => router.push('/leaderboard' as any)}>
-          <Text style={{ fontSize: 14 }}>🔥</Text>
-          <Text style={styles.streakText}>{streakDays} ngày</Text>
+        <TouchableOpacity style={styles.notificationButton} onPress={() => router.push('/notifications' as any)} accessibilityLabel="Thông báo">
+          <MaterialIcons name="notifications-none" size={22} color={colors.primary} />
         </TouchableOpacity>
       </View>
 
@@ -147,8 +145,7 @@ export default function MobileHomeScreen() {
           </View>
           
           <View style={styles.dailyGoalFooter}>
-            <Text style={styles.dailyGoalDesc}>Chỉ cần hoàn thành 1 bài nữa để giữ streak!</Text>
-            <Text style={styles.dailyGoalXp}>+50 XP</Text>
+            <Text style={styles.dailyGoalDesc}>Chỉ cần hoàn thành thêm 1 bài học hôm nay!</Text>
           </View>
         </View>
 
@@ -268,21 +265,12 @@ const styles = StyleSheet.create({
     color: '#464555',
     marginTop: 2,
   },
-  streakBadge: {
-    flexDirection: 'row',
-    alignItems: 'center',
+  notificationButton: {
     backgroundColor: '#F5F3FF',
     borderWidth: 1,
     borderColor: '#DDD6FE',
-    paddingHorizontal: spacing.sm,
-    paddingVertical: 4,
-    borderRadius: 16,
-    gap: 4,
-  },
-  streakText: {
-    fontSize: 13,
-    fontWeight: '600',
-    color: colors.primary,
+    padding: spacing.sm,
+    borderRadius: 20,
   },
   contentContainer: {
     padding: spacing.md,
@@ -451,12 +439,6 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: '#464555',
     flex: 1,
-  },
-  dailyGoalXp: {
-    fontSize: 12,
-    fontWeight: '600',
-    color: colors.primary,
-    marginLeft: spacing.sm,
   },
   sectionContainer: {
     width: '100%',
