@@ -15,16 +15,11 @@ import { UploadModule } from './modules/upload.module'
 
 import { RedisCacheModule } from './infrastructure/cache/redis.module'
 
-import { ReadingLabController } from './presentation/reading-lab.controller';
 import { PlacementTestController } from './presentation/placement-test.controller';
-import { RecommendationModule } from './modules/recommendation.module';
-import { CareerPrepController } from './presentation/career-prep.controller';
 
 @Module({
   controllers: [
-    ReadingLabController,
     PlacementTestController,
-    CareerPrepController,
   ],
   imports: [
     ConfigModule.forRoot({ isGlobal: true }),
@@ -41,8 +36,6 @@ import { CareerPrepController } from './presentation/career-prep.controller';
     LearnerProfileModule,
     TaxonomyModule,
     UploadModule,
-    RecommendationModule,
   ],
 })
 export class AppModule {}
-

@@ -49,11 +49,6 @@ export default function MobileProgressScreen() {
   const certGoals = learnerProfile?.certGoals || [];
   const mainCert = certGoals[0]?.certificate?.name || 'Chưa chọn chứng chỉ';
 
-  const heatmapData = Array.from({ length: 28 }).map((_, index) => {
-    const target = new Date(); target.setHours(0, 0, 0, 0); target.setDate(target.getDate() - (27 - index));
-    const count = progressItems.filter((item: any) => { const date = new Date(item.updatedAt); date.setHours(0, 0, 0, 0); return date.getTime() === target.getTime(); }).length;
-    return count > 1 ? colors.primary : count === 1 ? '#c3c0ff' : '#e6e8ea';
-  });
 
   return (
     <View style={styles.container}>
@@ -163,15 +158,6 @@ export default function MobileProgressScreen() {
           )}
         </View>
 
-        {/* Activity Heatmap */}
-        <View style={styles.card}>
-          <Text style={styles.cardTitle}>Hoạt động 30 ngày qua</Text>
-          <View style={styles.heatmapGrid}>
-            {heatmapData.map((color, idx) => (
-              <View key={idx} style={[styles.heatmapCell, { backgroundColor: color }]} />
-            ))}
-          </View>
-        </View>
 
       </ScrollView>
     </View>
@@ -341,16 +327,4 @@ const styles = StyleSheet.create({
     color: '#464555',
     marginTop: spacing.sm,
   },
-  heatmapGrid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 4,
-    height: 128,
-  },
-  heatmapCell: {
-    width: '12%', // Roughly 7 columns
-    aspectRatio: 1,
-    borderRadius: 4,
-    opacity: 0.8,
-  }
 });
