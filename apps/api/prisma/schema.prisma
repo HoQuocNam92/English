@@ -111,6 +111,7 @@ enum LevelCode {
   beginner
   intermediate
   advanced
+  professional
 
   @@map("level_code")
 }

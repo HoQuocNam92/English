@@ -469,9 +469,9 @@ export class UpdateLearnerProfileDto {
 }
 
 export class CompleteOnboardingDto {
-  @ApiProperty({ description: 'Level code (beginner/intermediate/advanced)' })
+  @ApiProperty({ description: 'Level code (beginner/intermediate/advanced/professional)' })
   @IsString() @IsNotEmpty()
-  @IsEnum(['beginner', 'intermediate', 'advanced'])
+  @IsEnum(['beginner', 'intermediate', 'advanced', 'professional'])
   levelCode: string
 
   @ApiProperty({ type: [String], description: 'Mảng domain codes (CLOUD, DEVOPS, ...)' })
@@ -479,13 +479,13 @@ export class CompleteOnboardingDto {
   @IsString({ each: true })
   domainCodes: string[]
 
-  @ApiPropertyOptional({ description: 'Career goal code' })
-  @IsOptional() @IsString()
-  careerGoalCode?: string
+  @ApiPropertyOptional({ type: [String], description: 'Mảng career goal codes' })
+  @IsOptional() @IsArray() @IsString({ each: true })
+  careerGoalCodes?: string[]
 
-  @ApiPropertyOptional({ description: 'Certificate code mục tiêu' })
-  @IsOptional() @IsString()
-  certificateCode?: string
+  @ApiPropertyOptional({ type: [String], description: 'Mảng certificate codes mục tiêu' })
+  @IsOptional() @IsArray() @IsString({ each: true })
+  certificateCodes?: string[]
 
   @ApiPropertyOptional({ example: 120 })
   @IsOptional() @IsInt() @Min(30) @Max(10080)

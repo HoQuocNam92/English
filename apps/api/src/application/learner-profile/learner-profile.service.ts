@@ -57,21 +57,25 @@ export class LearnerProfilesService {
       })
     }
 
-    // 4. Career goal (tuỳ chọn)
-    if (dto.careerGoalCode) {
-      const goal = await this.prisma.careerGoal.findUnique({ where: { code: dto.careerGoalCode } })
-      if (goal) {
-        await this.prisma.learnerProfileCareerGoal.deleteMany({ where: { profileId: profile.id } })
-        await this.prisma.learnerProfileCareerGoal.create({ data: { profileId: profile.id, careerGoalId: goal.id } })
+    // 4. Career goals (mảng, tuỳ chọn)
+    await this.prisma.learnerProfileCareerGoal.deleteMany({ where: { profileId: profile.id } })
+    if (dto.careerGoalCodes && dto.careerGoalCodes.length > 0) {
+      const goals = await this.prisma.careerGoal.findMany({ where: { code: { in: dto.careerGoalCodes } } })
+      if (goals.length > 0) {
+        await this.prisma.learnerProfileCareerGoal.createMany({
+          data: goals.map(g => ({ profileId: profile.id, careerGoalId: g.id }))
+        })
       }
     }
 
-    // 5. Certificate goal (tuỳ chọn)
-    if (dto.certificateCode) {
-      const cert = await this.prisma.certificate.findFirst({ where: { OR: [{ code: dto.certificateCode }, { name: dto.certificateCode }] } })
-      if (cert) {
-        await this.prisma.learnerCertificateGoal.deleteMany({ where: { profileId: profile.id } })
-        await this.prisma.learnerCertificateGoal.create({ data: { profileId: profile.id, certificateId: cert.id } })
+    // 5. Certificate goals (mảng, tuỳ chọn)
+    await this.prisma.learnerCertificateGoal.deleteMany({ where: { profileId: profile.id } })
+    if (dto.certificateCodes && dto.certificateCodes.length > 0) {
+      const certs = await this.prisma.certificate.findMany({ where: { code: { in: dto.certificateCodes } } })
+      if (certs.length > 0) {
+        await this.prisma.learnerCertificateGoal.createMany({
+          data: certs.map(c => ({ profileId: profile.id, certificateId: c.id }))
+        })
       }
     }
 

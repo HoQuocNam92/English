@@ -1,47 +1,69 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
-import { StyleSheet, Text, View, TouchableOpacity, ScrollView } from 'react-native';
+import { StyleSheet, Text, View, TouchableOpacity, ScrollView, ActivityIndicator } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
 import { colors, spacing } from '@techenglish/design-tokens';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { api } from '../../src/shared/api/api-client';
 
-interface GoalOption {
+interface CareerGoal {
   id: string;
+  code: string;
   name: string;
-  desc: string;
-  icon: keyof typeof MaterialIcons.glyphMap;
+  description: string;
 }
 
-const goals: GoalOption[] = [
-  { id: 'DOCS_API', name: 'Đọc hiểu tài liệu kỹ thuật & API', desc: 'Docs, Specs, StackOverflow & RFCs', icon: 'terminal' },
-  { id: 'INTERVIEW', name: 'Chuẩn bị phỏng vấn IT tiếng Anh', desc: 'Technical Interview, System Design, Live Coding', icon: 'psychology' },
-  { id: 'AGILE_SCRUM', name: 'Giao tiếp môi trường Agile/Scrum', desc: 'Daily Standup, Sprint Planning, Slack, Jira', icon: 'groups' },
-  { id: 'GLOBAL_COMPANY', name: 'Làm việc tại công ty Global', desc: 'Khách hàng US, EU, Singapore & Remote Teams', icon: 'public' },
-  { id: 'TECH_SPECS', name: 'Viết Tech Specs & Bug Reports', desc: 'Code Comments, PR Reviews, Architecture Docs', icon: 'description' },
-  { id: 'CERTIFICATE', name: 'Luyện thi chứng chỉ quốc tế', desc: 'AWS SAA, CompTIA, GCP', icon: 'workspace-premium' }
-];
+// Fallback icon mapping based on keywords in goal code/name
+const getGoalIcon = (code: string): keyof typeof MaterialIcons.glyphMap => {
+  const map: Record<string, keyof typeof MaterialIcons.glyphMap> = {
+    BACKEND: 'dns',
+    FRONTEND: 'web',
+    FULLSTACK: 'layers',
+    DEVOPS: 'settings-suggest',
+    CLOUD: 'cloud',
+    DATA: 'storage',
+    ML: 'psychology',
+    SECURITY: 'security',
+    SRE: 'monitor-heart',
+    SOLUTION: 'architecture',
+  };
+  const key = Object.keys(map).find(k => code.toUpperCase().includes(k));
+  return key ? map[key] : 'work';
+};
 
 export default function OnboardingCareerGoalScreen() {
   const router = useRouter();
-  const [selectedGoals, setSelectedGoals] = useState<string[]>(['DOCS_API', 'INTERVIEW']);
+  const [selectedGoals, setSelectedGoals] = useState<string[]>([]);
+  const [goals, setGoals] = useState<CareerGoal[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  const toggleGoal = (id: string) => {
-    setSelectedGoals(prev => 
-      prev.includes(id) ? prev.filter(g => g !== id) : [...prev, id]
+  useEffect(() => {
+    api.get<CareerGoal[]>('/career-goals')
+      .then(data => {
+        setGoals(Array.isArray(data) ? data : []);
+      })
+      .catch(() => setGoals([]))
+      .finally(() => setLoading(false));
+  }, []);
+
+  const toggleGoal = (code: string) => {
+    setSelectedGoals(prev =>
+      prev.includes(code) ? prev.filter(g => g !== code) : [...prev, code]
     );
   };
 
   const handleNext = async () => {
-    const toSave = selectedGoals.length > 0 ? selectedGoals : ['DOCS_API'];
-    await AsyncStorage.setItem('onboarding_career_goal', JSON.stringify(toSave));
+    if (selectedGoals.length > 0) {
+      await AsyncStorage.setItem('onboarding_career_goals', JSON.stringify(selectedGoals));
+    }
     router.push('/(onboarding)/certificate' as any);
   };
 
   return (
     <View style={styles.container}>
       <StatusBar style="dark" />
-      
+
       {/* Top Header */}
       <View style={styles.headerBar}>
         <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
@@ -62,41 +84,48 @@ export default function OnboardingCareerGoalScreen() {
           </View>
         </View>
 
-        <Text style={styles.title}>Mục tiêu học tập của bạn?</Text>
-        <Text style={styles.subtitle}>Bạn học tiếng Anh chuyên ngành CNTT để đạt được điều gì? Chọn một hoặc nhiều mục tiêu.</Text>
+        <Text style={styles.title}>Mục tiêu nghề nghiệp của bạn?</Text>
+        <Text style={styles.subtitle}>Bạn đang hướng tới vị trí nào trong ngành CNTT? Chọn một hoặc nhiều mục tiêu.</Text>
 
-        <View style={styles.optionsList}>
-          {goals.map((g) => {
-            const isSelected = selectedGoals.includes(g.id);
-            return (
-              <TouchableOpacity
-                key={g.id}
-                style={[styles.optionCard, isSelected && styles.optionCardSelected]}
-                onPress={() => toggleGoal(g.id)}
-                activeOpacity={0.8}
-              >
-                <View style={styles.optionContentRow}>
-                  <View style={[styles.iconBox, isSelected && styles.iconBoxSelected]}>
-                    <MaterialIcons name={g.icon} size={22} color={isSelected ? colors.primary : '#464555'} />
-                  </View>
-                  <View style={styles.optionTextContainer}>
-                    <View style={styles.optionTitleRow}>
-                      <Text style={[styles.goalName, isSelected && styles.goalNameSelected]}>{g.name}</Text>
-                      {isSelected ? (
-                        <View style={styles.checkIconActive}>
-                          <MaterialIcons name="check" size={16} color="#ffffff" />
-                        </View>
-                      ) : (
-                        <View style={styles.checkIconInactive} />
-                      )}
+        {loading ? (
+          <View style={styles.loadingContainer}>
+            <ActivityIndicator size="large" color={colors.primary} />
+            <Text style={styles.loadingText}>Đang tải danh sách...</Text>
+          </View>
+        ) : (
+          <View style={styles.optionsList}>
+            {goals.map((g) => {
+              const isSelected = selectedGoals.includes(g.code);
+              return (
+                <TouchableOpacity
+                  key={g.id}
+                  style={[styles.optionCard, isSelected && styles.optionCardSelected]}
+                  onPress={() => toggleGoal(g.code)}
+                  activeOpacity={0.8}
+                >
+                  <View style={styles.optionContentRow}>
+                    <View style={[styles.iconBox, isSelected && styles.iconBoxSelected]}>
+                      <MaterialIcons name={getGoalIcon(g.code)} size={22} color={isSelected ? colors.primary : '#464555'} />
                     </View>
-                    <Text style={styles.goalDesc}>{g.desc}</Text>
+                    <View style={styles.optionTextContainer}>
+                      <View style={styles.optionTitleRow}>
+                        <Text style={[styles.goalName, isSelected && styles.goalNameSelected]}>{g.name}</Text>
+                        {isSelected ? (
+                          <View style={styles.checkIconActive}>
+                            <MaterialIcons name="check" size={16} color="#ffffff" />
+                          </View>
+                        ) : (
+                          <View style={styles.checkIconInactive} />
+                        )}
+                      </View>
+                      <Text style={styles.goalDesc}>{g.description}</Text>
+                    </View>
                   </View>
-                </View>
-              </TouchableOpacity>
-            );
-          })}
-        </View>
+                </TouchableOpacity>
+              );
+            })}
+          </View>
+        )}
 
         <View style={styles.aiHintBanner}>
           <MaterialIcons name="auto-awesome" size={18} color={colors.primary} />
@@ -105,8 +134,8 @@ export default function OnboardingCareerGoalScreen() {
       </ScrollView>
 
       <View style={styles.bottomBar}>
-        <TouchableOpacity 
-          style={[styles.nextButton, selectedGoals.length === 0 && styles.nextButtonDisabled]} 
+        <TouchableOpacity
+          style={[styles.nextButton, selectedGoals.length === 0 && styles.nextButtonDisabled]}
           onPress={handleNext}
           disabled={selectedGoals.length === 0}
         >
@@ -154,6 +183,8 @@ const styles = StyleSheet.create({
   progressFill: { height: 8, backgroundColor: colors.primary, borderRadius: 4 },
   title: { fontSize: 24, fontWeight: '700', color: '#191c1e', marginBottom: spacing.xs, letterSpacing: -0.2 },
   subtitle: { fontSize: 14, color: '#464555', marginBottom: spacing.lg, lineHeight: 20 },
+  loadingContainer: { alignItems: 'center', paddingVertical: 40 },
+  loadingText: { marginTop: spacing.sm, fontSize: 14, color: '#464555' },
   optionsList: { gap: spacing.sm },
   optionCard: {
     backgroundColor: '#ffffff', borderRadius: 12, padding: spacing.md,
@@ -209,21 +240,21 @@ const styles = StyleSheet.create({
     color: '#464555',
     flex: 1
   },
-  bottomBar: { 
-    position: 'absolute', bottom: 0, left: 0, right: 0, 
-    backgroundColor: '#ffffff', 
-    padding: spacing.md, 
+  bottomBar: {
+    position: 'absolute', bottom: 0, left: 0, right: 0,
+    backgroundColor: '#ffffff',
+    padding: spacing.md,
     paddingBottom: 32, // safearea
-    borderTopWidth: 1, 
-    borderTopColor: '#e6e8ea' 
+    borderTopWidth: 1,
+    borderTopColor: '#e6e8ea'
   },
-  nextButton: { 
-    backgroundColor: colors.primary, 
-    height: 48, 
-    borderRadius: 10, 
-    flexDirection: 'row', 
-    alignItems: 'center', 
-    justifyContent: 'center', 
+  nextButton: {
+    backgroundColor: colors.primary,
+    height: 48,
+    borderRadius: 10,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
     gap: spacing.xs,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 1 },
@@ -231,7 +262,7 @@ const styles = StyleSheet.create({
     shadowRadius: 2,
     elevation: 2
   },
-  nextButtonDisabled: { 
+  nextButtonDisabled: {
     backgroundColor: '#e6e8ea',
     shadowOpacity: 0,
     elevation: 0
