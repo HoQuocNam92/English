@@ -61,24 +61,6 @@ export class TaxonomyController {
     return this.svc.updateCertificateLinks(id, dto)
   }
 
-  @Post('certificates/:id/contents')
-  @RequirePermissions('certificates:manage')
-  createCertificationContent(@Param('id') id: string, @Body() dto: any) {
-    return this.svc.createCertificationContent(id, dto)
-  }
-
-  @Patch('certification-contents/:contentId')
-  @RequirePermissions('certificates:manage')
-  updateCertificationContent(@Param('contentId') contentId: string, @Body() dto: any) {
-    return this.svc.updateCertificationContent(contentId, dto)
-  }
-
-  @Delete('certification-contents/:contentId')
-  @RequirePermissions('certificates:manage')
-  deleteCertificationContent(@Param('contentId') contentId: string) {
-    return this.svc.deleteCertificationContent(contentId)
-  }
-
   @Delete('certificates/:id')
   @RequirePermissions('certificates:manage')
   deleteCertificate(@Param('id') id: string) {
@@ -112,4 +94,12 @@ export class TaxonomyController {
   getDashboardAnalytics() {
     return this.svc.getDashboardAnalytics()
   }
+
+  @Get('reports/domain/:domainId')
+  @RequirePermissions('reports:read')
+  @ApiOperation({ summary: 'Get detailed report for a specific domain' })
+  getDomainReport(@Param('domainId') domainId: string) {
+    return this.svc.getDomainReport(domainId)
+  }
 }
+

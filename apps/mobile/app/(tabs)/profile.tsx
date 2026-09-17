@@ -140,9 +140,6 @@ export default function MobileProfileScreen() {
         {/* Action List */}
         <View style={[styles.menuList, { backgroundColor: colors.surfaceContainerLowest, borderColor: colors.outlineVariant }]}>
           {[
-            ['route', 'Lộ trình học', '/roadmap'],
-            ['auto-awesome', 'Tạo lộ trình cá nhân', '/path-generator'],
-            ['workspace-premium', 'Chứng chỉ', '/certifications'],
             ['style', 'Flashcards', '/flashcards'],
           ].map(([icon, label, route], index, list) => (
             <TouchableOpacity key={route} style={[styles.menuListItem, { borderBottomColor: colors.outlineVariant, borderBottomWidth: index === list.length - 1 ? 0 : 1 }]} onPress={() => router.push(route as any)}>

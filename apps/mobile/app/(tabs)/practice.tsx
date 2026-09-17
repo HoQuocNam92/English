@@ -54,9 +54,7 @@ export default function MobilePracticeScreen() {
       <View style={styles.headerBar}>
         <View style={{ width: 40 }} />
         <Text style={styles.headerTitle}>IT English Pro</Text>
-        <TouchableOpacity style={styles.headerButton} onPress={() => router.push('/test-history' as any)}>
-          <MaterialIcons name="more-vert" size={24} color={colors.primary} />
-        </TouchableOpacity>
+        <View style={{ width: 40 }} />
       </View>
 
       <ScrollView contentContainerStyle={styles.contentContainer} showsVerticalScrollIndicator={false}>
@@ -82,17 +80,6 @@ export default function MobilePracticeScreen() {
             <View>
               <Text style={styles.bentoTitleLarge}>Vocabulary Practice</Text>
               <Text style={styles.bentoDesc}>Ôn tập từ vựng chuyên ngành CNTT qua thẻ ghi nhớ thông minh.</Text>
-            </View>
-          </TouchableOpacity>
-
-          {/* Technical Reading (Half Width) */}
-          <TouchableOpacity style={styles.bentoCard} onPress={() => router.push('/reading-lab' as any)}>
-            <View style={[styles.bentoIconBox, { backgroundColor: '#d8e2ff', marginBottom: spacing.md }]}>
-              <MaterialIcons name="menu-book" size={24} color="#0058be" />
-            </View>
-            <View>
-              <Text style={styles.bentoTitleSmall}>Technical Reading</Text>
-              <Text style={styles.bentoDesc}>Đọc hiểu tài liệu kỹ thuật, tài liệu API và blog công nghệ.</Text>
             </View>
           </TouchableOpacity>
 

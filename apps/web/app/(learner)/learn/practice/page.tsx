@@ -15,11 +15,10 @@ export default function LearnerPracticePage() {
   useEffect(() => {
     async function loadData() {
       try {
-        const [examsRes, vocabRes, lessonsRes, readingRes, progressRes] = await Promise.all<any>([
+        const [examsRes, vocabRes, lessonsRes, progressRes] = await Promise.all<any>([
           apiClient.get('/exams?limit=4&status=published'),
           apiClient.get('/vocabulary?limit=1'), 
           apiClient.get('/lessons?limit=100&status=published'),
-          apiClient.get('/reading-lab/articles?limit=1'),
           apiClient.get('/progress/me'),
         ]);
         
@@ -27,7 +26,6 @@ export default function LearnerPracticePage() {
           exams: examsRes?.data || examsRes || [],
           vocabCount: vocabRes?.meta?.total ?? 0,
           lessons: lessonsRes?.data || [],
-          readingCount: readingRes?.total ?? 0,
           progress: progressRes?.progress || [],
         });
       } catch (err) {
@@ -51,16 +49,6 @@ export default function LearnerPracticePage() {
       bgIcon: 'bg-primary-light text-primary group-hover:bg-primary-container group-hover:text-surface-white',
       badgeClass: 'text-tertiary bg-tertiary-fixed',
       link: `/learn/flashcards`
-    },
-    {
-      id: 'reading',
-      title: 'Đọc tài liệu',
-      badge: `${data.readingCount} BÀI ĐỌC`,
-      description: 'Cải thiện kỹ năng đọc hiểu tài liệu kỹ thuật, API docs và release notes.',
-      icon: 'menu_book',
-      bgIcon: 'bg-primary-light text-primary group-hover:bg-primary-container group-hover:text-surface-white',
-      badgeClass: 'text-tertiary bg-tertiary-fixed',
-      link: `/learn/reading-lab`
     },
     {
       id: 'tech-understanding',

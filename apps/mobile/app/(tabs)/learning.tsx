@@ -14,16 +14,6 @@ const DOMAIN_CODES: Record<string, string> = { Cloud: 'CLOUD', Security: 'CYBERS
 
 const CATEGORIES = [
   {
-    id: 'vocabulary',
-    title: 'Kho từ vựng IT',
-    desc: 'Học nghĩa, phát âm và ví dụ từ kho từ vựng đã xuất bản.',
-    icon: 'sort',
-    iconBg: '#EEF2FF',
-    iconColor: '#4F46E5',
-    wide: false,
-    route: '/vocabulary',
-  },
-  {
     id: 'lessons',
     title: 'Bài học theo lĩnh vực',
     desc: 'Học nội dung có cấu trúc theo trình độ và lĩnh vực IT.',
@@ -69,13 +59,9 @@ export default function MobileLearningScreen() {
   const router = useRouter();
   const [searchQuery, setSearchQuery] = useState('');
   const [activeChip, setActiveChip] = useState('Tất cả');
-  const [recommendation, setRecommendation] = useState<any>(null);
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    api.get<any>('/recommendations/my').then((res) => {
-      setRecommendation(res);
-    }).catch(() => {});
   }, []);
 
   const handleCategoryPress = (route: string) => {
@@ -161,7 +147,7 @@ export default function MobileLearningScreen() {
           <MaterialIcons name="search" size={20} color="#777587" />
           <TextInput
             style={styles.searchInput}
-            placeholder="Tìm bài học, từ vựng..."
+            placeholder="Tìm bài học..."
             placeholderTextColor="#777587"
             value={searchQuery}
             onChangeText={setSearchQuery}
@@ -202,18 +188,6 @@ export default function MobileLearningScreen() {
           {rows}
         </View>
 
-        {/* AI Recommendation Banner */}
-        <View style={styles.aiBanner}>
-          <MaterialIcons name="smart-toy" size={20} color="#4F46E5" style={{ marginTop: 2 }} />
-          <View style={{ flex: 1 }}>
-            <Text style={styles.aiBannerTitle}>Gợi ý cho bạn</Text>
-            <Text style={styles.aiBannerDesc}>
-              {recommendation?.reason
-                ? recommendation.reason
-                : 'Dựa trên tiến độ, hãy tiếp tục với "Technical Terminology: Cloud Computing".'}
-            </Text>
-          </View>
-        </View>
       </ScrollView>
     </View>
   );
@@ -324,26 +298,5 @@ const styles = StyleSheet.create({
     color: '#464555',
     lineHeight: 18,
     flex: 1,
-  },
-  aiBanner: {
-    flexDirection: 'row',
-    alignItems: 'flex-start',
-    gap: spacing.sm,
-    borderWidth: 1,
-    borderColor: '#4F46E5',
-    backgroundColor: '#F5F3FF',
-    borderRadius: 8,
-    padding: spacing.md,
-  },
-  aiBannerTitle: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: '#4F46E5',
-  },
-  aiBannerDesc: {
-    fontSize: 12,
-    color: '#464555',
-    marginTop: 4,
-    lineHeight: 18,
   },
 });

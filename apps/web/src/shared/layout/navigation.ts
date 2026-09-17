@@ -106,7 +106,6 @@ export const combinedNavigation: NavigationGroup[] = [
   {
     group: 'Công cụ học tập',
     items: [
-      { label: 'Lộ trình học', href: '/admin/learning-paths', icon: 'route' },
     ],
   },
 ];

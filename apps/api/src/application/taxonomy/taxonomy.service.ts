@@ -207,7 +207,7 @@ export class TaxonomyService {
         const completedLessons = l.learnerProgress.reduce((sum, p) => sum + (p.completedLessonCount || 0), 0)
         const avgCompletion = l.learnerProgress.length > 0
           ? Math.round(l.learnerProgress.reduce((sum, p) => sum + (p.completionPercent || 0), 0) / l.learnerProgress.length)
-          : 65
+          : 0
         const examCount = l.examAttempts.length
         const passedExams = l.examAttempts.filter((e) => e.passed).length
 
@@ -328,6 +328,99 @@ export class TaxonomyService {
     }
   }
 
+  async getDomainReport(domainId: string) {
+    const domain = await this.prisma.domain.findUnique({ where: { id: domainId } })
+    if (!domain) throw new NotFoundException('Lĩnh vực không tồn tại')
+
+    // Learners who selected this domain
+    const learners = await this.prisma.user.findMany({
+      where: {
+        userRoles: { some: { role: { code: 'learner' } } },
+        learnerProfile: { is: { domains: { some: { domainId } } } },
+      },
+      include: {
+        userDetail: true,
+        learnerProfile: {
+          include: {
+            level: true,
+            certGoals: { include: { certificate: true } },
+          },
+        },
+        learnerProgress: true,
+        examAttempts: { where: { exam: { domainId } }, include: { exam: { select: { title: true } } } },
+      },
+      orderBy: { createdAt: 'desc' },
+    })
+
+    // Content stats for this domain
+    const [totalLessons, totalExams, totalVocab] = await Promise.all([
+      this.prisma.lesson.count({ where: { domainId } }),
+      this.prisma.exam.count({ where: { domainId } }),
+      this.prisma.vocabulary.count({ where: { domainId } }),
+    ])
+
+    // Exam attempts in this domain for average score
+    const domainAttempts = await this.prisma.examAttempt.findMany({
+      where: { exam: { domainId }, status: { in: ['graded', 'submitted'] } },
+      select: { scorePercent: true, passed: true, learnerId: true },
+    })
+    const avgScore = domainAttempts.length > 0
+      ? Math.round(domainAttempts.reduce((sum, a) => sum + Number(a.scorePercent ?? 0), 0) / domainAttempts.length)
+      : 0
+    const passRate = domainAttempts.length > 0
+      ? Math.round(domainAttempts.filter(a => a.passed).length / domainAttempts.length * 100)
+      : 0
+
+    // Top certificate goal among these learners
+    const certCounts: Record<string, { name: string; count: number }> = {}
+    learners.forEach(l => {
+      l.learnerProfile?.certGoals?.forEach(cg => {
+        const name = cg.certificate.name
+        if (!certCounts[name]) certCounts[name] = { name, count: 0 }
+        certCounts[name].count++
+      })
+    })
+    const topCert = Object.values(certCounts).sort((a, b) => b.count - a.count)[0] ?? null
+
+    // Map learner details
+    const learnerData = learners.map(l => {
+      const progress = l.learnerProgress.filter(p => p.resourceType === 'lesson')
+      const avgCompletion = progress.length > 0
+        ? Math.round(progress.reduce((sum, p) => sum + (p.completionPercent || 0), 0) / progress.length)
+        : 0
+      const examCount = l.examAttempts.length
+      const passedExams = l.examAttempts.filter(e => e.passed).length
+      const lastActive = l.examAttempts[0]?.startedAt ?? l.learnerProgress[0]?.updatedAt ?? l.createdAt
+
+      return {
+        id: l.id,
+        displayName: l.userDetail?.displayName ?? l.email,
+        email: l.email,
+        avatarUrl: l.userDetail?.avatarUrl,
+        level: l.learnerProfile?.level?.name ?? 'Beginner',
+        certGoal: l.learnerProfile?.certGoals?.[0]?.certificate?.name ?? null,
+        avgCompletion,
+        examCount,
+        passedExams,
+        lastActive,
+      }
+    })
+
+    return {
+      domain: { id: domain.id, code: domain.code, name: domain.name, description: domain.description },
+      stats: {
+        totalLearners: learners.length,
+        avgScore,
+        passRate,
+        totalLessons,
+        totalExams,
+        totalVocab,
+        topCertGoal: topCert ? { name: topCert.name, percent: Math.round(topCert.count / learners.length * 100) } : null,
+      },
+      learners: learnerData,
+    }
+  }
+
   async createCertificate(dto: any) {
     const cert = await this.prisma.certificate.create({
       data: {
@@ -359,7 +452,6 @@ export class TaxonomyService {
         lessonCerts: { include: { lesson: { include: { domain: true, level: true } } } },
         questionCerts: { include: { question: { include: { domain: true, level: true } } } },
         exams: { include: { domain: true, level: true, _count: { select: { questions: true, attempts: true } } } },
-        certContent: { orderBy: { order: 'asc' } },
         profileGoals: true,
       },
     })
@@ -404,43 +496,6 @@ export class TaxonomyService {
       }
     })
     return this.getCertificate(id)
-  }
-
-  async createCertificationContent(certificateId: string, dto: any) {
-    const certificate = await this.prisma.certificate.findUnique({ where: { id: certificateId }, select: { id: true } })
-    if (!certificate) throw new NotFoundException('Chứng chỉ không tồn tại')
-    if (!dto.title?.trim() || !dto.body?.trim()) throw new BadRequestException('Tiêu đề và nội dung là bắt buộc')
-    return this.prisma.certificationContent.create({
-      data: {
-        certificateId,
-        title: dto.title.trim(),
-        body: dto.body.trim(),
-        topic: dto.topic?.trim() || null,
-        order: Number(dto.order) || 0,
-        status: dto.status ?? 'draft',
-      },
-    })
-  }
-
-  async updateCertificationContent(id: string, dto: any) {
-    const exists = await this.prisma.certificationContent.findUnique({ where: { id }, select: { id: true } })
-    if (!exists) throw new NotFoundException('Nội dung ôn tập không tồn tại')
-    return this.prisma.certificationContent.update({
-      where: { id },
-      data: {
-        ...(dto.title !== undefined ? { title: dto.title.trim() } : {}),
-        ...(dto.body !== undefined ? { body: dto.body.trim() } : {}),
-        ...(dto.topic !== undefined ? { topic: dto.topic.trim() || null } : {}),
-        ...(dto.order !== undefined ? { order: Number(dto.order) || 0 } : {}),
-        ...(dto.status !== undefined ? { status: dto.status } : {}),
-      },
-    })
-  }
-
-  async deleteCertificationContent(id: string) {
-    const deleted = await this.prisma.certificationContent.deleteMany({ where: { id } })
-    if (!deleted.count) throw new NotFoundException('Nội dung ôn tập không tồn tại')
-    return { deleted: true }
   }
 
   async updateCertificate(id: string, dto: any) {

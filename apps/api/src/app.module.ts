@@ -12,22 +12,15 @@ import { ProgressModule } from './modules/progress.module'
 import { LearnerProfileModule } from './modules/learner-profile.module'
 import { TaxonomyModule } from './modules/taxonomy.module'
 import { UploadModule } from './modules/upload.module'
+import { VocabStudyModule } from './modules/vocab-study.module'
 
 import { RedisCacheModule } from './infrastructure/cache/redis.module'
 
-import { LearningPathController } from './presentation/learning-path.controller';
-import { ReadingLabController } from './presentation/reading-lab.controller';
-import { AiCoreModule } from './modules/ai-core.module';
 import { PlacementTestController } from './presentation/placement-test.controller';
-import { RecommendationModule } from './modules/recommendation.module';
-import { CareerPrepController } from './presentation/career-prep.controller';
 
 @Module({
   controllers: [
-    LearningPathController,
-    ReadingLabController,
     PlacementTestController,
-    CareerPrepController,
   ],
   imports: [
     ConfigModule.forRoot({ isGlobal: true }),
@@ -44,9 +37,7 @@ import { CareerPrepController } from './presentation/career-prep.controller';
     LearnerProfileModule,
     TaxonomyModule,
     UploadModule,
-    AiCoreModule,
-    RecommendationModule,
+    VocabStudyModule,
   ],
 })
 export class AppModule {}
-

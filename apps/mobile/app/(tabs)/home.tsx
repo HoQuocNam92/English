@@ -12,7 +12,6 @@ export default function MobileHomeScreen() {
   const [error, setError] = useState('');
   const [userData, setUserData] = useState<any>(null);
   const [progressData, setProgressData] = useState<any>(null);
-  const [recommendation, setRecommendation] = useState<any>(null);
   const [lessons, setLessons] = useState<any[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
 
@@ -20,16 +19,14 @@ export default function MobileHomeScreen() {
     setIsLoading(true);
     setError('');
     try {
-      const [meRes, progRes, recRes, lessonsRes] = await Promise.allSettled([
+      const [meRes, progRes, lessonsRes] = await Promise.allSettled([
         api.get<any>('/auth/me'),
         api.get<any>('/progress/me'),
-        api.get<any>('/recommendations/my'),
         api.get<any>('/lessons?limit=4'),
       ]);
 
       if (meRes.status === 'fulfilled') setUserData(meRes.value);
       if (progRes.status === 'fulfilled') setProgressData(progRes.value);
-      if (recRes.status === 'fulfilled') setRecommendation(recRes.value);
       if (lessonsRes.status === 'fulfilled') setLessons(lessonsRes.value?.data || lessonsRes.value || []);
     } catch (err: any) {
       setError(err.message || 'Không thể tải dữ liệu');
@@ -157,7 +154,7 @@ export default function MobileHomeScreen() {
           </View>
           
           <View style={styles.quickPracticeGrid}>
-            <TouchableOpacity style={styles.quickPracticeCard} onPress={() => router.push('/flashcards' as any)}>
+            <TouchableOpacity style={styles.quickPracticeCard} onPress={() => router.push('/flashcards?limit=10' as any)}>
               <View style={styles.quickPracticeCardHeader}>
                 <View style={[styles.quickPracticeIconBox, { backgroundColor: '#eff6ff' }]}>
                   <MaterialIcons name="menu-book" size={18} color="#2563eb" />
@@ -189,23 +186,6 @@ export default function MobileHomeScreen() {
           </View>
         </View>
 
-        {/* AI Recommendation Card */}
-        <View style={styles.sectionContainer}>
-          <Text style={[styles.sectionTitle, { marginBottom: spacing.sm }]}>Đề xuất cho bạn</Text>
-          <TouchableOpacity style={styles.aiCard} onPress={() => router.push((recommendation?.resourceId ? `/lessons/${recommendation.resourceId}` : '/lessons') as any)}>
-            <View style={styles.aiIconBox}>
-              <MaterialIcons name="psychology" size={24} color="#7C3AED" />
-            </View>
-            <View style={styles.aiContent}>
-              <Text style={styles.aiLabel}>GỢI Ý DỰA TRÊN ĐIỂM SỐ</Text>
-              <Text style={styles.aiTitle} numberOfLines={1}>{recommendation?.topic || 'Networking Fundamentals'}</Text>
-              <Text style={styles.aiDesc} numberOfLines={1}>12 bài • 45 phút ôn luyện</Text>
-            </View>
-            <View style={styles.aiButton}>
-              <Text style={styles.aiButtonText}>Học</Text>
-            </View>
-          </TouchableOpacity>
-        </View>
 
       </ScrollView>
     </View>
@@ -502,58 +482,6 @@ const styles = StyleSheet.create({
   quickPracticeCardDesc: {
     fontSize: 11,
     color: '#464555',
-  },
-  aiCard: {
-    backgroundColor: '#ffffff',
-    borderWidth: 1,
-    borderColor: '#c7c4d8',
-    borderRadius: 12,
-    padding: spacing.sm,
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: spacing.md,
-  },
-  aiIconBox: {
-    width: 48,
-    height: 48,
-    borderRadius: 8,
-    backgroundColor: '#F5F3FF',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  aiContent: {
-    flex: 1,
-  },
-  aiLabel: {
-    fontSize: 10,
-    fontWeight: '600',
-    color: colors.primary,
-    textTransform: 'uppercase',
-    letterSpacing: 0.5,
-    marginBottom: 2,
-  },
-  aiTitle: {
-    fontSize: 13,
-    fontWeight: '600',
-    color: '#191c1e',
-    marginBottom: 2,
-  },
-  aiDesc: {
-    fontSize: 11,
-    color: '#464555',
-  },
-  aiButton: {
-    backgroundColor: '#F5F3FF',
-    borderWidth: 1,
-    borderColor: '#DDD6FE',
-    paddingHorizontal: 10,
-    paddingVertical: 6,
-    borderRadius: 8,
-  },
-  aiButtonText: {
-    fontSize: 12,
-    fontWeight: '600',
-    color: colors.primary,
   },
   continueButton: {
     backgroundColor: colors.primary,

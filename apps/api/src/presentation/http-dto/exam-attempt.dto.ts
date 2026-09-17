@@ -6,7 +6,7 @@ export class AnswerDto {
   questionId: string
 
   @IsArray()
-  @IsString({ each: true })
+  @IsUUID('4', { each: true })
   selectedOptionIds: string[]
 
   @IsOptional()

@@ -28,12 +28,6 @@ export default function MobileVocabularyLessonScreen() {
       const data = response.data || response;
       let items = Array.isArray(data) ? data : data.items || [];
       
-      if (items.length === 0) {
-        const fallbackRes = await api.get<any>('/vocabulary?limit=20');
-        const fallbackData = fallbackRes.data || fallbackRes;
-        items = Array.isArray(fallbackData) ? fallbackData : fallbackData.items || [];
-      }
-      
       setFlashcards(items);
     } catch (err: any) {
       setError(err.message || 'Lỗi tải từ vựng. Vui lòng thử lại.');
@@ -95,9 +89,21 @@ export default function MobileVocabularyLessonScreen() {
     }
   };
 
-  const handleFinish = () => {
+  const handleFinish = async () => {
+    // Mark all words as studied via API
+    try {
+      await Promise.all(
+        flashcards.map((card: any) =>
+          api.post('/vocab-study/answer', { vocabularyId: card.id, isCorrect: true }).catch(() => {})
+        )
+      );
+    } catch { /* best-effort */ }
     alert('Tuyệt vời! Bạn đã hoàn thành bài học từ vựng.');
     router.back();
+  };
+
+  const handlePractice = () => {
+    router.push(`/flashcards?lessonId=${id}` as any);
   };
 
   return (
@@ -170,7 +176,7 @@ export default function MobileVocabularyLessonScreen() {
 
       {/* Bottom Actions Fixed */}
       <View style={styles.bottomFixedArea}>
-        <TouchableOpacity style={styles.btnSecondary} onPress={() => {}}>
+        <TouchableOpacity style={styles.btnSecondary} onPress={handlePractice}>
           <Text style={styles.btnSecondaryText}>Luyện tập ngay</Text>
         </TouchableOpacity>
 

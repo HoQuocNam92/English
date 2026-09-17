@@ -78,13 +78,28 @@ export class ExamsService {
     if (attempt.status !== 'in_progress') throw new BadRequestException('Attempt already submitted')
     
     const snapshot = (attempt.questionsSnapshot as any[]) || []
+    const snapshotById = new Map(snapshot.map((question: any) => [question.id, question]))
+    const answerByQuestion = new Map<string, any>()
+    for (const answer of answers) {
+      const question = snapshotById.get(answer.questionId)
+      if (!question || answerByQuestion.has(answer.questionId)) {
+        throw new BadRequestException('Câu trả lời không thuộc bài thi hoặc bị trùng')
+      }
+      const selectedIds = answer.selectedOptionIds ?? []
+      const optionIds = new Set((question.options ?? []).map((option: any) => option.id))
+      if (new Set(selectedIds).size !== selectedIds.length || selectedIds.some((id: string) => !optionIds.has(id))) {
+        throw new BadRequestException('Phương án đã chọn không hợp lệ')
+      }
+      answerByQuestion.set(answer.questionId, answer)
+    }
     let totalScore = 0
     let maxScore = 0
     let correctCount = 0
     let incorrectCount = 0
 
+    const answerRows: any[] = []
     const updatedSnapshot = snapshot.map((q: any) => {
-      const ans = answers.find((a: any) => a.questionId === q.id)
+      const ans = answerByQuestion.get(q.id)
       const selectedIds = ans?.selectedOptionIds ?? []
       
       const correctOpts = q.options?.filter((o: any) => o.isCorrect) ?? []
@@ -94,13 +109,24 @@ export class ExamsService {
         selectedIds.length === correctIds.length && 
         selectedIds.every((id: string) => correctIds.includes(id))
 
-      maxScore += q.points || 1
+      const points = q.points || 1
+      maxScore += points
       if (isCorrect) {
-        totalScore += q.points || 1
+        totalScore += points
         correctCount++
       } else {
         incorrectCount++
       }
+
+      if (ans) answerRows.push({
+        attemptId,
+        questionId: q.id,
+        selectedOptionIds: selectedIds,
+        textAnswer: ans.textAnswer ?? null,
+        isCorrect,
+        earnedPoints: isCorrect ? points : 0,
+        maxPoints: points,
+      })
 
       return {
         ...q,
@@ -113,19 +139,23 @@ export class ExamsService {
     const passingScore = (attempt.examSnapshot as any)?.passingScorePercent ?? 70
     const passed = scorePercent >= passingScore
 
-    const updated = await this.prisma.examAttempt.update({
-      where: { id: attemptId },
-      data: {
-        status: 'graded',
-        questionsSnapshot: updatedSnapshot,
-        score: totalScore,
-        maxScore,
-        scorePercent,
-        passed,
-        submittedAt: new Date(),
-        gradedAt: new Date()
-      },
-      include: { exam: true }
+    const updated = await this.prisma.$transaction(async (tx) => {
+      const claimed = await tx.examAttempt.updateMany({
+        where: { id: attemptId, learnerId, status: 'in_progress' },
+        data: {
+          status: 'graded',
+          questionsSnapshot: updatedSnapshot,
+          score: totalScore,
+          maxScore,
+          scorePercent,
+          passed,
+          submittedAt: new Date(),
+          gradedAt: new Date(),
+        },
+      })
+      if (claimed.count !== 1) throw new BadRequestException('Attempt already submitted')
+      if (answerRows.length) await tx.attemptAnswer.createMany({ data: answerRows })
+      return tx.examAttempt.findUniqueOrThrow({ where: { id: attemptId }, include: { exam: true } })
     })
 
     return {
