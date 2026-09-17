@@ -38,6 +38,7 @@ export default function MobileProgressScreen() {
   const progressItems = Array.isArray(progress?.progress) ? progress.progress : [];
   const attempts = Array.isArray(progress?.recentAttempts) ? progress.recentAttempts : [];
   const lessonProgress = progressItems.filter((item: any) => item.resourceType === 'lesson');
+  const certProgressData = Array.isArray(progress?.certProgress) ? progress.certProgress : [];
   const completedLessons = lessonProgress.filter((item: any) => item.status === 'completed').length;
   const overallPercent = Math.round(summary.overallCompletionPercent ?? (lessonProgress.length ? lessonProgress.reduce((sum: number, item: any) => sum + (item.completionPercent ?? 0), 0) / lessonProgress.length : 0));
   const learnedCount = summary.wordsLearned ?? completedLessons;
@@ -133,16 +134,33 @@ export default function MobileProgressScreen() {
             <MaterialIcons name="workspace-premium" size={24} color={colors.outline} />
           </View>
           
-          <View style={styles.certItem}>
-            <View style={styles.certRow}>
-              <Text style={styles.certName}>{mainCert}</Text>
-              <Text style={styles.certPercentText}>{overallPercent}%</Text>
+          {certProgressData.length > 0 ? certProgressData.map((cp: any) => (
+            <View key={cp.certificateId} style={styles.certItem}>
+              <View style={styles.certRow}>
+                <Text style={styles.certName}>{cp.certificateName}</Text>
+                <Text style={styles.certPercentText}>{cp.completionPercent}%</Text>
+              </View>
+              <View style={styles.progressBarBg}>
+                <View style={[styles.progressBarFill, { width: `${cp.completionPercent}%` }]} />
+              </View>
+              <Text style={styles.certTime}>
+                {cp.totalLessons > 0
+                  ? `${cp.completedLessons}/${cp.totalLessons} bài học hoàn thành`
+                  : 'Chưa có bài học liên kết'}
+              </Text>
             </View>
-            <View style={styles.progressBarBg}>
-              <View style={[styles.progressBarFill, { width: `${overallPercent}%` }]} />
+          )) : (
+            <View style={styles.certItem}>
+              <View style={styles.certRow}>
+                <Text style={styles.certName}>{mainCert}</Text>
+                <Text style={styles.certPercentText}>0%</Text>
+              </View>
+              <View style={styles.progressBarBg}>
+                <View style={[styles.progressBarFill, { width: '0%' }]} />
+              </View>
+              <Text style={styles.certTime}>Chọn chứng chỉ trong hồ sơ để theo dõi</Text>
             </View>
-            <Text style={styles.certTime}>{certGoals.length ? 'Dựa trên tiến độ học tập hiện tại' : 'Chọn chứng chỉ trong hồ sơ để theo dõi'}</Text>
-          </View>
+          )}
         </View>
 
         {/* Activity Heatmap */}

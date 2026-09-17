@@ -24,7 +24,50 @@ export class ProgressService {
       weakTopics: [],
       calculatedAt: new Date(),
     }
-    return { progress, summary, recentAttempts }
+    // Certificate-specific progress
+    const profile = await this.prisma.learnerProfile.findUnique({
+      where: { userId: learnerId },
+      include: { certGoals: { include: { certificate: true } } },
+    })
+    const certProgress = await Promise.all(
+      (profile?.certGoals ?? []).map(async (cg) => {
+        // Find lessons linked to this certificate
+        const certLessons = await this.prisma.lessonCertificate.findMany({
+          where: { certificateId: cg.certificateId },
+          select: { lessonId: true },
+        })
+        const lessonIds = certLessons.map((cl) => cl.lessonId)
+        // Find learner's progress on those lessons
+        const certLessonProgress = lessonIds.length > 0
+          ? await this.prisma.learningProgress.findMany({
+              where: { learnerId, resourceType: 'lesson', resourceId: { in: lessonIds } },
+            })
+          : []
+        const completedCount = certLessonProgress.filter((p) => p.status === 'completed').length
+        const completionPercent = lessonIds.length > 0
+          ? Math.round((completedCount / lessonIds.length) * 100)
+          : 0
+        // Exam scores for this certificate
+        const certAttempts = await this.prisma.examAttempt.findMany({
+          where: { learnerId, exam: { certificateId: cg.certificateId }, status: { in: ['graded', 'submitted'] } },
+          select: { scorePercent: true, passed: true },
+        })
+        const avgScore = certAttempts.length > 0
+          ? Math.round(certAttempts.reduce((sum, a) => sum + Number(a.scorePercent ?? 0), 0) / certAttempts.length)
+          : null
+        return {
+          certificateId: cg.certificateId,
+          certificateCode: cg.certificate.code,
+          certificateName: cg.certificate.name,
+          totalLessons: lessonIds.length,
+          completedLessons: completedCount,
+          completionPercent,
+          examAttempts: certAttempts.length,
+          avgScore,
+        }
+      })
+    )
+    return { progress, summary, recentAttempts, certProgress }
   }
 
   async upsertProgress(learnerId: string, dto: TrackLessonProgressDto) {

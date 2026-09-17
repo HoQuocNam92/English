@@ -94,4 +94,12 @@ export class TaxonomyController {
   getDashboardAnalytics() {
     return this.svc.getDashboardAnalytics()
   }
+
+  @Get('reports/domain/:domainId')
+  @RequirePermissions('reports:read')
+  @ApiOperation({ summary: 'Get detailed report for a specific domain' })
+  getDomainReport(@Param('domainId') domainId: string) {
+    return this.svc.getDomainReport(domainId)
+  }
 }
+
