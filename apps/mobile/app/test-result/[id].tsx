@@ -16,6 +16,7 @@ interface AttemptResult {
   correctAnswersCount: number;
   incorrectAnswersCount: number;
   exam: { title: string; passingScorePercent: number };
+  questionsSnapshot?: any[];
 }
 
 export default function MobileTestResultScreen() {
@@ -160,22 +161,68 @@ export default function MobileTestResultScreen() {
             </View>
           </View>
         </View>
+
+        {/* Inline Answer Review */}
+        {result.questionsSnapshot && result.questionsSnapshot.length > 0 && (
+          <View style={styles.reviewSection}>
+            <View style={styles.detailsHeader}>
+              <Text style={styles.detailsTitle}>Xem lại đáp án chi tiết</Text>
+            </View>
+            {result.questionsSnapshot.map((q: any, idx: number) => {
+              const selectedIds = Array.isArray(q.userSelectedOptionIds) ? q.userSelectedOptionIds : [];
+              const selectedOpts = q.options?.filter((o: any) => selectedIds.includes(o.id || o.key)) ?? [];
+              const correctOpts = q.options?.filter((o: any) => o.isCorrect) ?? [];
+              const isCorrect = Boolean(q.isUserCorrect);
+
+              return (
+                <View key={q.id || idx} style={styles.reviewItem}>
+                  <View style={styles.reviewHeader}>
+                    <View style={[styles.reviewBadge, { backgroundColor: isCorrect ? '#dcfce7' : '#ffdad6' }]}>
+                      <MaterialIcons name={isCorrect ? 'check' : 'close'} size={14} color={isCorrect ? '#16a34a' : '#ba1a1a'} />
+                      <Text style={[styles.reviewBadgeText, { color: isCorrect ? '#16a34a' : '#ba1a1a' }]}>
+                        {isCorrect ? 'Đúng' : 'Sai'}
+                      </Text>
+                    </View>
+                    <Text style={styles.reviewQNum}>Câu #{idx + 1}</Text>
+                  </View>
+
+                  <Text style={styles.reviewPrompt}>{q.prompt}</Text>
+
+                  <View style={styles.reviewAnswers}>
+                    <View style={styles.reviewAnswerRow}>
+                      <Text style={styles.reviewAnswerLabel}>Bạn đã chọn:</Text>
+                      <Text style={[styles.reviewAnswerValue, { color: isCorrect ? '#16a34a' : '#ba1a1a' }]}>
+                        {selectedOpts.length ? selectedOpts.map((o: any) => o.text).join(', ') : 'Không chọn'}
+                      </Text>
+                    </View>
+                    <View style={styles.reviewAnswerRow}>
+                      <Text style={styles.reviewAnswerLabel}>Đáp án đúng:</Text>
+                      <Text style={[styles.reviewAnswerValue, { color: '#16a34a' }]}>
+                        {correctOpts.length ? correctOpts.map((o: any) => o.text).join(', ') : '—'}
+                      </Text>
+                    </View>
+                  </View>
+
+                  {q.explanation ? (
+                    <View style={styles.reviewExplanation}>
+                      <Text style={styles.reviewExplanationLabel}>💡 Giải thích:</Text>
+                      <Text style={styles.reviewExplanationText}>{q.explanation}</Text>
+                    </View>
+                  ) : null}
+                </View>
+              );
+            })}
+          </View>
+        )}
       </ScrollView>
 
       {/* Bottom Actions Fixed */}
       <View style={styles.bottomFixedArea}>
         <TouchableOpacity 
           style={styles.btnPrimary} 
-          onPress={() => router.push(`/answer-review/${id}` as any)}
-        >
-          <Text style={styles.btnPrimaryText}>Xem giải thích chi tiết</Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity 
-          style={styles.btnSecondary} 
           onPress={() => router.replace('/(tabs)/practice')}
         >
-          <Text style={styles.btnSecondaryText}>Quay lại luyện tập</Text>
+          <Text style={styles.btnPrimaryText}>Quay lại luyện tập</Text>
         </TouchableOpacity>
       </View>
     </View>
@@ -396,5 +443,81 @@ const styles = StyleSheet.create({
   backHomeText: {
     color: '#ffffff',
     fontWeight: '600'
-  }
+  },
+  // Answer Review styles
+  reviewSection: {
+    backgroundColor: '#ffffff',
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: '#c7c4d8',
+    overflow: 'hidden',
+    marginTop: spacing.lg,
+  },
+  reviewItem: {
+    padding: spacing.md,
+    borderBottomWidth: 1,
+    borderBottomColor: '#e6e8ea',
+    gap: spacing.sm,
+  },
+  reviewHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  reviewBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    borderRadius: 6,
+  },
+  reviewBadgeText: {
+    fontSize: 11,
+    fontWeight: '700',
+  },
+  reviewQNum: {
+    fontSize: 11,
+    color: '#777587',
+    fontWeight: '600',
+  },
+  reviewPrompt: {
+    fontSize: 13,
+    fontWeight: '600',
+    color: '#191c1e',
+    lineHeight: 20,
+  },
+  reviewAnswers: {
+    backgroundColor: '#f2f4f6',
+    borderRadius: 8,
+    padding: spacing.sm,
+    gap: spacing.xs,
+  },
+  reviewAnswerRow: {
+    gap: 2,
+  },
+  reviewAnswerLabel: {
+    fontSize: 10,
+    color: '#777587',
+  },
+  reviewAnswerValue: {
+    fontSize: 13,
+    fontWeight: '700',
+  },
+  reviewExplanation: {
+    backgroundColor: '#f3e8ff',
+    borderRadius: 8,
+    padding: spacing.sm,
+    gap: 4,
+  },
+  reviewExplanationLabel: {
+    fontSize: 11,
+    fontWeight: '700',
+    color: '#7c3aed',
+  },
+  reviewExplanationText: {
+    fontSize: 12,
+    color: '#191c1e',
+    lineHeight: 18,
+  },
 });

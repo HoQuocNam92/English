@@ -54,9 +54,7 @@ export default function MobilePracticeScreen() {
       <View style={styles.headerBar}>
         <View style={{ width: 40 }} />
         <Text style={styles.headerTitle}>IT English Pro</Text>
-        <TouchableOpacity style={styles.headerButton} onPress={() => router.push('/test-history' as any)}>
-          <MaterialIcons name="more-vert" size={24} color={colors.primary} />
-        </TouchableOpacity>
+        <View style={{ width: 40 }} />
       </View>
 
       <ScrollView contentContainerStyle={styles.contentContainer} showsVerticalScrollIndicator={false}>

@@ -14,9 +14,20 @@ function GoogleCallbackInner() {
     if (accessToken && userRaw) {
       try {
         const user = JSON.parse(userRaw)
-        localStorage.setItem('access_token', accessToken)
-        if (refreshToken) localStorage.setItem('refresh_token', refreshToken)
-        localStorage.setItem('user', JSON.stringify(user))
+        const role = (user.roles?.[0] ?? 'learner')
+        const session = {
+          accessToken,
+          refreshToken: refreshToken ?? null,
+          user: {
+            id: user.id,
+            email: user.email,
+            displayName: user.displayName ?? user.email?.split('@')[0] ?? '',
+            role,
+            roles: user.roles ?? [role],
+            permissions: user.permissions ?? [],
+          },
+        }
+        localStorage.setItem('techenglish.web.session', JSON.stringify(session))
 
         const roles = user.roles ?? []
         if (roles.includes('admin')) router.replace('/admin/dashboard')

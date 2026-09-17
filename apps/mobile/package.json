@@ -20,6 +20,7 @@
     "@techenglish/contracts": "workspace:*",
     "@techenglish/design-tokens": "workspace:*",
     "@techenglish/shared-kernel": "workspace:*",
+    "buffer": "^6.0.3",
     "expo": "~54.0.37",
     "expo-auth-session": "~7.0.11",
     "expo-constants": "~18.0.14",

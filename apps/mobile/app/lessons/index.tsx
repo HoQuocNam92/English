@@ -70,7 +70,7 @@ export default function MobileLessonListScreen() {
           <TouchableOpacity style={styles.iconButton} onPress={() => router.back()}>
             <MaterialIcons name="arrow-back" size={24} color="#191c1e" />
           </TouchableOpacity>
-          <Text style={styles.headerTitle} numberOfLines={1}>Cloud Computing</Text>
+          <Text style={styles.headerTitle} numberOfLines={1}>Bài học</Text>
           <View style={{ width: 40 }} />
         </View>
 

@@ -1,4 +1,4 @@
-import { PrismaClient, UserStatus, ContentStatus, LevelCode, QuestionType, AttemptStatus, ProgressStatus, ProgressResourceType, RecommendationResourceType } from '@prisma/client'
+import { PrismaClient, UserStatus, ContentStatus, LevelCode, QuestionType, AttemptStatus, ProgressStatus, ProgressResourceType } from '@prisma/client'
 import * as bcrypt from 'bcrypt'
 
 const prisma = new PrismaClient()
@@ -709,29 +709,7 @@ async function main() {
         });
       }
     }
-
-    const recCount = await prisma.recommendation.count({ where: { learnerId: learner.id } });
-    if (recCount === 0 && allLessons.length > 0 && allExams.length > 0) {
-       for (let i = 0; i < 4; i++) {
-         const types = ['lesson_review', 'vocabulary_practice', 'exam_ready', 'weak_area'];
-         const recType = types[i % types.length];
-         
-         const resType = (i % 2 === 0) ? RecommendationResourceType.lesson : RecommendationResourceType.exam;
-         const resId = resType === RecommendationResourceType.lesson ? allLessons[0].id : allExams[0].id;
-         
-         await prisma.recommendation.create({
-           data: {
-             learnerId: learner.id,
-             resourceType: resType,
-             resourceId: resId,
-             title: 'Recommended ' + recType,
-             reason: 'Based on your recent activity, we recommend this for your ' + recType + '.',
-             priority: Math.floor(Math.random() * 5) + 1
-           }
-         });
-       }
     }
-  }
 
   // ─── SEED: MOCK INTERVIEWS ───────────────────────────────────────────────
   /* Retired interview and writing features: intentionally kept out of seed execution.

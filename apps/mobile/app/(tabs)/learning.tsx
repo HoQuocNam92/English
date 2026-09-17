@@ -14,16 +14,6 @@ const DOMAIN_CODES: Record<string, string> = { Cloud: 'CLOUD', Security: 'CYBERS
 
 const CATEGORIES = [
   {
-    id: 'vocabulary',
-    title: 'Kho từ vựng IT',
-    desc: 'Học nghĩa, phát âm và ví dụ từ kho từ vựng đã xuất bản.',
-    icon: 'sort',
-    iconBg: '#EEF2FF',
-    iconColor: '#4F46E5',
-    wide: false,
-    route: '/vocabulary',
-  },
-  {
     id: 'lessons',
     title: 'Bài học theo lĩnh vực',
     desc: 'Học nội dung có cấu trúc theo trình độ và lĩnh vực IT.',
@@ -157,7 +147,7 @@ export default function MobileLearningScreen() {
           <MaterialIcons name="search" size={20} color="#777587" />
           <TextInput
             style={styles.searchInput}
-            placeholder="Tìm bài học, từ vựng..."
+            placeholder="Tìm bài học..."
             placeholderTextColor="#777587"
             value={searchQuery}
             onChangeText={setSearchQuery}

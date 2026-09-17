@@ -99,14 +99,6 @@ enum ProgressResourceType {
   @@map("progress_resource_type")
 }
 
-enum RecommendationResourceType {
-  lesson
-  practice
-  exam
-
-  @@map("recommendation_resource_type")
-}
-
 enum LevelCode {
   beginner
   intermediate
@@ -114,6 +106,14 @@ enum LevelCode {
   professional
 
   @@map("level_code")
+}
+
+enum VocabStudyStatus {
+  new
+  learning
+  mastered
+
+  @@map("vocab_study_status")
 }
 
 // =============================================================================
@@ -141,7 +141,7 @@ model User {
   createdExams    Exam[]             @relation("ExamCreatedBy")
   examAttempts    ExamAttempt[]
   learnerProgress LearningProgress[]
-  recommendations Recommendation[]
+  vocabProgress   VocabularyProgress[]
 
   // Group management
   // Roles granted by this user
@@ -462,9 +462,9 @@ model Vocabulary {
   domain Domain @relation(fields: [domainId], references: [id])
   level  Level  @relation(fields: [levelId], references: [id])
 
-  examples     VocabularyExample[]
-  lessonVocabs LessonVocabulary[]
-  sources      VocabularySource[]
+  examples      VocabularyExample[]
+  lessonVocabs  LessonVocabulary[]
+  vocabProgress VocabularyProgress[]
 
   @@unique([term, domainId])
   @@index([domainId])
@@ -770,45 +770,27 @@ model LearningProgress {
 }
 
 // =============================================================================
-// AI RECOMMENDATIONS
+// VOCABULARY STUDY PROGRESS
 // =============================================================================
 
-/// Gợi ý học tập cá nhân hóa sinh ra từ AI Engine.
-model Recommendation {
-  id           String                     @id @default(uuid()) @db.Uuid
-  learnerId    String                     @map("learner_id") @db.Uuid
-  resourceType RecommendationResourceType @map("resource_type")
-  resourceId   String                     @map("resource_id") @db.Uuid
-  title        String                     @db.VarChar(200)
-  reason       String                     @db.VarChar(1000)
-  priority     Int                        @default(50)
-  basedOn      Json                       @default("[]") @map("based_on")
-  generatedAt  DateTime                   @default(now()) @map("generated_at") @db.Timestamptz(6)
-  expiresAt    DateTime?                  @map("expires_at") @db.Timestamptz(6)
+/// Tiến độ học từ vựng của mỗi learner — SRS đơn giản.
+model VocabularyProgress {
+  id            String           @id @default(uuid()) @db.Uuid
+  learnerId     String           @map("learner_id") @db.Uuid
+  vocabularyId  String           @map("vocabulary_id") @db.Uuid
+  status        VocabStudyStatus @default(new)
+  correctCount  Int              @default(0) @map("correct_count")
+  wrongCount    Int              @default(0) @map("wrong_count")
+  lastReviewAt  DateTime?        @map("last_review_at") @db.Timestamptz(6)
+  nextReviewAt  DateTime?        @map("next_review_at") @db.Timestamptz(6)
+  createdAt     DateTime         @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt     DateTime         @updatedAt @map("updated_at") @db.Timestamptz(6)
 
-  learner User @relation(fields: [learnerId], references: [id], onDelete: Cascade)
-
-  @@index([learnerId])
-  @@index([learnerId, resourceType])
-  @@index([generatedAt])
-  @@map("recommendations")
-}
-
-// ─── AI Mock Interview ────────────────────────────────────────────────────────
-
-// ─── AI Writing Practice ──────────────────────────────────────────────────────
-
-model VocabularySource {
-  vocabularyId String   @map("vocabulary_id") @db.Uuid
-  source       String   @db.Text
-  sourceUrl    String   @map("source_url") @db.Text
-  sourceTitle  String   @map("source_title") @db.Text
-  contentHash  String   @map("content_hash") @db.Char(64)
-  crawledAt    DateTime @map("crawled_at") @db.Timestamptz(6)
-  metadata     Json     @default("{}")
-
+  learner    User       @relation(fields: [learnerId], references: [id], onDelete: Cascade)
   vocabulary Vocabulary @relation(fields: [vocabularyId], references: [id], onDelete: Cascade)
 
-  @@id([vocabularyId, source, sourceUrl])
-  @@map("vocabulary_sources")
+  @@unique([learnerId, vocabularyId])
+  @@index([learnerId, status])
+  @@index([learnerId, nextReviewAt])
+  @@map("vocabulary_progress")
 }
