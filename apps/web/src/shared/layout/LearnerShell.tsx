@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useRef, useEffect } from 'react';
+import React from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { useAuth } from '@/features/auth/presentation';
@@ -24,19 +24,6 @@ export function LearnerShell({ children }: LearnerShellProps) {
     { href: '/learn/quiz/tech', label: 'Thi thử', exactMatch: false },
     { href: '/learn/progress', label: t.nav.progress, exactMatch: false },
   ];
-  
-  const [moreOpen, setMoreOpen] = useState(false);
-  const moreRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    function handleOutside(e: MouseEvent) {
-      if (moreRef.current && !moreRef.current.contains(e.target as Node)) {
-        setMoreOpen(false);
-      }
-    }
-    document.addEventListener('mousedown', handleOutside);
-    return () => document.removeEventListener('mousedown', handleOutside);
-  }, []);
 
   const displayName = session?.user?.displayName ?? 'Người dùng';
   const initial = displayName.charAt(0).toUpperCase();
@@ -79,38 +66,7 @@ export function LearnerShell({ children }: LearnerShellProps) {
                   </Link>
                 );
               })}
-              
-              {/* More Dropdown */}
-              <div className="relative h-full flex items-center" ref={moreRef}>
-                <button
-                  onClick={() => setMoreOpen(!moreOpen)}
-                  className={`h-full flex items-center gap-1 text-[13px] font-semibold transition-colors duration-200 border-b-2 cursor-pointer whitespace-nowrap ${
-                    moreOpen ? 'text-primary border-primary' : 'text-on-surface-variant border-transparent hover:text-primary'
-                  }`}
-                >
-                  {t.nav.explore}
-                  <span className="material-symbols-outlined text-[18px]">expand_more</span>
-                </button>
-                {moreOpen && (
-                  <div className="absolute top-full left-0 mt-1 w-52 bg-surface-container-lowest border border-outline-variant/50 rounded-xl shadow-lg z-50 py-1 overflow-hidden">
-                    {[
-                      { href: '/learn/community', label: t.nav.community, icon: 'forum' },
-                    ].map((item) => (
-                      <Link
-                        key={item.href}
-                        href={item.href}
-                        onClick={() => setMoreOpen(false)}
-                        className={`flex items-center gap-2.5 px-4 py-2.5 text-xs font-semibold transition-colors ${
-                          pathname.startsWith(item.href) ? 'bg-primary/10 text-primary' : 'text-on-surface-variant hover:bg-surface-container hover:text-on-surface'
-                        }`}
-                      >
-                        <span className="material-symbols-outlined text-[18px]">{item.icon}</span>
-                        {item.label}
-                      </Link>
-                    ))}
-                  </div>
-                )}
-              </div>
+
             </div>
           </div>
 

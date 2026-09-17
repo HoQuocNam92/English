@@ -85,17 +85,6 @@ export default function MobilePracticeScreen() {
             </View>
           </TouchableOpacity>
 
-          {/* Technical Reading (Half Width) */}
-          <TouchableOpacity style={styles.bentoCard} onPress={() => router.push('/reading-lab' as any)}>
-            <View style={[styles.bentoIconBox, { backgroundColor: '#d8e2ff', marginBottom: spacing.md }]}>
-              <MaterialIcons name="menu-book" size={24} color="#0058be" />
-            </View>
-            <View>
-              <Text style={styles.bentoTitleSmall}>Technical Reading</Text>
-              <Text style={styles.bentoDesc}>Đọc hiểu tài liệu kỹ thuật, tài liệu API và blog công nghệ.</Text>
-            </View>
-          </TouchableOpacity>
-
           {/* Scenario Challenges (Half Width) */}
           <TouchableOpacity style={styles.bentoCard} onPress={async () => {
             try {
