@@ -61,7 +61,7 @@ export default function RegisterPage() {
       if (res?.accessToken) {
         localStorage.setItem('techenglish.web.session', JSON.stringify(res));
       }
-      router.push('/learn');
+      router.push('/onboarding');
     } catch (err: any) {
       setError(err?.message || 'Đăng ký không thành công. Email có thể đã tồn tại.');
     } finally {

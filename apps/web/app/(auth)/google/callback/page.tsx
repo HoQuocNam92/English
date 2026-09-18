@@ -1,6 +1,7 @@
 'use client'
 import { Suspense, useEffect } from 'react'
 import { useSearchParams, useRouter } from 'next/navigation'
+import { apiClient } from '@/shared/api/api-client'
 
 function GoogleCallbackInner() {
   const searchParams = useSearchParams()
@@ -32,7 +33,17 @@ function GoogleCallbackInner() {
         const roles = user.roles ?? []
         if (roles.includes('admin')) router.replace('/admin/dashboard')
         else if (roles.includes('teacher')) router.replace('/admin/dashboard')
-        else router.replace('/learn')
+        else {
+          apiClient.get<any>('/learner-profiles/me')
+            .then((profile) => {
+              if (profile && !profile.onboardingCompleted) {
+                router.replace('/onboarding')
+              } else {
+                router.replace('/learn')
+              }
+            })
+            .catch(() => router.replace('/learn'))
+        }
       } catch {
         router.replace('/login?error=oauth_failed')
       }
