@@ -18,6 +18,7 @@ import { useTheme } from '../../src/shared/store/theme-context';
 import { FeatureScreen, EmptyState } from '../../src/shared/ui/FeatureScreen';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
+const BATCH_SIZE = 20;
 
 // ─── Types ──────────────────────────────────────────────────────────────────────
 
@@ -56,10 +57,15 @@ export default function FlashcardsScreen() {
   const [words, setWords] = useState<VocabWord[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
-  const [studiedToday, setStudiedToday] = useState(0);
+
+  // Batch learning state
+  const [batchStart, setBatchStart] = useState(0);
+  const [batchIdx, setBatchIdx] = useState(0);
+  const [masteredSet, setMasteredSet] = useState<Set<string>>(new Set());
+  const [pendingWrongIds, setPendingWrongIds] = useState<string[]>([]);
+  const batchNumberRef = useRef(1);
 
   // Learn phase
-  const [learnIndex, setLearnIndex] = useState(0);
   const [flipped, setFlipped] = useState(false);
 
   // Quiz phase
@@ -69,10 +75,29 @@ export default function FlashcardsScreen() {
   const [selectedOption, setSelectedOption] = useState<string | null>(null);
   const [showResult, setShowResult] = useState(false);
   const [quizResults, setQuizResults] = useState<{ vocabId: string; term: string; correct: boolean }[]>([]);
-  const [quizRound, setQuizRound] = useState(1);
+  const [allTimeResults, setAllTimeResults] = useState<{ vocabId: string; term: string; correct: boolean }[]>([]);
 
   // Animation
   const flipAnim = useRef(new Animated.Value(0)).current;
+
+  // Compute current batch
+  const getCurrentBatch = useCallback(() => {
+    if (pendingWrongIds.length > 0) {
+      const alreadySeenIds = new Set([
+        ...masteredSet,
+        ...pendingWrongIds,
+        ...words.slice(0, batchStart + BATCH_SIZE).map(w => w.id),
+      ]);
+      return words.filter(w => !alreadySeenIds.has(w.id)).slice(0, pendingWrongIds.length);
+    }
+    return words.slice(batchStart, batchStart + BATCH_SIZE).filter(w => !masteredSet.has(w.id));
+  }, [words, batchStart, masteredSet, pendingWrongIds]);
+
+  const currentBatch = getCurrentBatch();
+  const currentWord = currentBatch[batchIdx];
+  const totalWords = words.length;
+  const masteredCount = masteredSet.size;
+  const allDone = masteredCount >= totalWords || (batchStart >= totalWords && pendingWrongIds.length === 0);
 
   // ── Load study session ──────────────────────────────────────────────────────
 
@@ -87,9 +112,13 @@ export default function FlashcardsScreen() {
       const query = qs.toString() ? `?${qs.toString()}` : '';
       const res: any = await api.get(`/vocab-study/session${query}`);
       setWords(res.words ?? []);
-      setStudiedToday(res.meta?.studiedToday ?? 0);
-      setLearnIndex(0);
+      setBatchStart(0);
+      setBatchIdx(0);
       setFlipped(false);
+      setMasteredSet(new Set());
+      setPendingWrongIds([]);
+      setAllTimeResults([]);
+      batchNumberRef.current = 1;
       setPhase('learn');
     } catch (e: any) {
       setError(e.message || 'Không thể tải phiên học.');
@@ -116,12 +145,22 @@ export default function FlashcardsScreen() {
   const frontInterpolate = flipAnim.interpolate({ inputRange: [0, 1], outputRange: ['0deg', '180deg'] });
   const backInterpolate = flipAnim.interpolate({ inputRange: [0, 1], outputRange: ['180deg', '360deg'] });
 
+  // ── Auto quiz ──────────────────────────────────────────────────────────────
+
+  const autoStartQuiz = async () => {
+    const batchIds = currentBatch.map(w => w.id);
+    const quizIds = pendingWrongIds.length > 0
+      ? [...pendingWrongIds, ...batchIds]
+      : batchIds;
+    const uniqueIds = [...new Set(quizIds)];
+    await startQuiz(uniqueIds);
+  };
+
   // ── Start quiz ──────────────────────────────────────────────────────────────
 
-  const startQuiz = async (vocabIds?: string[]) => {
-    const ids = vocabIds ?? words.map(w => w.id);
+  const startQuiz = async (vocabIds: string[]) => {
     try {
-      const res: any = await api.get(`/vocab-study/quiz?ids=${ids.join(',')}`);
+      const res: any = await api.get(`/vocab-study/quiz?ids=${vocabIds.join(',')}`);
       setQuestions(res.questions ?? []);
       setQuizIndex(0);
       setUserAnswer('');
@@ -144,12 +183,60 @@ export default function FlashcardsScreen() {
     const isCorrect = answer.toLowerCase() === q.answer.toLowerCase();
 
     setShowResult(true);
-    setQuizResults(prev => [...prev, { vocabId: q.vocabularyId, term: q.answer, correct: isCorrect }]);
+    const result = { vocabId: q.vocabularyId, term: q.answer, correct: isCorrect };
+    setQuizResults(prev => [...prev, result]);
+    setAllTimeResults(prev => [...prev, result]);
 
-    // Save to backend
     try {
       await api.post('/vocab-study/answer', { vocabularyId: q.vocabularyId, isCorrect });
     } catch { /* best-effort */ }
+  };
+
+  // ── Handle quiz completion ──────────────────────────────────────────────────
+
+  const handleQuizComplete = () => {
+    const correctIds = quizResults.filter(r => r.correct).map(r => r.vocabId);
+    const wrongIds = quizResults.filter(r => !r.correct).map(r => r.vocabId);
+
+    setMasteredSet(prev => {
+      const next = new Set(prev);
+      correctIds.forEach(id => next.add(id));
+      return next;
+    });
+
+    if (wrongIds.length > 0) {
+      setPendingWrongIds(wrongIds);
+      const alreadySeenIds = new Set([
+        ...masteredSet,
+        ...correctIds,
+        ...wrongIds,
+        ...words.slice(0, batchStart + BATCH_SIZE).map(w => w.id),
+      ]);
+      const remainingNew = words.filter(w => !alreadySeenIds.has(w.id));
+
+      if (remainingNew.length > 0) {
+        setBatchIdx(0);
+        setFlipped(false);
+        flipAnim.setValue(0);
+        setPhase('learn');
+      } else {
+        startQuiz(wrongIds);
+      }
+    } else {
+      setPendingWrongIds([]);
+      const nextBatchStart = batchStart + BATCH_SIZE;
+
+      if (nextBatchStart >= words.length) {
+        setPhase('summary');
+      } else {
+        setBatchStart(nextBatchStart);
+        setBatchIdx(0);
+        setFlipped(false);
+        flipAnim.setValue(0);
+        batchNumberRef.current += 1;
+        setPhase('learn');
+      }
+    }
   };
 
   const nextQuizQuestion = () => {
@@ -159,33 +246,25 @@ export default function FlashcardsScreen() {
       setSelectedOption(null);
       setShowResult(false);
     } else {
-      // Check if there are wrong answers to retry
-      const wrongIds = quizResults.filter(r => !r.correct).map(r => r.vocabId);
-      if (wrongIds.length > 0 && quizRound < 3) {
-        setQuizRound(prev => prev + 1);
-        startQuiz(wrongIds);
-      } else {
-        setPhase('summary');
-      }
+      handleQuizComplete();
     }
   };
 
   // ── Learn phase navigation ─────────────────────────────────────────────────
 
   const nextCard = () => {
-    if (learnIndex + 1 < words.length) {
-      setLearnIndex(learnIndex + 1);
+    if (batchIdx + 1 < currentBatch.length) {
+      setBatchIdx(batchIdx + 1);
       setFlipped(false);
       flipAnim.setValue(0);
     } else {
-      // Finished all cards → start quiz
-      startQuiz();
+      autoStartQuiz();
     }
   };
 
   const prevCard = () => {
-    if (learnIndex > 0) {
-      setLearnIndex(learnIndex - 1);
+    if (batchIdx > 0) {
+      setBatchIdx(batchIdx - 1);
       setFlipped(false);
       flipAnim.setValue(0);
     }
@@ -193,28 +272,48 @@ export default function FlashcardsScreen() {
 
   // ── Render helpers ─────────────────────────────────────────────────────────
 
-  const currentWord = words[learnIndex];
   const currentQuestion = questions[quizIndex];
-  const correctCount = quizResults.filter(r => r.correct).length;
-  const wrongResults = quizResults.filter(r => !r.correct);
+  const batchNumber = batchNumberRef.current;
+  const totalBatches = Math.ceil(words.length / BATCH_SIZE);
 
   // ═══════════════════════════════════════════════════════════════════════════
   // PHASE 1: LEARN
   // ═══════════════════════════════════════════════════════════════════════════
 
   const renderLearnPhase = () => {
-    if (!currentWord) {
-      return <EmptyState icon="school" title="Không có từ mới" detail="Bạn đã mastered tất cả từ vựng hiện có. Tuyệt vời!" />;
+    if (!currentWord || currentBatch.length === 0 || allDone) {
+      setPhase('summary');
+      return <EmptyState icon="school" title="Hoàn thành!" detail="Bạn đã học hết tất cả từ vựng." />;
     }
+
+    const isReviewBatch = pendingWrongIds.length > 0;
 
     return (
       <View style={styles.phaseContainer}>
-        {/* Progress bar */}
+        {/* Batch info */}
+        <View style={[styles.batchInfoRow, { backgroundColor: colors.primaryContainer }]}>
+          <MaterialIcons name="layers" size={16} color={colors.onPrimaryContainer} />
+          <Text style={[styles.batchInfoText, { color: colors.onPrimaryContainer }]}>
+            {isReviewBatch ? `Học thêm từ mới (${pendingWrongIds.length} từ sai cần ôn)` : `Đợt ${batchNumber}/${totalBatches}`}
+          </Text>
+        </View>
+
+        {/* Overall progress */}
+        <View style={styles.overallProgressRow}>
+          <Text style={[styles.overallProgressLabel, { color: colors.onSurfaceVariant }]}>
+            Đã thuộc: {masteredCount}/{totalWords}
+          </Text>
+          <View style={[styles.progressContainer, { backgroundColor: colors.surfaceVariant }]}>
+            <View style={[styles.progressBar, { width: `${totalWords > 0 ? (masteredCount / totalWords) * 100 : 0}%`, backgroundColor: '#4CAF50' }]} />
+          </View>
+        </View>
+
+        {/* Batch progress */}
         <View style={[styles.progressContainer, { backgroundColor: colors.surfaceVariant }]}>
-          <View style={[styles.progressBar, { width: `${((learnIndex + 1) / words.length) * 100}%`, backgroundColor: colors.primary }]} />
+          <View style={[styles.progressBar, { width: `${((batchIdx + 1) / currentBatch.length) * 100}%`, backgroundColor: colors.primary }]} />
         </View>
         <Text style={[styles.progressText, { color: colors.onSurfaceVariant }]}>
-          {learnIndex + 1} / {words.length} từ
+          {batchIdx + 1} / {currentBatch.length} từ trong đợt này
         </Text>
 
         {/* Flip card */}
@@ -253,7 +352,7 @@ export default function FlashcardsScreen() {
 
         {/* Navigation buttons */}
         <View style={styles.navRow}>
-          <TouchableOpacity onPress={prevCard} disabled={learnIndex === 0} style={[styles.navBtn, { backgroundColor: colors.surface, opacity: learnIndex === 0 ? 0.4 : 1 }]}>
+          <TouchableOpacity onPress={prevCard} disabled={batchIdx === 0} style={[styles.navBtn, { backgroundColor: colors.surface, opacity: batchIdx === 0 ? 0.4 : 1 }]}>
             <MaterialIcons name="chevron-left" size={24} color={colors.onSurface} />
             <Text style={{ color: colors.onSurface }}>Trước</Text>
           </TouchableOpacity>
@@ -263,11 +362,11 @@ export default function FlashcardsScreen() {
             <Text style={styles.flipBtnText}>Lật thẻ</Text>
           </TouchableOpacity>
 
-          <TouchableOpacity onPress={nextCard} style={[styles.navBtn, { backgroundColor: learnIndex + 1 >= words.length ? colors.primary : colors.surface }]}>
-            <Text style={{ color: learnIndex + 1 >= words.length ? '#fff' : colors.onSurface, fontWeight: learnIndex + 1 >= words.length ? '800' : '400' }}>
-              {learnIndex + 1 >= words.length ? 'Kiểm tra' : 'Tiếp'}
+          <TouchableOpacity onPress={nextCard} style={[styles.navBtn, { backgroundColor: batchIdx + 1 >= currentBatch.length ? colors.primary : colors.surface }]}>
+            <Text style={{ color: batchIdx + 1 >= currentBatch.length ? '#fff' : colors.onSurface, fontWeight: batchIdx + 1 >= currentBatch.length ? '800' : '400' }}>
+              {batchIdx + 1 >= currentBatch.length ? 'Kiểm tra' : 'Tiếp'}
             </Text>
-            <MaterialIcons name={learnIndex + 1 >= words.length ? 'quiz' : 'chevron-right'} size={24} color={learnIndex + 1 >= words.length ? '#fff' : colors.onSurface} />
+            <MaterialIcons name={batchIdx + 1 >= currentBatch.length ? 'quiz' : 'chevron-right'} size={24} color={batchIdx + 1 >= currentBatch.length ? '#fff' : colors.onSurface} />
           </TouchableOpacity>
         </View>
 
@@ -292,19 +391,24 @@ export default function FlashcardsScreen() {
 
     return (
       <KeyboardAvoidingView style={styles.phaseContainer} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
-        {/* Quiz progress */}
-        <View style={[styles.progressContainer, { backgroundColor: colors.surfaceVariant }]}>
-          <View style={[styles.progressBar, { width: `${((quizIndex + 1) / questions.length) * 100}%`, backgroundColor: colors.secondary }]} />
-        </View>
+        {/* Batch + mastered info */}
         <View style={styles.quizHeader}>
           <Text style={[styles.progressText, { color: colors.onSurfaceVariant }]}>
             Câu {quizIndex + 1} / {questions.length}
           </Text>
-          {quizRound > 1 ? (
-            <Text style={[styles.roundBadge, { backgroundColor: colors.tertiaryContainer ?? '#FFF3E0', color: colors.onTertiaryContainer ?? '#BF360C' }]}>
-              Vòng {quizRound}
+          <View style={{ flexDirection: 'row', gap: 6 }}>
+            <Text style={[styles.roundBadge, { backgroundColor: colors.primaryContainer, color: colors.onPrimaryContainer }]}>
+              Đợt {batchNumber}
             </Text>
-          ) : null}
+            <Text style={[styles.roundBadge, { backgroundColor: '#E8F5E9', color: '#2E7D32' }]}>
+              {masteredCount} thuộc
+            </Text>
+          </View>
+        </View>
+
+        {/* Quiz progress */}
+        <View style={[styles.progressContainer, { backgroundColor: colors.surfaceVariant }]}>
+          <View style={[styles.progressBar, { width: `${((quizIndex + 1) / questions.length) * 100}%`, backgroundColor: colors.secondary }]} />
         </View>
 
         {/* Question card */}
@@ -417,27 +521,36 @@ export default function FlashcardsScreen() {
   // ═══════════════════════════════════════════════════════════════════════════
 
   const renderSummaryPhase = () => {
-    const totalAnswered = quizResults.length;
-    const percentage = totalAnswered > 0 ? Math.round((correctCount / totalAnswered) * 100) : 0;
+    const finalMastered = masteredSet.size;
+    const percentage = totalWords > 0 ? Math.round((finalMastered / totalWords) * 100) : 0;
     const emoji = percentage >= 80 ? '🎉' : percentage >= 50 ? '💪' : '📚';
+
+    // Deduplicate — show last result per vocabId
+    const resultMap = new Map<string, { vocabId: string; term: string; correct: boolean }>();
+    allTimeResults.forEach(r => resultMap.set(r.vocabId, r));
+    const finalResults = Array.from(resultMap.values());
+    const finalCorrect = finalResults.filter(r => r.correct).length;
 
     return (
       <View style={styles.phaseContainer}>
         {/* Score circle */}
         <View style={[styles.scoreCircle, { borderColor: percentage >= 80 ? '#4CAF50' : percentage >= 50 ? '#FF9800' : '#F44336' }]}>
           <Text style={styles.scoreEmoji}>{emoji}</Text>
-          <Text style={[styles.scoreText, { color: colors.onSurface }]}>{correctCount}/{totalAnswered}</Text>
+          <Text style={[styles.scoreText, { color: colors.onSurface }]}>{finalMastered}/{totalWords}</Text>
           <Text style={[styles.scoreLabel, { color: colors.onSurfaceVariant }]}>từ đã thuộc</Text>
         </View>
 
         <Text style={[styles.summaryTitle, { color: colors.onSurface }]}>
           {percentage >= 80 ? 'Xuất sắc!' : percentage >= 50 ? 'Khá tốt!' : 'Cần ôn thêm!'}
         </Text>
+        <Text style={[styles.summarySubtitle, { color: colors.onSurfaceVariant }]}>
+          {batchNumber} đợt học · {finalCorrect}/{finalResults.length} câu trả lời đúng
+        </Text>
 
         {/* Results list */}
         <View style={[styles.resultsList, { backgroundColor: colors.surface, borderColor: colors.outlineVariant }]}>
-          {quizResults.map((r, i) => (
-            <View key={i} style={[styles.resultRow, i < quizResults.length - 1 && { borderBottomWidth: 1, borderBottomColor: colors.outlineVariant }]}>
+          {finalResults.map((r, i) => (
+            <View key={i} style={[styles.resultRow, i < finalResults.length - 1 && { borderBottomWidth: 1, borderBottomColor: colors.outlineVariant }]}>
               <MaterialIcons name={r.correct ? 'check-circle' : 'cancel'} size={20} color={r.correct ? '#4CAF50' : '#F44336'} />
               <Text style={[styles.resultTerm, { color: colors.onSurface }]}>{r.term}</Text>
               <Text style={[styles.resultStatus, { color: r.correct ? '#4CAF50' : '#F44336' }]}>
@@ -449,16 +562,9 @@ export default function FlashcardsScreen() {
 
         {/* Action buttons */}
         <View style={styles.summaryActions}>
-          {wrongResults.length > 0 ? (
-            <TouchableOpacity onPress={() => startQuiz(wrongResults.map(r => r.vocabId))} style={[styles.secondaryBtn, { borderColor: colors.primary }]}>
-              <MaterialIcons name="replay" size={20} color={colors.primary} />
-              <Text style={[styles.secondaryBtnText, { color: colors.primary }]}>Ôn lại {wrongResults.length} từ chưa thuộc</Text>
-            </TouchableOpacity>
-          ) : null}
-
           <TouchableOpacity onPress={loadSession} style={[styles.primaryBtn, { backgroundColor: colors.primary }]}>
-            <MaterialIcons name="school" size={20} color="#fff" />
-            <Text style={styles.primaryBtnText}>Học thêm từ mới</Text>
+            <MaterialIcons name="replay" size={20} color="#fff" />
+            <Text style={styles.primaryBtnText}>Học lại từ đầu</Text>
           </TouchableOpacity>
 
           <TouchableOpacity onPress={() => router.back()} style={[styles.textBtn]}>
@@ -473,9 +579,9 @@ export default function FlashcardsScreen() {
 
   const phaseTitle = phase === 'learn' ? 'Học từ vựng' : phase === 'quiz' ? 'Kiểm tra' : 'Kết quả';
   const phaseSubtitle =
-    phase === 'learn' && words.length ? `${learnIndex + 1}/${words.length} từ` :
+    phase === 'learn' && currentBatch.length ? `Đợt ${batchNumber} · ${batchIdx + 1}/${currentBatch.length} từ` :
     phase === 'quiz' && questions.length ? `Câu ${quizIndex + 1}/${questions.length}` :
-    phase === 'summary' ? `${correctCount}/${quizResults.length} đúng` :
+    phase === 'summary' ? `${masteredCount}/${totalWords} đã thuộc` :
     'Ôn tập từ vựng IT';
 
   return (
@@ -491,6 +597,12 @@ export default function FlashcardsScreen() {
 
 const styles = StyleSheet.create({
   phaseContainer: { flex: 1, gap: 16 },
+
+  // Batch info
+  batchInfoRow: { flexDirection: 'row', alignItems: 'center', gap: 8, paddingHorizontal: 14, paddingVertical: 8, borderRadius: 10 },
+  batchInfoText: { fontSize: 13, fontWeight: '700' },
+  overallProgressRow: { gap: 4 },
+  overallProgressLabel: { fontSize: 12, fontWeight: '600' },
 
   // Progress
   progressContainer: { height: 6, borderRadius: 3, overflow: 'hidden' },
@@ -526,10 +638,6 @@ const styles = StyleSheet.create({
   flipBtn: { flexDirection: 'row', alignItems: 'center', gap: 6, paddingHorizontal: 20, paddingVertical: 12, borderRadius: 12 },
   flipBtnText: { color: '#fff', fontWeight: '800' },
 
-  // Warning banner
-  warningBanner: { flexDirection: 'row', alignItems: 'center', gap: 10, padding: 14, borderRadius: 12, marginTop: 4 },
-  warningText: { flex: 1, fontSize: 13, lineHeight: 18 },
-
   // Quiz
   quizHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
   roundBadge: { fontSize: 11, fontWeight: '700', paddingHorizontal: 10, paddingVertical: 4, borderRadius: 99, overflow: 'hidden' },
@@ -559,6 +667,7 @@ const styles = StyleSheet.create({
   scoreText: { fontSize: 28, fontWeight: '900' },
   scoreLabel: { fontSize: 12 },
   summaryTitle: { fontSize: 22, fontWeight: '900', textAlign: 'center' },
+  summarySubtitle: { fontSize: 14, textAlign: 'center' },
   resultsList: { borderWidth: 1, borderRadius: 16, overflow: 'hidden' },
   resultRow: { flexDirection: 'row', alignItems: 'center', gap: 10, paddingHorizontal: 16, paddingVertical: 12 },
   resultTerm: { flex: 1, fontSize: 15, fontWeight: '600' },
