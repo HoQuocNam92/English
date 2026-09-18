@@ -1,5 +1,13 @@
-import { PrismaClient, UserStatus, ContentStatus, LevelCode, QuestionType, AttemptStatus, ProgressStatus, ProgressResourceType } from '@prisma/client'
+import { PrismaClient, UserStatus, ContentStatus, QuestionType, AttemptStatus, ProgressStatus, ProgressResourceType } from '@prisma/client'
 import * as bcrypt from 'bcrypt'
+
+const LevelCode = {
+  beginner: 'beginner' as const,
+  intermediate: 'intermediate' as const,
+  advanced: 'advanced' as const,
+  professional: 'professional' as const,
+}
+type LevelCode = (typeof LevelCode)[keyof typeof LevelCode]
 
 const prisma = new PrismaClient()
 
@@ -400,7 +408,7 @@ async function main() {
 
   const existingQuestionCount = await prisma.question.count()
   if (existingQuestionCount === 0) {
-  const makeQ = async (type: QuestionType, prompt: string, context: string | null, explanation: string, domainCode: string, levelCode: LevelCode, topics: string[], points: number, certCodes: string[], options: Array<{ key: string; text: string; correct: boolean; exp: string }>) => {
+  const makeQ = async (type: QuestionType, prompt: string, context: string | null, explanation: string, domainCode: string, levelCode: string, topics: string[], points: number, certCodes: string[], options: Array<{ key: string; text: string; correct: boolean; exp: string }>) => {
     const lvl = await prisma.level.findUnique({ where: { code: levelCode } })
     return prisma.question.create({
       data: {

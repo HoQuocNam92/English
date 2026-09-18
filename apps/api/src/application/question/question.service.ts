@@ -94,4 +94,76 @@ export class QuestionsService {
       this.prisma.question.delete({ where: { id: q.id } }),
     ])
   }
+
+  async bulkCreate(dtos: any[]) {
+    if (!Array.isArray(dtos) || dtos.length === 0) {
+      return { count: 0, success: true, message: 'Không có câu hỏi nào để nhập' }
+    }
+
+    const [allDomains, allLevels] = await Promise.all([
+      this.prisma.domain.findMany(),
+      this.prisma.level.findMany(),
+    ])
+
+    const domainMap = new Map<string, string>()
+    for (const d of allDomains) {
+      domainMap.set(d.id.toLowerCase(), d.id)
+      domainMap.set(d.code.toLowerCase(), d.id)
+      domainMap.set(d.name.toLowerCase(), d.id)
+    }
+
+    const levelMap = new Map<string, string>()
+    for (const l of allLevels) {
+      levelMap.set(l.id.toLowerCase(), l.id)
+      levelMap.set(l.code.toLowerCase(), l.id)
+      levelMap.set(l.name.toLowerCase(), l.id)
+    }
+
+    const defaultDomainId = allDomains[0]?.id
+    const defaultLevelId = allLevels[0]?.id
+
+    const created = await this.prisma.$transaction(async (tx) => {
+      const results = []
+      for (const item of dtos) {
+        const dKey = String(item.domainId || item.domainCode || item.domain || '').trim().toLowerCase()
+        const domainId = domainMap.get(dKey) || defaultDomainId
+
+        const lKey = String(item.levelId || item.levelCode || item.level || '').trim().toLowerCase()
+        const levelId = levelMap.get(lKey) || defaultLevelId
+
+        if (!domainId || !levelId) continue
+
+        const q = await tx.question.create({
+          data: {
+            type: item.type || 'single_choice',
+            prompt: item.prompt,
+            context: item.context || null,
+            explanation: item.explanation || '',
+            points: Number(item.points) || 1.0,
+            status: item.status || 'published',
+            topics: Array.isArray(item.topics) ? item.topics : [],
+            domainId,
+            levelId,
+            options: item.options ? {
+              create: item.options.map((o: any, idx: number) => ({
+                key: o.key || String.fromCharCode(65 + idx),
+                text: o.text,
+                isCorrect: Boolean(o.isCorrect),
+                explanation: o.explanation || null,
+                order: idx + 1,
+              })),
+            } : undefined,
+          },
+        })
+        results.push(q)
+      }
+      return results
+    })
+
+    return {
+      count: created.length,
+      success: true,
+      message: `Đã nhập thành công ${created.length} câu hỏi.`,
+    }
+  }
 }

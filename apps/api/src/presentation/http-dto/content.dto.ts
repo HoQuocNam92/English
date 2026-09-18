@@ -291,6 +291,82 @@ export class CreateQuestionDto {
   certificateIds?: string[]
 }
 
+export class BulkQuestionItemDto {
+  @ApiProperty({ enum: ['single_choice', 'multiple_choice', 'true_false', 'short_answer', 'scenario'] })
+  @IsEnum(['single_choice', 'multiple_choice', 'true_false', 'short_answer', 'scenario'], {
+    message: 'Loại câu hỏi không hợp lệ',
+  })
+  type: string
+
+  @ApiProperty({ example: 'What does "autoscaling" mean in cloud computing?' })
+  @IsString()
+  @IsNotEmpty({ message: 'Nội dung câu hỏi không được để trống' })
+  @MinLength(10, { message: 'Nội dung câu hỏi phải có ít nhất 10 ký tự' })
+  @MaxLength(1000)
+  prompt: string
+
+  @ApiPropertyOptional({ example: 'Read the following paragraph about AWS...' })
+  @IsOptional()
+  @IsString()
+  @MaxLength(2000)
+  context?: string
+
+  @ApiPropertyOptional({ example: 'Autoscaling is the process of...' })
+  @IsOptional()
+  @IsString()
+  @MaxLength(1000)
+  explanation?: string
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsInt()
+  @Min(1)
+  @Max(100)
+  points?: number
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  domainId?: string
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  domainCode?: string
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  levelId?: string
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  levelCode?: string
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsArray()
+  @IsString({ each: true })
+  topics?: string[]
+
+  @ApiProperty({ type: [QuestionOptionDto], description: 'Danh sách các đáp án' })
+  @IsArray()
+  @ArrayNotEmpty({ message: 'Câu hỏi phải có ít nhất 1 đáp án' })
+  @ValidateNested({ each: true })
+  @Type(() => QuestionOptionDto)
+  options: QuestionOptionDto[]
+}
+
+export class BulkCreateQuestionsDto {
+  @ApiProperty({ type: [BulkQuestionItemDto] })
+  @IsArray()
+  @ArrayNotEmpty({ message: 'Danh sách câu hỏi không được để trống' })
+  @ValidateNested({ each: true })
+  @Type(() => BulkQuestionItemDto)
+  questions: BulkQuestionItemDto[]
+}
+
 export class UpdateQuestionDto {
   @ApiPropertyOptional({ enum: ['single_choice', 'multiple_choice', 'true_false', 'short_answer', 'scenario'] })
   @IsOptional() @IsEnum(['single_choice', 'multiple_choice', 'true_false', 'short_answer', 'scenario'])

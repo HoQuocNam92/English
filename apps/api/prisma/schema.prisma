@@ -306,7 +306,7 @@ model Domain {
 /// Cấp độ học tập (Beginner → Professional).
 model Level {
   id          String    @id @default(uuid()) @db.Uuid
-  code        LevelCode @unique
+  code        String    @unique @db.VarChar(50)
   name        String    @db.VarChar(50)
   order       Int
   description String    @db.VarChar(500)

@@ -5,6 +5,8 @@ import Link from 'next/link';
 import { PageHeader, Pagination, SearchInput } from '@/shared/ui';
 import { apiClient, ApiClientError } from '@/shared/api/api-client';
 import type { ExamItem, QuestionItem, PaginatedResponse } from '@/shared/api/api-client';
+import { downloadQuestionExcelTemplate } from '@/features/questions/question-excel';
+import { ImportQuestionsModal } from './ImportQuestionsModal';
 
 const QUESTION_TYPES: Record<string, { label: string; icon: string; color: string }> = {
   single_choice: { label: 'Chọn một đáp án', icon: 'radio_button_checked', color: 'text-blue-600' },
@@ -35,6 +37,8 @@ export default function AdminQuestionsPage() {
   const [items, setItems] = React.useState<QuestionItem[]>([]);
   const [total, setTotal] = React.useState(0);
   const [page, setPage] = React.useState(1);
+  const limit = 20;
+  const totalPages = Math.max(1, Math.ceil(total / limit));
   const [searchInput, setSearchInput] = React.useState('');
   const [search, setSearch] = React.useState('');
   const [status, setStatus] = React.useState('');
@@ -42,15 +46,14 @@ export default function AdminQuestionsPage() {
   const [domainCode, setDomainCode] = React.useState('');
   const [examId, setExamId] = React.useState('');
   const [domains, setDomains] = React.useState<FilterOption[]>([]);
+  const [levels, setLevels] = React.useState<FilterOption[]>([]);
   const [exams, setExams] = React.useState<FilterOption[]>([]);
   const [expanded, setExpanded] = React.useState<string | null>(null);
   const [loading, setLoading] = React.useState(true);
   const [error, setError] = React.useState<string | null>(null);
+  const [successMessage, setSuccessMessage] = React.useState<string | null>(null);
+  const [importModalOpen, setImportModalOpen] = React.useState(false);
   const [deletingId, setDeletingId] = React.useState<string | null>(null);
-  const limit = 10;
-
-  const totalPages = Math.ceil(total / limit);
-
   const load = React.useCallback(async () => {
     setLoading(true);
     setError(null);
@@ -79,9 +82,11 @@ export default function AdminQuestionsPage() {
   React.useEffect(() => {
     void Promise.all([
       apiClient.get<{ data: FilterOption[] } | FilterOption[]>('/domains'),
+      apiClient.get<{ data: FilterOption[] } | FilterOption[]>('/levels'),
       apiClient.get<PaginatedResponse<ExamItem>>('/exams?page=1&limit=100'),
-    ]).then(([domainResult, examResult]) => {
+    ]).then(([domainResult, levelResult, examResult]) => {
       setDomains(Array.isArray(domainResult) ? domainResult : domainResult.data);
+      setLevels(Array.isArray(levelResult) ? levelResult : levelResult.data);
       setExams(examResult.data);
     }).catch(() => undefined);
   }, []);
@@ -103,9 +108,37 @@ export default function AdminQuestionsPage() {
 
   return (
     <div>
-      <div className="flex items-start justify-between gap-4">
+      <div className="flex flex-wrap items-start justify-between gap-4">
         <PageHeader title="Ngân hàng câu hỏi" description="Quản lý toàn bộ câu hỏi luyện tập và thi trắc nghiệm IT" />
-        <Link href="/admin/questions/editor" className="inline-flex shrink-0 items-center gap-2 rounded-xl bg-primary px-4 py-2.5 text-sm font-semibold !text-white shadow-sm"><span className="material-symbols-outlined text-[19px]">add</span>Thêm câu hỏi</Link>
+        <div className="flex flex-wrap items-center gap-2.5">
+          <button
+            type="button"
+            onClick={downloadQuestionExcelTemplate}
+            className="inline-flex shrink-0 items-center gap-2 rounded-xl border border-outline-variant bg-surface-container-lowest px-3.5 py-2.5 text-sm font-semibold text-on-surface shadow-sm transition-colors hover:bg-surface-container"
+            title="Tải file mẫu Excel chuẩn để soạn câu hỏi"
+          >
+            <span className="material-symbols-outlined text-[19px] text-emerald-600">file_download</span>
+            Tải file mẫu
+          </button>
+          <button
+            type="button"
+            onClick={() => {
+              setSuccessMessage(null);
+              setImportModalOpen(true);
+            }}
+            className="inline-flex shrink-0 items-center gap-2 rounded-xl border border-primary/20 bg-primary/10 px-3.5 py-2.5 text-sm font-semibold text-primary shadow-sm transition-colors hover:bg-primary/15"
+          >
+            <span className="material-symbols-outlined text-[19px]">upload_file</span>
+            Nhập từ Excel
+          </button>
+          <Link
+            href="/admin/questions/editor"
+            className="inline-flex shrink-0 items-center gap-2 rounded-xl bg-primary px-4 py-2.5 text-sm font-semibold !text-white shadow-sm"
+          >
+            <span className="material-symbols-outlined text-[19px]">add</span>
+            Thêm câu hỏi
+          </Link>
+        </div>
       </div>
 
       {/* Filters */}
@@ -171,6 +204,22 @@ export default function AdminQuestionsPage() {
         <p className="mt-3 text-xs text-on-surface-variant">
           Tổng cộng {total} câu hỏi trong ngân hàng {search && `— kết quả cho "${search}"`}
         </p>
+      )}
+
+      {successMessage && (
+        <div className="mt-4 p-3.5 rounded-xl bg-emerald-50 border border-emerald-300 text-emerald-800 text-sm flex items-center justify-between gap-2">
+          <div className="flex items-center gap-2">
+            <span className="material-symbols-outlined text-[18px] text-emerald-600">check_circle</span>
+            <span className="font-medium">{successMessage}</span>
+          </div>
+          <button
+            type="button"
+            onClick={() => setSuccessMessage(null)}
+            className="text-emerald-700 hover:text-emerald-900"
+          >
+            <span className="material-symbols-outlined text-[18px]">close</span>
+          </button>
+        </div>
       )}
 
       {error && (
@@ -329,6 +378,18 @@ export default function AdminQuestionsPage() {
       {totalPages > 1 && (
         <Pagination className="mt-4 rounded-2xl" page={page} limit={limit} total={total} totalPages={totalPages} onPageChange={setPage} />
       )}
+
+      {/* Import Questions Modal */}
+      <ImportQuestionsModal
+        open={importModalOpen}
+        onClose={() => setImportModalOpen(false)}
+        onSuccess={(count) => {
+          setSuccessMessage(`Đã nhập thành công ${count} câu hỏi vào ngân hàng câu hỏi!`);
+          void load();
+        }}
+        availableDomains={domains}
+        availableLevels={levels}
+      />
     </div>
   );
 }

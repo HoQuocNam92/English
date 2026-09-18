@@ -10,10 +10,51 @@ export class ProgressService {
   async getMyProgress(learnerId: string) {
     await this.assertLearner(learnerId)
     const [progress, recentAttempts] = await Promise.all([
-      this.prisma.learningProgress.findMany({ where: { learnerId }, orderBy: { updatedAt: 'desc' } }),
-      this.prisma.examAttempt.findMany({ where: { learnerId, status: { in: ['graded', 'submitted'] } }, include: { exam: { select: { title: true } } }, orderBy: { startedAt: 'desc' }, take: 10 }),
+      this.prisma.learningProgress.findMany({
+        where: { learnerId },
+        include: {
+          lesson: {
+            select: {
+              id: true,
+              title: true,
+              slug: true,
+              domain: { select: { id: true, name: true, code: true } },
+              level: { select: { id: true, name: true, code: true } },
+            },
+          },
+        },
+        orderBy: { updatedAt: 'desc' },
+      }),
+      this.prisma.examAttempt.findMany({
+        where: { learnerId, status: { in: ['graded', 'submitted'] } },
+        include: { exam: { select: { id: true, title: true } } },
+        orderBy: { startedAt: 'desc' },
+        take: 10,
+      }),
     ])
-    const lessonProgress = progress.filter((item) => item.resourceType === 'lesson')
+
+    const domainIds = progress.filter((p) => p.resourceType === 'domain').map((p) => p.resourceId)
+    const certIds = progress.filter((p) => p.resourceType === 'certificate').map((p) => p.resourceId)
+    const [domains, certs] = await Promise.all([
+      domainIds.length ? this.prisma.domain.findMany({ where: { id: { in: domainIds } }, select: { id: true, name: true } }) : [],
+      certIds.length ? this.prisma.certificate.findMany({ where: { id: { in: certIds } }, select: { id: true, name: true } }) : [],
+    ])
+    const domainMap = new Map<string, string>()
+    domains.forEach((d: any) => domainMap.set(d.id, d.name))
+    const certMap = new Map<string, string>()
+    certs.forEach((c: any) => certMap.set(c.id, c.name))
+
+    const enrichedProgress = (progress as any[]).map((item) => {
+      let title: string | undefined = item.lesson?.title
+      if (!title && item.resourceType === 'domain') title = domainMap.get(item.resourceId)
+      if (!title && item.resourceType === 'certificate') title = certMap.get(item.resourceId)
+      return {
+        ...item,
+        title: title ?? (item.resourceType === 'lesson' ? 'Bài học' : item.resourceType),
+      }
+    })
+
+    const lessonProgress = enrichedProgress.filter((item) => item.resourceType === 'lesson')
     const completedLessons = lessonProgress.filter((item) => item.status === 'completed').length
     const scoredAttempts = recentAttempts.filter((item) => item.scorePercent !== null)
     const summary = {
@@ -67,7 +108,7 @@ export class ProgressService {
         }
       })
     )
-    return { progress, summary, recentAttempts, certProgress }
+    return { progress: enrichedProgress, summary, recentAttempts, certProgress }
   }
 
   async upsertProgress(learnerId: string, dto: TrackLessonProgressDto) {

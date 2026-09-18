@@ -93,6 +93,48 @@ export default function LearnerHomePage() {
   const cert = profile?.certGoals?.[0]?.certificate?.name ?? profile?.targetCertification?.name ?? profile?.targetCert ?? 'Chưa thiết lập';
   const overallProgress = progress?.summary?.overallCompletionPercent ?? progress?.overallPercent ?? 0;
 
+  // Xây dựng danh sách hoạt động gần đây thực tế từ tiến độ học & bài thi
+  const lessonById = new Map(lessons.map((l: any) => [l.id, l]));
+  const progressItems = Array.isArray(progress?.progress) ? progress.progress : [];
+
+  const lessonActivities = progressItems
+    .filter((p: any) => p.resourceType === 'lesson')
+    .map((p: any) => {
+      const lesson = p.lesson || lessonById.get(p.resourceId);
+      const title = lesson?.title || p.title || 'Bài học chuyên ngành';
+      const isDone = p.status === 'completed' || (p.completionPercent ?? 0) >= 100;
+      const time = p.completedAt || p.updatedAt || p.startedAt;
+      return {
+        id: `lesson-${p.id || p.resourceId}`,
+        text: isDone ? t.lessons.lessonComplete : 'Đang học bài',
+        bold: title,
+        timestamp: time ? new Date(time).getTime() : 0,
+        when: formatRelativeDate(time),
+        done: isDone,
+        link: `/learn/lessons/${p.resourceId}`,
+      };
+    });
+
+  const examActivities = attempts.map((a: any) => {
+    const title = a.exam?.title ?? a.examTitle ?? t.practice.exams;
+    const scoreVal = a.score ?? a.correctCount;
+    const scoreText = scoreVal !== undefined && scoreVal !== null ? `${scoreVal}/${a.totalQuestions ?? 100}` : '';
+    const time = a.completedAt || a.submittedAt || a.startedAt;
+    return {
+      id: `exam-${a.id}`,
+      text: 'Làm bài kiểm tra',
+      bold: scoreText ? `${title} (${scoreText})` : title,
+      timestamp: time ? new Date(time).getTime() : 0,
+      when: formatRelativeDate(time),
+      done: true,
+      link: `/learn/quiz/${a.examId ?? ''}`,
+    };
+  });
+
+  const recentActivities = [...lessonActivities, ...examActivities]
+    .sort((a, b) => b.timestamp - a.timestamp)
+    .slice(0, 4);
+
   return (
     <LearnerShell>
       {/* ─── Hero Section ───────────────────────────────────────── */}
@@ -278,20 +320,28 @@ export default function LearnerHomePage() {
               Hoạt động gần đây
             </h3>
             <div className="bg-surface-container border border-outline-variant rounded-lg p-4">
-              <ul className="relative border-l border-outline-variant ml-2 pb-2 space-y-4">
-                {[
-                  { text: t.lessons.lessonComplete, bold: 'IAM Policies', when: '2 giờ trước', done: true },
-                  { text: 'Đăng nhập từ thiết bị mới', bold: '', when: '4 ngày trước', done: false },
-                ].map((item, i) => (
-                  <li key={i} className="relative pl-4">
-                    <div className={`absolute w-2 h-2 rounded-full -left-[5px] top-1.5 ring-4 ring-surface-container ${item.done ? 'bg-primary' : 'bg-surface-container-high'}`} />
-                    <p className="text-[12px] text-on-surface">
-                      {item.text} {item.bold && <strong>{item.bold}</strong>}
-                    </p>
-                    <p className="text-[12px] font-bold text-on-surface-variant uppercase tracking-[0.05em] mt-1">{item.when}</p>
-                  </li>
-                ))}
-              </ul>
+              {recentActivities.length > 0 ? (
+                <ul className="relative border-l border-outline-variant ml-2 pb-2 space-y-4">
+                  {recentActivities.map((item) => (
+                    <li key={item.id} className="relative pl-4">
+                      <div className={`absolute w-2 h-2 rounded-full -left-[5px] top-1.5 ring-4 ring-surface-container ${item.done ? 'bg-primary' : 'bg-surface-container-high'}`} />
+                      <Link href={item.link} className="group block">
+                        <p className="text-[12px] text-on-surface group-hover:text-primary transition-colors line-clamp-2">
+                          {item.text} {item.bold && <strong>{item.bold}</strong>}
+                        </p>
+                        <p className="text-[12px] font-bold text-on-surface-variant uppercase tracking-[0.05em] mt-1">{item.when}</p>
+                      </Link>
+                    </li>
+                  ))}
+                </ul>
+              ) : (
+                <div className="py-4 text-center">
+                  <p className="text-[12px] text-on-surface-variant">Chưa có hoạt động học gần đây.</p>
+                  <Link href="/learn/lessons" className="mt-2 inline-block text-[12px] font-bold text-primary hover:underline">
+                    Bắt đầu bài học đầu tiên →
+                  </Link>
+                </div>
+              )}
             </div>
           </div>
         </aside>
@@ -301,3 +351,19 @@ export default function LearnerHomePage() {
   );
 }
 
+function formatRelativeDate(dateStr?: string | null): string {
+  if (!dateStr) return 'Gần đây';
+  const date = new Date(dateStr);
+  if (isNaN(date.getTime())) return 'Gần đây';
+  const diffMs = Date.now() - date.getTime();
+  const diffMinutes = Math.floor(diffMs / 60000);
+  const diffHours = Math.floor(diffMinutes / 60);
+  const diffDays = Math.floor(diffHours / 24);
+
+  if (diffMinutes < 1) return 'Vừa xong';
+  if (diffMinutes < 60) return `${diffMinutes} phút trước`;
+  if (diffHours < 24) return `${diffHours} giờ trước`;
+  if (diffDays === 1) return 'Hôm qua';
+  if (diffDays < 7) return `${diffDays} ngày trước`;
+  return date.toLocaleDateString('vi-VN');
+}

@@ -1,5 +1,4 @@
 import { BadRequestException, ForbiddenException, Injectable, NotFoundException } from '@nestjs/common'
-import { LevelCode } from '@prisma/client'
 import { PrismaService } from '../../infrastructure/database/prisma.service'
 import { CompleteOnboardingDto } from '../../presentation/http-dto/content.dto'
 
@@ -30,7 +29,7 @@ export class LearnerProfilesService {
   async completeOnboarding(userId: string, dto: CompleteOnboardingDto) {
     await this.assertLearner(userId)
     // 1. Tìm level
-    const level = await this.prisma.level.findUnique({ where: { code: dto.levelCode as LevelCode } })
+    const level = await this.prisma.level.findUnique({ where: { code: dto.levelCode as any } })
 
     // 2. Upsert profile với level + onboardingCompleted
     const profile = await this.prisma.learnerProfile.upsert({

@@ -5,7 +5,7 @@ import { JwtAuthGuard } from '../infrastructure/auth/jwt-auth.guard'
 import { PermissionsGuard } from '../infrastructure/auth/permissions.guard'
 import { RequirePermissions } from './decorators/require-permissions.decorator'
 import { CurrentUser, JwtPayload } from './decorators/current-user.decorator'
-import { CreateQuestionDto, UpdateQuestionDto } from './http-dto/content.dto'
+import { CreateQuestionDto, UpdateQuestionDto, BulkCreateQuestionsDto } from './http-dto/content.dto'
 
 @ApiTags('Questions')
 @ApiBearerAuth()
@@ -21,6 +21,11 @@ export class QuestionsController {
   @Get(':id')
   @ApiOperation({ summary: 'Get question by id' })
   findOne(@Param('id') id: string) { return this.svc.findOne(id) }
+
+  @Post('bulk')
+  @RequirePermissions('questions:manage')
+  @ApiOperation({ summary: 'Bulk create questions' })
+  bulkCreate(@Body() dto: BulkCreateQuestionsDto) { return this.svc.bulkCreate(dto.questions) }
 
   @Post()
   @RequirePermissions('questions:manage')

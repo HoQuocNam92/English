@@ -15,11 +15,160 @@ export class TaxonomyService {
             vocabularies: true,
             questions: true,
             exams: true,
+            learnerProfiles: true,
           },
         },
       },
     })
     return { data: levels }
+  }
+
+  async getLevel(id: string) {
+    const level = await this.prisma.level.findUnique({
+      where: { id },
+      include: {
+        _count: {
+          select: {
+            lessons: true,
+            vocabularies: true,
+            questions: true,
+            exams: true,
+            learnerProfiles: true,
+          },
+        },
+      },
+    })
+    if (!level) throw new NotFoundException('Cấp độ không tồn tại')
+    return { data: level }
+  }
+
+  async createLevel(dto: { code: string; name: string; order?: number; description?: string; isActive?: boolean }) {
+    const code = dto.code?.trim().toLowerCase()
+    if (!code) throw new BadRequestException('Mã cấp độ không được để trống')
+    if (!dto.name?.trim()) throw new BadRequestException('Tên cấp độ không được để trống')
+
+    const existingCode = await this.prisma.level.findUnique({ where: { code } })
+    if (existingCode) throw new BadRequestException(`Mã cấp độ "${code}" đã tồn tại`)
+
+    let order = Number(dto.order)
+    if (!order || isNaN(order) || order <= 0) {
+      const maxOrder = await this.prisma.level.findFirst({
+        orderBy: { order: 'desc' },
+        select: { order: true },
+      })
+      order = (maxOrder?.order ?? 0) + 1
+    }
+
+    const level = await this.prisma.level.create({
+      data: {
+        code,
+        name: dto.name.trim(),
+        order,
+        description: dto.description?.trim() ?? '',
+        isActive: dto.isActive !== undefined ? Boolean(dto.isActive) : true,
+      },
+      include: {
+        _count: {
+          select: {
+            lessons: true,
+            vocabularies: true,
+            questions: true,
+            exams: true,
+            learnerProfiles: true,
+          },
+        },
+      },
+    })
+    return { data: level }
+  }
+
+  async updateLevel(id: string, dto: { code?: string; name?: string; order?: number; description?: string; isActive?: boolean }) {
+    const existing = await this.prisma.level.findUnique({ where: { id } })
+    if (!existing) throw new NotFoundException('Cấp độ không tồn tại')
+
+    const data: any = {}
+    if (dto.code !== undefined) {
+      const code = dto.code.trim().toLowerCase()
+      if (!code) throw new BadRequestException('Mã cấp độ không được để trống')
+      if (code !== existing.code) {
+        const dup = await this.prisma.level.findUnique({ where: { code } })
+        if (dup) throw new BadRequestException(`Mã cấp độ "${code}" đã tồn tại`)
+        data.code = code
+      }
+    }
+    if (dto.name !== undefined) {
+      if (!dto.name.trim()) throw new BadRequestException('Tên cấp độ không được để trống')
+      data.name = dto.name.trim()
+    }
+    if (dto.order !== undefined) {
+      const order = Number(dto.order)
+      if (isNaN(order) || order <= 0) throw new BadRequestException('Thứ tự phải là số nguyên dương')
+      data.order = order
+    }
+    if (dto.description !== undefined) {
+      data.description = dto.description.trim()
+    }
+    if (dto.isActive !== undefined) {
+      data.isActive = Boolean(dto.isActive)
+    }
+
+    const level = await this.prisma.level.update({
+      where: { id },
+      data,
+      include: {
+        _count: {
+          select: {
+            lessons: true,
+            vocabularies: true,
+            questions: true,
+            exams: true,
+            learnerProfiles: true,
+          },
+        },
+      },
+    })
+    return { data: level }
+  }
+
+  async deleteLevel(id: string) {
+    const level = await this.prisma.level.findUnique({
+      where: { id },
+      include: {
+        _count: {
+          select: {
+            lessons: true,
+            vocabularies: true,
+            questions: true,
+            exams: true,
+            learnerProfiles: true,
+          },
+        },
+      },
+    })
+    if (!level) throw new NotFoundException('Cấp độ không tồn tại')
+
+    const linked =
+      level._count.lessons +
+      level._count.vocabularies +
+      level._count.questions +
+      level._count.exams +
+      level._count.learnerProfiles
+
+    if (linked > 0) {
+      const details: string[] = []
+      if (level._count.lessons > 0) details.push(`${level._count.lessons} bài học`)
+      if (level._count.vocabularies > 0) details.push(`${level._count.vocabularies} từ vựng`)
+      if (level._count.questions > 0) details.push(`${level._count.questions} câu hỏi`)
+      if (level._count.exams > 0) details.push(`${level._count.exams} bài thi`)
+      if (level._count.learnerProfiles > 0) details.push(`${level._count.learnerProfiles} học viên`)
+
+      throw new BadRequestException(
+        `Không thể xóa cấp độ "${level.name}" vì đang có dữ liệu liên kết: ${details.join(', ')}. Vui lòng chuyển dữ liệu sang cấp độ khác hoặc tắt kích hoạt (Ngừng hoạt động) cấp độ này.`
+      )
+    }
+
+    await this.prisma.level.delete({ where: { id } })
+    return { success: true, message: `Đã xóa cấp độ "${level.name}" thành công` }
   }
 
   async getDomains() {

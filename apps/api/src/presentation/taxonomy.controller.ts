@@ -18,6 +18,33 @@ export class TaxonomyController {
     return this.svc.getLevels()
   }
 
+  @Get('levels/:id')
+  @ApiOperation({ summary: 'Get level by ID' })
+  getLevel(@Param('id') id: string) {
+    return this.svc.getLevel(id)
+  }
+
+  @Post('levels')
+  @RequirePermissions('certificates:manage')
+  @ApiOperation({ summary: 'Create a new level' })
+  createLevel(@Body() dto: any) {
+    return this.svc.createLevel(dto)
+  }
+
+  @Patch('levels/:id')
+  @RequirePermissions('certificates:manage')
+  @ApiOperation({ summary: 'Update a level' })
+  updateLevel(@Param('id') id: string, @Body() dto: any) {
+    return this.svc.updateLevel(id, dto)
+  }
+
+  @Delete('levels/:id')
+  @RequirePermissions('certificates:manage')
+  @ApiOperation({ summary: 'Delete a level' })
+  deleteLevel(@Param('id') id: string) {
+    return this.svc.deleteLevel(id)
+  }
+
   @Get('domains')
   @ApiOperation({ summary: 'List all domains' })
   getDomains() {
