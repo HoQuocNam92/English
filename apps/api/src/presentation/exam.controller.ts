@@ -64,6 +64,6 @@ export class ExamsController {
   @Get('attempts/:id')
   @ApiOperation({ summary: 'Get attempt detail by id' })
   getAttemptById(@Param('id') id: string, @CurrentUser() u: JwtPayload) {
-    return this.svc.getAttemptById(id, u.sub)
+    return this.svc.getAttemptById(id, u)
   }
 }

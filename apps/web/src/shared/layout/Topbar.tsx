@@ -6,41 +6,61 @@ import { ThemeLanguageToggle } from '../ui/ThemeLanguageToggle';
 
 export interface TopbarProps {
   onToggleMobileMenu?: () => void;
+  onToggleSidebar?: () => void;
+  isSidebarCollapsed?: boolean;
 }
 
-export function Topbar({ onToggleMobileMenu }: TopbarProps) {
+export function Topbar({ onToggleMobileMenu, onToggleSidebar, isSidebarCollapsed }: TopbarProps) {
   const { session, signOut } = useAuth();
 
   return (
     <header className="h-[72px] border-b border-outline-variant/50 bg-surface-container-lowest/95 backdrop-blur flex justify-between items-center w-full px-4 sm:px-8 z-30 shrink-0">
-      {/* Mobile hamburger + brand */}
-      <div className="flex items-center gap-2.5 md:hidden">
-        <button
-          type="button"
-          onClick={onToggleMobileMenu}
-          aria-label="Mở menu"
-          className="p-1.5 rounded-lg text-on-surface-variant hover:bg-surface-container-high transition-colors"
-        >
-          <span className="material-symbols-outlined text-[24px]">menu</span>
-        </button>
-        <Link href="/admin/dashboard" className="flex items-center gap-2">
-          <div className="w-7 h-7 rounded bg-primary text-white flex items-center justify-center shadow-xs">
-            <span className="material-symbols-outlined text-[17px] fill-1">terminal</span>
-          </div>
-          <span className="font-bold text-primary text-sm">TechEnglish Pro</span>
-        </Link>
-      </div>
+      {/* Left controls: Mobile hamburger + brand or Desktop sidebar toggle */}
+      <div className="flex items-center gap-3">
+        {/* Mobile hamburger + brand */}
+        <div className="flex items-center gap-2.5 md:hidden">
+          <button
+            type="button"
+            onClick={onToggleMobileMenu}
+            aria-label="Mở menu"
+            className="p-1.5 rounded-lg text-on-surface-variant hover:bg-surface-container-high transition-colors"
+          >
+            <span className="material-symbols-outlined text-[24px]">menu</span>
+          </button>
+          <Link href="/admin/dashboard" className="flex items-center gap-2">
+            <div className="w-7 h-7 rounded bg-primary text-white flex items-center justify-center shadow-xs">
+              <span className="material-symbols-outlined text-[17px] fill-1">terminal</span>
+            </div>
+            <span className="font-bold text-primary text-sm">TechEnglish Pro</span>
+          </Link>
+        </div>
 
-      {/* Search Input */}
-      <div className="relative hidden sm:block w-72 lg:w-[420px]">
-        <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-outline text-[20px]">
-          search
-        </span>
-        <input
-          className="w-full h-10 pl-10 pr-4 rounded-xl border border-outline-variant/60 bg-surface-container-low focus:bg-surface-container-lowest focus:border-primary focus:ring-4 focus:ring-primary/10 outline-none text-[13px] text-on-surface transition-all placeholder:text-outline"
-          placeholder="Tìm kiếm học viên, bài học, chứng chỉ..."
-          type="text"
-        />
+        {/* Desktop sidebar toggle button */}
+        {onToggleSidebar ? (
+          <button
+            type="button"
+            onClick={onToggleSidebar}
+            title={isSidebarCollapsed ? 'Mở rộng thanh điều hướng' : 'Thu gọn thanh điều hướng'}
+            aria-label="Thu gọn/mở rộng thanh điều hướng"
+            className="hidden md:flex p-2 rounded-xl text-on-surface-variant hover:text-primary hover:bg-surface-container-high transition-colors cursor-pointer"
+          >
+            <span className="material-symbols-outlined text-[22px]">
+              {isSidebarCollapsed ? 'menu' : 'menu_open'}
+            </span>
+          </button>
+        ) : null}
+
+        {/* Search Input */}
+        <div className="relative hidden sm:block w-72 lg:w-[420px]">
+          <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-outline text-[20px]">
+            search
+          </span>
+          <input
+            className="w-full h-10 pl-10 pr-4 rounded-xl border border-outline-variant/60 bg-surface-container-low focus:bg-surface-container-lowest focus:border-primary focus:ring-4 focus:ring-primary/10 outline-none text-[13px] text-on-surface transition-all placeholder:text-outline"
+            placeholder="Tìm kiếm học viên, bài học, chứng chỉ..."
+            type="text"
+          />
+        </div>
       </div>
 
       {/* Right actions */}
@@ -76,4 +96,3 @@ export function Topbar({ onToggleMobileMenu }: TopbarProps) {
     </header>
   );
 }
-

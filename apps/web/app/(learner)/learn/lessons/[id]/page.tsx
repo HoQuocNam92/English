@@ -114,19 +114,13 @@ export default function LearnerLessonDetailPage({ params }: { params: Promise<{ 
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [marked, setMarked] = useState(false);
-  const [allLessons, setAllLessons] = useState<any[]>([]);
   const [activeSectionIndex, setActiveSectionIndex] = useState(0);
 
   useEffect(() => {
     async function fetchLesson() {
       try {
-        const [res, listRes] = await Promise.all<any>([
-          apiClient.get(`/lessons/${lessonId}`),
-          apiClient.get('/lessons?status=published&limit=200'),
-        ]);
+        const res = await apiClient.get<any>(`/lessons/${lessonId}`);
         setLesson(res);
-        const listData = listRes?.data ?? listRes ?? [];
-        setAllLessons(Array.isArray(listData) ? listData : []);
       } catch {
         setError('Không thể tải bài học. Vui lòng thử lại.');
       } finally {
@@ -148,11 +142,6 @@ export default function LearnerLessonDetailPage({ params }: { params: Promise<{ 
   };
 
   if (loading) return <LearnerShell><LoadingSpinner /></LearnerShell>;
-
-  const sortedLessons = [...allLessons].sort((a, b) => new Date(a.createdAt ?? 0).getTime() - new Date(b.createdAt ?? 0).getTime());
-  const currentLessonIdx = sortedLessons.findIndex((l) => l.id === lessonId);
-  const prevLesson = currentLessonIdx > 0 ? sortedLessons[currentLessonIdx - 1] : null;
-  const nextLesson = currentLessonIdx >= 0 && currentLessonIdx < sortedLessons.length - 1 ? sortedLessons[currentLessonIdx + 1] : null;
 
   if (error || !lesson)
     return (
@@ -226,33 +215,56 @@ export default function LearnerLessonDetailPage({ params }: { params: Promise<{ 
             </div>
           </div>
 
-          {/* Bottom Navigation (Lesson context) */}
-          <div className="flex justify-between items-center mt-8 border-t border-outline-variant pt-6">
-            {prevLesson ? (
-              <button
-                onClick={() => router.push(`/learn/lessons/${prevLesson.id}`)}
-                className="flex items-center gap-2 px-4 py-2 border border-outline-variant rounded-lg text-on-surface hover:bg-surface-container-low transition-colors font-semibold text-[14px] group"
-              >
-                <span className="material-symbols-outlined text-on-surface-variant group-hover:text-primary transition-colors">arrow_back</span>
-                <div>
-                  <div className="text-[12px] text-on-surface-variant text-left">Bài trước</div>
-                  <div className="line-clamp-1 max-w-[180px]">{prevLesson.title}</div>
-                </div>
-              </button>
-            ) : <div />}
-            {nextLesson ? (
-              <button
-                onClick={() => router.push(`/learn/lessons/${nextLesson.id}`)}
-                className="flex items-center gap-2 px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary/90 transition-colors font-semibold text-[14px] group"
-              >
-                <div className="text-right">
-                  <div className="text-[12px] text-white/80">Tiếp theo</div>
-                  <div className="line-clamp-1 max-w-[180px]">{nextLesson.title}</div>
-                </div>
-                <span className="material-symbols-outlined text-white">arrow_forward</span>
-              </button>
-            ) : <div />}
-          </div>
+          {/* Section Navigation */}
+          {sections.length > 1 && (
+            <div className="flex flex-col sm:flex-row justify-between items-center gap-3 mt-8 border-t border-outline-variant pt-6">
+              {activeSectionIndex > 0 ? (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setActiveSectionIndex((i) => Math.max(0, i - 1));
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                  }}
+                  className="w-full sm:w-auto flex items-center gap-2 px-5 py-2.5 border border-outline-variant rounded-xl text-on-surface hover:bg-surface-container-low transition-all font-semibold text-[14px] group"
+                >
+                  <span className="material-symbols-outlined text-on-surface-variant group-hover:text-primary transition-colors">arrow_back</span>
+                  <div className="text-left">
+                    <div className="text-[11px] text-on-surface-variant font-normal">Phần trước</div>
+                    <div className="line-clamp-1 max-w-[220px]">{sectionTitle(sections[activeSectionIndex - 1], activeSectionIndex - 1)}</div>
+                  </div>
+                </button>
+              ) : (
+                <div />
+              )}
+
+              {activeSectionIndex < sections.length - 1 ? (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setActiveSectionIndex((i) => Math.min(sections.length - 1, i + 1));
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                  }}
+                  className="w-full sm:w-auto ml-auto flex items-center gap-2 px-5 py-2.5 bg-primary text-white rounded-xl hover:bg-primary/90 transition-all font-semibold text-[14px] shadow-sm group"
+                >
+                  <div className="text-right">
+                    <div className="text-[11px] text-white/80 font-normal">Phần sau</div>
+                    <div className="line-clamp-1 max-w-[220px]">{sectionTitle(sections[activeSectionIndex + 1], activeSectionIndex + 1)}</div>
+                  </div>
+                  <span className="material-symbols-outlined text-white group-hover:translate-x-0.5 transition-transform">arrow_forward</span>
+                </button>
+              ) : (
+                <button
+                  type="button"
+                  onClick={markComplete}
+                  disabled={marked}
+                  className="w-full sm:w-auto ml-auto flex items-center gap-2 px-6 py-2.5 bg-emerald-600 hover:bg-emerald-700 disabled:bg-emerald-600/70 text-white rounded-xl transition-all font-semibold text-[14px] shadow-sm"
+                >
+                  <span className="material-symbols-outlined text-white">check_circle</span>
+                  <span>{marked ? 'Đã hoàn thành bài học' : 'Hoàn thành bài học'}</span>
+                </button>
+              )}
+            </div>
+          )}
 
         </div>
 
@@ -288,10 +300,32 @@ export default function LearnerLessonDetailPage({ params }: { params: Promise<{ 
                 })}
                 {!sections.length && <p className="p-4 text-sm text-on-surface-variant">Bài học chưa chia thành từng phần.</p>}
               </div>
-              {sections.length > 1 && <div className="flex gap-2 border-t border-outline-variant p-3">
-                <button type="button" disabled={activeSectionIndex === 0} onClick={() => setActiveSectionIndex(index => Math.max(0, index - 1))} className="flex-1 rounded-lg border border-outline-variant px-2 py-2 text-xs font-semibold disabled:opacity-40">Phần trước</button>
-                <button type="button" disabled={activeSectionIndex === sections.length - 1} onClick={() => setActiveSectionIndex(index => Math.min(sections.length - 1, index + 1))} className="flex-1 rounded-lg bg-primary px-2 py-2 text-xs font-semibold text-white disabled:opacity-40">Phần sau</button>
-              </div>}
+              {sections.length > 1 && (
+                <div className="flex gap-2 border-t border-outline-variant p-3 bg-surface-container-lowest">
+                  <button
+                    type="button"
+                    disabled={activeSectionIndex === 0}
+                    onClick={() => {
+                      setActiveSectionIndex(index => Math.max(0, index - 1));
+                      window.scrollTo({ top: 0, behavior: 'smooth' });
+                    }}
+                    className="flex-1 rounded-lg border border-outline-variant px-2 py-2 text-xs font-semibold text-on-surface hover:bg-surface-container-low transition-colors disabled:opacity-40"
+                  >
+                    Phần trước
+                  </button>
+                  <button
+                    type="button"
+                    disabled={activeSectionIndex === sections.length - 1}
+                    onClick={() => {
+                      setActiveSectionIndex(index => Math.min(sections.length - 1, index + 1));
+                      window.scrollTo({ top: 0, behavior: 'smooth' });
+                    }}
+                    className="flex-1 rounded-lg bg-primary px-2 py-2 text-xs font-semibold text-white hover:bg-primary/90 transition-colors disabled:opacity-40"
+                  >
+                    Phần sau
+                  </button>
+                </div>
+              )}
             </div>
 
           </div>

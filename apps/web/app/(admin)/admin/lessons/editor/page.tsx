@@ -32,6 +32,7 @@ export default function LessonEditorPage() {
   const [levelId, setLevelId] = React.useState('');
   const [estimatedMinutes, setEstimatedMinutes] = React.useState('');
   const [tags, setTags] = React.useState(''); // comma-separated
+  const [status, setStatus] = React.useState('draft');
 
   const [errors, setErrors] = React.useState<Record<string, string>>({});
   const [loading, setLoading] = React.useState(false);
@@ -62,6 +63,7 @@ export default function LessonEditorPage() {
           setEstimatedMinutes(String(lesson.estimatedMinutes ?? ''));
           setTags(((lesson as any).tags as string[] ?? []).join(', '));
           setCertificateIds((lesson as any).certificates?.map((item: any) => item.certificateId ?? item.certificate?.id) ?? []);
+          setStatus(lesson.status ?? 'draft');
         }
       } catch (e) {
         setGlobalError(e instanceof ApiClientError ? e.message : 'Không thể tải dữ liệu');
@@ -107,6 +109,7 @@ export default function LessonEditorPage() {
         estimatedMinutes: estimatedMinutes ? Number(estimatedMinutes) : undefined,
         tags: tags.trim() ? tags.split(',').map((t) => t.trim()).filter(Boolean) : [],
         certificateIds,
+        status,
       };
 
       if (isEdit) {
@@ -267,25 +270,140 @@ export default function LessonEditorPage() {
           />
         </div>
 
+        {/* Status */}
+        <div>
+          <label className="block text-sm font-semibold text-on-surface mb-2">Trạng thái bài học</label>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            <label
+              className={`flex items-center gap-3 p-3.5 rounded-xl border cursor-pointer transition-all ${
+                status === 'draft'
+                  ? 'border-amber-500 bg-amber-50/60 text-amber-900 shadow-sm ring-1 ring-amber-400'
+                  : 'border-outline-variant bg-surface-container-low hover:bg-surface-container'
+              }`}
+            >
+              <input
+                type="radio"
+                name="lessonStatus"
+                value="draft"
+                checked={status === 'draft'}
+                onChange={() => setStatus('draft')}
+                className="accent-amber-600"
+              />
+              <div>
+                <div className="text-sm font-bold flex items-center gap-1.5">
+                  <span className="material-symbols-outlined text-[17px] text-amber-600">edit_note</span>
+                  Bản nháp
+                </div>
+                <p className="text-xs text-on-surface-variant mt-0.5">Chưa hiển thị cho học viên</p>
+              </div>
+            </label>
+
+            <label
+              className={`flex items-center gap-3 p-3.5 rounded-xl border cursor-pointer transition-all ${
+                status === 'published'
+                  ? 'border-green-600 bg-green-50/60 text-green-900 shadow-sm ring-1 ring-green-500'
+                  : 'border-outline-variant bg-surface-container-low hover:bg-surface-container'
+              }`}
+            >
+              <input
+                type="radio"
+                name="lessonStatus"
+                value="published"
+                checked={status === 'published'}
+                onChange={() => setStatus('published')}
+                className="accent-green-600"
+              />
+              <div>
+                <div className="text-sm font-bold flex items-center gap-1.5">
+                  <span className="material-symbols-outlined text-[17px] text-green-600">check_circle</span>
+                  Xuất bản
+                </div>
+                <p className="text-xs text-on-surface-variant mt-0.5">Học viên có thể học ngay</p>
+              </div>
+            </label>
+
+            <label
+              className={`flex items-center gap-3 p-3.5 rounded-xl border cursor-pointer transition-all ${
+                status === 'archived'
+                  ? 'border-gray-500 bg-gray-100 text-gray-900 shadow-sm ring-1 ring-gray-400'
+                  : 'border-outline-variant bg-surface-container-low hover:bg-surface-container'
+              }`}
+            >
+              <input
+                type="radio"
+                name="lessonStatus"
+                value="archived"
+                checked={status === 'archived'}
+                onChange={() => setStatus('archived')}
+                className="accent-gray-600"
+              />
+              <div>
+                <div className="text-sm font-bold flex items-center gap-1.5">
+                  <span className="material-symbols-outlined text-[17px] text-gray-600">archive</span>
+                  Lưu trữ
+                </div>
+                <p className="text-xs text-on-surface-variant mt-0.5">Ẩn bài học khỏi kho</p>
+              </div>
+            </label>
+          </div>
+        </div>
+
         {/* Actions */}
-        <div className="flex gap-3 pt-2">
+        <div className="flex flex-wrap items-center gap-3 pt-4 border-t border-outline-variant/30">
           <button
             type="submit"
             disabled={saving}
-            className="flex items-center gap-2 px-6 py-2.5 rounded-xl bg-primary text-white text-sm font-semibold hover:opacity-90 disabled:opacity-50 transition-opacity"
+            className="flex items-center gap-2 px-6 py-2.5 rounded-xl bg-primary text-white text-sm font-semibold hover:opacity-90 disabled:opacity-50 transition-opacity shadow-sm cursor-pointer"
           >
             {saving ? (
               <span className="animate-spin material-symbols-outlined text-[16px]">progress_activity</span>
             ) : (
               <span className="material-symbols-outlined text-[16px]">save</span>
             )}
-            {isEdit ? 'Lưu thay đổi' : 'Tạo bài học'}
+            {isEdit ? 'Lưu bài học' : 'Tạo bài học'}
           </button>
+
+          {status !== 'published' && (
+            <button
+              type="button"
+              disabled={saving}
+              onClick={async (e) => {
+                setStatus('published');
+                setTimeout(() => {
+                  const form = (e.target as HTMLElement).closest('form');
+                  if (form) form.requestSubmit();
+                }, 0);
+              }}
+              className="flex items-center gap-2 px-6 py-2.5 rounded-xl bg-green-600 text-white text-sm font-semibold hover:bg-green-700 disabled:opacity-50 transition-colors shadow-sm cursor-pointer"
+            >
+              <span className="material-symbols-outlined text-[16px]">publish</span>
+              Xuất bản ngay
+            </button>
+          )}
+
+          {isEdit && status === 'published' && (
+            <button
+              type="button"
+              disabled={saving}
+              onClick={async (e) => {
+                setStatus('archived');
+                setTimeout(() => {
+                  const form = (e.target as HTMLElement).closest('form');
+                  if (form) form.requestSubmit();
+                }, 0);
+              }}
+              className="flex items-center gap-2 px-6 py-2.5 rounded-xl border border-outline-variant text-sm font-semibold text-on-surface hover:bg-surface-container transition-colors cursor-pointer"
+            >
+              <span className="material-symbols-outlined text-[16px]">archive</span>
+              Lưu trữ bài học
+            </button>
+          )}
+
           <button
             type="button"
             onClick={() => router.back()}
             disabled={saving}
-            className="px-6 py-2.5 rounded-xl border border-outline-variant text-sm font-semibold text-on-surface hover:bg-surface-container transition-colors"
+            className="px-6 py-2.5 rounded-xl border border-outline-variant text-sm font-semibold text-on-surface hover:bg-surface-container transition-colors ml-auto cursor-pointer"
           >
             Hủy
           </button>

@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common'
+import { Injectable, NotFoundException, BadRequestException, ForbiddenException } from '@nestjs/common'
 import { PrismaService } from '../../infrastructure/database/prisma.service'
 
 @Injectable()
@@ -43,7 +43,7 @@ export class ExamsService {
     const domain = await this.prisma.domain.findUnique({ where: { id: dto.domainId } })
     const level = await this.prisma.level.findUnique({ where: { id: dto.levelId } })
     if (!domain||!level) throw new NotFoundException('Domain or Level not found')
-    return this.prisma.exam.create({ data: { title: dto.title, description: dto.description, domainId: domain.id, levelId: level.id, certificateId: dto.certificateId || null, topics: dto.topics??[], durationMinutes: dto.durationMinutes, passingScorePercent: dto.passingScorePercent??70, maxAttempts: dto.maxAttempts??1, shuffleQuestions: dto.shuffleQuestions??false, status: dto.status??'draft', createdById, questions: dto.questions?.length ? { create: dto.questions.map((question: any) => ({ questionId: question.questionId, order: question.order })) } : undefined } })
+    return this.prisma.exam.create({ data: { title: dto.title, description: dto.description, domainId: domain.id, levelId: level.id, certificateId: dto.certificateId || null, topics: dto.topics??[], durationMinutes: dto.durationMinutes, passingScorePercent: dto.passingScorePercent??70, maxAttempts: dto.maxAttempts??1, shuffleQuestions: dto.shuffleQuestions??false, status: dto.status??'draft', publishedAt: dto.status === 'published' ? new Date() : null, createdById, questions: dto.questions?.length ? { create: dto.questions.map((question: any) => ({ questionId: question.questionId, order: question.order })) } : undefined } })
   }
 
   async update(id: string, dto: any) {
@@ -223,21 +223,37 @@ export class ExamsService {
     }
   }
 
-  async getAttemptById(id: string, learnerId: string) {
+  async getAttemptById(id: string, user: any) {
     const attempt = await this.prisma.examAttempt.findUnique({
       where: { id },
-      include: { exam: true, learner: { include: { userDetail: true } } }
+      include: {
+        exam: { include: { domain: true, level: true } },
+        learner: { include: { userDetail: true } }
+      }
     })
-    if (!attempt || attempt.learnerId !== learnerId) throw new NotFoundException('Attempt not found')
+    if (!attempt) throw new NotFoundException('Attempt not found')
+
+    const userId = typeof user === 'string' ? user : user?.sub
+    const isOwner = attempt.learnerId === userId
+    const isAdminOrStaff = typeof user !== 'string' && (
+      user?.roles?.some((r: string) => ['admin', 'teacher', 'superadmin', 'manager'].includes(r)) ||
+      user?.permissions?.some((p: string) => ['exams:grade', 'reports:read', 'exams:manage'].includes(p))
+    )
+
+    if (!isOwner && !isAdminOrStaff) throw new ForbiddenException('Attempt not found')
 
     const snapshot = Array.isArray(attempt.questionsSnapshot) ? attempt.questionsSnapshot : []
     const totalQuestions = snapshot.length
     const correctCount = snapshot.filter((q: any) => q.isUserCorrect === true).length
     const incorrectCount = Math.max(0, totalQuestions - correctCount)
+    const timeSpentSeconds = attempt.submittedAt && attempt.startedAt
+      ? Math.max(0, Math.round((new Date(attempt.submittedAt).getTime() - new Date(attempt.startedAt).getTime()) / 1000))
+      : 0
 
     return {
       ...attempt,
-      isPassed: attempt.passed ?? ((attempt.scorePercent ?? 0) >= 70),
+      timeSpentSeconds,
+      isPassed: attempt.passed ?? ((attempt.scorePercent ?? 0) >= ((attempt.exam as any)?.passingScorePercent ?? 70)),
       score: Math.round(attempt.scorePercent ?? attempt.score ?? 0),
       totalQuestions,
       correctAnswersCount: correctCount,

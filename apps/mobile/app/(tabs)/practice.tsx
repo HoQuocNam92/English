@@ -83,24 +83,6 @@ export default function MobilePracticeScreen() {
             </View>
           </TouchableOpacity>
 
-          {/* Scenario Challenges (Half Width) */}
-          <TouchableOpacity style={styles.bentoCard} onPress={async () => {
-            try {
-              const response: any = await api.get('/questions?type=scenario&status=published&limit=1');
-              const question = response?.data?.[0] || response?.items?.[0];
-              if (question?.id) router.push(`/scenario/${question.id}` as any);
-              else Alert.alert('Chưa có dữ liệu', 'Hiện chưa có tình huống nào đã xuất bản.');
-            } catch { Alert.alert('Lỗi', 'Không thể tải tình huống lúc này.'); }
-          }}>
-            <View style={[styles.bentoIconBox, { backgroundColor: '#7531e6', marginBottom: spacing.md }]}>
-              <MaterialIcons name="chat-bubble" size={24} color="#ffffff" />
-            </View>
-            <View>
-              <Text style={styles.bentoTitleSmall}>Scenario Challenges</Text>
-              <Text style={styles.bentoDesc}>Thực hành giao tiếp qua các tình huống thực tế tại nơi làm việc.</Text>
-            </View>
-          </TouchableOpacity>
-
           {/* Mock Tests (Full Width) */}
           <TouchableOpacity style={[styles.bentoCard, styles.bentoCardFull]} onPress={() => exams.length > 0 ? handleExamPress(exams[0]) : null}>
             <View style={styles.bentoRow}>

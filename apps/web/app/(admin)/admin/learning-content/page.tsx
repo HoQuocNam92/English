@@ -1,7 +1,7 @@
 'use client';
 
 import * as React from 'react';
-import { PageHeader, SearchInput } from '@/shared/ui';
+import { PageHeader, SearchInput, Pagination } from '@/shared/ui';
 import { apiClient, ApiClientError } from '@/shared/api/api-client';
 import type { VocabularyItem, PaginatedResponse } from '@/shared/api/api-client';
 
@@ -691,25 +691,15 @@ export default function AdminLearningContentPage() {
 
       {/* Pagination */}
       {totalPages > 1 && (
-        <div className="mt-6 flex items-center justify-between">
-          <p className="text-xs text-on-surface-variant">Trang {page}/{totalPages}</p>
-          <div className="flex gap-2">
-            <button
-              disabled={page <= 1}
-              onClick={() => setPage((p) => p - 1)}
-              className="px-4 py-2 rounded-xl text-sm border border-outline-variant disabled:opacity-40 hover:bg-surface-container transition-colors"
-            >
-              ← Trước
-            </button>
-            <button
-              disabled={page >= totalPages}
-              onClick={() => setPage((p) => p + 1)}
-              className="px-4 py-2 rounded-xl text-sm border border-outline-variant disabled:opacity-40 hover:bg-surface-container transition-colors"
-            >
-              Sau →
-            </button>
-          </div>
-        </div>
+        <Pagination
+          className="mt-6 rounded-2xl border border-outline-variant/40 shadow-xs"
+          page={page}
+          limit={limit}
+          total={total}
+          totalPages={totalPages}
+          onPageChange={setPage}
+          showQuickJumper
+        />
       )}
 
       {/* Create / Edit modal */}

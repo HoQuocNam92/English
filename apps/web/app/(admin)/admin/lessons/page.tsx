@@ -2,7 +2,7 @@
 
 import * as React from 'react';
 import Link from 'next/link';
-import { PageHeader, SearchInput } from '@/shared/ui';
+import { PageHeader, SearchInput, Pagination } from '@/shared/ui';
 import { apiClient, ApiClientError } from '@/shared/api/api-client';
 import type { LessonItem, PaginatedResponse } from '@/shared/api/api-client';
 
@@ -24,12 +24,12 @@ const STATUSES = [
 
 function StatusBadge({ status }: { status: string }) {
   const map: Record<string, { label: string; cls: string }> = {
-    published: { label: 'Đã xuất bản', cls: 'bg-green-100 text-green-700' },
-    draft: { label: 'Bản nháp', cls: 'bg-amber-100 text-amber-700' },
-    archived: { label: 'Đã lưu trữ', cls: 'bg-gray-100 text-gray-600' },
+    published: { label: 'Đã xuất bản', cls: 'bg-emerald-50 text-emerald-700 border border-emerald-200/60' },
+    draft: { label: 'Bản nháp', cls: 'bg-amber-50 text-amber-700 border border-amber-200/60' },
+    archived: { label: 'Đã lưu trữ', cls: 'bg-gray-100 text-gray-600 border border-gray-200/60' },
   };
-  const s = map[status] ?? { label: status, cls: 'bg-gray-100 text-gray-600' };
-  return <span className={`inline-flex px-2 py-0.5 rounded-full text-xs font-medium ${s.cls}`}>{s.label}</span>;
+  const s = map[status] ?? { label: status, cls: 'bg-gray-100 text-gray-600 border border-gray-200/60' };
+  return <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold ${s.cls}`}>{s.label}</span>;
 }
 
 export default function AdminLessonsPage() {
@@ -40,6 +40,7 @@ export default function AdminLessonsPage() {
   const [searchInput, setSearchInput] = React.useState('');
   const [status, setStatus] = React.useState('');
   const [loading, setLoading] = React.useState(true);
+  const [updatingId, setUpdatingId] = React.useState<string | null>(null);
   const [error, setError] = React.useState<string | null>(null);
   const limit = 10;
 
@@ -66,6 +67,19 @@ export default function AdminLessonsPage() {
   }, [page, search, status]);
 
   React.useEffect(() => { void load(); }, [load]);
+
+  const updateStatus = async (lessonId: string, newStatus: string) => {
+    setUpdatingId(lessonId);
+    setError(null);
+    try {
+      await apiClient.patch(`/lessons/${lessonId}`, { status: newStatus });
+      await load();
+    } catch (e) {
+      setError(e instanceof ApiClientError ? e.message : 'Không thể cập nhật trạng thái bài học');
+    } finally {
+      setUpdatingId(null);
+    }
+  };
 
   const removeLesson = async (lesson: LessonItem) => {
     if (!window.confirm(`Xóa bài học “${lesson.title}”? Hành động này không thể hoàn tác.`)) return;
@@ -167,8 +181,84 @@ export default function AdminLessonsPage() {
                     <td className="px-4 py-3 text-xs text-on-surface-variant">
                       {lesson.createdBy?.userDetail?.displayName ?? 'Hệ thống'}
                     </td>
-                    <td className="px-4 py-3"><StatusBadge status={lesson.status} /></td>
-                    <td className="px-4 py-3"><div className="flex justify-end gap-1"><Link href={`/admin/lessons/editor?id=${lesson.id}`} title="Sửa bài học" className="rounded-lg p-2 text-primary hover:bg-primary/10"><span className="material-symbols-outlined text-[18px]">edit</span></Link><button type="button" title="Xóa bài học" onClick={() => void removeLesson(lesson)} className="rounded-lg p-2 text-error hover:bg-error-container"><span className="material-symbols-outlined text-[18px]">delete</span></button></div></td>
+                    <td className="px-4 py-3">
+                      <StatusBadge status={lesson.status} />
+                    </td>
+                    <td className="px-4 py-3">
+                      <div className="flex justify-end items-center gap-1">
+                        {lesson.status === 'draft' && (
+                          <button
+                            type="button"
+                            title="Xuất bản bài học"
+                            disabled={updatingId === lesson.id}
+                            onClick={() => void updateStatus(lesson.id, 'published')}
+                            className="rounded-lg p-2 text-green-700 hover:bg-green-100 disabled:opacity-40 transition-colors"
+                          >
+                            <span className="material-symbols-outlined text-[18px]">publish</span>
+                          </button>
+                        )}
+                        {lesson.status === 'published' && (
+                          <>
+                            <button
+                              type="button"
+                              title="Chuyển về bản nháp"
+                              disabled={updatingId === lesson.id}
+                              onClick={() => void updateStatus(lesson.id, 'draft')}
+                              className="rounded-lg p-2 text-amber-700 hover:bg-amber-100 disabled:opacity-40 transition-colors"
+                            >
+                              <span className="material-symbols-outlined text-[18px]">edit_note</span>
+                            </button>
+                            <button
+                              type="button"
+                              title="Chuyển vào lưu trữ"
+                              disabled={updatingId === lesson.id}
+                              onClick={() => void updateStatus(lesson.id, 'archived')}
+                              className="rounded-lg p-2 text-gray-500 hover:bg-gray-200 disabled:opacity-40 transition-colors"
+                            >
+                              <span className="material-symbols-outlined text-[18px]">archive</span>
+                            </button>
+                          </>
+                        )}
+                        {lesson.status === 'archived' && (
+                          <>
+                            <button
+                              type="button"
+                              title="Xuất bản lại bài học"
+                              disabled={updatingId === lesson.id}
+                              onClick={() => void updateStatus(lesson.id, 'published')}
+                              className="rounded-lg p-2 text-green-700 hover:bg-green-100 disabled:opacity-40 transition-colors"
+                            >
+                              <span className="material-symbols-outlined text-[18px]">publish</span>
+                            </button>
+                            <button
+                              type="button"
+                              title="Khôi phục về bản nháp"
+                              disabled={updatingId === lesson.id}
+                              onClick={() => void updateStatus(lesson.id, 'draft')}
+                              className="rounded-lg p-2 text-amber-700 hover:bg-amber-100 disabled:opacity-40 transition-colors"
+                            >
+                              <span className="material-symbols-outlined text-[18px]">edit_note</span>
+                            </button>
+                          </>
+                        )}
+                        <Link
+                          href={`/admin/lessons/editor?id=${lesson.id}`}
+                          title="Sửa bài học"
+                          className="rounded-lg p-2 text-primary hover:bg-primary/10 transition-colors"
+                        >
+                          <span className="material-symbols-outlined text-[18px]">edit</span>
+                        </Link>
+                        <button
+                          type="button"
+                          title="Xóa bài học"
+                          disabled={updatingId === lesson.id}
+                          onClick={() => void removeLesson(lesson)}
+                          className="rounded-lg p-2 text-error hover:bg-error-container disabled:opacity-40 transition-colors"
+                        >
+                          <span className="material-symbols-outlined text-[18px]">delete</span>
+                        </button>
+                      </div>
+                    </td>
                   </tr>
                 ))
               )}
@@ -178,27 +268,15 @@ export default function AdminLessonsPage() {
 
         {/* Pagination */}
         {totalPages > 1 && (
-          <div className="px-4 py-3 border-t border-outline-variant/30 flex items-center justify-between">
-            <p className="text-xs text-on-surface-variant">
-              Trang {page}/{totalPages}
-            </p>
-            <div className="flex gap-2">
-              <button
-                disabled={page <= 1}
-                onClick={() => setPage((p) => p - 1)}
-                className="px-3 py-1.5 rounded-lg text-xs border border-outline-variant disabled:opacity-40 hover:bg-surface-container transition-colors"
-              >
-                ← Trước
-              </button>
-              <button
-                disabled={page >= totalPages}
-                onClick={() => setPage((p) => p + 1)}
-                className="px-3 py-1.5 rounded-lg text-xs border border-outline-variant disabled:opacity-40 hover:bg-surface-container transition-colors"
-              >
-                Sau →
-              </button>
-            </div>
-          </div>
+          <Pagination
+            className="border-t border-outline-variant/30"
+            page={page}
+            limit={limit}
+            total={total}
+            totalPages={totalPages}
+            onPageChange={setPage}
+            showQuickJumper
+          />
         )}
       </div>
     </div>

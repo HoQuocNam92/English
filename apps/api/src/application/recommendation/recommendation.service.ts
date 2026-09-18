@@ -3,7 +3,7 @@ import { PrismaService } from '../../infrastructure/database/prisma.service'
 
 export interface LearningRecommendationItem {
   id: string
-  type: 'lesson' | 'exam' | 'vocab' | 'scenario'
+  type: 'lesson' | 'exam' | 'vocab'
   title: string
   summary?: string
   reason: string
@@ -79,6 +79,16 @@ export class RecommendationService {
       }
     }
 
+    const hasTargetDomains = targetDomainIds.length > 0
+    const hasTargetCerts = targetCertIds.length > 0
+    const hasTargets = hasTargetDomains || hasTargetCerts
+
+    const matchesTarget = (domainId?: string | null) => {
+      if (!hasTargetDomains) return true
+      return !!(domainId && targetDomainIds.includes(domainId))
+    }
+
+    const recommendedLessonIds = new Set<string>()
     const recommendations: LearningRecommendationItem[] = []
 
     // =========================================================================
@@ -86,13 +96,16 @@ export class RecommendationService {
     // =========================================================================
 
     // 1.1. Bài thi gần nhất điểm thấp (< 70% hoặc không pass)
+    // Ưu tiên lọc nghiêm ngặt theo mục tiêu Domain của người học
     const lowAttempts = recentAttempts.filter(
-      (a) => (a.scorePercent !== null && a.scorePercent < 70) || a.passed === false
+      (a) =>
+        matchesTarget(a.exam?.domainId) &&
+        ((a.scorePercent !== null && a.scorePercent < 70) || a.passed === false)
     )
 
     if (lowAttempts.length > 0) {
       const latestFailed = lowAttempts[0]
-      // Tìm bài học cùng domain/cert với bài thi mà học viên chưa hoàn thành
+      // Tìm bài học cùng domain với bài thi mà học viên chưa hoàn thành
       const reinforceLessons = await this.prisma.lesson.findMany({
         where: {
           status: 'published',
@@ -104,6 +117,9 @@ export class RecommendationService {
       })
 
       for (const l of reinforceLessons) {
+        if (recommendedLessonIds.has(l.id)) continue
+        recommendedLessonIds.add(l.id)
+
         const scoreText = latestFailed.scorePercent !== null ? `${Math.round(latestFailed.scorePercent)}%` : 'chưa đạt'
         recommendations.push({
           id: `reinforce-exam-${latestFailed.id}-${l.id}`,
@@ -122,8 +138,16 @@ export class RecommendationService {
     }
 
     // 1.2. Bài học đang học dở dang (in_progress)
-    for (const item of inProgressItems.slice(0, 2)) {
+    // Ưu tiên lọc nghiêm ngặt theo mục tiêu Domain của học viên
+    const relevantInProgress = inProgressItems.filter((item) =>
+      matchesTarget(item.lesson?.domainId)
+    )
+
+    for (const item of relevantInProgress.slice(0, 2)) {
       const lesson = item.lesson
+      if (recommendedLessonIds.has(lesson.id)) continue
+      recommendedLessonIds.add(lesson.id)
+
       const percent = Math.round(item.completionPercent ?? 0)
       recommendations.push({
         id: `in-progress-${lesson.id}`,
@@ -161,14 +185,13 @@ export class RecommendationService {
     // TẦNG 2 (HIGH - 75-89đ): Luyện tập tăng cường
     // =========================================================================
 
-    // 2.1. Đề xuất bài thi kiểm tra theo domain/certificate mục tiêu
+    // 2.1. Đề xuất bài thi kiểm tra theo domain mục tiêu
     const examWhere: any = {
       status: 'published',
     }
-    if (targetDomainIds.length > 0) {
+    if (hasTargetDomains) {
       examWhere.domainId = { in: targetDomainIds }
-    }
-    if (targetCertIds.length > 0) {
+    } else if (hasTargetCerts) {
       examWhere.certificateId = { in: targetCertIds }
     }
 
@@ -198,25 +221,10 @@ export class RecommendationService {
       }
     }
 
-    // 2.2. Tình huống thực tế (Scenario practice)
-    recommendations.push({
-      id: `practice-scenario-daily`,
-      type: 'scenario',
-      title: 'Luyện tập tình huống: Daily Scrum & Standup Meeting',
-      summary: 'Thực hành phản xạ giao tiếp tiếng Anh trong buổi họp kỹ thuật, báo cáo tiến độ và giải quyết blocker.',
-      reason: 'Luyện tập tăng cường: Củng cố kỹ năng giao tiếp tiếng Anh thực tế trong môi trường dự án phần mềm.',
-      priority: 'high',
-      priorityScore: 78,
-      domainName: 'Giao tiếp thực tế',
-      actionUrl: '/learn/practice/scenario/1',
-      actionText: 'Luyện tập tình huống',
-    })
-
     // =========================================================================
     // TẦNG 3 (NORMAL - 50-74đ): Lộ trình bài học tiếp theo
     // =========================================================================
 
-    const hasTargetDomains = targetDomainIds.length > 0
     let nextLessons: any[] = []
 
     if (hasTargetDomains) {
@@ -267,7 +275,8 @@ export class RecommendationService {
 
     for (const l of nextLessons) {
       // Tránh duplicate nếu bài học đã được thêm ở tầng 1
-      if (!recommendations.some((r) => r.actionUrl === `/learn/lessons/${l.id}`)) {
+      if (!recommendedLessonIds.has(l.id) && !recommendations.some((r) => r.actionUrl === `/learn/lessons/${l.id}`)) {
+        recommendedLessonIds.add(l.id)
         const isExactLevel = levelId && l.levelId === levelId
         const reasonText = isExactLevel
           ? `Đề xuất theo lộ trình: Bài học tiếp theo phù hợp với trình độ ${l.level?.name || 'phù hợp'} và lĩnh vực ${l.domain?.name || 'CNTT'}.`

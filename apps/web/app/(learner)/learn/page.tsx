@@ -220,7 +220,9 @@ export default function LearnerHomePage() {
                   href="/learn/lessons"
                   className="inline-flex items-center gap-2 px-6 py-2 bg-primary text-white rounded-lg text-[14px] font-semibold hover:opacity-90 active:opacity-80 transition-opacity"
                 >
-                  <span className="text-white">{t.home.continueLearn}</span>
+                  <span className="text-white">
+                    {overallProgress > 0 ? t.home.continueLearn : t.home.startLearn}
+                  </span>
                   <span className="material-symbols-outlined text-[18px] text-white">arrow_forward</span>
                 </Link>
                 {(!cert || cert === 'Chưa thiết lập') && (
@@ -351,11 +353,14 @@ export default function LearnerHomePage() {
             )}
           </div>
 
-          {/* Tiếp tục học — Lesson Grid */}
+          {/* Tiếp tục học / Bài học đề xuất — Lesson Grid */}
           <div>
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-4">
               <h3 className="text-[20px] font-semibold text-on-surface" style={{ lineHeight: '28px' }}>
-                {t.home.continueLearn}
+                {lessons.slice(0, 4).some((l: any) => {
+                  const p = Math.round((lessonProgressById.get(l.id) as any)?.completionPercent ?? 0);
+                  return p > 0 && p < 100;
+                }) ? t.home.continueLearn : t.home.recommendedLessons}
               </h3>
               {profile?.level?.name && (
                 <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-primary/10 text-primary border border-primary/20 w-fit">
@@ -369,6 +374,11 @@ export default function LearnerHomePage() {
                 const lessonProgress = Math.round((lessonProgressById.get(lesson.id) as any)?.completionPercent ?? 0);
                 const domain = lesson.domain?.name ?? lesson.domain?.code ?? 'IT';
                 const lessonLevelName = lesson.level?.name ?? lesson.level?.code ?? '';
+                const buttonLabel = lessonProgress >= 100
+                  ? t.lessons.reviewLesson
+                  : lessonProgress > 0
+                    ? t.common.continue
+                    : t.lessons.startLesson;
                 return (
                   <Link
                     key={lesson.id}
@@ -407,7 +417,7 @@ export default function LearnerHomePage() {
                         </div>
                       </div>
                       <button className="w-full text-center py-1.5 border border-outline-variant text-on-surface text-[14px] font-semibold rounded hover:bg-surface-container-low transition-colors">
-                        {t.common.continue}
+                        {buttonLabel}
                       </button>
                     </div>
                   </Link>

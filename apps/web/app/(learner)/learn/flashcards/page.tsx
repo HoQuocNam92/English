@@ -100,9 +100,9 @@ export default function FlashcardsDashboardPage() {
 
     const levelColors = [
       'bg-slate-100',
-      'bg-emerald-200',
-      'bg-emerald-400',
-      'bg-emerald-600',
+      'bg-primary/20',
+      'bg-primary/50',
+      'bg-primary',
     ];
 
     return (
@@ -174,10 +174,10 @@ export default function FlashcardsDashboardPage() {
         </div>
 
         {/* Notice Banner */}
-        <div className="flex items-start gap-3 p-4 rounded-2xl bg-emerald-50 border border-emerald-200 text-emerald-900 text-xs leading-relaxed">
-          <span className="material-symbols-outlined text-emerald-600 text-base mt-0.5">info</span>
+        <div className="flex items-start gap-3 p-4 rounded-2xl bg-primary/5 border border-primary/20 text-on-surface text-xs leading-relaxed">
+          <span className="material-symbols-outlined text-primary text-base mt-0.5">info</span>
           <div>
-            <span className="font-bold">Chú ý:</span> Bạn có thể luyện tập flashcard hàng ngày theo thuật toán lặp lại ngắt quãng (SRS) để ghi nhớ từ vựng CNTT lâu dài.
+            <span className="font-bold text-primary">Chú ý:</span> Bạn có thể luyện tập flashcard hàng ngày theo thuật toán lặp lại ngắt quãng (SRS) để ghi nhớ từ vựng CNTT lâu dài.
           </div>
         </div>
 
@@ -188,19 +188,19 @@ export default function FlashcardsDashboardPage() {
           <div className="space-y-6">
             {/* SRS Review Alert Banner */}
             {dashboardData.stats.needsReview > 0 && (
-              <div className="flex flex-col sm:flex-row items-center justify-between gap-4 p-5 rounded-3xl bg-gradient-to-r from-amber-50 via-amber-100/40 to-orange-50 border-2 border-amber-300 shadow-sm animate-in fade-in slide-in-from-top-2">
+              <div className="flex flex-col sm:flex-row items-center justify-between gap-4 p-5 rounded-3xl bg-gradient-to-r from-primary/[0.08] via-primary/[0.04] to-surface-white border border-primary/25 shadow-xs animate-in fade-in slide-in-from-top-2">
                 <div className="flex items-center gap-3.5">
-                  <div className="w-12 h-12 rounded-2xl bg-amber-500 text-white flex items-center justify-center shrink-0 shadow-md shadow-amber-500/20">
+                  <div className="w-12 h-12 rounded-2xl bg-primary text-white flex items-center justify-center shrink-0 shadow-md shadow-primary/25">
                     <span className="material-symbols-outlined text-2xl">alarm</span>
                   </div>
                   <div className="space-y-0.5">
-                    <h3 className="text-base font-black text-amber-950 flex items-center gap-2">
+                    <h3 className="text-base font-black text-on-surface flex items-center gap-2">
                       <span>Bạn có {dashboardData.stats.needsReview} từ vựng đã đến hạn ôn tập!</span>
-                      <span className="px-2 py-0.5 text-[10px] uppercase tracking-wider font-extrabold bg-amber-200 text-amber-900 rounded-md">
+                      <span className="px-2 py-0.5 text-[10px] uppercase tracking-wider font-extrabold bg-primary/10 text-primary border border-primary/25 rounded-md">
                         SRS DUE
                       </span>
                     </h3>
-                    <p className="text-xs text-amber-900/80 leading-relaxed">
+                    <p className="text-xs text-on-surface-variant leading-relaxed">
                       Ôn tập đúng thời điểm ngắt quãng giúp củng cố từ vựng kỹ thuật vào trí nhớ dài hạn.
                     </p>
                   </div>
@@ -208,7 +208,7 @@ export default function FlashcardsDashboardPage() {
 
                 <Link
                   href="/learn/flashcards/review/practice"
-                  className="w-full sm:w-auto px-6 py-3 rounded-2xl bg-amber-600 hover:bg-amber-700 text-white text-xs font-black transition-all shadow-md shadow-amber-600/25 flex items-center justify-center gap-2 shrink-0 group hover:scale-[1.02]"
+                  className="w-full sm:w-auto px-6 py-3 rounded-2xl bg-primary hover:bg-primary/90 text-white text-xs font-black transition-all shadow-md shadow-primary/20 flex items-center justify-center gap-2 shrink-0 group hover:scale-[1.02]"
                 >
                   <span className="material-symbols-outlined text-lg group-hover:scale-110 transition-transform">
                     play_circle
@@ -223,8 +223,8 @@ export default function FlashcardsDashboardPage() {
               <div className="flex items-center justify-between">
                 <h2 className="text-base font-bold text-slate-800">Đang học:</h2>
                 {dashboardData.stats.needsReview > 0 && (
-                  <span className="text-xs font-bold text-amber-700 bg-amber-50 border border-amber-200 px-3 py-1 rounded-full flex items-center gap-1.5">
-                    <span className="w-2 h-2 rounded-full bg-amber-500 animate-pulse inline-block" />
+                  <span className="text-xs font-bold text-primary bg-primary/10 border border-primary/20 px-3 py-1 rounded-full flex items-center gap-1.5">
+                    <span className="w-2 h-2 rounded-full bg-primary animate-pulse inline-block" />
                     Có từ đến hạn ôn tập
                   </span>
                 )}
@@ -247,20 +247,20 @@ export default function FlashcardsDashboardPage() {
                   {dashboardData.stats.needsReview > 0 ? (
                     <Link
                       href="/learn/flashcards/review/practice"
-                      className="group block p-3 -m-3 rounded-2xl bg-amber-50/80 hover:bg-amber-100 border border-amber-300 transition-all hover:scale-[1.02] shadow-2xs cursor-pointer"
+                      className="group block p-3 -m-3 rounded-2xl bg-primary/5 hover:bg-primary/10 border border-primary/25 transition-all hover:scale-[1.02] shadow-2xs cursor-pointer"
                       title="Bấm để bắt đầu ôn tập các từ đến hạn theo thuật toán SRS"
                     >
                       <div className="flex items-center justify-center gap-1">
-                        <span className="text-3xl lg:text-4xl font-black text-amber-600 group-hover:text-amber-700">
+                        <span className="text-3xl lg:text-4xl font-black text-primary group-hover:text-primary/90">
                           {dashboardData.stats.needsReview}
                         </span>
-                        <span className="material-symbols-outlined text-amber-600 text-xl group-hover:translate-x-0.5 transition-transform">
+                        <span className="material-symbols-outlined text-primary text-xl group-hover:translate-x-0.5 transition-transform">
                           arrow_forward
                         </span>
                       </div>
-                      <div className="text-xs font-bold text-amber-800 mt-1 flex items-center justify-center gap-1.5 flex-wrap">
+                      <div className="text-xs font-bold text-primary mt-1 flex items-center justify-center gap-1.5 flex-wrap">
                         <span>Cần ôn tập</span>
-                        <span className="text-[10px] bg-amber-600 text-white px-2 py-0.5 rounded-full font-black">
+                        <span className="text-[10px] bg-primary text-white px-2 py-0.5 rounded-full font-black">
                           Bấm để ôn
                         </span>
                       </div>
@@ -283,9 +283,9 @@ export default function FlashcardsDashboardPage() {
                   <div className="flex items-center gap-1.5 lowercase">
                     <span>Ít</span>
                     <span className="w-2.5 h-2.5 rounded-xs bg-slate-100 inline-block" />
-                    <span className="w-2.5 h-2.5 rounded-xs bg-emerald-200 inline-block" />
-                    <span className="w-2.5 h-2.5 rounded-xs bg-emerald-400 inline-block" />
-                    <span className="w-2.5 h-2.5 rounded-xs bg-emerald-600 inline-block" />
+                    <span className="w-2.5 h-2.5 rounded-xs bg-primary/20 inline-block" />
+                    <span className="w-2.5 h-2.5 rounded-xs bg-primary/50 inline-block" />
+                    <span className="w-2.5 h-2.5 rounded-xs bg-primary inline-block" />
                     <span>Nhiều</span>
                   </div>
                 </div>
@@ -317,7 +317,7 @@ export default function FlashcardsDashboardPage() {
                   </p>
                   <button
                     onClick={() => setActiveTab('explore')}
-                    className="px-6 py-2.5 rounded-xl bg-primary text-white text-xs font-bold shadow-xs hover:bg-indigo-700 transition-colors inline-flex items-center gap-2"
+                    className="px-6 py-2.5 rounded-xl bg-primary text-white text-xs font-bold shadow-xs hover:bg-primary/90 transition-colors inline-flex items-center gap-2"
                   >
                     <span className="material-symbols-outlined text-sm">explore</span>
                     Khám phá kho từ vựng
@@ -349,15 +349,15 @@ export default function FlashcardsDashboardPage() {
                         </div>
 
                         <div className="flex items-center gap-2 text-xs text-slate-500 pt-1">
-                          <div className="w-5 h-5 rounded-full bg-indigo-100 text-indigo-700 font-bold flex items-center justify-center text-[10px]">
+                          <div className="w-5 h-5 rounded-full bg-primary/10 text-primary font-bold flex items-center justify-center text-[10px]">
                             TE
                           </div>
                           <span>TechEnglish</span>
                         </div>
 
                         <div className="pt-2 border-t border-slate-100 flex items-center justify-between text-xs font-semibold">
-                          <span className={item.needsReviewCount > 0 ? "text-amber-600 font-black flex items-center gap-1" : "text-slate-500"}>
-                            {item.needsReviewCount > 0 && <span className="w-2 h-2 rounded-full bg-amber-500 animate-pulse inline-block" />}
+                          <span className={item.needsReviewCount > 0 ? "text-primary font-bold flex items-center gap-1" : "text-slate-500"}>
+                            {item.needsReviewCount > 0 && <span className="w-2 h-2 rounded-full bg-primary animate-pulse inline-block" />}
                             Cần ôn tập: {item.needsReviewCount}
                           </span>
                           <span className="text-emerald-600 font-bold">
@@ -370,7 +370,7 @@ export default function FlashcardsDashboardPage() {
                         {item.needsReviewCount > 0 && (
                           <Link
                             href={`/learn/flashcards/${item.id}/practice?onlyNeedsReview=true`}
-                            className="flex-1 py-2 px-3 rounded-xl bg-amber-500 hover:bg-amber-600 text-white font-bold text-xs text-center transition-all shadow-xs flex items-center justify-center gap-1"
+                            className="flex-1 py-2 px-3 rounded-xl bg-primary hover:bg-primary/90 text-white font-bold text-xs text-center transition-all shadow-xs flex items-center justify-center gap-1"
                             title={`Chỉ ôn ${item.needsReviewCount} từ đến hạn của bộ này`}
                           >
                             <span className="material-symbols-outlined text-sm">alarm</span>
@@ -501,7 +501,7 @@ export default function FlashcardsDashboardPage() {
                         <span className="px-2 py-0.5 rounded-full bg-slate-100 text-slate-600 text-[11px] font-bold">
                           {lesson._count?.vocabularies ?? 0} từ
                         </span>
-                        <span className="px-2 py-0.5 rounded-full bg-indigo-50 text-indigo-700 text-[11px] font-bold">
+                        <span className="px-2 py-0.5 rounded-full bg-primary/10 text-primary text-[11px] font-bold">
                           {lesson.domain?.name || 'CNTT'}
                         </span>
                       </div>
@@ -532,7 +532,7 @@ export default function FlashcardsDashboardPage() {
             </p>
             <button
               onClick={() => alert('Tính năng tạo danh sách cá nhân đang được phát triển!')}
-              className="px-6 py-2.5 rounded-xl bg-primary text-white text-xs font-bold shadow-xs hover:bg-indigo-700 transition-colors inline-flex items-center gap-2"
+              className="px-6 py-2.5 rounded-xl bg-primary text-white text-xs font-bold shadow-xs hover:bg-primary/90 transition-colors inline-flex items-center gap-2"
             >
               <span className="material-symbols-outlined text-sm">add</span>
               Tạo list từ mới

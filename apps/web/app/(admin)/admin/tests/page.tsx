@@ -2,7 +2,7 @@
 
 import * as React from 'react';
 import Link from 'next/link';
-import { PageHeader, SearchInput } from '@/shared/ui';
+import { PageHeader, SearchInput, Pagination } from '@/shared/ui';
 import { apiClient, ApiClientError } from '@/shared/api/api-client';
 import type { ExamItem, PaginatedResponse } from '@/shared/api/api-client';
 
@@ -67,6 +67,25 @@ export default function AdminTestsPage() {
   }, [page, search, status]);
 
   React.useEffect(() => { void load(); }, [load]);
+
+  const [updatingId, setUpdatingId] = React.useState<string | null>(null);
+
+  const updateStatus = async (id: string, newStatus: string) => {
+    setUpdatingId(id);
+    setError(null);
+    try {
+      await apiClient.patch(`/exams/${id}`, { status: newStatus });
+      setItems((prev) =>
+        prev.map((exam) =>
+          exam.id === id ? { ...exam, status: newStatus } : exam
+        )
+      );
+    } catch (e) {
+      setError(e instanceof ApiClientError ? e.message : 'Không thể cập nhật trạng thái bài thi');
+    } finally {
+      setUpdatingId(null);
+    }
+  };
 
   const removeExam = async (exam: ExamItem) => {
     if (!window.confirm(`Xóa bài thi “${exam.title}”? Hành động này không thể hoàn tác.`)) return;
@@ -181,9 +200,94 @@ export default function AdminTestsPage() {
                 <span>Tạo bởi: <strong className="text-on-surface">{exam.createdBy?.userDetail?.displayName ?? 'Admin'}</strong></span>
                 <span>{new Date(exam.createdAt).toLocaleDateString('vi-VN')}</span>
               </div>
-              <div className="mt-3 flex justify-end gap-2">
-                <Link href={`/admin/tests/builder?id=${exam.id}`} className="inline-flex items-center gap-1 rounded-lg bg-primary/10 px-3 py-2 text-xs font-semibold text-primary"><span className="material-symbols-outlined text-[16px]">edit</span>Sửa</Link>
-                <button type="button" onClick={() => void removeExam(exam)} className="inline-flex items-center gap-1 rounded-lg bg-error-container px-3 py-2 text-xs font-semibold text-error"><span className="material-symbols-outlined text-[16px]">delete</span>Xóa</button>
+              <div className="mt-3 flex items-center justify-between gap-2">
+                <div className="flex items-center gap-1.5 flex-wrap">
+                  {exam.status === 'draft' && (
+                    <button
+                      type="button"
+                      disabled={updatingId === exam.id}
+                      onClick={() => void updateStatus(exam.id, 'published')}
+                      className="inline-flex items-center gap-1 rounded-lg bg-emerald-50 border border-emerald-200/80 px-2.5 py-1.5 text-xs font-semibold text-emerald-700 hover:bg-emerald-100 disabled:opacity-40 transition-colors cursor-pointer"
+                      title="Xuất bản để học viên có thể thi ngay"
+                    >
+                      {updatingId === exam.id ? (
+                        <span className="animate-spin material-symbols-outlined text-[15px]">progress_activity</span>
+                      ) : (
+                        <span className="material-symbols-outlined text-[15px]">publish</span>
+                      )}
+                      Xuất bản
+                    </button>
+                  )}
+                  {exam.status === 'published' && (
+                    <>
+                      <button
+                        type="button"
+                        disabled={updatingId === exam.id}
+                        onClick={() => void updateStatus(exam.id, 'draft')}
+                        className="inline-flex items-center gap-1 rounded-lg bg-amber-50 border border-amber-200/80 px-2.5 py-1.5 text-xs font-semibold text-amber-700 hover:bg-amber-100 disabled:opacity-40 transition-colors cursor-pointer"
+                        title="Chuyển về bản nháp"
+                      >
+                        {updatingId === exam.id ? (
+                          <span className="animate-spin material-symbols-outlined text-[15px]">progress_activity</span>
+                        ) : (
+                          <span className="material-symbols-outlined text-[15px]">edit_note</span>
+                        )}
+                        Về nháp
+                      </button>
+                      <button
+                        type="button"
+                        disabled={updatingId === exam.id}
+                        onClick={() => void updateStatus(exam.id, 'archived')}
+                        className="inline-flex items-center gap-1 rounded-lg bg-slate-100 border border-slate-200 px-2.5 py-1.5 text-xs font-semibold text-slate-600 hover:bg-slate-200 disabled:opacity-40 transition-colors cursor-pointer"
+                        title="Đóng bài thi"
+                      >
+                        {updatingId === exam.id ? (
+                          <span className="animate-spin material-symbols-outlined text-[15px]">progress_activity</span>
+                        ) : (
+                          <span className="material-symbols-outlined text-[15px]">archive</span>
+                        )}
+                        Đóng
+                      </button>
+                    </>
+                  )}
+                  {exam.status === 'archived' && (
+                    <>
+                      <button
+                        type="button"
+                        disabled={updatingId === exam.id}
+                        onClick={() => void updateStatus(exam.id, 'published')}
+                        className="inline-flex items-center gap-1 rounded-lg bg-emerald-50 border border-emerald-200/80 px-2.5 py-1.5 text-xs font-semibold text-emerald-700 hover:bg-emerald-100 disabled:opacity-40 transition-colors cursor-pointer"
+                        title="Mở lại bài thi"
+                      >
+                        {updatingId === exam.id ? (
+                          <span className="animate-spin material-symbols-outlined text-[15px]">progress_activity</span>
+                        ) : (
+                          <span className="material-symbols-outlined text-[15px]">publish</span>
+                        )}
+                        Mở lại
+                      </button>
+                      <button
+                        type="button"
+                        disabled={updatingId === exam.id}
+                        onClick={() => void updateStatus(exam.id, 'draft')}
+                        className="inline-flex items-center gap-1 rounded-lg bg-amber-50 border border-amber-200/80 px-2.5 py-1.5 text-xs font-semibold text-amber-700 hover:bg-amber-100 disabled:opacity-40 transition-colors cursor-pointer"
+                        title="Chuyển về bản nháp"
+                      >
+                        {updatingId === exam.id ? (
+                          <span className="animate-spin material-symbols-outlined text-[15px]">progress_activity</span>
+                        ) : (
+                          <span className="material-symbols-outlined text-[15px]">edit_note</span>
+                        )}
+                        Về nháp
+                      </button>
+                    </>
+                  )}
+                </div>
+
+                <div className="flex items-center gap-1.5 shrink-0">
+                  <Link href={`/admin/tests/builder?id=${exam.id}`} className="inline-flex items-center gap-1 rounded-lg bg-primary/10 px-3 py-1.5 text-xs font-semibold text-primary hover:bg-primary/20 transition-colors"><span className="material-symbols-outlined text-[16px]">edit</span>Sửa</Link>
+                  <button type="button" onClick={() => void removeExam(exam)} className="inline-flex items-center gap-1 rounded-lg bg-error-container px-3 py-1.5 text-xs font-semibold text-error hover:opacity-90 transition-opacity cursor-pointer"><span className="material-symbols-outlined text-[16px]">delete</span>Xóa</button>
+                </div>
               </div>
             </div>
           ))
@@ -192,13 +296,15 @@ export default function AdminTestsPage() {
 
       {/* Pagination */}
       {totalPages > 1 && (
-        <div className="mt-6 flex items-center justify-between">
-          <p className="text-xs text-on-surface-variant">Trang {page}/{totalPages}</p>
-          <div className="flex gap-2">
-            <button disabled={page <= 1} onClick={() => setPage((p) => p - 1)} className="px-4 py-2 rounded-xl text-sm border border-outline-variant disabled:opacity-40 hover:bg-surface-container transition-colors">← Trước</button>
-            <button disabled={page >= totalPages} onClick={() => setPage((p) => p + 1)} className="px-4 py-2 rounded-xl text-sm border border-outline-variant disabled:opacity-40 hover:bg-surface-container transition-colors">Sau →</button>
-          </div>
-        </div>
+        <Pagination
+          className="mt-6 rounded-2xl border border-outline-variant/40 shadow-xs"
+          page={page}
+          limit={limit}
+          total={total}
+          totalPages={totalPages}
+          onPageChange={setPage}
+          showQuickJumper
+        />
       )}
     </div>
   );

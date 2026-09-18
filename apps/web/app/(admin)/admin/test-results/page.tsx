@@ -4,13 +4,18 @@ import * as React from 'react';
 import { PageHeader, SearchInput } from '@/shared/ui';
 import { apiClient, ApiClientError } from '@/shared/api/api-client';
 import type { PaginatedResponse } from '@/shared/api/api-client';
+import { ExamAttemptDetailModal } from './ExamAttemptDetailModal';
 
 interface TestResultItem {
   id: string;
-  score: number;
-  isPassed: boolean;
-  timeSpentSeconds: number;
-  completedAt: string;
+  score?: number;
+  scorePercent?: number;
+  isPassed?: boolean;
+  passed?: boolean;
+  timeSpentSeconds?: number;
+  startedAt?: string;
+  submittedAt?: string;
+  completedAt?: string;
   createdAt: string;
   learner?: {
     id: string;
@@ -33,6 +38,8 @@ export default function AdminTestResultsPage() {
   const [page, setPage] = React.useState(1);
   const [searchInput, setSearchInput] = React.useState('');
   const [search, setSearch] = React.useState('');
+  const [status, setStatus] = React.useState('');
+  const [selectedAttemptId, setSelectedAttemptId] = React.useState<string | null>(null);
   const [loading, setLoading] = React.useState(true);
   const [error, setError] = React.useState<string | null>(null);
   const limit = 15;
@@ -47,6 +54,8 @@ export default function AdminTestResultsPage() {
         page: String(page),
         limit: String(limit),
         ...(search && { search }),
+        ...(status === 'passed' && { passed: 'true' }),
+        ...(status === 'failed' && { passed: 'false' }),
       });
       const res = await apiClient.get<PaginatedResponse<TestResultItem>>(`/test-results?${params}`);
       setResults(res.data);
@@ -56,9 +65,11 @@ export default function AdminTestResultsPage() {
     } finally {
       setLoading(false);
     }
-  }, [page, search]);
+  }, [page, search, status]);
 
-  React.useEffect(() => { void load(); }, [load]);
+  React.useEffect(() => {
+    void load();
+  }, [load]);
 
   return (
     <main className="flex-1 overflow-y-auto p-4 md:p-margin bg-surface">
@@ -151,7 +162,7 @@ export default function AdminTestResultsPage() {
             </div>
             <select
               value={status}
-              onChange={(e) => {  setPage(1); }}
+              onChange={(e) => { setStatus(e.target.value); setPage(1); }}
               className="py-sm px-3 rounded-lg border border-outline-variant text-sm bg-surface"
             >
               <option value="">Tất cả</option>
@@ -181,6 +192,16 @@ export default function AdminTestResultsPage() {
               ) : (
                 results.map((r) => {
                   const learnerName = r.learner?.userDetail?.displayName || r.learner?.email || 'Người học';
+                  const isPassed = Boolean(r.isPassed ?? r.passed);
+                  const score = Math.round(Number(r.score ?? r.scorePercent ?? 0));
+                  const timeSpent = typeof r.timeSpentSeconds === 'number' && !Number.isNaN(r.timeSpentSeconds)
+                    ? r.timeSpentSeconds
+                    : (r.submittedAt && r.startedAt ? Math.max(0, Math.round((new Date(r.submittedAt).getTime() - new Date(r.startedAt).getTime()) / 1000)) : 0);
+                  const mins = Math.floor(timeSpent / 60);
+                  const secs = timeSpent % 60;
+                  const timeFormatted = `${mins}m ${secs}s`;
+                  const submittedDate = r.completedAt || r.submittedAt || r.createdAt;
+
                   return (
                     <tr key={r.id} className="border-b border-outline-variant hover:bg-surface-container-low transition-colors">
                       <td className="p-md">
@@ -202,24 +223,30 @@ export default function AdminTestResultsPage() {
                           <span className="text-[11px] text-on-surface-variant">{r.exam?.domain?.name ?? 'General IT'}</span>
                         </div>
                       </td>
-                      <td className={`p-md font-interface-sb text-interface-sb ${r.isPassed ? 'text-primary' : 'text-error'}`}>
-                        {Math.round(r.score)} / 100
+                      <td className={`p-md font-interface-sb text-interface-sb ${isPassed ? 'text-primary' : 'text-error'}`}>
+                        {score} / 100
                       </td>
                       <td className="p-md hidden sm:table-cell text-on-surface-variant">
-                        {Math.floor(r.timeSpentSeconds / 60)}m {r.timeSpentSeconds % 60}s
+                        {timeFormatted}
                       </td>
                       <td className="p-md hidden md:table-cell text-on-surface-variant">
-                        {new Date(r.completedAt || r.createdAt).toLocaleString('vi-VN')}
+                        {submittedDate ? new Date(submittedDate).toLocaleString('vi-VN') : '—'}
                       </td>
                       <td className="p-md">
-                        {r.isPassed ? (
+                        {isPassed ? (
                           <span className="inline-flex items-center px-2 py-1 rounded-full bg-[#dcfce7] text-[#166534] font-interface-sb text-[11px]">Đạt</span>
                         ) : (
                           <span className="inline-flex items-center px-2 py-1 rounded-full bg-error-container text-on-error-container font-interface-sb text-[11px]">Không đạt</span>
                         )}
                       </td>
                       <td className="p-md text-right">
-                        <button className="text-primary hover:text-primary-container font-interface-sb text-interface-sb transition-colors whitespace-nowrap">Chi tiết</button>
+                        <button 
+                          onClick={() => setSelectedAttemptId(r.id)}
+                          className="inline-flex items-center gap-1 text-primary hover:text-primary-variant font-interface-sb text-interface-sb transition-colors whitespace-nowrap cursor-pointer hover:underline px-2 py-1 rounded hover:bg-primary-fixed/30"
+                        >
+                          <span>Chi tiết</span>
+                          <span className="material-symbols-outlined text-[16px]">visibility</span>
+                        </button>
                       </td>
                     </tr>
                   );
@@ -238,7 +265,7 @@ export default function AdminTestResultsPage() {
               <button 
                 disabled={page <= 1}
                 onClick={() => setPage(p => p - 1)}
-                className="p-sm rounded border border-outline-variant text-outline disabled:opacity-50"
+                className="p-sm rounded border border-outline-variant text-outline disabled:opacity-50 cursor-pointer"
               >
                 <span className="material-symbols-outlined text-[18px]">chevron_left</span>
               </button>
@@ -246,7 +273,7 @@ export default function AdminTestResultsPage() {
               <button 
                 disabled={page * limit >= total}
                 onClick={() => setPage(p => p + 1)}
-                className="p-sm rounded border border-outline-variant text-outline disabled:opacity-50"
+                className="p-sm rounded border border-outline-variant text-outline disabled:opacity-50 cursor-pointer"
               >
                 <span className="material-symbols-outlined text-[18px]">chevron_right</span>
               </button>
@@ -255,6 +282,12 @@ export default function AdminTestResultsPage() {
         )}
       </div>
       <div className="h-24 md:h-8"></div>
+
+      {/* Detail Modal */}
+      <ExamAttemptDetailModal
+        attemptId={selectedAttemptId}
+        onClose={() => setSelectedAttemptId(null)}
+      />
     </main>
   );
 }

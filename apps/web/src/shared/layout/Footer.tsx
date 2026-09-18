@@ -68,11 +68,6 @@ export function Footer() {
                 </Link>
               </li>
               <li>
-                <Link href="/learn/practice" className="hover:text-primary transition-colors">
-                  Bài tập tình huống Scenario-based
-                </Link>
-              </li>
-              <li>
                 <Link href="/learn/progress" className="hover:text-primary transition-colors">
                   Đánh giá năng lực chuẩn CEFR
                 </Link>

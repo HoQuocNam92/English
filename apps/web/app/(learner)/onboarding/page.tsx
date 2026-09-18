@@ -26,6 +26,7 @@ const CAREER_GOALS = [
   { id: 'SOLUTION_ARCHITECT', title: 'Solution Architect', subtitle: 'Tiếng Anh chuyên sâu để thiết kế hệ thống, viết tài liệu kỹ thuật và thuyết trình.', icon: 'architecture' },
   { id: 'DATA_ENGINEER', title: 'Data Engineer', subtitle: 'Xây dựng data pipeline, analytics và kiến trúc xử lý dữ liệu lớn.', icon: 'monitoring' },
   { id: 'DEVOPS_ENGINEER', title: 'DevOps Engineer', subtitle: 'Tự động hóa hạ tầng đám mây, quy trình CI/CD và tối ưu độ tin cậy.', icon: 'manage_accounts' },
+  { id: 'OTHER', title: 'Lĩnh vực / Mục tiêu khác', subtitle: 'Frontend, Mobile, Fullstack, Tester hoặc chưa xác định mục tiêu cụ thể.', icon: 'work_outline' },
 ];
 
 const TARGET_CERTS = [
@@ -33,12 +34,13 @@ const TARGET_CERTS = [
   { id: 'COMPTIA-SECURITY-PLUS', title: 'CompTIA Security+', subtitle: 'Kiến thức an ninh mạng và bảo mật hệ thống.', icon: 'security' },
   { id: 'CKA', title: 'Certified Kubernetes Administrator', subtitle: 'Quản trị cụm Kubernetes và container orchestration.', icon: 'hub' },
   { id: 'GCP-ACE', title: 'Google Cloud Associate Cloud Engineer', subtitle: 'Triển khai và vận hành trên Google Cloud Platform.', icon: 'memory' },
+  { id: 'NONE', title: 'Chưa có nhu cầu thi chứng chỉ', subtitle: 'Tôi muốn tập trung học tiếng Anh giao tiếp & tài liệu chuyên ngành, chưa cần thi chứng chỉ.', icon: 'check_box_outline_blank' },
 ];
 
 export default function OnboardingPage() {
   const router = useRouter();
   const [step, setStep] = useState(1);
-  const [level, setLevel] = useState<string>('');
+  const [level, setLevel] = useState<string>('beginner');
   const [itFields, setItFields] = useState<string[]>([]);
   const [careerGoal, setCareerGoal] = useState<string>('');
   const [targetCert, setTargetCert] = useState<string>('');
@@ -68,10 +70,10 @@ export default function OnboardingPage() {
     setIsSubmitting(true);
     try {
       await apiClient.post('/learner-profiles/me/complete-onboarding', {
-        levelCode: level.toLowerCase(),
-        domainCodes: itFields.length > 0 ? itFields : ['CLOUD'],
-        careerGoalCodes: careerGoal ? [careerGoal] : undefined,
-        certificateCodes: targetCert ? [targetCert] : undefined,
+        levelCode: level ? level.toLowerCase() : 'beginner',
+        domainCodes: itFields.length > 0 ? itFields : ['SOFTWARE_ENG'],
+        careerGoalCodes: careerGoal && careerGoal !== 'OTHER' ? [careerGoal] : undefined,
+        certificateCodes: targetCert && targetCert !== 'NONE' ? [targetCert] : undefined,
         weeklyStudyTargetMinutes: 120,
       });
       router.push('/learn');
@@ -81,18 +83,30 @@ export default function OnboardingPage() {
     }
   };
 
-  const isStepValid = () => {
-    switch (step) {
-      case 1: return !!level;
-      case 2: return itFields.length > 0;
-      case 3: return !!careerGoal;
-      case 4: return !!targetCert;
-      default: return false;
+  const handleSkipAll = async () => {
+    setIsSubmitting(true);
+    try {
+      await apiClient.post('/learner-profiles/me/complete-onboarding', {
+        levelCode: level ? level.toLowerCase() : 'beginner',
+        domainCodes: itFields.length > 0 ? itFields : ['SOFTWARE_ENG'],
+        careerGoalCodes: careerGoal && careerGoal !== 'OTHER' ? [careerGoal] : undefined,
+        certificateCodes: targetCert && targetCert !== 'NONE' ? [targetCert] : undefined,
+        weeklyStudyTargetMinutes: 120,
+      });
+      router.push('/learn');
+    } catch (error) {
+      console.error('Failed to skip onboarding:', error);
+      router.push('/learn');
     }
   };
 
+  const isStepValid = () => {
+    // Tất cả các bước đều cho phép tiếp tục linh hoạt
+    return true;
+  };
+
   const renderProgressBar = () => (
-    <div className="w-full max-w-[600px] flex gap-2 mb-12">
+    <div className="w-full max-w-[600px] flex gap-2 mb-10">
       {Array.from({ length: totalSteps }).map((_, i) => (
         <div 
           key={i} 
@@ -107,6 +121,22 @@ export default function OnboardingPage() {
   return (
     <main className="min-h-screen bg-surface flex flex-col items-center justify-center p-6 md:p-8 w-full">
       <div className="w-full max-w-[800px] flex flex-col items-center relative z-10">
+        {/* Top header with Skip All button */}
+        <div className="w-full flex items-center justify-between mb-6">
+          <span className="text-xs font-semibold text-on-surface-variant uppercase tracking-wider">
+            Bước {step} / {totalSteps}
+          </span>
+          <button
+            type="button"
+            onClick={handleSkipAll}
+            disabled={isSubmitting}
+            className="text-xs md:text-sm font-semibold text-on-surface-variant hover:text-primary transition-colors flex items-center gap-1 px-3 py-1.5 rounded-lg hover:bg-surface-container-low"
+          >
+            <span>Bỏ qua thiết lập</span>
+            <span className="material-symbols-outlined text-[16px]">chevron_right</span>
+          </button>
+        </div>
+
         {renderProgressBar()}
 
         {step === 1 && (
@@ -203,32 +233,37 @@ export default function OnboardingPage() {
             </div>
             
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 w-full">
-              {CAREER_GOALS.map(item => (
-                <div 
-                  key={item.id}
-                  onClick={() => setCareerGoal(item.id)}
-                  className={`bg-white rounded-lg p-4 border relative flex items-start gap-4 cursor-pointer transition-all duration-200 ${
-                    careerGoal === item.id
-                      ? 'border-primary bg-primary-light shadow-[0_0_0_1px_#3525cd]'
-                      : 'border-border-subtle hover:border-primary hover:-translate-y-0.5 hover:shadow-md'
-                  }`}
-                >
-                  <div className={`flex-shrink-0 w-12 h-12 rounded-lg flex items-center justify-center transition-colors ${
-                    careerGoal === item.id ? 'bg-primary text-white' : 'bg-surface-container-low text-on-surface-variant'
-                  }`}>
-                    <span className="material-symbols-outlined">{item.icon}</span>
+              {CAREER_GOALS.map((item, index) => {
+                const isLast = index === CAREER_GOALS.length - 1;
+                return (
+                  <div 
+                    key={item.id}
+                    onClick={() => setCareerGoal(prev => prev === item.id ? '' : item.id)}
+                    className={`bg-white rounded-lg p-4 border relative flex items-start gap-4 cursor-pointer transition-all duration-200 ${
+                      isLast ? 'md:col-span-2' : ''
+                    } ${
+                      careerGoal === item.id
+                        ? 'border-primary bg-primary-light shadow-[0_0_0_1px_#3525cd]'
+                        : 'border-border-subtle hover:border-primary hover:-translate-y-0.5 hover:shadow-md'
+                    }`}
+                  >
+                    <div className={`flex-shrink-0 w-12 h-12 rounded-lg flex items-center justify-center transition-colors ${
+                      careerGoal === item.id ? 'bg-primary text-white' : 'bg-surface-container-low text-on-surface-variant'
+                    }`}>
+                      <span className="material-symbols-outlined">{item.icon}</span>
+                    </div>
+                    <div className="flex-grow pr-8">
+                      <h3 className="text-[14px] font-semibold text-on-surface mb-1">{item.title}</h3>
+                      <p className="text-[12px] text-on-surface-variant">{item.subtitle}</p>
+                    </div>
+                    <div className="absolute top-4 right-4">
+                      <span className={`material-symbols-outlined text-primary transition-all duration-200 ${
+                        careerGoal === item.id ? 'opacity-100 scale-100' : 'opacity-0 scale-50'
+                      }`} style={{ fontVariationSettings: "'FILL' 1" }}>check_circle</span>
+                    </div>
                   </div>
-                  <div className="flex-grow pr-8">
-                    <h3 className="text-[14px] font-semibold text-on-surface mb-1">{item.title}</h3>
-                    <p className="text-[12px] text-on-surface-variant">{item.subtitle}</p>
-                  </div>
-                  <div className="absolute top-4 right-4">
-                    <span className={`material-symbols-outlined text-primary transition-all duration-200 ${
-                      careerGoal === item.id ? 'opacity-100 scale-100' : 'opacity-0 scale-50'
-                    }`} style={{ fontVariationSettings: "'FILL' 1" }}>check_circle</span>
-                  </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           </div>
         )}
@@ -240,35 +275,40 @@ export default function OnboardingPage() {
                 Chứng chỉ mục tiêu?
               </h1>
               <p className="text-[14px] text-on-surface-variant max-w-md mx-auto">
-                Chọn chứng chỉ bạn muốn đạt được để chúng tôi cá nhân hóa lộ trình học.
+                Chọn chứng chỉ bạn muốn đạt được (không bắt buộc) để chúng tôi cá nhân hóa lộ trình học.
               </p>
             </div>
             
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 w-full">
-              {TARGET_CERTS.map(item => (
-                <div 
-                  key={item.id}
-                  onClick={() => setTargetCert(item.id)}
-                  className={`bg-white border rounded-lg p-5 flex items-start gap-4 cursor-pointer transition-all duration-200 relative ${
-                    targetCert === item.id
-                      ? 'border-primary bg-primary-light shadow-[0_0_0_1px_#3525cd]'
-                      : 'border-border-subtle hover:shadow-md'
-                  }`}
-                >
-                  <div className="w-10 h-10 rounded bg-surface-container flex items-center justify-center shrink-0">
-                    <span className="material-symbols-outlined text-primary">{item.icon}</span>
+              {TARGET_CERTS.map((item, index) => {
+                const isLast = index === TARGET_CERTS.length - 1;
+                return (
+                  <div 
+                    key={item.id}
+                    onClick={() => setTargetCert(prev => prev === item.id ? '' : item.id)}
+                    className={`bg-white border rounded-lg p-5 flex items-start gap-4 cursor-pointer transition-all duration-200 relative ${
+                      isLast ? 'md:col-span-2' : ''
+                    } ${
+                      targetCert === item.id
+                        ? 'border-primary bg-primary-light shadow-[0_0_0_1px_#3525cd]'
+                        : 'border-border-subtle hover:shadow-md'
+                    }`}
+                  >
+                    <div className="w-10 h-10 rounded bg-surface-container flex items-center justify-center shrink-0">
+                      <span className="material-symbols-outlined text-primary">{item.icon}</span>
+                    </div>
+                    <div className="flex-1 pr-6">
+                      <h3 className="text-[14px] font-semibold text-on-surface mb-1">{item.title}</h3>
+                      <p className="text-[12px] text-on-surface-variant">{item.subtitle}</p>
+                    </div>
+                    <div className={`absolute right-5 transition-opacity duration-200 ${
+                      targetCert === item.id ? 'opacity-100' : 'opacity-0'
+                    }`}>
+                      <span className="material-symbols-outlined text-primary" style={{ fontVariationSettings: "'FILL' 1" }}>check_circle</span>
+                    </div>
                   </div>
-                  <div className="flex-1 pr-6">
-                    <h3 className="text-[14px] font-semibold text-on-surface mb-1">{item.title}</h3>
-                    <p className="text-[12px] text-on-surface-variant">{item.subtitle}</p>
-                  </div>
-                  <div className={`absolute right-5 transition-opacity duration-200 ${
-                    targetCert === item.id ? 'opacity-100' : 'opacity-0'
-                  }`}>
-                    <span className="material-symbols-outlined text-primary" style={{ fontVariationSettings: "'FILL' 1" }}>check_circle</span>
-                  </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           </div>
         )}
@@ -289,23 +329,32 @@ export default function OnboardingPage() {
             Quay lại
           </button>
           
-          <button 
-            type="button"
-            onClick={step === totalSteps ? handleSubmit : handleNext}
-            disabled={!isStepValid() || isSubmitting}
-            className={`px-8 py-2.5 rounded-lg text-[14px] font-semibold flex items-center gap-2 transition-all ${
-              !isStepValid() || isSubmitting
-                ? 'bg-primary text-white opacity-50 cursor-not-allowed'
-                : 'bg-primary text-white hover:bg-primary-container shadow-sm'
-            }`}
-          >
-            {isSubmitting ? 'Đang xử lý...' : step === totalSteps ? 'Hoàn tất' : 'Tiếp tục'}
-            {!isSubmitting && (
-              <span className="material-symbols-outlined text-[20px]">
-                {step === totalSteps ? 'check' : 'arrow_forward'}
-              </span>
+          <div className="flex items-center gap-3">
+            {(step === 3 || step === 4) && (
+              <button 
+                type="button"
+                onClick={step === totalSteps ? handleSubmit : handleNext}
+                disabled={isSubmitting}
+                className="px-5 py-2.5 rounded-lg text-[14px] font-semibold text-on-surface-variant hover:text-on-surface hover:bg-surface-container-low transition-colors"
+              >
+                Bỏ qua bước này
+              </button>
             )}
-          </button>
+
+            <button 
+              type="button"
+              onClick={step === totalSteps ? handleSubmit : handleNext}
+              disabled={isSubmitting}
+              className="px-8 py-2.5 rounded-lg text-[14px] font-semibold flex items-center gap-2 transition-all bg-primary text-white hover:bg-primary-container shadow-sm cursor-pointer"
+            >
+              {isSubmitting ? 'Đang xử lý...' : step === totalSteps ? 'Hoàn tất' : 'Tiếp tục'}
+              {!isSubmitting && (
+                <span className="material-symbols-outlined text-[20px]">
+                  {step === totalSteps ? 'check' : 'arrow_forward'}
+                </span>
+              )}
+            </button>
+          </div>
         </div>
       </div>
     </main>

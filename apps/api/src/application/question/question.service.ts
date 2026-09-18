@@ -125,10 +125,10 @@ export class QuestionsService {
     const created = await this.prisma.$transaction(async (tx) => {
       const results = []
       for (const item of dtos) {
-        const dKey = String(item.domainId || item.domainCode || item.domain || '').trim().toLowerCase()
+        const dKey = String(item.domainId || item.domainCode || item.domainName || item.domain || '').trim().toLowerCase()
         const domainId = domainMap.get(dKey) || defaultDomainId
 
-        const lKey = String(item.levelId || item.levelCode || item.level || '').trim().toLowerCase()
+        const lKey = String(item.levelId || item.levelCode || item.levelName || item.level || '').trim().toLowerCase()
         const levelId = levelMap.get(lKey) || defaultLevelId
 
         if (!domainId || !levelId) continue

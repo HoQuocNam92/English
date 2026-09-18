@@ -34,6 +34,7 @@ export default function TestBuilderPage() {
   const [levelId, setLevelId] = React.useState('');
   const [certificateId, setCertificateId] = React.useState('');
   const [topics, setTopics] = React.useState('');
+  const [status, setStatus] = React.useState('draft');
 
   const [qSearch, setQSearch] = React.useState('');
   const [qFilterDomain, setQFilterDomain] = React.useState('');
@@ -70,6 +71,7 @@ export default function TestBuilderPage() {
           setLevelId(exam.levelId ?? '');
           setCertificateId(exam.certificateId ?? '');
           setTopics((exam.topics ?? []).join(', '));
+          setStatus(exam.status ?? 'draft');
           setSelectedQuestionIds((exam.questions ?? []).map((q: any) => q.id ?? q.questionId));
         }
       } catch (e) {
@@ -89,14 +91,15 @@ export default function TestBuilderPage() {
 
   const validate = (): boolean => {
     const errs: Record<string, string> = {};
-    if (!title.trim()) errs.title = 'Tiêu đề bài thi không được để trống';
-    else if (title.trim().length > 200) errs.title = 'Tiêu đề tối đa 200 ký tự';
+    if (!title.trim()) errs.title = 'Tiêu đề không được để trống';
     if (!domainId) errs.domainId = 'Vui lòng chọn lĩnh vực';
     if (!levelId) errs.levelId = 'Vui lòng chọn cấp độ';
-    const dur = Number(durationMinutes);
-    if (isNaN(dur) || dur < 1 || dur > 300) errs.durationMinutes = 'Thời gian phải từ 1 đến 300 phút';
-    const pass = Number(passingScorePercent);
-    if (isNaN(pass) || pass < 1 || pass > 100) errs.passingScorePercent = 'Điểm đạt phải từ 1 đến 100%';
+    if (!durationMinutes || isNaN(Number(durationMinutes)) || Number(durationMinutes) < 1 || Number(durationMinutes) > 300) {
+      errs.durationMinutes = 'Thời gian phải từ 1 đến 300 phút';
+    }
+    if (!passingScorePercent || isNaN(Number(passingScorePercent)) || Number(passingScorePercent) < 1 || Number(passingScorePercent) > 100) {
+      errs.passingScorePercent = 'Điểm đạt phải từ 1 đến 100%';
+    }
     if (maxAttempts && (isNaN(Number(maxAttempts)) || Number(maxAttempts) < 1)) {
       errs.maxAttempts = 'Số lần thi phải ≥ 1';
     }
@@ -105,10 +108,11 @@ export default function TestBuilderPage() {
     return Object.keys(errs).length === 0;
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleSubmit = async (e?: React.FormEvent, overrideStatus?: string) => {
+    if (e) e.preventDefault();
     if (!validate()) return;
 
+    const targetStatus = overrideStatus || status;
     setSaving(true);
     setGlobalError('');
     try {
@@ -122,6 +126,7 @@ export default function TestBuilderPage() {
         levelId: levelId || undefined,
         certificateId: certificateId || undefined,
         topics: topics.trim() ? topics.split(',').map(t => t.trim()).filter(Boolean) : [],
+        status: targetStatus,
         questions: selectedQuestionIds.map((id, idx) => ({ questionId: id, order: idx + 1 })),
       };
 
@@ -138,9 +143,9 @@ export default function TestBuilderPage() {
     }
   };
 
-  const filteredQuestions = React.useMemo(() => {
+  // Filter questions matching search, domain, and level criteria
+  const matchingQuestions = React.useMemo(() => {
     return availableQuestions.filter(q => {
-      if (qOnlySelected && !selectedQuestionIds.includes(q.id)) return false;
       if (qFilterDomain) {
         const domainObj = domains.find(d => d.id === qFilterDomain);
         const matchDomain =
@@ -164,16 +169,29 @@ export default function TestBuilderPage() {
       }
       return true;
     });
-  }, [availableQuestions, selectedQuestionIds, qOnlySelected, qFilterDomain, qFilterLevel, qSearch, domains, levels]);
+  }, [availableQuestions, qFilterDomain, qFilterLevel, qSearch, domains, levels]);
+
+  // Count of selected questions within the current filter criteria
+  const matchingSelectedCount = React.useMemo(() => {
+    return matchingQuestions.filter(q => selectedQuestionIds.includes(q.id)).length;
+  }, [matchingQuestions, selectedQuestionIds]);
+
+  // Current questions to display depending on "Tất cả" vs "Đã chọn" tab
+  const filteredQuestions = React.useMemo(() => {
+    if (qOnlySelected) {
+      return matchingQuestions.filter(q => selectedQuestionIds.includes(q.id));
+    }
+    return matchingQuestions;
+  }, [matchingQuestions, qOnlySelected, selectedQuestionIds]);
 
   const handleSelectAllFiltered = () => {
-    const filteredIds = filteredQuestions.map(q => q.id);
-    setSelectedQuestionIds(prev => Array.from(new Set([...prev, ...filteredIds])));
+    const matchingIds = matchingQuestions.map(q => q.id);
+    setSelectedQuestionIds(prev => Array.from(new Set([...prev, ...matchingIds])));
   };
 
   const handleDeselectFiltered = () => {
-    const filteredIdSet = new Set(filteredQuestions.map(q => q.id));
-    setSelectedQuestionIds(prev => prev.filter(id => !filteredIdSet.has(id)));
+    const matchingIdSet = new Set(matchingQuestions.map(q => q.id));
+    setSelectedQuestionIds(prev => prev.filter(id => !matchingIdSet.has(id)));
   };
 
   const handleResetFilters = () => {
@@ -346,6 +364,72 @@ export default function TestBuilderPage() {
                 />
               </div>
             </div>
+
+            {/* Trạng thái bài thi */}
+            <div>
+              <label className="block text-sm font-semibold text-slate-900 mb-2">Trạng thái bài thi</label>
+              <div className="grid grid-cols-3 gap-2.5">
+                <label
+                  className={`flex flex-col items-center justify-center p-3 rounded-xl border text-center cursor-pointer transition-all ${
+                    status === 'draft'
+                      ? 'border-amber-500 bg-amber-50/60 text-amber-900 ring-2 ring-amber-400/40 shadow-xs'
+                      : 'border-slate-200 bg-white hover:bg-slate-50 text-slate-700'
+                  }`}
+                >
+                  <input
+                    type="radio"
+                    name="examStatus"
+                    value="draft"
+                    checked={status === 'draft'}
+                    onChange={() => setStatus('draft')}
+                    className="sr-only"
+                  />
+                  <span className="material-symbols-outlined text-[20px] text-amber-600 mb-1">edit_note</span>
+                  <span className="text-xs font-bold">Bản nháp</span>
+                  <span className="text-[10px] text-slate-500 mt-0.5">Chưa mở thi</span>
+                </label>
+
+                <label
+                  className={`flex flex-col items-center justify-center p-3 rounded-xl border text-center cursor-pointer transition-all ${
+                    status === 'published'
+                      ? 'border-emerald-500 bg-emerald-50/60 text-emerald-900 ring-2 ring-emerald-400/40 shadow-xs'
+                      : 'border-slate-200 bg-white hover:bg-slate-50 text-slate-700'
+                  }`}
+                >
+                  <input
+                    type="radio"
+                    name="examStatus"
+                    value="published"
+                    checked={status === 'published'}
+                    onChange={() => setStatus('published')}
+                    className="sr-only"
+                  />
+                  <span className="material-symbols-outlined text-[20px] text-emerald-600 mb-1">check_circle</span>
+                  <span className="text-xs font-bold">Đang mở thi</span>
+                  <span className="text-[10px] text-slate-500 mt-0.5">Học viên vào thi</span>
+                </label>
+
+                <label
+                  className={`flex flex-col items-center justify-center p-3 rounded-xl border text-center cursor-pointer transition-all ${
+                    status === 'archived'
+                      ? 'border-slate-400 bg-slate-100 text-slate-900 ring-2 ring-slate-300 shadow-xs'
+                      : 'border-slate-200 bg-white hover:bg-slate-50 text-slate-700'
+                  }`}
+                >
+                  <input
+                    type="radio"
+                    name="examStatus"
+                    value="archived"
+                    checked={status === 'archived'}
+                    onChange={() => setStatus('archived')}
+                    className="sr-only"
+                  />
+                  <span className="material-symbols-outlined text-[20px] text-slate-500 mb-1">archive</span>
+                  <span className="text-xs font-bold">Đã đóng</span>
+                  <span className="text-[10px] text-slate-500 mt-0.5">Lưu trữ</span>
+                </label>
+              </div>
+            </div>
           </div>
 
           {/* Right: Question picker */}
@@ -419,7 +503,7 @@ export default function TestBuilderPage() {
                       : 'text-slate-600 hover:text-slate-900'
                   }`}
                 >
-                  Tất cả ({availableQuestions.length})
+                  Tất cả ({matchingQuestions.length})
                 </button>
                 <button
                   type="button"
@@ -430,7 +514,7 @@ export default function TestBuilderPage() {
                       : 'text-slate-600 hover:text-slate-900'
                   }`}
                 >
-                  Đã chọn ({selectedQuestionIds.length})
+                  Đã chọn ({matchingSelectedCount})
                 </button>
               </div>
 
@@ -438,7 +522,7 @@ export default function TestBuilderPage() {
                 <button
                   type="button"
                   onClick={handleSelectAllFiltered}
-                  disabled={filteredQuestions.length === 0}
+                  disabled={matchingQuestions.length === 0 || matchingSelectedCount === matchingQuestions.length}
                   className="px-2.5 py-1 rounded-lg border border-slate-200 bg-white text-[11px] font-bold text-slate-700 hover:bg-slate-50 hover:text-primary disabled:opacity-40 disabled:pointer-events-none transition-colors shadow-2xs"
                 >
                   Chọn tất cả
@@ -446,7 +530,7 @@ export default function TestBuilderPage() {
                 <button
                   type="button"
                   onClick={handleDeselectFiltered}
-                  disabled={filteredQuestions.length === 0}
+                  disabled={matchingSelectedCount === 0}
                   className="px-2.5 py-1 rounded-lg border border-slate-200 bg-white text-[11px] font-bold text-slate-700 hover:bg-slate-50 hover:text-error disabled:opacity-40 disabled:pointer-events-none transition-colors shadow-2xs"
                 >
                   Bỏ chọn
@@ -520,7 +604,7 @@ export default function TestBuilderPage() {
         </div>
 
         {/* Actions */}
-        <div className="flex items-center gap-3 pt-3">
+        <div className="flex flex-wrap items-center gap-3 pt-3">
           <button
             type="submit"
             disabled={saving}
@@ -533,6 +617,26 @@ export default function TestBuilderPage() {
             )}
             {isEdit ? 'Lưu thay đổi' : 'Tạo bài thi'}
           </button>
+
+          {status !== 'published' && (
+            <button
+              type="button"
+              disabled={saving}
+              onClick={() => {
+                setStatus('published');
+                void handleSubmit(undefined, 'published');
+              }}
+              className="flex items-center gap-2 px-6 py-2.5 rounded-xl bg-emerald-600 text-white text-sm font-bold shadow-sm hover:bg-emerald-700 disabled:opacity-50 transition-all cursor-pointer"
+            >
+              {saving ? (
+                <span className="animate-spin material-symbols-outlined text-[18px]">progress_activity</span>
+              ) : (
+                <span className="material-symbols-outlined text-[18px]">publish</span>
+              )}
+              {isEdit ? 'Lưu & Xuất bản ngay' : 'Tạo & Xuất bản ngay'}
+            </button>
+          )}
+
           <button
             type="button"
             onClick={() => router.back()}

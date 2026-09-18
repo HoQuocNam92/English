@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import Link from 'next/link';
 import { LearnerShell } from '@/shared/layout';
 import { apiClient } from '@/shared/api/api-client';
 import { LoadingSpinner } from '@/shared/ui';
@@ -36,7 +37,16 @@ export default function LearnerPersonalProgressPage() {
 
   const { progress, profile } = data;
   const overallCompletion = progress?.summary?.overallCompletionPercent ?? 0;
-  const certGoal = profile?.certGoals?.[0]?.certificate?.name || 'N/A';
+  const certGoal = profile?.certGoals?.[0]?.certificate?.name || null;
+  const hasCertGoal = Boolean(certGoal);
+  const certProgressList = progress?.certProgress || [];
+  const activeCertProg = certProgressList.find(
+    (cp: any) => cp.certificateName === certGoal || cp.certificateId === profile?.certGoals?.[0]?.certificateId
+  );
+  const displayPercent = hasCertGoal
+    ? (activeCertProg?.completionPercent ?? overallCompletion)
+    : overallCompletion;
+
   const domains = profile?.domains || [];
   const recentAttempts = progress?.recentAttempts || [];
 
@@ -59,14 +69,35 @@ export default function LearnerPersonalProgressPage() {
                 <span className="px-2.5 py-0.5 rounded text-[11px] font-bold bg-amber-100 text-amber-900 border border-amber-300">
                   MỤC TIÊU
                 </span>
-                <span className="text-xs font-semibold text-primary">{certGoal}</span>
+                <span className="text-xs font-semibold text-primary">
+                  {hasCertGoal ? certGoal : 'Chưa thiết lập mục tiêu'}
+                </span>
               </div>
-              <h3 className="text-xl font-extrabold text-on-surface">Độ sẵn sàng: {overallCompletion}%</h3>
+              <h3 className="text-xl font-extrabold text-on-surface">
+                {hasCertGoal ? `Độ sẵn sàng chứng chỉ: ${displayPercent}%` : `Tiến độ học tập bài học: ${displayPercent}%`}
+              </h3>
+              <p className="text-xs text-on-surface-variant mt-1">
+                {hasCertGoal
+                  ? `Độ hoàn thiện bài học và ôn luyện chuẩn bị cho chứng chỉ ${certGoal}.`
+                  : 'Tỷ lệ hoàn thành các bài học bạn đã tham gia. Độ sẵn sàng cho từng bài thi sẽ được tính riêng theo chuyên đề bài thi đó.'}
+              </p>
             </div>
+            {!hasCertGoal && (
+              <Link
+                href="/learn/profile"
+                className="text-xs font-semibold text-primary hover:underline flex items-center gap-1"
+              >
+                <span>Thiết lập mục tiêu</span>
+                <span className="material-symbols-outlined text-[14px]">arrow_forward</span>
+              </Link>
+            )}
           </div>
 
           <div className="w-full h-3 rounded-full bg-surface-container overflow-hidden">
-            <div className="h-full rounded-full bg-primary" style={{ width: `${overallCompletion}%` }} />
+            <div
+              className="h-full rounded-full bg-primary transition-all duration-300"
+              style={{ width: `${displayPercent}%` }}
+            />
           </div>
         </div>
 
@@ -76,13 +107,19 @@ export default function LearnerPersonalProgressPage() {
           <div className="lg:col-span-7 p-6 rounded-2xl bg-surface-container-lowest border border-outline-variant/40 shadow-2xs space-y-4">
             <h3 className="text-sm font-bold text-on-surface">Độ thành thạo theo chuyên ngành</h3>
             <div className="space-y-4">
-              {domains.length > 0 ? domains.map((d: any, idx: number) => (
-                <div key={idx} className="space-y-1.5">
-                  <div className="flex justify-between text-xs">
-                    <span className="font-semibold text-on-surface">{d.domain?.name} ({d.domain?.code})</span>
+              {domains.length > 0 ? (
+                domains.map((d: any, idx: number) => (
+                  <div key={idx} className="space-y-1.5">
+                    <div className="flex justify-between text-xs">
+                      <span className="font-semibold text-on-surface">
+                        {d.domain?.name} ({d.domain?.code})
+                      </span>
+                    </div>
                   </div>
-                </div>
-              )) : <p className="text-xs text-slate-500">Chưa có dữ liệu chuyên ngành.</p>}
+                ))
+              ) : (
+                <p className="text-xs text-slate-500">Chưa có dữ liệu chuyên ngành.</p>
+              )}
             </div>
           </div>
 
@@ -90,12 +127,23 @@ export default function LearnerPersonalProgressPage() {
           <div className="lg:col-span-5 p-6 rounded-2xl bg-surface-container-lowest border border-outline-variant/40 shadow-2xs space-y-4">
             <h3 className="text-sm font-bold text-on-surface">Kết quả thi gần đây</h3>
             <div className="space-y-2.5 text-xs">
-              {recentAttempts.length > 0 ? recentAttempts.map((attempt: any, idx: number) => (
-                <div key={idx} className="flex items-center gap-3 p-3 rounded-xl bg-surface-bright border border-outline-variant/30">
-                  <span className="flex-1 font-semibold text-on-surface">Bài thi #{attempt.examId || idx + 1}</span>
-                  <span className={`font-bold ${attempt.passed ? 'text-green-600' : 'text-red-500'}`}>{attempt.scorePercent}%</span>
-                </div>
-              )) : <p className="text-slate-500">Chưa có dữ liệu bài thi.</p>}
+              {recentAttempts.length > 0 ? (
+                recentAttempts.map((attempt: any, idx: number) => (
+                  <div
+                    key={idx}
+                    className="flex items-center gap-3 p-3 rounded-xl bg-surface-bright border border-outline-variant/30"
+                  >
+                    <span className="flex-1 font-semibold text-on-surface">
+                      Bài thi #{attempt.exam?.title || attempt.examId || idx + 1}
+                    </span>
+                    <span className={`font-bold ${attempt.passed ? 'text-green-600' : 'text-red-500'}`}>
+                      {Math.round(attempt.scorePercent ?? 0)}%
+                    </span>
+                  </div>
+                ))
+              ) : (
+                <p className="text-slate-500">Chưa có dữ liệu bài thi.</p>
+              )}
             </div>
           </div>
         </div>

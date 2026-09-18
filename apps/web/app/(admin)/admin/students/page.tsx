@@ -1,6 +1,7 @@
 'use client';
 
 import * as React from 'react';
+import Link from 'next/link';
 import { PageHeader, SearchInput } from '@/shared/ui';
 import { apiClient, ApiClientError } from '@/shared/api/api-client';
 import type { UserItem, PaginatedResponse } from '@/shared/api/api-client';
@@ -168,9 +169,13 @@ export default function AdminStudentsPage() {
                       {new Date(u.createdAt).toLocaleDateString('vi-VN')}
                     </td>
                     <td className="p-md text-center">
-                      <button className="text-primary hover:text-tertiary-container transition-colors p-sm rounded-lg hover:bg-primary-fixed opacity-0 group-hover:opacity-100">
-                        <span className="font-interface-sb text-interface-sb">Xem chi tiết</span>
-                      </button>
+                      <Link
+                        href={`/admin/students/${u.id}`}
+                        className="inline-flex items-center gap-1 text-primary hover:text-primary-variant font-interface-sb text-interface-sb hover:underline transition-colors px-3 py-1.5 rounded-lg hover:bg-primary-fixed/30 cursor-pointer whitespace-nowrap"
+                      >
+                        <span>Xem chi tiết</span>
+                        <span className="material-symbols-outlined text-[16px]">arrow_forward</span>
+                      </Link>
                     </td>
                   </tr>
                 ))
@@ -188,7 +193,7 @@ export default function AdminStudentsPage() {
               <button 
                 disabled={page <= 1}
                 onClick={() => setPage(p => p - 1)}
-                className="p-sm rounded-lg border border-outline-variant text-on-surface-variant hover:bg-surface-container disabled:opacity-50 transition-colors flex items-center justify-center"
+                className="p-sm rounded-lg border border-outline-variant text-on-surface-variant hover:bg-surface-container disabled:opacity-50 transition-colors flex items-center justify-center cursor-pointer"
               >
                 <span className="material-symbols-outlined text-[20px]">chevron_left</span>
               </button>
@@ -196,7 +201,7 @@ export default function AdminStudentsPage() {
               <button 
                 disabled={page >= totalPages}
                 onClick={() => setPage(p => p + 1)}
-                className="p-sm rounded-lg border border-outline-variant text-on-surface hover:bg-surface-container disabled:opacity-50 transition-colors flex items-center justify-center"
+                className="p-sm rounded-lg border border-outline-variant text-on-surface hover:bg-surface-container disabled:opacity-50 transition-colors flex items-center justify-center cursor-pointer"
               >
                 <span className="material-symbols-outlined text-[20px]">chevron_right</span>
               </button>

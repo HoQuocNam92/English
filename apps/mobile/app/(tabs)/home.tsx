@@ -120,7 +120,7 @@ export default function MobileHomeScreen() {
           <View style={styles.heroCardHeader}>
             <View style={styles.heroBadge}>
               <MaterialIcons name="play-circle" size={12} color="#ffffff" />
-              <Text style={styles.heroBadgeText}>Đang học</Text>
+              <Text style={styles.heroBadgeText}>{progressPercent > 0 ? 'Đang học' : 'Bài học đề xuất'}</Text>
             </View>
             {firstLesson.estimatedMinutes && (
               <Text style={styles.heroTimeText}>{firstLesson.estimatedMinutes} phút</Text>
@@ -146,7 +146,7 @@ export default function MobileHomeScreen() {
             activeOpacity={0.9}
             onPress={() => router.push(`/lessons/${firstLesson.id}` as any)}
           >
-            <Text style={styles.heroButtonText}>Học tiếp ngay</Text>
+            <Text style={styles.heroButtonText}>{progressPercent > 0 ? 'Học tiếp ngay' : 'Bắt đầu học'}</Text>
             <MaterialIcons name="arrow-forward" size={18} color={colors.primary} />
           </TouchableOpacity>
         </View>

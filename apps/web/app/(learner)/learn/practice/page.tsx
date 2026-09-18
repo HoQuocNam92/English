@@ -68,18 +68,7 @@ export default function LearnerPracticePage() {
       icon: 'integration_instructions',
       bgIcon: 'bg-primary-light text-primary group-hover:bg-primary-container group-hover:text-surface-white',
       badgeClass: 'text-tertiary bg-tertiary-fixed',
-      link: `/learn/quiz/tech`
-    },
-    {
-      id: 'scenario',
-      title: 'Tình huống thực tế',
-      badge: 'VÔ HẠN',
-      description: 'Giao tiếp trong Daily Scrum, họp với khách hàng và báo cáo tiến độ.',
-      icon: 'forum',
-      bgIcon: 'bg-violet-200 text-violet-700 group-hover:bg-violet-600 group-hover:text-white',
-      badgeClass: 'text-tertiary bg-tertiary-fixed',
-      link: `/learn/practice/scenario/1`,
-      isAi: true
+      link: `/learn/exams`
     }
   ];
   const lessonById = new Map(data.lessons.map((lesson: any) => [lesson.id, lesson]));
@@ -98,17 +87,12 @@ export default function LearnerPracticePage() {
         </header>
 
         {/* Categories Grid */}
-        <section className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <section className="grid grid-cols-1 md:grid-cols-3 gap-6">
           {practiceCategories.map((cat) => (
             <div
               key={cat.id}
-              className={`bg-surface-white rounded-xl p-6 flex flex-col transition-all duration-200 hover:-translate-y-0.5 hover:shadow-[0_4px_12px_rgba(15,23,24,0.08)] group cursor-pointer relative overflow-hidden ${cat.isAi ? 'border border-violet-200 bg-ai-accent' : 'border border-border-subtle'}`}
+              className="bg-surface-white rounded-xl p-6 flex flex-col transition-all duration-200 hover:-translate-y-0.5 hover:shadow-[0_4px_12px_rgba(15,23,24,0.08)] group cursor-pointer relative overflow-hidden border border-border-subtle"
             >
-              {cat.isAi && (
-                <div className="absolute top-0 right-0 bg-violet-100 text-violet-700 text-[10px] font-bold leading-[16px] tracking-[0.05em] px-2 py-1 rounded-bl-lg">
-                  KHÔNG GIỚI HẠN
-                </div>
-              )}
               <div className={`w-12 h-12 rounded-lg flex items-center justify-center mb-4 transition-colors ${cat.bgIcon}`}>
                 <span className="material-symbols-outlined transition-colors">{cat.icon}</span>
               </div>
@@ -119,7 +103,7 @@ export default function LearnerPracticePage() {
                 <span className={`text-[12px] font-bold leading-[16px] tracking-[0.05em] px-2 py-1 rounded ${cat.badgeClass}`}>
                   {cat.badge}
                 </span>
-                <Link href={cat.link} className={`text-[14px] font-semibold flex items-center gap-1 group-hover:underline ${cat.isAi ? 'text-violet-700' : 'text-primary'}`}>
+                <Link href={cat.link} className="text-[14px] font-semibold flex items-center gap-1 group-hover:underline text-primary">
                   Bắt đầu <span className="material-symbols-outlined text-[16px]">arrow_forward</span>
                 </Link>
               </div>

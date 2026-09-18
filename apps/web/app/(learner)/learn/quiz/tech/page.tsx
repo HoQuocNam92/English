@@ -70,8 +70,11 @@ export default function TechQuizListPage() {
     const certProgressList = progressData?.certProgress || [];
     const lessonProgressList = (progressData?.progress || []).filter((p: any) => p.resourceType === 'lesson');
     const completedLessonIds = new Set(
-      lessonProgressList.filter((p: any) => p.status === 'completed').map((p: any) => p.resourceId)
+      lessonProgressList
+        .filter((p: any) => p.status === 'completed' || p.completionPercent >= 70)
+        .map((p: any) => p.resourceId)
     );
+    const overallPercent = Math.round(progressData?.summary?.overallCompletionPercent ?? 0);
 
     exams.forEach((exam: any) => {
       let readinessPercent = 0;
@@ -100,12 +103,15 @@ export default function TechQuizListPage() {
 
       // 3. Fallback to overall lesson completion percent if neither domain nor cert has lessons
       if (!evaluated) {
-        readinessPercent = Math.round(progressData?.summary?.overallCompletionPercent ?? 0);
+        readinessPercent = overallPercent;
       }
 
+      // If learner has high overall lesson progress, combine domain with overall so completed learners are never falsely blocked
+      const effectivePercent = Math.max(readinessPercent, overallPercent);
+
       map.set(exam.id, {
-        isReady: readinessPercent >= 70,
-        readinessPercent,
+        isReady: effectivePercent >= 70,
+        readinessPercent: effectivePercent,
       });
     });
 
@@ -323,19 +329,11 @@ export default function TechQuizListPage() {
                         {qCount} CÂU
                       </span>
 
-                      {/* Readiness status badge */}
-                      {readiness.isReady ? (
+                      {/* Readiness status badge - Only show when ready, do not show yellow warning badge on card */}
+                      {readiness.isReady && (
                         <span className="inline-flex items-center gap-1 text-[11px] font-bold bg-emerald-100 text-emerald-800 border border-emerald-200 px-2 py-0.5 rounded">
                           <span className="material-symbols-outlined text-[13px]">check_circle</span>
                           Sẵn sàng thi
-                        </span>
-                      ) : (
-                        <span
-                          title={`Tiến độ ôn tập bài học liên quan: ${readiness.readinessPercent}%`}
-                          className="inline-flex items-center gap-1 text-[11px] font-bold bg-amber-100 text-amber-900 border border-amber-300 px-2 py-0.5 rounded"
-                        >
-                          <span className="material-symbols-outlined text-[13px]">warning</span>
-                          Khuyên ôn trước ({readiness.readinessPercent}%)
                         </span>
                       )}
                     </div>

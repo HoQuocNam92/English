@@ -119,31 +119,31 @@ export default function LearnerLessonsPage() {
         </header>
 
         {/* Search + Filter Bar */}
-        <div className="flex flex-col md:flex-row gap-4 items-start md:items-center justify-between bg-surface-white p-4 rounded-lg border border-border-subtle">
+        <div className="flex flex-col md:flex-row gap-4 items-start md:items-center justify-between bg-surface-white p-4 rounded-xl border border-border-subtle shadow-xs">
           {/* Search */}
           <div className="relative w-full md:w-96">
             <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant" style={{ fontSize: '20px' }}>search</span>
             <input
-              className="w-full pl-10 pr-4 py-2 bg-background border border-border-subtle rounded text-[14px] text-on-surface focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all"
-              placeholder={(t.lessons as any).searchPlaceholder}
+              className="w-full pl-10 pr-4 py-2 bg-surface-white border border-border-subtle rounded-lg text-[14px] text-on-surface font-medium placeholder:text-on-surface-variant/60 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all shadow-xs"
+              placeholder={(t.lessons as any).searchPlaceholder || 'Tìm bài học...'}
               value={search}
               onChange={(e) => { setSearch(e.target.value); setPage(1); }}
               type="text"
             />
           </div>
 
-          <div className="flex gap-4 w-full md:w-auto">
+          <div className="flex gap-3 w-full md:w-auto">
             {/* Level filter */}
             <div className="relative flex-1 md:flex-none">
               <select
                 value={level}
                 onChange={(e) => { setLevel(e.target.value as LevelFilter); setPage(1); }}
-                className="w-full md:w-auto appearance-none bg-background border border-border-subtle rounded pl-4 pr-10 py-2 text-[14px] text-on-surface focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent cursor-pointer"
+                className="w-full md:w-auto appearance-none bg-surface-white border border-border-subtle rounded-lg pl-4 pr-10 py-2 text-[14px] text-on-surface font-medium focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent cursor-pointer shadow-xs hover:border-outline-variant transition-colors"
               >
-                <option value="all">{(t.lessons as any).allLevels}</option>
-                <option value="beginner">{(t.lessons as any).beginner}</option>
-                <option value="intermediate">{(t.lessons as any).intermediate}</option>
-                <option value="advanced">{(t.lessons as any).advanced}</option>
+                <option value="all" className="bg-white text-slate-900 py-1.5">{(t.lessons as any).allLevels || 'Tất cả cấp độ'}</option>
+                <option value="beginner" className="bg-white text-slate-900 py-1.5">{(t.lessons as any).beginner || 'Cơ bản'}</option>
+                <option value="intermediate" className="bg-white text-slate-900 py-1.5">{(t.lessons as any).intermediate || 'Trung cấp'}</option>
+                <option value="advanced" className="bg-white text-slate-900 py-1.5">{(t.lessons as any).advanced || 'Nâng cao'}</option>
               </select>
               <span className="material-symbols-outlined absolute right-3 top-1/2 -translate-y-1/2 text-on-surface-variant pointer-events-none" style={{ fontSize: '20px' }}>expand_more</span>
             </div>
@@ -153,11 +153,11 @@ export default function LearnerLessonsPage() {
               <select
                 value={sort}
                 onChange={(e) => { setSort(e.target.value as SortMode); setPage(1); }}
-                className="w-full md:w-auto appearance-none bg-background border border-border-subtle rounded pl-4 pr-10 py-2 text-[14px] text-on-surface focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent cursor-pointer"
+                className="w-full md:w-auto appearance-none bg-surface-white border border-border-subtle rounded-lg pl-4 pr-10 py-2 text-[14px] text-on-surface font-medium focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent cursor-pointer shadow-xs hover:border-outline-variant transition-colors"
               >
-                <option value="newest">{(t.lessons as any).sortNewest}</option>
-                <option value="oldest">{(t.lessons as any).sortOldest}</option>
-                <option value="progress">{(t.lessons as any).sortProgress}</option>
+                <option value="newest" className="bg-white text-slate-900 py-1.5">{(t.lessons as any).sortNewest || 'Mới nhất'}</option>
+                <option value="oldest" className="bg-white text-slate-900 py-1.5">{(t.lessons as any).sortOldest || 'Cũ nhất'}</option>
+                <option value="progress" className="bg-white text-slate-900 py-1.5">{(t.lessons as any).sortProgress || 'Tiến độ'}</option>
               </select>
               <span className="material-symbols-outlined absolute right-3 top-1/2 -translate-y-1/2 text-on-surface-variant pointer-events-none" style={{ fontSize: '20px' }}>sort</span>
             </div>

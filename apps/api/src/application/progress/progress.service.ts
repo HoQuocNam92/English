@@ -117,12 +117,14 @@ export class ProgressService {
     if (dto.completedLessonCount !== undefined && dto.totalLessonCount !== undefined && dto.completedLessonCount > dto.totalLessonCount) {
       throw new BadRequestException('So bai da hoan thanh khong duoc lon hon tong so bai')
     }
-    const status = (dto.status ?? 'in_progress') as ProgressStatus
-    const completedAt = status === 'completed' ? new Date() : null
+    const resolvedStatus = (dto.completionPercent !== undefined && dto.completionPercent >= 100)
+      ? ('completed' as ProgressStatus)
+      : ((dto.status ?? 'in_progress') as ProgressStatus)
+    const completedAt = resolvedStatus === 'completed' ? new Date() : null
     return this.prisma.learningProgress.upsert({
       where: { learnerId_resourceType_resourceId: { learnerId, resourceType: dto.resourceType as ProgressResourceType, resourceId: dto.resourceId } },
-      update: { status, completionPercent: dto.completionPercent, completedLessonCount: dto.completedLessonCount, totalLessonCount: dto.totalLessonCount, averageScorePercent: dto.averageScorePercent, completedAt },
-      create: { learnerId, resourceType: dto.resourceType as ProgressResourceType, resourceId: dto.resourceId, status, completionPercent: dto.completionPercent, completedLessonCount: dto.completedLessonCount, totalLessonCount: dto.totalLessonCount, averageScorePercent: dto.averageScorePercent, startedAt: new Date(), completedAt },
+      update: { status: resolvedStatus, completionPercent: dto.completionPercent, completedLessonCount: dto.completedLessonCount, totalLessonCount: dto.totalLessonCount, averageScorePercent: dto.averageScorePercent, completedAt },
+      create: { learnerId, resourceType: dto.resourceType as ProgressResourceType, resourceId: dto.resourceId, status: resolvedStatus, completionPercent: dto.completionPercent, completedLessonCount: dto.completedLessonCount, totalLessonCount: dto.totalLessonCount, averageScorePercent: dto.averageScorePercent, startedAt: new Date(), completedAt },
     })
   }
 
@@ -136,7 +138,25 @@ export class ProgressService {
     })
   }
 
-  async getLearnerProgress(learnerId: string) { return this.getMyProgress(learnerId) }
+  async getLearnerProgress(learnerId: string) {
+    try {
+      return await this.getMyProgress(learnerId)
+    } catch {
+      return {
+        progress: [],
+        summary: {
+          overallCompletionPercent: 0,
+          completedLessons: 0,
+          totalAttempts: 0,
+          averageScorePercent: null,
+          weakTopics: [],
+          calculatedAt: new Date(),
+        },
+        recentAttempts: [],
+        certProgress: [],
+      }
+    }
+  }
 
   private async assertLearner(userId: string) {
     const user = await this.prisma.user.findFirst({

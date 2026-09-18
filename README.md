@@ -27,31 +27,27 @@
 
 ---
 
-## Tính năng
+## Tính năng nổi bật
 
-### Học viên
-- **Onboarding cá nhân hóa** — Chọn trình độ, lĩnh vực IT, mục tiêu nghề nghiệp, chứng chỉ
-- **Bài học chuyên ngành** — Nội dung bài học theo sections (text, code, video)
-- **Flashcard từ vựng** — Học tối đa 20 từ/phiên, lật thẻ, phát âm TTS, đánh dấu đã học
-- **Quiz kiểm tra** — Điền từ vào chỗ trống + trắc nghiệm, chấm điểm tự động
-- **Hệ thống SRS** — Lặp lại ngắt quãng, từ đã thuộc không hiện lại
-- **Đề thi thử** — Làm bài thi thử có giới hạn thời gian
-- **Xem đáp án chi tiết** — Inline review đáp án + giải thích
-- **Theo dõi tiến độ** — Dashboard thống kê tiến độ học tập
-- **Scenario Challenges** — Thực hành tình huống thực tế tại nơi làm việc
+### 🎓 Học viên (Learner)
+- **Onboarding cá nhân hóa** — Khảo sát trình độ, lĩnh vực IT quan tâm (Software Engineering, Cloud, DevOps, Cybersecurity...), mục tiêu nghề nghiệp và chứng chỉ quốc tế.
+- **Bài học chuyên ngành** — Học thuật ngữ, tài liệu kỹ thuật theo cấu trúc phân mục (sections: Text, Code Snippet, Callout...).
+- **Flashcard & Học từ vựng SRS** — Học từ vựng thông minh theo chu kỳ lặp lại ngắt quãng (Spaced Repetition System), phát âm chuẩn IPA & Text-to-Speech (TTS), lật thẻ tương tác, phân trang danh mục.
+- **Thi thử & Kiểm tra mô phỏng (Tech Quiz & Exams)**:
+  - Bộ lọc bài thi theo từ khóa, chuyên ngành (Domain) và cấp độ (Level).
+  - Đánh giá độ sẵn sàng (Readiness score) thông minh dựa trên tiến độ học tập và chuyên đề.
+  - Giao diện làm bài chuyên nghiệp: Đồng hồ đếm ngược, tự động nộp bài khi hết giờ, bảng danh sách câu hỏi (Question Palette).
+  - Phân biệt trực quan câu hỏi 1 đáp án (Radio) và câu hỏi nhiều đáp án (Checkbox).
+  - **Hộp thoại cảnh báo & xác nhận nộp bài**: Cảnh báo số câu chưa làm, danh sách câu chưa làm dạng chip bấm vào để nhảy ngay tới câu hỏi đó, ngăn chặn nộp nhầm khi chưa hoàn thành.
+  - Xem kết quả chi tiết, thống kê tỷ lệ đạt, so sánh đáp án học viên với đáp án chính xác kèm giải thích kỹ thuật.
+- **Báo cáo Năng lực & Tiến độ Cá nhân** — Theo dõi trực quan tiến độ học tập, độ sẵn sàng chứng chỉ mục tiêu, độ thành thạo chuyên ngành và lịch sử kết quả thi.
 
-### Giảng viên
-- **Biên soạn bài học** — Tạo/sửa bài học, sections, nội dung
-- **Quản lý từ vựng** — Thêm/sửa từ vựng, ví dụ, phát âm IPA
-- **Ngân hàng câu hỏi** — Tạo câu hỏi trắc nghiệm với đáp án + giải thích
-- **Thiết lập đề thi** — Cấu hình đề thi từ ngân hàng câu hỏi
-- **Theo dõi học viên** — Xem kết quả và tiến độ từng học viên
-
-### Quản trị viên
-- **Quản lý users** — CRUD tài khoản, phân quyền RBAC
-- **Quản lý danh mục** — Domains, Levels, Careers, Certificates
-- **Dashboard thống kê** — Báo cáo tổng quan, kết quả, tiến độ
-- **Quản lý roles & permissions** — Phân quyền chi tiết
+### 👨‍🏫 Giảng viên & Quản trị viên (Admin / Teacher)
+- **Quản lý & Soạn thảo đề thi (Test Builder)** — Tìm kiếm, lọc câu hỏi theo chuyên ngành, cấp độ và loại câu; chọn câu hỏi vào đề thi kèm xem trước nội dung trực tiếp.
+- **Ngân hàng câu hỏi & Nhập liệu Excel** — Quản lý ngân hàng câu hỏi đa dạng (single choice, multiple choice); hỗ trợ **Import hàng loạt nhiều file Excel đồng thời**, tự động phân tích và kiểm tra lỗi định dạng.
+- **Quản lý học viên & Chi tiết kết quả thi** — Theo dõi danh sách học viên, hồ sơ năng lực, lịch sử các lượt thi; xem chi tiết từng lượt làm bài qua modal popup chuyên sâu.
+- **Quản lý phân quyền RBAC & Danh mục hệ thống** — Quản trị người dùng, vai trò (Admin, Teacher, Learner), phân quyền chi tiết; quản lý chuyên ngành (Domains), cấp độ (Levels), chứng chỉ (Certificates).
+- **Giao diện quản trị hiện đại** — Menu bên (Sidebar) thu gọn linh hoạt, tối ưu diện tích làm việc, thanh phân trang chuẩn hóa toàn hệ thống.
 
 ---
 
@@ -64,33 +60,32 @@ techenglish-pro/
 │   │   ├── prisma/             # Schema + Migrations + Seed
 │   │   └── src/
 │   │       ├── application/    # Business logic (services)
-│   │       ├── infrastructure/ # Database, external services
+│   │       ├── infrastructure/ # Database (Prisma), external services
 │   │       ├── modules/        # NestJS modules
-│   │       └── presentation/   # Controllers (REST API)
-│   ├── web/                    # Next.js Frontend
+│   │       └── presentation/   # REST Controllers & DTOs
+│   ├── web/                    # Next.js 15 Frontend
 │   │   └── app/
-│   │       ├── (admin)/        # Admin panel (dashboard, CRUD)
-│   │       ├── (auth)/         # Auth pages (login, register, OAuth)
-│   │       ├── (learner)/      # Learner pages (learn, quiz, progress)
+│   │       ├── (admin)/        # Admin & Teacher portal (students, questions, tests, reports)
+│   │       ├── (auth)/         # Authentication (login, register, OAuth, password reset)
+│   │       ├── (learner)/      # Learner portal (learn, lessons, flashcards, quiz, progress)
 │   │       ├── landing/        # Landing page
-│   │       └── onboarding/     # Onboarding flow
+│   │       └── onboarding/     # Learner personalization flow
 │   └── mobile/                 # Expo React Native
 │       └── app/
 │           ├── (auth)/         # Login, register, forgot password
 │           ├── (onboarding)/   # Level, IT field, career, certificate
 │           ├── (tabs)/         # Home, Learning, Practice, Progress, Profile
-│           ├── flashcards/     # Flashcard + quiz 3 phases
+│           ├── flashcards/     # Flashcard study
 │           ├── lessons/        # Lesson detail + vocabulary
-│           ├── quiz/           # Exam taking
-│           ├── scenario/       # Scenario challenges
-│           └── test-result/    # Results + inline answer review
+│           ├── quiz/           # Mobile exam taking
+│           └── test-result/    # Mobile test results & review
 ├── packages/
-│   ├── contracts/              # Shared TypeScript types
-│   ├── design-tokens/          # Shared colors, spacing, typography
-│   └── shared-kernel/          # Shared utilities
-├── docker-compose.yml          # Redis + Redis Commander
+│   ├── contracts/              # Shared TypeScript interfaces & contracts
+│   ├── design-tokens/          # Shared colors, typography, spacing
+│   └── shared-kernel/          # Shared pagination, error & result types
+├── docker-compose.yml          # Redis & infrastructure services
 ├── pnpm-workspace.yaml         # Monorepo workspace config
-└── tsconfig.base.json          # Shared TypeScript config
+└── tsconfig.base.json          # Shared TypeScript base config
 ```
 
 ---

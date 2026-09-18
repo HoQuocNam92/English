@@ -28,8 +28,10 @@ export class LearnerProfilesService {
 
   async completeOnboarding(userId: string, dto: CompleteOnboardingDto) {
     await this.assertLearner(userId)
-    // 1. Tìm level
-    const level = await this.prisma.level.findUnique({ where: { code: dto.levelCode as any } })
+    // 1. Tìm level (mặc định beginner nếu không cung cấp)
+    const targetLevelCode = (dto.levelCode ? dto.levelCode.toLowerCase() : 'beginner') as any
+    const level = (await this.prisma.level.findUnique({ where: { code: targetLevelCode } })) ??
+      (await this.prisma.level.findFirst({ where: { code: 'beginner' } }))
 
     // 2. Upsert profile với level + onboardingCompleted
     const profile = await this.prisma.learnerProfile.upsert({
@@ -41,19 +43,21 @@ export class LearnerProfilesService {
       },
       create: {
         userId,
-        levelId: level?.id ?? (await this.prisma.level.findFirst({ where: { code: 'beginner' } }))!.id,
+        levelId: level?.id ?? '',
         weeklyStudyTargetMinutes: dto.weeklyStudyTargetMinutes ?? 120,
         onboardingCompleted: true,
       },
     })
 
     // 3. Cập nhật domains
-    const domains = await this.prisma.domain.findMany({ where: { code: { in: dto.domainCodes } } })
     await this.prisma.learnerProfileDomain.deleteMany({ where: { profileId: profile.id } })
-    if (domains.length > 0) {
-      await this.prisma.learnerProfileDomain.createMany({
-        data: domains.map(d => ({ profileId: profile.id, domainId: d.id }))
-      })
+    if (dto.domainCodes && dto.domainCodes.length > 0) {
+      const domains = await this.prisma.domain.findMany({ where: { code: { in: dto.domainCodes } } })
+      if (domains.length > 0) {
+        await this.prisma.learnerProfileDomain.createMany({
+          data: domains.map(d => ({ profileId: profile.id, domainId: d.id }))
+        })
+      }
     }
 
     // 4. Career goals (mảng, tuỳ chọn)

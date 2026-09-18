@@ -62,6 +62,10 @@ export class CreateLessonDto {
   @ApiPropertyOptional({ type: [String] })
   @IsOptional() @IsArray() @ArrayMaxSize(20) @IsUUID('4', { each: true })
   certificateIds?: string[]
+
+  @ApiPropertyOptional({ enum: ['draft', 'published', 'archived'], default: 'draft' })
+  @IsOptional() @IsEnum(['draft', 'published', 'archived'], { message: 'Trạng thái không hợp lệ' })
+  status?: string
 }
 
 export class UpdateLessonDto {
@@ -100,6 +104,10 @@ export class UpdateLessonDto {
   @ApiPropertyOptional({ type: [String] })
   @IsOptional() @IsArray() @ArrayMaxSize(20) @IsUUID('4', { each: true })
   certificateIds?: string[]
+
+  @ApiPropertyOptional({ enum: ['draft', 'published', 'archived'] })
+  @IsOptional() @IsEnum(['draft', 'published', 'archived'], { message: 'Trạng thái không hợp lệ' })
+  status?: string
 }
 
 // ─── Vocabulary ───────────────────────────────────────────────────────────────
@@ -337,12 +345,37 @@ export class BulkQuestionItemDto {
   @ApiPropertyOptional()
   @IsOptional()
   @IsString()
+  domainName?: string
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  domain?: string
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
   levelId?: string
 
   @ApiPropertyOptional()
   @IsOptional()
   @IsString()
   levelCode?: string
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  levelName?: string
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  level?: string
+
+  @ApiPropertyOptional({ enum: ['published', 'draft', 'archived'] })
+  @IsOptional()
+  @IsEnum(['published', 'draft', 'archived'])
+  status?: string
 
   @ApiPropertyOptional()
   @IsOptional()
@@ -459,6 +492,10 @@ export class CreateExamDto {
   @IsOptional() @IsArray() @ArrayMaxSize(30) @IsString({ each: true }) @MaxLength(50, { each: true })
   topics?: string[]
 
+  @ApiPropertyOptional({ enum: ['draft', 'published', 'archived'] })
+  @IsOptional() @IsEnum(['draft', 'published', 'archived'], { message: 'Trạng thái không hợp lệ' })
+  status?: string
+
   @ApiPropertyOptional({ type: [ExamQuestionLinkDto] })
   @IsOptional() @IsArray() @ArrayMaxSize(200) @ValidateNested({ each: true }) @Type(() => ExamQuestionLinkDto)
   questions?: ExamQuestionLinkDto[]
@@ -500,6 +537,10 @@ export class UpdateExamDto {
   @ApiPropertyOptional()
   @IsOptional() @IsArray() @IsString({ each: true })
   topics?: string[]
+
+  @ApiPropertyOptional({ enum: ['draft', 'published', 'archived'] })
+  @IsOptional() @IsEnum(['draft', 'published', 'archived'], { message: 'Trạng thái không hợp lệ' })
+  status?: string
 
   @ApiPropertyOptional({ type: [ExamQuestionLinkDto] })
   @IsOptional() @IsArray() @ValidateNested({ each: true }) @Type(() => ExamQuestionLinkDto)
@@ -545,15 +586,17 @@ export class UpdateLearnerProfileDto {
 }
 
 export class CompleteOnboardingDto {
-  @ApiProperty({ description: 'Level code (beginner/intermediate/advanced/professional)' })
-  @IsString() @IsNotEmpty()
+  @ApiPropertyOptional({ description: 'Level code (beginner/intermediate/advanced/professional)' })
+  @IsOptional()
+  @IsString()
   @IsEnum(['beginner', 'intermediate', 'advanced', 'professional'])
-  levelCode: string
+  levelCode?: string
 
-  @ApiProperty({ type: [String], description: 'Mảng domain codes (CLOUD, DEVOPS, ...)' })
-  @IsArray() @ArrayNotEmpty({ message: 'Phải chọn ít nhất 1 lĩnh vực CNTT' })
+  @ApiPropertyOptional({ type: [String], description: 'Mảng domain codes (CLOUD, DEVOPS, ...)' })
+  @IsOptional()
+  @IsArray()
   @IsString({ each: true })
-  domainCodes: string[]
+  domainCodes?: string[]
 
   @ApiPropertyOptional({ type: [String], description: 'Mảng career goal codes' })
   @IsOptional() @IsArray() @IsString({ each: true })
