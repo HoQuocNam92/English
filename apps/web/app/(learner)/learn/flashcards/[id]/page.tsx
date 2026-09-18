@@ -7,7 +7,6 @@ import { LearnerShell } from '@/shared/layout';
 import { apiClient } from '@/shared/api/api-client';
 import { LoadingSpinner } from '@/shared/ui';
 
-const BATCH_SIZE = 20;
 
 type Phase = 'learn' | 'quiz' | 'summary';
 
@@ -41,7 +40,7 @@ export default function LearnerVocabularyFlashcardsPage({ params }: { params: Pr
   const [quizResults, setQuizResults] = useState<{ vocabId: string; term: string; correct: boolean }[]>([]);
   const [quizRound, setQuizRound] = useState(1);
 
-  // Load vocab - limited to BATCH_SIZE
+  // Load vocab
   const loadVocab = useCallback(async () => {
     setLoading(true);
     setError('');
@@ -156,20 +155,12 @@ export default function LearnerVocabularyFlashcardsPage({ params }: { params: Pr
             <h1 className="text-2xl font-black text-slate-900 tracking-tight">
               {lessonId === 'all' ? 'Toàn bộ từ vựng IT' : 'Từ vựng IT Chuyên ngành'}
             </h1>
-            <p className="text-xs text-slate-500 mt-1">Học tối đa {BATCH_SIZE} từ mỗi phiên — sau đó kiểm tra</p>
+            <p className="text-xs text-slate-500 mt-1">Học từ vựng theo thẻ — sau đó kiểm tra</p>
           </div>
           <Link href="/learn/lessons" className="flex items-center gap-1.5 text-xs font-bold text-slate-600 hover:text-primary transition-colors px-3 py-1.5 rounded-lg border border-slate-200 bg-white">
             Về danh mục bài học
           </Link>
         </div>
-
-        {/* Warning banner when at batch limit */}
-        {vocabList.length >= BATCH_SIZE && selectedIdx >= BATCH_SIZE - 3 && (
-          <div className="flex items-center gap-3 px-5 py-3 rounded-xl bg-amber-50 border border-amber-200 text-amber-800">
-            <span className="material-symbols-outlined text-amber-600">info</span>
-            <p className="text-sm font-medium">Bạn đã học {vocabList.length} từ! Hoàn thành bài kiểm tra trước khi học thêm nhé.</p>
-          </div>
-        )}
 
         <div className="bg-white border border-slate-200 rounded-3xl p-6 lg:p-8 space-y-6 shadow-2xs overflow-hidden">
           {/* Flip card */}

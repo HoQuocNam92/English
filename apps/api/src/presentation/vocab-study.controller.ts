@@ -11,7 +11,7 @@ export class VocabStudyController {
   constructor(private readonly svc: VocabStudyService) {}
 
   @Get('session')
-  @ApiOperation({ summary: 'Get a study session (up to 20 words)' })
+  @ApiOperation({ summary: 'Get a study session (all words for given filters)' })
   getSession(
     @Request() req: any,
     @Query('domainCode') domainCode?: string,

@@ -18,7 +18,6 @@ import { useTheme } from '../../src/shared/store/theme-context';
 import { FeatureScreen, EmptyState } from '../../src/shared/ui/FeatureScreen';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
-const BATCH_SIZE = 20;
 
 // ─── Types ──────────────────────────────────────────────────────────────────────
 
@@ -272,15 +271,6 @@ export default function FlashcardsScreen() {
           </TouchableOpacity>
         </View>
 
-        {/* Warning banner after 20 words */}
-        {words.length >= BATCH_SIZE ? (
-          <View style={[styles.warningBanner, { backgroundColor: colors.tertiaryContainer ?? '#FFF3E0' }]}>
-            <MaterialIcons name="info" size={20} color={colors.tertiary ?? '#E65100'} />
-            <Text style={[styles.warningText, { color: colors.onTertiaryContainer ?? '#BF360C' }]}>
-              Bạn đã học {words.length} từ! Hãy kiểm tra trước khi học thêm nhé.
-            </Text>
-          </View>
-        ) : null}
       </View>
     );
   };

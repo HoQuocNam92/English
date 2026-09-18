@@ -5,12 +5,10 @@ import { PrismaService } from '../../infrastructure/database/prisma.service'
 export class VocabStudyService {
   constructor(private prisma: PrismaService) {}
 
-  // Get study session: up to 20 words
+  // Get study session: all words matching filters
   // Priority: 1) 'learning' words with nextReviewAt <= now, 2) 'new' words
   // Accepts optional filters: domainCode, levelCode, lessonId
   async getStudySession(learnerId: string, filters?: { domainCode?: string; levelCode?: string; lessonId?: string }) {
-    const BATCH_SIZE = 20
-    
     // Build vocab filter
     const vocabWhere: any = { status: 'published' }
     if (filters?.domainCode) vocabWhere.domain = { code: filters.domainCode }
@@ -23,7 +21,6 @@ export class VocabStudyService {
         ...vocabWhere,
         vocabProgress: { some: { learnerId, status: 'learning', nextReviewAt: { lte: new Date() } } },
       },
-      take: BATCH_SIZE,
       include: {
         examples: { orderBy: { order: 'asc' }, take: 3 },
         domain: { select: { code: true, name: true } },
@@ -32,26 +29,19 @@ export class VocabStudyService {
       },
     })
 
-    const remaining = BATCH_SIZE - reviewWords.length
-
-    // Get new words (no progress record OR status = 'new')
-    let newWords: any[] = []
-    if (remaining > 0) {
-      // Words that the learner has never seen
-      newWords = await this.prisma.vocabulary.findMany({
-        where: {
-          ...vocabWhere,
-          vocabProgress: { none: { learnerId } },
-        },
-        take: remaining,
-        include: {
-          examples: { orderBy: { order: 'asc' }, take: 3 },
-          domain: { select: { code: true, name: true } },
-          level: { select: { code: true, name: true } },
-          vocabProgress: { where: { learnerId }, take: 1 },
-        },
-      })
-    }
+    // Get new words (no progress record)
+    const newWords = await this.prisma.vocabulary.findMany({
+      where: {
+        ...vocabWhere,
+        vocabProgress: { none: { learnerId } },
+      },
+      include: {
+        examples: { orderBy: { order: 'asc' }, take: 3 },
+        domain: { select: { code: true, name: true } },
+        level: { select: { code: true, name: true } },
+        vocabProgress: { where: { learnerId }, take: 1 },
+      },
+    })
 
     const words = [...reviewWords, ...newWords]
 
@@ -75,7 +65,7 @@ export class VocabStudyService {
         level: w.level,
         studyStatus: w.vocabProgress?.[0]?.status ?? 'new',
       })),
-      meta: { total: words.length, studiedToday, batchSize: BATCH_SIZE },
+      meta: { total: words.length, studiedToday },
     }
   }
 
