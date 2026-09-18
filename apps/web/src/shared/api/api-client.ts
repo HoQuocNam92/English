@@ -113,6 +113,8 @@ export const apiClient = {
     request<T>(path, { method: 'POST', body: JSON.stringify(body) }),
   postWithHeaders: <T>(path: string, body: unknown, extraHeaders: Record<string, string>) =>
     request<T>(path, { method: 'POST', body: JSON.stringify(body), headers: extraHeaders }),
+  put: <T>(path: string, body: unknown) =>
+    request<T>(path, { method: 'PUT', body: JSON.stringify(body) }),
   patch: <T>(path: string, body: unknown) =>
     request<T>(path, { method: 'PATCH', body: JSON.stringify(body) }),
   delete: <T>(path: string) => request<T>(path, { method: 'DELETE' }),
