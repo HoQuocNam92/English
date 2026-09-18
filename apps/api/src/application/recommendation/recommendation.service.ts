@@ -216,30 +216,50 @@ export class RecommendationService {
     // TẦNG 3 (NORMAL - 50-74đ): Lộ trình bài học tiếp theo
     // =========================================================================
 
-    const lessonWhere: any = {
-      status: 'published',
-      id: { notIn: Array.from(completedLessonIds) },
-    }
-    if (levelId) {
-      lessonWhere.levelId = levelId
-    }
-    if (targetDomainIds.length > 0) {
-      lessonWhere.domainId = { in: targetDomainIds }
-    }
+    const hasTargetDomains = targetDomainIds.length > 0
+    let nextLessons: any[] = []
 
-    let nextLessons = await this.prisma.lesson.findMany({
-      where: lessonWhere,
-      include: { domain: true, level: true },
-      take: 4,
-    })
+    if (hasTargetDomains) {
+      // 1. Ưu tiên tìm bài học khớp chính xác cả Domain đã chọn và Level
+      const lessonWhere: any = {
+        status: 'published',
+        id: { notIn: Array.from(completedLessonIds) },
+        domainId: { in: targetDomainIds },
+      }
+      if (levelId) {
+        lessonWhere.levelId = levelId
+      }
 
-    // Fallback nếu không có bài khớp chính xác level + domain
-    if (nextLessons.length === 0) {
       nextLessons = await this.prisma.lesson.findMany({
-        where: {
-          status: 'published',
-          id: { notIn: Array.from(completedLessonIds) },
-        },
+        where: lessonWhere,
+        include: { domain: true, level: true },
+        take: 4,
+      })
+
+      // 2. Nếu chưa có bài đúng level, nới lỏng level nhưng BẮT BUỘC giữ đúng domain người dùng đã chọn
+      if (nextLessons.length === 0) {
+        nextLessons = await this.prisma.lesson.findMany({
+          where: {
+            status: 'published',
+            id: { notIn: Array.from(completedLessonIds) },
+            domainId: { in: targetDomainIds },
+          },
+          include: { domain: true, level: true },
+          take: 3,
+        })
+      }
+    } else {
+      // Chỉ khi người dùng chưa chọn lĩnh vực nào mới lấy bài học tổng quan theo level
+      const lessonWhere: any = {
+        status: 'published',
+        id: { notIn: Array.from(completedLessonIds) },
+      }
+      if (levelId) {
+        lessonWhere.levelId = levelId
+      }
+
+      nextLessons = await this.prisma.lesson.findMany({
+        where: lessonWhere,
         include: { domain: true, level: true },
         take: 3,
       })
@@ -248,12 +268,17 @@ export class RecommendationService {
     for (const l of nextLessons) {
       // Tránh duplicate nếu bài học đã được thêm ở tầng 1
       if (!recommendations.some((r) => r.actionUrl === `/learn/lessons/${l.id}`)) {
+        const isExactLevel = levelId && l.levelId === levelId
+        const reasonText = isExactLevel
+          ? `Đề xuất theo lộ trình: Bài học tiếp theo phù hợp với trình độ ${l.level?.name || 'phù hợp'} và lĩnh vực ${l.domain?.name || 'CNTT'}.`
+          : `Đề xuất theo lĩnh vực ${l.domain?.name || 'bạn quan tâm'}: Bài học thuộc trình độ ${l.level?.name || 'cơ bản'} giúp bạn củng cố kiến thức nền tảng.`
+
         recommendations.push({
           id: `next-path-${l.id}`,
           type: 'lesson',
           title: l.title,
           summary: l.summary ?? undefined,
-          reason: `Đề xuất theo lộ trình: Bài học tiếp theo phù hợp với trình độ ${l.level?.name || 'Beginner'} và lĩnh vực ${l.domain?.name || 'CNTT'}.`,
+          reason: reasonText,
           priority: 'normal',
           priorityScore: 65,
           domainName: l.domain?.name,

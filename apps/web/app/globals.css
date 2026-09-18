@@ -201,31 +201,6 @@
   --font-interface-sb: 'Inter', sans-serif;
   --font-label-caps: 'Inter', sans-serif;
 
-  /* Spacing tokens mapped to design system */
-  --spacing-xs: 4px;
-  --spacing-sm: 8px;
-  --spacing-md: 16px;
-  --spacing-lg: 24px;
-  --spacing-xl: 32px;
-  --spacing-2xl: 48px;
-  --spacing-gutter: 24px;
-
-  /* Typography font size tokens */
-  --text-headline-h1: 30px;
-  --text-headline-h1--line-height: 38px;
-  --text-headline-h2: 24px;
-  --text-headline-h2--line-height: 32px;
-  --text-headline-h3: 20px;
-  --text-headline-h3--line-height: 28px;
-  --text-body-md: 14px;
-  --text-body-md--line-height: 20px;
-  --text-body-sm: 12px;
-  --text-body-sm--line-height: 18px;
-  --text-interface-sb: 14px;
-  --text-interface-sb--line-height: 20px;
-  --text-label-caps: 10px;
-  --text-label-caps--line-height: 14px;
-
   /* Radius tokens */
   --radius-sm: 4px;
   --radius-md: 8px;
@@ -233,6 +208,246 @@
   --radius-xl: 16px;
   --radius-2xl: 20px;
   --radius-DEFAULT: 8px;
+}
+
+/* ============================================================
+   Stitch Design System Spacing Utilities
+   Explicit utilities avoid Tailwind v4 spacing/container collisions
+   ============================================================ */
+
+/* Padding */
+@utility p-xs { padding: 4px; }
+@utility p-sm { padding: 8px; }
+@utility p-md { padding: 16px; }
+@utility p-lg { padding: 24px; }
+@utility p-xl { padding: 32px; }
+@utility p-2xl { padding: 48px; }
+@utility p-margin { padding: 32px; }
+@utility p-gutter { padding: 24px; }
+
+@utility px-xs { padding-inline: 4px; }
+@utility px-sm { padding-inline: 8px; }
+@utility px-md { padding-inline: 16px; }
+@utility px-lg { padding-inline: 24px; }
+@utility px-xl { padding-inline: 32px; }
+@utility px-2xl { padding-inline: 48px; }
+@utility px-margin { padding-inline: 32px; }
+@utility px-gutter { padding-inline: 24px; }
+
+@utility py-xs { padding-block: 4px; }
+@utility py-sm { padding-block: 8px; }
+@utility py-md { padding-block: 16px; }
+@utility py-lg { padding-block: 24px; }
+@utility py-xl { padding-block: 32px; }
+@utility py-2xl { padding-block: 48px; }
+@utility py-margin { padding-block: 32px; }
+@utility py-gutter { padding-block: 24px; }
+
+@utility pt-xs { padding-top: 4px; }
+@utility pt-sm { padding-top: 8px; }
+@utility pt-md { padding-top: 16px; }
+@utility pt-lg { padding-top: 24px; }
+@utility pt-xl { padding-top: 32px; }
+@utility pt-2xl { padding-top: 48px; }
+
+@utility pb-xs { padding-bottom: 4px; }
+@utility pb-sm { padding-bottom: 8px; }
+@utility pb-md { padding-bottom: 16px; }
+@utility pb-lg { padding-bottom: 24px; }
+@utility pb-xl { padding-bottom: 32px; }
+@utility pb-2xl { padding-bottom: 48px; }
+
+@utility pl-xs { padding-left: 4px; }
+@utility pl-sm { padding-left: 8px; }
+@utility pl-md { padding-left: 16px; }
+@utility pl-lg { padding-left: 24px; }
+@utility pl-xl { padding-left: 36px; }
+@utility pl-2xl { padding-left: 48px; }
+
+@utility pr-xs { padding-right: 4px; }
+@utility pr-sm { padding-right: 8px; }
+@utility pr-md { padding-right: 16px; }
+@utility pr-lg { padding-right: 24px; }
+@utility pr-xl { padding-right: 32px; }
+@utility pr-2xl { padding-right: 48px; }
+
+/* Margin */
+@utility m-xs { margin: 4px; }
+@utility m-sm { margin: 8px; }
+@utility m-md { margin: 16px; }
+@utility m-lg { margin: 24px; }
+@utility m-xl { margin: 32px; }
+@utility m-2xl { margin: 48px; }
+@utility m-margin { margin: 32px; }
+
+@utility mx-xs { margin-inline: 4px; }
+@utility mx-sm { margin-inline: 8px; }
+@utility mx-md { margin-inline: 16px; }
+@utility mx-lg { margin-inline: 24px; }
+@utility mx-xl { margin-inline: 32px; }
+@utility mx-2xl { margin-inline: 48px; }
+
+@utility my-xs { margin-block: 4px; }
+@utility my-sm { margin-block: 8px; }
+@utility my-md { margin-block: 16px; }
+@utility my-lg { margin-block: 24px; }
+@utility my-xl { margin-block: 32px; }
+@utility my-2xl { margin-block: 48px; }
+
+@utility mt-xs { margin-top: 4px; }
+@utility mt-sm { margin-top: 8px; }
+@utility mt-md { margin-top: 16px; }
+@utility mt-lg { margin-top: 24px; }
+@utility mt-xl { margin-top: 32px; }
+@utility mt-2xl { margin-top: 48px; }
+@utility mt-margin { margin-top: 32px; }
+
+@utility mb-xs { margin-bottom: 4px; }
+@utility mb-sm { margin-bottom: 8px; }
+@utility mb-md { margin-bottom: 16px; }
+@utility mb-lg { margin-bottom: 24px; }
+@utility mb-xl { margin-bottom: 32px; }
+@utility mb-2xl { margin-bottom: 48px; }
+@utility mb-margin { margin-bottom: 32px; }
+
+@utility ml-xs { margin-left: 4px; }
+@utility ml-sm { margin-left: 8px; }
+@utility ml-md { margin-left: 16px; }
+@utility ml-lg { margin-left: 24px; }
+@utility ml-xl { margin-left: 32px; }
+@utility ml-2xl { margin-left: 48px; }
+
+@utility mr-xs { margin-right: 4px; }
+@utility mr-sm { margin-right: 8px; }
+@utility mr-md { margin-right: 16px; }
+@utility mr-lg { margin-right: 24px; }
+@utility mr-xl { margin-right: 32px; }
+@utility mr-2xl { margin-right: 48px; }
+
+/* Gap */
+@utility gap-xs { gap: 4px; }
+@utility gap-sm { gap: 8px; }
+@utility gap-md { gap: 16px; }
+@utility gap-lg { gap: 24px; }
+@utility gap-xl { gap: 32px; }
+@utility gap-2xl { gap: 48px; }
+@utility gap-gutter { gap: 24px; }
+@utility gap-margin { gap: 32px; }
+
+@utility gap-x-xs { column-gap: 4px; }
+@utility gap-x-sm { column-gap: 8px; }
+@utility gap-x-md { column-gap: 16px; }
+@utility gap-x-lg { column-gap: 24px; }
+@utility gap-x-xl { column-gap: 32px; }
+@utility gap-x-2xl { column-gap: 48px; }
+
+@utility gap-y-xs { row-gap: 4px; }
+@utility gap-y-sm { row-gap: 8px; }
+@utility gap-y-md { row-gap: 16px; }
+@utility gap-y-lg { row-gap: 24px; }
+@utility gap-y-xl { row-gap: 32px; }
+@utility gap-y-2xl { row-gap: 48px; }
+
+/* Positioning */
+.left-xs { left: 4px; }
+.left-sm { left: 8px; }
+.left-md { left: 16px; }
+.left-lg { left: 24px; }
+.left-xl { left: 32px; }
+.left-2xl { left: 48px; }
+
+.right-xs { right: 4px; }
+.right-sm { right: 8px; }
+.right-md { right: 16px; }
+.right-lg { right: 24px; }
+.right-xl { right: 32px; }
+.right-2xl { right: 48px; }
+
+.top-xs { top: 4px; }
+.top-sm { top: 8px; }
+.top-md { top: 16px; }
+.top-lg { top: 24px; }
+.top-xl { top: 32px; }
+.top-2xl { top: 48px; }
+
+.bottom-xs { bottom: 4px; }
+.bottom-sm { bottom: 8px; }
+.bottom-md { bottom: 16px; }
+.bottom-lg { bottom: 24px; }
+.bottom-xl { bottom: 32px; }
+.bottom-2xl { bottom: 48px; }
+
+.inset-xs { inset: 4px; }
+.inset-sm { inset: 8px; }
+.inset-md { inset: 16px; }
+.inset-lg { inset: 24px; }
+.inset-xl { inset: 32px; }
+.inset-2xl { inset: 48px; }
+
+/* Space between */
+.space-y-xs > :not(:last-child) { margin-bottom: 4px; }
+.space-y-sm > :not(:last-child) { margin-bottom: 8px; }
+.space-y-md > :not(:last-child) { margin-bottom: 16px; }
+.space-y-lg > :not(:last-child) { margin-bottom: 24px; }
+.space-y-xl > :not(:last-child) { margin-bottom: 32px; }
+.space-y-2xl > :not(:last-child) { margin-bottom: 48px; }
+.space-y-gutter > :not(:last-child) { margin-bottom: 24px; }
+
+.space-x-xs > :not(:last-child) { margin-right: 4px; }
+.space-x-sm > :not(:last-child) { margin-right: 8px; }
+.space-x-md > :not(:last-child) { margin-right: 16px; }
+.space-x-lg > :not(:last-child) { margin-right: 24px; }
+.space-x-xl > :not(:last-child) { margin-right: 32px; }
+.space-x-2xl > :not(:last-child) { margin-right: 48px; }
+
+/* Stitch Typography Classes */
+.text-headline-h1 {
+  font-size: 30px;
+  line-height: 38px;
+}
+.text-headline-h2 {
+  font-size: 24px;
+  line-height: 32px;
+}
+.text-headline-h3 {
+  font-size: 20px;
+  line-height: 28px;
+}
+.text-body-md {
+  font-size: 14px;
+  line-height: 20px;
+}
+.text-body-sm {
+  font-size: 12px;
+  line-height: 18px;
+}
+.text-interface-sb {
+  font-size: 14px;
+  line-height: 20px;
+}
+.text-label-caps {
+  font-size: 10px;
+  line-height: 14px;
+}
+
+.font-headline-h1,
+.font-headline-h2 {
+  font-weight: 700;
+}
+.font-headline-h3 {
+  font-weight: 600;
+}
+.font-interface-sb {
+  font-weight: 600;
+}
+.font-body-md,
+.font-body-sm {
+  font-weight: 400;
+}
+.font-label-caps {
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
 }
 
 * {

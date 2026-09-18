@@ -3,7 +3,7 @@
 import * as React from 'react';
 import { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { LearnerShell } from '@/shared/layout';
 import { apiClient } from '@/shared/api/api-client';
 import { LoadingSpinner } from '@/shared/ui';
@@ -14,6 +14,8 @@ export default function FlashcardPracticePage({ params }: { params: Promise<{ id
   const unwrappedParams = React.use(params);
   const lessonId = unwrappedParams.id;
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const onlyNeedsReview = searchParams?.get('onlyNeedsReview') === 'true';
 
   const [lesson, setLesson] = useState<any>(null);
   const [words, setWords] = useState<any[]>([]);
@@ -52,9 +54,26 @@ export default function FlashcardPracticePage({ params }: { params: Promise<{ id
         setCurrentIdx(0);
         setIsFlipped(false);
         setIsFinished(false);
+      } else if (lessonId === 'review') {
+        const res: any = await apiClient.get('/vocab-study/practice-session/review');
+        if (!res || !res.words) {
+          setError('Không thể tải danh sách từ cần ôn tập.');
+          return;
+        }
+        setLesson(res.lesson);
+        setWords(res.words);
+        setCurrentIdx(0);
+        setIsFlipped(false);
+        setIsFinished(false);
       } else {
-        const query = `/vocab-study/practice-session/${lessonId}${filterOnlyNew ? '?onlyNew=true' : ''}`;
-        const res: any = await apiClient.get(query);
+        const queryParams = new URLSearchParams();
+        if (onlyNeedsReview) {
+          queryParams.set('onlyNeedsReview', 'true');
+        } else if (filterOnlyNew) {
+          queryParams.set('onlyNew', 'true');
+        }
+        const queryString = queryParams.toString() ? `?${queryParams.toString()}` : '';
+        const res: any = await apiClient.get(`/vocab-study/practice-session/${lessonId}${queryString}`);
         if (!res || !res.words) {
           setError('Không thể tải bài học để luyện tập.');
           return;
@@ -70,7 +89,7 @@ export default function FlashcardPracticePage({ params }: { params: Promise<{ id
     } finally {
       setLoading(false);
     }
-  }, [lessonId]);
+  }, [lessonId, onlyNeedsReview]);
 
   useEffect(() => {
     if (lessonId) {
@@ -197,10 +216,12 @@ export default function FlashcardPracticePage({ params }: { params: Promise<{ id
         <div className="p-12 text-center text-slate-500 space-y-4 max-w-lg mx-auto">
           <span className="material-symbols-outlined text-5xl text-slate-300">task_alt</span>
           <h2 className="text-xl font-bold text-slate-800">
-            {error || 'Không có từ vựng nào để ôn tập!'}
+            {error || (lessonId === 'review' ? 'Hiện tại không có từ nào cần ôn tập!' : 'Không có từ vựng nào để ôn tập!')}
           </h2>
-          <p className="text-xs text-slate-500">
-            Bạn đã thuộc hết các từ trong bài hoặc không có từ mới nào theo bộ lọc.
+          <p className="text-xs text-slate-500 leading-relaxed">
+            {lessonId === 'review'
+              ? 'Tuyệt vời! Bạn đã hoàn thành các từ đến hạn. Khi các từ khác đến chu kỳ ôn tập (SRS), hệ thống sẽ tự động nhắc nhở bạn.'
+              : 'Bạn đã thuộc hết các từ trong bài hoặc không có từ mới nào theo bộ lọc.'}
           </p>
           <div className="flex justify-center gap-3 pt-2">
             {onlyNew && (
@@ -212,10 +233,10 @@ export default function FlashcardPracticePage({ params }: { params: Promise<{ id
               </button>
             )}
             <Link
-              href={`/learn/flashcards/${lessonId}`}
+              href={lessonId === 'review' ? '/learn/flashcards' : `/learn/flashcards/${lessonId}`}
               className="px-4 py-2 rounded-xl bg-primary text-white text-xs font-bold shadow-xs hover:bg-indigo-700 transition-colors"
             >
-              Về bài học
+              {lessonId === 'review' ? 'Về trang Flashcards' : 'Về bài học'}
             </Link>
           </div>
         </div>
@@ -231,7 +252,7 @@ export default function FlashcardPracticePage({ params }: { params: Promise<{ id
 
     return (
       <LearnerShell>
-        <div className="w-full max-w-2xl mx-auto px-4 py-10 space-y-8">
+        <div className="w-full max-w-[640px] mx-auto px-4 py-10 space-y-8">
           <div className="text-center space-y-3">
             <div className="w-20 h-20 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center mx-auto text-4xl shadow-xs">
               🎉
@@ -240,7 +261,7 @@ export default function FlashcardPracticePage({ params }: { params: Promise<{ id
               Hoàn thành phiên luyện tập!
             </h1>
             <p className="text-xs text-slate-500">
-              Bạn đã ôn qua {totalRated} lượt từ vựng trong bài học này.
+              Bạn đã ôn qua {totalRated} lượt từ vựng trong phiên học này.
             </p>
           </div>
 
@@ -271,10 +292,10 @@ export default function FlashcardPracticePage({ params }: { params: Promise<{ id
               Luyện tập tiếp
             </button>
             <Link
-              href={`/learn/flashcards/${lessonId}`}
+              href={lessonId === 'review' ? '/learn/flashcards' : `/learn/flashcards/${lessonId}`}
               className="flex-1 py-3.5 rounded-xl border border-slate-200 bg-white text-slate-700 hover:bg-slate-50 text-xs font-bold transition-colors text-center"
             >
-              Về danh sách bài học
+              {lessonId === 'review' ? 'Về trang Flashcards' : 'Về danh sách từ'}
             </Link>
           </div>
         </div>
@@ -294,10 +315,10 @@ export default function FlashcardPracticePage({ params }: { params: Promise<{ id
         <div className="flex flex-wrap items-center justify-between gap-3 text-xs font-bold text-slate-600 pt-1">
           <div className="flex items-center gap-2 sm:gap-3 flex-wrap">
             <Link
-              href={`/learn/flashcards/${lessonId}`}
+              href={lessonId === 'review' ? '/learn/flashcards' : `/learn/flashcards/${lessonId}`}
               className="hover:text-primary transition-colors flex items-center gap-1"
             >
-              &lt;&lt; Xem tất cả
+              &lt;&lt; {lessonId === 'review' ? 'Danh mục Flashcards' : 'Xem tất cả'}
             </Link>
             <span>·</span>
             <button
@@ -316,26 +337,32 @@ export default function FlashcardPracticePage({ params }: { params: Promise<{ id
             >
               Các từ đã bỏ qua ({skippedWords.length})
             </button>
-            <span>·</span>
-            <label className="flex items-center gap-1.5 cursor-pointer select-none text-slate-700">
-              <input
-                type="checkbox"
-                checked={onlyNew}
-                onChange={e => setOnlyNew(e.target.checked)}
-                className="w-3.5 h-3.5 text-primary rounded-xs border-slate-300 focus:ring-primary"
-              />
-              <span>Chỉ ôn từ mới</span>
-            </label>
+            {lessonId !== 'review' && (
+              <>
+                <span>·</span>
+                <label className="flex items-center gap-1.5 cursor-pointer select-none text-slate-700">
+                  <input
+                    type="checkbox"
+                    checked={onlyNew}
+                    onChange={e => setOnlyNew(e.target.checked)}
+                    className="w-3.5 h-3.5 text-primary rounded-xs border-slate-300 focus:ring-primary"
+                  />
+                  <span>Chỉ ôn từ mới</span>
+                </label>
+              </>
+            )}
           </div>
 
-          <button
-            type="button"
-            onClick={() => setConfirmStopModal(true)}
-            className="text-xs font-bold text-red-600 hover:text-red-700 hover:underline flex items-center gap-1 transition-colors"
-          >
-            <span className="material-symbols-outlined text-sm">archive</span>
-            <span>Dừng học list từ này</span>
-          </button>
+          {lessonId !== 'review' && lessonId !== 'all' && (
+            <button
+              type="button"
+              onClick={() => setConfirmStopModal(true)}
+              className="text-xs font-bold text-red-600 hover:text-red-700 hover:underline flex items-center gap-1 transition-colors"
+            >
+              <span className="material-symbols-outlined text-sm">archive</span>
+              <span>Dừng học list từ này</span>
+            </button>
+          )}
         </div>
 
         {/* Notice Banner */}
@@ -537,7 +564,7 @@ export default function FlashcardPracticePage({ params }: { params: Promise<{ id
         {/* Modal: Settings */}
         {showSettingsModal && (
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 p-4">
-            <div className="bg-white rounded-3xl max-w-sm w-full p-6 space-y-4 shadow-xl">
+            <div className="bg-white rounded-3xl max-w-[420px] w-full p-6 space-y-4 shadow-xl">
               <h3 className="text-base font-bold text-slate-900">Cài đặt luyện tập</h3>
               <div className="space-y-3 text-xs">
                 <label className="flex items-center justify-between cursor-pointer py-1">
@@ -564,7 +591,7 @@ export default function FlashcardPracticePage({ params }: { params: Promise<{ id
         {/* Modal: Skipped Words */}
         {showSkippedModal && (
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 p-4">
-            <div className="bg-white rounded-3xl max-w-md w-full p-6 space-y-4 shadow-xl max-h-[80vh] flex flex-col">
+            <div className="bg-white rounded-3xl max-w-[500px] w-full p-6 space-y-4 shadow-xl max-h-[80vh] flex flex-col">
               <h3 className="text-base font-bold text-slate-900">
                 Từ đã đánh dấu &quot;Đã biết&quot; ({skippedWords.length})
               </h3>
@@ -594,7 +621,7 @@ export default function FlashcardPracticePage({ params }: { params: Promise<{ id
         {/* Modal: Confirm Stop Studying */}
         {confirmStopModal && (
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 p-4">
-            <div className="bg-white rounded-3xl max-w-md w-full p-6 space-y-5 shadow-xl">
+            <div className="bg-white rounded-3xl max-w-[480px] w-full p-6 space-y-5 shadow-xl">
               <div className="w-12 h-12 rounded-2xl bg-red-100 text-red-600 flex items-center justify-center mx-auto">
                 <span className="material-symbols-outlined text-2xl">archive</span>
               </div>

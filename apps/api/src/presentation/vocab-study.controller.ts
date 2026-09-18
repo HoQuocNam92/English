@@ -43,9 +43,11 @@ export class VocabStudyController {
     @Request() req: any,
     @Param('lessonId') lessonId: string,
     @Query('onlyNew') onlyNew?: string,
+    @Query('onlyNeedsReview') onlyNeedsReview?: string,
   ) {
     return this.svc.getPracticeSession(req.user.sub, lessonId, {
       onlyNew: onlyNew === 'true',
+      onlyNeedsReview: onlyNeedsReview === 'true',
     })
   }
 

@@ -486,8 +486,64 @@ export class VocabStudyService {
     }
   }
 
-  // Get practice session for a lesson with optional onlyNew filter
-  async getPracticeSession(learnerId: string, lessonId: string, options?: { onlyNew?: boolean }) {
+  // Get practice session for a lesson with optional onlyNew or onlyNeedsReview filter
+  async getPracticeSession(learnerId: string, lessonId: string, options?: { onlyNew?: boolean; onlyNeedsReview?: boolean }) {
+    if (lessonId === 'review') {
+      const now = new Date()
+      const reviewVocabs = await this.prisma.vocabulary.findMany({
+        where: {
+          status: 'published',
+          vocabProgress: { some: { learnerId, status: 'learning', nextReviewAt: { lte: now } } },
+        },
+        include: {
+          examples: { orderBy: { order: 'asc' }, take: 2 },
+          vocabProgress: { where: { learnerId }, take: 1 },
+        },
+      })
+
+      const words = reviewVocabs.map(v => {
+        const prog = v.vocabProgress?.[0]
+        return {
+          id: v.id,
+          term: v.term,
+          pronunciationIpa: v.pronunciationIpa,
+          audioUrl: v.audioUrl,
+          partOfSpeech: v.partOfSpeech,
+          definitionEn: v.definitionEn,
+          definitionVi: v.definitionVi,
+          examples: v.examples.map(ex => ({ sentenceEn: ex.sentenceEn, translationVi: ex.translationVi })),
+          status: prog?.status ?? 'learning',
+          isMastered: false,
+          isNeedsReview: true,
+          isNew: false,
+          correctCount: prog?.correctCount ?? 0,
+        }
+      })
+
+      const todayStart = new Date()
+      todayStart.setHours(0, 0, 0, 0)
+      const studiedToday = await this.prisma.vocabularyProgress.count({
+        where: { learnerId, lastReviewAt: { gte: todayStart } },
+      })
+
+      return {
+        lesson: {
+          id: 'review',
+          title: 'Ôn tập từ vựng đến hạn (SRS)',
+          summary: 'Tập trung ôn tập toàn bộ các từ vựng kỹ thuật đã đến lịch củng cố trí nhớ',
+          domain: { name: 'Toàn bộ từ đang học' },
+          level: { code: 'review', name: 'Ôn tập ngắt quãng' },
+          author: 'Hệ thống TechEnglish',
+        },
+        words,
+        stats: {
+          totalWords: words.length,
+          studiedToday,
+          maxDailyNewWords: 20,
+        },
+      }
+    }
+
     // Automatically ensure the lesson is in "in_progress" state
     await this.prisma.learningProgress.upsert({
       where: {
@@ -515,7 +571,9 @@ export class VocabStudyService {
 
     let words = lessonData.words
 
-    if (options?.onlyNew) {
+    if (options?.onlyNeedsReview) {
+      words = words.filter(w => w.isNeedsReview)
+    } else if (options?.onlyNew) {
       // Filter only words not yet mastered
       words = words.filter(w => !w.isMastered)
     }

@@ -185,12 +185,52 @@ export default function FlashcardsDashboardPage() {
         {/* TAB 1: ĐANG HỌC */}
         {/* ═════════════════════════════════════════════════════════════════════ */}
         {activeTab === 'studying' && (
-          <div className="space-y-8">
+          <div className="space-y-6">
+            {/* SRS Review Alert Banner */}
+            {dashboardData.stats.needsReview > 0 && (
+              <div className="flex flex-col sm:flex-row items-center justify-between gap-4 p-5 rounded-3xl bg-gradient-to-r from-amber-50 via-amber-100/40 to-orange-50 border-2 border-amber-300 shadow-sm animate-in fade-in slide-in-from-top-2">
+                <div className="flex items-center gap-3.5">
+                  <div className="w-12 h-12 rounded-2xl bg-amber-500 text-white flex items-center justify-center shrink-0 shadow-md shadow-amber-500/20">
+                    <span className="material-symbols-outlined text-2xl">alarm</span>
+                  </div>
+                  <div className="space-y-0.5">
+                    <h3 className="text-base font-black text-amber-950 flex items-center gap-2">
+                      <span>Bạn có {dashboardData.stats.needsReview} từ vựng đã đến hạn ôn tập!</span>
+                      <span className="px-2 py-0.5 text-[10px] uppercase tracking-wider font-extrabold bg-amber-200 text-amber-900 rounded-md">
+                        SRS DUE
+                      </span>
+                    </h3>
+                    <p className="text-xs text-amber-900/80 leading-relaxed">
+                      Ôn tập đúng thời điểm ngắt quãng giúp củng cố từ vựng kỹ thuật vào trí nhớ dài hạn.
+                    </p>
+                  </div>
+                </div>
+
+                <Link
+                  href="/learn/flashcards/review/practice"
+                  className="w-full sm:w-auto px-6 py-3 rounded-2xl bg-amber-600 hover:bg-amber-700 text-white text-xs font-black transition-all shadow-md shadow-amber-600/25 flex items-center justify-center gap-2 shrink-0 group hover:scale-[1.02]"
+                >
+                  <span className="material-symbols-outlined text-lg group-hover:scale-110 transition-transform">
+                    play_circle
+                  </span>
+                  <span>Ôn tập ngay ({dashboardData.stats.needsReview} từ)</span>
+                </Link>
+              </div>
+            )}
+
             {/* Overview Stats Box */}
             <div className="bg-white border border-slate-200 rounded-3xl p-6 lg:p-8 shadow-2xs space-y-6">
-              <h2 className="text-base font-bold text-slate-800">Đang học:</h2>
+              <div className="flex items-center justify-between">
+                <h2 className="text-base font-bold text-slate-800">Đang học:</h2>
+                {dashboardData.stats.needsReview > 0 && (
+                  <span className="text-xs font-bold text-amber-700 bg-amber-50 border border-amber-200 px-3 py-1 rounded-full flex items-center gap-1.5">
+                    <span className="w-2 h-2 rounded-full bg-amber-500 animate-pulse inline-block" />
+                    Có từ đến hạn ôn tập
+                  </span>
+                )}
+              </div>
 
-              <div className="grid grid-cols-3 gap-4 text-center divide-x divide-slate-100">
+              <div className="grid grid-cols-3 gap-4 text-center divide-x divide-slate-100 items-center">
                 <div>
                   <div className="text-3xl lg:text-4xl font-black text-slate-900">
                     {dashboardData.stats.learned}
@@ -204,10 +244,35 @@ export default function FlashcardsDashboardPage() {
                   <div className="text-xs font-bold text-emerald-700 mt-1">Đã nhớ</div>
                 </div>
                 <div>
-                  <div className="text-3xl lg:text-4xl font-black text-amber-600">
-                    {dashboardData.stats.needsReview}
-                  </div>
-                  <div className="text-xs font-bold text-amber-700 mt-1">Cần ôn tập</div>
+                  {dashboardData.stats.needsReview > 0 ? (
+                    <Link
+                      href="/learn/flashcards/review/practice"
+                      className="group block p-3 -m-3 rounded-2xl bg-amber-50/80 hover:bg-amber-100 border border-amber-300 transition-all hover:scale-[1.02] shadow-2xs cursor-pointer"
+                      title="Bấm để bắt đầu ôn tập các từ đến hạn theo thuật toán SRS"
+                    >
+                      <div className="flex items-center justify-center gap-1">
+                        <span className="text-3xl lg:text-4xl font-black text-amber-600 group-hover:text-amber-700">
+                          {dashboardData.stats.needsReview}
+                        </span>
+                        <span className="material-symbols-outlined text-amber-600 text-xl group-hover:translate-x-0.5 transition-transform">
+                          arrow_forward
+                        </span>
+                      </div>
+                      <div className="text-xs font-bold text-amber-800 mt-1 flex items-center justify-center gap-1.5 flex-wrap">
+                        <span>Cần ôn tập</span>
+                        <span className="text-[10px] bg-amber-600 text-white px-2 py-0.5 rounded-full font-black">
+                          Bấm để ôn
+                        </span>
+                      </div>
+                    </Link>
+                  ) : (
+                    <div>
+                      <div className="text-3xl lg:text-4xl font-black text-slate-400">
+                        0
+                      </div>
+                      <div className="text-xs font-bold text-slate-500 mt-1">Cần ôn tập</div>
+                    </div>
+                  )}
                 </div>
               </div>
 
@@ -291,7 +356,8 @@ export default function FlashcardsDashboardPage() {
                         </div>
 
                         <div className="pt-2 border-t border-slate-100 flex items-center justify-between text-xs font-semibold">
-                          <span className="text-amber-600 font-bold">
+                          <span className={item.needsReviewCount > 0 ? "text-amber-600 font-black flex items-center gap-1" : "text-slate-500"}>
+                            {item.needsReviewCount > 0 && <span className="w-2 h-2 rounded-full bg-amber-500 animate-pulse inline-block" />}
                             Cần ôn tập: {item.needsReviewCount}
                           </span>
                           <span className="text-emerald-600 font-bold">
@@ -300,12 +366,24 @@ export default function FlashcardsDashboardPage() {
                         </div>
                       </div>
 
-                      <div className="mt-4 pt-3">
+                      <div className="mt-4 pt-3 flex items-center gap-2">
+                        {item.needsReviewCount > 0 && (
+                          <Link
+                            href={`/learn/flashcards/${item.id}/practice?onlyNeedsReview=true`}
+                            className="flex-1 py-2 px-3 rounded-xl bg-amber-500 hover:bg-amber-600 text-white font-bold text-xs text-center transition-all shadow-xs flex items-center justify-center gap-1"
+                            title={`Chỉ ôn ${item.needsReviewCount} từ đến hạn của bộ này`}
+                          >
+                            <span className="material-symbols-outlined text-sm">alarm</span>
+                            <span>Ôn ({item.needsReviewCount})</span>
+                          </Link>
+                        )}
                         <Link
                           href={`/learn/flashcards/${item.id}`}
-                          className="w-full block py-2 px-4 rounded-xl border border-primary text-primary hover:bg-primary hover:text-white font-bold text-xs text-center transition-all"
+                          className={`py-2 px-3 rounded-xl border border-primary text-primary hover:bg-primary hover:text-white font-bold text-xs text-center transition-all ${
+                            item.needsReviewCount > 0 ? 'flex-1' : 'w-full'
+                          }`}
                         >
-                          Học tiếp
+                          {item.needsReviewCount > 0 ? 'Chi tiết' : 'Học tiếp'}
                         </Link>
                       </div>
                     </div>
@@ -449,7 +527,7 @@ export default function FlashcardsDashboardPage() {
           <div className="bg-white border border-slate-200 rounded-3xl p-12 text-center space-y-4">
             <span className="material-symbols-outlined text-5xl text-slate-300">bookmark</span>
             <h2 className="text-lg font-bold text-slate-800">Chưa có list từ nào</h2>
-            <p className="text-xs text-slate-500 max-w-md mx-auto">
+            <p className="text-xs text-slate-500 max-w-[480px] w-full mx-auto leading-relaxed">
               Bạn có thể tự tạo bộ flashcard từ vựng riêng của mình hoặc lưu lại những từ vựng cần lưu ý khi đọc bài học.
             </p>
             <button
