@@ -154,6 +154,7 @@ export default function LearnerHomePage() {
             { icon: 'workspace_premium', label: t.home.certGoal, value: cert, bg: 'bg-tertiary-container/20', text: 'text-tertiary' },
           ].map((s) => (
             <div
+
               key={s.label}
               className="bg-surface-container border border-outline-variant rounded-lg p-4 flex items-center gap-4 hover:shadow-[0_1px_3px_rgba(15,23,24,0.06)] transition-shadow"
             >
@@ -167,8 +168,6 @@ export default function LearnerHomePage() {
             </div>
           ))}
         </div>
-
-
       </section>
 
       {/* ─── Main Grid: 8-col content + 4-col sidebar ────────────── */}
@@ -189,15 +188,18 @@ export default function LearnerHomePage() {
                     {t.home.todayGoal}
                   </span>
                   <h2 className="text-[24px] font-bold text-on-surface" style={{ lineHeight: '32px', letterSpacing: '-0.01em' }}>
-                    {cert} Cloud Practitioner
+                    {cert && cert !== 'Chưa thiết lập' ? cert : 'Chưa thiết lập mục tiêu chứng chỉ'}
                   </h2>
                 </div>
-                <span className="material-symbols-outlined text-primary text-3xl">cloud_done</span>
+                <span className="material-symbols-outlined text-primary text-3xl">
+                  {cert && cert !== 'Chưa thiết lập' ? 'cloud_done' : 'flag'}
+                </span>
               </div>
-              <p >
-                Hoàn thành lộ trình này để nắm vững các thuật ngữ cốt lõi và khái niệm cơ bản về {cert} bằng tiếng Anh chuyên ngành.
+              <p className="text-[14px] text-on-surface-variant mb-4">
+                {cert && cert !== 'Chưa thiết lập'
+                  ? `Hoàn thành lộ trình này để nắm vững các thuật ngữ cốt lõi và khái niệm cơ bản về ${cert} bằng tiếng Anh chuyên ngành.`
+                  : 'Hãy thiết lập trình độ, lĩnh vực CNTT và chứng chỉ mục tiêu trong hồ sơ để TechEnglish Pro cá nhân hoá nội dung học tập tối ưu cho bạn.'}
               </p>
-
             </div>
 
             <div className="z-10 mt-auto">
@@ -208,13 +210,24 @@ export default function LearnerHomePage() {
               <div className="w-full bg-surface-container h-2 rounded-full mb-4 overflow-hidden">
                 <div className="bg-primary h-2 rounded-full" style={{ width: `${overallProgress}%` }} />
               </div>
-              <Link
-                href="/learn/lessons"
-                className="inline-flex items-center gap-2 px-6 py-2 bg-primary text-white rounded-lg text-[14px] font-semibold hover:opacity-90 active:opacity-80 transition-opacity"
-              >
-                <span className="text-white">{t.home.continueLearn}</span>
-                <span className="material-symbols-outlined text-[18px] text-white">arrow_forward</span>
-              </Link>
+              <div className="flex items-center gap-3">
+                <Link
+                  href="/learn/lessons"
+                  className="inline-flex items-center gap-2 px-6 py-2 bg-primary text-white rounded-lg text-[14px] font-semibold hover:opacity-90 active:opacity-80 transition-opacity"
+                >
+                  <span className="text-white">{t.home.continueLearn}</span>
+                  <span className="material-symbols-outlined text-[18px] text-white">arrow_forward</span>
+                </Link>
+                {(!cert || cert === 'Chưa thiết lập') && (
+                  <Link
+                    href="/learn/profile"
+                    className="inline-flex items-center gap-1.5 px-4 py-2 border border-primary text-primary rounded-lg text-[14px] font-semibold hover:bg-primary-light transition-colors"
+                  >
+                    <span>Thiết lập mục tiêu ngay</span>
+                    <span className="material-symbols-outlined text-[16px]">tune</span>
+                  </Link>
+                )}
+              </div>
             </div>
           </div>
 
