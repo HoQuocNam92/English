@@ -161,10 +161,6 @@ export default function CertificationsPage() {
             </div>
             <div className="flex justify-between items-start mb-4 mt-2">
               <div>
-                <div className="flex items-center gap-1 mb-1">
-                  <span className="material-symbols-outlined text-[16px] text-secondary">auto_awesome</span>
-                  <span className="text-[12px] font-bold text-secondary uppercase">Đề xuất lộ trình AI</span>
-                </div>
                 <h2 className="text-[20px] font-bold text-on-surface">Google Cloud Associate</h2>
                 <span className="text-[12px] font-bold text-on-surface-variant mt-1 inline-block uppercase">Mức độ sẵn sàng</span>
               </div>

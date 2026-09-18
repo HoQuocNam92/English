@@ -53,11 +53,6 @@ export const colors = {
   onTertiaryFixed: '#25005a',
   onTertiaryFixedVariant: '#5a00c6',
 
-  // ── AI Accent (Violet #7C3AED) ────────────────────────────────────
-  aiAccent: '#7c3aed',
-  aiAccentBg: '#F5F3FF',
-  aiAccentBorder: '#7C3AED',
-
   // ── Error ─────────────────────────────────────────────────────────
   error: '#ba1a1a',
   onError: '#ffffff',

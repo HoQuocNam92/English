@@ -30,9 +30,7 @@ const mappings = [
   ['community_discussion/code.html', 'apps/web/app/(admin)/admin/community/page.tsx', 'AdminCommunityPage', 'Thảo luận Cộng đồng'],
   ['technical_dictionary/code.html', 'apps/web/app/(admin)/admin/dictionary/page.tsx', 'AdminDictionaryPage', 'Từ điển Chuyên ngành'],
   ['technical_reading_lab/code.html', 'apps/web/app/(admin)/admin/reading-lab/page.tsx', 'AdminReadingLabPage', 'Phòng đọc Kỹ thuật'],
-  ['ai_mock_interview/code.html', 'apps/web/app/(admin)/admin/ai-interview/page.tsx', 'AdminAIInterviewPage', 'Phỏng vấn AI'],
-  ['ai_smart_review/code.html', 'apps/web/app/(admin)/admin/smart-review/page.tsx', 'AdminSmartReviewPage', 'Ôn tập Thông minh AI'],
-  ['ai_writing_practice/code.html', 'apps/web/app/(admin)/admin/writing-practice/page.tsx', 'AdminWritingPracticePage', 'Luyện viết AI'],
+
   ['career_preparation_center/code.html', 'apps/web/app/(admin)/admin/career-center/page.tsx', 'AdminCareerCenterPage', 'Trung tâm Hướng nghiệp'],
   ['learning_calendar/code.html', 'apps/web/app/(admin)/admin/calendar/page.tsx', 'AdminCalendarPage', 'Lịch Học tập']
 ];

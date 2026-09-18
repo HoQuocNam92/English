@@ -163,31 +163,18 @@ export default function LearnerLessonsPage() {
               const levelLabel = getLevelLabel(lesson);
               const domain = lesson.domain?.name ?? lesson.domain?.code ?? 'IT';
               const duration = lesson.estimatedMinutes ?? 30;
-              const isAIRec = idx % 7 === 3; // Mock AI badge every 7th card
 
               return (
                 <Link
                   key={lesson.id}
                   href={`/learn/lessons/${lesson.id}`}
-                  className={`bg-surface-white border rounded-lg overflow-hidden flex flex-col group cursor-pointer relative transition-all duration-200 hover:-translate-y-0.5 hover:shadow-[0_4px_6px_-1px_rgba(15,23,24,0.1),0_2px_4px_-1px_rgba(15,23,24,0.06)] ${isAIRec ? 'border-secondary/40 bg-ai-accent-bg/30' : 'border-border-subtle'}`}
+                  className="bg-surface-white border border-border-subtle rounded-lg overflow-hidden flex flex-col group cursor-pointer relative transition-all duration-200 hover:-translate-y-0.5 hover:shadow-[0_4px_6px_-1px_rgba(15,23,24,0.1),0_2px_4px_-1px_rgba(15,23,24,0.06)]"
                 >
-                  {/* AI gradient bar */}
-                  {isAIRec && (
-                    <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-secondary to-primary z-10" />
-                  )}
-
                   {/* Thumbnail */}
                   <div className="relative h-40 w-full bg-surface-container-low overflow-hidden">
                     <div className="w-full h-full bg-gradient-to-br from-primary-light to-surface-container group-hover:scale-105 transition-transform duration-300 flex items-center justify-center">
                       <span className="material-symbols-outlined text-primary opacity-20" style={{ fontSize: '72px' }}>auto_stories</span>
                     </div>
-
-                    {/* AI badge */}
-                    {isAIRec && (
-                      <div className="absolute top-2 left-2 bg-surface-white px-2 py-1 rounded text-[12px] font-bold text-secondary flex items-center gap-1 shadow-sm border border-secondary/20">
-                        <span className="material-symbols-outlined" style={{ fontSize: '14px' }}>auto_awesome</span> {(t.lessons as any).aiRecommendation}
-                      </div>
-                    )}
 
                     {/* Duration badge */}
                     <div className="absolute top-2 right-2 bg-surface-white px-2 py-1 rounded text-[12px] font-bold text-on-surface-variant flex items-center gap-1 shadow-sm">

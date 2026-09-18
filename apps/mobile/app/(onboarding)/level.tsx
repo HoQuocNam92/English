@@ -107,8 +107,6 @@ export default function OnboardingLevelScreen() {
           })}
         </View>
 
-        {/* AI Placement Test - removed, feature not available */}
-
       </ScrollView>
 
       {/* Bottom Action */}
