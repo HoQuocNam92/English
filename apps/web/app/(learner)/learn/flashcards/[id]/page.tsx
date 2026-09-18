@@ -30,6 +30,7 @@ export default function LearnerVocabularyFlashcardsPage({ params }: { params: Pr
   const [error, setError] = useState('');
   const [selectedIdx, setSelectedIdx] = useState(0);
   const [isFlipped, setIsFlipped] = useState(false);
+  const [learnedSet, setLearnedSet] = useState<Set<string>>(new Set());
 
   // Quiz state
   const [questions, setQuestions] = useState<QuizQuestion[]>([]);
@@ -46,11 +47,11 @@ export default function LearnerVocabularyFlashcardsPage({ params }: { params: Pr
     setError('');
     try {
       const query = lessonId === 'all'
-        ? `/vocabulary?status=published&limit=${BATCH_SIZE}`
-        : `/vocabulary?lessonId=${lessonId}&limit=${BATCH_SIZE}`;
+        ? '/vocab-study/session'
+        : `/vocab-study/session?lessonId=${lessonId}`;
       const res: any = await apiClient.get(query);
-      const items = res?.data || res || [];
-      setVocabList(Array.isArray(items) ? items.slice(0, BATCH_SIZE) : items.items?.slice(0, BATCH_SIZE) ?? []);
+      const words = res?.words ?? [];
+      setVocabList(Array.isArray(words) ? words : []);
       setSelectedIdx(0);
       setIsFlipped(false);
       setPhase('learn');
@@ -84,6 +85,14 @@ export default function LearnerVocabularyFlashcardsPage({ params }: { params: Pr
     } else {
       startQuiz();
     }
+  };
+
+  // Mark word as learned
+  const markAsLearned = async () => {
+    const word = vocabList[selectedIdx];
+    if (!word || learnedSet.has(word.id)) return;
+    setLearnedSet(prev => new Set(prev).add(word.id));
+    try { await apiClient.post('/vocab-study/answer', { vocabularyId: word.id, isCorrect: true }); } catch { /* best-effort */ }
   };
   const handlePrev = () => {
     if (selectedIdx > 0) { setSelectedIdx(selectedIdx - 1); setIsFlipped(false); }
@@ -212,6 +221,19 @@ export default function LearnerVocabularyFlashcardsPage({ params }: { params: Pr
             <div className="flex flex-col sm:flex-row justify-between items-center gap-3">
               <div className="flex gap-2 w-full sm:w-auto">
                 <button disabled={selectedIdx === 0} onClick={handlePrev} className="flex-1 sm:flex-none px-4 py-2 border border-slate-200 bg-white hover:bg-slate-50 disabled:opacity-40 text-slate-700 rounded-xl text-xs font-bold transition-colors">Từ trước</button>
+                <button onClick={markAsLearned} disabled={learnedSet.has(currentWord.id)}
+                  className={`flex-1 sm:flex-none px-4 py-2 rounded-xl text-xs font-bold transition-colors flex items-center justify-center gap-1.5 ${
+                    learnedSet.has(currentWord.id)
+                      ? 'bg-green-50 border border-green-300 text-green-700'
+                      : 'bg-emerald-500 hover:bg-emerald-600 !text-white'
+                  }`}>
+                  <span className={`material-symbols-outlined text-sm ${learnedSet.has(currentWord.id) ? 'text-green-600' : '!text-white'}`}>
+                    {learnedSet.has(currentWord.id) ? 'check_circle' : 'bookmark_add'}
+                  </span>
+                  <span className={learnedSet.has(currentWord.id) ? '' : '!text-white'}>
+                    {learnedSet.has(currentWord.id) ? 'Đã đánh dấu' : 'Đánh dấu đã học'}
+                  </span>
+                </button>
                 <button onClick={handleNext} className="flex-1 sm:flex-none px-4 py-2 border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 rounded-xl text-xs font-bold transition-colors">
                   {selectedIdx + 1 >= vocabList.length ? '🎯 Bắt đầu kiểm tra' : 'Từ tiếp theo'}
                 </button>
