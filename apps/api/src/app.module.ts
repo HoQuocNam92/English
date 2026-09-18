@@ -13,6 +13,7 @@ import { LearnerProfileModule } from './modules/learner-profile.module'
 import { TaxonomyModule } from './modules/taxonomy.module'
 import { UploadModule } from './modules/upload.module'
 import { VocabStudyModule } from './modules/vocab-study.module'
+import { RecommendationModule } from './modules/recommendation.module'
 
 import { RedisCacheModule } from './infrastructure/cache/redis.module'
 
@@ -38,6 +39,7 @@ import { PlacementTestController } from './presentation/placement-test.controlle
     TaxonomyModule,
     UploadModule,
     VocabStudyModule,
+    RecommendationModule,
   ],
 })
 export class AppModule {}
