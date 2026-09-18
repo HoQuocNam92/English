@@ -24,7 +24,7 @@ export default function MobileScenarioScreen() {
       .then((data: any) => {
         setScenario({
           title: data.domain?.name ?? 'Tình huống',
-          domain: data.domain?.name ?? 'Production Environment',
+          domain: data.domain?.name ?? '',
           description: data.context ?? '',
           question: data.prompt,
           options: data.options?.map((opt: any) => ({ id: opt.key, text: opt.text })) || [],
@@ -66,18 +66,15 @@ export default function MobileScenarioScreen() {
           <MaterialIcons name="close" size={24} color="#464555" />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>Scenario Quiz</Text>
-        <TouchableOpacity style={styles.headerIconBtn}>
-          <MaterialIcons name="more-vert" size={24} color="#464555" />
-        </TouchableOpacity>
+        <View style={{ width: 40 }} />
       </View>
 
       <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
-        {/* Progress Indicator (Mocked for single scenario) */}
+        {/* Progress Indicator */}
         <View style={styles.progressRow}>
           <View style={styles.progressBarBg}>
             <View style={[styles.progressBarFill, { width: '100%' }]} />
           </View>
-          <Text style={styles.progressText}>1/1</Text>
         </View>
 
         {/* Scenario Context Box */}

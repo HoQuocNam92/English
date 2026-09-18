@@ -53,11 +53,11 @@ export default function MobileProfileScreen() {
   
   const currentLevelRaw = profile?.learnerProfile?.currentLevel;
   const currentLevel = typeof currentLevelRaw === 'object' && currentLevelRaw !== null
-    ? (currentLevelRaw.name ?? currentLevelRaw.code ?? 'Intermediate (B1)')
-    : (currentLevelRaw || 'Intermediate (B1)');
-  const mainDomain = profile?.learnerProfile?.mainDomain || 'Software Engineering';
-  const careerGoal = profile?.learnerProfile?.careerGoal || 'Full-stack Dev';
-  const certGoal = profile?.certGoal || profile?.learnerProfile?.certGoal || 'AWS Solutions Architect';
+    ? (currentLevelRaw.name ?? currentLevelRaw.code ?? '')
+    : (currentLevelRaw || '');
+  const mainDomain = profile?.learnerProfile?.mainDomain || '';
+  const careerGoal = profile?.learnerProfile?.careerGoal || '';
+  const certGoal = profile?.certGoal || profile?.learnerProfile?.certGoal || '';
 
   return (
     <View style={[styles.container, { backgroundColor: colors.background }]}>

@@ -14,11 +14,10 @@ export default function MobileEditProfileScreen() {
   const { fetchUser } = useAuth();
   const [displayName, setDisplayName] = useState('');
   
-  // Mock states for the new dropdowns
-  const [englishLevel, setEnglishLevel] = useState('Intermediate (B1-B2)');
-  const [itField, setItField] = useState('Frontend Development');
-  const [careerGoal, setCareerGoal] = useState('Remote Work for US/EU Clients');
-  const [certification, setCertification] = useState('IELTS 6.5+');
+  const [englishLevel, setEnglishLevel] = useState('');
+  const [itField, setItField] = useState('');
+  const [careerGoal, setCareerGoal] = useState('');
+  const [certification, setCertification] = useState('');
   
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
@@ -26,13 +25,23 @@ export default function MobileEditProfileScreen() {
   const [uploading, setUploading] = useState(false);
 
   useEffect(() => {
-    api.get('/users/me')
-      .then((data: any) => {
-        setDisplayName(data.displayName || 'Nguyen Van A');
+    Promise.allSettled([
+      api.get('/users/me'),
+      api.get('/learner-profile/me'),
+    ]).then(([meRes, profileRes]) => {
+      if (meRes.status === 'fulfilled') {
+        const data = meRes.value as any;
+        setDisplayName(data.displayName || '');
         setAvatarUrl(data.avatarUrl || data.userDetail?.avatarUrl || null);
-      })
-      .catch(err => Alert.alert('Lỗi', 'Không thể tải thông tin'))
-      .finally(() => setLoading(false));
+      }
+      if (profileRes.status === 'fulfilled') {
+        const profile = profileRes.value as any;
+        setEnglishLevel(profile.level?.name || '');
+        setItField(profile.domains?.[0]?.domain?.name || '');
+        setCareerGoal(profile.careerGoals?.[0]?.careerGoal?.name || '');
+        setCertification(profile.certGoals?.[0]?.certificate?.name || '');
+      }
+    }).finally(() => setLoading(false));
   }, []);
 
   const handlePickImage = async () => {

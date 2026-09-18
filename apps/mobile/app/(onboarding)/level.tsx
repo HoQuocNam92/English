@@ -57,7 +57,7 @@ export default function OnboardingLevelScreen() {
           <MaterialIcons name="terminal" size={20} color={colors.primary} />
           <Text style={styles.logoText}>TechEnglish Pro</Text>
         </View>
-        <TouchableOpacity>
+        <TouchableOpacity onPress={() => router.push('/(onboarding)/it-field' as any)}>
           <Text style={styles.skipButtonText}>Bỏ qua</Text>
         </TouchableOpacity>
       </View>
@@ -107,19 +107,7 @@ export default function OnboardingLevelScreen() {
           })}
         </View>
 
-        {/* Quick AI Placement Test Banner */}
-        <View style={styles.aiBanner}>
-          <View style={styles.aiIconBox}>
-            <MaterialIcons name="auto-awesome" size={20} color="#ffffff" />
-          </View>
-          <View style={styles.aiContent}>
-            <Text style={styles.aiTitle}>Chưa chắc chắn trình độ?</Text>
-            <Text style={styles.aiDesc}>Làm bài test nhanh 3 phút phân loại chuẩn Dev.</Text>
-          </View>
-          <TouchableOpacity>
-            <Text style={styles.aiTestLink}>Test ngay</Text>
-          </TouchableOpacity>
-        </View>
+        {/* AI Placement Test - removed, feature not available */}
 
       </ScrollView>
 

@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
-import { StyleSheet, Text, View, TouchableOpacity, ScrollView, ActivityIndicator, TextInput, Image } from 'react-native';
+import { StyleSheet, Text, View, TouchableOpacity, ScrollView, ActivityIndicator } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
 import { colors, spacing } from '@techenglish/design-tokens';
 import { api } from '../../src/shared/api/api-client';
@@ -13,7 +13,6 @@ export default function MobileHomeScreen() {
   const [userData, setUserData] = useState<any>(null);
   const [progressData, setProgressData] = useState<any>(null);
   const [lessons, setLessons] = useState<any[]>([]);
-  const [searchQuery, setSearchQuery] = useState('');
 
   const fetchHomeData = async () => {
     setIsLoading(true);
@@ -60,11 +59,12 @@ export default function MobileHomeScreen() {
 
   const name = userData?.displayName || 'Bạn';
   const avatarLetter = name.charAt(0).toUpperCase();
-  const goalTitle = userData?.certGoals?.[0]?.certificate?.name || userData?.learnerProfile?.certGoals?.[0]?.certificate?.name || 'Chứng chỉ tiếng Anh CNTT';
 
   const summary = progressData?.summary || progressData || {};
-  const wordsCount = summary.wordsLearned ?? ((progressData?.progress?.filter((p: any) => p.completedAt)?.length ?? 0) * 8 || 12);
-  const progressPercent = summary.overallCompletionPercent ?? summary.completionPercent ?? (progressData?.progress?.length > 0 ? 65 : 65);
+  const progressPercent = summary.overallCompletionPercent ?? summary.completionPercent ?? 0;
+  const completedLessons = summary.completedLessons ?? progressData?.progress?.filter((p: any) => p.completedAt)?.length ?? 0;
+  const totalLessons = summary.totalLessons ?? progressData?.progress?.length ?? 0;
+  const firstLesson = lessons[0];
   
   return (
     <View style={styles.container}>
@@ -84,22 +84,24 @@ export default function MobileHomeScreen() {
             <Text style={styles.greetingSubtitle}>Sẵn sàng học bài mới chưa?</Text>
           </View>
         </View>
-        <View style={styles.notificationButton} />
+        <View style={{ width: 40 }} />
       </View>
 
       <ScrollView contentContainerStyle={styles.contentContainer} showsVerticalScrollIndicator={false}>
         
-        {/* Hero Goal Card */}
+        {firstLesson ? (
         <View style={styles.heroCard}>
           <View style={styles.heroCardHeader}>
             <View style={styles.heroBadge}>
               <MaterialIcons name="play-circle" size={12} color="#ffffff" />
               <Text style={styles.heroBadgeText}>Đang học</Text>
             </View>
-            <Text style={styles.heroTimeText}>Còn 15 phút</Text>
+            {firstLesson.estimatedMinutes && (
+              <Text style={styles.heroTimeText}>{firstLesson.estimatedMinutes} phút</Text>
+            )}
           </View>
-          <Text style={styles.heroTitle}>{lessons[0]?.title || 'RESTful API Design'}</Text>
-          <Text style={styles.heroSubtitle}>Chương 4: Authentication & JWT Tokens</Text>
+          <Text style={styles.heroTitle}>{firstLesson.title}</Text>
+          <Text style={styles.heroSubtitle}>{firstLesson.domain?.name || firstLesson.level?.name || ''}</Text>
           
           <View style={styles.heroProgressContainer}>
             <View style={styles.heroProgressLabels}>
@@ -114,33 +116,36 @@ export default function MobileHomeScreen() {
           <TouchableOpacity
             style={styles.heroButton}
             activeOpacity={0.9}
-            onPress={() => router.push((lessons.length > 0 ? `/lessons/${lessons[0].id}` : '/lessons') as any)}
+            onPress={() => router.push(`/lessons/${firstLesson.id}` as any)}
           >
             <Text style={styles.heroButtonText}>Học tiếp ngay</Text>
             <MaterialIcons name="arrow-forward" size={18} color={colors.primary} />
           </TouchableOpacity>
         </View>
+        ) : null}
 
         {/* Daily Goal card */}
         <View style={styles.dailyGoalCard}>
           <View style={styles.dailyGoalHeader}>
             <View style={styles.dailyGoalHeaderLeft}>
               <MaterialIcons name="flag" size={20} color={colors.primary} />
-              <Text style={styles.dailyGoalTitle}>Mục tiêu hôm nay</Text>
+              <Text style={styles.dailyGoalTitle}>Tiến độ học tập</Text>
             </View>
             <View style={styles.dailyGoalBadge}>
-              <Text style={styles.dailyGoalBadgeText}>2/3 bài</Text>
+              <Text style={styles.dailyGoalBadgeText}>{completedLessons}/{totalLessons || '?'} bài</Text>
             </View>
           </View>
           
-          <View style={styles.dailyGoalProgressRow}>
-            <View style={[styles.dailyGoalSegment, styles.dailyGoalSegmentActive]} />
-            <View style={[styles.dailyGoalSegment, styles.dailyGoalSegmentActive]} />
-            <View style={[styles.dailyGoalSegment, styles.dailyGoalSegmentInactive]} />
+          <View style={styles.heroProgressBarBg}>
+            <View style={[styles.heroProgressBarFill, { width: totalLessons > 0 ? `${(completedLessons / totalLessons) * 100}%` : '0%' }]} />
           </View>
           
           <View style={styles.dailyGoalFooter}>
-            <Text style={styles.dailyGoalDesc}>Chỉ cần hoàn thành thêm 1 bài học hôm nay!</Text>
+            <Text style={styles.dailyGoalDesc}>
+              {completedLessons >= totalLessons && totalLessons > 0
+                ? 'Bạn đã hoàn thành tất cả bài học! 🎉'
+                : `Còn ${totalLessons - completedLessons} bài học cần hoàn thành`}
+            </Text>
           </View>
         </View>
 

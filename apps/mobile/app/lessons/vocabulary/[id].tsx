@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
-import { StyleSheet, Text, View, TouchableOpacity, ActivityIndicator, ScrollView } from 'react-native';
+import { StyleSheet, Text, View, TouchableOpacity, ActivityIndicator, ScrollView, Alert } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
 import { colors, spacing } from '@techenglish/design-tokens';
 import { api } from '../../../src/shared/api/api-client';
@@ -98,7 +98,7 @@ export default function MobileVocabularyLessonScreen() {
         )
       );
     } catch { /* best-effort */ }
-    alert('Tuyệt vời! Bạn đã hoàn thành bài học từ vựng.');
+    Alert.alert('Thành công', 'Tuyệt vời! Bạn đã hoàn thành bài học từ vựng.');
     router.back();
   };
 

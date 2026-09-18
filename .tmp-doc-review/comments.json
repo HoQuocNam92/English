@@ -1,0 +1,558 @@
+{
+  "file": "C:\\Users\\quocnam\\Downloads\\NHOM_NGHIENCUU_DT04 (13).docx",
+  "comment_count": 24,
+  "comments": [
+    {
+      "id": "0",
+      "author": "Huỳnh Thị Cẩm Dung",
+      "date": "2026-08-20T16:03:54Z",
+      "initials": null,
+      "resolved": false,
+      "text": "bổ sung thêm mình chứng cho việc nhu cầu học tiếng ánh vi dụ:",
+      "anchors": [
+        {
+          "part": "word/document.xml",
+          "paragraphs": [
+            {
+              "where": "start",
+              "text": "1.1. GIỚI THIỆU"
+            },
+            {
+              "where": "end",
+              "text": "1.1. GIỚI THIỆU"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "1",
+      "author": "Huỳnh Thị Cẩm Dung",
+      "date": "2026-08-20T16:04:44Z",
+      "initials": null,
+      "resolved": false,
+      "text": "Sinh viên Việt Nam đã có nhu cầu học tiếng Anh bằng ứng dụng di động link: https://files.eric.ed.gov/fulltext/EJ1380978.pdf",
+      "anchors": [
+        {
+          "part": "word/document.xml",
+          "paragraphs": [
+            {
+              "where": "start",
+              "text": "1.1. GIỚI THIỆU"
+            },
+            {
+              "where": "end",
+              "text": "1.1. GIỚI THIỆU"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "2",
+      "author": "Huỳnh Thị Cẩm Dung",
+      "date": "2026-08-20T16:06:38Z",
+      "initials": null,
+      "resolved": false,
+      "text": "Nhu cầu học tiếng Anh nghề nghiệp gắn với cơ hội việc làm. Nghiên cứu 246 sinh viên UEH: 85,6% đã/đang dùng Duolingo; người học đánh giá cao tính linh hoạt, tương tác, gamification. Họ mong muốn nội dung sát nghề nghiệp hơn; tài liệu và phương pháp là hai yếu tố cần ưu tiên cải thiện. Bài báo search google schoolar: English-Learning Mobile Apps for Business Students: A Case Study from Vietnam",
+      "anchors": [
+        {
+          "part": "word/document.xml",
+          "paragraphs": [
+            {
+              "where": "start",
+              "text": "1.1. GIỚI THIỆU"
+            },
+            {
+              "where": "end",
+              "text": "1.1. GIỚI THIỆU"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "3",
+      "author": "Huỳnh Thị Cẩm Dung",
+      "date": "2026-09-05T18:15:45Z",
+      "initials": null,
+      "resolved": false,
+      "text": "Nhiều nút quyết định thiếu điều kiện hoặc luồng chưa kín",
+      "anchors": [
+        {
+          "part": "word/document.xml",
+          "paragraphs": [
+            {
+              "where": "start",
+              "text": "2.2.1 Biểu đồ Usecase nghiệp vụ"
+            },
+            {
+              "where": "end",
+              "text": "2.2.1 Biểu đồ Usecase nghiệp vụ"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "4",
+      "author": "Huỳnh Thị Cẩm Dung",
+      "date": "2026-09-05T18:18:54Z",
+      "initials": null,
+      "resolved": false,
+      "text": "Không nhất thiết phải vẽ all các nghiệp vụ\ngợi ý chỉ vẽ 9 nghiệp vụ chính",
+      "anchors": [
+        {
+          "part": "word/document.xml",
+          "paragraphs": [
+            {
+              "where": "start",
+              "text": "2.2.1 Biểu đồ Usecase nghiệp vụ"
+            },
+            {
+              "where": "end",
+              "text": "2.2.1 Biểu đồ Usecase nghiệp vụ"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "5",
+      "author": "Huỳnh Thị Cẩm Dung",
+      "date": "2026-09-05T18:18:56Z",
+      "initials": null,
+      "resolved": false,
+      "text": "1\tQuản lý hồ sơ học tập\n2\tHọc bài học chuyên ngành\n3\tHọc và ôn từ vựng chuyên ngành\n4\tLuyện tập câu hỏi\n5\tLàm đề thi thử\n6\tBiên soạn học liệu và câu hỏi\n7\tThiết lập đề thi\n8\tTheo dõi kết quả học tập và báo cáo\n9 \t Nghiệp vụ liên quan AI",
+      "anchors": [
+        {
+          "part": "word/document.xml",
+          "paragraphs": [
+            {
+              "where": "start",
+              "text": "2.2.1 Biểu đồ Usecase nghiệp vụ"
+            },
+            {
+              "where": "end",
+              "text": "2.2.1 Biểu đồ Usecase nghiệp vụ"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "6",
+      "author": "Huỳnh Thị Cẩm Dung",
+      "date": "2026-09-05T18:20:41Z",
+      "initials": null,
+      "resolved": false,
+      "text": "Vẽ đầy đủ loại sơ đồ\n+ UC nghiệp vụ\n+ UC hệ thống\n+ Sơ đồ hoạt động\n+ Sơ đồ tuần tự",
+      "anchors": [
+        {
+          "part": "word/document.xml",
+          "paragraphs": [
+            {
+              "where": "start",
+              "text": "2.2.1 Biểu đồ Usecase nghiệp vụ"
+            },
+            {
+              "where": "end",
+              "text": "2.2.1 Biểu đồ Usecase nghiệp vụ"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "7",
+      "author": "Huỳnh Thị Cẩm Dung",
+      "date": "2026-09-05T18:10:33Z",
+      "initials": null,
+      "resolved": false,
+      "text": "Lỗi chung cho các sơ đồ",
+      "anchors": [
+        {
+          "part": "word/document.xml",
+          "paragraphs": [
+            {
+              "where": "start",
+              "text": "2.2.1 Biểu đồ Usecase nghiệp vụ"
+            },
+            {
+              "where": "end",
+              "text": "Biểu đồ Usecase nghiệp vụ (Business Usecase Diagram) tập trung vào việc mô tả các quy trình nghiệp vụ mà hệ thống sẽ hỗ trợ và không đi sâu vào chi tiết kỹ thuật của hệ thống. Nó giúp làm rõ các hoạt "
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "8",
+      "author": "Huỳnh Thị Cẩm Dung",
+      "date": "2026-09-05T18:10:45Z",
+      "initials": null,
+      "resolved": false,
+      "text": "Các sơ đồ như quản lý hồ sơ, học bài học, học từ vựng, luyện tập, làm đề, biên soạn nội dung… đều chỉ có một swimlane dạng “Học viên: Học viên”, “Giảng viên: Giảng viên” hoặc “Quản trị viên: Quản trị viên”.\nTrong khi đó, các bước như:\nHiển thị thông tin;\nKiểm tra dữ liệu;\nKiểm tra câu trả lời;\nCập nhật tiến độ;\nLưu nội dung;\nThông báo kết quả;\nlà trách nhiệm của hệ thống, không phải của Học viên/Giảng viên/Quản trị viên.\nCần sửa thành hai swimlane",
+      "anchors": [
+        {
+          "part": "word/document.xml",
+          "paragraphs": [
+            {
+              "where": "start",
+              "text": "2.2.1 Biểu đồ Usecase nghiệp vụ"
+            },
+            {
+              "where": "end",
+              "text": "Biểu đồ Usecase nghiệp vụ (Business Usecase Diagram) tập trung vào việc mô tả các quy trình nghiệp vụ mà hệ thống sẽ hỗ trợ và không đi sâu vào chi tiết kỹ thuật của hệ thống. Nó giúp làm rõ các hoạt "
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "9",
+      "author": "Huỳnh Thị Cẩm Dung",
+      "date": "2026-09-05T17:57:52Z",
+      "initials": null,
+      "resolved": false,
+      "text": "Cô nhớ có 1 lần cmt bs thêm UC liên quan đến AI ? hiện chưa thấy",
+      "anchors": [
+        {
+          "part": "word/document.xml",
+          "paragraphs": [
+            {
+              "where": "start",
+              "text": "Hình 7. Usecase nghiệp vụ học tiếng anh chuyên ngành CNTT"
+            },
+            {
+              "where": "end",
+              "text": "Hình 7. Usecase nghiệp vụ học tiếng anh chuyên ngành CNTT"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "10",
+      "author": "Huỳnh Thị Cẩm Dung",
+      "date": "2026-09-05T17:57:02Z",
+      "initials": null,
+      "resolved": false,
+      "text": "Nếu ba hoạt động biên soạn là bắt buộc/cấu thành của việc quản lý nội dung\n=> Mũi tên nét đứt phải đi từ UC tổng quát đến UC được include.",
+      "anchors": [
+        {
+          "part": "word/document.xml",
+          "paragraphs": [
+            {
+              "where": "start",
+              "text": "Hình 7. Usecase nghiệp vụ học tiếng anh chuyên ngành CNTT"
+            },
+            {
+              "where": "end",
+              "text": "Hình 7. Usecase nghiệp vụ học tiếng anh chuyên ngành CNTT"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "11",
+      "author": "Huỳnh Thị Cẩm Dung",
+      "date": "2026-09-05T17:56:12Z",
+      "initials": null,
+      "resolved": false,
+      "text": "Hình x trên với x là số của hình",
+      "anchors": [
+        {
+          "part": "word/document.xml",
+          "paragraphs": [
+            {
+              "where": "start",
+              "text": "Nhìn vào Hình 7, chúng ta có thể thấy ba tác nhân chính tham gia vào quy trình của ứng dụng học tiếng anh chuyên ngành CNTT ở mức nghiệp vụ:"
+            },
+            {
+              "where": "end",
+              "text": "Nhìn vào Hình 7, chúng ta có thể thấy ba tác nhân chính tham gia vào quy trình của ứng dụng học tiếng anh chuyên ngành CNTT ở mức nghiệp vụ:"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "12",
+      "author": "Huỳnh Thị Cẩm Dung",
+      "date": "2026-09-05T18:02:14Z",
+      "initials": null,
+      "resolved": false,
+      "text": "Toàn bộ luồng đang nằm trong lane Học viên, trong khi “kiểm tra hợp lệ”, “cập nhật hồ sơ” và “thông báo kết quả” là trách nhiệm của hệ thống. Nên dùng hai swimlane:\n+ Học viên: chọn chức năng, xem, nhập/chọn thông tin, xác nhận, nhận thông báo.\n+ Hệ thống: hiển thị hồ sơ, kiểm tra dữ liệu, lưu cập nhật, thông báo kết quả.",
+      "anchors": [
+        {
+          "part": "word/document.xml",
+          "paragraphs": [
+            {
+              "where": "start",
+              "text": "Bảng 2. Bảng đặc tả usecase Quản lý hồ sơ học tập."
+            },
+            {
+              "where": "end",
+              "text": "Bảng 2. Bảng đặc tả usecase Quản lý hồ sơ học tập."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "13",
+      "author": "Huỳnh Thị Cẩm Dung",
+      "date": "2026-09-05T18:01:06Z",
+      "initials": null,
+      "resolved": false,
+      "text": "Chỗ điều kiện hiện chưa có ghi ví dụ",
+      "anchors": [
+        {
+          "part": "word/document.xml",
+          "paragraphs": [
+            {
+              "where": "start",
+              "text": "Bảng 2. Bảng đặc tả usecase Quản lý hồ sơ học tập."
+            },
+            {
+              "where": "end",
+              "text": "Bảng 2. Bảng đặc tả usecase Quản lý hồ sơ học tập."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "14",
+      "author": "Huỳnh Thị Cẩm Dung",
+      "date": "2026-09-05T18:01:09Z",
+      "initials": null,
+      "resolved": false,
+      "text": "[Có nhu cầu cập nhật] → Cập nhật trình độ tiếng Anh;\n[Không cập nhật] → Kết thúc/quay lại màn hình hồ sơ.",
+      "anchors": [
+        {
+          "part": "word/document.xml",
+          "paragraphs": [
+            {
+              "where": "start",
+              "text": "Bảng 2. Bảng đặc tả usecase Quản lý hồ sơ học tập."
+            },
+            {
+              "where": "end",
+              "text": "Bảng 2. Bảng đặc tả usecase Quản lý hồ sơ học tập."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "15",
+      "author": "Huỳnh Thị Cẩm Dung",
+      "date": "2026-09-05T18:01:16Z",
+      "initials": null,
+      "resolved": false,
+      "text": "=> điều chỉnh lỗi chung",
+      "anchors": [
+        {
+          "part": "word/document.xml",
+          "paragraphs": [
+            {
+              "where": "start",
+              "text": "Bảng 2. Bảng đặc tả usecase Quản lý hồ sơ học tập."
+            },
+            {
+              "where": "end",
+              "text": "Bảng 2. Bảng đặc tả usecase Quản lý hồ sơ học tập."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "16",
+      "author": "Huỳnh Thị Cẩm Dung",
+      "date": "2026-09-05T18:03:05Z",
+      "initials": null,
+      "resolved": false,
+      "text": "gợi ý luồng\nChọn quản lý hồ sơ → Hiển thị hồ sơ → Cập nhật thông tin → Xác nhận → Kiểm tra hợp lệ → [Hợp lệ] Lưu hồ sơ → Thông báo thành công / [Không hợp lệ] Thông báo lỗi → Quay lại cập nhật.",
+      "anchors": [
+        {
+          "part": "word/document.xml",
+          "paragraphs": [
+            {
+              "where": "start",
+              "text": "Bảng 2. Bảng đặc tả usecase Quản lý hồ sơ học tập."
+            },
+            {
+              "where": "end",
+              "text": "Bảng 2. Bảng đặc tả usecase Quản lý hồ sơ học tập."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "17",
+      "author": "Huỳnh Thị Cẩm Dung",
+      "date": "2026-09-05T18:00:26Z",
+      "initials": null,
+      "resolved": false,
+      "text": "Phải có tên hình và tên bảng=> rà soát và bs cho toàn bài",
+      "anchors": [
+        {
+          "part": "word/document.xml",
+          "paragraphs": [
+            {
+              "where": "start",
+              "text": "Bảng 2. Bảng đặc tả usecase Quản lý hồ sơ học tập."
+            },
+            {
+              "where": "end",
+              "text": "Bảng 2. Bảng đặc tả usecase Quản lý hồ sơ học tập."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "18",
+      "author": "Huỳnh Thị Cẩm Dung",
+      "date": "2026-09-05T18:21:48Z",
+      "initials": null,
+      "resolved": false,
+      "text": "users – learner_profiles đang là 1–1\nNên là users 1 — 0..1 learner_profiles, vì Giảng viên và Quản trị viên không có hồ sơ học viên.",
+      "anchors": [
+        {
+          "part": "word/document.xml",
+          "paragraphs": [
+            {
+              "where": "start",
+              "text": "Hình 9. Sơ đồ lớp mức phân tích của hệ thống học tiếng Anh chuyên ngành CNTT"
+            },
+            {
+              "where": "end",
+              "text": "2.3.1. Các nhóm thực thể trong mô hình"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "19",
+      "author": "Huỳnh Thị Cẩm Dung",
+      "date": "2026-09-05T18:22:11Z",
+      "initials": null,
+      "resolved": false,
+      "text": "essons – vocabularies\nBáo cáo nói quan hệ nhiều–nhiều nhưng sơ đồ thiếu bảng trung gian lesson_vocabularies.",
+      "anchors": [
+        {
+          "part": "word/document.xml",
+          "paragraphs": [
+            {
+              "where": "start",
+              "text": "Hình 9. Sơ đồ lớp mức phân tích của hệ thống học tiếng Anh chuyên ngành CNTT"
+            },
+            {
+              "where": "end",
+              "text": "2.3.1. Các nhóm thực thể trong mô hình"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "20",
+      "author": "Huỳnh Thị Cẩm Dung",
+      "date": "2026-09-05T18:22:53Z",
+      "initials": null,
+      "resolved": false,
+      "text": "Mục tiêu chứng chỉ\nlearner_certificate_goals là hợp lý, nhưng cần xác định học viên có thể chọn nhiều chứng chỉ hay chỉ một chứng chỉ tại một thời điểm để ràng buộc dữ liệu đúng.",
+      "anchors": [
+        {
+          "part": "word/document.xml",
+          "paragraphs": [
+            {
+              "where": "start",
+              "text": "Hình 9. Sơ đồ lớp mức phân tích của hệ thống học tiếng Anh chuyên ngành CNTT"
+            },
+            {
+              "where": "end",
+              "text": "2.3.1. Các nhóm thực thể trong mô hình"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "21",
+      "author": "Huỳnh Thị Cẩm Dung",
+      "date": "2026-09-05T18:22:28Z",
+      "initials": null,
+      "resolved": false,
+      "text": "learning_progress dùng resource_type, resource_id\nCó thể dùng, nhưng đây là quan hệ đa hình; phải nêu rõ tiến độ áp dụng cho loại tài nguyên nào. Nếu cần toàn vẹn khóa ngoại, nên tách tiến độ bài học, từ vựng và đề thi.",
+      "anchors": [
+        {
+          "part": "word/document.xml",
+          "paragraphs": [
+            {
+              "where": "start",
+              "text": "Hình 9. Sơ đồ lớp mức phân tích của hệ thống học tiếng Anh chuyên ngành CNTT"
+            },
+            {
+              "where": "end",
+              "text": "2.3.1. Các nhóm thực thể trong mô hình"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "22",
+      "author": "Huỳnh Thị Cẩm Dung",
+      "date": "2026-09-05T18:22:42Z",
+      "initials": null,
+      "resolved": false,
+      "text": "exam_attempts.question_snapshot\nCần làm rõ snapshot là toàn bộ đề thi hay từng câu. Nếu lưu nội dung câu hỏi tại thời điểm thi, dữ liệu snapshot nên đặt ở attempt_answers hoặc tạo bảng snapshot riêng.",
+      "anchors": [
+        {
+          "part": "word/document.xml",
+          "paragraphs": [
+            {
+              "where": "start",
+              "text": "Hình 9. Sơ đồ lớp mức phân tích của hệ thống học tiếng Anh chuyên ngành CNTT"
+            },
+            {
+              "where": "end",
+              "text": "2.3.1. Các nhóm thực thể trong mô hình"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "23",
+      "author": "Huỳnh Thị Cẩm Dung",
+      "date": "2026-09-05T18:22:01Z",
+      "initials": null,
+      "resolved": false,
+      "text": "learner_profiles – career_goals\nNếu một học viên có nhiều mục tiêu nghề nghiệp và một mục tiêu có nhiều học viên thì cần bảng learner_career_goals; không nối trực tiếp 1–n.",
+      "anchors": [
+        {
+          "part": "word/document.xml",
+          "paragraphs": [
+            {
+              "where": "start",
+              "text": "Hình 9. Sơ đồ lớp mức phân tích của hệ thống học tiếng Anh chuyên ngành CNTT"
+            },
+            {
+              "where": "end",
+              "text": "2.3.1. Các nhóm thực thể trong mô hình"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

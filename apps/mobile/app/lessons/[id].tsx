@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
-import { StyleSheet, Text, View, TouchableOpacity, ScrollView, ActivityIndicator } from 'react-native';
+import { StyleSheet, Text, View, TouchableOpacity, ScrollView, ActivityIndicator, Alert } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
 import { colors, spacing } from '@techenglish/design-tokens';
 import { api } from '../../src/shared/api/api-client';
@@ -67,9 +67,9 @@ export default function MobileLessonDetailScreen() {
       setMarking(true);
       await api.post(`/progress/mark-lesson/${id}`, {});
       setIsCompleted(true);
-      alert('Tuyệt vời! Bạn đã hoàn thành bài học này!');
+      Alert.alert('Thành công', 'Tuyệt vời! Bạn đã hoàn thành bài học này!');
     } catch (err: any) {
-      alert(err.message || 'Lỗi khi đánh dấu. Vui lòng thử lại.');
+      Alert.alert('Lỗi', err.message || 'Lỗi khi đánh dấu. Vui lòng thử lại.');
     } finally {
       setMarking(false);
     }

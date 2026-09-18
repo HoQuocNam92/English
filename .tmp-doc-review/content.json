@@ -1,0 +1,2111 @@
+{
+  "paragraphs": [
+    {
+      "style": "normal",
+      "text": "BỘ CÔNG THƯƠNG"
+    },
+    {
+      "style": "normal",
+      "text": "TRƯỜNG ĐẠI HỌC CÔNG THƯƠNG TP. HCM KHOA CÔNG NGHỆ THÔNG TIN"
+    },
+    {
+      "style": "normal",
+      "text": "---&---"
+    },
+    {
+      "style": "normal",
+      "text": "KHÓA LUẬN CỬ NHÂN"
+    },
+    {
+      "style": "normal",
+      "text": "XÂY DỰNG HỆ THỐNG HỌC TIẾNG ANH CHUYÊN NGÀNH CÔNG NGHỆ THÔNG TIN"
+    },
+    {
+      "style": "normal",
+      "text": "Ngành: Công nghệ thông tin"
+    },
+    {
+      "style": "normal",
+      "text": "GIẢNG VIÊN HƯỚNG DẪN: "
+    },
+    {
+      "style": "normal",
+      "text": "ThS. Huỳnh Thị Cẩm Dung"
+    },
+    {
+      "style": "normal",
+      "text": "SINH VIÊN THỰC HIỆN:"
+    },
+    {
+      "style": "normal",
+      "text": "1.  2001230536 – Hồ Quốc Nam   – 14DHTH05"
+    },
+    {
+      "style": "normal",
+      "text": "2.  2001230858 – Trần Lê Anh Tuấn – 14DHTH05"
+    },
+    {
+      "style": "normal",
+      "text": "3.  2001230951 – Nguyễn Đẩu Thủy – 14DHTH05"
+    },
+    {
+      "style": "normal",
+      "text": " \t\t\t\t\t\tTP. HỒ CHÍ MINH, tháng 08  năm 2026 "
+    },
+    {
+      "style": "normal",
+      "text": "CHƯƠNG 1: KHẢO SÁT HỆ THỐNG "
+    },
+    {
+      "style": "normal",
+      "text": "1.1. GIỚI THIỆU "
+    },
+    {
+      "style": "normal",
+      "text": "Hiện nay có nhiều ứng dụng hỗ trợ học tiếng Anh trên nền tảng di động và web, cung cấp các chức năng như học từ vựng, luyện nghe, đọc, nói và theo dõi tiến độ. Theo định hướng khảo sát các ứng dụng học tiếng Anh phổ biến, nhóm lựa chọn 4English, Duolingo và Cambly dựa trên mức độ phổ biến được thể hiện qua số lượt tải trên Google Play. Tại thời điểm khảo sát, 4English đạt trên 1 triệu lượt tải [5], Duolingo đạt trên 500 triệu lượt tải [6] và Cambly đạt trên 10 triệu lượt tải [7]. Các số liệu này cho thấy ba ứng dụng có mức độ phổ biến đáng kể và phù hợp để nhóm lựa chọn làm đối tượng khảo sát. "
+    },
+    {
+      "style": "normal",
+      "text": "Bên cạnh mức độ phổ biến, ba ứng dụng còn có những cách tổ chức học tập khác nhau. 4English tập trung vào việc học tiếng Anh thông qua các nguồn nội dung thực tế như tin tức, video và podcast, kết hợp với tra cứu và ôn tập từ vựng. Duolingo tổ chức nội dung thành các bài học ngắn theo lộ trình và sử dụng các yếu tố trò chơi nhằm duy trì động lực học tập. Cambly tập trung vào luyện giao tiếp tiếng Anh thông qua các cuộc hội thoại trực tiếp với tutor."
+    },
+    {
+      "style": "normal",
+      "text": "Việc khảo sát ba ứng dụng trên giúp nhóm phân tích cách tổ chức chức năng, phương pháp hỗ trợ học tập, ưu điểm và hạn chế của các hệ thống hiện có. Kết quả khảo sát được sử dụng làm cơ sở để xác định những chức năng có thể tham khảo, đồng thời nhận diện các khoảng trống cần bổ sung khi xây dựng hệ thống học tiếng Anh chuyên ngành Công nghệ thông tin của đề tài. "
+    },
+    {
+      "style": "normal",
+      "text": "1.1.1. Phạm vi nghiên cứu"
+    },
+    {
+      "style": "normal",
+      "text": "Đề tài tập trung nghiên cứu và xây dựng hệ thống hỗ trợ sinh viên Công nghệ thông tin học tiếng Anh trong các ngữ cảnh chuyên môn. Nội dung của hệ thống tập trung vào từ vựng tiếng Anh chuyên ngành CNTT, đọc hiểu tài liệu kỹ thuật, luyện nghe nói trong các tình huống học tập và nghề nghiệp, theo dõi tiến độ và cá nhân hóa quá trình học. AI được sử dụng như một công cụ hỗ trợ luyện tập, giải thích và phản hồi cho người học. Về phạm vi triển khai, hệ thống được xây dựng trên nền tảng web và ứng dụng, nhằm tạo điều kiện cho người học truy cập và sử dụng các chức năng học tập trên nhiều hình thức khác nhau. Đề tài không hướng đến xây dựng một hệ thống học tiếng Anh tổng quát hoặc một hệ thống luyện thi chứng chỉ CNTT chuyên biệt hoàn chỉnh. "
+    },
+    {
+      "style": "normal",
+      "text": "1.1.2. Phương pháp nghiên cứu"
+    },
+    {
+      "style": "normal",
+      "text": "Đề tài sử dụng phương pháp khảo sát, nghiên cứu tài liệu, so sánh và phân tích yêu cầu hệ thống. Nhóm tiến hành khảo sát các ứng dụng 4English, Duolingo và Cambly nhằm tìm hiểu cách tổ chức chức năng, phương pháp hỗ trợ học tập, ưu điểm và hạn chế của từng hệ thống. Bên cạnh đó, nhóm tham khảo các nghiên cứu, chương trình đào tạo và báo cáo liên quan đến việc học tiếng Anh của sinh viên và yêu cầu sử dụng tiếng Anh trong lĩnh vực Công nghệ thông tin. Từ các kết quả thu thập được, nhóm tiến hành so sánh, tổng hợp và xác định những nội dung phù hợp làm cơ sở cho việc phân tích chức năng, thiết kế và xây dựng hệ thống đề xuất."
+    },
+    {
+      "style": "normal",
+      "text": "1.2. KHẢO SÁT ỨNG DỤNG  4ENGLISH"
+    },
+    {
+      "style": "normal",
+      "text": "1.2.1. Mô tả cấu trúc chức năng của ứng dụng 4English"
+    },
+    {
+      "style": "normal",
+      "text": "Để có cái nhìn chi tiết về cách thức hoạt động và các chức năng chính của ứng dụng 4English, nhóm tiến hành khảo sát các chức năng được cung cấp cho người học. Qua khảo sát, các chức năng của 4English được phân chia thành các nhóm chức năng chính gồm: Quản lý tài khoản và cài đặt, Quản lý nội dung học tập, Tra cứu và quản lý từ vựng, Luyện tập và ôn tập. "
+    },
+    {
+      "style": "normal",
+      "text": "Hình 1. Sơ đồ phân rã chức năng của ứng dụng 4English "
+    },
+    {
+      "style": "normal",
+      "text": "Sơ đồ chức năng trên được mô tả chi tiết như sau:"
+    },
+    {
+      "style": "normal",
+      "text": "Quản lý tài khoản và cài đặt: Đảm nhiệm việc xác thực và quản trị hồ sơ người dùng trong hệ thống. Cung cấp các tính năng đăng ký, đăng nhập (qua Email, tài khoản Google) và tự động đồng bộ tiến độ học tập giữa các thiết bị. Đồng thời, phân hệ này xử lý việc nâng cấp tài khoản lên gói PRO để mở khóa các tiện ích mở rộng và cho phép người dùng tùy chỉnh cài đặt giao diện (cỡ chữ, chế độ sáng/tối)."
+    },
+    {
+      "style": "normal",
+      "text": "Quản lý nội dung học tập: Cung cấp nguồn học liệu đa phương tiện từ các nền tảng thực tế. Phân hệ tích hợp các kênh tin tức quốc tế (hỗ trợ đọc báo song ngữ), video từ YouTube (có phụ đề đồng bộ chạy theo thời gian thực), các bài nghe podcast (kèm kịch bản văn bản - transcript) và kho sách điện tử (Ebooks). Người dùng có thể trực tiếp tương tác, nghe, đọc và đối chiếu bản dịch ngay trong quá trình học."
+    },
+    {
+      "style": "normal",
+      "text": "Tra cứu và quản lý từ vựng: Đảm nhiệm luồng xử lý từ điển và lưu trữ từ mới của người học. Tính năng cốt lõi là chạm để tra nhanh (tap-to-look-up) trên bất kỳ đoạn văn bản nào mà không cần chuyển đổi ứng dụng, hỗ trợ hiển thị phiên âm, định nghĩa và phát âm mẫu từ nhiều bộ từ điển. Bên cạnh đó, người học có thể tạo các thư mục sổ từ cá nhân để phân loại và lưu trữ các từ vựng cần học."
+    },
+    {
+      "style": "normal",
+      "text": "Luyện tập và ôn tập: Cung cấp các công cụ củng cố kiến thức dựa trên danh sách từ vựng người dùng đã lưu. Phân hệ áp dụng thuật toán lặp lại ngắt quãng (Spaced Repetition System - SRS) thông qua hình thức thẻ ghi nhớ (Flashcards) để tối ưu hóa khả năng ghi nhớ dài hạn. Ngoài ra, hệ thống còn hỗ trợ các bài tập nghe chép chính tả và các trò chơi tương tác như nối từ, trắc nghiệm nhanh để tăng tính sinh động trong quá trình ôn luyện."
+    },
+    {
+      "style": "normal",
+      "text": "1.2.2 Quy trình phân rã chức năng"
+    },
+    {
+      "style": "normal",
+      "text": "Hình 2. Sơ đồ phân rã chi tiết chức năng ứng dụng 4English "
+    },
+    {
+      "style": "normal",
+      "text": "Sơ đồ chức năng trên được mô tả chi tiết như sau:"
+    },
+    {
+      "style": "normal",
+      "text": "Quản lý tài khoản và cài đặt"
+    },
+    {
+      "style": "normal",
+      "text": "Nhóm chức năng này đảm bảo việc định danh, xác thực và cá nhân hóa trải nghiệm của người học, từ lúc đăng ký tham gia hệ thống đến quá trình đồng bộ dữ liệu đa nền tảng."
+    },
+    {
+      "style": "normal",
+      "text": "-        Đăng nhập và đồng bộ dữ liệu: Ghi nhận thông tin xác thực của người dùng qua Email, Google và tự động đồng bộ tiến độ học tập trên nhiều thiết bị."
+    },
+    {
+      "style": "normal",
+      "text": "-      Nâng cấp gói tài khoản PRO: Xử lý giao dịch thanh toán mua gói tài khoản trả phí, mở khóa các tính năng nâng cao và loại bỏ quảng cáo."
+    },
+    {
+      "style": "normal",
+      "text": "-        Cài đặt giao diện và hiển thị: Hỗ trợ người dùng tùy biến chế độ hiển thị sáng/tối (Dark mode), căn chỉnh cỡ chữ và bật/tắt các tiện ích dịch tự động."
+    },
+    {
+      "style": "normal",
+      "text": "Quản lý nội dung học tập"
+    },
+    {
+      "style": "normal",
+      "text": "Nhóm chức năng này quản lý toàn bộ kho học liệu đa phương tiện từ các nguồn quốc tế, giúp người học tiếp cận tiếng Anh trong ngữ cảnh thực tế."
+    },
+    {
+      "style": "normal",
+      "text": "-      Đọc báo song ngữ: Cung cấp bài viết từ các trang tin uy tín, hỗ trợ hiển thị song song văn bản tiếng Anh và bản dịch tiếng Việt theo từng đoạn văn."
+    },
+    {
+      "style": "normal",
+      "text": "-       Xem video kèm phụ đề: Tích hợp nguồn video từ YouTube với dải phụ đề chạy theo thời gian thực, hỗ trợ tua lại và lặp lại từng câu thoại."
+    },
+    {
+      "style": "normal",
+      "text": "-        Nghe podcast có kịch bản: Cung cấp các bài nghe kèm văn bản kịch bản (transcript) đầy đủ và cho phép tùy chỉnh tốc độ phát âm thanh."
+    },
+    {
+      "style": "normal",
+      "text": "-        Đọc sách điện tử (Ebooks): Cung cấp kho sách truyện kinh điển dạng văn bản phục vụ nhu cầu đọc hiểu chuyên sâu."
+    },
+    {
+      "style": "normal",
+      "text": "-        Tự thêm nội dung học tập cá nhân: Cho phép người dùng nhập liên kết website hoặc đường dẫn video ngoài để hệ thống tự động bóc tách nội dung phục vụ tra cứu."
+    },
+    {
+      "style": "normal",
+      "text": "Tra cứu và quản lý từ vựng"
+    },
+    {
+      "style": "normal",
+      "text": "Nhóm chức năng này hỗ trợ người học giải nghĩa từ mới tức thì và xây dựng kho từ vựng cá nhân có hệ thống."
+    },
+    {
+      "style": "normal",
+      "text": "-      Tra nhanh từ vựng: Cho phép người dùng chạm trực tiếp vào bất kỳ từ nào trên bài báo, phụ đề video hoặc podcast để tra cứu nghĩa, phiên âm và nghe phát âm mẫu ngay tại chỗ."
+    },
+    {
+      "style": "normal",
+      "text": "-      Hệ thống đa từ điển tra cứu: Tích hợp và liên kết nhiều nguồn dữ liệu từ điển uy tín (Anh - Việt, Oxford, Cambridge, Google Dịch) và tìm kiếm hình ảnh minh họa."
+    },
+    {
+      "style": "normal",
+      "text": "-        Bộ từ vựng có sẵn: Cung cấp các gói từ vựng được biên soạn sẵn theo các chứng chỉ và chủ đề thông dụng (IELTS, TOEIC, TOEFL, Oxford 3000)."
+    },
+    {
+      "style": "normal",
+      "text": "-        Quản lý sổ từ vựng cá nhân: Hỗ trợ tạo các thư mục (Folder) theo chủ đề, lưu trữ từ mới, ghi chú ngữ nghĩa cá nhân và quản lý danh sách từ cần học."
+    },
+    {
+      "style": "normal",
+      "text": "Luyện tập và ôn tập"
+    },
+    {
+      "style": "normal",
+      "text": "Nhóm chức năng này đảm bảo việc ghi nhớ và củng cố kiến thức từ vựng của người học thông qua các phương pháp khoa học và tương tác trực quan."
+    },
+    {
+      "style": "normal",
+      "text": "-  Ôn tập Flashcards: Ứng dụng thuật toán lặp lại ngắt quãng (Spaced Repetition System - SRS) để tự động phân bổ lịch ôn từ vựng theo mức độ ghi nhớ của người dùng."
+    },
+    {
+      "style": "normal",
+      "text": "-   Luyện nghe chép chính tả: Phát đoạn âm thanh ngắn trích xuất từ bài học và yêu cầu người học gõ lại chính xác từ ngữ còn thiếu vào chỗ trống."
+    },
+    {
+      "style": "normal",
+      "text": "-   Game nối từ và trắc nghiệm: Cung cấp các trò chơi ghép từ vựng với nghĩa tương ứng và các bài kiểm tra trắc nghiệm nhanh nhằm tăng phản xạ ngôn ngữ."
+    },
+    {
+      "style": "normal",
+      "text": "1.2.3 Đánh giá ứng dụng 4English"
+    },
+    {
+      "style": "normal",
+      "text": "Sau khi cài đặt và trực tiếp trải nghiệm các tính năng của 4English, nhóm rút ra một số nhận xét thực tế như sau:"
+    },
+    {
+      "style": "normal",
+      "text": "Ưu điểm:"
+    },
+    {
+      "style": "normal",
+      "text": "-    Tính năng chạm vào từ để tra nghĩa trực tiếp trên bài báo hay phụ đề video rất tiện, giúp người đọc không phải mất công copy rồi chuyển qua lại giữa các app từ điển."
+    },
+    {
+      "style": "normal",
+      "text": "-    Nội dung học lấy từ các nguồn thực tế (báo chí quốc tế, YouTube) nên văn phong tự nhiên, đỡ nhàm chán hơn so với học lý thuyết suông."
+    },
+    {
+      "style": "normal",
+      "text": "-   Phần Flashcard tự động nhắc ôn lại các từ đã lưu theo chu kỳ ngắt quãng, giúp người học nhớ từ lâu hơn."
+    },
+    {
+      "style": "normal",
+      "text": "-    Cho phép người dùng tự tạo thư mục để gom từ vựng theo ý muốn và tự dán link bài viết bên ngoài vào app để học."
+    },
+    {
+      "style": "normal",
+      "text": "Hạn chế khi áp dụng cho người học tiếng Anh chuyên ngành CNTT:"
+    },
+    {
+      "style": "normal",
+      "text": "-   4English đã cung cấp một số nội dung và bộ từ vựng liên quan đến Information Technology. Tuy nhiên, tiếng Anh CNTT chưa phải trọng tâm xuyên suốt của ứng dụng."
+    },
+    {
+      "style": "normal",
+      "text": "-      Nội dung từ vựng CNTT chưa được tổ c hức thành một lộ trình chuyên sâu theo từng lĩnh vực như lập trình, cơ sở dữ liệu, mạng máy tính, kiểm thử phần mềm hoặc an toàn thông tin."
+    },
+    {
+      "style": "normal",
+      "text": "-   Ứng dụng có thế mạnh về bài báo, video, podcast và nội dung thực tế nhưng chưa tập trung vào các dạng tài liệu kỹ thuật đặc thù như documentation, README, API documentation hoặc specification."
+    },
+    {
+      "style": "normal",
+      "text": "-      Các hoạt động từ vựng, đọc và luyện tập chưa được tổ chức thành một lộ trình tiếng Anh CNTT thống nhất."
+    },
+    {
+      "style": "Heading 2",
+      "text": "1.3. KHẢO SÁT ỨNG DỤNG  DUOLINGO"
+    },
+    {
+      "style": "Heading 3",
+      "text": "1.3.1 Mô tả cấu trúc chức năng của ứng dụng Duolingo "
+    },
+    {
+      "style": "normal",
+      "text": "Để có cái nhìn tổng quan về cách thức hoạt động và các chức năng chính của ứng dụng Duolingo, nhóm tiến hành khảo sát và trực tiếp trải nghiệm các chức năng được cung cấp cho người học. "
+    },
+    {
+      "style": "normal",
+      "text": "Qua khảo sát, các chức năng của Duolingo được phân chia thành các nhóm chức năng chính gồm: Quản lý tài khoản và thiết lập mục tiêu, Quản lý lộ trình học tập, Luyện tập các kỹ năng ngôn ngữ, Ôn tập và củng cố kiến thức, Theo dõi tiến độ và Gamification. "
+    },
+    {
+      "style": "normal",
+      "text": "Hình 3. Sơ đồ cơ cấu tổ chức của ứng dụng Duolingo"
+    },
+    {
+      "style": "normal",
+      "text": "Sơ đồ chức năng trên được mô tả chi tiết như sau:"
+    },
+    {
+      "style": "normal",
+      "text": "Quản lý tài khoản và thiết lập mục tiêu: Đảm nhiệm việc quản lý thông tin người dùng và thiết lập mục tiêu học tập. Người dùng có thể đăng ký, đăng nhập, lựa chọn ngôn ngữ muốn học, xác định mục tiêu học tập hằng ngày và thiết lập mức độ học phù hợp với nhu cầu cá nhân."
+    },
+    {
+      "style": "normal",
+      "text": "Quản lý lộ trình học tập: Cung cấp lộ trình học được tổ chức thành các bài học và chủ đề theo từng cấp độ. Người học thực hiện các bài học theo thứ tự trong Learning Path, từ những nội dung cơ bản đến các nội dung nâng cao hơn. Lộ trình giúp người học xác định nội dung cần hoàn thành và theo dõi quá trình học tập."
+    },
+    {
+      "style": "normal",
+      "text": "Luyện tập các kỹ năng ngôn ngữ: Cung cấp các bài tập nhằm phát triển nhiều kỹ năng khác nhau như từ vựng, ngữ pháp, nghe, nói, đọc và viết. Các bài tập được thiết kế dưới nhiều dạng câu hỏi và hoạt động tương tác, giúp người học luyện tập kiến thức ngay trong quá trình học."
+    },
+    {
+      "style": "normal",
+      "text": "Ôn tập và củng cố kiến thức: Cung cấp các hoạt động luyện tập lại những nội dung đã học, hỗ trợ người dùng củng cố từ vựng và kiến thức còn chưa vững. Hệ thống có thể đưa người học quay lại các nội dung cần luyện tập dựa trên quá trình học và kết quả thực hiện bài tập."
+    },
+    {
+      "style": "normal",
+      "text": "Theo dõi tiến độ và Gamification: Cung cấp các cơ chế theo dõi quá trình học tập và tạo động lực cho người dùng thông qua XP, Streak, Leaderboard, Achievement/Quest và các phần thưởng trong quá trình học. Những yếu tố này giúp người học duy trì thói quen học tập thường xuyên."
+    },
+    {
+      "style": "Heading 3",
+      "text": "1.3.2. Quy trình phân rã chức năng"
+    },
+    {
+      "style": "normal",
+      "text": "Hình 4. Sơ đồ phân rã chi tiết chức năng ứng dụng Duolingo"
+    },
+    {
+      "style": "normal",
+      "text": "Sơ đồ chức năng trên được mô tả chi tiết như sau:"
+    },
+    {
+      "style": "normal",
+      "text": "Quản lý tài khoản và thiết lập mục tiêu"
+    },
+    {
+      "style": "normal",
+      "text": "Nhóm chức năng này đảm bảo việc quản lý người dùng và thiết lập định hướng học tập ngay từ khi bắt đầu sử dụng ứng dụng."
+    },
+    {
+      "style": "normal",
+      "text": "Đăng ký và đăng nhập: Cho phép người dùng tạo tài khoản và đăng nhập để lưu trữ quá trình học tập."
+    },
+    {
+      "style": "normal",
+      "text": "Lựa chọn khóa học: Cho phép người dùng lựa chọn ngôn ngữ muốn học và bắt đầu khóa học tương ứng."
+    },
+    {
+      "style": "normal",
+      "text": "Thiết lập mục tiêu học tập: Cho phép người dùng lựa chọn mục tiêu học tập hằng ngày và duy trì thời lượng học phù hợp với nhu cầu cá nhân."
+    },
+    {
+      "style": "normal",
+      "text": "Quản lý lộ trình học tập"
+    },
+    {
+      "style": "normal",
+      "text": "Nhóm chức năng này tổ chức nội dung học tập thành một lộ trình có cấu trúc, giúp người dùng biết được nội dung cần học và thứ tự thực hiện."
+    },
+    {
+      "style": "normal",
+      "text": "Learning Path: Cung cấp lộ trình học được chia thành các chủ đề và bài học theo từng giai đoạn."
+    },
+    {
+      "style": "normal",
+      "text": "Bài học: Cung cấp các bài học tương ứng với nội dung trong lộ trình, người dùng hoàn thành bài học để tiếp tục mở khóa và học các nội dung tiếp theo."
+    },
+    {
+      "style": "normal",
+      "text": "Phân chia cấp độ: Nội dung được tổ chức theo các mức độ khác nhau, giúp người học từng bước tiếp cận kiến thức từ cơ bản đến nâng cao."
+    },
+    {
+      "style": "normal",
+      "text": "Luyện tập các kỹ năng ngôn ngữ"
+    },
+    {
+      "style": "normal",
+      "text": "Nhóm chức năng này cung cấp các dạng bài tập tương tác nhằm luyện tập kiến thức và các kỹ năng sử dụng tiếng Anh."
+    },
+    {
+      "style": "normal",
+      "text": "Luyện từ vựng: Cung cấp các bài tập giúp người học ghi nhớ và sử dụng từ vựng thông qua nhiều dạng câu hỏi."
+    },
+    {
+      "style": "normal",
+      "text": "Luyện ngữ pháp: Cung cấp các bài tập giúp người học luyện cấu trúc câu và sử dụng ngữ pháp trong ngữ cảnh."
+    },
+    {
+      "style": "normal",
+      "text": "Luyện nghe: Sử dụng các đoạn âm thanh và câu hỏi liên quan để giúp người học rèn luyện khả năng nghe hiểu."
+    },
+    {
+      "style": "normal",
+      "text": "Luyện nói: Cung cấp các bài tập yêu cầu người học nghe và nói lại hoặc thực hiện các nhiệm vụ liên quan đến phát âm."
+    },
+    {
+      "style": "normal",
+      "text": "Luyện hội thoại với AI: Đối với Duolingo Max, ứng dụng cung cấp các hoạt động như Video Call và Roleplay, cho phép người học thực hành hội thoại với nhân vật AI và nhận phản hồi sau hoạt động. Tuy nhiên, các tình huống này chủ yếu phục vụ việc luyện ngôn ngữ nói chung và chưa tập trung vào giao tiếp chuyên ngành CNTT. "
+    },
+    {
+      "style": "normal",
+      "text": "Luyện đọc: Cung cấp các câu, đoạn văn và bài tập đọc hiểu nhằm rèn luyện khả năng nhận biết và hiểu nội dung tiếng Anh."
+    },
+    {
+      "style": "normal",
+      "text": "Luyện viết: Cung cấp các bài tập yêu cầu người học sắp xếp, lựa chọn hoặc nhập nội dung để luyện khả năng sử dụng tiếng Anh bằng văn bản."
+    },
+    {
+      "style": "normal",
+      "text": "Ôn tập và củng cố kiến thức"
+    },
+    {
+      "style": "normal",
+      "text": "Nhóm chức năng này hỗ trợ người học xem lại những nội dung đã học và luyện tập thêm các kiến thức còn chưa vững."
+    },
+    {
+      "style": "normal",
+      "text": "Ôn tập bài học: Cho phép người dùng thực hiện lại những nội dung đã học nhằm củng cố kiến thức."
+    },
+    {
+      "style": "normal",
+      "text": "Luyện điểm yếu: Hỗ trợ người học tập trung luyện tập những nội dung mà người dùng thực hiện chưa tốt."
+    },
+    {
+      "style": "normal",
+      "text": "Luyện tập bổ sung: Cung cấp thêm các hoạt động luyện tập để người học củng cố từ vựng và kiến thức đã học."
+    },
+    {
+      "style": "normal",
+      "text": "Theo dõi tiến độ và Gamification"
+    },
+    {
+      "style": "normal",
+      "text": "Nhóm chức năng này kết hợp việc theo dõi quá trình học với các yếu tố trò chơi nhằm tạo động lực và duy trì thói quen học tập."
+    },
+    {
+      "style": "normal",
+      "text": "XP: Ghi nhận điểm kinh nghiệm mà người dùng đạt được thông qua việc hoàn thành bài học và các hoạt động luyện tập."
+    },
+    {
+      "style": "normal",
+      "text": "Streak: Theo dõi số ngày liên tiếp người dùng duy trì hoạt động học tập."
+    },
+    {
+      "style": "normal",
+      "text": "Leaderboard: Xếp hạng người dùng dựa trên thành tích và XP, tạo môi trường cạnh tranh giữa những người học."
+    },
+    {
+      "style": "normal",
+      "text": "Achievement/Quest: Cung cấp các nhiệm vụ và thành tích để người dùng hoàn thành trong quá trình học."
+    },
+    {
+      "style": "normal",
+      "text": "Theo dõi tiến độ: Hiển thị quá trình hoàn thành bài học và kết quả học tập, giúp người dùng biết được mức độ tiến bộ của bản thân."
+    },
+    {
+      "style": "Heading 3",
+      "text": "1.3.3. Đánh giá ứng dụng Duolingo"
+    },
+    {
+      "style": "normal",
+      "text": "Sau khi trực tiếp trải nghiệm các chức năng của Duolingo, nhóm nhận thấy ứng dụng có cách tổ chức nội dung tương đối rõ ràng và tập trung mạnh vào việc duy trì thói quen học tập. Một số ưu điểm và hạn chế được ghi nhận như sau:"
+    },
+    {
+      "style": "normal",
+      "text": "Ưu điểm:"
+    },
+    {
+      "style": "normal",
+      "text": "Lộ trình học rõ ràng: Learning Path tổ chức các bài học theo trình tự, giúp người học dễ xác định nội dung cần học và duy trì quá trình học tập."
+    },
+    {
+      "style": "normal",
+      "text": "Gamification hiệu quả: Các cơ chế XP, Streak, Leaderboard và Achievement/Quest tạo động lực cho người học hoàn thành bài học và duy trì thói quen học hằng ngày."
+    },
+    {
+      "style": "normal",
+      "text": "Bài học ngắn và có tính tương tác: Nội dung được chia thành các bài học nhỏ với nhiều dạng bài tập khác nhau, giúp người học có thể hoàn thành một bài học trong thời gian ngắn và tránh cảm giác quá tải."
+    },
+    {
+      "style": "normal",
+      "text": "Hỗ trợ nhiều kỹ năng: Duolingo cung cấp các hoạt động luyện từ vựng, ngữ pháp, nghe, nói, đọc và viết, giúp người học tiếp cận tiếng Anh từ nhiều khía cạnh khác nhau."
+    },
+    {
+      "style": "normal",
+      "text": "Có chức năng ôn tập và luyện điểm yếu: Người học có thể luyện tập lại những nội dung đã học và tập trung vào các kiến thức chưa vững, giúp củng cố quá trình ghi nhớ."
+    },
+    {
+      "style": "normal",
+      "text": "Hạn chế khi áp dụng cho người học tiếng Anh chuyên ngành CNTT:"
+    },
+    {
+      "style": "normal",
+      "text": "Không tập trung vào tiếng Anh chuyên ngành CNTT: Nội dung học của Duolingo chủ yếu hướng đến tiếng Anh và ngôn ngữ nói chung, chưa xây dựng hệ thống bài học chuyên biệt về các chủ đề như lập trình, cơ sở dữ liệu, mạng máy tính, phần mềm hoặc công nghệ thông tin."
+    },
+    {
+      "style": "normal",
+      "text": "Không tập trung vào luyện thi chứng chỉ nghề nghiệp CNTT: Duolingo không hướng đến các kỳ thi hoặc chứng chỉ nghề nghiệp quốc tế trong lĩnh vực CNTT. Vì vậy, hệ thống chưa cung cấp ngân hàng câu hỏi, cấu trúc đề thi hoặc bài thi mô phỏng dành cho các chứng chỉ chuyên ngành."
+    },
+    {
+      "style": "normal",
+      "text": "Nội dung chưa gắn đủ với tình huống nghề nghiệp CNTT: Các bài học chưa tập trung vào những tình huống mà sinh viên hoặc người làm CNTT thường gặp như đọc tài liệu kỹ thuật, viết email công việc, trao đổi trong nhóm phát triển phần mềm, mô tả lỗi hoặc thảo luận về yêu cầu hệ thống."
+    },
+    {
+      "style": "normal",
+      "text": "Chưa hướng mạnh đến đọc tài liệu kỹ thuật: Mặc dù có các hoạt động Reading, nội dung chưa được định hướng chuyên sâu vào việc đọc hiểu tài liệu kỹ thuật, tài liệu API, documentation, specification hoặc các nội dung chuyên môn thường gặp trong lĩnh vực CNTT."
+    },
+    {
+      "style": "Heading 3",
+      "text": "1.3.4. Khả năng áp dụng vào đề tài"
+    },
+    {
+      "style": "normal",
+      "text": "Qua khảo sát Duolingo, nhóm nhận thấy có thể kế thừa một số phương pháp và chức năng phù hợp cho hệ thống đề tài, đặc biệt là Learning Path, bài học ngắn, các dạng bài tập tương tác, cơ chế gamification, theo dõi tiến độ và chức năng ôn tập. Những chức năng này có thể giúp hệ thống tạo ra quá trình học tập có cấu trúc và duy trì động lực cho người học."
+    },
+    {
+      "style": "normal",
+      "text": "Tuy nhiên, hệ thống của nhóm cần phát triển nội dung theo hướng chuyên biệt hơn, tập trung vào tiếng Anh chuyên ngành CNTT và luyện thi chứng chỉ nghề nghiệp quốc tế. Một số chức năng cần bổ sung gồm kho từ vựng CNTT theo từng chuyên ngành, bài đọc tài liệu kỹ thuật, tình huống giao tiếp trong môi trường CNTT, bài tập chuyên ngành, ngân hàng câu hỏi và bài thi mô phỏng chứng chỉ. Do đó, Duolingo phù hợp để tham khảo về phương pháp tổ chức học tập và trải nghiệm người dùng, nhưng không thể đáp ứng đầy đủ yêu cầu chuyên môn của đề tài nếu sử dụng nguyên bản."
+    },
+    {
+      "style": "Heading 2",
+      "text": "1.4. KHẢO SÁT ỨNG DỤNG  CAMPLY"
+    },
+    {
+      "style": "Heading 3",
+      "text": "1.4.1. Mô tả cấu trúc chức năng của ứng dụng Cambly"
+    },
+    {
+      "style": "normal",
+      "text": "Cambly là nền tảng học tiếng Anh tập trung vào việc luyện giao tiếp trực tiếp giữa người học và người hướng dẫn (tutor) thông qua hình thức học trực tuyến. Khác với các ứng dụng chủ yếu cung cấp bài học tự học, Cambly lấy hoạt động hội thoại với người thật làm chức năng trung tâm."
+    },
+    {
+      "style": "normal",
+      "text": "Qua quá trình khảo sát, các chức năng của Cambly có thể được phân chia thành các nhóm chức năng chính gồm: Quản lý tài khoản và gói học, Tìm kiếm và quản lý tutor, Quản lý buổi học trực tuyến, Quản lý khóa học và nội dung học tập, Theo dõi và hỗ trợ sau buổi học."
+    },
+    {
+      "style": "normal",
+      "text": "Hình 5. Sơ đồ cơ cấu tổ chức của ứng dụng CAMBLY"
+    },
+    {
+      "style": "normal",
+      "text": "Sơ đồ chức năng trên được mô tả chi tiết như sau:"
+    },
+    {
+      "style": "normal",
+      "text": "Quản lý tài khoản và gói học: Cho phép người học đăng ký, đăng nhập, quản lý thông tin cá nhân và lựa chọn các gói học phù hợp. Cambly cung cấp nhiều hình thức học như lớp nhóm nhỏ, học 1-1 và các gói có lộ trình chuyên sâu."
+    },
+    {
+      "style": "normal",
+      "text": "Tìm kiếm và quản lý tutor: Cho phép người học tìm kiếm và lựa chọn tutor dựa trên hồ sơ, lịch làm việc, phong cách giao tiếp và lĩnh vực phù hợp. Người học có thể lựa chọn tutor khác nhau hoặc tiếp tục học với tutor phù hợp trong các buổi tiếp theo."
+    },
+    {
+      "style": "normal",
+      "text": "Quản lý buổi học trực tuyến: Hỗ trợ đặt lịch và tham gia các buổi học trực tiếp với tutor. Hoạt động học tập tập trung vào hội thoại và luyện phản xạ giao tiếp trong thời gian thực."
+    },
+    {
+      "style": "normal",
+      "text": "Quản lý khóa học và nội dung học tập: Cung cấp các khóa học theo nhiều mục tiêu như giao tiếp thông thường, tiếng Anh thương mại, IELTS Speaking, phỏng vấn xin việc và tiếng Anh dành cho một số lĩnh vực nghề nghiệp."
+    },
+    {
+      "style": "normal",
+      "text": "Theo dõi và hỗ trợ sau buổi học: Một số gói hỗ trợ ghi lại buổi học, cung cấp transcript và phản hồi tự động. Người học có thể xem lại nội dung đã học và tiếp tục luyện tập các nội dung như phát âm, ngữ pháp và từ vựng."
+    },
+    {
+      "style": "Heading 3",
+      "text": "1.4.2. Quy trình phân rã chức năng"
+    },
+    {
+      "style": "normal",
+      "text": "Hình 6. Sơ đồ phân rã chức năng của ứng dụng CAMBLY"
+    },
+    {
+      "style": "Heading 3",
+      "text": "Quản lý tài khoản và gói học"
+    },
+    {
+      "style": "normal",
+      "text": "Nhóm chức năng này đảm nhiệm việc xác thực người dùng, quản lý thông tin cá nhân và các gói học được sử dụng trên hệ thống."
+    },
+    {
+      "style": "normal",
+      "text": "Đăng ký và đăng nhập: Cho phép người học tạo tài khoản và đăng nhập để sử dụng các chức năng của hệ thống."
+    },
+    {
+      "style": "normal",
+      "text": "Quản lý thông tin cá nhân: Cho phép người học cập nhật và quản lý các thông tin liên quan đến hồ sơ cá nhân."
+    },
+    {
+      "style": "normal",
+      "text": "Lựa chọn gói học: Cho phép người học lựa chọn hình thức và gói học phù hợp với nhu cầu học tập."
+    },
+    {
+      "style": "normal",
+      "text": "Thanh toán và quản lý gói: Hỗ trợ thực hiện thanh toán và theo dõi gói học mà người dùng đang sử dụng."
+    },
+    {
+      "style": "normal",
+      "text": "Quản lý thời lượng và số buổi học: Theo dõi thời lượng, số buổi học và quyền sử dụng tương ứng với gói đã đăng ký."
+    },
+    {
+      "style": "Heading 3",
+      "text": "Tìm kiếm và quản lý tutor"
+    },
+    {
+      "style": "normal",
+      "text": "Nhóm chức năng này hỗ trợ người học tìm kiếm, lựa chọn và quản lý tutor phù hợp với nhu cầu, thời gian và mục tiêu học tập."
+    },
+    {
+      "style": "normal",
+      "text": "Xem danh sách tutor: Hiển thị danh sách các tutor mà người học có thể lựa chọn."
+    },
+    {
+      "style": "normal",
+      "text": "Xem hồ sơ tutor: Cung cấp các thông tin về tutor như giới thiệu, kinh nghiệm, ngôn ngữ, đánh giá và lĩnh vực quan tâm."
+    },
+    {
+      "style": "normal",
+      "text": "Lọc và lựa chọn tutor phù hợp: Cho phép tìm kiếm và lựa chọn tutor dựa trên các tiêu chí phù hợp với nhu cầu của người học."
+    },
+    {
+      "style": "normal",
+      "text": "Xem lịch rảnh của tutor: Hiển thị những khoảng thời gian tutor có thể tham gia giảng dạy."
+    },
+    {
+      "style": "normal",
+      "text": "Đặt lịch học: Cho phép người học lựa chọn thời gian phù hợp và đăng ký một buổi học với tutor."
+    },
+    {
+      "style": "normal",
+      "text": "Quản lý lịch học đã đặt: Hỗ trợ người học theo dõi các buổi học đã được lên lịch."
+    },
+    {
+      "style": "normal",
+      "text": "Tutor yêu thích: Cho phép người học tiếp tục lựa chọn những tutor phù hợp cho các buổi học tiếp theo."
+    },
+    {
+      "style": "Heading 3",
+      "text": "Quản lý buổi học trực tuyến"
+    },
+    {
+      "style": "normal",
+      "text": "Nhóm chức năng này đảm nhiệm quá trình tương tác trực tiếp giữa người học và tutor trong các buổi học trực tuyến."
+    },
+    {
+      "style": "normal",
+      "text": "Tham gia lớp học trực tuyến: Cho phép người học truy cập vào buổi học đã được đặt lịch."
+    },
+    {
+      "style": "normal",
+      "text": "Học 1-1 với tutor: Hỗ trợ người học luyện giao tiếp trực tiếp với tutor theo hình thức cá nhân."
+    },
+    {
+      "style": "normal",
+      "text": "Lớp học nhóm nhỏ: Cho phép người học tham gia các buổi thảo luận cùng tutor và một số học viên khác."
+    },
+    {
+      "style": "normal",
+      "text": "Thực hành giao tiếp theo chủ đề: Người học luyện nói dựa trên các chủ đề hoặc mục tiêu được lựa chọn."
+    },
+    {
+      "style": "normal",
+      "text": "Nhận phản hồi trực tiếp từ tutor: Tutor có thể nhận xét, sửa lỗi và hướng dẫn người học ngay trong quá trình giao tiếp."
+    },
+    {
+      "style": "normal",
+      "text": "Đánh giá buổi học và tutor: Cho phép người học đưa ra đánh giá sau khi hoàn thành buổi học."
+    },
+    {
+      "style": "Heading 3",
+      "text": "Quản lý khóa học và nội dung học tập"
+    },
+    {
+      "style": "normal",
+      "text": "Nhóm chức năng này cung cấp các khóa học được tổ chức theo mục tiêu và nhu cầu sử dụng tiếng Anh khác nhau."
+    },
+    {
+      "style": "normal",
+      "text": "Lựa chọn khóa học theo mục tiêu: Cho phép người học lựa chọn nội dung phù hợp với mục tiêu học tập."
+    },
+    {
+      "style": "normal",
+      "text": "Giao tiếp tiếng Anh: Cung cấp nội dung luyện hội thoại và giao tiếp trong các tình huống thông thường."
+    },
+    {
+      "style": "normal",
+      "text": "Học tiếng Anh thương mại: Cung cấp nội dung tiếng Anh phục vụ môi trường doanh nghiệp và công việc."
+    },
+    {
+      "style": "normal",
+      "text": "Luyện IELTS Speaking: Hỗ trợ luyện tập kỹ năng nói theo định hướng kỳ thi IELTS."
+    },
+    {
+      "style": "normal",
+      "text": "Luyện phỏng vấn và thuyết trình: Cung cấp các nội dung luyện giao tiếp phục vụ phỏng vấn xin việc và thuyết trình."
+    },
+    {
+      "style": "normal",
+      "text": "Học tiếng Anh theo lĩnh vực nghề nghiệp: Cung cấp một số khóa học theo nghề nghiệp, trong đó có nội dung dành cho Software Developer."
+    },
+    {
+      "style": "Heading 3",
+      "text": "Theo dõi và hỗ trợ sau buổi học"
+    },
+    {
+      "style": "normal",
+      "text": "Nhóm chức năng này hỗ trợ người học xem lại nội dung, nhận phản hồi và tiếp tục ôn luyện sau khi buổi học trực tuyến kết thúc."
+    },
+    {
+      "style": "normal",
+      "text": "Xem lại bản ghi buổi học: Cho phép người học xem lại nội dung của buổi học khi tính năng này được hỗ trợ."
+    },
+    {
+      "style": "normal",
+      "text": "Xem transcript: Cung cấp nội dung văn bản của cuộc hội thoại để người học xem lại."
+    },
+    {
+      "style": "normal",
+      "text": "Nhận phản hồi sau buổi học: Hỗ trợ người học xem các nhận xét và phản hồi liên quan đến quá trình học."
+    },
+    {
+      "style": "normal",
+      "text": "Luyện tập phát âm: Hỗ trợ người học tiếp tục cải thiện khả năng phát âm sau buổi học."
+    },
+    {
+      "style": "normal",
+      "text": "Ôn tập ngữ pháp và từ vựng: Cung cấp nội dung bổ trợ nhằm củng cố những kiến thức đã được sử dụng trong buổi học."
+    },
+    {
+      "style": "normal",
+      "text": "Theo dõi tiến độ học tập: Giúp người học quan sát quá trình và kết quả học tập qua các buổi học."
+    },
+    {
+      "style": "normal",
+      "text": "Xem lịch sử học tập: Cho phép người học xem lại các buổi học và nội dung đã tham gia trước đó."
+    },
+    {
+      "style": "normal",
+      "text": "Hỗ trợ và giải đáp thắc mắc: Cung cấp kênh hỗ trợ để người học gửi câu hỏi, phản ánh vấn đề và nhận hướng dẫn trong quá trình sử dụng nền tảng. "
+    },
+    {
+      "style": "Heading 3",
+      "text": "1.4.3. Đánh giá ứng dụng Cambly"
+    },
+    {
+      "style": "normal",
+      "text": "Sau khi khảo sát các chức năng và mô hình hoạt động của Cambly, nhóm rút ra một số nhận xét như sau:"
+    },
+    {
+      "style": "normal",
+      "text": "Ưu điểm:"
+    },
+    {
+      "style": "normal",
+      "text": "Cho phép người học giao tiếp trực tiếp với người thật, giúp rèn luyện khả năng phản xạ và làm quen với các tình huống hội thoại khó dự đoán hơn so với các bài luyện cố định."
+    },
+    {
+      "style": "normal",
+      "text": "Người học có thể lựa chọn tutor dựa trên nhu cầu, lịch học và phong cách giao tiếp của bản thân."
+    },
+    {
+      "style": "normal",
+      "text": "Hỗ trợ hình thức học 1-1 và lớp nhóm nhỏ, phù hợp với nhiều nhu cầu luyện giao tiếp khác nhau."
+    },
+    {
+      "style": "normal",
+      "text": "Có các khóa học theo mục tiêu cụ thể như tiếng Anh thương mại, IELTS Speaking, phỏng vấn xin việc và tiếng Anh dành cho Software Developer."
+    },
+    {
+      "style": "normal",
+      "text": "Một số gói hỗ trợ ghi lại buổi học, transcript và phản hồi, giúp người học có thể xem lại nội dung sau khi kết thúc buổi học."
+    },
+    {
+      "style": "normal",
+      "text": "Hạn chế khi áp dụng cho hệ thống học tiếng Anh chuyên ngành CNTT:"
+    },
+    {
+      "style": "normal",
+      "text": "Việc học phụ thuộc vào lịch rảnh của tutor và người học cần thực hiện quá trình tìm kiếm, lựa chọn và đặt lịch trước khi tham gia buổi học."
+    },
+    {
+      "style": "normal",
+      "text": "Chi phí học với người thật cao hơn so với mô hình tự học hoặc luyện tập bằng AI do mỗi buổi học cần thời gian trực tiếp của tutor."
+    },
+    {
+      "style": "normal",
+      "text": "Chất lượng và phương pháp hướng dẫn có thể khác nhau giữa các tutor, do đó trải nghiệm học tập không hoàn toàn đồng nhất."
+    },
+    {
+      "style": "normal",
+      "text": "Mặc dù Cambly có nội dung dành cho Software Developer, tiếng Anh chuyên ngành CNTT không phải là toàn bộ trọng tâm của hệ thống, nền tảng vẫn phục vụ nhiều nhu cầu học tiếng Anh khác nhau."
+    },
+    {
+      "style": "normal",
+      "text": "Khả năng luyện tập liên tục bị giới hạn bởi thời lượng và số buổi của gói học, khó cung cấp môi trường luyện nói với người thật không giới hạn."
+    },
+    {
+      "style": "normal",
+      "text": "Việc theo dõi lỗi và cá nhân hóa quá trình học qua nhiều buổi phụ thuộc vào tutor và các công cụ hỗ trợ, chưa hoàn toàn tự động như mô hình AI Tutor dựa trên dữ liệu học tập."
+    },
+    {
+      "style": "Heading 2",
+      "text": "1.5. KHẢO SÁT NHU CẦU HỌC TIẾNG ANH QUA ỨNG DỤNG CỦA SINH VIÊN VIỆT NAM"
+    },
+    {
+      "style": "normal",
+      "text": "Bên cạnh việc khảo sát các hệ thống học tiếng Anh hiện có, nhóm tiến hành tham khảo các nghiên cứu liên quan nhằm xác định nhu cầu thực tế của sinh viên Việt Nam đối với hình thức học tiếng Anh thông qua ứng dụng. Việc khảo sát này là cơ sở để đánh giá mức độ phù hợp của mô hình học tập trên nền tảng số và xác định những nhóm kỹ năng cần được ưu tiên khi xây dựng hệ thống."
+    },
+    {
+      "style": "normal",
+      "text": "Một nghiên cứu đáng chú ý cuả Bui và cộng sự (2023) [1] tập trung khảo sát mục đích sử dụng và thái độ của sinh viên Việt Nam đối với các ứng dụng học tiếng Anh trên điện thoại thông minh (Smartphone English Language Learning Apps - SELLA)."
+    },
+    {
+      "style": "normal",
+      "text": "nghiên cứu thu được 123 phản hồi hợp lệ từ sinh viên thuộc ba trường đại học tại Thành phố Hồ Chí Minh. Độ tuổi của người tham gia nằm trong khoảng từ 18 đến 21 tuổi, trong đó phần lớn là sinh viên năm thứ nhất và năm thứ hai."
+    },
+    {
+      "style": "normal",
+      "text": "Kết quả cho thấy việc sử dụng ứng dụng di động để hỗ trợ học tiếng Anh đã xuất hiện phổ biến trong nhóm sinh viên được khảo sát. Tất cả người tham gia nghiên cứu đều có ít nhất một ứng dụng học tiếng Anh được cài đặt trên điện thoại. Trong đó, 64% sinh viên cài đặt từ một đến hai ứng dụng, 27% cài đặt từ ba đến bốn ứng dụng và 9% còn lại cài đặt từ năm ứng dụng trở lên."
+    },
+    {
+      "style": "normal",
+      "text": "Về thời gian sử dụng, 77% người tham gia cho biết dành dưới một giờ mỗi ngày cho các ứng dụng học tiếng Anh. Điều này cho thấy ứng dụng di động thường được sử dụng dưới hình thức các phiên học ngắn, phù hợp với đặc điểm học tập linh hoạt và khả năng sử dụng trong nhiều khoảng thời gian khác nhau của sinh viên."
+    },
+    {
+      "style": "Heading 3",
+      "text": "1.5.1. Nhu cầu luyện tập các kỹ năng tiếng Anh"
+    },
+    {
+      "style": "normal",
+      "text": "Kết quả nghiên cứu của Bui và cộng sự [1] cho thấy sinh viên sử dụng ứng dụng học tiếng Anh để hỗ trợ nhiều thành phần và kỹ năng khác nhau. Trong đó, học và cải thiện từ vựng là mục đích được đánh giá cao nhất với giá trị trung bình (Mean – M) = 4,26. Luyện phát âm và luyện nghe cũng được đánh giá ở mức cao, lần lượt đạt M = 4,11 và M = 4,05."
+    },
+    {
+      "style": "normal",
+      "text": "Các kết quả trên cho thấy sinh viên sử dụng ứng dụng không chỉ để học từ vựng mà còn để hỗ trợ nhiều hoạt động luyện tập khác nhau. Đối với đề tài, đây là cơ sở tham khảo để hệ thống được xây dựng theo hướng kết hợp nội dung từ vựng chuyên ngành CNTT với các hoạt động luyện nghe, nói và các kỹ năng có liên quan, thay vì chỉ tập trung vào một nội dung học tập riêng lẻ."
+    },
+    {
+      "style": "Heading 3",
+      "text": "1.5.2. Thái độ của sinh viên đối với ứng dụng học tiếng Anh"
+    },
+    {
+      "style": "normal",
+      "text": "Bên cạnh mục đích sử dụng, nghiên cứu của Bui và cộng sự [1] cũng ghi nhận thái độ tích cực của sinh viên đối với việc học tiếng Anh thông qua ứng dụng. Người học đánh giá cao tính linh hoạt và khả năng học mọi lúc, mọi nơi, qua đó có thể chủ động lựa chọn thời gian và địa điểm học phù hợp với điều kiện cá nhân."
+    },
+    {
+      "style": "normal",
+      "text": "Kết quả này cho thấy tính linh hoạt là một yếu tố cần được xem xét khi xây dựng hệ thống học tiếng Anh. Vì vậy, hệ thống của đề tài cần tạo điều kiện để người học chủ động tiếp cận nội dung, thực hiện các hoạt động học và theo dõi quá trình học tập theo thời gian phù hợp với bản thân."
+    },
+    {
+      "style": "Heading 3",
+      "text": "1.5.3. Các yếu tố ảnh hưởng đến việc sử dụng ứng dụng học tiếng Anh "
+    },
+    {
+      "style": "normal",
+      "text": " Bên cạnh nghiên cứu của Bui, Bui và Dinh (2023) [1], nhóm tham khảo nghiên cứu “English-Learning Mobile Apps for Business Students: A Case Study from Vietnam” của Ho-Minh (2024), được công bố trên Computer-Assisted Language Learning Electronic Journal. Nghiên cứu tập trung đánh giá việc sử dụng các ứng dụng học tiếng Anh trên thiết bị di động của sinh viên khối ngành kinh doanh tại Việt Nam, qua đó xác định những khó khăn của người học và các yếu tố cần được cải thiện trong quá trình phát triển ứng dụng học tiếng Anh."
+    },
+    {
+      "style": "normal",
+      "text": "Kết quả nghiên cứu cho thấy các ứng dụng học tiếng Anh trên thiết bị di động nhìn chung có khả năng hỗ trợ quá trình học của sinh viên. Tuy nhiên, mức độ hài lòng của người học đối với nội dung học tập và phương pháp tổ chức học thấp hơn so với các phương diện còn lại. Điều này cho thấy một ứng dụng học tiếng Anh không chỉ cần cung cấp đầy đủ chức năng kỹ thuật mà còn cần chú trọng đến chất lượng nội dung và cách tổ chức hoạt động học tập phù hợp với đối tượng người sử dụng."
+    },
+    {
+      "style": "normal",
+      "text": "Ngoài ra, kết quả nghiên cứu định tính cho thấy động lực học tập, mức độ tương tác, tính linh hoạt và trải nghiệm người dùng là những yếu tố quan trọng ảnh hưởng đến việc sinh viên lựa chọn và tiếp tục sử dụng ứng dụng học tiếng Anh. Do đó, việc thiết kế ứng dụng cần tạo điều kiện để người học có thể chủ động lựa chọn thời gian học, duy trì sự tương tác trong quá trình học và có trải nghiệm sử dụng thuận tiện."
+    },
+    {
+      "style": "normal",
+      "text": "Đối với hệ thống học tiếng Anh chuyên ngành Công nghệ thông tin của đề tài, kết quả trên gợi ý rằng nội dung cần được xây dựng phù hợp với nhu cầu chuyên môn của người học thay vì chỉ sử dụng các nội dung tiếng Anh tổng quát. Các bài học có thể được tổ chức theo những chủ đề CNTT cụ thể như lập trình, cơ sở dữ liệu, mạng máy tính, phát triển Web, kiểm thử phần mềm và trí tuệ nhân tạo. Đồng thời, hệ thống cần kết hợp nội dung chuyên ngành với phương pháp học có tính tương tác, khả năng học linh hoạt và cơ chế theo dõi quá trình học nhằm duy trì động lực cho người sử dụng."
+    },
+    {
+      "style": "normal",
+      "text": "Như vậy, nghiên cứu của Ho-Minh (2024) [2] bổ sung một góc nhìn quan trọng cho đề tài: chất lượng của hệ thống học tiếng Anh không chỉ phụ thuộc vào các chức năng được cung cấp mà còn phụ thuộc vào mức độ phù hợp của nội dung, phương pháp tổ chức học, công nghệ và trải nghiệm người dùng. Đây là những yếu tố cần được xem xét khi xây dựng hệ thống học tiếng Anh chuyên ngành CNTT."
+    },
+    {
+      "style": "normal",
+      "text": "1.5.4. Nhận xét và khả năng áp dụng vào đề tài "
+    },
+    {
+      "style": "normal",
+      "text": "Từ các kết quả nghiên cứu được tham khảo, nhóm nhận thấy một số đặc điểm của hình thức học tiếng Anh qua ứng dụng có thể được sử dụng làm cơ sở định hướng cho hệ thống đề xuất. "
+    },
+    {
+      "style": "normal",
+      "text": "Đối với hệ thống học tiếng Anh chuyên ngành Công nghệ thông tin của đề tài, các kết quả trên là cơ sở để nhóm định hướng hệ thống theo mô hình học tập linh hoạt, hỗ trợ nhiều kỹ năng và tổ chức nội dung thành các hoạt động học ngắn, thuận tiện cho việc học thường xuyên. Đồng thời, nội dung và phương pháp học cần được xây dựng phù hợp với mục tiêu học tiếng Anh trong lĩnh vực Công nghệ thông tin, thay vì chỉ cung cấp nội dung tiếng Anh tổng quát."
+    },
+    {
+      "style": "normal",
+      "text": "Tuy nhiên, cả hai nghiên cứu được tham khảo đều không tập trung riêng vào sinh viên Công nghệ thông tin. Vì vậy, các kết quả này được sử dụng làm cơ sở tham khảo về nhu cầu sử dụng ứng dụng, các kỹ năng được quan tâm và những yếu tố ảnh hưởng đến trải nghiệm học tập của sinh viên Việt Nam, không được sử dụng để kết luận trực tiếp về nhu cầu tiếng Anh chuyên ngành CNTT. Các yêu cầu cụ thể đối với hệ thống học tiếng Anh chuyên ngành CNTT sẽ được tiếp tục xác định dựa trên đặc thù đào tạo, yêu cầu nghề nghiệp và kết quả khảo sát các hệ thống hiện có ở các phần tiếp theo."
+    },
+    {
+      "style": "Heading 2",
+      "text": "1.6. XÁC ĐỊNH NHU CẦU ĐỐI VỚI HỆ THỐNG HỌC TIẾNG ANH CHUYÊN NGÀNH CNTT"
+    },
+    {
+      "style": "normal",
+      "text": "Từ kết quả khảo sát các ứng dụng 4English, Duolingo và Cambly kết hợp với kết quả nghiên cứu về việc sử dụng ứng dụng học tiếng Anh của sinh viên Việt Nam, nhóm xác định một số định hướng cần xem xét khi xây dựng hệ thống học tiếng Anh chuyên ngành CNTT."
+    },
+    {
+      "style": "normal",
+      "text": "Đối với sinh viên Công nghệ thông tin, năng lực tiếng Anh không chỉ phục vụ việc học ngoại ngữ nói chung mà còn gắn với yêu cầu đào tạo và môi trường nghề nghiệp. Chương trình đào tạo ngành Công nghệ thông tin của Trường Đại học Công Thương Thành phố Hồ Chí Minh xác định năng lực sử dụng ngoại ngữ phục vụ công việc trong lĩnh vực CNTT là một trong những chuẩn đầu ra của chương trình. Đồng thời, chương trình cũng bố trí học phần Anh văn chuyên ngành nhằm hỗ trợ người học sử dụng tiếng Anh trong bối cảnh chuyên môn."
+    },
+    {
+      "style": "normal",
+      "text": "Nhu cầu sử dụng tiếng Anh còn được thể hiện trong thị trường lao động CNTT. Báo cáo Vietnam IT Salary & Recruitment Market 2024–2025 [4] của ITviec cho thấy 40,3% doanh nghiệp tham gia khảo sát ưu tiên năng lực tiếng Anh khi tuyển dụng nhân sự IT mới. Kết quả này cho thấy năng lực tiếng Anh không chỉ có ý nghĩa trong quá trình đào tạo mà còn liên quan đến khả năng đáp ứng yêu cầu nghề nghiệp trong lĩnh vực Công nghệ thông tin."
+    },
+    {
+      "style": "normal",
+      "text": "Từ các căn cứ trên, kết hợp với kết quả khảo sát các ứng dụng hiện có, nhóm xác định hệ thống đề xuất cần tập trung vào những ngữ cảnh sử dụng tiếng Anh gắn với lĩnh vực CNTT như từ vựng chuyên ngành, đọc hiểu tài liệu kỹ thuật, luyện nghe – nói trong các tình huống chuyên môn và tổ chức quá trình học phù hợp với nhu cầu của người học."
+    },
+    {
+      "style": "Heading 3",
+      "text": "1.6.1. Từ vựng tiếng Anh chuyên ngành CNTT"
+    },
+    {
+      "style": "normal",
+      "text": "Nghiên cứu của Bui và cộng sự [1] cho thấy từ vựng là mục đích sử dụng ứng dụng được đánh giá cao nhất. Qua khảo sát, 4English đã cung cấp một số bộ từ vựng theo chủ đề, trong đó có nội dung Information Technology, trong khi Duolingo chủ yếu tổ chức từ vựng trong lộ trình học ngôn ngữ tổng quát. Tuy nhiên, nhóm chưa ghi nhận một lộ trình từ vựng CNTT được tổ chức xuyên suốt theo từng lĩnh vực chuyên môn và liên kết trực tiếp với các kỹ năng khác. "
+    },
+    {
+      "style": "normal",
+      "text": "Đối với người học CNTT, hệ thống đề xuất cần tổ chức từ vựng theo các chủ đề chuyên môn như lập trình, cơ sở dữ liệu, mạng máy tính, phát triển Web, trí tuệ nhân tạo, kiểm thử phần mềm và các lĩnh vực liên quan. Từ vựng không chỉ được trình bày dưới dạng từ và nghĩa mà cần được đặt trong ngữ cảnh kỹ thuật để giúp người học hiểu cách sử dụng thuật ngữ trong tài liệu chuyên ngành."
+    },
+    {
+      "style": "Heading 3",
+      "text": "1.6.2. Đọc hiểu tài liệu kỹ thuật"
+    },
+    {
+      "style": "normal",
+      "text": "Kỹ năng đọc nhận được mức sử dụng tương đối cao trong nghiên cứu về ứng dụng học tiếng Anh của sinh viên Việt Nam. Đối với lĩnh vực CNTT, khả năng đọc tiếng Anh còn có ý nghĩa trong việc tiếp cận tài liệu kỹ thuật."
+    },
+    {
+      "style": "normal",
+      "text": "Qua khảo sát các hệ thống hiện có, 4English hỗ trợ đọc nội dung thực tế nhưng chủ yếu là báo chí và nội dung phổ thông, Duolingo có các bài luyện đọc nhưng chưa tập trung vào tài liệu kỹ thuật, Cambly tập trung chủ yếu vào giao tiếp với tutor."
+    },
+    {
+      "style": "normal",
+      "text": "Do đó, hệ thống đề xuất định hướng bổ sung nội dung đọc gắn với môi trường CNTT như tài liệu hướng dẫn sử dụng công nghệ, tài liệu API, documentation, specification, mô tả hệ thống và các đoạn văn kỹ thuật. Nội dung này giúp tạo sự khác biệt giữa hệ thống đề tài và các ứng dụng học tiếng Anh phổ thông."
+    },
+    {
+      "style": "Heading 3",
+      "text": "1.6.3. Luyện nghe và nói trong ngữ cảnh CNTT"
+    },
+    {
+      "style": "normal",
+      "text": "Kết quả nghiên cứu cho thấy nghe và nói đều là những kỹ năng được sinh viên sử dụng ứng dụng để luyện tập, trong đó nghe đạt M = 4,05 và nói đạt M = 3,67."
+    },
+    {
+      "style": "normal",
+      "text": "Qua khảo sát Cambly, mô hình giao tiếp trực tiếp với tutor có ưu điểm trong việc rèn luyện phản xạ và nhận phản hồi trực tiếp. Tuy nhiên, hình thức này phụ thuộc vào lịch học, tutor và gói học."
+    },
+    {
+      "style": "normal",
+      "text": "Từ đó, hệ thống đề xuất có thể xây dựng các hoạt động luyện nghe và nói xoay quanh ngữ cảnh CNTT như giới thiệu bản thân trong phỏng vấn kỹ thuật, trao đổi công việc trong nhóm phát triển phần mềm, trình bày giải pháp, mô tả lỗi phần mềm, trao đổi yêu cầu hệ thống và giải thích một vấn đề kỹ thuật."
+    },
+    {
+      "style": "Heading 3",
+      "text": "1.6.4. Cá nhân hóa quá trình học tập"
+    },
+    {
+      "style": "normal",
+      "text": "Qua khảo sát Duolingo, nhóm nhận thấy Learning Path và chức năng luyện lại điểm yếu giúp tổ chức quá trình học thành các bước rõ ràng. Trong khi đó, các nghiên cứu trước được tổng hợp trong bài của Bui và cộng sự cũng chỉ ra rằng một số ứng dụng học ngôn ngữ chưa thích ứng tốt với nhu cầu riêng của từng người học."
+    },
+    {
+      "style": "normal",
+      "text": "Vì vậy, hệ thống đề xuất cần hướng đến khả năng xây dựng lộ trình dựa trên mục tiêu, trình độ và kết quả học tập của từng người dùng. Kết quả làm bài có thể được sử dụng để xác định nội dung người học còn yếu và ưu tiên các bài luyện tương ứng."
+    },
+    {
+      "style": "Heading 3",
+      "text": "1.6.5. Hỗ trợ học tập bằng AI"
+    },
+    {
+      "style": "normal",
+      "text": "Các kết quả từ nghiên cứu của Bui và cộng sự chứng minh thái độ tích cực của sinh viên đối với việc sử dụng ứng dụng học tiếng Anh, nhưng nghiên cứu không khảo sát trực tiếp mức độ sẵn sàng sử dụng AI Tutor."
+    },
+    {
+      "style": "normal",
+      "text": "Do đó, chưa thể sử dụng nghiên cứu này để kết luận rằng sinh viên Việt Nam có nhu cầu hoặc sẵn sàng học tiếng Anh với AI. Trong phạm vi đề tài, AI được xem là một giải pháp kỹ thuật có khả năng hỗ trợ cá nhân hóa và tạo môi trường luyện tập linh hoạt."
+    },
+    {
+      "style": "normal",
+      "text": "Hệ thống có thể sử dụng AI để hỗ trợ hội thoại theo tình huống CNTT, tạo câu hỏi luyện tập, giải thích lỗi sai và đưa ra phản hồi dựa trên quá trình học. Tuy nhiên, hiệu quả và mức độ chấp nhận AI của người học cần được đánh giá trong quá trình thử nghiệm hệ thống hoặc thông qua khảo sát người dùng riêng."
+    },
+    {
+      "style": "Heading 2",
+      "text": "1.7. SO SÁNH CÁC HỆ THỐNG VÀ XÁC ĐỊNH KHOẢNG TRỐNG"
+    },
+    {
+      "style": "normal",
+      "text": "Sau khi khảo sát 4English, Duolingo, Cambly và tham khảo nghiên cứu về nhu cầu sử dụng ứng dụng học tiếng Anh của sinh viên Việt Nam, nhóm tiến hành tổng hợp các đặc điểm có liên quan trực tiếp đến định hướng của đề tài."
+    },
+    {
+      "style": "normal",
+      "text": "Bảng 1. Bảng so sánh các hệ thống học tiếng anh"
+    },
+    {
+      "style": "normal",
+      "text": "Kết quả so sánh cho thấy mỗi hệ thống hiện có giải quyết tốt một nhóm nhu cầu khác nhau. 4English có ưu điểm trong việc khai thác nội dung thực tế, tra cứu và quản lý từ vựng. Duolingo nổi bật với Learning Path, bài học ngắn, luyện tập nhiều kỹ năng và gamification. Cambly tạo môi trường giao tiếp trực tiếp với tutor và cung cấp các khóa học gắn với một số mục tiêu nghề nghiệp."
+    },
+    {
+      "style": "normal",
+      "text": "Tuy nhiên, qua phạm vi ba hệ thống được khảo sát, nhóm chưa ghi nhận một hệ thống nào đồng thời lấy tiếng Anh chuyên ngành CNTT làm trọng tâm và kết hợp đầy đủ các nội dung như từ vựng chuyên ngành, đọc tài liệu kỹ thuật, luyện nghe - nói trong tình huống CNTT, cá nhân hóa lộ trình và hỗ trợ luyện tập liên tục."
+    },
+    {
+      "style": "normal",
+      "text": "Từ kết quả khảo sát và so sánh trên, đề tài ‘’Xây dựng hệ thống học tiếng Anh chuyên ngành Công nghệ thông tin’’ hướng đến xây dựng một hệ thống hỗ trợ sinh viên CNTT học tiếng Anh trong các ngữ cảnh chuyên môn. Hệ thống kế thừa những phương pháp phù hợp từ các ứng dụng đã khảo sát, đồng thời tổ chức nội dung và hoạt động học theo nhu cầu sử dụng tiếng Anh trong học tập và công việc thuộc lĩnh vực CNTT. "
+    },
+    {
+      "style": "Heading 2",
+      "text": "1.8. KẾT LUẬN CHƯƠNG"
+    },
+    {
+      "style": "normal",
+      "text": "Trong chương này, nhóm đã khảo sát ba hệ thống học tiếng Anh gồm 4English, Duolingo và Cambly. Qua khảo sát, mỗi hệ thống có những thế mạnh riêng: 4English hỗ trợ học từ nội dung thực tế và tra cứu từ vựng, Duolingo nổi bật với lộ trình học, các bài học ngắn và gamification, Cambly tập trung vào luyện giao tiếp trực tiếp với tutor."
+    },
+    {
+      "style": "normal",
+      "text": "Bên cạnh việc khảo sát các hệ thống hiện có, nhóm tham khảo các nghiên cứu liên quan đến việc học tiếng Anh qua ứng dụng của sinh viên Việt Nam, đồng thời xem xét yêu cầu ngoại ngữ trong chương trình đào tạo và môi trường nghề nghiệp CNTT. Các căn cứ này giúp nhóm xác định rõ hơn nhu cầu sử dụng tiếng Anh trong học tập và công việc, đồng thời cho thấy các nghiên cứu về ứng dụng học tiếng Anh nói chung không thể được sử dụng để kết luận trực tiếp về nhu cầu tiếng Anh chuyên ngành CNTT."
+    },
+    {
+      "style": "normal",
+      "text": "Từ kết quả khảo sát và so sánh, nhóm xác định hướng phát triển của đề tài là xây dựng hệ thống hỗ trợ sinh viên CNTT học tiếng Anh trong các ngữ cảnh chuyên môn. Hệ thống tập trung vào từ vựng chuyên ngành, đọc hiểu tài liệu kỹ thuật, luyện nghe  nói trong các tình huống CNTT, cá nhân hóa quá trình học tập và hỗ trợ luyện tập bằng AI. Đây là cơ sở để nhóm tiếp tục phân tích yêu cầu và thiết kế các chức năng của hệ thống trong chương tiếp theo."
+    },
+    {
+      "style": "normal",
+      "text": "Fix là nội dung khảo sát , bổ sung phạm vi nghiên cứu, pp nghiên cứu"
+    },
+    {
+      "style": "normal",
+      "text": "Nội dung tuần tới:"
+    },
+    {
+      "style": "normal",
+      "text": "Phân rã sơ đồ chức năng"
+    },
+    {
+      "style": "normal",
+      "text": "Phân tích chức năng"
+    },
+    {
+      "style": "normal",
+      "text": "Desgin giao diện"
+    },
+    {
+      "style": "normal",
+      "text": "CHƯƠNG 2: PHÂN TÍCH HỆ THỐNG "
+    },
+    {
+      "style": "Heading 2",
+      "text": "2.1. PHÂN TÍCH YÊU CẦU CHI TIẾT CỦA HỆ THỐNG"
+    },
+    {
+      "style": "normal",
+      "text": "Dựa trên kết quả khảo sát nhu cầu học tiếng Anh chuyên ngành Công nghệ thông tin và yêu cầu của đề tài, hệ thống được phân tích nhằm hỗ trợ người học trong quá trình học tập, luyện tập và ôn thi các chứng chỉ nghề nghiệp quốc tế, đồng thời hỗ trợ giảng viên và quản trị viên trong việc quản lý nội dung, ngân hàng câu hỏi, bài kiểm tra và theo dõi kết quả học tập."
+    },
+    {
+      "style": "normal",
+      "text": "Hệ thống được triển khai trên hai nền tảng, học viên có thể sử dụng website hoặc ứng dụng di động để học tập, Giảng viên và Quản trị viên chủ yếu sử dụng website cho các chức năng quản lý.Các yêu cầu của hệ thống được phân loại thành yêu cầu chức năng và yêu cầu phi chức năng."
+    },
+    {
+      "style": "normal",
+      "text": "Yêu cầu chức năng: Hệ thống cần cung cấp các chức năng chính để hỗ trợ toàn bộ quá trình quản lý và học tập tiếng Anh chuyên ngành CNTT, bao gồm:"
+    },
+    {
+      "style": "normal",
+      "text": "Quản lý tài khoản và phân quyền: Hệ thống cho phép quản lý tài khoản của người học, giảng viên và quản trị viên. Các chức năng bao gồm thêm mới, cập nhật, khóa và mở khóa , tìm kiếm tài khoản người dùng, đăng nhập, đăng xuất và thay đổi mật khẩu. Hệ thống đồng thời hỗ trợ phân quyền người dùng theo các vai trò quản trị viên, giảng viên và người học nhằm đảm bảo mỗi đối tượng được sử dụng các chức năng phù hợp với vai trò của mình."
+    },
+    {
+      "style": "normal",
+      "text": "Quản lý hồ sơ học tập: Hệ thống hỗ trợ quản lý thông tin hồ sơ của người học, bao gồm trình độ tiếng Anh, lĩnh vực Công nghệ thông tin quan tâm, mục tiêu nghề nghiệp và mục tiêu chứng chỉ nghề nghiệp. Người học có thể cập nhật thông tin hồ sơ học tập của mình trên ứng dụng di động, đồng thời các thông tin này được sử dụng làm cơ sở để theo dõi và hỗ trợ quá trình học tập."
+    },
+    {
+      "style": "normal",
+      "text": "Quản lý nội dung học tập: Hệ thống hỗ trợ quản lý các nội dung phục vụ việc học tiếng Anh chuyên ngành CNTT. Nội dung bao gồm từ vựng, thuật ngữ chuyên ngành, bài đọc hiểu tài liệu kỹ thuật, bài học theo tình huống thực tế, API documentation, technical documentation và system design cơ bản. Nội dung được phân loại theo các lĩnh vực CNTT như Cloud Computing, Cybersecurity, Networking, Data Engineering, Data Science, Software Engineering và DevOps."
+    },
+    {
+      "style": "normal",
+      "text": "Quản lý cấp độ học: Hệ thống hỗ trợ phân loại và quản lý nội dung học tập theo các cấp độ Beginner, Intermediate, Advanced và Professional. Việc phân loại cấp độ giúp người học lựa chọn nội dung phù hợp với trình độ hiện tại."
+    },
+    {
+      "style": "normal",
+      "text": "Quản lý nội dung ôn tập theo mục tiêu chứng chỉ: Hệ thống hỗ trợ xây dựng và quản lý nội dung ôn tập theo các chủ đề và lĩnh vực CNTT phục vụ mục tiêu chứng chỉ của người học. Nội dung ôn tập có thể được tổ chức theo các lĩnh vực như Cloud Computing, Cybersecurity, Networking, Data Engineering, Data Science, Software Engineering và DevOps."
+    },
+    {
+      "style": "normal",
+      "text": "Quản lý ngân hàng câu hỏi: Hệ thống hỗ trợ xây dựng và quản lý ngân hàng câu hỏi phục vụ quá trình luyện tập và kiểm tra. Câu hỏi được phân loại theo kỹ năng Vocabulary, Reading, Technical Understanding và dạng tình huống thực tế (Scenario-based). Hệ thống cho phép thêm mới, cập nhật, xóa, tìm kiếm và phân loại câu hỏi theo chủ đề, lĩnh vực CNTT, cấp độ học và mục tiêu chứng chỉ."
+    },
+    {
+      "style": "normal",
+      "text": "Quản lý bài kiểm tra và đánh giá: Giảng viên có thể tạo bài kiểm tra theo chủ đề hoặc mục tiêu chứng chỉ, quản lý bài thi trắc nghiệm và bài tập tình huống thực tế. Hệ thống hỗ trợ chấm điểm tự động và quản lý kết quả làm bài của người học."
+    },
+    {
+      "style": "normal",
+      "text": "Học tiếng Anh chuyên ngành CNTT: Người học có thể sử dụng ứng dụng di động để học từ vựng theo lĩnh vực CNTT, học thuật ngữ trong tài liệu kỹ thuật, đọc hiểu bài viết và technical documentation, API documentation, system design cơ bản và các tình huống thực tế trong công việc CNTT. Nội dung học tập được cung cấp theo các cấp độ từ Beginner đến Professional."
+    },
+    {
+      "style": "normal",
+      "text": "Luyện tập và làm bài kiểm tra: Người học có thể luyện tập các nội dung theo lĩnh vực và mục tiêu chứng chỉ, trả lời các câu hỏi kỹ thuật bằng tiếng Anh, làm bài trắc nghiệm thuật ngữ CNTT và thực hiện các bài kiểm tra theo chủ đề hoặc mục tiêu chứng chỉ. Sau khi hoàn thành bài làm, hệ thống cung cấp điểm tự động và giải thích đáp án để hỗ trợ người học hiểu rõ kết quả."
+    },
+    {
+      "style": "normal",
+      "text": "Theo dõi tiến độ học tập: Hệ thống hỗ trợ người học theo dõi tiến độ học tập cá nhân, mức độ hoàn thành nội dung theo mục tiêu chứng chỉ, lịch sử kết quả bài kiểm tra và điểm theo từng nội dung hoặc chủ đề. Đối với giảng viên, hệ thống hỗ trợ theo dõi tiến độ của từng người học, mức độ hoàn thành nội dung theo chứng chỉ mục tiêu và kết quả bài kiểm tra."
+    },
+    {
+      "style": "normal",
+      "text": "Báo cáo và thống kê: Hệ thống cung cấp chức năng thống kê số lượng người học theo lĩnh vực CNTT quan tâm, thống kê điểm theo từng mục tiêu chứng chỉ và thống kê tiến độ học tập. Các báo cáo được sử dụng để phục vụ việc quản lý và đánh giá hoạt động học tập của người học."
+    },
+    {
+      "style": "normal",
+      "text": "Hỗ trợ cá nhân hóa quá trình học tập bằng trí tuệ nhân tạo: Hệ thống định hướng tích hợp trí tuệ nhân tạo nhằm hỗ trợ cá nhân hóa quá trình học tập dựa trên hồ sơ, mục tiêu và tiến độ học tập của người học. Chức năng này nhằm hỗ trợ người học lựa chọn nội dung phù hợp với nhu cầu và mục tiêu học tập."
+    },
+    {
+      "style": "normal",
+      "text": "Yêu cầu phi chức năng: Bên cạnh các chức năng nghiệp vụ, hệ thống cần đáp ứng một số yêu cầu về chất lượng và khả năng sử dụng:"
+    },
+    {
+      "style": "normal",
+      "text": "Tính dễ sử dụng: Giao diện Website và ứng dụng di động cần được thiết kế thân thiện, trực quan và dễ sử dụng, phù hợp với hoạt động học tiếng Anh chuyên ngành CNTT."
+    },
+    {
+      "style": "normal",
+      "text": "Tính bảo mật và phân quyền: Thông tin tài khoản và dữ liệu học tập cần được quản lý theo đúng vai trò của người sử dụng. Hệ thống phải hỗ trợ đăng nhập, đăng xuất, thay đổi mật khẩu và phân quyền giữa quản trị viên, giảng viên và người học."
+    },
+    {
+      "style": "normal",
+      "text": "Tính nhất quán dữ liệu: Thông tin người học, nội dung học tập, ngân hàng câu hỏi, bài kiểm tra, kết quả và tiến độ học tập cần được quản lý thống nhất trên hệ thống. Website và ứng dụng di động sử dụng mô hình dữ liệu và API dùng chung theo định hướng triển khai của đề tài."
+    },
+    {
+      "style": "normal",
+      "text": "Khả năng mở rộng: Hệ thống cần có khả năng bổ sung nội dung học tập, lĩnh vực CNTT, cấp độ học, mục tiêu chứng chỉ và ngân hàng câu hỏi trong quá trình phát triển. Đề cương cũng định hướng hệ thống có thể quản lý nhiều lĩnh vực như Cloud Computing, Cybersecurity, Networking, Data Engineering, Data Science, Software Engineering và DevOps."
+    },
+    {
+      "style": "Heading 2",
+      "text": "2.2. XÂY DỰNG MÔ HÌNH NGHIỆP VỤ"
+    },
+    {
+      "style": "normal",
+      "text": "Để làm rõ hoạt động của hệ thống và sự tương tác giữa các tác nhân, các quy trình nghiệp vụ chính được xác định dựa trên ba nhóm người sử dụng chính của hệ thống: người học, giảng viên, quản trị viên. Việc mô hình hóa các quy trình giúp xác định rõ vai trò của từng tác nhân, các chức năng được thực hiện và thông tin được xử lý trong từng nghiệp vụ."
+    },
+    {
+      "style": "normal",
+      "text": "Quy trình đăng ký và thiết lập hồ sơ học tập: Quy trình bắt đầu khi người học đăng ký tài khoản trên ứng dụng di động và đăng nhập vào hệ thống. Sau khi đăng nhập, người học cập nhật thông tin hồ sơ học tập, trình độ tiếng Anh, lĩnh vực CNTT quan tâm, mục tiêu nghề nghiệp và mục tiêu chứng chỉ."
+    },
+    {
+      "style": "normal",
+      "text": "Quy trình quản lý và biên soạn nội dung học tập: Giảng viên thực hiện quản lý và biên soạn nội dung phục vụ việc học tiếng Anh chuyên ngành CNTT. Nội dung có thể bao gồm từ vựng, thuật ngữ chuyên ngành, bài đọc hiểu tài liệu kỹ thuật, API documentation, technical documentation, system design và các case study thực tế.."
+    },
+    {
+      "style": "normal",
+      "text": "Quy trình luyện tập và làm bài kiểm tra: Người học lựa chọn nội dung luyện tập theo lĩnh vực CNTT, chủ đề hoặc mục tiêu chứng chỉ. Hệ thống cung cấp các câu hỏi thuộc ngân hàng câu hỏi để người học thực hiện luyện tập, bao gồm câu hỏi Vocabulary, Reading, Technical Understanding và Scenario-based. Đối với bài kiểm tra, giảng viên có thể tạo bài kiểm tra theo chủ đề hoặc mục tiêu chứng chỉ. "
+    },
+    {
+      "style": "normal",
+      "text": "Quy trình theo dõi tiến độ và kết quả học tập: Trong quá trình học, hệ thống ghi nhận tiến độ và kết quả của người học. Người học có thể xem tiến độ cá nhân, mức độ hoàn thành nội dung theo mục tiêu chứng chỉ, lịch sử làm bài và điểm theo từng nội dung hoặc chủ đề. Giảng viên có thể theo dõi tiến độ học tập của từng người học, xem mức độ hoàn thành theo chứng chỉ mục tiêu và kết quả bài kiểm tra."
+    },
+    {
+      "style": "normal",
+      "text": "Quy trình báo cáo và thống kê: Dựa trên dữ liệu học tập được ghi nhận trong hệ thống, chức năng báo cáo và thống kê cung cấp các thông tin phục vụ quản lý như số lượng người học theo lĩnh vực CNTT quan tâm, điểm theo từng mục tiêu chứng chỉ và tiến độ học tập. Các kết quả thống kê giúp giảng viên và quản trị viên có cơ sở theo dõi tình hình học tập và đánh giá hoạt động của hệ thống."
+    },
+    {
+      "style": "normal",
+      "text": "Việc sử dụng các biểu đồ nghiệp vụ như biểu đồ Use Case (xác định các chức năng chính và mối quan hệ giữa các tác nhân với hệ thống), biểu đồ trình tự (mô tả sự tương tác giữa các đối tượng theo trình tự thời gian) và biểu đồ hoạt động (mô tả các bước thực hiện của từng quy trình nghiệp vụ) sẽ giúp trực quan hóa các quy trình trên."
+    },
+    {
+      "style": "normal",
+      "text": "Tiếp theo phần mô tả quy trình nghiệp vụ, các biểu đồ Use Case được xây dựng để trực quan hóa các chức năng chính và sự tương tác giữa các tác nhân với hệ thống ở hai mức độ: Use Case nghiệp vụ và Use Case hệ thống."
+    },
+    {
+      "style": "Heading 3",
+      "text": "2.2.1 Biểu đồ Usecase nghiệp vụ"
+    },
+    {
+      "style": "normal",
+      "text": "\tBiểu đồ Usecase nghiệp vụ (Business Usecase Diagram) tập trung vào việc mô tả các quy trình nghiệp vụ mà hệ thống sẽ hỗ trợ và không đi sâu vào chi tiết kỹ thuật của hệ thống. Nó giúp làm rõ các hoạt động chính diễn ra trong thực tế và ai là người sẽ thực hiện các hoạt động đó."
+    },
+    {
+      "style": "normal",
+      "text": "Hình 7. Usecase nghiệp vụ học tiếng anh chuyên ngành CNTT"
+    },
+    {
+      "style": "normal",
+      "text": "Nhìn vào Hình 7, chúng ta có thể thấy ba tác nhân chính tham gia vào quy trình của ứng dụng học tiếng anh chuyên ngành CNTT ở mức nghiệp vụ:"
+    },
+    {
+      "style": "normal",
+      "text": "Học viên: Tác nhân này đại diện cho vai trò của sinh viên, học viên ngành CNTT trong các hoạt động nghiệp vụ. Các Usecase nghiệp vụ chính liên quan đến học viên bao gồm:"
+    },
+    {
+      "style": "normal",
+      "text": "Quản lý hồ sơ học tập: Hoạt động người học cập nhật và quản lý thông tin hồ sơ học tập, bao gồm trình độ Tiếng Anh, lĩnh vực CNTT quan tâm và mục tiêu học tập."
+    },
+    {
+      "style": "normal",
+      "text": "Bảng 2. Bảng đặc tả usecase Quản lý hồ sơ học tập."
+    },
+    {
+      "style": "normal",
+      "text": "Học bài học chuyên ngành: Hoạt động người học lựa chọn và học các nội dung tiếng Anh chuyên ngành CNTT theo lĩnh vực và cấp độ. Nội dung bài học bao gồm thuật ngữ chuyên ngành, tài liệu kỹ thuật, bài đọc hiểu, API documentation, system design cơ bản và các tình huống thực tế trong công việc CNTT. "
+    },
+    {
+      "style": "normal",
+      "text": "Bảng 3. Bảng đặc tả usecase Học bài học chuyên ngành"
+    },
+    {
+      "style": "normal",
+      "text": "Học từ vựng chuyên ngành: Hoạt động người học học và ôn tập các từ vựng, thuật ngữ tiếng Anh chuyên ngành CNTT theo các lĩnh vực như Cloud Computing, Cybersecurity, Networking, Data Engineering, Data Science, Software Engineering và DevOps."
+    },
+    {
+      "style": "normal",
+      "text": "Bảng 4. Bảng đặc tả usecase Học từ vựng chuyên ngành"
+    },
+    {
+      "style": "normal",
+      "text": "Theo dõi tiến độ học tập: Hoạt động người học xem và theo dõi tiến độ học tập cá nhân, mức độ hoàn thành nội dung theo mục tiêu chứng chỉ, lịch sử kết quả bài kiểm tra và điểm theo từng nội dung hoặc chủ đề."
+    },
+    {
+      "style": "normal",
+      "text": "Bảng 5. Bảng đặc tả usecase Theo dõi tiến độ học tập"
+    },
+    {
+      "style": "normal",
+      "text": "Luyện tập câu hỏi: Hoạt động người học thực hiện các câu hỏi luyện tập tiếng Anh chuyên ngành CNTT nhằm củng cố kiến thức và nâng cao khả năng vận dụng, bao gồm các câu hỏi về Vocabulary, Reading, Technical Understanding và tình huống thực tế. "
+    },
+    {
+      "style": "normal",
+      "text": "Bảng 6. Bảng đặc tả usecase Luyện tập câu hỏi"
+    },
+    {
+      "style": "normal",
+      "text": "Làm đề thi thử: Hoạt động người học thực hiện bài kiểm tra theo chủ đề hoặc mục tiêu chứng chỉ để đánh giá kiến thức và mức độ sẵn sàng cho kỳ thi chứng chỉ nghề nghiệp quốc tế. Hệ thống hỗ trợ chấm điểm tự động và hiển thị giải thích đáp án sau khi hoàn thành bài làm. "
+    },
+    {
+      "style": "normal",
+      "text": "Bảng 7. Bảng đặc tả usecase Làm đề thi thử"
+    },
+    {
+      "style": "normal",
+      "text": "Giảng viên: Tác nhân này đại diện cho vai trò của giảng viên trong các hoạt động nghiệp vụ. Các Usecase nghiệp vụ chính liên quan đến giảng viên bao gồm:"
+    },
+    {
+      "style": "normal",
+      "text": "Biên soạn bài học: Hoạt động giảng viên tạo mới, cập nhật và quản lý nội dung các bài học tiếng Anh chuyên ngành CNTT theo lĩnh vực và cấp độ, phục vụ quá trình học tập của người học."
+    },
+    {
+      "style": "normal",
+      "text": "Bảng 8. Bảng đặc tả usecase Biên soạn bài học"
+    },
+    {
+      "style": "normal",
+      "text": "Biên soạn câu hỏi: Hoạt động giảng viên tạo mới, cập nhật và quản lý ngân hàng câu hỏi tiếng Anh chuyên ngành CNTT theo dạng câu hỏi, chủ đề, lĩnh vực và cấp độ."
+    },
+    {
+      "style": "normal",
+      "text": "Bảng 9. Bảng đặc tả usecase Biên soạn câu hỏi"
+    },
+    {
+      "style": "normal",
+      "text": "Biên soạn từ vựng: Hoạt động giảng viên tạo mới, cập nhật và quản lý các từ vựng, thuật ngữ tiếng Anh chuyên ngành CNTT theo từng lĩnh vực và chủ đề."
+    },
+    {
+      "style": "normal",
+      "text": "Bảng 10. Bảng đặc tả usecase Biên soạn từ vựng"
+    },
+    {
+      "style": "normal",
+      "text": "Thiết lập đề thi: Hoạt động giảng viên tạo và thiết lập các bài kiểm tra, đề thi theo chủ đề, lĩnh vực và mục tiêu chứng chỉ, bao gồm lựa chọn câu hỏi và thiết lập các thông tin của đề thi."
+    },
+    {
+      "style": "normal",
+      "text": "Bảng 11. Bảng đặc tả usecase Thiết lập đề thi"
+    },
+    {
+      "style": "normal",
+      "text": "Theo dõi tiến độ học tập: Hoạt động giảng viên theo dõi quá trình học tập, mức độ hoàn thành nội dung và kết quả học tập của người học theo mục tiêu học tập và chứng chỉ."
+    },
+    {
+      "style": "normal",
+      "text": "Bảng 12. Bảng đặc tả usecase Theo dõi tiến độ học của học viên"
+    },
+    {
+      "style": "normal",
+      "text": "Quản trị viên:"
+    },
+    {
+      "style": "normal",
+      "text": "Quản lý nội dung học tập: Hoạt động quản trị viên quản lý và kiểm soát các nội dung học tập được cung cấp trên hệ thống, đảm bảo nội dung phù hợp với cấu trúc và định hướng của hệ thống. "
+    },
+    {
+      "style": "normal",
+      "text": "Bảng 13. Bảng đặc tả usecase Quản lý nội dung hệ thống"
+    },
+    {
+      "style": "normal",
+      "text": "Xem báo cáo thống kê: Hoạt động quản trị viên xem các báo cáo và số liệu thống kê về tình hình sử dụng hệ thống, người học, kết quả học tập và tiến độ học tập để hỗ trợ quản lý và đánh giá hoạt động của hệ thống. "
+    },
+    {
+      "style": "normal",
+      "text": "Bảng 14. Bảng đặc tả usecase Xem báo cáo thống kê"
+    },
+    {
+      "style": "Heading 3",
+      "text": "2.2.2 Biểu đồ Usecase hệ thống"
+    },
+    {
+      "style": "normal",
+      "text": "Hình 8. Biểu đồ Use Case hệ thống học tiếng Anh chuyên ngành CNTT"
+    },
+    {
+      "style": "normal",
+      "text": "Biểu đồ Use Case hệ thống mô tả các chức năng mà phần mềm cung cấp và cách người dùng tương tác với hệ thống. So với Use Case nghiệp vụ, biểu đồ ở mức hệ thống thể hiện cụ thể hơn các chức năng mà phần mềm cần hỗ trợ cho từng vai trò."
+    },
+    {
+      "style": "normal",
+      "text": "Hệ thống có ba tác nhân chính gồm Học viên, Giảng viên và Quản trị viên. Học viên có thể học tập, luyện tập và thực hiện các bài kiểm tra trên Website hoặc ứng dụng di động. Giảng viên và Quản trị viên chủ yếu sử dụng Website để quản lý nội dung, theo dõi hoạt động học tập và thực hiện các chức năng quản trị. Các nền tảng sử dụng chung dữ liệu để bảo đảm thông tin được đồng bộ trong toàn hệ thống."
+    },
+    {
+      "style": "normal",
+      "text": "2.2.2.1. Các tác nhân của hệ thống"
+    },
+    {
+      "style": "normal",
+      "text": "Học viên: sử dụng hệ thống để quản lý hồ sơ học tập, học và luyện tập tiếng Anh chuyên ngành CNTT, sử dụng chức năng hỗ trợ học tập cá nhân hóa bằng AI, làm đề thi thử, xem kết quả và theo dõi tiến độ của bản thân. "
+    },
+    {
+      "style": "normal",
+      "text": "Giảng viên: quản lý bài học, từ vựng, ngân hàng câu hỏi và đề thi, đồng thời theo dõi kết quả học tập của Học viên và xem các báo cáo liên quan."
+    },
+    {
+      "style": "normal",
+      "text": "Quản trị viên: quản lý tài khoản, phân quyền, Học viên và danh mục hệ thống, đồng thời theo dõi báo cáo thống kê. Danh mục hệ thống bao gồm lĩnh vực CNTT, cấp độ học và mục tiêu chứng chỉ. "
+    },
+    {
+      "style": "normal",
+      "text": "2.2.2.2. Phân hệ Học tập và Khảo thí"
+    },
+    {
+      "style": "normal",
+      "text": "Đối với Học viên, hệ thống hỗ trợ các hoạt động học và luyện tập nội dung tiếng Anh chuyên ngành CNTT theo lĩnh vực, cấp độ và mục tiêu học tập. Trong quá trình học, trong quá trình học, Học viên có thể sử dụng chức năng hỗ trợ học tập cá nhân hóa bằng AI. Chức năng này hỗ trợ phân tích hồ sơ, mục tiêu nghề nghiệp, mục tiêu chứng chỉ và kết quả học tập để xác định nội dung còn hạn chế và đề xuất lộ trình học phù hợp. Bên cạnh đó, AI có thể hỗ trợ luyện tập kỹ năng tiếng Anh chuyên ngành và đánh giá mức độ sẵn sàng đối với mục tiêu học tập của Học viên. "
+    },
+    {
+      "style": "normal",
+      "text": "Bên cạnh việc học tập, Học viên có thể làm đề thi thử để tự đánh giá kiến thức. Sau khi hoàn thành bài làm, hệ thống thực hiện chấm điểm, lưu kết quả và cho phép Học viên xem lại đáp án, giải thích cũng như theo dõi tiến độ học tập của mình."
+    },
+    {
+      "style": "normal",
+      "text": "2.2.2.3. Phân hệ Quản lý chuyên môn"
+    },
+    {
+      "style": "normal",
+      "text": "Giảng viên phụ trách quản lý các nội dung chuyên môn của hệ thống, bao gồm bài học, từ vựng và ngân hàng câu hỏi. Các nội dung được tổ chức theo lĩnh vực CNTT và cấp độ để phù hợp với quá trình học của Học viên."
+    },
+    {
+      "style": "normal",
+      "text": "Giảng viên cũng có thể thiết lập đề thi từ ngân hàng câu hỏi và theo dõi kết quả học tập của Học viên. Thông qua kết quả và báo cáo thống kê, Giảng viên có thêm thông tin để đánh giá tình hình học tập và điều chỉnh nội dung khi cần thiết."
+    },
+    {
+      "style": "normal",
+      "text": "2.2.2.4. Phân hệ Quản trị hệ thống"
+    },
+    {
+      "style": "normal",
+      "text": "Quản trị viên chịu trách nhiệm quản lý tài khoản và phân quyền cho các nhóm người dùng trong hệ thống. Ngoài ra, Quản trị viên quản lý thông tin Học viên và các danh mục dùng chung của hệ thống, bao gồm lĩnh vực CNTT, cấp độ học và mục tiêu chứng chỉ. "
+    },
+    {
+      "style": "normal",
+      "text": "Chức năng báo cáo thống kê giúp Quản trị viên theo dõi tình hình sử dụng hệ thống, kết quả và tiến độ học tập, từ đó hỗ trợ quá trình quản lý chung. Quản trị viên cũng có thể quản lý bài học và từ vựng nhằm kiểm soát nội dung được cung cấp trên hệ thống. "
+    },
+    {
+      "style": "normal",
+      "text": "2.2.2.5. Các mối quan hệ trong biểu đồ Use Case"
+    },
+    {
+      "style": "normal",
+      "text": "Association thể hiện sự tương tác trực tiếp giữa tác nhân và các chức năng mà tác nhân được phép sử dụng. Một số chức năng dùng chung như Đăng nhập, Đăng xuất và Đổi mật khẩu được sử dụng bởi nhiều vai trò khác nhau."
+    },
+    {
+      "style": "normal",
+      "text": "Quan hệ include được sử dụng đối với các chức năng bắt buộc trong quá trình làm đề thi thử. Cụ thể, Làm đề thi thử bao gồm Nộp bài, và khi bài được nộp, hệ thống thực hiện Chấm điểm tự động."
+    },
+    {
+      "style": "normal",
+      "text": "Quan hệ extend được sử dụng đối với chức năng Xem giải thích đáp án. Sau khi xem kết quả bài làm, Học viên có thể lựa chọn xem thêm phần giải thích nếu có nhu cầu."
+    },
+    {
+      "style": "normal",
+      "text": "2.2.2.6. Đặc tả một số Use Case hệ thống tiêu biểu"
+    },
+    {
+      "style": "normal",
+      "text": "Các Use Case dưới đây đại diện cho ba nhóm chức năng chính của hệ thống: học tập - khảo thí, quản lý chuyên môn và quản trị người dùng."
+    },
+    {
+      "style": "normal",
+      "text": "Bảng 19. Bảng đặc tả Use Case hệ thống Làm đề thi thử"
+    },
+    {
+      "style": "normal",
+      "text": "Bảng 20. Bảng đặc tả Use Case hệ thống Thiết lập đề thi"
+    },
+    {
+      "style": "normal",
+      "text": "Bảng 21. Bảng đặc tả Use Case hệ thống Quản lý tài khoản và phân quyền"
+    },
+    {
+      "style": "Heading 2",
+      "text": "2.3. MÔ HÌNH DỮ LIỆU MỨC PHÂN TÍCH"
+    },
+    {
+      "style": "normal",
+      "text": "Mô hình dữ liệu mức phân tích được biểu diễn dưới dạng sơ đồ lớp phân tích (Analysis Class Diagram), nhằm mô tả các thực thể dữ liệu chính và mối quan hệ giữa chúng trước khi chuyển sang thiết kế cơ sở dữ liệu chi tiết. Trong mô hình, hệ thống được xác định gồm 20 lớp dữ liệu chính, tập trung vào các nhóm như người dùng và hồ sơ học tập, danh mục nền tảng, nội dung học tập, từ vựng, ngân hàng câu hỏi, khảo thí và tiến độ học tập. . Các lớp này có mối liên hệ với nhau nhằm phản ánh cách dữ liệu được tổ chức và sử dụng trong các chức năng của hệ thống. "
+    },
+    {
+      "style": "normal",
+      "text": "Hình 9. Sơ đồ lớp mức phân tích của hệ thống học tiếng Anh chuyên ngành CNTT"
+    },
+    {
+      "style": "Heading 2",
+      "text": "2.3.1. Các nhóm thực thể trong mô hình"
+    },
+    {
+      "style": "normal",
+      "text": "Dựa trên sơ đồ lớp mức phân tích, các thực thể được chia thành một số nhóm chính theo chức năng mà chúng đảm nhiệm trong hệ thống. Cách phân nhóm này giúp làm rõ vai trò của từng loại dữ liệu và mối liên hệ giữa các thành phần trong quá trình học tập, quản lý nội dung và tổ chức kiểm tra."
+    },
+    {
+      "style": "Heading 3",
+      "text": "2.3.1.1. Nhóm Người dùng và Hồ sơ học tập"
+    },
+    {
+      "style": "normal",
+      "text": "users: lưu thông tin tài khoản của Học viên, Giảng viên và Quản trị viên. Các thông tin chính gồm định danh người dùng, email, tên hiển thị, mật khẩu, vai trò và trạng thái tài khoản."
+    },
+    {
+      "style": "normal",
+      "text": "learner_profiles: lưu hồ sơ học tập riêng của Học viên, bao gồm cấp độ hiện tại và các thông tin liên quan đến định hướng học tập. Mỗi hồ sơ được liên kết với một tài khoản Học viên trong hệ thống."
+    },
+    {
+      "style": "normal",
+      "text": "learner_career_goals: là lớp liên kết giữa hồ sơ Học viên và mục tiêu nghề nghiệp, cho phép một Học viên lựa chọn nhiều mục tiêu nghề nghiệp và một mục tiêu nghề nghiệp được nhiều Học viên lựa chọn. "
+    },
+    {
+      "style": "normal",
+      "text": "learner_certificate_goals: lưu các mục tiêu chứng chỉ mà Học viên lựa chọn, thời gian dự kiến hoàn thành và trạng thái của từng mục tiêu. Thông tin mục tiêu chính được sử dụng làm cơ sở hỗ trợ cá nhân hóa quá trình học tập.  "
+    },
+    {
+      "style": "Heading 3",
+      "text": "2.3.1.2. Nhóm Danh mục nền tảng"
+    },
+    {
+      "style": "normal",
+      "text": "levels: quản lý các cấp độ học gồm Beginner, Intermediate, Advanced và Professional. Cấp độ giúp phân loại nội dung theo trình độ của Học viên."
+    },
+    {
+      "style": "normal",
+      "text": "domains: quản lý các lĩnh vực CNTT như Cloud Computing, Cybersecurity, Networking, Data Engineering, Data Science, Software Engineering và DevOps. Các lĩnh vực này được dùng để phân loại bài học, từ vựng, câu hỏi và đề thi."
+    },
+    {
+      "style": "normal",
+      "text": "career_goals: lưu các mục tiêu nghề nghiệp mà Học viên có thể lựa chọn trong hồ sơ học tập."
+    },
+    {
+      "style": "normal",
+      "text": "certificates: lưu thông tin về các chứng chỉ nghề nghiệp mà Học viên có thể lựa chọn làm mục tiêu học tập và ôn luyện."
+    },
+    {
+      "style": "normal",
+      "text": "certification_contents: lưu nội dung ôn tập gắn với từng chứng chỉ, được tổ chức theo chủ đề và thứ tự để Học viên thuận tiện theo dõi."
+    },
+    {
+      "style": "Heading 3",
+      "text": "2.3.1.3. Nhóm Nội dung học tập và Từ vựng"
+    },
+    {
+      "style": "normal",
+      "text": "lessons: lưu các bài học tiếng Anh chuyên ngành CNTT. Mỗi bài học được phân loại theo lĩnh vực, cấp độ và trạng thái nội dung."
+    },
+    {
+      "style": "normal",
+      "text": "vocabularies: lưu các từ vựng và thuật ngữ tiếng Anh chuyên ngành CNTT, kèm theo những thông tin như định nghĩa, phát âm, lĩnh vực và cấp độ."
+    },
+    {
+      "style": "normal",
+      "text": "lesson_vocabularies: là lớp liên kết giữa bài học và từ vựng, dùng để xác định các từ vựng xuất hiện hoặc có liên quan đến từng bài học và thứ tự của chúng trong bài. "
+    },
+    {
+      "style": "Heading 3",
+      "text": "2.3.1.4. Nhóm Ngân hàng câu hỏi và Khảo thí"
+    },
+    {
+      "style": "normal",
+      "text": "questions: lưu các câu hỏi phục vụ luyện tập và kiểm tra. Câu hỏi được phân loại theo dạng câu hỏi, lĩnh vực, cấp độ và chủ đề."
+    },
+    {
+      "style": "normal",
+      "text": "question_options: lưu các phương án trả lời của câu hỏi dạng lựa chọn và thông tin xác định đáp án đúng."
+    },
+    {
+      "style": "normal",
+      "text": "exams: lưu thông tin của đề thi như tên đề, mô tả, lĩnh vực, cấp độ, mục tiêu chứng chỉ, thời lượng và các thông tin liên quan đến quá trình làm bài."
+    },
+    {
+      "style": "normal",
+      "text": "exam_questions: liên kết đề thi với các câu hỏi được sử dụng trong đề. Ngoài thông tin liên kết, thực thể này còn ghi nhận thứ tự và trọng số của từng câu hỏi."
+    },
+    {
+      "style": "normal",
+      "text": "exam_attempts: ghi nhận từng lần Học viên thực hiện một đề thi, bao gồm đề thi, Học viên thực hiện, trạng thái, thời gian, kết quả và thông tin tổng quát của đề tại thời điểm làm bài . "
+    },
+    {
+      "style": "normal",
+      "text": "attempt_answers: lưu câu trả lời của Học viên đối với từng câu hỏi trong một lượt làm bài, bao gồm nội dung trả lời, kết quả đúng hoặc sai, số điểm và bản sao nội dung câu hỏi tại thời điểm làm bài. Việc lưu lại nội dung câu hỏi giúp bảo toàn thông tin của bài làm khi câu hỏi gốc được chỉnh sửa sau đó. "
+    },
+    {
+      "style": "Heading 3",
+      "text": "2.3.1.5. Nhóm Tiến độ học tập"
+    },
+    {
+      "style": "normal",
+      "text": "lesson_progress: lưu tiến độ học của từng Học viên đối với từng bài học, bao gồm trạng thái, tỷ lệ hoàn thành, thời điểm bắt đầu và thời điểm hoàn thành. "
+    },
+    {
+      "style": "normal",
+      "text": "vocabulary_progress: lưu quá trình học và ôn tập từ vựng của từng Học viên, bao gồm mức độ ghi nhớ, số lần ôn tập, lần ôn gần nhất và thời điểm dự kiến ôn tập tiếp theo. "
+    },
+    {
+      "style": "Heading 2",
+      "text": "2.3.2. Các mối quan hệ và ràng buộc bội số"
+    },
+    {
+      "style": "normal",
+      "text": "Các thực thể trong mô hình có mối liên hệ với nhau theo các quy tắc nghiệp vụ của hệ thống. Các mối quan hệ trong mô hình chủ yếu được thể hiện dưới dạng quan hệ 1 - 0..1, quan hệ một - nhiều và quan hệ nhiều - nhiều. "
+    },
+    {
+      "style": "Heading 3",
+      "text": "2.3.2.1. Quan hệ 1 - 0..1"
+    },
+    {
+      "style": "normal",
+      "text": "Quan hệ 1 - 0..1 thể hiện trường hợp một bản ghi có thể không có hoặc chỉ có tối đa một bản ghi liên quan."
+    },
+    {
+      "style": "normal",
+      "text": "Trong mô hình, users và learner_profiles có quan hệ 1 - 0..1. Mỗi hồ sơ học tập chỉ thuộc về một tài khoản người dùng, trong khi một tài khoản có thể không có hoặc có tối đa một hồ sơ học tập. Điều này phù hợp với hệ thống vì chỉ Học viên cần hồ sơ học tập, còn Giảng viên và Quản trị viên chỉ cần thông tin tài khoản được lưu trong users."
+    },
+    {
+      "style": "normal",
+      "text": "Việc tách hai thực thể giúp phân biệt thông tin tài khoản dùng chung với các thông tin riêng phục vụ quá trình học tập của Học viên."
+    },
+    {
+      "style": "normal",
+      "text": "2.3.2.2. Quan hệ 1 - n"
+    },
+    {
+      "style": "normal",
+      "text": "Quan hệ 1 - n xuất hiện ở nhiều nhóm dữ liệu trong hệ thống. Một cấp độ trong levels có thể được sử dụng cho nhiều hồ sơ Học viên, bài học, từ vựng, câu hỏi và đề thi. Tương tự, một lĩnh vực trong domains có thể được sử dụng để phân loại nhiều bài học, từ vựng, câu hỏi và đề thi."
+    },
+    {
+      "style": "normal",
+      "text": "Một hồ sơ Học viên có thể có nhiều mục tiêu chứng chỉ, mục tiêu nghề nghiệp, lượt làm đề và bản ghi tiến độ học tập. Các mục tiêu chứng chỉ được lưu thông qua learner_certificate_goals, mục tiêu nghề nghiệp được liên kết thông qua learner_career_goals, còn quá trình học bài và ôn tập từ vựng được ghi nhận trong lesson_progress và vocabulary_progress."
+    },
+    {
+      "style": "normal",
+      "text": "Đối với nội dung ôn tập, một chứng chỉ có thể có nhiều nội dung trong certification_contents. Trong ngân hàng câu hỏi, một câu hỏi có thể có nhiều phương án trả lời trong question_options. Trong quá trình khảo thí, một đề thi có thể phát sinh nhiều lượt làm bài và mỗi lượt làm bài có thể gồm nhiều câu trả lời của Học viên."
+    },
+    {
+      "style": "Heading 3",
+      "text": "2.3.2.3. Quan hệ n - n"
+    },
+    {
+      "style": "normal",
+      "text": "Quan hệ n - n được sử dụng khi một thực thể có thể liên kết với nhiều bản ghi của thực thể khác và ngược lại. Trong mô hình của hệ thống, các quan hệ này được thể hiện thông qua các lớp trung gian để dễ quản lý và xác định rõ mối liên kết giữa các dữ liệu."
+    },
+    {
+      "style": "normal",
+      "text": "Trong phần khảo thí, exams và questions có quan hệ nhiều - nhiều. Một đề thi có thể gồm nhiều câu hỏi, đồng thời một câu hỏi cũng có thể được sử dụng lại trong nhiều đề thi khác nhau. Quan hệ này được thể hiện thông qua lớp exam_questions. Lớp này còn lưu thêm thứ tự và trọng số của từng câu hỏi trong đề thi."
+    },
+    {
+      "style": "normal",
+      "text": "Đối với hồ sơ học tập, learner_profiles và career_goals cũng có quan hệ nhiều - nhiều. Một Học viên có thể lựa chọn nhiều mục tiêu nghề nghiệp, trong khi một mục tiêu nghề nghiệp có thể được nhiều Học viên quan tâm. Mối quan hệ này được thể hiện thông qua lớp learner_career_goals."
+    },
+    {
+      "style": "normal",
+      "text": "Tương tự, lessons và vocabularies có quan hệ nhiều - nhiều. Một bài học có thể sử dụng nhiều từ vựng chuyên ngành, đồng thời một từ vựng có thể xuất hiện trong nhiều bài học khác nhau. Quan hệ này được thể hiện thông qua lớp lesson_vocabularies, giúp xác định các từ vựng được sử dụng trong từng bài học."
+    },
+    {
+      "style": "Heading 2",
+      "text": "2.3.3. Ý nghĩa của mô hình dữ liệu mức phân tích"
+    },
+    {
+      "style": "normal",
+      "text": "Mô hình dữ liệu mức phân tích cho thấy cách các nhóm dữ liệu chính của hệ thống được tổ chức và liên kết với nhau. Qua mô hình, có thể xác định các dữ liệu phục vụ quản lý tài khoản, hồ sơ học tập, mục tiêu nghề nghiệp, mục tiêu chứng chỉ, nội dung học tập, từ vựng, câu hỏi, đề thi, kết quả làm bài và tiến độ học tập của Học viên."
+    },
+    {
+      "style": "normal",
+      "text": "Các mối quan hệ giữa các thực thể phản ánh những quy tắc chính của hệ thống. Học viên có thể lựa chọn mục tiêu nghề nghiệp và mục tiêu chứng chỉ, bài học được phân loại theo lĩnh vực và cấp độ, từ vựng có thể được sử dụng trong nhiều bài học, đề thi được xây dựng từ ngân hàng câu hỏi. Quá trình học bài, ôn tập từ vựng và làm đề thi cũng được ghi nhận để phục vụ theo dõi kết quả và tiến độ học tập."
+    },
+    {
+      "style": "normal",
+      "text": "Mô hình này là cơ sở để tiếp tục xây dựng cơ sở dữ liệu chi tiết và thiết kế các chức năng xử lý dữ liệu trong giai đoạn tiếp theo. Việc sử dụng chung một mô hình dữ liệu cũng giúp bảo đảm thông tin được đồng bộ giữa Website và ứng dụng di động của hệ thống."
+    },
+    {
+      "style": "Heading 3",
+      "text": "2.4. KẾT CHƯƠNG"
+    },
+    {
+      "style": "normal",
+      "text": "Chương 2 đã trình bày quá trình phân tích hệ thống học tiếng Anh chuyên ngành Công nghệ thông tin dựa trên các yêu cầu chức năng và phi chức năng của đề tài. Từ đó, các quy trình nghiệp vụ chính và vai trò của học viên, giảng viên, quản trị viên được xác định, làm cơ sở cho việc mô tả phạm vi hoạt động của hệ thống."
+    },
+    {
+      "style": "normal",
+      "text": "Các chức năng của hệ thống được thể hiện thông qua biểu đồ Use Case nghiệp vụ, biểu đồ Use Case hệ thống và các đặc tả liên quan. Những mô hình này giúp làm rõ cách các tác nhân tương tác với hệ thống, đồng thời xác định các chức năng chính phục vụ học tập, quản lý nội dung, kiểm tra đánh giá, theo dõi tiến độ và quản trị."
+    },
+    {
+      "style": "normal",
+      "text": "Bên cạnh đó, mô hình dữ liệu mức phân tích được xây dựng nhằm xác định các thực thể dữ liệu chính và mối quan hệ giữa chúng. Kết quả phân tích trong chương này là cơ sở để tiếp tục xây dựng các mô hình và giải pháp thiết kế hệ thống ở chương tiếp theo."
+    },
+    {
+      "style": "Heading 1",
+      "text": "CHƯƠNG 3: THIẾT KẾ HỆ THỐNG"
+    },
+    {
+      "style": "normal",
+      "text": "CHƯƠNG 4: CÀI ĐẶT THỰC NGHIỆM "
+    },
+    {
+      "style": "normal",
+      "text": "CHƯƠNG 5: KIỂM THỬ HỆ THỐNG "
+    },
+    {
+      "style": "Heading 3",
+      "text": "TÀI LIỆU THAM KHẢO"
+    },
+    {
+      "style": "normal",
+      "text": "[1] Bui, P. H., Bui, H. H. P., & Dinh, P. D. (2023). Vietnamese Students’ Use of Smartphone Apps in English Learning. LEARN Journal: Language Education and Acquisition Research Network, 16(1). https://files.eric.ed.gov/fulltext/EJ1380978.pdf"
+    },
+    {
+      "style": "normal",
+      "text": "[2] Ho-Minh, T. (2024). English-Learning Mobile Apps for Business Students: A Case Study from Vietnam. Computer-Assisted Language Learning Electronic Journal, 25(2), 173–200. https://callej.org/index.php/journal/article/view/443"
+    },
+    {
+      "style": "normal",
+      "text": "[3] Trường Đại học Công Thương Thành phố Hồ Chí Minh. (2024). Chương trình đào tạo ngành Công nghệ thông tin. Khoa Công nghệ Thông tin. https://fit.huit.edu.vn/app_web/images/documents/n00ct/2024_ctdt-nganh-cong-nghe-thong-tin.pdf"
+    },
+    {
+      "style": "normal",
+      "text": "[4] ITviec. (2024). Vietnam IT Salary & Recruitment Market 2024–2025. ITviec.\n https://itviec.com/salary-reports/download/56c31df8-0ce5-448e-8e78-a19310be7ff0"
+    },
+    {
+      "style": "normal",
+      "text": "[5] 4English. (2026). 4English – Learn English Daily. Google Play.\n https://play.google.com/store/apps/details?id=com.new4english.learnenglish"
+    },
+    {
+      "style": "normal",
+      "text": "[6] Duolingo. (2026). Duolingo: Ngoại ngữ & Cờ vua. Google Play."
+    },
+    {
+      "style": "normal",
+      "text": "https://play.google.com/store/apps/details?id=com.duolingo "
+    },
+    {
+      "style": "normal",
+      "text": "[7] Cambly Inc. (2026). Cambly - Giáo Viên Tiếng Anh. Google Play."
+    },
+    {
+      "style": "normal",
+      "text": "https://play.google.com/store/apps/details?id=com.cambly.cambly "
+    }
+  ],
+  "tables": [
+    [
+      [
+        "Tiêu chí",
+        "4English",
+        "Duolingo",
+        "Cambly",
+        "Hệ thống đề xuất"
+      ],
+      [
+        "Học từ vựng",
+        "Có",
+        "Có",
+        "Có hỗ trợ",
+        "Có"
+      ],
+      [
+        "Từ vựng chuyên ngành CNTT",
+        "Hạn chế",
+        "Không tập trung",
+        "Có một phần theo nội dung nghề nghiệp",
+        "Tập trung"
+      ],
+      [
+        "Đọc nội dung tiếng Anh",
+        "Có",
+        "Có",
+        "Có nội dung khóa học",
+        "Có"
+      ],
+      [
+        "Đọc tài liệu kỹ thuật CNTT",
+        "Không tập trung",
+        "Không tập trung",
+        "Không phải chức năng trọng tâm",
+        "Tập trung"
+      ],
+      [
+        "Luyện nghe",
+        "Có",
+        "Có",
+        "Có",
+        "Có"
+      ],
+      [
+        "Luyện nói",
+        "Hạn chế",
+        "Có",
+        "Mạnh qua tutor",
+        "Có"
+      ],
+      [
+        "Giao tiếp theo tình huống CNTT",
+        "Không tập trung",
+        "Không tập trung",
+        "Có thể thực hiện với tutor",
+        "Tập trung"
+      ],
+      [
+        "Lộ trình học",
+        "Hạn chế",
+        "Mạnh",
+        "Theo khóa học/tutor",
+        "Có"
+      ],
+      [
+        "Cá nhân hóa theo điểm yếu",
+        "Hạn chế",
+        "Có",
+        "Phụ thuộc tutor và công cụ hỗ trợ",
+        "Có"
+      ],
+      [
+        "Gamification",
+        "Có một phần",
+        "Mạnh",
+        "Không phải trọng tâm",
+        "Có thể áp dụng"
+      ],
+      [
+        "Luyện thi chứng chỉ nghề nghiệp CNTT",
+        "Không",
+        "Không",
+        "Không phải trọng tâm",
+        "Định hướng hỗ trợ"
+      ],
+      [
+        "AI hỗ trợ học tập",
+        "Không phải trọng tâm",
+        "Có một số tính năng AI",
+        "Có công cụ hỗ trợ sau buổi học",
+        "Tích hợp vào quá trình học"
+      ]
+    ],
+    [
+      [
+        "Usecase ",
+        "Quản lý hồ sơ học tập"
+      ],
+      [
+        "Mục tiêu",
+        "Người học cập nhật thông tin hồ sơ học tập phục vụ quá trình học và định hướng mục tiêu chứng chỉ. "
+      ],
+      [
+        "Dòng cơ bản",
+        "Người học chọn hồ sơ học tập.\nHệ thống hiển thị hồ sơ học tập.\nNgười học xem thông tin hồ sơ học tập hiện tại.\nNgười học cập nhật trình độ tiếng Anh.\nNgười học lựa chọn lĩnh vực CNTT quan tâm.\nNgười học lựa chọn mục tiêu chứng chỉ.\nNgười học xác nhận thông tin cập nhật.\nHệ thống thông báo kết quả cập nhật.\nKết thúc Use Case."
+      ],
+      [
+        "Dòng thay thế",
+        "Có nhu cầu cập nhật:\nTại bước 3, nếu người học không có nhu cầu cập nhật thông tin.\nKết thúc Use Case."
+      ]
+    ],
+    [
+      [
+        "Usecase ",
+        "Học bài học chuyên ngành"
+      ],
+      [
+        "Mục tiêu",
+        "Giúp người học học và tiếp thu kiến thức tiếng Anh chuyên ngành CNTT theo lĩnh vực và cấp độ."
+      ],
+      [
+        "Dòng cơ bản",
+        "Người học lựa chọn học bài học chuyên ngành.\nNgười học lựa chọn lĩnh vực CNTT.\nNgười học lựa chọn bài học phù hợp.\nNgười học thực hiện các hoạt động trong bài học.\nHệ thống ghi nhận kết quả học tập.\nHệ thống ghi nhận tiến độ học tập.\nNgười học hoàn thành bài học.\nKết thúc Use Case."
+      ],
+      [
+        "Dòng thay thế",
+        "Bài học không khả dụng:\nTại bước 3, nếu bài học không khả dụng, người học lựa chọn bài học khác.\nQuay lại bước 3."
+      ]
+    ],
+    [
+      [
+        "Usecase ",
+        "Học từ vựng chuyên ngành"
+      ],
+      [
+        "Mục tiêu",
+        "Giúp người học tiếp thu và củng cố từ vựng, thuật ngữ tiếng Anh chuyên ngành CNTT. "
+      ],
+      [
+        "Dòng cơ bản",
+        "Người học lựa chọn học từ vựng chuyên ngành.\nNgười học lựa chọn chủ đề từ vựng.\nNgười học học các từ vựng và thuật ngữ.\nNgười học thực hiện bài tập luyện tập.\nNgười học gửi câu trả lời.\nCâu trả lời được kiểm tra.\nNgười học xem kết quả và giải thích.\nTiến độ học tập được cập nhật.\nKết thúc Use Case."
+      ],
+      [
+        "Dòng thay thế",
+        "Chủ đề không có nội dung:\nTại bước 2, nếu chủ đề không có nội dung, người học lựa chọn chủ đề khác.\nQuay lại bước 2.\nNgười học trả lời sai:\nTại bước 6, nếu câu trả lời không chính xác, người học xem đáp án đúng và giải thích.\nNgười học tiếp tục thực hiện bài tập."
+      ]
+    ],
+    [
+      [
+        "Usecase ",
+        "Theo dõi tiến độ học tập"
+      ],
+      [
+        "Mục tiêu",
+        "Giúp người học theo dõi quá trình học tập và đánh giá mức độ hoàn thành mục tiêu chứng chỉ. "
+      ],
+      [
+        "Dòng cơ bản",
+        "Người học lựa chọn theo dõi tiến độ học tập.\nNgười học xem tiến độ học tập cá nhân.\nNgười học xem mức độ hoàn thành nội dung theo mục tiêu chứng chỉ.\nNgười học xem lịch sử kết quả bài kiểm tra.\nNgười học xem điểm theo từng nội dung hoặc chủ đề.\nKết thúc Use Case."
+      ],
+      [
+        "Dòng thay thế",
+        "Chưa có dữ liệu học tập:\nTại bước 2, nếu chưa có dữ liệu học tập, người học được thông báo chưa có dữ liệu.\nKết thúc Use Case."
+      ]
+    ],
+    [
+      [
+        "Usecase ",
+        "Luyện tập câu hỏi"
+      ],
+      [
+        "Mục tiêu",
+        "Giúp người học củng cố kiến thức và luyện khả năng vận dụng tiếng Anh chuyên ngành CNTT. "
+      ],
+      [
+        "Dòng cơ bản",
+        "Người học lựa chọn luyện tập câu hỏi.\nNgười học lựa chọn chủ đề câu hỏi.\nNgười học đọc và trả lời câu hỏi.\nNgười học gửi câu trả lời.\nCâu trả lời được kiểm tra\nKết quả và giải thích đáp án được cung cấp.\nKết quả luyện tập được ghi nhận.\nKết thúc Use Case."
+      ],
+      [
+        "Dòng thay thế",
+        "Trả lời sai:\nTại bước 5, nếu câu trả lời không chính xác, người học xem đáp án đúng và giải thích.\nKhông có câu hỏi phù hợp:\nTại bước 2, nếu không có câu hỏi phù hợp, người học lựa chọn chủ đề khác.\nQuay lại bước 2."
+      ]
+    ],
+    [
+      [
+        "Usecase ",
+        "Làm đề thi thử"
+      ],
+      [
+        "Mục tiêu",
+        "Giúp người học đánh giá kiến thức và khả năng thông qua bài kiểm tra theo chủ đề hoặc mục tiêu chứng chỉ. "
+      ],
+      [
+        "Dòng cơ bản",
+        "Người học lựa chọn làm đề thi thử.\nNgười học lựa chọn đề thi theo chủ đề hoặc mục tiêu chứng chỉ.\nNgười học xem thông tin đề thi.\nNgười học bắt đầu làm bài.\nNgười học đọc và trả lời các câu hỏi.\nNgười học nộp bài.\nBài làm được chấm điểm.\nNgười học xem điểm và kết quả bài làm.\nNgười học xem đáp án và giải thích.\nKết quả bài thi được ghi nhận.\nKết thúc Use Case."
+      ],
+      [
+        "Dòng thay thế",
+        "Hết thời gian làm bài:\nTại bước 5, nếu hết thời gian quy định, bài thi được kết thúc với các câu trả lời đã ghi nhận.\nBài làm được chấm điểm.\nCòn câu hỏi chưa trả lời:\nTại bước 6, nếu còn câu hỏi chưa trả lời, người học lựa chọn quay lại hoàn thành hoặc xác nhận nộp bài.\nNếu xác nhận nộp bài, chuyển đến bước 7.\nKhông có đề thi phù hợp:\nTại bước 2, nếu không có đề thi phù hợp, người học lựa chọn đề thi khác.\nQuay lại bước 2."
+      ]
+    ],
+    [
+      [
+        "Usecase ",
+        "Biên soạn bài học"
+      ],
+      [
+        "Mục tiêu",
+        "Giảng viên tạo và cập nhật các bài học tiếng Anh chuyên ngành CNTT phù hợp với lĩnh vực và cấp độ học tập."
+      ],
+      [
+        "Dòng cơ bản",
+        "Giảng viên có nhu cầu biên soạn bài học.\nGiảng viên lựa chọn tạo bài học mới hoặc chỉnh sửa bài học.\nGiảng viên nhập hoặc cập nhật thông tin bài học.\nGiảng viên xác định lĩnh vực và cấp độ của bài học.\nGiảng viên xác nhận thông tin bài học.\nThông tin bài học được kiểm tra và ghi nhận.\nBài học được hoàn tất biên soạn.\nKết thúc Use Case."
+      ],
+      [
+        "Dòng thay thế",
+        "Thông tin bài học không hợp lệ hoặc thiếu:\nTại bước 6, nếu thông tin không hợp lệ hoặc thiếu, giảng viên chỉnh sửa hoặc bổ sung lại thông tin.\nQuay lại bước 3."
+      ]
+    ],
+    [
+      [
+        "Usecase ",
+        "Biên soạn câu hỏi"
+      ],
+      [
+        "Mục tiêu",
+        "Giảng viên xây dựng và quản lý ngân hàng câu hỏi phục vụ luyện tập và kiểm tra kiến thức người học."
+      ],
+      [
+        "Dòng cơ bản",
+        "Giảng viên chọn biên soạn câu hỏi.\nGiảng viên lựa chọn tạo câu hỏi mới hoặc chỉnh sửa câu hỏi.\nGiảng viên nhập nội dung câu hỏi và các phương án trả lời.\nGiảng viên xác định đáp án đúng.\nGiảng viên xác định chủ đề, lĩnh vực và cấp độ câu hỏi.\nGiảng viên xác nhận thông tin câu hỏi.\nThông tin câu hỏi được kiểm tra và ghi nhận.\nCâu hỏi và đáp án được hoàn tất biên soạn.\nKết thúc Use Case."
+      ],
+      [
+        "Dòng thay thế",
+        "Câu hỏi không hợp lệ:\nTại bước 7, nếu thông tin câu hỏi không hợp lệ, giảng viên chỉnh sửa thông tin.\nQuay lại bước 3.\nChưa xác định đáp án đúng:\nTại bước 7, nếu chưa xác định đáp án đúng, giảng viên bổ sung đáp án.\nQuay lại bước 4."
+      ]
+    ],
+    [
+      [
+        "Usecase ",
+        "Biên soạn từ vựng"
+      ],
+      [
+        "Mục tiêu",
+        "Giảng viên xây dựng và quản lý kho từ vựng, thuật ngữ tiếng Anh chuyên ngành CNTT phục vụ học tập."
+      ],
+      [
+        "Dòng cơ bản",
+        "Giảng viên chọn biên soạn từ vựng.\nGiảng viên lựa chọn thêm từ vựng mới hoặc chỉnh sửa từ vựng.\nGiảng viên nhập từ vựng và thông tin liên quan.\nGiảng viên xác định lĩnh vực và chủ đề.\nGiảng viên xác nhận thông tin.\nThông tin từ vựng được kiểm tra và ghi nhận.\nTừ vựng được hoàn tất biên soạn.\nKết thúc Use Case."
+      ],
+      [
+        "Dòng thay thế",
+        "Thông tin không hợp lệ hoặc tồn tại:\nTại bước 6, nếu thông tin không hợp lệ hoặc đã tồn tại, giảng viên chỉnh sửa thông tin.\nQuay lại bước 3."
+      ]
+    ],
+    [
+      [
+        "Usecase ",
+        "Thiết lập đề thi"
+      ],
+      [
+        "Mục tiêu",
+        "Giảng viên xây dựng các đề thi phục vụ đánh giá năng lực và luyện thi chứng chỉ của người học."
+      ],
+      [
+        "Dòng cơ bản",
+        "Giảng viên chọn thiết lập đề thi.\nGiảng viên lựa chọn tạo đề thi mới.\nGiảng viên nhập tên và thông tin đề thi.\nGiảng viên xác định chủ đề hoặc mục tiêu chứng chỉ.\nGiảng viên lựa chọn các câu hỏi từ ngân hàng câu hỏi.\nGiảng viên thiết lập thời gian và các thông tin cần thiết.\nGiảng viên xác nhận thông tin đề thi.\nThông tin đề thi được kiểm tra và ghi nhận.\nĐề thi được hoàn tất thiết lập.\nKết thúc Use Case."
+      ],
+      [
+        "Dòng thay thế",
+        "Không đủ câu hỏi:\nTại bước 5, nếu không đủ câu hỏi phù hợp, giảng viên bổ sung hoặc biên soạn thêm câu hỏi.\nQuay lại bước 5.\nThông tin đề thi không hợp lệ:\nTại bước 8, nếu thông tin không hợp lệ, giảng viên chỉnh sửa thông tin.\nQuay lại bước 3."
+      ]
+    ],
+    [
+      [
+        "Usecase ",
+        "Theo dõi tiến độ học tập"
+      ],
+      [
+        "Mục tiêu",
+        "Giúp giảng viên theo dõi và đánh giá tình hình học tập của người học."
+      ],
+      [
+        "Dòng cơ bản",
+        "Giảng viên có chọn dõi tiến độ học tập.\nGiảng viên lựa chọn người học cần theo dõi.\nGiảng viên xem tiến độ học tập của người học.\nGiảng viên xem mức độ hoàn thành nội dung theo mục tiêu chứng chỉ.\nGiảng viên xem kết quả và điểm các bài kiểm tra.\nGiảng viên đánh giá tình hình học tập của người học.\nKết thúc Use Case."
+      ],
+      [
+        "Dòng thay thế",
+        "Không tìm thấy người học:\nTại bước 2, nếu không tìm thấy người học, giảng viên thực hiện tìm kiếm lại hoặc lựa chọn người học khác.\nQuay lại bước 2.\nNgười học chưa có dữ liệu:\nTại bước 3, nếu người học chưa có dữ liệu học tập, giảng viên được thông báo.\nGiảng viên quay lại danh sách người học.\nKết thúc Use Case."
+      ]
+    ],
+    [
+      [
+        "Usecase ",
+        "Quản lý nội dung học tập"
+      ],
+      [
+        "Mục tiêu",
+        "Kiểm soát và quản lý các nội dung học tập được cung cấp trên hệ thống. "
+      ],
+      [
+        "Dòng cơ bản",
+        "Quản trị viên chọn quản lý nội dung học tập.\nQuản trị viên lựa chọn nội dung cần quản lý.\nQuản trị viên xem thông tin nội dung.\nQuản trị viên thực hiện thêm, chỉnh sửa, xóa hoặc thay đổi trạng thái nội dung.\nQuản trị viên xác nhận thao tác.\nNội dung được kiểm tra và cập nhật.\nQuản trị viên nhận thông báo kết quả thao tác.\nKết thúc Use Case."
+      ],
+      [
+        "Dòng thay thế",
+        "Nội dung không hợp lệ:\nTại bước 6, nếu nội dung không hợp lệ, quản trị viên chỉnh sửa nội dung.\nQuay lại bước 4.\nNội dung đang được sử dụng:\nTại bước 4, nếu nội dung đang được sử dụng trong bài học hoặc bài kiểm tra, quản trị viên không thể xóa nội dung.\nQuản trị viên lựa chọn thay đổi trạng thái nội dung.\nKết thúc Use Case."
+      ]
+    ],
+    [
+      [
+        "Usecase ",
+        "Xem báo cáo thống kê"
+      ],
+      [
+        "Mục tiêu",
+        "Cung cấp thông tin tổng hợp giúp quản trị viên theo dõi và đánh giá hoạt động của hệ thống. "
+      ],
+      [
+        "Dòng cơ bản",
+        "Quản trị viên chọn xem báo cáo thống kê.\nQuản trị viên lựa chọn loại báo cáo cần xem.\nQuản trị viên lựa chọn khoảng thời gian hoặc tiêu chí thống kê.\nDữ liệu phù hợp được tổng hợp.\nQuản trị viên xem báo cáo và số liệu thống kê.\nQuản trị viên phân tích kết quả.\nKết thúc Use Case."
+      ],
+      [
+        "Dòng thay thế",
+        "Không có dữ liệu:\nTại bước 4, nếu không có dữ liệu phù hợp với điều kiện thống kê, quản trị viên thay đổi điều kiện thống kê.\nQuay lại bước 3.\nKhông thể truy xuất dữ liệu:\nTại bước 4, nếu không thể truy xuất dữ liệu, quản trị viên thực hiện lại thao tác.\nQuay lại bước 3."
+      ]
+    ],
+    [
+      [
+        "Tên Usecase",
+        "Làm đề thi thử"
+      ],
+      [
+        "Mô tả",
+        "Học viên thực hiện một đề thi theo chủ đề hoặc mục tiêu chứng chỉ và nhận kết quả sau khi nộp bài."
+      ],
+      [
+        "Sự kiện kích hoạt",
+        "Học viên muốn tự đánh giá kiến thức bằng một đề thi thử."
+      ],
+      [
+        "Tác nhân",
+        "Học viên"
+      ],
+      [
+        "Usecase liên quan",
+        "Nộp bài, Chấm điểm tự động, Xem kết quả bài làm, Xem giải thích đáp án. "
+      ],
+      [
+        "Tiền điều kiện",
+        "Học viên đã đăng nhập và đề thi đang ở trạng thái có thể thực hiện."
+      ],
+      [
+        "Hậu điều kiện",
+        "Bài làm, điểm số và kết quả được ghi nhận, tiến độ học tập được cập nhật."
+      ],
+      [
+        "Dòng sự kiện chính",
+        "1. Học viên chọn chức năng Làm đề thi thử.\n2. Hệ thống hiển thị các đề thi phù hợp.\n3. Học viên chọn đề và bắt đầu làm bài.\n4. Học viên trả lời các câu hỏi trong thời gian quy định.\n5. Học viên nộp bài.\n6. Hệ thống chấm điểm tự động và lưu kết quả.\n7. Học viên xem điểm và kết quả bài làm.\n8. Học viên có thể xem giải thích đáp án."
+      ],
+      [
+        "Dòng sự kiện phụ",
+        "- Hết thời gian: hệ thống kết thúc lượt làm và chấm các câu trả lời đã ghi nhận.\n- Còn câu hỏi chưa trả lời: hệ thống cảnh báo trước khi Học viên xác nhận nộp bài.\n- Không có đề phù hợp: Học viên thay đổi chủ đề hoặc mục tiêu chứng chỉ."
+      ]
+    ],
+    [
+      [
+        "Tên Usecase",
+        "Thiết lập đề thi"
+      ],
+      [
+        "Mô tả",
+        "Giảng viên tạo đề thi và lựa chọn câu hỏi phù hợp với nội dung cần đánh giá."
+      ],
+      [
+        "Sự kiện kích hoạt",
+        "Giảng viên cần tạo mới hoặc cập nhật một đề thi."
+      ],
+      [
+        "Tác nhân",
+        "Giảng viên"
+      ],
+      [
+        "Usecase liên quan",
+        "Ngân hàng câu hỏi."
+      ],
+      [
+        "Tiền điều kiện",
+        "Giảng viên đã đăng nhập và có quyền quản lý đề thi."
+      ],
+      [
+        "Hậu điều kiện",
+        "Thông tin đề thi và danh sách câu hỏi được lưu trong hệ thống."
+      ],
+      [
+        "Dòng sự kiện chính",
+        "1. Giảng viên chọn chức năng Thiết lập đề thi.\n2. Giảng viên nhập tên, mô tả và tiêu chí của đề.\n3. Giảng viên chọn lĩnh vực, cấp độ hoặc mục tiêu chứng chỉ.\n4. Hệ thống hiển thị các câu hỏi phù hợp.\n5. Giảng viên chọn câu hỏi, sắp xếp thứ tự và thiết lập thời gian làm bài.\n6. Giảng viên xác nhận thông tin.\n7. Hệ thống kiểm tra và lưu đề thi."
+      ],
+      [
+        "Dòng sự kiện phụ",
+        "- Không đủ câu hỏi phù hợp: Giảng viên thay đổi tiêu chí hoặc bổ sung câu hỏi vào ngân hàng.\n- Thông tin đề thi chưa hợp lệ: hệ thống yêu cầu chỉnh sửa trước khi lưu."
+      ]
+    ],
+    [
+      [
+        "Tên Usecase",
+        "Quản lý tài khoản và phân quyền"
+      ],
+      [
+        "Mô tả",
+        "Quản trị viên quản lý tài khoản người dùng và gán quyền truy cập phù hợp với từng vai trò."
+      ],
+      [
+        "Sự kiện kích hoạt",
+        "Quản trị viên cần thêm mới, cập nhật, khóa/mở khóa hoặc thay đổi vai trò của một tài khoản."
+      ],
+      [
+        "Tác nhân",
+        "Quản trị viên"
+      ],
+      [
+        "Usecase liên quan",
+        "Quản lý học viên."
+      ],
+      [
+        "Tiền điều kiện",
+        "Quản trị viên đã đăng nhập và có quyền quản trị tài khoản."
+      ],
+      [
+        "Hậu điều kiện",
+        "Thông tin hoặc quyền của tài khoản được cập nhật theo thao tác đã xác nhận."
+      ],
+      [
+        "Dòng sự kiện chính",
+        "1. Quản trị viên mở chức năng Quản lý tài khoản và phân quyền.\n2. Hệ thống hiển thị danh sách tài khoản.\n3. Quản trị viên tìm và chọn tài khoản cần xử lý hoặc tạo tài khoản mới.\n4. Quản trị viên cập nhật thông tin, trạng thái hoặc vai trò.\n5. Quản trị viên xác nhận thay đổi.\n6. Hệ thống kiểm tra và lưu thông tin.\n7. Hệ thống thông báo kết quả."
+      ],
+      [
+        "Dòng sự kiện phụ",
+        "- Không tìm thấy tài khoản: Quản trị viên thực hiện tìm kiếm lại.\n- Thông tin không hợp lệ hoặc trùng: hệ thống yêu cầu điều chỉnh trước khi lưu."
+      ]
+    ]
+  ]
+}
