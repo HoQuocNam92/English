@@ -32,10 +32,13 @@ export default function TestBuilderPage() {
   const [maxAttempts, setMaxAttempts] = React.useState('');
   const [domainId, setDomainId] = React.useState('');
   const [levelId, setLevelId] = React.useState('');
-  const [certificateId, setCertificateId] = React.useState(params.get('certificateId') || '');
+  const [certificateId, setCertificateId] = React.useState('');
   const [topics, setTopics] = React.useState('');
 
   const [qSearch, setQSearch] = React.useState('');
+  const [qFilterDomain, setQFilterDomain] = React.useState('');
+  const [qFilterLevel, setQFilterLevel] = React.useState('');
+  const [qOnlySelected, setQOnlySelected] = React.useState(false);
   const [errors, setErrors] = React.useState<Record<string, string>>({});
   const [loading, setLoading] = React.useState(false);
   const [saving, setSaving] = React.useState(false);
@@ -135,9 +138,50 @@ export default function TestBuilderPage() {
     }
   };
 
-  const filteredQuestions = availableQuestions.filter(q =>
-    !qSearch || q.prompt.toLowerCase().includes(qSearch.toLowerCase())
-  );
+  const filteredQuestions = React.useMemo(() => {
+    return availableQuestions.filter(q => {
+      if (qOnlySelected && !selectedQuestionIds.includes(q.id)) return false;
+      if (qFilterDomain) {
+        const domainObj = domains.find(d => d.id === qFilterDomain);
+        const matchDomain =
+          (q as any).domainId === qFilterDomain ||
+          (q.domain as any)?.id === qFilterDomain ||
+          (domainObj && q.domain?.code === domainObj.code) ||
+          (domainObj && q.domain?.name === domainObj.name);
+        if (!matchDomain) return false;
+      }
+      if (qFilterLevel) {
+        const levelObj = levels.find(l => l.id === qFilterLevel);
+        const matchLevel =
+          (q as any).levelId === qFilterLevel ||
+          (q.level as any)?.id === qFilterLevel ||
+          (levelObj && q.level?.code === levelObj.code) ||
+          (levelObj && q.level?.name === levelObj.name);
+        if (!matchLevel) return false;
+      }
+      if (qSearch.trim() && !q.prompt.toLowerCase().includes(qSearch.trim().toLowerCase())) {
+        return false;
+      }
+      return true;
+    });
+  }, [availableQuestions, selectedQuestionIds, qOnlySelected, qFilterDomain, qFilterLevel, qSearch, domains, levels]);
+
+  const handleSelectAllFiltered = () => {
+    const filteredIds = filteredQuestions.map(q => q.id);
+    setSelectedQuestionIds(prev => Array.from(new Set([...prev, ...filteredIds])));
+  };
+
+  const handleDeselectFiltered = () => {
+    const filteredIdSet = new Set(filteredQuestions.map(q => q.id));
+    setSelectedQuestionIds(prev => prev.filter(id => !filteredIdSet.has(id)));
+  };
+
+  const handleResetFilters = () => {
+    setQSearch('');
+    setQFilterDomain('');
+    setQFilterLevel('');
+    setQOnlySelected(false);
+  };
 
   if (loading) {
     return (
@@ -167,161 +211,304 @@ export default function TestBuilderPage() {
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {/* Left: Exam info */}
-          <div className="space-y-5">
-            <h3 className="text-sm font-bold text-on-surface">Thông tin bài thi</h3>
+          <div className="rounded-2xl border border-slate-200/80 bg-white p-6 lg:p-7 shadow-sm space-y-5">
+            <div className="flex items-center gap-2.5 pb-4 border-b border-slate-100">
+              <span className="material-symbols-outlined text-primary text-[22px]">description</span>
+              <h3 className="text-base font-bold text-slate-900">Thông tin bài thi</h3>
+            </div>
 
             {/* Title */}
             <div>
-              <label className="block text-sm font-semibold text-on-surface mb-1">Tiêu đề <span className="text-error">*</span></label>
+              <label className="block text-sm font-semibold text-slate-900 mb-1.5">
+                Tiêu đề <span className="text-error">*</span>
+              </label>
               <input
                 type="text"
                 value={title}
                 onChange={e => setTitle(e.target.value)}
                 maxLength={200}
-                placeholder="Cloud Fundamentals Quiz"
-                className="w-full rounded-xl border border-outline-variant px-4 py-2.5 text-sm text-on-surface bg-surface-container-low focus:outline-none focus:border-primary"
+                placeholder="Ví dụ: Cloud Fundamentals Quiz"
+                className="w-full rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-sm font-medium text-slate-900 placeholder:text-slate-400 shadow-2xs focus:outline-none focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all"
               />
               <FieldError msg={errors.title} />
             </div>
 
             {/* Description */}
             <div>
-              <label className="block text-sm font-semibold text-on-surface mb-1">Mô tả</label>
+              <label className="block text-sm font-semibold text-slate-900 mb-1.5">Mô tả</label>
               <textarea
                 value={description}
                 onChange={e => setDescription(e.target.value)}
                 rows={3}
                 maxLength={1000}
-                placeholder="Mô tả ngắn về bài thi..."
-                className="w-full rounded-xl border border-outline-variant px-4 py-2.5 text-sm text-on-surface bg-surface-container-low focus:outline-none focus:border-primary resize-none"
+                placeholder="Mô tả ngắn gọn về nội dung và mục tiêu bài thi..."
+                className="w-full rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-sm font-medium text-slate-900 placeholder:text-slate-400 shadow-2xs focus:outline-none focus:border-primary focus:ring-4 focus:ring-primary/10 resize-none transition-all"
               />
             </div>
 
             {/* Domain & Level */}
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-2 gap-3.5">
               <div>
-                <label className="block text-sm font-semibold text-on-surface mb-1">Lĩnh vực <span className="text-error">*</span></label>
+                <label className="block text-sm font-semibold text-slate-900 mb-1.5">
+                  Lĩnh vực <span className="text-error">*</span>
+                </label>
                 <select
                   value={domainId}
                   onChange={e => setDomainId(e.target.value)}
-                  className="w-full rounded-xl border border-outline-variant px-3 py-2 text-sm text-on-surface bg-surface-container-low focus:outline-none focus:border-primary"
+                  className="w-full rounded-xl border border-slate-300 bg-white px-3.5 py-2.5 text-sm font-medium text-slate-900 shadow-2xs focus:outline-none focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all cursor-pointer"
                 >
-                  <option value="">-- Chọn --</option>
+                  <option value="">-- Chọn lĩnh vực --</option>
                   {domains.map(d => <option key={d.id} value={d.id}>{d.name}</option>)}
                 </select>
                 <FieldError msg={errors.domainId} />
               </div>
               <div>
-                <label className="block text-sm font-semibold text-on-surface mb-1">Cấp độ <span className="text-error">*</span></label>
+                <label className="block text-sm font-semibold text-slate-900 mb-1.5">
+                  Cấp độ <span className="text-error">*</span>
+                </label>
                 <select
                   value={levelId}
                   onChange={e => setLevelId(e.target.value)}
-                  className="w-full rounded-xl border border-outline-variant px-3 py-2 text-sm text-on-surface bg-surface-container-low focus:outline-none focus:border-primary"
+                  className="w-full rounded-xl border border-slate-300 bg-white px-3.5 py-2.5 text-sm font-medium text-slate-900 shadow-2xs focus:outline-none focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all cursor-pointer"
                 >
-                  <option value="">-- Chọn --</option>
+                  <option value="">-- Chọn cấp độ --</option>
                   {levels.map(l => <option key={l.id} value={l.id}>{l.name}</option>)}
                 </select>
                 <FieldError msg={errors.levelId} />
               </div>
             </div>
 
-            {/* Duration & Pass score */}
-            <div><label className="block text-sm font-semibold text-on-surface mb-1">Chứng chỉ liên quan</label><select value={certificateId} onChange={event => setCertificateId(event.target.value)} className="w-full rounded-xl border border-outline-variant px-3 py-2 text-sm text-on-surface bg-surface-container-low"><option value="">Không gắn chứng chỉ</option>{certificates.map(cert => <option key={cert.id} value={cert.id}>{cert.name}</option>)}</select></div>
+            {/* Certificate */}
+            <div>
+              <label className="block text-sm font-semibold text-slate-900 mb-1.5">Chứng chỉ liên quan</label>
+              <select
+                value={certificateId}
+                onChange={e => setCertificateId(e.target.value)}
+                className="w-full rounded-xl border border-slate-300 bg-white px-3.5 py-2.5 text-sm font-medium text-slate-900 shadow-2xs focus:outline-none focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all cursor-pointer"
+              >
+                <option value="">Không gắn chứng chỉ</option>
+                {certificates.map(cert => <option key={cert.id} value={cert.id}>{cert.name}</option>)}
+              </select>
+            </div>
 
             {/* Duration & Pass score */}
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-2 gap-3.5">
               <div>
-                <label className="block text-sm font-semibold text-on-surface mb-1">Thời gian (phút) <span className="text-error">*</span></label>
+                <label className="block text-sm font-semibold text-slate-900 mb-1.5">
+                  Thời gian (phút) <span className="text-error">*</span>
+                </label>
                 <input
                   type="number"
                   value={durationMinutes}
                   onChange={e => setDurationMinutes(e.target.value)}
                   min={1} max={300}
-                  className="w-full rounded-xl border border-outline-variant px-3 py-2 text-sm text-on-surface bg-surface-container-low focus:outline-none focus:border-primary"
+                  className="w-full rounded-xl border border-slate-300 bg-white px-3.5 py-2.5 text-sm font-medium text-slate-900 shadow-2xs focus:outline-none focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all"
                 />
                 <FieldError msg={errors.durationMinutes} />
               </div>
               <div>
-                <label className="block text-sm font-semibold text-on-surface mb-1">Điểm đạt (%) <span className="text-error">*</span></label>
+                <label className="block text-sm font-semibold text-slate-900 mb-1.5">
+                  Điểm đạt (%) <span className="text-error">*</span>
+                </label>
                 <input
                   type="number"
                   value={passingScorePercent}
                   onChange={e => setPassingScorePercent(e.target.value)}
                   min={1} max={100}
-                  className="w-full rounded-xl border border-outline-variant px-3 py-2 text-sm text-on-surface bg-surface-container-low focus:outline-none focus:border-primary"
+                  className="w-full rounded-xl border border-slate-300 bg-white px-3.5 py-2.5 text-sm font-medium text-slate-900 shadow-2xs focus:outline-none focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all"
                 />
                 <FieldError msg={errors.passingScorePercent} />
               </div>
             </div>
 
             {/* Max attempts & Topics */}
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-2 gap-3.5">
               <div>
-                <label className="block text-sm font-semibold text-on-surface mb-1">Số lần thi tối đa</label>
+                <label className="block text-sm font-semibold text-slate-900 mb-1.5">Số lần thi tối đa</label>
                 <input
                   type="number"
                   value={maxAttempts}
                   onChange={e => setMaxAttempts(e.target.value)}
                   min={1}
                   placeholder="Không giới hạn"
-                  className="w-full rounded-xl border border-outline-variant px-3 py-2 text-sm text-on-surface bg-surface-container-low focus:outline-none focus:border-primary"
+                  className="w-full rounded-xl border border-slate-300 bg-white px-3.5 py-2.5 text-sm font-medium text-slate-900 placeholder:text-slate-400 shadow-2xs focus:outline-none focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all"
                 />
                 <FieldError msg={errors.maxAttempts} />
               </div>
               <div>
-                <label className="block text-sm font-semibold text-on-surface mb-1">Topics</label>
+                <label className="block text-sm font-semibold text-slate-900 mb-1.5">Topics</label>
                 <input
                   type="text"
                   value={topics}
                   onChange={e => setTopics(e.target.value)}
-                  placeholder="aws, networking"
-                  className="w-full rounded-xl border border-outline-variant px-3 py-2 text-sm text-on-surface bg-surface-container-low focus:outline-none focus:border-primary"
+                  placeholder="aws, networking..."
+                  className="w-full rounded-xl border border-slate-300 bg-white px-3.5 py-2.5 text-sm font-medium text-slate-900 placeholder:text-slate-400 shadow-2xs focus:outline-none focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all"
                 />
               </div>
             </div>
           </div>
 
           {/* Right: Question picker */}
-          <div className="space-y-3">
-            <div className="flex items-center justify-between">
-              <h3 className="text-sm font-bold text-on-surface">Chọn câu hỏi</h3>
-              <span className="text-xs text-on-surface-variant">Đã chọn: {selectedQuestionIds.length}</span>
+          <div className="rounded-2xl border border-slate-200/80 bg-white p-6 lg:p-7 shadow-sm flex flex-col space-y-4">
+            <div className="flex items-center justify-between pb-4 border-b border-slate-100">
+              <div className="flex items-center gap-2.5">
+                <span className="material-symbols-outlined text-primary text-[22px]">quiz</span>
+                <h3 className="text-base font-bold text-slate-900">Chọn câu hỏi</h3>
+              </div>
+              <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-bold bg-primary/10 text-primary">
+                Đã chọn: {selectedQuestionIds.length} câu
+              </span>
             </div>
 
-            <input
-              type="text"
-              value={qSearch}
-              onChange={e => setQSearch(e.target.value)}
-              placeholder="Tìm câu hỏi..."
-              className="w-full rounded-xl border border-outline-variant px-3 py-2 text-sm text-on-surface bg-surface-container-low focus:outline-none focus:border-primary"
-            />
+            {/* Search Input */}
+            <div className="relative">
+              <span className="material-symbols-outlined absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-[18px]">
+                search
+              </span>
+              <input
+                type="text"
+                value={qSearch}
+                onChange={e => setQSearch(e.target.value)}
+                placeholder="Tìm kiếm nội dung câu hỏi..."
+                className="w-full rounded-xl border border-slate-300 bg-white pl-10 pr-9 py-2.5 text-sm font-medium text-slate-900 placeholder:text-slate-400 shadow-2xs focus:outline-none focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all"
+              />
+              {qSearch && (
+                <button
+                  type="button"
+                  onClick={() => setQSearch('')}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 p-0.5 rounded-full"
+                >
+                  <span className="material-symbols-outlined text-[16px] block">close</span>
+                </button>
+              )}
+            </div>
+
+            {/* Filter Dropdowns: Domain & Level */}
+            <div className="grid grid-cols-2 gap-2.5">
+              <div>
+                <select
+                  value={qFilterDomain}
+                  onChange={e => setQFilterDomain(e.target.value)}
+                  className="w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-xs font-semibold text-slate-700 shadow-2xs focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/10 transition-all cursor-pointer"
+                >
+                  <option value="">Tất cả lĩnh vực</option>
+                  {domains.map(d => <option key={d.id} value={d.id}>{d.name}</option>)}
+                </select>
+              </div>
+              <div>
+                <select
+                  value={qFilterLevel}
+                  onChange={e => setQFilterLevel(e.target.value)}
+                  className="w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-xs font-semibold text-slate-700 shadow-2xs focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/10 transition-all cursor-pointer"
+                >
+                  <option value="">Tất cả cấp độ</option>
+                  {levels.map(l => <option key={l.id} value={l.id}>{l.name}</option>)}
+                </select>
+              </div>
+            </div>
+
+            {/* View Tabs & Batch Actions */}
+            <div className="flex flex-wrap items-center justify-between gap-2 pt-1">
+              <div className="inline-flex rounded-xl bg-slate-100 p-1">
+                <button
+                  type="button"
+                  onClick={() => setQOnlySelected(false)}
+                  className={`px-3 py-1 rounded-lg text-xs font-bold transition-all ${
+                    !qOnlySelected
+                      ? 'bg-white text-slate-900 shadow-xs'
+                      : 'text-slate-600 hover:text-slate-900'
+                  }`}
+                >
+                  Tất cả ({availableQuestions.length})
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setQOnlySelected(true)}
+                  className={`px-3 py-1 rounded-lg text-xs font-bold transition-all ${
+                    qOnlySelected
+                      ? 'bg-white text-primary shadow-xs'
+                      : 'text-slate-600 hover:text-slate-900'
+                  }`}
+                >
+                  Đã chọn ({selectedQuestionIds.length})
+                </button>
+              </div>
+
+              <div className="flex items-center gap-1.5">
+                <button
+                  type="button"
+                  onClick={handleSelectAllFiltered}
+                  disabled={filteredQuestions.length === 0}
+                  className="px-2.5 py-1 rounded-lg border border-slate-200 bg-white text-[11px] font-bold text-slate-700 hover:bg-slate-50 hover:text-primary disabled:opacity-40 disabled:pointer-events-none transition-colors shadow-2xs"
+                >
+                  Chọn tất cả
+                </button>
+                <button
+                  type="button"
+                  onClick={handleDeselectFiltered}
+                  disabled={filteredQuestions.length === 0}
+                  className="px-2.5 py-1 rounded-lg border border-slate-200 bg-white text-[11px] font-bold text-slate-700 hover:bg-slate-50 hover:text-error disabled:opacity-40 disabled:pointer-events-none transition-colors shadow-2xs"
+                >
+                  Bỏ chọn
+                </button>
+              </div>
+            </div>
+
             <FieldError msg={errors.questions} />
 
-            <div className="h-96 overflow-y-auto rounded-xl border border-outline-variant/40 divide-y divide-outline-variant/20">
+            {/* Questions List */}
+            <div className="h-[430px] overflow-y-auto rounded-xl border border-slate-200 bg-white divide-y divide-slate-100 shadow-2xs">
               {filteredQuestions.length === 0 ? (
-                <div className="p-6 text-center text-sm text-on-surface-variant">Không tìm thấy câu hỏi nào</div>
+                <div className="h-full flex flex-col items-center justify-center p-8 text-center">
+                  <div className="w-12 h-12 rounded-full bg-slate-100 flex items-center justify-center text-slate-400 mb-3">
+                    <span className="material-symbols-outlined text-[24px]">search_off</span>
+                  </div>
+                  <p className="text-sm font-semibold text-slate-700">Không tìm thấy câu hỏi phù hợp</p>
+                  <p className="text-xs text-slate-400 mt-1 max-w-xs">
+                    Thử thay đổi từ khóa tìm kiếm hoặc đặt lại các bộ lọc lĩnh vực, cấp độ.
+                  </p>
+                  {(qSearch || qFilterDomain || qFilterLevel || qOnlySelected) && (
+                    <button
+                      type="button"
+                      onClick={handleResetFilters}
+                      className="mt-3.5 px-3 py-1.5 rounded-lg bg-primary/10 text-primary text-xs font-bold hover:bg-primary/20 transition-colors"
+                    >
+                      Đặt lại bộ lọc
+                    </button>
+                  )}
+                </div>
               ) : (
                 filteredQuestions.map(q => {
                   const selected = selectedQuestionIds.includes(q.id);
                   return (
                     <label
                       key={q.id}
-                      className={`flex items-start gap-3 px-4 py-3 cursor-pointer hover:bg-surface-container/50 transition-colors ${selected ? 'bg-primary/5' : ''}`}
+                      className={`flex items-start gap-3.5 px-4 py-3.5 cursor-pointer transition-all border-l-4 ${
+                        selected
+                          ? 'bg-primary/5 border-l-primary hover:bg-primary/10'
+                          : 'border-l-transparent hover:bg-slate-50'
+                      }`}
                     >
                       <input
                         type="checkbox"
                         checked={selected}
                         onChange={() => toggleQuestion(q.id)}
-                        className="mt-1 accent-primary"
+                        className="mt-1 h-4 w-4 rounded border-slate-300 text-primary accent-primary cursor-pointer"
                       />
                       <div className="flex-1 min-w-0">
-                        <p className="text-sm text-on-surface line-clamp-2">{q.prompt}</p>
-                        <div className="flex gap-2 mt-1">
-                          <span className="text-xs text-on-surface-variant">{q.domain?.name ?? '—'}</span>
-                          <span className="text-xs text-on-surface-variant">•</span>
-                          <span className="text-xs text-on-surface-variant">{q.level?.name ?? '—'}</span>
-                          <span className="text-xs text-on-surface-variant">•</span>
-                          <span className="text-xs text-on-surface-variant">{q.points} điểm</span>
+                        <p className={`text-sm leading-snug line-clamp-2 ${selected ? 'font-bold text-slate-900' : 'font-medium text-slate-800'}`}>
+                          {q.prompt}
+                        </p>
+                        <div className="flex flex-wrap items-center gap-2 mt-2">
+                          <span className="inline-flex items-center px-2 py-0.5 rounded-md text-[11px] font-semibold bg-slate-100 text-slate-600">
+                            {q.domain?.name ?? 'Chưa phân loại'}
+                          </span>
+                          <span className="inline-flex items-center px-2 py-0.5 rounded-md text-[11px] font-semibold bg-indigo-50 text-indigo-700">
+                            {q.level?.name ?? 'Mọi cấp độ'}
+                          </span>
+                          <span className="inline-flex items-center px-2 py-0.5 rounded-md text-[11px] font-semibold bg-amber-50 text-amber-700">
+                            {q.points} điểm
+                          </span>
                         </div>
                       </div>
                     </label>
@@ -333,16 +520,16 @@ export default function TestBuilderPage() {
         </div>
 
         {/* Actions */}
-        <div className="flex gap-3 pt-2">
+        <div className="flex items-center gap-3 pt-3">
           <button
             type="submit"
             disabled={saving}
-            className="flex items-center gap-2 px-6 py-2.5 rounded-xl bg-primary text-white text-sm font-semibold hover:opacity-90 disabled:opacity-50 transition-opacity"
+            className="flex items-center gap-2 px-6 py-2.5 rounded-xl bg-primary text-white text-sm font-bold shadow-sm hover:opacity-90 disabled:opacity-50 transition-all cursor-pointer"
           >
             {saving ? (
-              <span className="animate-spin material-symbols-outlined text-[16px]">progress_activity</span>
+              <span className="animate-spin material-symbols-outlined text-[18px]">progress_activity</span>
             ) : (
-              <span className="material-symbols-outlined text-[16px]">save</span>
+              <span className="material-symbols-outlined text-[18px]">save</span>
             )}
             {isEdit ? 'Lưu thay đổi' : 'Tạo bài thi'}
           </button>
@@ -350,7 +537,7 @@ export default function TestBuilderPage() {
             type="button"
             onClick={() => router.back()}
             disabled={saving}
-            className="px-6 py-2.5 rounded-xl border border-outline-variant text-sm font-semibold text-on-surface hover:bg-surface-container transition-colors"
+            className="px-6 py-2.5 rounded-xl border border-slate-300 bg-white text-sm font-bold text-slate-700 hover:bg-slate-50 transition-colors shadow-2xs cursor-pointer"
           >
             Hủy
           </button>
