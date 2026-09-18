@@ -16,8 +16,19 @@ export class ExamsService {
     if (levelCode) where.level = { code: levelCode }
     if (status) where.status = status
     const [data, total] = await Promise.all([
-      this.prisma.exam.findMany({ where, skip, take: limit, include: { domain: true, level: true, certificate: true }, orderBy: { createdAt: 'desc' } }),
-      this.prisma.exam.count({ where })
+      this.prisma.exam.findMany({
+        where,
+        skip,
+        take: limit,
+        include: {
+          domain: true,
+          level: true,
+          certificate: true,
+          _count: { select: { questions: true } },
+        },
+        orderBy: { createdAt: 'desc' },
+      }),
+      this.prisma.exam.count({ where }),
     ])
     return { data, meta: { total, page, limit, totalPages: Math.ceil(total / limit) } }
   }
