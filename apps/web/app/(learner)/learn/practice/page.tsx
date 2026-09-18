@@ -41,6 +41,16 @@ export default function LearnerPracticePage() {
 
   const practiceCategories = [
     {
+      id: 'lessons',
+      title: 'Bài học chuyên ngành',
+      badge: `${data.lessons.length} BÀI HỌC`,
+      description: 'Học và thực hành đọc hiểu tài liệu kỹ thuật, kiến trúc hệ thống và thuật ngữ CNTT.',
+      icon: 'auto_stories',
+      bgIcon: 'bg-primary-light text-primary group-hover:bg-primary-container group-hover:text-surface-white',
+      badgeClass: 'text-tertiary bg-tertiary-fixed',
+      link: `/learn/lessons`
+    },
+    {
       id: 'vocab',
       title: 'Từ vựng chuyên ngành',
       badge: `${data.vocabCount} TỪ`,

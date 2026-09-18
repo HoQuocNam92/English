@@ -20,6 +20,7 @@ export function LearnerShell({ children }: LearnerShellProps) {
 
   const navLinks = [
     { href: '/learn', label: t.nav.home, exactMatch: true },
+    { href: '/learn/lessons', label: t.lessons.title, exactMatch: false },
     { href: '/learn/practice', label: t.nav.practice, exactMatch: false },
     { href: '/learn/quiz/tech', label: 'Thi thử', exactMatch: false },
     { href: '/learn/progress', label: t.nav.progress, exactMatch: false },
