@@ -16,11 +16,12 @@ export default function LearnerHomePage() {
   useEffect(() => {
     async function loadData() {
       try {
-        const [meRes, profileRes, progressRes, attemptsRes] = await Promise.allSettled([
+        const [meRes, profileRes, progressRes, attemptsRes, recsRes] = await Promise.allSettled([
           apiClient.get('/auth/me'),
           apiClient.get('/learner-profiles/me'),
           apiClient.get('/progress/me'),
           apiClient.get('/exams/attempts/my?limit=3'),
+          apiClient.get('/recommendations/me'),
         ]);
 
         const get = (r: PromiseSettledResult<any>) =>
@@ -47,12 +48,15 @@ export default function LearnerHomePage() {
           lessonsData = fallback?.data ?? fallback ?? [];
         }
 
+        const recsData = get(recsRes);
+
         setData({
           me: get(meRes),
           profile: profileData,
           progress: get(progressRes),
           lessons: Array.isArray(lessonsData) ? lessonsData : [],
           attempts: (() => { const d = get(attemptsRes); return d?.data ?? d ?? []; })(),
+          recommendations: Array.isArray(recsData?.recommendations) ? recsData.recommendations : [],
         });
       } catch (err: any) {
         setError(err?.message ?? 'Không thể tải dữ liệu');
@@ -86,6 +90,7 @@ export default function LearnerHomePage() {
   const progress = data?.progress;
   const lessons: any[] = data?.lessons ?? [];
   const attempts: any[] = data?.attempts ?? [];
+  const recommendations: any[] = data?.recommendations ?? [];
   const lessonProgressById = new Map((progress?.progress || []).filter((item: any) => item.resourceType === 'lesson').map((item: any) => [item.resourceId, item]));
 
   const level = profile?.level?.name ?? profile?.level ?? 'Chưa thiết lập';
@@ -229,6 +234,121 @@ export default function LearnerHomePage() {
                 )}
               </div>
             </div>
+          </div>
+
+          {/* ─── Gợi ý học tập thích ứng (Adaptive Learning Recommendations) ─── */}
+          <div className="bg-surface-container border border-outline-variant rounded-xl p-6 relative overflow-hidden">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-4">
+              <div>
+                <div className="flex items-center gap-2">
+                  <span className="material-symbols-outlined text-violet-600 text-[22px]">auto_awesome</span>
+                  <h3 className="text-[20px] font-bold text-on-surface" style={{ lineHeight: '28px' }}>
+                    Gợi ý học tập dành cho bạn
+                  </h3>
+                </div>
+                <p className="text-xs text-on-surface-variant mt-0.5">
+                  Xác định nội dung cần củng cố và sắp xếp theo mức độ ưu tiên dựa trên kết quả bài thi &amp; tiến độ học tập thực tế.
+                </p>
+              </div>
+              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-violet-100 text-violet-700 border border-violet-200 w-fit">
+                <span className="material-symbols-outlined text-[15px]">psychology</span>
+                Cá nhân hoá theo năng lực
+              </span>
+            </div>
+
+            {recommendations.length > 0 ? (
+              <div className="flex flex-col gap-3">
+                {recommendations.map((rec: any) => {
+                  const isUrgent = rec.priority === 'urgent';
+                  const isHigh = rec.priority === 'high';
+                  const priorityLabel = isUrgent ? 'Cần củng cố gấp' : isHigh ? 'Luyện tập tăng cường' : 'Lộ trình đề xuất';
+                  const priorityClass = isUrgent
+                    ? 'bg-rose-100 text-rose-800 border-rose-200'
+                    : isHigh
+                      ? 'bg-violet-100 text-violet-800 border-violet-200'
+                      : 'bg-emerald-100 text-emerald-800 border-emerald-200';
+                  const priorityIcon = isUrgent ? 'error' : isHigh ? 'psychology' : 'recommend';
+
+                  const typeLabel = rec.type === 'lesson' ? 'Bài học' : rec.type === 'exam' ? 'Bài kiểm tra' : rec.type === 'vocab' ? 'Từ vựng' : 'Tình huống';
+
+                  return (
+                    <div
+                      key={rec.id}
+                      className={`p-4 rounded-xl border transition-all flex flex-col md:flex-row md:items-center justify-between gap-4 ${
+                        isUrgent
+                          ? 'border-rose-200 bg-rose-50/40 hover:bg-rose-50/70 hover:border-rose-300'
+                          : isHigh
+                            ? 'border-violet-200 bg-violet-50/30 hover:bg-violet-50/60 hover:border-violet-300'
+                            : 'border-outline-variant bg-surface-container-low hover:bg-surface-container-high'
+                      }`}
+                    >
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2 flex-wrap mb-1.5">
+                          <span className={`inline-flex items-center gap-1 text-[11px] font-bold px-2.5 py-0.5 rounded-full border ${priorityClass}`}>
+                            <span className="material-symbols-outlined text-[13px]">{priorityIcon}</span>
+                            {priorityLabel}
+                          </span>
+                          <span className="text-[11px] font-semibold px-2 py-0.5 rounded bg-surface-container text-on-surface-variant border border-outline-variant/40">
+                            {typeLabel}
+                          </span>
+                          {rec.domainName && (
+                            <span className="text-[11px] font-semibold px-2 py-0.5 rounded bg-primary/10 text-primary border border-primary/20">
+                              {rec.domainName}
+                            </span>
+                          )}
+                          {rec.levelName && (
+                            <span className="text-[11px] font-semibold px-2 py-0.5 rounded bg-surface-container text-on-surface-variant">
+                              {rec.levelName}
+                            </span>
+                          )}
+                        </div>
+
+                        <h4 className="font-bold text-[15px] text-on-surface mb-1">
+                          {rec.title}
+                        </h4>
+
+                        <p className="text-xs text-on-surface-variant leading-relaxed mb-2">
+                          {rec.reason}
+                        </p>
+
+                        {rec.progressPercent !== undefined && rec.progressPercent > 0 && (
+                          <div className="flex items-center gap-3 mt-1 max-w-xs">
+                            <div className="w-full bg-surface-container-highest h-1.5 rounded-full overflow-hidden">
+                              <div className="bg-primary h-full rounded-full" style={{ width: `${rec.progressPercent}%` }} />
+                            </div>
+                            <span className="text-[11px] font-bold text-primary shrink-0">{rec.progressPercent}%</span>
+                          </div>
+                        )}
+                      </div>
+
+                      <div className="shrink-0 flex items-center">
+                        <Link
+                          href={rec.actionUrl}
+                          className={`inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold transition-all shadow-xs ${
+                            isUrgent
+                              ? 'bg-rose-600 text-white hover:bg-rose-700'
+                              : isHigh
+                                ? 'bg-violet-600 text-white hover:bg-violet-700'
+                                : 'bg-primary text-white hover:bg-primary/90'
+                          }`}
+                        >
+                          <span>{rec.actionText}</span>
+                          <span className="material-symbols-outlined text-[16px]">arrow_forward</span>
+                        </Link>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            ) : (
+              <div className="text-center py-6 border border-dashed border-outline-variant/60 rounded-xl bg-surface-container-low">
+                <span className="material-symbols-outlined text-3xl text-on-surface-variant/70 mb-2">lightbulb</span>
+                <p className="text-sm font-semibold text-on-surface">Đang cập nhật gợi ý học tập</p>
+                <p className="text-xs text-on-surface-variant mt-1">
+                  Hãy tiếp tục học các bài học hoặc làm bài kiểm tra để hệ thống phân tích và đề xuất nội dung cần củng cố cho bạn.
+                </p>
+              </div>
+            )}
           </div>
 
           {/* Tiếp tục học — Lesson Grid */}
