@@ -5,7 +5,7 @@ import { JwtAuthGuard } from '../infrastructure/auth/jwt-auth.guard'
 import { PermissionsGuard } from '../infrastructure/auth/permissions.guard'
 import { RequirePermissions } from './decorators/require-permissions.decorator'
 import { CurrentUser, JwtPayload } from './decorators/current-user.decorator'
-import { UpdateLearnerProfileDto, CompleteOnboardingDto } from './http-dto/content.dto'
+import { UpdateLearnerProfileDto, CompleteOnboardingDto, UpdateLearnerGoalsDto } from './http-dto/content.dto'
 
 @ApiTags('Learner Profiles')
 @ApiBearerAuth()
@@ -27,6 +27,12 @@ export class LearnerProfilesController {
   @ApiOperation({ summary: 'Update my learner profile' })
   updateMe(@CurrentUser() u: JwtPayload, @Body() dto: UpdateLearnerProfileDto) {
     return this.svc.upsert(u.sub, dto)
+  }
+
+  @Put('me/goals')
+  @ApiOperation({ summary: 'Update learner learning goals, domains, level, and certificate' })
+  updateGoals(@CurrentUser() u: JwtPayload, @Body() dto: UpdateLearnerGoalsDto) {
+    return this.svc.updateGoals(u.sub, dto)
   }
 
   @Put('me/domains')

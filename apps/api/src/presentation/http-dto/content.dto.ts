@@ -568,6 +568,38 @@ export class CompleteOnboardingDto {
   weeklyStudyTargetMinutes?: number
 }
 
+export class UpdateLearnerGoalsDto {
+  @ApiPropertyOptional({ description: 'Level code (beginner/intermediate/advanced/professional)' })
+  @IsOptional()
+  @IsString()
+  levelCode?: string
+
+  @ApiPropertyOptional({ type: [String], description: 'Mảng domain codes (CLOUD, DEVOPS, ...)' })
+  @IsOptional()
+  @IsArray()
+  @IsString({ each: true })
+  domainCodes?: string[]
+
+  @ApiPropertyOptional({ type: [String], description: 'Mảng career goal codes' })
+  @IsOptional()
+  @IsArray()
+  @IsString({ each: true })
+  careerGoalCodes?: string[]
+
+  @ApiPropertyOptional({ type: [String], description: 'Mảng certificate codes mục tiêu' })
+  @IsOptional()
+  @IsArray()
+  @IsString({ each: true })
+  certificateCodes?: string[]
+
+  @ApiPropertyOptional({ example: 120 })
+  @IsOptional()
+  @IsInt()
+  @Min(0)
+  @Max(10080)
+  weeklyStudyTargetMinutes?: number
+}
+
 // ─── Progress ─────────────────────────────────────────────────────────────────
 
 export class TrackLessonProgressDto {

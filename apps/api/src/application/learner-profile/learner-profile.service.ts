@@ -1,6 +1,6 @@
 import { BadRequestException, ForbiddenException, Injectable, NotFoundException } from '@nestjs/common'
 import { PrismaService } from '../../infrastructure/database/prisma.service'
-import { CompleteOnboardingDto } from '../../presentation/http-dto/content.dto'
+import { CompleteOnboardingDto, UpdateLearnerGoalsDto } from '../../presentation/http-dto/content.dto'
 
 @Injectable()
 export class LearnerProfilesService {
@@ -86,6 +86,69 @@ export class LearnerProfilesService {
     await this.prisma.learnerProfileDomain.deleteMany({ where: { profileId: profile.id } })
     const domains = await this.prisma.domain.findMany({ where: { code: { in: domainCodes } } })
     await this.prisma.learnerProfileDomain.createMany({ data: domains.map(d => ({ profileId: profile.id, domainId: d.id })) })
+    return this.findByUser(userId)
+  }
+
+  async updateGoals(userId: string, dto: UpdateLearnerGoalsDto) {
+    await this.assertLearner(userId)
+    const existing = await this.prisma.learnerProfile.findUnique({ where: { userId } })
+    if (!existing) throw new NotFoundException('Learner profile not found')
+
+    let levelId = existing.levelId
+    if (dto.levelCode) {
+      const level = await this.prisma.level.findUnique({ where: { code: dto.levelCode } })
+      if (level) levelId = level.id
+    }
+
+    const updateData: any = {
+      levelId,
+      onboardingCompleted: true,
+    }
+    if (dto.weeklyStudyTargetMinutes !== undefined) {
+      updateData.weeklyStudyTargetMinutes = dto.weeklyStudyTargetMinutes
+    }
+
+    await this.prisma.learnerProfile.update({
+      where: { userId },
+      data: updateData,
+    })
+
+    if (dto.domainCodes !== undefined) {
+      await this.prisma.learnerProfileDomain.deleteMany({ where: { profileId: existing.id } })
+      if (dto.domainCodes.length > 0) {
+        const domains = await this.prisma.domain.findMany({ where: { code: { in: dto.domainCodes } } })
+        if (domains.length > 0) {
+          await this.prisma.learnerProfileDomain.createMany({
+            data: domains.map(d => ({ profileId: existing.id, domainId: d.id })),
+          })
+        }
+      }
+    }
+
+    if (dto.careerGoalCodes !== undefined) {
+      await this.prisma.learnerProfileCareerGoal.deleteMany({ where: { profileId: existing.id } })
+      if (dto.careerGoalCodes.length > 0) {
+        const goals = await this.prisma.careerGoal.findMany({ where: { code: { in: dto.careerGoalCodes } } })
+        if (goals.length > 0) {
+          await this.prisma.learnerProfileCareerGoal.createMany({
+            data: goals.map(g => ({ profileId: existing.id, careerGoalId: g.id })),
+          })
+        }
+      }
+    }
+
+    if (dto.certificateCodes !== undefined) {
+      await this.prisma.learnerCertificateGoal.deleteMany({ where: { profileId: existing.id } })
+      if (dto.certificateCodes.length > 0) {
+        const certs = await this.prisma.certificate.findMany({ where: { code: { in: dto.certificateCodes } } })
+        if (certs.length > 0) {
+          await this.prisma.learnerCertificateGoal.createMany({
+            data: certs.map(c => ({ profileId: existing.id, certificateId: c.id })),
+          })
+        }
+      }
+    }
+
     return this.findByUser(userId)
   }
 
