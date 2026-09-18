@@ -14,16 +14,26 @@ export default function FlashcardsPage() {
   const [level, setLevel] = useState('');
   const [vocabCount, setVocabCount] = useState(0);
 
+  const [userProfile, setUserProfile] = useState<any>(null);
+
   useEffect(() => {
     async function load() {
       try {
-        const [lessonRes, vocabularyRes] = await Promise.all<any>([
+        const [lessonRes, vocabularyRes, profileRes] = await Promise.allSettled<any>([
           apiClient.get('/lessons?status=published&limit=100'),
           apiClient.get('/vocabulary?status=published&limit=1'),
+          apiClient.get('/learner-profiles/me'),
         ]);
-        const data = lessonRes?.data ?? lessonRes ?? [];
-        setLessons(Array.isArray(data) ? data : []);
-        setVocabCount(vocabularyRes?.meta?.total ?? 0);
+        const lessonData = lessonRes.status === 'fulfilled' ? (lessonRes.value?.data ?? lessonRes.value ?? []) : [];
+        const vocabData = vocabularyRes.status === 'fulfilled' ? (vocabularyRes.value?.meta?.total ?? 0) : 0;
+        const prof = profileRes.status === 'fulfilled' ? profileRes.value : null;
+
+        setLessons(Array.isArray(lessonData) ? lessonData : []);
+        setVocabCount(vocabData);
+        if (prof?.level?.code) {
+          setUserProfile(prof);
+          setLevel(prof.level.code);
+        }
       } finally {
         setLoading(false);
       }
@@ -71,8 +81,26 @@ export default function FlashcardsPage() {
           <button type="button" onClick={() => { setSearch(''); setDomain(''); setLevel(''); }} className="h-11 whitespace-nowrap px-3 text-sm font-bold text-primary hover:underline">Xóa lọc</button>
         </div>
 
-        <Link href="/learn/flashcards/all" className="flex items-center justify-between gap-4 rounded-2xl border border-primary/20 bg-primary/5 p-5 transition-all hover:border-primary hover:shadow-sm">
-          <div className="flex items-center gap-4"><span className="material-symbols-outlined flex h-12 w-12 items-center justify-center rounded-xl bg-primary text-white">library_books</span><div><h2 className="font-bold text-on-surface">Luyện toàn bộ kho từ vựng</h2><p className="mt-1 text-sm text-on-surface-variant">Không giới hạn theo bài học · {vocabCount.toLocaleString('vi-VN')} từ đã xuất bản</p></div></div>
+        <Link
+          href={level ? `/learn/flashcards/all?levelCode=${level}` : '/learn/flashcards/all'}
+          className="flex items-center justify-between gap-4 rounded-2xl border border-primary/20 bg-primary/5 p-5 transition-all hover:border-primary hover:shadow-sm"
+        >
+          <div className="flex items-center gap-4">
+            <span className="material-symbols-outlined flex h-12 w-12 items-center justify-center rounded-xl bg-primary text-white">library_books</span>
+            <div>
+              <div className="flex items-center gap-2 flex-wrap">
+                <h2 className="font-bold text-on-surface">Luyện toàn bộ kho từ vựng</h2>
+                {level && (
+                  <span className="text-xs px-2 py-0.5 rounded-full bg-primary text-white font-semibold">
+                    Trình độ: {levels.find((lv: any) => lv.code === level)?.name || level}
+                  </span>
+                )}
+              </div>
+              <p className="mt-1 text-sm text-on-surface-variant">
+                {level ? `Ưu tiên từ vựng phù hợp trình độ · ${vocabCount.toLocaleString('vi-VN')} từ trong hệ thống` : `Không giới hạn theo bài học · ${vocabCount.toLocaleString('vi-VN')} từ đã xuất bản`}
+              </p>
+            </div>
+          </div>
           <span className="material-symbols-outlined text-primary">arrow_forward</span>
         </Link>
 
@@ -94,7 +122,14 @@ export default function FlashcardsPage() {
                 </div>
                 <div>
                   <h3 className="text-[16px] font-semibold text-on-background group-hover:text-primary transition-colors line-clamp-2">{lesson.title}</h3>
-                  <p className="text-[12px] text-on-surface-variant mt-1">{lesson.domain?.name || 'CNTT'} · {lesson.level?.name || 'Intermediate'}</p>
+                  <div className="flex items-center gap-1.5 flex-wrap mt-1">
+                    <p className="text-[12px] text-on-surface-variant">{lesson.domain?.name || 'CNTT'} · {lesson.level?.name || 'Intermediate'}</p>
+                    {userProfile?.level?.code && lesson.level?.code === userProfile.level.code && (
+                      <span className="text-[11px] font-bold text-emerald-700 bg-emerald-50 border border-emerald-200 px-1.5 py-0.5 rounded">
+                        Phù hợp với bạn
+                      </span>
+                    )}
+                  </div>
                   <p className="mt-2 text-xs font-bold text-primary">{lesson._count?.vocabularies ?? 0} từ đã liên kết</p>
                 </div>
                 <div className="flex items-center gap-1 text-primary text-[13px] font-semibold mt-auto">

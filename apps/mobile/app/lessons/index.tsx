@@ -7,13 +7,15 @@ import { colors, spacing } from '@techenglish/design-tokens';
 import { api } from '../../src/shared/api/api-client';
 
 const FILTER_OPTIONS = ['Tất cả', 'Video', 'Reading', 'Vocabulary'];
+const LEVEL_OPTIONS = ['Tất cả cấp độ', 'Beginner', 'Intermediate', 'Advanced'];
 
 export default function MobileLessonListScreen() {
   const router = useRouter();
-  const params = useLocalSearchParams<{ q?: string; type?: string; domainCode?: string }>();
+  const params = useLocalSearchParams<{ q?: string; type?: string; domainCode?: string; levelCode?: string }>();
   const [lessons, setLessons] = useState<any[]>([]);
   const [searchQuery, setSearchQuery] = useState(typeof params.q === 'string' ? params.q : '');
   const [activeFilter, setActiveFilter] = useState('Tất cả');
+  const [selectedLevel, setSelectedLevel] = useState('Tất cả cấp độ');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
@@ -28,10 +30,24 @@ export default function MobileLessonListScreen() {
       const query = new URLSearchParams({ limit: '50', status: 'published' });
       if (typeof params.type === 'string' && params.type) query.set('type', params.type);
       if (typeof params.domainCode === 'string' && params.domainCode) query.set('domainCode', params.domainCode);
+      if (typeof params.levelCode === 'string' && params.levelCode) query.set('levelCode', params.levelCode);
       if (typeof params.q === 'string' && params.q) query.set('search', params.q);
-      const response = await api.get<any>(`/lessons?${query.toString()}`);
-      const data = response.data || response;
+
+      const [response, profileRes] = await Promise.allSettled([
+        api.get<any>(`/lessons?${query.toString()}`),
+        api.get<any>('/learner-profiles/me'),
+      ]);
+
+      const data = response.status === 'fulfilled' ? (response.value.data || response.value) : [];
       setLessons(Array.isArray(data) ? data : data.items || []);
+
+      if (profileRes.status === 'fulfilled') {
+        const profLevel = profileRes.value?.level?.code?.toLowerCase();
+        if (profLevel && !params.levelCode) {
+          const match = LEVEL_OPTIONS.find(opt => opt.toLowerCase().includes(profLevel));
+          if (match) setSelectedLevel(match);
+        }
+      }
     } catch (err: any) {
       setError(err.message || 'Lỗi tải dữ liệu. Vui lòng thử lại.');
     } finally {
@@ -50,8 +66,14 @@ export default function MobileLessonListScreen() {
     if (activeFilter === 'Video') matchesFilter = type === 'video';
     else if (activeFilter === 'Reading') matchesFilter = ['technical_reading', 'api_documentation', 'case_study'].includes(type);
     else if (activeFilter === 'Vocabulary') matchesFilter = ['vocabulary', 'terminology'].includes(type);
-    
-    return matchesSearch && matchesFilter;
+
+    let matchesLevel = true;
+    if (selectedLevel !== 'Tất cả cấp độ') {
+      const lCode = (lesson.level?.code || lesson.level?.name || '').toLowerCase();
+      matchesLevel = lCode.includes(selectedLevel.toLowerCase());
+    }
+
+    return matchesSearch && matchesFilter && matchesLevel;
   });
 
   const getLessonIcon = (type: string) => {
@@ -93,6 +115,18 @@ export default function MobileLessonListScreen() {
               onPress={() => setActiveFilter(opt)}
             >
               <Text style={[styles.filterChipText, activeFilter === opt && styles.filterChipTextActive]}>{opt}</Text>
+            </TouchableOpacity>
+          ))}
+        </ScrollView>
+
+        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={[styles.filterScroll, { marginTop: 4, paddingBottom: spacing.sm, borderBottomWidth: 0 }]}>
+          {LEVEL_OPTIONS.map((lvl) => (
+            <TouchableOpacity 
+              key={lvl}
+              style={[styles.levelChip, selectedLevel === lvl && styles.levelChipActive]}
+              onPress={() => setSelectedLevel(lvl)}
+            >
+              <Text style={[styles.levelChipText, selectedLevel === lvl && styles.levelChipTextActive]}>{lvl}</Text>
             </TouchableOpacity>
           ))}
         </ScrollView>
@@ -240,6 +274,27 @@ const styles = StyleSheet.create({
   },
   filterChipTextActive: {
     color: '#ffffff'
+  },
+  levelChip: {
+    paddingHorizontal: 12,
+    paddingVertical: 4,
+    borderRadius: 14,
+    backgroundColor: '#ffffff',
+    borderWidth: 1,
+    borderColor: '#e0e2e5',
+  },
+  levelChipActive: {
+    backgroundColor: '#EDE7F6',
+    borderColor: colors.primary,
+  },
+  levelChipText: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: '#464555',
+  },
+  levelChipTextActive: {
+    color: colors.primary,
+    fontWeight: '700',
   },
   listContent: {
     padding: spacing.md,

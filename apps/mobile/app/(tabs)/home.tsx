@@ -11,6 +11,7 @@ export default function MobileHomeScreen() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState('');
   const [userData, setUserData] = useState<any>(null);
+  const [profileData, setProfileData] = useState<any>(null);
   const [progressData, setProgressData] = useState<any>(null);
   const [lessons, setLessons] = useState<any[]>([]);
 
@@ -18,15 +19,35 @@ export default function MobileHomeScreen() {
     setIsLoading(true);
     setError('');
     try {
-      const [meRes, progRes, lessonsRes] = await Promise.allSettled([
+      const [meRes, profRes, progRes] = await Promise.allSettled([
         api.get<any>('/auth/me'),
+        api.get<any>('/learner-profiles/me'),
         api.get<any>('/progress/me'),
-        api.get<any>('/lessons?limit=4'),
       ]);
 
       if (meRes.status === 'fulfilled') setUserData(meRes.value);
+      let userProf: any = null;
+      if (profRes.status === 'fulfilled') {
+        userProf = profRes.value;
+        setProfileData(userProf);
+      }
       if (progRes.status === 'fulfilled') setProgressData(progRes.value);
-      if (lessonsRes.status === 'fulfilled') setLessons(lessonsRes.value?.data || lessonsRes.value || []);
+
+      const levelCode = userProf?.level?.code;
+      const lessonsUrl = levelCode ? `/lessons?limit=4&levelCode=${levelCode}` : '/lessons?limit=4';
+      try {
+        const lessonsRes = await api.get<any>(lessonsUrl);
+        const list = lessonsRes?.data || lessonsRes || [];
+        if (Array.isArray(list) && list.length > 0) {
+          setLessons(list);
+        } else {
+          const fallback = await api.get<any>('/lessons?limit=4');
+          setLessons(fallback?.data || fallback || []);
+        }
+      } catch {
+        const fallback = await api.get<any>('/lessons?limit=4').catch(() => []);
+        setLessons(fallback?.data || fallback || []);
+      }
     } catch (err: any) {
       setError(err.message || 'Không thể tải dữ liệu');
     } finally {
@@ -77,9 +98,14 @@ export default function MobileHomeScreen() {
             <Text style={styles.avatarTextSmall}>{avatarLetter}</Text>
           </View>
           <View>
-            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
               <Text style={styles.greetingTitle}>Chào {name}</Text>
               <Text style={{ fontSize: 16 }}>👋</Text>
+              {profileData?.level?.name ? (
+                <View style={styles.userLevelBadge}>
+                  <Text style={styles.userLevelBadgeText}>{profileData.level.name}</Text>
+                </View>
+              ) : null}
             </View>
             <Text style={styles.greetingSubtitle}>Sẵn sàng học bài mới chưa?</Text>
           </View>
@@ -101,7 +127,9 @@ export default function MobileHomeScreen() {
             )}
           </View>
           <Text style={styles.heroTitle}>{firstLesson.title}</Text>
-          <Text style={styles.heroSubtitle}>{firstLesson.domain?.name || firstLesson.level?.name || ''}</Text>
+          <Text style={styles.heroSubtitle}>
+            {[firstLesson.domain?.name, firstLesson.level?.name].filter(Boolean).join(' · ')}
+          </Text>
           
           <View style={styles.heroProgressContainer}>
             <View style={styles.heroProgressLabels}>
@@ -501,6 +529,17 @@ const styles = StyleSheet.create({
     color: colors.onPrimary,
     fontSize: 14,
     fontWeight: '700'
+  },
+  userLevelBadge: {
+    backgroundColor: '#EDE7F6',
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+    borderRadius: 6,
+  },
+  userLevelBadgeText: {
+    fontSize: 11,
+    fontWeight: '700',
+    color: colors.primary,
   },
 });
 

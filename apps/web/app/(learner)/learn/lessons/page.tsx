@@ -16,6 +16,7 @@ export default function LearnerLessonsPage() {
   const [error, setError] = useState('');
   const [search, setSearch] = useState('');
   const [level, setLevel] = useState<LevelFilter>('all');
+  const [userLevel, setUserLevel] = useState<string>('');
   const [sort, setSort] = useState<SortMode>('newest');
   const [page, setPage] = useState(1);
   const PER_PAGE = 12;
@@ -23,9 +24,22 @@ export default function LearnerLessonsPage() {
   useEffect(() => {
     async function loadData() {
       try {
-        const res: any = await apiClient.get('/lessons?limit=100');
-        const data = res?.data ?? res ?? [];
+        const [res, profileRes]: any = await Promise.allSettled([
+          apiClient.get('/lessons?limit=100'),
+          apiClient.get('/learner-profiles/me'),
+        ]);
+        const data = res.status === 'fulfilled' ? (res.value?.data ?? res.value ?? []) : [];
         setLessons(Array.isArray(data) ? data : []);
+
+        if (profileRes.status === 'fulfilled') {
+          const profLevel = profileRes.value?.level?.code?.toLowerCase();
+          if (profLevel) {
+            setUserLevel(profLevel);
+            if (['beginner', 'intermediate', 'advanced'].includes(profLevel)) {
+              setLevel(profLevel as LevelFilter);
+            }
+          }
+        }
       } catch {
         setError((t.lessons as any).fetchError);
       } finally {
@@ -185,10 +199,18 @@ export default function LearnerLessonsPage() {
 
                   {/* Card body */}
                   <div className="p-4 flex flex-col flex-grow gap-2">
-                    <div className="flex justify-between items-start">
-                      <span className="text-[12px] font-bold text-primary bg-primary-light px-2 py-1 rounded">
-                        {domain}
-                      </span>
+                    <div className="flex justify-between items-start flex-wrap gap-1">
+                      <div className="flex items-center gap-1.5 flex-wrap">
+                        <span className="text-[12px] font-bold text-primary bg-primary-light px-2 py-1 rounded">
+                          {domain}
+                        </span>
+                        {userLevel && (lesson.level?.code?.toLowerCase() === userLevel || lesson.level?.name?.toLowerCase() === userLevel) && (
+                          <span className="text-[11px] font-bold text-emerald-700 bg-emerald-50 border border-emerald-200 px-1.5 py-0.5 rounded flex items-center gap-0.5">
+                            <span className="material-symbols-outlined text-[13px]">verified</span>
+                            Phù hợp với bạn
+                          </span>
+                        )}
+                      </div>
                       <span className="text-[12px] font-bold text-on-surface-variant">{levelLabel}</span>
                     </div>
 

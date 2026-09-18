@@ -50,7 +50,15 @@ export class PlacementTestController {
     const levelCode = percent < 40 ? 'beginner' : percent < 70 ? 'intermediate' : 'advanced'
     const level = await this.prisma.level.findUnique({ where: { code: levelCode } })
     if (level) {
-      await this.prisma.learnerProfile.updateMany({ where: { userId: req.user.sub }, data: { levelId: level.id } })
+      await this.prisma.learnerProfile.upsert({
+        where: { userId: req.user.sub },
+        update: { levelId: level.id },
+        create: {
+          userId: req.user.sub,
+          levelId: level.id,
+          onboardingCompleted: false,
+        },
+      })
     }
     return { correct, total: questions.length, percent, levelCode, levelName: level?.name ?? levelCode }
   }

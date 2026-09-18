@@ -12,7 +12,17 @@ export class VocabStudyService {
     // Build vocab filter
     const vocabWhere: any = { status: 'published' }
     if (filters?.domainCode) vocabWhere.domain = { code: filters.domainCode }
-    if (filters?.levelCode) vocabWhere.level = { code: filters.levelCode }
+    if (filters?.levelCode) {
+      vocabWhere.level = { code: filters.levelCode }
+    } else if (!filters?.lessonId) {
+      const profile = await this.prisma.learnerProfile.findUnique({
+        where: { userId: learnerId },
+        include: { level: true },
+      })
+      if (profile?.level?.code) {
+        vocabWhere.level = { code: profile.level.code }
+      }
+    }
     if (filters?.lessonId) vocabWhere.lessonVocabs = { some: { lessonId: filters.lessonId } }
 
     // Get words needing review (learning, nextReviewAt <= now)

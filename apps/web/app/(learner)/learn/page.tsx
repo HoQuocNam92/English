@@ -16,25 +16,42 @@ export default function LearnerHomePage() {
   useEffect(() => {
     async function loadData() {
       try {
-        const results = await Promise.allSettled([
+        const [meRes, profileRes, progressRes, attemptsRes] = await Promise.allSettled([
           apiClient.get('/auth/me'),
           apiClient.get('/learner-profiles/me'),
           apiClient.get('/progress/me'),
-          apiClient.get('/lessons?limit=4&status=published'),
           apiClient.get('/exams/attempts/my?limit=3'),
         ]);
 
         const get = (r: PromiseSettledResult<any>) =>
           r.status === 'fulfilled' ? r.value : null;
 
-        const [meRes, profileRes, progressRes, lessonsRes, attemptsRes] = results;
+        const profileData = get(profileRes);
+        const levelCode = profileData?.level?.code;
+        const lessonsUrl = levelCode
+          ? `/lessons?limit=4&status=published&levelCode=${levelCode}`
+          : '/lessons?limit=4&status=published';
 
-        const lessonsData = get(lessonsRes);
+        let lessonsData: any = null;
+        try {
+          const res: any = await apiClient.get(lessonsUrl);
+          const data = res?.data ?? res ?? [];
+          if (Array.isArray(data) && data.length > 0) {
+            lessonsData = data;
+          } else if (levelCode) {
+            const fallback: any = await apiClient.get('/lessons?limit=4&status=published');
+            lessonsData = fallback?.data ?? fallback ?? [];
+          }
+        } catch {
+          const fallback: any = await apiClient.get('/lessons?limit=4&status=published').catch(() => []);
+          lessonsData = fallback?.data ?? fallback ?? [];
+        }
+
         setData({
           me: get(meRes),
-          profile: get(profileRes),
+          profile: profileData,
           progress: get(progressRes),
-          lessons: lessonsData?.data ?? lessonsData ?? [],
+          lessons: Array.isArray(lessonsData) ? lessonsData : [],
           attempts: (() => { const d = get(attemptsRes); return d?.data ?? d ?? []; })(),
         });
       } catch (err: any) {
@@ -138,6 +155,7 @@ export default function LearnerHomePage() {
               <p >
                 Hoàn thành lộ trình này để nắm vững các thuật ngữ cốt lõi và khái niệm cơ bản về {cert} bằng tiếng Anh chuyên ngành.
               </p>
+
             </div>
 
             <div className="z-10 mt-auto">
@@ -160,13 +178,22 @@ export default function LearnerHomePage() {
 
           {/* Tiếp tục học — Lesson Grid */}
           <div>
-            <h3 className="text-[20px] font-semibold text-on-surface mb-4" style={{ lineHeight: '28px' }}>
-              {t.home.continueLearn}
-            </h3>
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-4">
+              <h3 className="text-[20px] font-semibold text-on-surface" style={{ lineHeight: '28px' }}>
+                {t.home.continueLearn}
+              </h3>
+              {profile?.level?.name && (
+                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-primary/10 text-primary border border-primary/20 w-fit">
+                  <span className="material-symbols-outlined text-[15px]">recommend</span>
+                  Đề xuất theo trình độ: {profile.level.name}
+                </span>
+              )}
+            </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               {lessons.length > 0 ? lessons.slice(0, 4).map((lesson: any) => {
                 const lessonProgress = Math.round((lessonProgressById.get(lesson.id) as any)?.completionPercent ?? 0);
                 const domain = lesson.domain?.name ?? lesson.domain?.code ?? 'IT';
+                const lessonLevelName = lesson.level?.name ?? lesson.level?.code ?? '';
                 return (
                   <Link
                     key={lesson.id}
@@ -178,9 +205,16 @@ export default function LearnerHomePage() {
                       <div className="absolute inset-0 bg-gradient-to-br from-primary/10 to-surface-container flex items-center justify-center">
                         <span className="material-symbols-outlined text-primary opacity-30" style={{ fontSize: '64px' }}>auto_stories</span>
                       </div>
-                      <span className="absolute top-2 left-2 bg-surface-container/90 backdrop-blur text-primary text-[12px] font-bold px-2 py-1 rounded border border-outline-variant">
-                        {domain}
-                      </span>
+                      <div className="absolute top-2 left-2 flex items-center gap-1.5 flex-wrap max-w-[90%]">
+                        <span className="bg-surface-container/90 backdrop-blur text-primary text-[11px] font-bold px-2 py-0.5 rounded border border-outline-variant">
+                          {domain}
+                        </span>
+                        {lessonLevelName ? (
+                          <span className="bg-primary/90 backdrop-blur text-white text-[11px] font-bold px-2 py-0.5 rounded">
+                            {lessonLevelName}
+                          </span>
+                        ) : null}
+                      </div>
                     </div>
 
                     <div className="p-4 flex flex-col flex-grow">
@@ -204,12 +238,10 @@ export default function LearnerHomePage() {
                   </Link>
                 );
               }) : <p className="col-span-2 rounded-lg border border-outline-variant bg-surface-container p-6 text-sm text-on-surface-variant">Chưa có bài học đã xuất bản.</p>}
-
             </div>
           </div>
         </section>
 
-        {/* ── Right Sidebar: 4-col ─────────────────────────────────── */}
         <aside className="lg:col-span-4 flex flex-col gap-6">
 
           {/* Kết quả kiểm tra gần đây */}

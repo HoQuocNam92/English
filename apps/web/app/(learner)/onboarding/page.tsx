@@ -5,34 +5,34 @@ import { useRouter } from 'next/navigation';
 import { apiClient } from '@/shared/api/api-client';
 
 const LEVELS = [
-  { id: 'Beginner', title: 'Mới bắt đầu', subtitle: 'Beginner', icon: 'school' },
-  { id: 'Intermediate', title: 'Trung cấp', subtitle: 'Intermediate', icon: 'trending_up' },
-  { id: 'Advanced', title: 'Nâng cao', subtitle: 'Advanced', icon: 'workspace_premium' },
-  { id: 'Professional', title: 'Chuyên nghiệp', subtitle: 'Professional', icon: 'diamond' },
+  { id: 'beginner', title: 'Mới bắt đầu', subtitle: 'Beginner', icon: 'school' },
+  { id: 'intermediate', title: 'Trung cấp', subtitle: 'Intermediate', icon: 'trending_up' },
+  { id: 'advanced', title: 'Nâng cao', subtitle: 'Advanced', icon: 'workspace_premium' },
+  { id: 'professional', title: 'Chuyên nghiệp', subtitle: 'Professional', icon: 'diamond' },
 ];
 
 const IT_FIELDS = [
-  { id: 'Cloud Computing', title: 'Cloud Computing', icon: 'cloud' },
-  { id: 'Cybersecurity', title: 'Cybersecurity', icon: 'security' },
-  { id: 'Networking', title: 'Networking', icon: 'router' },
-  { id: 'Data Engineering', title: 'Data Engineering', icon: 'database' },
-  { id: 'Data Science', title: 'Data Science', icon: 'insights' },
-  { id: 'Software Engineering', title: 'Software Engineering', icon: 'code' },
-  { id: 'DevOps', title: 'DevOps', icon: 'all_inclusive' },
+  { id: 'CLOUD', title: 'Cloud Computing', icon: 'cloud' },
+  { id: 'CYBERSEC', title: 'Cybersecurity', icon: 'security' },
+  { id: 'NETWORKING', title: 'Networking', icon: 'router' },
+  { id: 'DATA_ENG', title: 'Data Engineering', icon: 'database' },
+  { id: 'DATA_SCI', title: 'Data Science', icon: 'insights' },
+  { id: 'SOFTWARE_ENG', title: 'Software Engineering', icon: 'code' },
+  { id: 'DEVOPS', title: 'DevOps', icon: 'all_inclusive' },
 ];
 
 const CAREER_GOALS = [
-  { id: 'Junior Developer', title: 'Junior Developer', subtitle: 'Xây dựng nền tảng từ vựng kỹ thuật cơ bản để đọc tài liệu và giao tiếp nhóm.', icon: 'code' },
-  { id: 'Solution Architect', title: 'Solution Architect', subtitle: 'Tiếng Anh chuyên sâu để thiết kế hệ thống, viết tài liệu kỹ thuật và thuyết trình.', icon: 'architecture' },
-  { id: 'Data Scientist', title: 'Data Scientist', subtitle: 'Tập trung vào thuật ngữ AI, Machine Learning và đọc hiểu các báo cáo phân tích.', icon: 'monitoring' },
-  { id: 'Project Manager', title: 'Project Manager', subtitle: 'Giao tiếp khách hàng quốc tế, quản lý dự án Agile và đàm phán yêu cầu.', icon: 'manage_accounts' },
+  { id: 'BACKEND_ENGINEER', title: 'Backend Engineer', subtitle: 'Xây dựng hệ thống server-side, API và cơ sở dữ liệu mở rộng.', icon: 'code' },
+  { id: 'SOLUTION_ARCHITECT', title: 'Solution Architect', subtitle: 'Tiếng Anh chuyên sâu để thiết kế hệ thống, viết tài liệu kỹ thuật và thuyết trình.', icon: 'architecture' },
+  { id: 'DATA_ENGINEER', title: 'Data Engineer', subtitle: 'Xây dựng data pipeline, analytics và kiến trúc xử lý dữ liệu lớn.', icon: 'monitoring' },
+  { id: 'DEVOPS_ENGINEER', title: 'DevOps Engineer', subtitle: 'Tự động hóa hạ tầng đám mây, quy trình CI/CD và tối ưu độ tin cậy.', icon: 'manage_accounts' },
 ];
 
 const TARGET_CERTS = [
-  { id: 'AWS Certified Cloud Practitioner', title: 'AWS Certified Cloud Practitioner', subtitle: 'Nền tảng điện toán đám mây AWS.', icon: 'cloud' },
-  { id: 'CompTIA Security+', title: 'CompTIA Security+', subtitle: 'Kiến thức bảo mật mạng cơ bản.', icon: 'security' },
-  { id: 'Cisco CCNA', title: 'Cisco CCNA', subtitle: 'Quản trị mạng doanh nghiệp.', icon: 'router' },
-  { id: 'Google Professional Cloud Architect', title: 'Google Professional Cloud Architect', subtitle: 'Thiết kế kiến trúc Google Cloud.', icon: 'memory' },
+  { id: 'AWS-SAA', title: 'AWS Solutions Architect – Associate', subtitle: 'Nền tảng và kiến trúc điện toán đám mây AWS.', icon: 'cloud' },
+  { id: 'COMPTIA-SECURITY-PLUS', title: 'CompTIA Security+', subtitle: 'Kiến thức an ninh mạng và bảo mật hệ thống.', icon: 'security' },
+  { id: 'CKA', title: 'Certified Kubernetes Administrator', subtitle: 'Quản trị cụm Kubernetes và container orchestration.', icon: 'hub' },
+  { id: 'GCP-ACE', title: 'Google Cloud Associate Cloud Engineer', subtitle: 'Triển khai và vận hành trên Google Cloud Platform.', icon: 'memory' },
 ];
 
 export default function OnboardingPage() {
@@ -68,10 +68,11 @@ export default function OnboardingPage() {
     setIsSubmitting(true);
     try {
       await apiClient.post('/learner-profiles/me/complete-onboarding', {
-        level,
-        itFields,
-        careerGoal,
-        targetCert,
+        levelCode: level.toLowerCase(),
+        domainCodes: itFields.length > 0 ? itFields : ['CLOUD'],
+        careerGoalCodes: careerGoal ? [careerGoal] : undefined,
+        certificateCodes: targetCert ? [targetCert] : undefined,
+        weeklyStudyTargetMinutes: 120,
       });
       router.push('/learn');
     } catch (error) {
