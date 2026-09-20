@@ -9,12 +9,15 @@ export class EmailService {
   constructor(private configService: ConfigService) {}
 
   async sendPasswordResetOtp(toEmail: string, otp: string): Promise<boolean> {
-    const smtpHost = this.configService.get<string>('SMTP_HOST') || process.env.SMTP_HOST || 'smtp.gmail.com'
-    const smtpPort = Number(this.configService.get<string>('SMTP_PORT') || process.env.SMTP_PORT || '587')
+    const smtpHost = this.configService.getOrThrow<string>('SMTP_HOST')
+    const smtpPort = Number(this.configService.getOrThrow<string>('SMTP_PORT'))
+    if (!Number.isInteger(smtpPort) || smtpPort < 1 || smtpPort > 65535) {
+      throw new Error('SMTP_PORT must be an integer between 1 and 65535')
+    }
     const smtpSecure = (this.configService.get<string>('SMTP_SECURE') || process.env.SMTP_SECURE) === 'true'
     const smtpUser = this.configService.get<string>('SMTP_USER') || process.env.SMTP_USER
     const smtpPass = this.configService.get<string>('SMTP_PASS') || process.env.SMTP_PASS
-    const smtpFrom = this.configService.get<string>('SMTP_FROM') || process.env.SMTP_FROM || '"TechEnglish Pro" <no-reply@techenglish.pro>'
+    const smtpFrom = this.configService.getOrThrow<string>('SMTP_FROM')
 
     // DEV FALLBACK LOGGING
     this.logger.log(`=======================================================`)

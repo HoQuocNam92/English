@@ -22,7 +22,7 @@ export class AuthController {
   @UseGuards(AuthGuard('google'))
   @ApiOperation({ summary: 'Google OAuth callback trên web' })
   googleCallback(@Request() req: any, @Res() response: Response) {
-    const webUrl = this.config.get<string>('WEB_URL', 'http://localhost:3000').replace(/\/$/, '')
+    const webUrl = this.config.getOrThrow<string>('WEB_URL').replace(/\/$/, '')
     const params = new URLSearchParams({ access_token: req.user.accessToken, refresh_token: req.user.refreshToken, user: JSON.stringify(req.user.user) })
     return response.redirect(`${webUrl}/google/callback?${params.toString()}`)
   }

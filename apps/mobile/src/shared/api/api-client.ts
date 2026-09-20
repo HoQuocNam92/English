@@ -1,7 +1,7 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { API_BASE_URL } from '../config/env';
 
-export const API_BASE = process.env.EXPO_PUBLIC_API_URL ?? 'http://10.0.2.2:8080/api/v1';
-// 10.0.2.2 = Android emulator → localhost; change to your IP for real device
+export const API_BASE = API_BASE_URL;
 
 export class ApiError extends Error {
   constructor(public statusCode: number, message: string) {

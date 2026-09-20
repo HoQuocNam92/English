@@ -14,12 +14,16 @@ async function bootstrap() {
   })
 
   const configService = app.get(ConfigService)
-  const port = configService.get<number>('PORT', 8080)
-  const host = configService.get<string>('HOST', '0.0.0.0')
+  const port = Number(configService.getOrThrow<string>('PORT'))
+  if (!Number.isInteger(port) || port < 1 || port > 65535) {
+    throw new Error('PORT must be an integer between 1 and 65535')
+  }
+  const host = configService.getOrThrow<string>('HOST')
+  const apiPublicUrl = configService.getOrThrow<string>('API_PUBLIC_URL').replace(/\/$/, '')
 
   app.use(helmet())
   const configuredOrigins = configService
-    .get<string>('CORS_ORIGIN', 'http://localhost:3000')
+    .getOrThrow<string>('CORS_ORIGIN')
     .split(',')
     .map((origin) => origin.trim())
     .filter(Boolean)
@@ -66,8 +70,8 @@ async function bootstrap() {
   SwaggerModule.setup('api/docs', app, document)
 
   await app.listen(port, host)
-  console.log('API running on http://' + host + ':' + port + '/api/v1')
-  console.log('Swagger docs: http://localhost:' + port + '/api/docs')
+  console.log(`API running on ${apiPublicUrl}/api/v1`)
+  console.log(`Swagger docs: ${apiPublicUrl}/api/docs`)
 }
 
 bootstrap()

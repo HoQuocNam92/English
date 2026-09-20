@@ -23,7 +23,7 @@ info:
     name: Proprietary - Academic Project
 servers:
   - url: /api/v1
-    description: Cùng host với API deployment; local mặc định là http://localhost:3080/api/v1.
+    description: Cùng host với API deployment, được cấu hình bằng API_PUBLIC_URL.
 tags:
   - name: Auth
     description: Đăng ký, đăng nhập và quản lý phiên.

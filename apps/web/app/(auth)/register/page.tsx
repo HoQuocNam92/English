@@ -5,8 +5,9 @@ import { useRouter } from 'next/navigation';
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/features/auth/presentation';
 import { apiClient } from '@/shared/api/api-client';
+import { API_BASE_URL } from '@/shared/config/env';
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080/api/v1';
+const API_BASE = API_BASE_URL;
 
 export default function RegisterPage() {
   const router = useRouter();
@@ -266,13 +267,13 @@ export default function RegisterPage() {
 
             {/* Terms Checkbox */}
             <div className="flex items-start gap-2 mt-1">
-              <input 
-                type="checkbox" 
-                id="terms" 
-                checked={agreeTerms} 
-                onChange={(e) => setAgreeTerms(e.target.checked)} 
-                className="mt-1 border-outline-variant rounded text-primary focus:ring-primary" 
-                required 
+              <input
+                type="checkbox"
+                id="terms"
+                checked={agreeTerms}
+                onChange={(e) => setAgreeTerms(e.target.checked)}
+                className="mt-1 border-outline-variant rounded text-primary focus:ring-primary"
+                required
               />
               <label htmlFor="terms" className="text-[13px] text-on-surface-variant leading-tight">
                 Tôi đồng ý với <Link href="/terms" className="text-primary hover:underline font-semibold">Điều khoản dịch vụ</Link> và <Link href="/privacy" className="text-primary hover:underline font-semibold">Chính sách bảo mật</Link> của hệ thống

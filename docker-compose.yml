@@ -1,17 +1,15 @@
-version: '3.9'
-
 services:
   redis:
     image: redis:7-alpine
     container_name: techenglish-redis
     restart: unless-stopped
     ports:
-      - "6379:6379"
+      - "${REDIS_PORT}:${REDIS_CONTAINER_PORT}"
     volumes:
       - redis_data:/data
-    command: redis-server --appendonly yes --maxmemory 256mb --maxmemory-policy allkeys-lru
+    command: redis-server --port ${REDIS_CONTAINER_PORT} --appendonly yes --maxmemory 256mb --maxmemory-policy allkeys-lru
     healthcheck:
-      test: ["CMD", "redis-cli", "ping"]
+      test: ["CMD-SHELL", "redis-cli -p ${REDIS_CONTAINER_PORT} ping"]
       interval: 10s
       timeout: 5s
       retries: 3
@@ -21,9 +19,10 @@ services:
     container_name: techenglish-redis-ui
     restart: unless-stopped
     environment:
-      - REDIS_HOSTS=local:redis:6379
+      - REDIS_HOSTS=local:redis:${REDIS_CONTAINER_PORT}
+      - PORT=${REDIS_COMMANDER_PORT}
     ports:
-      - "8081:8081"
+      - "${REDIS_COMMANDER_PORT}:${REDIS_COMMANDER_PORT}"
     depends_on:
       - redis
 

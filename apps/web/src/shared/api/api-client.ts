@@ -3,11 +3,13 @@
  * Dùng cho mọi API call từ client components.
  */
 
-const SESSION_KEY = 'techenglish.web.session';
-const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:8080/api/v1';
+import { API_BASE_URL } from "@/shared/config/env";
+
+const SESSION_KEY = "techenglish.web.session";
+const API_BASE = API_BASE_URL;
 
 function getAccessToken(): string | null {
-  if (typeof window === 'undefined') return null;
+  if (typeof window === "undefined") return null;
   try {
     const raw = localStorage.getItem(SESSION_KEY);
     if (!raw) return null;
@@ -21,7 +23,7 @@ function getAccessToken(): string | null {
 let refreshPromise: Promise<string | null> | null = null;
 
 async function refreshAccessToken(): Promise<string | null> {
-  if (typeof window === 'undefined') return null;
+  if (typeof window === "undefined") return null;
   if (refreshPromise) return refreshPromise;
 
   refreshPromise = (async () => {
@@ -32,15 +34,18 @@ async function refreshAccessToken(): Promise<string | null> {
       if (!session?.refreshToken) return null;
 
       const response = await fetch(`${API_BASE}/auth/refresh`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ refreshToken: session.refreshToken }),
       });
       if (!response.ok) return null;
 
       const data = await response.json();
       if (!data?.accessToken) return null;
-      localStorage.setItem(SESSION_KEY, JSON.stringify({ ...session, accessToken: data.accessToken }));
+      localStorage.setItem(
+        SESSION_KEY,
+        JSON.stringify({ ...session, accessToken: data.accessToken }),
+      );
       return data.accessToken as string;
     } catch {
       return null;
@@ -66,34 +71,30 @@ export class ApiClientError extends Error {
   }
 }
 
-async function request<T>(
-  path: string,
-  options: RequestInit = {},
-  canRetry = true,
-): Promise<T> {
+async function request<T>(path: string, options: RequestInit = {}, canRetry = true): Promise<T> {
   const token = getAccessToken();
   const headers: Record<string, string> = {
-    ...(!(options.body instanceof FormData) ? { 'Content-Type': 'application/json' } : {}),
+    ...(!(options.body instanceof FormData) ? { "Content-Type": "application/json" } : {}),
     ...(options.headers as Record<string, string>),
   };
-  if (token) headers['Authorization'] = `Bearer ${token}`;
+  if (token) headers["Authorization"] = `Bearer ${token}`;
 
   const res = await fetch(`${API_BASE}${path}`, { ...options, headers });
 
-  if (res.status === 401 && canRetry && token && path !== '/auth/refresh') {
+  if (res.status === 401 && canRetry && token && path !== "/auth/refresh") {
     const refreshedToken = await refreshAccessToken();
     if (refreshedToken) return request<T>(path, options, false);
 
     localStorage.removeItem(SESSION_KEY);
-    if (window.location.pathname !== '/login') window.location.assign('/login');
+    if (window.location.pathname !== "/login") window.location.assign("/login");
   }
 
   if (!res.ok) {
-    const err: ApiError = await res.json().catch(() => ({ message: 'Lỗi không xác định' }));
+    const err: ApiError = await res.json().catch(() => ({ message: "Lỗi không xác định" }));
     throw new ApiClientError(
       Array.isArray((err as any).message)
-        ? (err as any).message.join(', ')
-        : err.message ?? `HTTP ${res.status}`,
+        ? (err as any).message.join(", ")
+        : (err.message ?? `HTTP ${res.status}`),
       res.status,
     );
   }
@@ -110,15 +111,15 @@ async function request<T>(
 export const apiClient = {
   get: <T>(path: string) => request<T>(path),
   post: <T>(path: string, body: unknown) =>
-    request<T>(path, { method: 'POST', body: JSON.stringify(body) }),
+    request<T>(path, { method: "POST", body: JSON.stringify(body) }),
   postWithHeaders: <T>(path: string, body: unknown, extraHeaders: Record<string, string>) =>
-    request<T>(path, { method: 'POST', body: JSON.stringify(body), headers: extraHeaders }),
+    request<T>(path, { method: "POST", body: JSON.stringify(body), headers: extraHeaders }),
   put: <T>(path: string, body: unknown) =>
-    request<T>(path, { method: 'PUT', body: JSON.stringify(body) }),
+    request<T>(path, { method: "PUT", body: JSON.stringify(body) }),
   patch: <T>(path: string, body: unknown) =>
-    request<T>(path, { method: 'PATCH', body: JSON.stringify(body) }),
-  delete: <T>(path: string) => request<T>(path, { method: 'DELETE' }),
-  upload: <T>(path: string, body: FormData) => request<T>(path, { method: 'POST', body }),
+    request<T>(path, { method: "PATCH", body: JSON.stringify(body) }),
+  delete: <T>(path: string) => request<T>(path, { method: "DELETE" }),
+  upload: <T>(path: string, body: FormData) => request<T>(path, { method: "POST", body }),
 };
 
 // ============================================================
@@ -190,7 +191,13 @@ export interface QuestionItem {
   createdAt: string;
   domain: { code: string; name: string } | null;
   level: { code: string; name: string } | null;
-  options: Array<{ id: string; key: string; text: string; isCorrect: boolean; explanation: string | null }>;
+  options: Array<{
+    id: string;
+    key: string;
+    text: string;
+    isCorrect: boolean;
+    explanation: string | null;
+  }>;
   certificates?: Array<{ certificate: { id: string; code: string; name: string } }>;
   examQuestions?: Array<{ order: number; exam: { id: string; title: string } }>;
 }

@@ -1,9 +1,10 @@
-import type { Session } from '@techenglish/contracts';
-import type { StoragePort } from '@/shared/storage';
-import type { AuthRepository, LoginInput } from '../../application/ports/auth-repository';
+import type { Session } from "@techenglish/contracts";
+import { API_BASE_URL } from "@/shared/config/env";
+import type { StoragePort } from "@/shared/storage";
+import type { AuthRepository, LoginInput } from "../../application/ports/auth-repository";
 
-const SESSION_KEY = 'techenglish.web.session';
-const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:8080/api/v1';
+const SESSION_KEY = "techenglish.web.session";
+const API_BASE = API_BASE_URL;
 
 export class ApiAuthRepository implements AuthRepository {
   constructor(private readonly storage: StoragePort) {}
@@ -12,12 +13,12 @@ export class ApiAuthRepository implements AuthRepository {
     let res: Response;
     try {
       res = await fetch(`${API_BASE}/auth/login`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email: input.email, password: input.password }),
       });
     } catch {
-      throw new Error('Không thể kết nối đến máy chủ. Vui lòng kiểm tra backend và địa chỉ API.');
+      throw new Error("Không thể kết nối đến máy chủ. Vui lòng kiểm tra backend và địa chỉ API.");
     }
 
     if (!res.ok) {
@@ -25,22 +26,25 @@ export class ApiAuthRepository implements AuthRepository {
       const message = (err as any)?.message;
       throw new Error(
         Array.isArray(message)
-          ? message.join(', ')
-          : message ?? (res.status === 401 ? 'Email hoặc mật khẩu không đúng.' : `Đăng nhập thất bại (HTTP ${res.status}).`),
+          ? message.join(", ")
+          : (message ??
+              (res.status === 401
+                ? "Email hoặc mật khẩu không đúng."
+                : `Đăng nhập thất bại (HTTP ${res.status}).`)),
       );
     }
 
     const data = await res.json();
 
     // data: { accessToken, refreshToken, user: { id, email, roles[], permissions[] } }
-    const role = (data.user?.roles?.[0] ?? 'learner') as import('@techenglish/contracts').UserRole;
+    const role = (data.user?.roles?.[0] ?? "learner") as import("@techenglish/contracts").UserRole;
     const session: Session = {
       accessToken: data.accessToken,
       refreshToken: data.refreshToken,
       user: {
         id: data.user.id,
         email: data.user.email,
-        displayName: data.user.displayName ?? data.user.email.split('@')[0],
+        displayName: data.user.displayName ?? data.user.email.split("@")[0],
         role,
         roles: data.user.roles ?? [role],
         permissions: data.user.permissions ?? [],
@@ -58,9 +62,9 @@ export class ApiAuthRepository implements AuthRepository {
         const session = JSON.parse(raw) as Session & { refreshToken?: string };
         if (session.refreshToken) {
           await fetch(`${API_BASE}/auth/logout`, {
-            method: 'POST',
+            method: "POST",
             headers: {
-              'Content-Type': 'application/json',
+              "Content-Type": "application/json",
               Authorization: `Bearer ${session.accessToken}`,
             },
             body: JSON.stringify({ refreshToken: session.refreshToken }),
