@@ -2,6 +2,10 @@ packages:
   - 'apps/*'
   - 'packages/*'
 
+overrides:
+  multer: 2.3.0
+  qs: 6.16.0
+
 # pnpm 11: allowBuilds thay thế onlyBuiltDependencies
 # Phê duyệt build scripts cho các package cần biên dịch native addons hoặc generate code
 allowBuilds:

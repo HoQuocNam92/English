@@ -319,7 +319,7 @@ export default function FlashcardsScreen() {
         {/* Flip card */}
         <TouchableOpacity activeOpacity={0.95} onPress={doFlip} style={styles.cardTouchArea}>
           {/* Front */}
-          <Animated.View style={[styles.flipCard, { backgroundColor: colors.surface, borderColor: colors.outlineVariant, transform: [{ rotateY: frontInterpolate }] }]}>
+          <Animated.View style={[styles.flipCard, { backgroundColor: colors.surface, borderColor: colors.outlineVariant, transform: [{ perspective: 1000 }, { rotateY: frontInterpolate }] }]}>
             <TouchableOpacity onPress={() => speak(currentWord.term)} style={styles.speakerBtn}>
               <MaterialIcons name="volume-up" size={28} color={colors.primary} />
             </TouchableOpacity>
@@ -336,7 +336,7 @@ export default function FlashcardsScreen() {
           </Animated.View>
 
           {/* Back */}
-          <Animated.View style={[styles.flipCard, styles.flipCardBack, { backgroundColor: colors.surface, borderColor: colors.outlineVariant, transform: [{ rotateY: backInterpolate }] }]}>
+          <Animated.View style={[styles.flipCard, styles.flipCardBack, { backgroundColor: colors.surface, borderColor: colors.outlineVariant, transform: [{ perspective: 1000 }, { rotateY: backInterpolate }] }]}>
             <Text style={[styles.defVi, { color: colors.onSurface }]}>{currentWord.definitionVi}</Text>
             <Text style={[styles.defEn, { color: colors.onSurfaceVariant }]}>{currentWord.definitionEn}</Text>
             {currentWord.examples?.[0] ? (
@@ -610,7 +610,7 @@ const styles = StyleSheet.create({
   progressText: { fontSize: 12, textAlign: 'center', marginTop: 4 },
 
   // Flip card
-  cardTouchArea: { height: 320, perspective: 1000 },
+  cardTouchArea: { height: 320 },
   flipCard: {
     position: 'absolute', width: '100%', height: '100%',
     borderWidth: 1, borderRadius: 20, padding: 24,

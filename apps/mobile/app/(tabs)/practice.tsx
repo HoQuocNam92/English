@@ -84,14 +84,33 @@ export default function MobilePracticeScreen() {
           </TouchableOpacity>
 
           {/* Mock Tests (Full Width) */}
-          <TouchableOpacity style={[styles.bentoCard, styles.bentoCardFull]} onPress={() => exams.length > 0 ? handleExamPress(exams[0]) : null}>
+          <TouchableOpacity style={[styles.bentoCard, styles.bentoCardFull]} onPress={() => router.push('/exams' as any)}>
             <View style={styles.bentoRow}>
               <View style={[styles.bentoIconBox, { backgroundColor: '#e0e3e5', marginBottom: 0, marginRight: spacing.md }]}>
                 <MaterialIcons name="checklist" size={24} color="#464555" />
               </View>
               <View style={{ flex: 1 }}>
-                <Text style={styles.bentoTitleLarge}>Mock Tests</Text>
-                <Text style={styles.bentoDesc}>Kiểm tra tổng hợp kỹ năng nghe, đọc, viết theo chuẩn chứng chỉ.</Text>
+                <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+                  <Text style={styles.bentoTitleLarge}>Mock Tests</Text>
+                  <MaterialIcons name="arrow-forward" size={18} color="#464555" />
+                </View>
+                <Text style={styles.bentoDesc}>Luyện thi trắc nghiệm theo chuyên ngành kèm đánh giá độ sẵn sàng.</Text>
+              </View>
+            </View>
+          </TouchableOpacity>
+
+          {/* International Certifications (Full Width) */}
+          <TouchableOpacity style={[styles.bentoCard, styles.bentoCardFull]} onPress={() => router.push('/certifications' as any)}>
+            <View style={styles.bentoRow}>
+              <View style={[styles.bentoIconBox, { backgroundColor: '#fef3c7', marginBottom: 0, marginRight: spacing.md }]}>
+                <MaterialIcons name="workspace-premium" size={24} color="#d97706" />
+              </View>
+              <View style={{ flex: 1 }}>
+                <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+                  <Text style={styles.bentoTitleLarge}>International Certifications</Text>
+                  <MaterialIcons name="arrow-forward" size={18} color="#d97706" />
+                </View>
+                <Text style={styles.bentoDesc}>Lộ trình và mức độ sẵn sàng cho các chứng chỉ AWS, CompTIA, CKA...</Text>
               </View>
             </View>
           </TouchableOpacity>

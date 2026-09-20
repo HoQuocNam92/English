@@ -33,17 +33,45 @@ export default function MobileHomeScreen() {
       }
       if (progRes.status === 'fulfilled') setProgressData(progRes.value);
 
+      const domainCodes = (userProf?.domains ?? []).map((d: any) => d.domain?.code).filter(Boolean);
+      const domainParam = domainCodes.length > 0 ? domainCodes.join(',') : undefined;
       const levelCode = userProf?.level?.code;
-      const lessonsUrl = levelCode ? `/lessons?limit=4&levelCode=${levelCode}` : '/lessons?limit=4';
+
+      let lessonsUrl = '/lessons?limit=4';
+      if (domainParam && levelCode) {
+        lessonsUrl = `/lessons?limit=4&domainCode=${domainParam}&levelCode=${levelCode}`;
+      } else if (domainParam) {
+        lessonsUrl = `/lessons?limit=4&domainCode=${domainParam}`;
+      } else if (levelCode) {
+        lessonsUrl = `/lessons?limit=4&levelCode=${levelCode}`;
+      }
+
       try {
         const lessonsRes = await api.get<any>(lessonsUrl);
-        const list = lessonsRes?.data || lessonsRes || [];
-        if (Array.isArray(list) && list.length > 0) {
-          setLessons(list);
-        } else {
-          const fallback = await api.get<any>('/lessons?limit=4');
-          setLessons(fallback?.data || fallback || []);
+        let list = lessonsRes?.data || lessonsRes || [];
+        if (!Array.isArray(list)) list = [];
+
+        if (domainParam && list.length < 4) {
+          const moreRes = await api.get<any>(`/lessons?limit=4&domainCode=${domainParam}`).catch(() => null);
+          const moreList = moreRes?.data || moreRes || [];
+          if (Array.isArray(moreList) && moreList.length > 0) {
+            const existingIds = new Set(list.map((l: any) => l.id));
+            for (const item of moreList) {
+              if (!existingIds.has(item.id)) {
+                list.push(item);
+                existingIds.add(item.id);
+                if (list.length >= 4) break;
+              }
+            }
+          }
         }
+
+        if (list.length === 0) {
+          const fallback = await api.get<any>('/lessons?limit=4').catch(() => []);
+          list = fallback?.data || fallback || [];
+        }
+
+        setLessons(Array.isArray(list) ? list : []);
       } catch {
         const fallback = await api.get<any>('/lessons?limit=4').catch(() => []);
         setLessons(fallback?.data || fallback || []);
@@ -217,6 +245,19 @@ export default function MobileHomeScreen() {
               </View>
             </TouchableOpacity>
           </View>
+
+          <TouchableOpacity style={[styles.quickPracticeCard, { width: '100%', marginTop: 10 }]} onPress={() => router.push('/certifications' as any)}>
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
+              <View style={[styles.quickPracticeIconBox, { backgroundColor: '#fef3c7', marginBottom: 0 }]}>
+                <MaterialIcons name="workspace-premium" size={20} color="#d97706" />
+              </View>
+              <View style={{ flex: 1 }}>
+                <Text style={styles.quickPracticeCardTitle}>Lộ trình chứng chỉ quốc tế</Text>
+                <Text style={styles.quickPracticeCardDesc}>AWS, CompTIA, CKA • Đo mức độ sẵn sàng</Text>
+              </View>
+              <MaterialIcons name="arrow-forward" size={18} color="#d97706" />
+            </View>
+          </TouchableOpacity>
         </View>
 
 

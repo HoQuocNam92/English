@@ -29,20 +29,55 @@ export default function LearnerHomePage() {
 
         const profileData = get(profileRes);
         const levelCode = profileData?.level?.code;
-        const lessonsUrl = levelCode
-          ? `/lessons?limit=4&status=published&levelCode=${levelCode}`
-          : '/lessons?limit=4&status=published';
+        const domainCodes = (profileData?.domains ?? [])
+          .map((d: any) => d.domain?.code)
+          .filter(Boolean);
+        const domainParam = domainCodes.length > 0
+          ? encodeURIComponent(domainCodes.join(','))
+          : undefined;
 
         let lessonsData: any = null;
         try {
-          const res: any = await apiClient.get(lessonsUrl);
-          const data = res?.data ?? res ?? [];
-          if (Array.isArray(data) && data.length > 0) {
-            lessonsData = data;
+          // Ưu tiên 1: Khớp cả Domain đã chọn và Level
+          let primaryUrl = '/lessons?limit=4&status=published';
+          if (domainParam && levelCode) {
+            primaryUrl += `&domainCode=${domainParam}&levelCode=${levelCode}`;
+          } else if (domainParam) {
+            primaryUrl += `&domainCode=${domainParam}`;
           } else if (levelCode) {
-            const fallback: any = await apiClient.get('/lessons?limit=4&status=published');
-            lessonsData = fallback?.data ?? fallback ?? [];
+            primaryUrl += `&levelCode=${levelCode}`;
           }
+
+          const res: any = await apiClient.get(primaryUrl);
+          let data = res?.data ?? res ?? [];
+          if (!Array.isArray(data)) data = [];
+
+          // Ưu tiên 2: Nếu chưa đủ 4 bài và có chọn domain, lấy thêm bài cùng domain để ưu tiên đúng chuyên ngành
+          if (domainParam && data.length < 4) {
+            const moreRes: any = await apiClient.get(`/lessons?limit=4&status=published&domainCode=${domainParam}`).catch(() => null);
+            const moreData = moreRes?.data ?? moreRes ?? [];
+            if (Array.isArray(moreData) && moreData.length > 0) {
+              const existingIds = new Set(data.map((l: any) => l.id));
+              for (const item of moreData) {
+                if (!existingIds.has(item.id)) {
+                  data.push(item);
+                  existingIds.add(item.id);
+                  if (data.length >= 4) break;
+                }
+              }
+            }
+          }
+
+          // Fallback: Chỉ khi không có bài nào thuộc domain mới fallback theo level tổng quát
+          if (data.length === 0) {
+            const fallbackUrl = levelCode
+              ? `/lessons?limit=4&status=published&levelCode=${levelCode}`
+              : '/lessons?limit=4&status=published';
+            const fallback: any = await apiClient.get(fallbackUrl).catch(() => []);
+            data = fallback?.data ?? fallback ?? [];
+          }
+
+          lessonsData = Array.isArray(data) ? data : [];
         } catch {
           const fallback: any = await apiClient.get('/lessons?limit=4&status=published').catch(() => []);
           lessonsData = fallback?.data ?? fallback ?? [];
@@ -362,10 +397,12 @@ export default function LearnerHomePage() {
                   return p > 0 && p < 100;
                 }) ? t.home.continueLearn : t.home.recommendedLessons}
               </h3>
-              {profile?.level?.name && (
+              {(domain !== 'Chưa thiết lập' || profile?.level?.name) && (
                 <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-primary/10 text-primary border border-primary/20 w-fit">
                   <span className="material-symbols-outlined text-[15px]">recommend</span>
-                  Đề xuất theo trình độ: {profile.level.name}
+                  {domain !== 'Chưa thiết lập'
+                    ? `Đề xuất theo chuyên ngành: ${domain}${profile?.level?.name ? ` • ${profile.level.name}` : ''}`
+                    : `Đề xuất theo trình độ: ${profile?.level?.name}`}
                 </span>
               )}
             </div>

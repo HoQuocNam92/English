@@ -53,6 +53,16 @@ const CATEGORIES = [
     wide: true,
     route: '/lessons?type=case_study',
   },
+  {
+    id: 'certifications',
+    title: 'Lộ trình chứng chỉ quốc tế',
+    desc: 'Theo dõi lộ trình và độ sẵn sàng cho các kỳ thi AWS, CompTIA, CKA...',
+    icon: 'workspace-premium',
+    iconBg: '#FEF3C7',
+    iconColor: '#D97706',
+    wide: true,
+    route: '/certifications',
+  },
 ];
 
 export default function MobileLearningScreen() {
@@ -65,6 +75,10 @@ export default function MobileLearningScreen() {
   }, []);
 
   const handleCategoryPress = (route: string) => {
+    if (route.startsWith('/certifications')) {
+      router.push('/certifications' as any);
+      return;
+    }
     const separator = route.includes('?') ? '&' : '?';
     const domainQuery = activeChip === 'Tất cả' ? '' : `${separator}domainCode=${DOMAIN_CODES[activeChip]}`;
     router.push(`${route}${domainQuery}` as any);

@@ -12,7 +12,14 @@ export class LessonsService {
     const skip = (page - 1) * limit
     const where: any = {}
     if (search) where.OR = [{ title: { contains: search, mode: 'insensitive' } }, { summary: { contains: search, mode: 'insensitive' } }]
-    if (domainCode) where.domain = { code: domainCode }
+    if (domainCode) {
+      const domainCodes = (Array.isArray(domainCode) ? domainCode : String(domainCode).split(','))
+        .map((code) => String(code).trim())
+        .filter(Boolean)
+
+      if (domainCodes.length === 1) where.domain = { code: domainCodes[0] }
+      if (domainCodes.length > 1) where.domain = { code: { in: domainCodes } }
+    }
     if (levelCode) where.level = { code: levelCode }
     if (status) where.status = status
     if (type) where.type = type
