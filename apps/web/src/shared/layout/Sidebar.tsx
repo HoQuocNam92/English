@@ -1,15 +1,29 @@
 'use client';
 
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { useState } from 'react';
+import { usePathname, useSearchParams } from 'next/navigation';
 import { combinedNavigation, teacherNavigation, type NavigationGroup, type NavigationItem } from './navigation';
 import { useAuth } from '@/features/auth/presentation';
 
 function NavItem({ item, isCollapsed }: { item: NavigationItem; isCollapsed?: boolean }) {
   const pathname = usePathname();
-  const isActive =
-    pathname === item.href ||
-    (item.href.split('/').length > 2 && pathname.startsWith(item.href));
+  const searchParams = useSearchParams();
+  const [itemPath, itemQuery = ''] = item.href.split('?');
+  const expectedQuery = new URLSearchParams(itemQuery);
+  const queryMatches = [...expectedQuery.entries()].every(([key, value]) => searchParams.get(key) === value);
+  const isLessonIndex = itemPath === '/admin/lessons' && expectedQuery.size === 0;
+  const isActive = expectedQuery.size > 0
+    ? pathname === itemPath && queryMatches
+    : (pathname === itemPath && (!isLessonIndex || !searchParams.has('type')))
+      || (pathname.startsWith(`${itemPath}/`) && itemPath.split('/').length > 2);
+  const level = item.level ?? 0;
+  const childIsActive = item.children?.some((child) => {
+    const [childPath, childQuery = ''] = child.href.split('?');
+    const query = new URLSearchParams(childQuery);
+    return pathname === childPath && [...query.entries()].every(([key, value]) => searchParams.get(key) === value);
+  }) ?? false;
+  const [expanded, setExpanded] = useState(false);
 
   if (isCollapsed) {
     return (
@@ -17,14 +31,14 @@ function NavItem({ item, isCollapsed }: { item: NavigationItem; isCollapsed?: bo
         href={item.href}
         title={item.badge ? `${item.label} (${item.badge})` : item.label}
         className={`group relative flex h-10 w-10 mx-auto items-center justify-center rounded-xl text-[13px] font-medium transition-all duration-200 ${
-          isActive
+          isActive || childIsActive
             ? 'text-primary bg-primary/10 font-semibold shadow-xs ring-1 ring-primary/30'
             : 'text-on-surface-variant hover:bg-surface-container-low hover:text-on-surface'
         }`}
       >
         <span
           className={`material-symbols-outlined text-[20px] transition-colors ${
-            isActive ? 'text-primary fill-1' : 'text-outline group-hover:text-primary'
+            isActive || childIsActive ? 'text-primary fill-1' : `nav-icon-${item.icon} group-hover:scale-110`
           }`}
         >
           {item.icon}
@@ -37,28 +51,44 @@ function NavItem({ item, isCollapsed }: { item: NavigationItem; isCollapsed?: bo
   }
 
   return (
-    <Link
-      href={item.href}
-      className={`group flex min-h-10 items-center gap-3 px-3.5 py-2.5 rounded-xl text-[13px] font-medium transition-all duration-200 ${
+    <div>
+      <div className="flex items-center">
+        <Link
+          href={item.href}
+          className={`group flex min-w-0 flex-1 items-center rounded-xl transition-all duration-200 ${
+        level === 2
+          ? 'ml-9 min-h-8 gap-2 px-2.5 py-1.5 text-[11px] font-medium border-l border-outline-variant/60 rounded-l-none'
+          : level === 1
+            ? 'ml-9 min-h-8 gap-2 px-2.5 py-1.5 text-[11px] font-medium border-l border-outline-variant/60 rounded-l-none'
+            : 'min-h-10 gap-3 px-3.5 py-2.5 text-[13px] font-semibold'
+      } ${
         isActive
-          ? 'text-primary bg-primary/10 font-semibold shadow-[inset_3px_0_0_var(--primary)]'
-          : 'text-on-surface-variant hover:bg-surface-container-low hover:text-on-surface'
+            ? 'text-primary bg-primary/10 font-semibold shadow-[inset_3px_0_0_var(--primary)]'
+            : 'text-on-surface-variant hover:bg-surface-container-low hover:text-on-surface'
       }`}
-    >
-      <span
-        className={`material-symbols-outlined text-[20px] transition-colors ${
-          isActive ? 'text-primary fill-1' : 'text-outline group-hover:text-primary'
-        }`}
-      >
-        {item.icon}
-      </span>
-      <span className="truncate">{item.label}</span>
-      {item.badge ? (
-        <span className="ml-auto px-1.5 py-0.5 text-[10px] rounded bg-primary text-white font-bold">
-          {item.badge}
-        </span>
+        >
+          <span
+            className={`material-symbols-outlined transition-colors ${level === 2 ? 'text-[16px]' : level === 1 ? 'text-[18px]' : 'text-[20px]'} ${
+              isActive ? 'text-primary fill-1' : `nav-icon-${item.icon} group-hover:scale-110`
+            }`}
+          >
+            {item.icon}
+          </span>
+          <span className="truncate">{item.label}</span>
+          {item.badge ? <span className="ml-auto px-1.5 py-0.5 text-[10px] rounded bg-primary text-white font-bold">{item.badge}</span> : null}
+        </Link>
+        {item.children?.length ? (
+          <button type="button" onClick={() => setExpanded(value => !value)} aria-label={`${expanded ? 'Thu gọn' : 'Mở rộng'} ${item.label}`} aria-expanded={expanded} className="ml-1 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-on-surface-variant hover:bg-surface-container-low hover:text-primary">
+            <span className="material-symbols-outlined text-[18px]">{expanded ? 'expand_less' : 'expand_more'}</span>
+          </button>
+        ) : null}
+      </div>
+      {item.children?.length && expanded ? (
+        <div className="mt-0.5 space-y-0.5">
+          {item.children.map(child => <NavItem key={child.href} item={child} />)}
+        </div>
       ) : null}
-    </Link>
+    </div>
   );
 }
 

@@ -1,145 +1,71 @@
 # TechEnglish Pro
 
-<p align="center">
-  <strong>Nền tảng học tiếng Anh chuyên ngành CNTT & Luyện thi Chứng chỉ Quốc tế</strong><br/>
-  <em>IT English Learning Platform</em>
-</p>
+Nền tảng học tiếng Anh chuyên ngành CNTT và luyện thi chứng chỉ quốc tế, được phát triển dưới dạng monorepo cho Web, Mobile và REST API.
 
-<p align="center">
-  <img src="https://img.shields.io/badge/Next.js-15-black?style=for-the-badge&logo=nextdotjs" />
-  <img src="https://img.shields.io/badge/Expo-SDK%2054-white?style=for-the-badge&logo=expo&logoColor=black" />
-  <img src="https://img.shields.io/badge/NestJS-11-red?style=for-the-badge&logo=nestjs" />
-  <img src="https://img.shields.io/badge/Prisma-5.22-2D3748?style=for-the-badge&logo=prisma" />
-  <img src="https://img.shields.io/badge/PostgreSQL-18-336791?style=for-the-badge&logo=postgresql" />
-</p>
+## Tổng quan
 
----
+| Ứng dụng | Công nghệ chính | Địa chỉ mặc định |
+| --- | --- | --- |
+| Web | Next.js 15, React 19, Tailwind CSS 4 | `http://localhost:3000` |
+| API | NestJS 11, Prisma 5, PostgreSQL | `http://localhost:8080/api/v1` |
+| Mobile | Expo SDK 57, React Native | Expo Dev Server |
+| API Docs | Swagger | `http://localhost:8080/api/docs` |
 
-## Giới thiệu
+TechEnglish Pro hỗ trợ ba nhóm người dùng:
 
-**TechEnglish Pro** là nền tảng học tiếng Anh chuyên ngành CNTT toàn diện, xây dựng theo kiến trúc monorepo với 3 ứng dụng chính:
+- **Học viên:** onboarding cá nhân hóa, bài học chuyên ngành, flashcard/SRS, bài kiểm tra, tiến độ và gợi ý học tập.
+- **Giảng viên:** quản lý nội dung, câu hỏi, bài học, học viên, nhóm học viên và kết quả học tập.
+- **Quản trị viên:** toàn bộ nghiệp vụ giảng viên cùng quản lý người dùng, vai trò, quyền, danh mục và chứng chỉ.
 
-| App | Công nghệ | Port |
-|-----|-----------|------|
-| **Web** | Next.js 15 + Tailwind CSS v4 | `3000` |
-| **Mobile** | Expo SDK 54 / React Native | `8081` |
-| **API** | NestJS 11 + Prisma + PostgreSQL | `8080` |
+## Tính năng chính
 
----
+- Xác thực bằng email/mật khẩu, JWT, Google OAuth và khôi phục mật khẩu bằng OTP.
+- Phân quyền RBAC theo vai trò và quyền chi tiết.
+- Quản lý bài học, từ vựng, ví dụ, lĩnh vực CNTT và cấp độ học tập.
+- Ngân hàng câu hỏi, nhập câu hỏi từ Excel và tạo bài kiểm tra.
+- Chứng chỉ, blueprint theo domain/topic và liên kết nội dung ôn tập.
+- Flashcard và theo dõi từ vựng bằng cơ chế lặp lại ngắt quãng.
+- Bài kiểm tra xếp lớp, bài thi mô phỏng, chấm điểm và xem lại đáp án.
+- Hồ sơ học viên, mục tiêu nghề nghiệp/chứng chỉ và lộ trình học.
+- Báo cáo tiến độ, phân tích kết quả và gợi ý học tập bằng luật hoặc AI tùy chọn.
+- Nhóm học viên và thông báo đẩy qua Firebase.
+- Upload hình ảnh qua Cloudinary và cache qua Redis.
 
-## Tính năng nổi bật
+## Cấu trúc dự án
 
-### 🎓 Học viên (Learner)
-- **Onboarding cá nhân hóa** — Khảo sát trình độ, lĩnh vực IT quan tâm (Software Engineering, Cloud, DevOps, Cybersecurity...), mục tiêu nghề nghiệp và chứng chỉ quốc tế.
-- **Bài học chuyên ngành** — Học thuật ngữ, tài liệu kỹ thuật theo cấu trúc phân mục (sections: Text, Code Snippet, Callout...).
-- **Flashcard & Học từ vựng SRS** — Học từ vựng thông minh theo chu kỳ lặp lại ngắt quãng (Spaced Repetition System), phát âm chuẩn IPA & Text-to-Speech (TTS), lật thẻ tương tác, phân trang danh mục.
-- **Thi thử & Kiểm tra mô phỏng (Tech Quiz & Exams)**:
-  - Bộ lọc bài thi theo từ khóa, chuyên ngành (Domain) và cấp độ (Level).
-  - Đánh giá độ sẵn sàng (Readiness score) thông minh dựa trên tiến độ học tập và chuyên đề.
-  - Giao diện làm bài chuyên nghiệp: Đồng hồ đếm ngược, tự động nộp bài khi hết giờ, bảng danh sách câu hỏi (Question Palette).
-  - Phân biệt trực quan câu hỏi 1 đáp án (Radio) và câu hỏi nhiều đáp án (Checkbox).
-  - **Hộp thoại cảnh báo & xác nhận nộp bài**: Cảnh báo số câu chưa làm, danh sách câu chưa làm dạng chip bấm vào để nhảy ngay tới câu hỏi đó, ngăn chặn nộp nhầm khi chưa hoàn thành.
-  - Xem kết quả chi tiết, thống kê tỷ lệ đạt, so sánh đáp án học viên với đáp án chính xác kèm giải thích kỹ thuật.
-- **Báo cáo Năng lực & Tiến độ Cá nhân** — Theo dõi trực quan tiến độ học tập, độ sẵn sàng chứng chỉ mục tiêu, độ thành thạo chuyên ngành và lịch sử kết quả thi.
-
-### 👨‍🏫 Giảng viên & Quản trị viên (Admin / Teacher)
-- **Quản lý & Soạn thảo đề thi (Test Builder)** — Tìm kiếm, lọc câu hỏi theo chuyên ngành, cấp độ và loại câu; chọn câu hỏi vào đề thi kèm xem trước nội dung trực tiếp.
-- **Ngân hàng câu hỏi & Nhập liệu Excel** — Quản lý ngân hàng câu hỏi đa dạng (single choice, multiple choice); hỗ trợ **Import hàng loạt nhiều file Excel đồng thời**, tự động phân tích và kiểm tra lỗi định dạng.
-- **Quản lý học viên & Chi tiết kết quả thi** — Theo dõi danh sách học viên, hồ sơ năng lực, lịch sử các lượt thi; xem chi tiết từng lượt làm bài qua modal popup chuyên sâu.
-- **Quản lý phân quyền RBAC & Danh mục hệ thống** — Quản trị người dùng, vai trò (Admin, Teacher, Learner), phân quyền chi tiết; quản lý chuyên ngành (Domains), cấp độ (Levels), chứng chỉ (Certificates).
-- **Giao diện quản trị hiện đại** — Menu bên (Sidebar) thu gọn linh hoạt, tối ưu diện tích làm việc, thanh phân trang chuẩn hóa toàn hệ thống.
-
----
-
-## Kiến trúc
-
-```
-techenglish-pro/
+```text
+English/
 ├── apps/
-│   ├── api/                    # NestJS Backend
-│   │   ├── prisma/             # Schema + Migrations + Seed
+│   ├── api/                    # NestJS REST API
+│   │   ├── prisma/             # Schema, migrations và seed
 │   │   └── src/
-│   │       ├── application/    # Business logic (services)
-│   │       ├── infrastructure/ # Database (Prisma), external services
+│   │       ├── application/    # Nghiệp vụ
+│   │       ├── infrastructure/ # Prisma và dịch vụ ngoài
 │   │       ├── modules/        # NestJS modules
-│   │       └── presentation/   # REST Controllers & DTOs
-│   ├── web/                    # Next.js 15 Frontend
-│   │   └── app/
-│   │       ├── (admin)/        # Admin & Teacher portal (students, questions, tests, reports)
-│   │       ├── (auth)/         # Authentication (login, register, OAuth, password reset)
-│   │       ├── (learner)/      # Learner portal (learn, lessons, flashcards, quiz, progress)
-│   │       ├── landing/        # Landing page
-│   │       └── onboarding/     # Learner personalization flow
-│   └── mobile/                 # Expo React Native
-│       └── app/
-│           ├── (auth)/         # Login, register, forgot password
-│           ├── (onboarding)/   # Level, IT field, career, certificate
-│           ├── (tabs)/         # Home, Learning, Practice, Progress, Profile
-│           ├── flashcards/     # Flashcard study
-│           ├── lessons/        # Lesson detail + vocabulary
-│           ├── quiz/           # Mobile exam taking
-│           └── test-result/    # Mobile test results & review
+│   │       └── presentation/   # Controllers, DTOs và filters
+│   ├── web/                    # Next.js App Router
+│   └── mobile/                 # Expo Router / React Native
 ├── packages/
-│   ├── contracts/              # Shared TypeScript interfaces & contracts
-│   ├── design-tokens/          # Shared colors, typography, spacing
-│   └── shared-kernel/          # Shared pagination, error & result types
-├── docker-compose.yml          # Redis & infrastructure services
-├── pnpm-workspace.yaml         # Monorepo workspace config
-└── tsconfig.base.json          # Shared TypeScript base config
+│   ├── contracts/              # Kiểu và giao ước dùng chung
+│   ├── design-tokens/          # Màu sắc và design tokens
+│   └── shared-kernel/          # Tiện ích nghiệp vụ dùng chung
+├── docs/                       # Tài liệu phân tích và kiểm thử
+├── docker-compose.yml          # Redis và Redis Commander
+├── pnpm-workspace.yaml
+└── tsconfig.base.json
 ```
-
----
-
-## Cơ sở dữ liệu
-
-**32 bảng** trên PostgreSQL, chia thành các nhóm:
-
-| Nhóm | Bảng |
-|------|------|
-| **Auth & RBAC** | `users`, `user_details`, `roles`, `permissions`, `role_permissions`, `user_roles`, `refresh_tokens`, `password_reset_tokens` |
-| **Learner Profile** | `learner_profiles`, `learner_profile_domains`, `learner_profile_career_goals`, `learner_certificate_goals` |
-| **Taxonomy** | `domains`, `levels`, `career_goals`, `certificates`, `certificate_domains` |
-| **Lessons** | `lessons`, `lesson_sections`, `lesson_certificates` |
-| **Vocabulary** | `vocabularies`, `vocabulary_examples`, `lesson_vocabularies`, `vocabulary_progress` |
-| **Questions & Exams** | `questions`, `question_options`, `question_certificates`, `exams`, `exam_questions`, `exam_attempts`, `attempt_answers` |
-| **Progress** | `learning_progress` |
-
----
-
-## API Endpoints
-
-Base URL: `http://localhost:8080/api/v1`
-
-| Module | Endpoints chính |
-|--------|----------------|
-| **Auth** | `POST /auth/register`, `POST /auth/login`, `GET /auth/me`, `POST /auth/google`, `POST /auth/forgot-password`, `POST /auth/reset-password` |
-| **Users** | `GET /users`, `GET /users/:id`, `PATCH /users/:id`, `DELETE /users/:id` |
-| **Learner Profile** | `GET /learner-profile/me`, `POST /learner-profile/onboarding` |
-| **Taxonomy** | `GET /taxonomy/domains`, `GET /taxonomy/levels`, `GET /taxonomy/careers`, `GET /taxonomy/certificates` |
-| **Lessons** | `GET /lessons`, `GET /lessons/:id`, `POST /lessons`, `PATCH /lessons/:id` |
-| **Vocabulary** | `GET /vocabulary`, `POST /vocabulary`, `PATCH /vocabulary/:id` |
-| **Vocab Study** | `GET /vocab-study/session`, `GET /vocab-study/quiz`, `POST /vocab-study/answer`, `GET /vocab-study/summary` |
-| **Questions** | `GET /questions`, `POST /questions`, `PATCH /questions/:id` |
-| **Exams** | `GET /exams`, `POST /exams`, `POST /exams/:id/start`, `POST /exam-attempts/:id/submit` |
-| **Progress** | `GET /progress/me`, `POST /progress/mark-lesson/:id` |
-| **Reports** | `GET /reports/dashboard`, `GET /reports/students` |
-| **Upload** | `POST /upload/image` (Cloudinary) |
-| **Roles** | `GET /roles`, `POST /roles`, `PATCH /roles/:id` |
-
----
 
 ## Yêu cầu hệ thống
 
-- **Node.js** >= 20.x
-- **pnpm** >= 11.x
-- **PostgreSQL** >= 15
-- **Redis** >= 7 (Docker)
+- Node.js 20 trở lên.
+- pnpm 11 (phiên bản dự án: `11.9.0`).
+- PostgreSQL 15 trở lên.
+- Docker Desktop nếu chạy Redis bằng Docker Compose.
+- Expo Go hoặc Android/iOS emulator nếu chạy ứng dụng mobile.
 
----
+## Cài đặt nhanh
 
-## Cài đặt & Chạy
-
-### 1. Clone và cài dependencies
+### 1. Cài dependencies
 
 ```bash
 git clone https://github.com/HoQuocNam92/English.git
@@ -147,142 +73,160 @@ cd English
 pnpm install
 ```
 
-### 2. Khởi động Redis
+### 2. Tạo cấu hình môi trường
+
+Sao chép các file mẫu:
+
+```powershell
+Copy-Item .env.example .env
+Copy-Item apps/api/.env.example apps/api/.env
+Copy-Item apps/web/.env.example apps/web/.env.local
+```
+
+Tối thiểu cần cấu hình `DATABASE_URL` và `JWT_SECRET` trong `apps/api/.env`. Các cấu hình OpenAI, Google OAuth, Cloudinary, Firebase và SMTP là tùy chọn theo tính năng sử dụng.
+
+Không commit file `.env` chứa khóa bí mật lên Git.
+
+### 3. Khởi động Redis
 
 ```bash
 docker compose up -d
 ```
 
-### 3. Cấu hình Database
+Redis Commander mặc định chạy tại `http://localhost:8081`.
 
-Tạo file `apps/api/.env`:
+### 4. Chuẩn bị Prisma và database
 
-```env
-DATABASE_URL="postgresql://postgres:123456@localhost:5432/techenglish"
-JWT_SECRET="your-jwt-secret-key"
-JWT_REFRESH_SECRET="your-refresh-secret-key"
-
-# Google OAuth
-GOOGLE_CLIENT_ID="your-google-client-id"
-GOOGLE_CLIENT_SECRET="your-google-client-secret"
-GOOGLE_CALLBACK_URL="http://localhost:8080/api/v1/auth/google/callback"
-
-# Cloudinary (upload ảnh)
-CLOUDINARY_CLOUD_NAME="your-cloud-name"
-CLOUDINARY_API_KEY="your-api-key"
-CLOUDINARY_API_SECRET="your-api-secret"
-
-# Redis
-REDIS_HOST="localhost"
-REDIS_PORT=6379
-
-# Mail (SMTP)
-MAIL_HOST="smtp.gmail.com"
-MAIL_PORT=587
-MAIL_USER="your-email@gmail.com"
-MAIL_PASS="your-app-password"
-```
-
-### 4. Khởi tạo Database
+Tạo Prisma Client (không thay đổi dữ liệu):
 
 ```bash
-cd apps/api
-npx prisma generate
-npx prisma db push
-npx prisma db seed
+pnpm --filter @techenglish/api db:generate
 ```
+
+Áp dụng các migration đã có:
+
+```bash
+pnpm --filter @techenglish/api db:migrate:deploy
+```
+
+Nạp dữ liệu mẫu khi cần:
+
+```bash
+pnpm --filter @techenglish/api db:seed
+```
+
+> `db:generate` chỉ tạo mã Prisma Client. Không dùng `db:reset` trên database có dữ liệu cần giữ vì lệnh đó xóa và tạo lại database.
 
 ### 5. Chạy ứng dụng
 
-**API Server:**
+Mở các terminal riêng từ thư mục gốc.
+
 ```bash
-cd apps/api
-pnpm dev
-# → http://localhost:8080/api/v1
-# → Swagger: http://localhost:8080/api/docs
+# Backend
+pnpm --filter @techenglish/api dev
+
+# Web
+pnpm --filter web dev
+
+# Mobile
+pnpm --filter mobile dev
 ```
 
-**Web App:**
-```bash
-cd apps/web
-pnpm dev
-# → http://localhost:3000
-```
+## Các lệnh thường dùng
 
-**Mobile App:**
-```bash
-cd apps/mobile
-pnpm start
-# → Expo DevTools: http://localhost:8081
-# Scan QR code bằng Expo Go trên điện thoại
-```
+| Lệnh | Công dụng |
+| --- | --- |
+| `pnpm --filter @techenglish/api dev` | Chạy API ở chế độ watch |
+| `pnpm --filter @techenglish/api build` | Build API |
+| `pnpm --filter @techenglish/api test` | Chạy test API |
+| `pnpm --filter @techenglish/api db:generate` | Tạo lại Prisma Client |
+| `pnpm --filter @techenglish/api db:migrate:deploy` | Áp dụng migration hiện có |
+| `pnpm --filter @techenglish/api db:seed` | Nạp dữ liệu mẫu |
+| `pnpm --filter @techenglish/api db:studio` | Mở Prisma Studio |
+| `pnpm --filter web dev` | Chạy Next.js dev server |
+| `pnpm --filter web build` | Build Web production |
+| `pnpm --filter web typecheck` | Kiểm tra TypeScript Web |
+| `pnpm --filter mobile dev` | Chạy Expo dev server |
+| `pnpm --filter mobile typecheck` | Kiểm tra TypeScript Mobile |
+| `pnpm typecheck` | Kiểm tra các package dùng chung |
 
----
+## Database
 
-## Tài khoản mặc định (Seed)
+Prisma schema hiện có 38 model, thuộc các nhóm:
+
+- Xác thực và RBAC: user, role, permission, refresh token và password reset.
+- Hồ sơ học viên: cấp độ, mục tiêu, lĩnh vực, chứng chỉ và nhóm học viên.
+- Nội dung: lesson, section, vocabulary, example và các bảng liên kết.
+- Chứng chỉ: certificate, domain, certification topic và blueprint nội dung.
+- Đánh giá: question, option, exam, attempt và answer.
+- Tiến độ: learning progress, vocabulary progress và thông báo đẩy.
+
+Mọi thay đổi schema phải đi kèm migration trong `apps/api/prisma/migrations`.
+
+## API và Swagger
+
+- Base URL: `http://localhost:8080/api/v1`
+- Swagger UI: `http://localhost:8080/api/docs`
+
+Các nhóm endpoint chính gồm auth, users, roles, learner profiles, learner groups, lessons, vocabulary, vocab study, questions, exams, progress, recommendations, notifications, taxonomy, certificates, analytics và upload.
+
+Swagger là nguồn tham chiếu chính xác nhất cho request/response của phiên bản đang chạy.
+
+## Tài khoản seed
+
+Sau khi chạy seed, có thể sử dụng:
 
 | Vai trò | Email | Mật khẩu |
-|---------|-------|-----------|
+| --- | --- | --- |
 | Admin | `admin@techenglish.pro` | `Demo@123456` |
-| Giảng viên | `teacher@techenglish.pro` | `Demo@123456` |
-| Học viên | `learner@techenglish.pro` | `Demo@123456` |
+| Giảng viên | `nguyen.thanh@techenglish.pro` | `Demo@123456` |
+| Học viên | `learner1@techenglish.pro` | `Demo@123456` |
 
----
+Chỉ sử dụng các tài khoản/mật khẩu mẫu trong môi trường phát triển.
 
-## Tech Stack
+## Xử lý lỗi thường gặp
 
-### Backend
-- **NestJS 11** — Framework Node.js, kiến trúc module
-- **Prisma 5.22** — ORM, type-safe database access
-- **PostgreSQL 18** — Relational database
-- **Redis 7** — Caching (cache-manager-ioredis)
-- **Passport.js** — Authentication (JWT + Google OAuth)
-- **Swagger** — API documentation tự động
-- **Cloudinary** — Upload & quản lý hình ảnh
-- **Nodemailer** — Gửi email (forgot password, OTP)
-- **Helmet** — Security headers
+### PrismaService không có `$connect`, `user`, `question` hoặc `$transaction`
 
-### Frontend (Web)
-- **Next.js 15** — React framework, App Router
-- **Tailwind CSS v4** — Utility-first CSS
-- **TypeScript** — Type safety
+Đây thường là dấu hiệu Prisma Client chưa được tạo hoặc `node_modules` chưa hoàn chỉnh:
 
-### Mobile
-- **Expo SDK 54** — React Native framework
-- **Expo Router** — File-based routing
-- **React Native** — Cross-platform mobile
+```bash
+pnpm --filter @techenglish/api db:generate
+pnpm --filter @techenglish/api build
+```
 
-### Shared Packages
-- **@techenglish/contracts** — Shared TypeScript interfaces
-- **@techenglish/design-tokens** — Colors, spacing, typography
-- **@techenglish/shared-kernel** — Shared utilities (pagination, result types)
+### pnpm báo `ERR_PNPM_EEXIST` khi tạo symlink
 
-### DevOps
-- **pnpm 11** — Package manager (monorepo workspaces)
-- **Docker Compose** — Redis infrastructure
-- **TypeScript 5.9** — Across all apps
+Dừng các tiến trình Node, đổi tên thư mục `node_modules`, sau đó cài lại:
 
----
+```powershell
+Get-Process node -ErrorAction SilentlyContinue | Stop-Process
+Rename-Item node_modules node_modules_old
+pnpm install
+```
 
-## Scripts
+Sau khi xác nhận dự án hoạt động bình thường, có thể xóa `node_modules_old`.
 
-| Script | Mô tả |
-|--------|-------|
-| `pnpm dev` | Chạy dev server (trong mỗi app) |
-| `pnpm build` | Build production |
-| `pnpm db:generate` | Generate Prisma Client |
-| `pnpm db:push` | Push schema lên DB |
-| `pnpm db:seed` | Seed dữ liệu mẫu |
-| `pnpm db:studio` | Mở Prisma Studio (GUI) |
+### Web không gọi được API
 
----
+Kiểm tra các giá trị sau có cùng host và port với môi trường đang chạy:
+
+- `NEXT_PUBLIC_API_URL` trong `apps/web/.env.local`.
+- `WEB_URL` và `CORS_ORIGIN` trong `apps/api/.env`.
+
+## Kiểm tra trước khi commit
+
+```bash
+pnpm --filter @techenglish/api build
+pnpm --filter web typecheck
+pnpm --filter mobile typecheck
+pnpm typecheck
+```
 
 ## Tác giả
 
-**Hồ Quốc Nam** — Đại học Công nghiệp TP.HCM (IUH)
+Hồ Quốc Nam — Đại học Công nghiệp TP.HCM (IUH)
 
----
-
-## License
+## Giấy phép
 
 Private — All rights reserved.
