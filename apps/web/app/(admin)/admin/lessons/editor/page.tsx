@@ -4,336 +4,53 @@ import * as React from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { PageHeader } from '@/shared/ui';
 import { apiClient, ApiClientError } from '@/shared/api/api-client';
-import type { LessonDetail } from '@/shared/api/api-client';
+import { CONTENT_TYPES } from '@/shared/lib/admin-content-types';
+import { createStudioTemplate, hasStudioContent, hydrateStudioSections, LessonContentStudio, type StudioSection } from './LessonContentStudio';
 
-// Domain & Level options (loaded from API)
-interface SelectOption { id: string; code: string; name: string }
-
-function FieldError({ msg }: { msg?: string }) {
-  if (!msg) return null;
-  return <p className="mt-1 text-xs text-error">{msg}</p>;
-}
+type Option = { id: string; code: string; name: string };
+const LESSON_TYPES = [['vocabulary','Từ vựng'],['terminology','Thuật ngữ CNTT'],['technical_reading','Đọc hiểu tài liệu kỹ thuật'],['api_documentation','Tài liệu API'],['system_design','System Design cơ bản'],['case_study','Tình huống thực tế'],['certification_review','Ôn tập theo chứng chỉ']] as const;
+const unwrap = <T,>(result: { data?: T[] } | T[]): T[] => Array.isArray(result) ? result : result.data ?? [];
 
 export default function LessonEditorPage() {
-  const router = useRouter();
-  const params = useSearchParams();
-  const lessonId = params.get('id'); // ?id=xxx => edit mode
-  const isEdit = !!lessonId;
+  const router = useRouter(); const searchParams = useSearchParams(); const lessonId = searchParams.get('id');
+  const requestedType = searchParams.get('type');
+  const [options, setOptions] = React.useState<{ domains: Option[]; levels: Option[]; certificates: Option[] }>({ domains: [], levels: [], certificates: [] });
+  const [form, setForm] = React.useState({ title: '', summary: '', type: LESSON_TYPES.some(([value]) => value === requestedType) ? requestedType! : 'technical_reading', domainId: '', levelId: '', estimatedMinutes: 30, status: 'draft', keyConcepts: '', certificateIds: [] as string[] });
+  const [sections, setSections] = React.useState<StudioSection[]>(() => createStudioTemplate(requestedType ?? 'technical_reading'));
+  const [loading, setLoading] = React.useState(true); const [saving, setSaving] = React.useState(false); const [error, setError] = React.useState('');
 
-  const [domains, setDomains] = React.useState<SelectOption[]>([]);
-  const [levels, setLevels] = React.useState<SelectOption[]>([]);
-  const [certificates, setCertificates] = React.useState<SelectOption[]>([]);
-  const [certificateIds, setCertificateIds] = React.useState<string[]>(params.get('certificateId') ? [params.get('certificateId')!] : []);
+  React.useEffect(() => { void (async () => { try {
+    const [domains, levels, certificates] = await Promise.all([apiClient.get<{data?: Option[]} | Option[]>('/domains'), apiClient.get<{data?: Option[]} | Option[]>('/levels'), apiClient.get<{data?: Option[]} | Option[]>('/certificates')]);
+    setOptions({ domains: unwrap(domains), levels: unwrap(levels), certificates: unwrap(certificates) });
+    if (lessonId) { const item = await apiClient.get<any>(`/lessons/${lessonId}`); setForm({ title: item.title, summary: item.summary, type: item.type, domainId: item.domainId, levelId: item.levelId, estimatedMinutes: item.estimatedMinutes, status: item.status, keyConcepts: (item.keyConcepts ?? []).join(', '), certificateIds: (item.certificates ?? []).map((x: any) => x.certificateId) }); setSections(hydrateStudioSections(item.type, item.sections ?? [], item.keyConcepts ?? [])); }
+  } catch (e) { setError(e instanceof ApiClientError ? e.message : 'Không thể tải dữ liệu bài học'); } finally { setLoading(false); } })(); }, [lessonId]);
 
-  const [title, setTitle] = React.useState('');
-  const [summary, setSummary] = React.useState('');
-  const [type, setType] = React.useState('vocabulary');
-  const [domainId, setDomainId] = React.useState('');
-  const [levelId, setLevelId] = React.useState('');
-  const [estimatedMinutes, setEstimatedMinutes] = React.useState('');
-  const [tags, setTags] = React.useState(''); // comma-separated
-  const [status, setStatus] = React.useState('draft');
-
-  const [errors, setErrors] = React.useState<Record<string, string>>({});
-  const [loading, setLoading] = React.useState(false);
-  const [saving, setSaving] = React.useState(false);
-  const [globalError, setGlobalError] = React.useState('');
-
-  // Load domains + levels + (if edit) lesson data
-  React.useEffect(() => {
-    const init = async () => {
-      setLoading(true);
-      try {
-        const [domainsRes, levelsRes, certificatesRes] = await Promise.all<any>([
-          apiClient.get<any>('/domains'),
-          apiClient.get<any>('/levels'),
-          apiClient.get<any>('/certificates'),
-        ]);
-        setDomains(domainsRes?.data ?? domainsRes ?? []);
-        setLevels(levelsRes?.data ?? levelsRes ?? []);
-        setCertificates(certificatesRes?.data ?? certificatesRes ?? []);
-
-        if (isEdit) {
-          const lesson = await apiClient.get<LessonDetail>(`/lessons/${lessonId}`);
-          setTitle(lesson.title);
-          setSummary(lesson.summary ?? '');
-          setType(lesson.type ?? 'reading');
-          setDomainId((lesson as any).domainId ?? '');
-          setLevelId((lesson as any).levelId ?? '');
-          setEstimatedMinutes(String(lesson.estimatedMinutes ?? ''));
-          setTags(((lesson as any).tags as string[] ?? []).join(', '));
-          setCertificateIds((lesson as any).certificates?.map((item: any) => item.certificateId ?? item.certificate?.id) ?? []);
-          setStatus(lesson.status ?? 'draft');
-        }
-      } catch (e) {
-        setGlobalError(e instanceof ApiClientError ? e.message : 'Không thể tải dữ liệu');
-      } finally {
-        setLoading(false);
-      }
-    };
-    void init();
-  }, [isEdit, lessonId]);
-
-  // Client-side validation
-  const validate = (): boolean => {
-    const errs: Record<string, string> = {};
-    if (!title.trim()) errs.title = 'Tiêu đề không được để trống';
-    else if (title.trim().length < 5) errs.title = 'Tiêu đề phải có ít nhất 5 ký tự';
-    else if (title.trim().length > 200) errs.title = 'Tiêu đề tối đa 200 ký tự';
-    if (summary.trim().length > 500) errs.summary = 'Tóm tắt tối đa 500 ký tự';
-    const tagList = tags.split(',').map((tag) => tag.trim()).filter(Boolean);
-    if (tagList.length > 30) errs.tags = 'Tối đa 30 tags';
-    else if (tagList.some((tag) => tag.length > 50)) errs.tags = 'Mỗi tag tối đa 50 ký tự';
-    if (!domainId) errs.domainId = 'Vui lòng chọn lĩnh vực';
-    if (!levelId) errs.levelId = 'Vui lòng chọn cấp độ';
-    if (estimatedMinutes && (isNaN(Number(estimatedMinutes)) || Number(estimatedMinutes) < 1 || Number(estimatedMinutes) > 480)) {
-      errs.estimatedMinutes = 'Thời gian học phải từ 1 đến 480 phút';
-    }
-    setErrors(errs);
-    return Object.keys(errs).length === 0;
+  const submit = async (event: React.FormEvent) => { event.preventDefault(); setError('');
+    if (!form.title.trim() || !form.summary.trim() || !form.domainId || !form.levelId) { setError('Vui lòng nhập đủ tiêu đề, tóm tắt, lĩnh vực và trình độ.'); return; }
+    if (!sections.length || sections.some(section => !hasStudioContent(section))) { setError('Hãy hoàn thành nội dung chính của từng khối trước khi lưu.'); return; }
+    if (form.type === 'certification_review' && form.certificateIds.length === 0) { setError('Chuyên đề ôn tập cần liên kết ít nhất một chứng chỉ.'); return; }
+    setSaving(true); try { const payload = { ...form, title: form.title.trim(), summary: form.summary.trim(), keyConcepts: form.keyConcepts.split(',').map(x => x.trim()).filter(Boolean), sections: sections.map((section, order) => ({ type: section.type, order, title: section.title.trim() || undefined, content: Object.fromEntries(Object.entries(section.content).map(([key, value]) => [key, value.trim()])) })) }; if (lessonId) await apiClient.patch(`/lessons/${lessonId}`, payload); else await apiClient.post('/lessons', payload); router.push(`/admin/lessons?type=${form.type}`); } catch (e) { setError(e instanceof ApiClientError ? e.message : 'Không thể lưu nội dung'); } finally { setSaving(false); }
   };
+  const field = (key: keyof typeof form, value: unknown) => setForm(current => ({ ...current, [key]: value }));
+  const category = CONTENT_TYPES[form.type];
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!validate()) return;
-
-    setSaving(true);
-    setGlobalError('');
-    try {
-      const payload = {
-        title: title.trim(),
-        summary: summary.trim() || undefined,
-        type,
-        domainId: domainId || undefined,
-        levelId: levelId || undefined,
-        estimatedMinutes: estimatedMinutes ? Number(estimatedMinutes) : undefined,
-        tags: tags.trim() ? tags.split(',').map((t) => t.trim()).filter(Boolean) : [],
-        certificateIds,
-        status,
-      };
-
-      if (isEdit) {
-        await apiClient.patch(`/lessons/${lessonId}`, payload);
-      } else {
-        await apiClient.post('/lessons', payload);
-      }
-      router.push('/admin/lessons');
-    } catch (e) {
-      setGlobalError(e instanceof ApiClientError ? e.message : 'Lỗi khi lưu bài học');
-    } finally {
-      setSaving(false);
-    }
-  };
-
-  if (loading) {
-    return (
-      <div>
-        <PageHeader title={isEdit ? 'Chỉnh sửa bài học' : 'Soạn bài học mới'} description="Tạo hoặc chỉnh sửa bài học" />
-        <div className="mt-6 flex items-center justify-center h-64">
-          <span className="animate-spin material-symbols-outlined text-primary">progress_activity</span>
-        </div>
-      </div>
-    );
-  }
-
-  return (
-    <div>
-      <PageHeader
-        title={isEdit ? 'Chỉnh sửa bài học' : 'Soạn bài học mới'}
-        description={isEdit ? `Đang chỉnh sửa lesson ID: ${lessonId}` : 'Tạo bài học mới cho hệ thống'}
-      />
-
-      <form onSubmit={handleSubmit} className="mt-6 w-full max-w-[900px] space-y-6 rounded-2xl bg-surface-container-lowest p-6 shadow-[0_8px_28px_rgba(15,23,42,0.05)]">
-        {globalError && (
-          <div className="p-3 rounded-xl bg-error-container text-on-error-container text-sm flex gap-2 items-center">
-            <span className="material-symbols-outlined text-[18px]">error</span>
-            {globalError}
-          </div>
-        )}
-
-        {/* Title */}
-        <div>
-          <label className="block text-sm font-semibold text-on-surface mb-1">
-            Tiêu đề bài học <span className="text-error">*</span>
-          </label>
-          <input
-            type="text"
-            value={title}
-            onChange={(e) => setTitle(e.target.value)}
-            maxLength={200}
-            placeholder="Ví dụ: Understanding REST APIs in Production"
-            className="w-full rounded-xl border border-outline-variant px-4 py-2.5 text-sm text-on-surface bg-surface-container-low focus:outline-none focus:border-primary"
-          />
-          <FieldError msg={errors.tags} />
-          <FieldError msg={errors.title} />
-        </div>
-
-        {/* Summary */}
-        <div>
-          <label className="block text-sm font-semibold text-on-surface mb-1">Tóm tắt</label>
-          <textarea
-            value={summary}
-            onChange={(e) => setSummary(e.target.value)}
-            maxLength={500}
-            rows={3}
-            placeholder="Mô tả ngắn về nội dung bài học..."
-            className="w-full rounded-xl border border-outline-variant px-4 py-2.5 text-sm text-on-surface bg-surface-container-low focus:outline-none focus:border-primary resize-none"
-          />
-          <p className="mt-0.5 text-xs text-on-surface-variant text-right">{summary.length}/500</p>
-          <FieldError msg={errors.summary} />
-        </div>
-
-        {/* Type */}
-        <div>
-          <label className="block text-sm font-semibold text-on-surface mb-1">Loại bài học</label>
-          <select
-            value={type}
-            onChange={(e) => setType(e.target.value)}
-            className="w-full rounded-xl border border-outline-variant px-4 py-2.5 text-sm text-on-surface bg-surface-container-low focus:outline-none focus:border-primary"
-          >
-            <option value="vocabulary">Từ vựng</option>
-            <option value="terminology">Thuật ngữ chuyên ngành</option>
-            <option value="technical_reading">Đọc hiểu tài liệu kỹ thuật</option>
-            <option value="api_documentation">Tài liệu API</option>
-            <option value="system_design">System Design cơ bản</option>
-            <option value="case_study">Case Study thực tế</option>
-          </select>
-        </div>
-
-        {/* Domain & Level */}
-        <div className="grid grid-cols-2 gap-4">
-          <div>
-            <label className="block text-sm font-semibold text-on-surface mb-1">
-              Lĩnh vực <span className="text-error">*</span>
-            </label>
-            <select
-              value={domainId}
-              onChange={(e) => setDomainId(e.target.value)}
-              className="w-full rounded-xl border border-outline-variant px-4 py-2.5 text-sm text-on-surface bg-surface-container-low focus:outline-none focus:border-primary"
-            >
-              <option value="">-- Chọn lĩnh vực --</option>
-              {domains.map((d) => (
-                <option key={d.id} value={d.id}>{d.name}</option>
-              ))}
-            </select>
-            <FieldError msg={errors.domainId} />
-          </div>
-
-          <div>
-            <label className="block text-sm font-semibold text-on-surface mb-1">
-              Cấp độ <span className="text-error">*</span>
-            </label>
-            <select
-              value={levelId}
-              onChange={(e) => setLevelId(e.target.value)}
-              className="w-full rounded-xl border border-outline-variant px-4 py-2.5 text-sm text-on-surface bg-surface-container-low focus:outline-none focus:border-primary"
-            >
-              <option value="">-- Chọn cấp độ --</option>
-              {levels.map((l) => (
-                <option key={l.id} value={l.id}>{l.name}</option>
-              ))}
-            </select>
-            <FieldError msg={errors.levelId} />
-          </div>
-        </div>
-
-        {/* Estimated Minutes */}
-        <div>
-          <label className="block text-sm font-semibold text-on-surface mb-2">Chứng chỉ liên quan</label>
-          <div className="grid gap-2 rounded-xl border border-outline-variant bg-surface-container-low p-3 sm:grid-cols-2">{certificates.map(cert => <label key={cert.id} className="flex items-center gap-2 text-sm"><input type="checkbox" checked={certificateIds.includes(cert.id)} onChange={event => setCertificateIds(current => event.target.checked ? [...current, cert.id] : current.filter(id => id !== cert.id))} className="accent-primary" />{cert.name}</label>)}{!certificates.length && <p className="text-sm text-on-surface-variant">Chưa có chứng chỉ.</p>}</div>
-        </div>
-
-        {/* Estimated Minutes */}
-        <div>
-          <label className="block text-sm font-semibold text-on-surface mb-1">Thời gian học (phút)</label>
-          <input
-            type="number"
-            value={estimatedMinutes}
-            onChange={(e) => setEstimatedMinutes(e.target.value)}
-            min={1}
-            max={480}
-            placeholder="Ví dụ: 30"
-            className="w-full rounded-xl border border-outline-variant px-4 py-2.5 text-sm text-on-surface bg-surface-container-low focus:outline-none focus:border-primary"
-          />
-          <FieldError msg={errors.estimatedMinutes} />
-        </div>
-
-        {/* Tags */}
-        <div>
-          <label className="block text-sm font-semibold text-on-surface mb-1">Tags (phân cách bằng dấu phẩy)</label>
-          <input
-            type="text"
-            value={tags}
-            onChange={(e) => setTags(e.target.value)}
-            placeholder="aws, api, rest, cloud"
-            className="w-full rounded-xl border border-outline-variant px-4 py-2.5 text-sm text-on-surface bg-surface-container-low focus:outline-none focus:border-primary"
-          />
-        </div>
-
-
-
-        {/* Actions */}
-        <div className="flex flex-wrap items-center gap-3 pt-4 border-t border-outline-variant/30">
-          <button
-            type="submit"
-            disabled={saving}
-            className="flex items-center gap-2 px-6 py-2.5 rounded-xl bg-primary text-white text-sm font-semibold hover:opacity-90 disabled:opacity-50 transition-opacity shadow-sm cursor-pointer"
-          >
-            {saving ? (
-              <span className="animate-spin material-symbols-outlined text-[16px]">progress_activity</span>
-            ) : (
-              <span className="material-symbols-outlined text-[16px]">save</span>
-            )}
-            {isEdit ? 'Lưu bài học' : 'Tạo bài học'}
-          </button>
-
-          {status !== 'published' && (
-            <button
-              type="button"
-              disabled={saving}
-              onClick={async (e) => {
-                setStatus('published');
-                setTimeout(() => {
-                  const form = (e.target as HTMLElement).closest('form');
-                  if (form) form.requestSubmit();
-                }, 0);
-              }}
-              className="flex items-center gap-2 px-6 py-2.5 rounded-xl bg-green-600 text-white text-sm font-semibold hover:bg-green-700 disabled:opacity-50 transition-colors shadow-sm cursor-pointer"
-            >
-              <span className="material-symbols-outlined text-[16px]">publish</span>
-              Xuất bản ngay
-            </button>
-          )}
-
-          {isEdit && status === 'published' && (
-            <button
-              type="button"
-              disabled={saving}
-              onClick={async (e) => {
-                setStatus('archived');
-                setTimeout(() => {
-                  const form = (e.target as HTMLElement).closest('form');
-                  if (form) form.requestSubmit();
-                }, 0);
-              }}
-              className="flex items-center gap-2 px-6 py-2.5 rounded-xl border border-outline-variant text-sm font-semibold text-on-surface hover:bg-surface-container transition-colors cursor-pointer"
-            >
-              <span className="material-symbols-outlined text-[16px]">archive</span>
-              Lưu trữ bài học
-            </button>
-          )}
-
-          <button
-            type="button"
-            onClick={() => router.back()}
-            disabled={saving}
-            className="px-6 py-2.5 rounded-xl border border-outline-variant text-sm font-semibold text-on-surface hover:bg-surface-container transition-colors ml-auto cursor-pointer"
-          >
-            Hủy
-          </button>
-        </div>
-      </form>
-    </div>
-  );
+  if (loading) return <div><PageHeader title="Quản lý bài học" description="Đang tải biểu mẫu..." /><p className="mt-10 text-center text-on-surface-variant">Đang tải...</p></div>;
+  return <div><PageHeader title={`${lessonId ? 'Chỉnh sửa' : 'Thêm'} ${category?.item ?? 'bài học'}`} description={category?.intro ?? 'Biên soạn nội dung học tập'} />
+    <form onSubmit={submit} className="mt-6 max-w-5xl space-y-6">
+      {error && <div className="rounded-xl bg-error-container p-3 text-sm text-on-error-container">{error}</div>}
+      <section className="grid gap-4 rounded-2xl bg-surface-container-lowest p-6 shadow-sm md:grid-cols-2">
+        <label className="md:col-span-2 text-sm font-semibold">Tên {category?.item ?? 'bài học'}<input value={form.title} onChange={e => field('title', e.target.value)} maxLength={200} className="mt-1.5 w-full rounded-xl border border-outline-variant bg-surface-container-low px-4 py-2.5 font-normal" /></label>
+        <label className="md:col-span-2 text-sm font-semibold">{category?.summaryLabel ?? 'Tóm tắt'}<textarea value={form.summary} onChange={e => field('summary', e.target.value)} maxLength={1000} rows={3} className="mt-1.5 w-full rounded-xl border border-outline-variant bg-surface-container-low px-4 py-2.5 font-normal" /></label>
+        <label className="text-sm font-semibold">Loại nội dung<select value={form.type} onChange={e => { const nextType = e.target.value; field('type', nextType); if (!lessonId || sections.every(section => !hasStudioContent(section))) setSections(createStudioTemplate(nextType)); }} className="mt-1.5 w-full rounded-xl border border-outline-variant bg-surface-container-low px-3 py-2.5 font-normal">{LESSON_TYPES.map(([value,label]) => <option key={value} value={value}>{label}</option>)}</select></label>
+        <label className="text-sm font-semibold">Trạng thái<select value={form.status} onChange={e => field('status', e.target.value)} className="mt-1.5 w-full rounded-xl border border-outline-variant bg-surface-container-low px-3 py-2.5 font-normal"><option value="draft">Bản nháp</option><option value="published">Đã xuất bản</option><option value="archived">Đã lưu trữ</option></select></label>
+        <label className="text-sm font-semibold">Lĩnh vực<select value={form.domainId} onChange={e => field('domainId', e.target.value)} className="mt-1.5 w-full rounded-xl border border-outline-variant bg-surface-container-low px-3 py-2.5 font-normal"><option value="">Chọn lĩnh vực</option>{options.domains.map(x => <option key={x.id} value={x.id}>{x.name}</option>)}</select></label>
+        <label className="text-sm font-semibold">Trình độ<select value={form.levelId} onChange={e => field('levelId', e.target.value)} className="mt-1.5 w-full rounded-xl border border-outline-variant bg-surface-container-low px-3 py-2.5 font-normal"><option value="">Chọn trình độ</option>{options.levels.map(x => <option key={x.id} value={x.id}>{x.name}</option>)}</select></label>
+        <label className="text-sm font-semibold">Thời lượng (phút)<input type="number" min={1} max={480} value={form.estimatedMinutes} onChange={e => field('estimatedMinutes', Number(e.target.value))} className="mt-1.5 w-full rounded-xl border border-outline-variant bg-surface-container-low px-4 py-2.5 font-normal" /></label>
+        <label className="text-sm font-semibold">{category?.conceptsLabel ?? 'Khái niệm chính'}<input value={form.keyConcepts} onChange={e => field('keyConcepts', e.target.value)} placeholder="Nhập các mục, cách nhau bằng dấu phẩy" className="mt-1.5 w-full rounded-xl border border-outline-variant bg-surface-container-low px-4 py-2.5 font-normal" /></label>
+        {(form.type === 'certification_review' || form.certificateIds.length > 0) && <fieldset className="md:col-span-2"><legend className="text-sm font-semibold">Chứng chỉ liên quan {form.type === 'certification_review' ? '(bắt buộc)' : ''}</legend><div className="mt-2 grid gap-2 rounded-xl border border-outline-variant p-3 sm:grid-cols-2">{options.certificates.map(cert => <label key={cert.id} className="flex items-center gap-2 text-sm"><input type="checkbox" checked={form.certificateIds.includes(cert.id)} onChange={e => field('certificateIds', e.target.checked ? [...form.certificateIds, cert.id] : form.certificateIds.filter(id => id !== cert.id))} className="accent-primary" />{cert.name}</label>)}{!options.certificates.length && <span className="text-sm text-on-surface-variant">Chưa có chứng chỉ.</span>}</div></fieldset>}
+      </section>
+      <LessonContentStudio type={form.type} sections={sections} onChange={setSections} />
+      <div className="flex justify-end gap-3"><button type="button" onClick={() => router.push(`/admin/lessons?type=${form.type}`)} className="rounded-xl border border-outline-variant px-5 py-2.5 text-sm font-semibold">Hủy</button><button disabled={saving} className="rounded-xl bg-primary px-5 py-2.5 text-sm font-semibold text-white disabled:opacity-50">{saving ? 'Đang lưu...' : `Lưu ${category?.item ?? 'bài học'}`}</button></div>
+    </form>
+  </div>;
 }
-

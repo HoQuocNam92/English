@@ -1,294 +1,72 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { Suspense, useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
+import { useSearchParams } from 'next/navigation';
 import { LearnerShell } from '@/shared/layout';
 import { apiClient } from '@/shared/api/api-client';
-import { useI18n } from '@/shared/i18n';
+import { lessonTracks, lessonTrackByType } from '@/shared/lib/lesson-tracks';
 
-type LevelFilter = 'all' | 'beginner' | 'intermediate' | 'advanced';
-type SortMode = 'newest' | 'oldest' | 'progress';
+type Lesson = { id: string; title: string; summary: string; type: string; estimatedMinutes: number; domain?: { name: string }; level?: { name: string }; keyConcepts?: string[] };
 
-export default function LearnerLessonsPage() {
-  const { t } = useI18n();
-  const [lessons, setLessons] = useState<any[]>([]);
+const accentClasses: Record<string, { icon: string; badge: string; border: string; nav: string }> = {
+  teal: { icon: 'bg-primary/10 text-primary', badge: 'bg-primary/10 text-primary', border: 'border-t-primary', nav: 'border-primary/30 bg-primary/5 text-on-surface' },
+  blue: { icon: 'bg-primary/10 text-primary', badge: 'bg-primary/10 text-primary', border: 'border-t-primary', nav: 'border-primary/30 bg-primary/5 text-on-surface' },
+  violet: { icon: 'bg-primary/10 text-primary', badge: 'bg-primary/10 text-primary', border: 'border-t-primary', nav: 'border-primary/30 bg-primary/5 text-on-surface' },
+  indigo: { icon: 'bg-primary/10 text-primary', badge: 'bg-primary/10 text-primary', border: 'border-t-primary', nav: 'border-primary/30 bg-primary/5 text-on-surface' },
+  amber: { icon: 'bg-primary/10 text-primary', badge: 'bg-primary/10 text-primary', border: 'border-t-primary', nav: 'border-primary/30 bg-primary/5 text-on-surface' },
+};
+
+function LessonCatalog() {
+  const params = useSearchParams();
+  const activeTrack = lessonTrackByType(params.get('type') ?? '');
+  const type = activeTrack?.type ?? '';
+  const [query, setQuery] = useState('');
+  const [items, setItems] = useState<Lesson[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
-  const [search, setSearch] = useState('');
-  const [level, setLevel] = useState<LevelFilter>('all');
-  const [userLevel, setUserLevel] = useState<string>('');
-  const [sort, setSort] = useState<SortMode>('newest');
-  const [page, setPage] = useState(1);
-  const PER_PAGE = 12;
 
   useEffect(() => {
-    async function loadData() {
+    let current = true;
+    setLoading(true); setError('');
+    const load = async () => {
       try {
-        const [res, profileRes]: any = await Promise.allSettled([
-          apiClient.get('/lessons?limit=100'),
-          apiClient.get('/learner-profiles/me'),
-        ]);
-        const data = res.status === 'fulfilled' ? (res.value?.data ?? res.value ?? []) : [];
-        setLessons(Array.isArray(data) ? data : []);
+        const results = await Promise.all((type ? [type] : lessonTracks.map(track => track.type)).map(async lessonType => {
+          const search = new URLSearchParams({ limit: '100', status: 'published', type: lessonType });
+          const result = await apiClient.get<{ data: Lesson[] }>(`/lessons?${search}`);
+          return result?.data ?? [];
+        }));
+        if (current) setItems(results.flat());
+      } catch (cause: any) {
+        if (current) setError(cause?.message ?? 'Không thể tải bài học.');
+      } finally { if (current) setLoading(false); }
+    };
+    void load();
+    return () => { current = false; };
+  }, [type]);
 
-        if (profileRes.status === 'fulfilled') {
-          const profLevel = profileRes.value?.level?.code?.toLowerCase();
-          if (profLevel) {
-            setUserLevel(profLevel);
-            if (['beginner', 'intermediate', 'advanced'].includes(profLevel)) {
-              setLevel(profLevel as LevelFilter);
-            }
-          }
-        }
-      } catch {
-        setError((t.lessons as any).fetchError);
-      } finally {
-        setLoading(false);
-      }
-    }
-    loadData();
-  }, [(t.lessons as any).fetchError]);
+  const visible = useMemo(() => items.filter(item => `${item.title} ${item.summary} ${item.domain?.name ?? ''} ${item.keyConcepts?.join(' ') ?? ''}`.toLocaleLowerCase('vi').includes(query.trim().toLocaleLowerCase('vi'))), [items, query]);
+  const counts = useMemo(() => Object.fromEntries(lessonTracks.map(track => [track.type, items.filter(item => item.type === track.type).length])), [items]);
 
-  // Filter & sort
-  const filtered = lessons
-    .filter((l) => {
-      const q = search.toLowerCase();
-      const matchSearch = !q || l.title?.toLowerCase().includes(q) || l.domain?.name?.toLowerCase().includes(q);
-      const levelCode = l.level?.code?.toLowerCase() ?? l.level?.name?.toLowerCase() ?? '';
-      const matchLevel = level === 'all' || levelCode.includes(level.replace('intermediate', 'inter'));
-      return matchSearch && matchLevel;
-    })
-    .sort((a, b) => {
-      if (sort === 'newest') return new Date(b.createdAt ?? 0).getTime() - new Date(a.createdAt ?? 0).getTime();
-      if (sort === 'oldest') return new Date(a.createdAt ?? 0).getTime() - new Date(b.createdAt ?? 0).getTime();
-      return (b.progress ?? 0) - (a.progress ?? 0);
-    });
+  return <LearnerShell><div className="pb-12">
+    <header className="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
+      <div><p className="text-xs font-black uppercase tracking-[.18em] text-primary">Thư viện nội dung</p><h1 className="mt-1 text-3xl font-black text-on-surface">{activeTrack?.label ?? 'Tiếng Anh trong công việc CNTT'}</h1><p className="mt-2 max-w-2xl text-sm leading-6 text-on-surface-variant">{activeTrack?.description ?? 'Luyện đọc, phân tích tài liệu và xử lý tình huống thực tế theo lĩnh vực bạn quan tâm.'}</p></div>
+      <label className="flex h-11 min-w-0 items-center gap-2 rounded-xl border border-outline-variant bg-white px-3 lg:w-72"><span className="material-symbols-outlined text-[20px] text-on-surface-variant">search</span><input value={query} onChange={event => setQuery(event.target.value)} placeholder="Tìm theo chủ đề, lĩnh vực..." aria-label="Tìm bài học chuyên ngành" className="h-full min-w-0 flex-1 border-0 bg-transparent text-sm outline-none" /></label>
+    </header>
 
-  const totalPages = Math.max(1, Math.ceil(filtered.length / PER_PAGE));
-  const paginated = filtered.slice((page - 1) * PER_PAGE, page * PER_PAGE);
+    <nav className="mt-7 grid gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6" aria-label="Không gian học tập">
+      <Link href="/learn/lessons" aria-current={!type ? 'page' : undefined} className={`group rounded-2xl border p-4 transition hover:-translate-y-0.5 hover:shadow-sm ${!type ? 'border-slate-900 bg-slate-900 text-white' : 'border-outline-variant/60 bg-white text-on-surface'}`}><span className={`flex h-9 w-9 items-center justify-center rounded-xl ${!type ? 'bg-white/15' : 'bg-slate-100'}`}><span className="material-symbols-outlined text-[20px]">explore</span></span><p className="mt-4 text-[10px] font-black uppercase tracking-widest opacity-65">Explore</p><strong className="mt-1 block text-sm">Tất cả không gian</strong></Link>
+      {lessonTracks.map(track => { const accent = accentClasses[track.accent]; const active = type === track.type; return <Link key={track.type} href={`/learn/lessons?type=${track.type}`} aria-current={active ? 'page' : undefined} className={`group relative overflow-hidden rounded-2xl border p-4 transition hover:-translate-y-0.5 hover:shadow-sm ${active ? `${accent.nav} ring-2 ring-current/10` : 'border-outline-variant/60 bg-white text-on-surface'}`}><span className={`flex h-9 w-9 items-center justify-center rounded-xl ${accent.icon}`}><span className="material-symbols-outlined text-[20px]">{track.icon}</span></span><p className="mt-4 text-[10px] font-black uppercase tracking-widest opacity-60">{track.eyebrow}</p><strong className="mt-1 block text-sm leading-5">{track.label}</strong>{active && <span className="absolute right-3 top-3 h-2 w-2 rounded-full bg-current" />}</Link>; })}
+    </nav>
 
-  const getLevelLabel = (l: any) => {
-    const code = l.level?.code ?? l.level?.name ?? '';
-    if (/begin|basic|cơ/i.test(code)) return (t.lessons as any).beginner;
-    if (/inter|trung/i.test(code)) return (t.lessons as any).intermediate;
-    if (/adv|nâng/i.test(code)) return (t.lessons as any).advanced;
-    return code || (t.lessons as any).beginner;
-  };
+    {!type && <section className="mt-7 grid gap-4 md:grid-cols-2 xl:grid-cols-3" aria-label="Hướng học chuyên ngành">{lessonTracks.map(track => { const accent = accentClasses[track.accent]; return <Link key={track.type} href={`/learn/lessons?type=${track.type}`} className={`group flex flex-col rounded-2xl border border-t-4 border-outline-variant/50 ${accent.border} bg-white p-5 shadow-xs transition hover:-translate-y-0.5 hover:shadow-md`}><div className="flex items-start justify-between"><span className={`flex h-11 w-11 items-center justify-center rounded-xl ${accent.icon}`}><span className="material-symbols-outlined">{track.icon}</span></span><span className="text-xs font-semibold text-on-surface-variant">{counts[track.type] ?? 0} bài học</span></div><p className="mt-5 text-[11px] font-black uppercase tracking-widest text-on-surface-variant">{track.eyebrow}</p><h2 className="mt-1 text-lg font-black text-on-surface">{track.label}</h2><p className="mt-2 flex-1 text-sm leading-6 text-on-surface-variant">{track.description}</p><span className="mt-5 inline-flex items-center gap-1 text-sm font-bold text-primary">Khám phá chuyên đề<span className="material-symbols-outlined text-[18px] transition group-hover:translate-x-1">arrow_forward</span></span></Link>; })}</section>}
 
-  const getStatusLabel = (l: any) => {
-    const prog = l.progress ?? null;
-    if (prog === null) return { label: (t.lessons as any).notStarted, color: 'text-on-surface-variant', pct: 0 };
-    if (prog >= 100) return { label: (t.lessons as any).completed, color: 'text-secondary', pct: 100 };
-    if (prog > 0) return { label: (t.lessons as any).inProgress, color: 'text-on-surface-variant', pct: prog };
-    return { label: (t.lessons as any).notStarted, color: 'text-on-surface-variant', pct: 0 };
-  };
-
-  if (loading) {
-    return (
-      <LearnerShell>
-        <div className="flex items-center justify-center h-64">
-          <div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin" />
-        </div>
-      </LearnerShell>
-    );
-  }
-
-  if (error) {
-    return (
-      <LearnerShell>
-        <div className="text-center text-error py-10">
-          <p>{error}</p>
-          <button onClick={() => window.location.reload()} className="mt-4 px-4 py-2 bg-primary text-white rounded-lg text-[14px] font-semibold">{t.common.submit}</button>
-        </div>
-      </LearnerShell>
-    );
-  }
-
-  return (
-    <LearnerShell>
-      <div className="flex flex-col gap-6">
-
-        {/* Header */}
-        <header className="flex flex-col gap-2">
-          <h1 className="text-[30px] font-bold text-on-surface" style={{ lineHeight: '38px', letterSpacing: '-0.02em' }}>
-            {(t.lessons as any).title}
-          </h1>
-          <p className="text-[14px] text-on-surface-variant max-w-2xl">
-            {(t.lessons as any).desc}
-          </p>
-        </header>
-
-        {/* Search + Filter Bar */}
-        <div className="flex flex-col md:flex-row gap-4 items-start md:items-center justify-between bg-surface-white p-4 rounded-xl border border-border-subtle shadow-xs">
-          {/* Search */}
-          <div className="relative w-full md:w-96">
-            <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant" style={{ fontSize: '20px' }}>search</span>
-            <input
-              className="w-full pl-10 pr-4 py-2 bg-surface-white border border-border-subtle rounded-lg text-[14px] text-on-surface font-medium placeholder:text-on-surface-variant/60 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all shadow-xs"
-              placeholder={(t.lessons as any).searchPlaceholder || 'Tìm bài học...'}
-              value={search}
-              onChange={(e) => { setSearch(e.target.value); setPage(1); }}
-              type="text"
-            />
-          </div>
-
-          <div className="flex gap-3 w-full md:w-auto">
-            {/* Level filter */}
-            <div className="relative flex-1 md:flex-none">
-              <select
-                value={level}
-                onChange={(e) => { setLevel(e.target.value as LevelFilter); setPage(1); }}
-                className="w-full md:w-auto appearance-none bg-surface-white border border-border-subtle rounded-lg pl-4 pr-10 py-2 text-[14px] text-on-surface font-medium focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent cursor-pointer shadow-xs hover:border-outline-variant transition-colors"
-              >
-                <option value="all" className="bg-white text-slate-900 py-1.5">{(t.lessons as any).allLevels || 'Tất cả cấp độ'}</option>
-                <option value="beginner" className="bg-white text-slate-900 py-1.5">{(t.lessons as any).beginner || 'Cơ bản'}</option>
-                <option value="intermediate" className="bg-white text-slate-900 py-1.5">{(t.lessons as any).intermediate || 'Trung cấp'}</option>
-                <option value="advanced" className="bg-white text-slate-900 py-1.5">{(t.lessons as any).advanced || 'Nâng cao'}</option>
-              </select>
-              <span className="material-symbols-outlined absolute right-3 top-1/2 -translate-y-1/2 text-on-surface-variant pointer-events-none" style={{ fontSize: '20px' }}>expand_more</span>
-            </div>
-
-            {/* Sort */}
-            <div className="relative flex-1 md:flex-none">
-              <select
-                value={sort}
-                onChange={(e) => { setSort(e.target.value as SortMode); setPage(1); }}
-                className="w-full md:w-auto appearance-none bg-surface-white border border-border-subtle rounded-lg pl-4 pr-10 py-2 text-[14px] text-on-surface font-medium focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent cursor-pointer shadow-xs hover:border-outline-variant transition-colors"
-              >
-                <option value="newest" className="bg-white text-slate-900 py-1.5">{(t.lessons as any).sortNewest || 'Mới nhất'}</option>
-                <option value="oldest" className="bg-white text-slate-900 py-1.5">{(t.lessons as any).sortOldest || 'Cũ nhất'}</option>
-                <option value="progress" className="bg-white text-slate-900 py-1.5">{(t.lessons as any).sortProgress || 'Tiến độ'}</option>
-              </select>
-              <span className="material-symbols-outlined absolute right-3 top-1/2 -translate-y-1/2 text-on-surface-variant pointer-events-none" style={{ fontSize: '20px' }}>sort</span>
-            </div>
-          </div>
-        </div>
-
-        {/* Lesson Grid — 4 col */}
-        {paginated.length === 0 ? (
-          <div className="text-center py-16 text-on-surface-variant">
-            <span className="material-symbols-outlined text-[48px] block mb-2">search_off</span>
-            <p className="text-[14px]">{(t.lessons as any).noResults}</p>
-          </div>
-        ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-6">
-            {paginated.map((lesson: any, idx: number) => {
-              const status = getStatusLabel(lesson);
-              const levelLabel = getLevelLabel(lesson);
-              const domain = lesson.domain?.name ?? lesson.domain?.code ?? 'IT';
-              const duration = lesson.estimatedMinutes ?? 30;
-
-              return (
-                <Link
-                  key={lesson.id}
-                  href={`/learn/lessons/${lesson.id}`}
-                  className="bg-surface-white border border-border-subtle rounded-lg overflow-hidden flex flex-col group cursor-pointer relative transition-all duration-200 hover:-translate-y-0.5 hover:shadow-[0_4px_6px_-1px_rgba(15,23,24,0.1),0_2px_4px_-1px_rgba(15,23,24,0.06)]"
-                >
-                  {/* Thumbnail */}
-                  <div className="relative h-40 w-full bg-surface-container-low overflow-hidden">
-                    <div className="w-full h-full bg-gradient-to-br from-primary-light to-surface-container group-hover:scale-105 transition-transform duration-300 flex items-center justify-center">
-                      <span className="material-symbols-outlined text-primary opacity-20" style={{ fontSize: '72px' }}>auto_stories</span>
-                    </div>
-
-                    {/* Duration badge */}
-                    <div className="absolute top-2 right-2 bg-surface-white px-2 py-1 rounded text-[12px] font-bold text-on-surface-variant flex items-center gap-1 shadow-sm">
-                      <span className="material-symbols-outlined" style={{ fontSize: '14px' }}>schedule</span>
-                      {duration} min
-                    </div>
-                  </div>
-
-                  {/* Card body */}
-                  <div className="p-4 flex flex-col flex-grow gap-2">
-                    <div className="flex justify-between items-start flex-wrap gap-1">
-                      <div className="flex items-center gap-1.5 flex-wrap">
-                        <span className="text-[12px] font-bold text-primary bg-primary-light px-2 py-1 rounded">
-                          {domain}
-                        </span>
-                        {userLevel && (lesson.level?.code?.toLowerCase() === userLevel || lesson.level?.name?.toLowerCase() === userLevel) && (
-                          <span className="text-[11px] font-bold text-emerald-700 bg-emerald-50 border border-emerald-200 px-1.5 py-0.5 rounded flex items-center gap-0.5">
-                            <span className="material-symbols-outlined text-[13px]">verified</span>
-                            Phù hợp với bạn
-                          </span>
-                        )}
-                      </div>
-                      <span className="text-[12px] font-bold text-on-surface-variant">{levelLabel}</span>
-                    </div>
-
-                    <h3 className="text-[20px] font-semibold text-on-surface group-hover:text-primary transition-colors line-clamp-2 mt-1" style={{ lineHeight: '28px' }}>
-                      {lesson.title}
-                    </h3>
-
-                    <div className="text-[12px] text-on-surface-variant flex items-center gap-1 mt-auto">
-                      <span className="material-symbols-outlined" style={{ fontSize: '16px' }}>signal_cellular_alt</span>
-                      {levelLabel}
-                    </div>
-
-                    {/* Progress */}
-                    <div className="mt-2 flex flex-col gap-1">
-                      <div className="flex justify-between text-[12px]">
-                        <span className={status.color}>{status.label}</span>
-                        <span className={`font-semibold ${status.pct > 0 ? 'text-primary' : 'text-on-surface-variant'}`}>{status.pct}%</span>
-                      </div>
-                      <div className="w-full h-2 bg-surface-container-highest rounded-full overflow-hidden">
-                        <div
-                          className={`h-full rounded-full ${status.pct >= 100 ? 'bg-secondary' : 'bg-primary'}`}
-                          style={{ width: `${status.pct}%` }}
-                        />
-                      </div>
-                    </div>
-                  </div>
-                </Link>
-              );
-            })}
-          </div>
-        )}
-
-        {/* Pagination */}
-        {totalPages > 1 && (
-          <div className="flex justify-center items-center gap-2 mt-4">
-            <button
-              onClick={() => setPage((p) => Math.max(1, p - 1))}
-              disabled={page === 1}
-              className="w-8 h-8 flex items-center justify-center rounded border border-border-subtle text-on-surface-variant hover:bg-surface-container-low transition-colors disabled:opacity-50"
-            >
-              <span className="material-symbols-outlined" style={{ fontSize: '20px' }}>chevron_left</span>
-            </button>
-
-            {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
-              const p = i + 1;
-              return (
-                <button
-                  key={p}
-                  onClick={() => setPage(p)}
-                  className={`w-8 h-8 flex items-center justify-center rounded text-[14px] font-semibold transition-colors ${p === page ? 'bg-primary text-white' : 'border border-border-subtle text-on-surface hover:bg-surface-container-low'}`}
-                >
-                  {p}
-                </button>
-              );
-            })}
-
-            {totalPages > 5 && <span className="text-on-surface-variant">...</span>}
-            {totalPages > 5 && (
-              <button
-                onClick={() => setPage(totalPages)}
-                className={`w-8 h-8 flex items-center justify-center rounded text-[14px] font-semibold border border-border-subtle text-on-surface hover:bg-surface-container-low transition-colors`}
-              >
-                {totalPages}
-              </button>
-            )}
-
-            <button
-              onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
-              disabled={page === totalPages}
-              className="w-8 h-8 flex items-center justify-center rounded border border-border-subtle text-on-surface-variant hover:bg-surface-container-low transition-colors disabled:opacity-50"
-            >
-              <span className="material-symbols-outlined" style={{ fontSize: '20px' }}>chevron_right</span>
-            </button>
-          </div>
-        )}
-      </div>
-    </LearnerShell>
-  );
+    <section className="mt-9"><div className="flex flex-wrap items-end justify-between gap-2"><div><p className="text-xs font-black uppercase tracking-widest text-primary">{activeTrack?.eyebrow ?? 'Nội dung đã xuất bản'}</p><h2 className="mt-1 text-xl font-black text-on-surface">{activeTrack ? `Bài học ${activeTrack.label}` : 'Tất cả bài học chuyên ngành'}</h2></div>{!loading && <span className="text-sm text-on-surface-variant">{visible.length} bài phù hợp</span>}</div>
+      {activeTrack && <p className="mt-3 rounded-xl border border-primary/10 bg-primary/5 px-4 py-3 text-sm text-on-surface-variant"><strong className="text-on-surface">Cách học:</strong> {activeTrack.focus}</p>}
+      {error && <p className="mt-5 rounded-xl bg-red-50 p-4 text-sm font-semibold text-red-700">{error}</p>}
+      {loading ? <div className="flex h-48 items-center justify-center"><div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" /></div> : visible.length ? <div className="mt-5 grid gap-4 md:grid-cols-2">{visible.map(item => { const track = lessonTrackByType(item.type); const accent = accentClasses[track?.accent ?? 'indigo']; return <article key={item.id} className="rounded-2xl border border-outline-variant/50 bg-white p-5 shadow-xs"><div className="flex flex-wrap items-center gap-2"><span className={`rounded-lg px-2.5 py-1 text-xs font-bold ${accent.badge}`}>{track?.label ?? 'Bài học'}</span><span className="text-xs text-on-surface-variant">{item.estimatedMinutes} phút</span><span className="text-xs text-on-surface-variant">{item.level?.name}</span></div><h3 className="mt-4 text-lg font-black text-on-surface">{item.title}</h3><p className="mt-2 line-clamp-2 text-sm leading-6 text-on-surface-variant">{item.summary}</p>{item.keyConcepts?.length ? <div className="mt-4 flex flex-wrap gap-1.5">{item.keyConcepts.slice(0, 3).map(concept => <span key={concept} className="rounded-md bg-surface-container-low px-2 py-1 text-xs text-on-surface-variant">{concept}</span>)}</div> : null}<div className="mt-5 flex items-center justify-between gap-3 border-t border-outline-variant/40 pt-4"><span className="text-xs font-semibold text-on-surface-variant">{item.domain?.name ?? 'Chuyên ngành CNTT'}</span><Link href={`/learn/lessons/${item.id}`} className="inline-flex items-center gap-1 text-sm font-bold text-primary">{track?.action ?? 'Vào học'}<span className="material-symbols-outlined text-[18px]">arrow_forward</span></Link></div></article>; })}</div> : <div className="mt-5 rounded-2xl border border-dashed border-outline-variant bg-white px-5 py-14 text-center"><span className="material-symbols-outlined text-4xl text-outline">menu_book</span><p className="mt-3 font-bold">Chưa có bài học phù hợp</p><p className="mt-1 text-sm text-on-surface-variant">Hãy chọn chuyên đề khác hoặc đổi từ khóa.</p></div>}
+    </section>
+  </div></LearnerShell>;
 }
 
-
+export default function LessonsPage() { return <Suspense><LessonCatalog /></Suspense>; }
