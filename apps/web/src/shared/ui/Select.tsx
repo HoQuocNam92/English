@@ -1,5 +1,5 @@
+import { Dropdown } from '@/shared/ui/Dropdown';
 import * as React from 'react';
-import { ChevronDown } from 'lucide-react';
 import { cn } from '@/shared/lib/cn';
 
 export interface SelectOption {
@@ -22,7 +22,7 @@ export const Select = React.forwardRef<HTMLSelectElement, SelectProps>(function 
     <label htmlFor={controlId} className="grid gap-1">
       {label ? <span className="text-sm font-semibold text-foreground">{label}</span> : null}
       <span className="relative block">
-      <select
+      <Dropdown
         ref={ref}
         id={controlId}
         aria-invalid={Boolean(error)}
@@ -39,8 +39,7 @@ export const Select = React.forwardRef<HTMLSelectElement, SelectProps>(function 
             {option.label}
           </option>
         ))}
-      </select>
-      <ChevronDown className="pointer-events-none absolute right-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+      </Dropdown>
       </span>
       {error ? <span className="text-xs font-normal text-destructive">{error}</span> : null}
     </label>

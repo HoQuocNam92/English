@@ -33,7 +33,7 @@ export const adminNavigation: NavigationGroup[] = [
     items: [
       { label: 'Người dùng', href: '/admin/users', icon: 'manage_accounts' },
       { label: 'Phân quyền', href: '/admin/roles', icon: 'admin_panel_settings' },
-      { label: 'Hồ sơ học viên', href: '/admin/students', icon: 'badge' },
+      { label: 'Danh sách học viên', href: '/admin/students', icon: 'badge' },
       { label: 'Phân nhóm học viên', href: '/admin/learner-groups', icon: 'groups' },
     ],
   },
@@ -57,7 +57,7 @@ export const adminNavigation: NavigationGroup[] = [
   {
     group: 'Học viên',
     items: [
-      { label: 'Hồ sơ học viên', href: '/admin/students', icon: 'badge', children: [
+      { label: 'Danh sách học viên', href: '/admin/students', icon: 'badge', children: [
         { label: 'Mục tiêu chứng chỉ', href: '/admin/students?view=certificate-goals', icon: 'verified', level: 1 },
         { label: 'Mục tiêu nghề nghiệp', href: '/admin/career-goals', icon: 'work_outline', level: 1 },
         { label: 'Phân nhóm học viên', href: '/admin/learner-groups', icon: 'groups', level: 1 },
@@ -118,7 +118,7 @@ export const combinedNavigation: NavigationGroup[] = [
   {
     group: 'Học viên',
     items: [
-      { label: 'Hồ sơ học viên', href: '/admin/students', icon: 'badge', children: [
+      { label: 'Danh sách học viên', href: '/admin/students', icon: 'badge', children: [
         { label: 'Mục tiêu chứng chỉ', href: '/admin/students?view=certificate-goals', icon: 'verified', level: 1 },
         { label: 'Mục tiêu nghề nghiệp', href: '/admin/career-goals', icon: 'work_outline', level: 1 },
         { label: 'Phân nhóm học viên', href: '/admin/learner-groups', icon: 'groups', level: 1 },

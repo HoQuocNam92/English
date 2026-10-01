@@ -1,5 +1,6 @@
 'use client';
 
+import { Dropdown } from '@/shared/ui/Dropdown';
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { LearnerShell } from '@/shared/layout';
@@ -338,12 +339,12 @@ export default function FlashcardsDashboardPage() {
               <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                 <div><h2 className="text-base font-bold text-slate-800">Từ đã học / đã biết</h2><p className="text-xs text-slate-500">Mặc định các từ này không xuất hiện trong phiên học từ mới.</p></div>
                 <div className="flex flex-wrap gap-2">
-                  <select value={historyPeriod} onChange={event => setHistoryPeriod(event.target.value as any)} className="rounded-lg border border-slate-200 px-3 py-2 text-xs font-bold">
+                  <Dropdown value={historyPeriod} onChange={event => setHistoryPeriod(event.target.value as any)} className="rounded-lg border border-slate-200 px-3 py-2 text-xs font-bold">
                     <option value="day">Hôm nay</option><option value="month">Tháng này</option><option value="year">Năm nay</option><option value="all">Tất cả</option>
-                  </select>
-                  <select value={historyRating} onChange={event => setHistoryRating(event.target.value)} className="rounded-lg border border-slate-200 px-3 py-2 text-xs font-bold">
+                  </Dropdown>
+                  <Dropdown value={historyRating} onChange={event => setHistoryRating(event.target.value)} className="rounded-lg border border-slate-200 px-3 py-2 text-xs font-bold">
                     <option value="all">Mọi độ khó</option><option value="easy">Dễ</option><option value="medium">Trung bình</option><option value="hard">Khó</option><option value="mastered">Đã biết</option>
-                  </select>
+                  </Dropdown>
                 </div>
               </div>
               {historyWords.length ? <div className="divide-y divide-slate-100">{historyWords.slice(0, 30).map(item => <div key={item.id} className="flex items-center justify-between gap-4 py-3"><div className="min-w-0"><p className="truncate text-sm font-bold text-slate-900">{item.vocabulary?.term}</p><p className="truncate text-xs text-slate-500">{item.vocabulary?.definitionVi}</p></div><div className="shrink-0 text-right"><span className="rounded-full bg-slate-100 px-2 py-1 text-[10px] font-bold uppercase text-slate-600">{item.lastRating === 'easy' ? 'Dễ' : item.lastRating === 'medium' ? 'Trung bình' : item.lastRating === 'hard' ? 'Khó' : item.lastRating === 'mastered' ? 'Đã biết' : 'Đã học'}</span><p className="mt-1 text-[10px] text-slate-400">{item.lastReviewAt ? new Date(item.lastReviewAt).toLocaleDateString('vi-VN') : ''}</p></div></div>)}</div> : <p className="rounded-xl bg-slate-50 p-5 text-center text-xs text-slate-500">Không có từ phù hợp với bộ lọc.</p>}
@@ -488,7 +489,7 @@ export default function FlashcardsDashboardPage() {
                   className="h-10 w-full rounded-xl border border-slate-200 bg-slate-50 pl-9 pr-4 text-xs font-semibold outline-none focus:border-primary focus:bg-white"
                 />
               </div>
-              <select
+              <Dropdown
                 value={domain}
                 onChange={e => setDomain(e.target.value)}
                 className="h-10 rounded-xl border border-slate-200 bg-slate-50 px-3 text-xs font-semibold outline-none focus:border-primary focus:bg-white"
@@ -499,8 +500,8 @@ export default function FlashcardsDashboardPage() {
                     {item.name}
                   </option>
                 ))}
-              </select>
-              <select
+              </Dropdown>
+              <Dropdown
                 value={level}
                 onChange={e => setLevel(e.target.value)}
                 className="h-10 rounded-xl border border-slate-200 bg-slate-50 px-3 text-xs font-semibold outline-none focus:border-primary focus:bg-white"
@@ -511,7 +512,7 @@ export default function FlashcardsDashboardPage() {
                     {item.name}
                   </option>
                 ))}
-              </select>
+              </Dropdown>
               <button
                 type="button"
                 onClick={() => {

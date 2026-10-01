@@ -1,5 +1,6 @@
 'use client';
 
+import { LevelBadge } from '@/shared/ui/LevelBadge';
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { LearnerShell } from '@/shared/layout';
@@ -148,7 +149,7 @@ export default function LearnerHomePage() {
               </div>
               <div>
                 <p className="text-[12px] font-bold text-on-surface-variant uppercase tracking-[0.05em]">{s.label}</p>
-                <p className="text-[20px] font-semibold text-on-surface" style={{ lineHeight: '28px' }}>{s.value}</p>
+                <p className="text-[20px] font-semibold text-on-surface" style={{ lineHeight: '28px' }}>{s.label === t.home.level ? <LevelBadge level={level} className="text-sm" /> : s.value}</p>
               </div>
             </div>
           ))}
@@ -272,9 +273,7 @@ export default function LearnerHomePage() {
                             </span>
                           )}
                           {rec.levelName && (
-                            <span className="text-[11px] font-semibold px-2 py-0.5 rounded bg-surface-container text-on-surface-variant">
-                              {rec.levelName}
-                            </span>
+                            <LevelBadge level={rec.levelName} />
                           )}
                         </div>
 

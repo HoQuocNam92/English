@@ -18,3 +18,5 @@ export { Modal } from './Modal';
 export { LoadingSpinner } from './LoadingSpinner';
 export { AppFeedbackProvider, confirmDialog, showToast } from './AppFeedback';
 export { ImageCropper } from './ImageCropper';
+
+export * from './LevelBadge';

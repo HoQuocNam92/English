@@ -1,5 +1,6 @@
 'use client';
 
+import { Dropdown } from '@/shared/ui/Dropdown';
 import * as React from 'react';
 import { StatusBadge } from '@/shared/ui/StatusBadge';
 import { Badge, confirmDialog, Modal, PageHeader, Pagination, SearchInput } from '@/shared/ui';
@@ -199,14 +200,14 @@ function CreateUserModal({ onClose, onCreated }: CreateUserModalProps) {
             <label className="block text-xs font-medium text-on-surface-variant mb-1">
               Vai trò <span className="text-red-500">*</span>
             </label>
-            <select
+            <Dropdown
               className={`admin-select ${inputCls(!!errors.role)}`}
               {...field('role')}
             >
               {CREATE_ROLE_OPTS.map((r) => (
                 <option key={r.value} value={r.value}>{r.label}</option>
               ))}
-            </select>
+            </Dropdown>
             {errors.role && <p className="mt-1 text-xs text-red-500">{errors.role}</p>}
           </div>
 
@@ -397,13 +398,13 @@ export default function AdminUsersPage() {
         <div className="p-5 flex flex-col md:flex-row gap-4 justify-between items-center bg-surface-container-low/55">
           <SearchInput value={searchInput} onChange={setSearchInput} onSearch={value => { setPage(1); setSearch(value); }} placeholder="Tìm kiếm theo tên, email…" />
           <div className="flex w-full md:w-auto justify-end gap-sm ml-auto">
-            <select
+            <Dropdown
               value={statusFilter}
               onChange={(e) => { setStatusFilter(e.target.value); setPage(1); }}
               className="h-10 px-4 border border-outline-variant/70 rounded-xl text-sm font-medium text-on-surface hover:bg-surface-container-low transition-colors bg-surface-container-lowest focus:outline-none focus:ring-4 focus:ring-primary/10"
             >
               {STATUS_OPTS.map((s) => <option key={s.value} value={s.value}>{s.label}</option>)}
-            </select>
+            </Dropdown>
           </div>
         </div>
 

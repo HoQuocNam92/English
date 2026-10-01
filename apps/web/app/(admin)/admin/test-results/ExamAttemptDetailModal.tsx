@@ -1,5 +1,6 @@
 'use client';
 
+import { LevelBadge } from '@/shared/ui/LevelBadge';
 import * as React from 'react';
 import { apiClient, ApiClientError } from '@/shared/api/api-client';
 
@@ -104,7 +105,7 @@ export function ExamAttemptDetailModal({ attemptId, onClose }: ExamAttemptDetail
                 {levelName && (
                   <>
                     <span>•</span>
-                    <span>{levelName}</span>
+                    <LevelBadge level={attempt?.exam?.level ?? levelName} />
                   </>
                 )}
               </p>

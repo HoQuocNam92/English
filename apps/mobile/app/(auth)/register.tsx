@@ -6,10 +6,13 @@ import { MaterialIcons } from '@expo/vector-icons';
 import { colors, spacing } from '@techenglish/design-tokens';
 import { api, ApiError } from '../../src/shared/api/api-client';
 import { validateEmail, validatePassword, validateDisplayName } from '../../src/shared/utils/validators';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useAuth } from '../../src/shared/store/auth-context';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 export default function MobileRegisterScreen() {
   const router = useRouter();
+  const { loginWithTokens } = useAuth();
+  const insets = useSafeAreaInsets();
   const [displayName, setDisplayName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -25,6 +28,7 @@ export default function MobileRegisterScreen() {
   const [isLoading, setIsLoading] = useState(false);
 
   const handleRegister = async () => {
+    if (isLoading) return;
     setNameError('');
     setEmailError('');
     setPasswordError('');
@@ -50,12 +54,10 @@ export default function MobileRegisterScreen() {
 
     setIsLoading(true);
     try {
-      const result = await api.post<any>('/auth/register', { displayName, email, password });
-      // Lưu token để các bước onboarding gọi API được xác thực
-      await Promise.all([
-        AsyncStorage.setItem('access_token', result.accessToken),
-        AsyncStorage.setItem('refresh_token', result.refreshToken ?? ''),
-      ]);
+      const result = await api.post<any>('/auth/register', {
+        displayName: displayName.trim(), email: email.trim().toLowerCase(), password,
+      });
+      await loginWithTokens(result);
       router.replace('/(onboarding)/goal' as any);
     } catch (err: any) {
       if (err instanceof ApiError) {
@@ -72,7 +74,7 @@ export default function MobileRegisterScreen() {
     <View style={styles.container}>
       <StatusBar style="dark" />
       {/* Header Bar */}
-      <View style={styles.headerBar}>
+      <View style={[styles.headerBar, { marginTop: insets.top }]}>
         <TouchableOpacity style={styles.headerBackButton} onPress={() => router.back()} disabled={isLoading}>
           <MaterialIcons name="arrow-back" size={24} color={colors.primary} />
         </TouchableOpacity>
@@ -161,7 +163,10 @@ export default function MobileRegisterScreen() {
 
           <TouchableOpacity style={styles.registerButton} activeOpacity={0.8} onPress={handleRegister} disabled={isLoading}>
             {isLoading ? (
-              <ActivityIndicator color="#ffffff" size="small" />
+              <>
+                <ActivityIndicator color="#ffffff" size="small" />
+                <Text style={styles.registerButtonText}>Đang tạo tài khoản...</Text>
+              </>
             ) : (
               <Text style={styles.registerButtonText}>Đăng ký</Text>
             )}
@@ -193,7 +198,6 @@ const styles = StyleSheet.create({
     backgroundColor: '#ffffff',
     borderBottomWidth: 1,
     borderBottomColor: '#e2e8f0',
-    marginTop: 40 // simple offset for statusbar, or use safeareaview
   },
   headerBackButton: {
     width: 40,
@@ -270,6 +274,7 @@ const styles = StyleSheet.create({
   },
   registerButton: {
     backgroundColor: colors.primary,
+    gap: spacing.sm,
     height: 48,
     borderRadius: 10,
     flexDirection: 'row',

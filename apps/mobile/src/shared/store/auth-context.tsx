@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { API_BASE, apiRequest } from '../api/api-client';
+import { apiRequest } from '../api/api-client';
 
 interface User {
   id: string;
@@ -57,16 +57,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const login = async (email: string, password: string) => {
-    const res = await fetch(`${API_BASE}/auth/login`, {
+    const data = await apiRequest<any>('/auth/login', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email, password }),
+      body: JSON.stringify({ email: email.trim().toLowerCase(), password }),
     });
-    if (!res.ok) {
-      const body = await res.json().catch(() => ({})) as any;
-      throw new Error(body?.message ?? 'Email hoặc mật khẩu không đúng');
-    }
-    const data = await res.json() as any;
     const user: User = {
       id: data.user.id,
       email: data.user.email,

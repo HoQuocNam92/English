@@ -1,5 +1,6 @@
 'use client';
 
+import { getLevelTheme } from '@/shared/lib/level-theme';
 import * as React from 'react';
 import { PageHeader, Modal } from '@/shared/ui';
 import { apiClient, ApiClientError } from '@/shared/api/api-client';
@@ -19,12 +20,7 @@ interface LevelItem {
   };
 }
 
-const LEVEL_COLOR_MAP: Record<string, { bg: string; text: string; icon: string }> = {
-  beginner: { bg: 'bg-emerald-100 text-emerald-800 border-emerald-200', text: 'text-emerald-700', icon: 'signal_cellular_alt_1_bar' },
-  intermediate: { bg: 'bg-blue-100 text-blue-800 border-blue-200', text: 'text-blue-700', icon: 'signal_cellular_alt_2_bar' },
-  advanced: { bg: 'bg-purple-100 text-purple-800 border-purple-200', text: 'text-purple-700', icon: 'signal_cellular_alt' },
-  professional: { bg: 'bg-rose-100 text-rose-800 border-rose-200', text: 'text-rose-700', icon: 'workspace_premium' },
-};
+
 
 export default function AdminLevelsPage() {
   const [levels, setLevels] = React.useState<LevelItem[]>([]);
@@ -283,11 +279,7 @@ export default function AdminLevelsPage() {
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
             {levels.map((lvl) => {
-              const meta = LEVEL_COLOR_MAP[lvl.code] ?? {
-                bg: 'bg-slate-100 text-slate-800 border-slate-200',
-                text: 'text-slate-700',
-                icon: 'school',
-              };
+              const meta = getLevelTheme(lvl);
 
               return (
                 <div

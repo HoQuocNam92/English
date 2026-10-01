@@ -1,5 +1,6 @@
 'use client';
 
+import { Dropdown } from '@/shared/ui/Dropdown';
 import * as React from 'react';
 import { Modal } from '@/shared/ui/Modal';
 import { apiClient, ApiClientError } from '@/shared/api/api-client';
@@ -767,7 +768,7 @@ export function ImportQuestionsModal({
 
                   {/* File Source Filter (when > 1 file) */}
                   {files.length > 1 && (
-                    <select
+                    <Dropdown
                       value={filterFileId}
                       onChange={(e) => setFilterFileId(e.target.value)}
                       className="rounded-xl border border-slate-300 bg-white px-3 py-1.5 text-xs font-medium text-slate-900 focus:border-primary focus:ring-2 focus:ring-primary/20 focus:outline-none max-w-[170px] truncate"
@@ -779,11 +780,11 @@ export function ImportQuestionsModal({
                           {f.file.name}
                         </option>
                       ))}
-                    </select>
+                    </Dropdown>
                   )}
 
                   {/* Domain Filter */}
-                  <select
+                  <Dropdown
                     value={filterDomain}
                     onChange={(e) => setFilterDomain(e.target.value)}
                     className="rounded-xl border border-slate-300 bg-white px-3 py-1.5 text-xs font-medium text-slate-900 focus:border-primary focus:ring-2 focus:ring-primary/20 focus:outline-none max-w-[150px] truncate"
@@ -795,10 +796,10 @@ export function ImportQuestionsModal({
                         {d.name || d.code || d.id}
                       </option>
                     ))}
-                  </select>
+                  </Dropdown>
 
                   {/* Level Filter */}
-                  <select
+                  <Dropdown
                     value={filterLevel}
                     onChange={(e) => setFilterLevel(e.target.value)}
                     className="rounded-xl border border-slate-300 bg-white px-3 py-1.5 text-xs font-medium text-slate-900 focus:border-primary focus:ring-2 focus:ring-primary/20 focus:outline-none max-w-[130px] truncate"
@@ -810,10 +811,10 @@ export function ImportQuestionsModal({
                         {l.name || l.code || l.id}
                       </option>
                     ))}
-                  </select>
+                  </Dropdown>
 
                   {/* Question Type Filter */}
-                  <select
+                  <Dropdown
                     value={filterType}
                     onChange={(e) => setFilterType(e.target.value)}
                     className="rounded-xl border border-slate-300 bg-white px-3 py-1.5 text-xs font-medium text-slate-900 focus:border-primary focus:ring-2 focus:ring-primary/20 focus:outline-none max-w-[135px]"
@@ -822,7 +823,7 @@ export function ImportQuestionsModal({
                     <option value="all">Tất cả loại câu</option>
                     <option value="single_choice">1 đáp án</option>
                     <option value="multiple_choice">Nhiều đáp án</option>
-                  </select>
+                  </Dropdown>
 
                   {/* Reset Filters Button */}
                   {hasActiveFilters && (

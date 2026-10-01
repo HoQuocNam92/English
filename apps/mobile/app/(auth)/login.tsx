@@ -9,6 +9,7 @@ import { useAuth } from '../../src/shared/store/auth-context';
 import { validateEmail } from '../../src/shared/utils/validators';
 import * as WebBrowser from 'expo-web-browser';
 import * as Google from 'expo-auth-session/providers/google';
+import Constants from 'expo-constants';
 import { api } from '../../src/shared/api/api-client';
 
 WebBrowser.maybeCompleteAuthSession();
@@ -41,9 +42,9 @@ export default function MobileLoginScreen() {
   const [isLoading, setIsLoading] = useState(false);
 
   const [request, response, promptAsync] = Google.useAuthRequest(
-    GOOGLE_CLIENT_ID
+    GOOGLE_WEB_CLIENT_ID
       ? {
-          clientId: GOOGLE_CLIENT_ID,
+          clientId: GOOGLE_WEB_CLIENT_ID,
           androidClientId: GOOGLE_ANDROID_CLIENT_ID ?? GOOGLE_CLIENT_ID,
           iosClientId: GOOGLE_IOS_CLIENT_ID ?? GOOGLE_CLIENT_ID,
           webClientId: GOOGLE_WEB_CLIENT_ID,
@@ -54,8 +55,11 @@ export default function MobileLoginScreen() {
 
   useEffect(() => {
     if (response?.type === 'success') {
-      const { id_token } = response.params;
+      const id_token = response.authentication?.idToken ?? response.params.id_token;
       if (id_token) handleGoogleLogin(id_token);
+      else Alert.alert('Lỗi đăng nhập Google', 'Google không trả về ID token. Vui lòng thử lại.');
+    } else if (response?.type === 'error') {
+      Alert.alert('Lỗi đăng nhập Google', response.error?.message ?? 'Không thể xác thực với Google.');
     }
   }, [response]);
 
@@ -65,6 +69,44 @@ export default function MobileLoginScreen() {
       const result = await api.post<any>('/auth/google/mobile', { idToken });
       await loginWithTokens(result);
       router.replace('/(tabs)/home' as any);
+    } catch (err: any) {
+      Alert.alert('Lỗi đăng nhập Google', err.message ?? 'Không thể xác thực với Google.');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const startGoogleLogin = async () => {
+    if (Platform.OS === 'web') {
+      try {
+        await promptAsync();
+      } catch (err: any) {
+        Alert.alert('Lỗi đăng nhập Google', err.message ?? 'Không thể mở Google.');
+      }
+      return;
+    }
+    if (Constants.appOwnership === 'expo') {
+      Alert.alert('Cần bản cài ứng dụng', 'Đăng nhập Google không hỗ trợ Expo Go. Hãy mở bản development build hoặc APK TechEnglish Pro.');
+      return;
+    }
+    setIsLoading(true);
+    try {
+      // Load only in a native build: Expo Go does not contain this native module.
+      const { GoogleSignin, isSuccessResponse, statusCodes, isErrorWithCode } = await import('@react-native-google-signin/google-signin');
+      GoogleSignin.configure({
+        webClientId: GOOGLE_WEB_CLIENT_ID,
+        ...(GOOGLE_IOS_CLIENT_ID ? { iosClientId: GOOGLE_IOS_CLIENT_ID } : {}),
+      });
+      try {
+        await GoogleSignin.hasPlayServices({ showPlayServicesUpdateDialog: true });
+        const result = await GoogleSignin.signIn();
+        if (!isSuccessResponse(result)) return;
+        if (!result.data.idToken) throw new Error('Google không trả về ID token. Kiểm tra Web client ID.');
+        await handleGoogleLogin(result.data.idToken);
+      } catch (err) {
+        if (isErrorWithCode(err) && (err.code === statusCodes.SIGN_IN_CANCELLED || err.code === statusCodes.IN_PROGRESS)) return;
+        throw err;
+      }
     } catch (err: any) {
       Alert.alert('Lỗi đăng nhập Google', err.message ?? 'Không thể xác thực với Google.');
     } finally {
@@ -171,7 +213,7 @@ export default function MobileLoginScreen() {
         </View>
 
         {/* Google login — đặt sau luồng đăng nhập/đăng ký chính */}
-        {GOOGLE_CLIENT_ID ? (
+        {GOOGLE_WEB_CLIENT_ID ? (
           <>
             <View style={styles.dividerRow}>
               <View style={styles.dividerLine} />
@@ -181,8 +223,8 @@ export default function MobileLoginScreen() {
             <TouchableOpacity
               style={styles.googleButton}
               activeOpacity={0.8}
-              onPress={() => promptAsync({ showInRecents: Platform.OS === 'android' })}
-              disabled={!request || isLoading}
+              onPress={startGoogleLogin}
+              disabled={isLoading || (Platform.OS === 'web' && !request)}
             >
               <GoogleIcon />
               <Text style={styles.googleButtonText}>Đăng nhập với Google</Text>

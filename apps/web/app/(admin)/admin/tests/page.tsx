@@ -1,5 +1,7 @@
 'use client';
 
+import { LevelBadge } from '@/shared/ui/LevelBadge';
+import { Dropdown } from '@/shared/ui/Dropdown';
 import * as React from 'react';
 import Link from 'next/link';
 import { StatusBadge } from '@/shared/ui/StatusBadge';
@@ -114,16 +116,16 @@ export default function AdminTestsPage() {
         />
         </div>
         <label className="grid gap-1 text-xs font-semibold">Trạng thái
-        <select
+        <Dropdown
           value={status}
           onChange={(e) => { setStatus(e.target.value); setPage(1); }}
           className="h-11 w-full rounded-xl border border-outline-variant/60 bg-surface-container-lowest px-3 py-2 text-sm text-on-surface focus:outline-none"
         >
           {STATUSES.map((s) => <option key={s.value} value={s.value}>{s.label}</option>)}
-        </select>
+        </Dropdown>
         </label>
-        {([['domainCode', 'Lĩnh vực', options.domains], ['levelCode', 'Trình độ', options.levels], ['certificateId', 'Chứng chỉ', options.certificates]] as const).map(([key,label,list]) => <label key={key} className="grid min-w-0 flex-1 basis-48 gap-1 text-xs font-semibold">{label}<select aria-label={label} value={filters[key]} onChange={e => { setFilters(f => ({ ...f, [key]: e.target.value })); setPage(1); }} className="h-11 min-w-0 rounded-xl border border-outline-variant px-3 text-sm"><option value="">Tất cả</option>{list.map(x => <option key={x.id} value={key === 'certificateId' ? x.id : x.code}>{x.name}</option>)}</select></label>)}
-        <label className="grid gap-1 text-xs font-semibold">Loại bài kiểm tra<select aria-label="Loại bài kiểm tra" value={filters.kind} onChange={e => { setFilters(f => ({ ...f, kind: e.target.value })); setPage(1); }} className="h-11 rounded-xl border border-outline-variant px-3 text-sm"><option value="">Tất cả</option>{Object.entries(EXAM_KINDS).map(([v,l]) => <option key={v} value={v}>{l}</option>)}</select></label>
+        {([['domainCode', 'Lĩnh vực', options.domains], ['levelCode', 'Trình độ', options.levels], ['certificateId', 'Chứng chỉ', options.certificates]] as const).map(([key,label,list]) => <label key={key} className="grid min-w-0 flex-1 basis-48 gap-1 text-xs font-semibold">{label}<Dropdown aria-label={label} value={filters[key]} onChange={e => { setFilters(f => ({ ...f, [key]: e.target.value })); setPage(1); }} className="h-11 min-w-0 rounded-xl border border-outline-variant px-3 text-sm"><option value="">Tất cả</option>{list.map(x => <option key={x.id} value={key === 'certificateId' ? x.id : x.code}>{x.name}</option>)}</Dropdown></label>)}
+        <label className="grid gap-1 text-xs font-semibold">Loại bài kiểm tra<Dropdown aria-label="Loại bài kiểm tra" value={filters.kind} onChange={e => { setFilters(f => ({ ...f, kind: e.target.value })); setPage(1); }} className="h-11 rounded-xl border border-outline-variant px-3 text-sm"><option value="">Tất cả</option>{Object.entries(EXAM_KINDS).map(([v,l]) => <option key={v} value={v}>{l}</option>)}</Dropdown></label>
         <button onClick={() => { setFilters({ domainCode: '', levelCode: '', certificateId: '', kind: '' }); setStatus(''); setSearch(''); setSearchInput(''); setPage(1); }} className="ui-button ui-button-outline h-11 self-start sm:mt-5 rounded-xl border border-outline-variant px-4 text-sm">Xóa bộ lọc</button>
       </div>
 
@@ -182,7 +184,7 @@ export default function AdminTestsPage() {
                   {exam.level && (
                     <div className="bg-surface-container rounded-xl p-2.5">
                       <p className="text-on-surface-variant mb-0.5 text-[11px]">Cấp độ</p>
-                      <p className="font-semibold text-on-surface truncate">{exam.level.name}</p>
+                      <LevelBadge level={exam.level} />
                     </div>
                   )}
                 </div>

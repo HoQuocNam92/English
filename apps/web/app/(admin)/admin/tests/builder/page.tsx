@@ -1,5 +1,7 @@
 'use client';
 
+import { LevelBadge } from '@/shared/ui/LevelBadge';
+import { Dropdown } from '@/shared/ui/Dropdown';
 import * as React from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { PageHeader } from '@/shared/ui';
@@ -277,28 +279,28 @@ export default function TestBuilderPage() {
                 <label className="block text-sm font-semibold text-slate-900 mb-1.5">
                   Lĩnh vực <span className="text-error">*</span>
                 </label>
-                <select
+                <Dropdown
                   value={domainId}
                   onChange={e => setDomainId(e.target.value)}
                   className="w-full rounded-xl border border-slate-300 bg-white px-3.5 py-2.5 text-sm font-medium text-slate-900 shadow-2xs focus:outline-none focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all cursor-pointer"
                 >
                   <option value="">-- Chọn lĩnh vực --</option>
                   {domains.map(d => <option key={d.id} value={d.id}>{d.name}</option>)}
-                </select>
+                </Dropdown>
                 <FieldError msg={errors.domainId} />
               </div>
               <div>
                 <label className="block text-sm font-semibold text-slate-900 mb-1.5">
                   Cấp độ <span className="text-error">*</span>
                 </label>
-                <select
+                <Dropdown
                   value={levelId}
                   onChange={e => setLevelId(e.target.value)}
                   className="w-full rounded-xl border border-slate-300 bg-white px-3.5 py-2.5 text-sm font-medium text-slate-900 shadow-2xs focus:outline-none focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all cursor-pointer"
                 >
                   <option value="">-- Chọn cấp độ --</option>
                   {levels.map(l => <option key={l.id} value={l.id}>{l.name}</option>)}
-                </select>
+                </Dropdown>
                 <FieldError msg={errors.levelId} />
               </div>
             </div>
@@ -306,20 +308,20 @@ export default function TestBuilderPage() {
             {/* Certificate */}
             <div>
               <label className="block text-sm font-semibold text-slate-900 mb-1.5">Loại bài kiểm tra</label>
-              <select value={kind} onChange={e => setKind(e.target.value)} className="w-full rounded-xl border border-slate-300 bg-white px-3.5 py-2.5 text-sm font-medium text-slate-900 shadow-2xs focus:outline-none focus:border-primary">
+              <Dropdown value={kind} onChange={e => setKind(e.target.value)} className="w-full rounded-xl border border-slate-300 bg-white px-3.5 py-2.5 text-sm font-medium text-slate-900 shadow-2xs focus:outline-none focus:border-primary">
                 <option value="practice">Luyện tập theo chủ đề</option><option value="domain_test">Kiểm tra Domain</option><option value="mock_exam">Thi thử chứng chỉ</option><option value="scenario_assessment">Bài tập tình huống thực tế</option>
-              </select>
+              </Dropdown>
             </div>
             <div>
               <label className="block text-sm font-semibold text-slate-900 mb-1.5">Chứng chỉ liên quan</label>
-              <select
+              <Dropdown
                 value={certificateId}
                 onChange={e => setCertificateId(e.target.value)}
                 className="w-full rounded-xl border border-slate-300 bg-white px-3.5 py-2.5 text-sm font-medium text-slate-900 shadow-2xs focus:outline-none focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all cursor-pointer"
               >
                 <option value="">Không gắn chứng chỉ</option>
                 {certificates.map(cert => <option key={cert.id} value={cert.id}>{cert.name}</option>)}
-              </select>
+              </Dropdown>
             </div>
 
             {/* Duration & Pass score */}
@@ -483,29 +485,29 @@ export default function TestBuilderPage() {
             {/* Filter Dropdowns: Domain & Level */}
             <div className="grid grid-cols-2 gap-2.5">
               <div>
-                <select
+                <Dropdown
                   value={qFilterDomain}
                   onChange={e => setQFilterDomain(e.target.value)}
                   className="w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-xs font-semibold text-slate-700 shadow-2xs focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/10 transition-all cursor-pointer"
                 >
                   <option value="">Tất cả lĩnh vực</option>
                   {domains.map(d => <option key={d.id} value={d.id}>{d.name}</option>)}
-                </select>
+                </Dropdown>
               </div>
               <div>
-                <select value={qFilterSkill} onChange={e => setQFilterSkill(e.target.value)} className="w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-xs font-semibold text-slate-700 shadow-2xs focus:outline-none focus:border-primary">
+                <Dropdown value={qFilterSkill} onChange={e => setQFilterSkill(e.target.value)} className="w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-xs font-semibold text-slate-700 shadow-2xs focus:outline-none focus:border-primary">
                   <option value="">Tất cả kỹ năng</option><option value="vocabulary">Vocabulary</option><option value="reading">Reading</option><option value="technical_understanding">Technical Understanding</option><option value="scenario_based">Scenario-based</option>
-                </select>
+                </Dropdown>
               </div>
               <div>
-                <select
+                <Dropdown
                   value={qFilterLevel}
                   onChange={e => setQFilterLevel(e.target.value)}
                   className="w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-xs font-semibold text-slate-700 shadow-2xs focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/10 transition-all cursor-pointer"
                 >
                   <option value="">Tất cả cấp độ</option>
                   {levels.map(l => <option key={l.id} value={l.id}>{l.name}</option>)}
-                </select>
+                </Dropdown>
               </div>
             </div>
 
@@ -605,9 +607,7 @@ export default function TestBuilderPage() {
                           <span className="inline-flex items-center px-2 py-0.5 rounded-md text-[11px] font-semibold bg-slate-100 text-slate-600">
                             {q.domain?.name ?? 'Chưa phân loại'}
                           </span>
-                          <span className="inline-flex items-center px-2 py-0.5 rounded-md text-[11px] font-semibold bg-indigo-50 text-indigo-700">
-                            {q.level?.name ?? 'Mọi cấp độ'}
-                          </span>
+                          <LevelBadge level={q.level} fallback="Mọi cấp độ" />
                           <span className="inline-flex items-center px-2 py-0.5 rounded-md text-[11px] font-semibold bg-amber-50 text-amber-700">
                             {q.points} điểm
                           </span>

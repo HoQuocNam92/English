@@ -1,5 +1,6 @@
 'use client';
 
+import { Dropdown } from '@/shared/ui/Dropdown';
 import * as React from 'react';
 import { ChevronLeft, ChevronRight, Rows3 } from 'lucide-react';
 import { cn } from '@/shared/lib/cn';
@@ -72,14 +73,14 @@ export function Pagination({
           <label className="relative inline-flex items-center gap-2 rounded-xl border border-outline-variant/50 bg-surface-container-low px-3 py-2 text-xs font-semibold text-on-surface-variant transition-colors hover:border-primary/40 hover:bg-primary/5">
             <Rows3 className="h-4 w-4 text-sky-600" />
             <span>Số dòng</span>
-            <select
+            <Dropdown
               aria-label="Số dòng trên mỗi trang"
               className="pagination-size-select h-7 w-12 cursor-pointer bg-transparent p-0 text-center font-bold leading-7 text-on-surface outline-none [text-align-last:center]"
               value={limit}
               onChange={(event) => onLimitChange(Number(event.target.value))}
             >
               {limitOptions.map((option) => <option key={option} value={option}>{option}</option>)}
-            </select>
+            </Dropdown>
           </label>
         )}
       </div>

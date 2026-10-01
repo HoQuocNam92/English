@@ -1,5 +1,6 @@
 'use client';
 
+import { Dropdown } from '@/shared/ui/Dropdown';
 import * as React from 'react';
 import { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
@@ -358,9 +359,9 @@ export default function LessonVocabularyDetailPage({ params }: { params: Promise
               <label className="relative inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-3 py-2">
                 <span className="material-symbols-outlined text-[17px] text-sky-600">view_list</span>
                 <span>Số dòng</span>
-                <select value={pageSize} onChange={(event) => { setPageSize(Number(event.target.value)); setCurrentPage(1); }} className="cursor-pointer bg-transparent font-bold text-slate-800 outline-none">
+                <Dropdown value={pageSize} onChange={(event) => { setPageSize(Number(event.target.value)); setCurrentPage(1); }} className="cursor-pointer bg-transparent font-bold text-slate-800 outline-none">
                   {[10, 20, 30, 40].map((size) => <option key={size} value={size}>{size}</option>)}
-                </select>
+                </Dropdown>
               </label>
             </div>
 

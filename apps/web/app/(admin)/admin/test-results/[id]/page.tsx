@@ -1,5 +1,6 @@
 'use client';
 
+import { LevelBadge } from '@/shared/ui/LevelBadge';
 import * as React from 'react';
 import Link from 'next/link';
 import { apiClient, ApiClientError } from '@/shared/api/api-client';
@@ -101,7 +102,7 @@ export default function AdminTestResultDetailPage({
             {levelName && (
               <>
                 <span>•</span>
-                <span>{levelName}</span>
+                <LevelBadge level={attempt?.exam?.level ?? levelName} />
               </>
             )}
           </p>

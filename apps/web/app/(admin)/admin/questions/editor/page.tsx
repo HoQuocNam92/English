@@ -1,5 +1,6 @@
 'use client';
 
+import { Dropdown } from '@/shared/ui/Dropdown';
 import * as React from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { PageHeader } from '@/shared/ui';
@@ -193,7 +194,7 @@ export default function QuestionEditorPage() {
         <div className="grid gap-4 md:grid-cols-2">
           <div>
           <label className="block text-sm font-semibold text-on-surface mb-1">Loại câu hỏi</label>
-          <select
+          <Dropdown
             value={type}
             onChange={e => setType(e.target.value)}
             className="w-full rounded-xl border border-outline-variant px-4 py-2.5 text-sm text-on-surface bg-surface-container-low focus:outline-none focus:border-primary"
@@ -203,16 +204,16 @@ export default function QuestionEditorPage() {
             <option value="true_false">Đúng / Sai</option>
             <option value="short_answer">Trả lời ngắn</option>
             <option value="scenario">Tình huống kỹ thuật</option>
-          </select>
+          </Dropdown>
           </div>
           <div>
             <label className="block text-sm font-semibold text-on-surface mb-1">Kỹ năng đánh giá</label>
-            <select value={skill} onChange={e => setSkill(e.target.value)} className="w-full rounded-xl border border-outline-variant px-4 py-2.5 text-sm text-on-surface bg-surface-container-low focus:outline-none focus:border-primary">
+            <Dropdown value={skill} onChange={e => setSkill(e.target.value)} className="w-full rounded-xl border border-outline-variant px-4 py-2.5 text-sm text-on-surface bg-surface-container-low focus:outline-none focus:border-primary">
               <option value="vocabulary">Vocabulary</option>
               <option value="reading">Reading</option>
               <option value="technical_understanding">Technical Understanding</option>
               <option value="scenario_based">Scenario-based</option>
-            </select>
+            </Dropdown>
           </div>
         </div>
 
@@ -250,26 +251,26 @@ export default function QuestionEditorPage() {
         <div className="grid grid-cols-2 gap-4">
           <div>
             <label className="block text-sm font-semibold text-on-surface mb-1">Lĩnh vực <span className="text-error">*</span></label>
-            <select
+            <Dropdown
               value={domainId}
               onChange={e => setDomainId(e.target.value)}
               className="w-full rounded-xl border border-outline-variant px-4 py-2.5 text-sm text-on-surface bg-surface-container-low focus:outline-none focus:border-primary"
             >
               <option value="">-- Chọn lĩnh vực --</option>
               {domains.map(d => <option key={d.id} value={d.id}>{d.name}</option>)}
-            </select>
+            </Dropdown>
             <FieldError msg={errors.domainId} />
           </div>
           <div>
             <label className="block text-sm font-semibold text-on-surface mb-1">Cấp độ <span className="text-error">*</span></label>
-            <select
+            <Dropdown
               value={levelId}
               onChange={e => setLevelId(e.target.value)}
               className="w-full rounded-xl border border-outline-variant px-4 py-2.5 text-sm text-on-surface bg-surface-container-low focus:outline-none focus:border-primary"
             >
               <option value="">-- Chọn cấp độ --</option>
               {levels.map(l => <option key={l.id} value={l.id}>{l.name}</option>)}
-            </select>
+            </Dropdown>
             <FieldError msg={errors.levelId} />
           </div>
         </div>

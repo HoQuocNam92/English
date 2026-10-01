@@ -1,5 +1,6 @@
 'use client';
 
+import { LevelBadge } from '@/shared/ui/LevelBadge';
 import { useEffect, useState, Suspense } from 'react';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
@@ -293,7 +294,7 @@ function LearnerProfileContent() {
                       }`}
                     >
                       <div className="flex items-center justify-between mb-1">
-                        <span className="font-bold text-sm text-on-surface">{lvl.name}</span>
+                        <LevelBadge level={lvl} />
                         <span className={`material-symbols-outlined text-[18px] ${isSelected ? 'text-primary' : 'text-outline-variant'}`}>
                           {isSelected ? 'check_circle' : 'radio_button_unchecked'}
                         </span>
@@ -468,9 +469,7 @@ function LearnerProfileContent() {
                                 </span>
                               )}
                               {levelName && (
-                                <span className="px-2 py-0.5 rounded text-[11px] font-semibold bg-surface-container text-on-surface-variant border border-outline-variant/40">
-                                  {levelName}
-                                </span>
+                                <LevelBadge level={lesson?.level ?? levelName} />
                               )}
                             </div>
 

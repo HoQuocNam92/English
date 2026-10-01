@@ -3,7 +3,6 @@
 import Link from 'next/link';
 import { useState, useEffect } from 'react';
 import { apiClient } from '@/shared/api/api-client';
-import { LoadingSpinner } from '@/shared/ui';
 
 export function LearningActivities() {
   const [data, setData] = useState<any>({ certificates: [], vocabCount: 0, recentAttempts: [] });
@@ -40,7 +39,7 @@ export function LearningActivities() {
     return () => { current = false; };
   }, [reload]);
 
-  if (loading) return <div className="mt-8"><LoadingSpinner /></div>;
+  if (loading) return <div role="status" aria-label="Đang tải hoạt động học tập" className="mt-6 grid gap-4 md:grid-cols-2">{[0, 1].map(index => <div key={index} className="animate-pulse rounded-2xl border border-outline-variant/50 bg-white p-5"><div className="h-10 w-10 rounded-xl bg-slate-100" /><div className="mt-4 h-5 w-40 rounded bg-slate-100" /><div className="mt-3 h-4 w-3/4 rounded bg-slate-100" /></div>)}</div>;
   if (error) return <div role="alert" className="mt-8 rounded-xl bg-red-50 p-4 text-sm text-red-700"><p>{error}</p><button type="button" onClick={() => setReload(value => value + 1)} className="mt-3 rounded-lg border border-red-300 px-4 py-2 font-semibold">Thử lại</button></div>;
 
   const practiceCategories = [

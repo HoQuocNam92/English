@@ -1,5 +1,6 @@
 'use client';
 
+import { LevelBadge } from '@/shared/ui/LevelBadge';
 import { useMemo, useState } from 'react';
 
 export type LessonSection = {
@@ -67,7 +68,7 @@ function sectionText(section: LessonSection) {
 function LessonMeta({ lesson, inverse = false }: { lesson: Lesson; inverse?: boolean }) {
   return <div className={`flex flex-wrap gap-2 text-xs font-bold ${inverse ? 'text-white/85' : 'text-on-surface-variant'}`}>
     {lesson.domain?.name && <span className={`rounded-full px-3 py-1.5 ${inverse ? 'bg-white/15' : 'bg-surface-container-low'}`}>{lesson.domain.name}</span>}
-    {lesson.level?.name && <span className={`rounded-full px-3 py-1.5 ${inverse ? 'bg-white/15' : 'bg-surface-container-low'}`}>{lesson.level.name}</span>}
+    {lesson.level?.name && <LevelBadge level={lesson.level} />}
     <span className={`rounded-full px-3 py-1.5 ${inverse ? 'bg-white/15' : 'bg-surface-container-low'}`}>{lesson.estimatedMinutes} phút</span>
   </div>;
 }

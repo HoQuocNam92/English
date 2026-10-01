@@ -1,5 +1,6 @@
 'use client';
 
+import { Dropdown } from '@/shared/ui/Dropdown';
 import * as React from 'react';
 import { ActivityChart } from '@/shared/ui/ActivityChart';
 import Link from 'next/link';
@@ -224,10 +225,10 @@ export default function AdminDashboardPage() {
         <div className="stat-card bg-surface-container-lowest p-lg col-span-12 lg:col-span-8 min-h-[360px] flex flex-col rounded-lg border border-outline-variant hover:shadow-[0_1px_3px_rgba(15,23,24,0.06)] hover:-translate-y-0.5 transition-all">
           <div className="flex justify-between items-center mb-xl">
             <h3 className="font-headline-h3 text-headline-h3 text-on-surface">Hoạt động học tập</h3>
-            <select aria-label="Khoảng thời gian hoạt động" value={period} onChange={e => setPeriod(e.target.value)} className="bg-surface-bright border border-outline-variant rounded-md px-sm py-xs font-body-sm text-body-sm outline-none focus:border-primary">
+            <Dropdown aria-label="Khoảng thời gian hoạt động" value={period} onChange={e => setPeriod(e.target.value)} className="bg-surface-bright border border-outline-variant rounded-md px-sm py-xs font-body-sm text-body-sm outline-none focus:border-primary">
               <option value="week">7 ngày gần nhất</option>
               <option value="month">Tháng này</option>
-            </select>
+            </Dropdown>
           </div>
           <ActivityChart data={analytics?.weeklyActivity ?? []} />
         </div>

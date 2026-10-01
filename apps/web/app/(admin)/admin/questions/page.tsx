@@ -1,5 +1,7 @@
 'use client';
 
+import { LevelBadge } from '@/shared/ui/LevelBadge';
+import { Dropdown } from '@/shared/ui/Dropdown';
 import * as React from 'react';
 import Link from 'next/link';
 import { confirmDialog, PageHeader, Pagination, SearchInput } from '@/shared/ui';
@@ -167,7 +169,7 @@ export default function AdminQuestionsPage() {
           placeholder="Tìm kiếm câu hỏi theo nội dung, từ khóa, tình huống..."
           maxLength={100}
         />
-        <select
+        <Dropdown
           value={type}
           onChange={(e) => { setType(e.target.value); setPage(1); }}
           className="min-w-0 w-full rounded-xl bg-surface-container-lowest px-3 py-2 text-sm text-on-surface shadow-[inset_0_0_0_1px_rgba(99,102,241,0.16)] focus:outline-none"
@@ -175,11 +177,11 @@ export default function AdminQuestionsPage() {
         >
           <option value="">Tất cả loại câu hỏi</option>
           {Object.entries(QUESTION_TYPES).map(([value, item]) => <option key={value} value={value}>{item.label}</option>)}
-        </select>
-        <select value={skill} onChange={(e) => { setSkill(e.target.value); setPage(1); }} className="min-w-0 w-full rounded-xl bg-surface-container-lowest px-3 py-2 text-sm text-on-surface shadow-[inset_0_0_0_1px_rgba(99,102,241,0.16)] focus:outline-none" aria-label="Lọc theo kỹ năng">
+        </Dropdown>
+        <Dropdown value={skill} onChange={(e) => { setSkill(e.target.value); setPage(1); }} className="min-w-0 w-full rounded-xl bg-surface-container-lowest px-3 py-2 text-sm text-on-surface shadow-[inset_0_0_0_1px_rgba(99,102,241,0.16)] focus:outline-none" aria-label="Lọc theo kỹ năng">
           <option value="">Tất cả kỹ năng</option>{Object.entries(SKILLS).map(([value,label]) => <option key={value} value={value}>{label}</option>)}
-        </select>
-        <select
+        </Dropdown>
+        <Dropdown
           value={domainCode}
           onChange={(e) => { setDomainCode(e.target.value); setPage(1); }}
           className="min-w-0 w-full rounded-xl bg-surface-container-lowest px-3 py-2 text-sm text-on-surface shadow-[inset_0_0_0_1px_rgba(99,102,241,0.16)] focus:outline-none"
@@ -187,8 +189,8 @@ export default function AdminQuestionsPage() {
         >
           <option value="">Tất cả chuyên ngành</option>
           {domains.map((domain) => <option key={domain.id} value={domain.code}>{domain.name}</option>)}
-        </select>
-        <select
+        </Dropdown>
+        <Dropdown
           value={examId}
           onChange={(e) => { setExamId(e.target.value); setPage(1); }}
           className="min-w-0 w-full rounded-xl bg-surface-container-lowest px-3 py-2 text-sm text-on-surface shadow-[inset_0_0_0_1px_rgba(99,102,241,0.16)] focus:outline-none"
@@ -196,14 +198,14 @@ export default function AdminQuestionsPage() {
         >
           <option value="">Tất cả bộ đề</option>
           {exams.map((exam) => <option key={exam.id} value={exam.id}>{exam.title}</option>)}
-        </select>
-        <select
+        </Dropdown>
+        <Dropdown
           value={status}
           onChange={(e) => { setStatus(e.target.value); setPage(1); }}
           className="min-w-0 w-full rounded-xl bg-surface-container-lowest px-3 py-2 text-sm text-on-surface shadow-[inset_0_0_0_1px_rgba(99,102,241,0.16)] focus:outline-none"
         >
           {STATUSES.map((s) => <option key={s.value} value={s.value}>{s.label}</option>)}
-        </select>
+        </Dropdown>
         </div>
       </div>
 
@@ -276,9 +278,7 @@ export default function AdminQuestionsPage() {
                             </span>
                           )}
                           {q.level && (
-                            <span className="text-xs text-tertiary bg-tertiary/10 px-2 py-0.5 rounded font-medium">
-                              {q.level.name}
-                            </span>
+                            <LevelBadge level={q.level} />
                           )}
                           {(q.examQuestions?.length ?? 0) > 0 ? (
                             <span className="inline-flex items-center gap-1 rounded bg-indigo-50 px-2 py-0.5 text-xs font-medium text-indigo-700">
@@ -289,16 +289,18 @@ export default function AdminQuestionsPage() {
                             <span className="text-xs text-on-surface-variant">Chưa xếp bộ đề</span>
                           )}
                           <span className="text-xs text-on-surface-variant">· {q.points} điểm</span>
-                          {q.status === 'published' ? (
-                            <span className="text-xs text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full font-medium">Đã xuất bản</span>
-                          ) : (
-                            <span className="text-xs text-amber-700 bg-amber-50 px-2 py-0.5 rounded-full font-medium">Bản nháp</span>
-                          )}
                         </div>
                       </div>
-                      <span className={`material-symbols-outlined text-[20px] text-on-surface-variant transition-transform shrink-0 ${isExpanded ? 'rotate-180' : ''}`}>
-                        expand_more
-                      </span>
+                      <div className="flex shrink-0 self-stretch flex-col items-end justify-between gap-2">
+                        <span className={`material-symbols-outlined text-[20px] text-on-surface-variant transition-transform shrink-0 ${isExpanded ? 'rotate-180' : ''}`}>
+                          expand_more
+                        </span>
+                        {q.status === 'published' ? (
+                          <span className="text-xs text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full font-medium whitespace-nowrap">Đã xuất bản</span>
+                        ) : (
+                          <span className="text-xs text-amber-700 bg-amber-50 px-2 py-0.5 rounded-full font-medium whitespace-nowrap">Bản nháp</span>
+                        )}
+                      </div>
                     </div>
                   </button>
 

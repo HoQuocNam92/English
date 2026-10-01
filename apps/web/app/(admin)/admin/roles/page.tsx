@@ -1,5 +1,6 @@
 'use client';
 
+import { Dropdown } from '@/shared/ui/Dropdown';
 import * as React from 'react';
 import { confirmDialog, Modal, PageHeader } from '@/shared/ui';
 import { apiClient, ApiClientError } from '@/shared/api/api-client';
@@ -272,8 +273,8 @@ export default function AdminRolesPage() {
         <form onSubmit={savePermission}>
           <div className="flex items-center justify-between border-b border-outline-variant/20 px-6 py-5"><div><h2 className="text-xl font-bold">{editingPermission ? 'Sửa việc được phép làm' : 'Thêm việc được phép làm'}</h2><p className="mt-1 text-xs text-on-surface-variant">Chọn đối tượng và hành động bằng ngôn ngữ dễ hiểu.</p></div><button type="button" onClick={() => setPermissionModal(false)}><span className="material-symbols-outlined">close</span></button></div>
           <div className="grid gap-4 p-6 sm:grid-cols-2">
-            <label className="text-sm font-semibold">Áp dụng cho<select required value={permissionForm.resource} onChange={e => setPermissionForm({...permissionForm, resource:e.target.value})} className="mt-2 h-11 w-full rounded-xl border border-outline-variant/50 bg-white px-3"><option value="">Chọn đối tượng</option>{PERMISSION_RESOURCES.map(([value, label]) => <option key={value} value={value}>{label}</option>)}</select></label>
-            <label className="text-sm font-semibold">Được làm gì?<select value={permissionForm.action} onChange={e => setPermissionForm({...permissionForm, action:e.target.value})} className="mt-2 h-11 w-full rounded-xl border border-outline-variant/50 bg-white px-3">{PERMISSION_ACTIONS.map(([value, label]) => <option key={value} value={value}>{label}</option>)}</select></label>
+            <label className="text-sm font-semibold">Áp dụng cho<Dropdown required value={permissionForm.resource} onChange={e => setPermissionForm({...permissionForm, resource:e.target.value})} className="mt-2 h-11 w-full rounded-xl border border-outline-variant/50 bg-white px-3"><option value="">Chọn đối tượng</option>{PERMISSION_RESOURCES.map(([value, label]) => <option key={value} value={value}>{label}</option>)}</Dropdown></label>
+            <label className="text-sm font-semibold">Được làm gì?<Dropdown value={permissionForm.action} onChange={e => setPermissionForm({...permissionForm, action:e.target.value})} className="mt-2 h-11 w-full rounded-xl border border-outline-variant/50 bg-white px-3">{PERMISSION_ACTIONS.map(([value, label]) => <option key={value} value={value}>{label}</option>)}</Dropdown></label>
             <label className="text-sm font-semibold sm:col-span-2">Tên hiển thị <span className="font-normal text-on-surface-variant">(không bắt buộc)</span><input value={permissionForm.name} onChange={e => setPermissionForm({...permissionForm, name:e.target.value})} className="mt-2 h-11 w-full rounded-xl border border-outline-variant/50 px-3" placeholder={permissionLabel(permissionForm)} /></label>
             <label className="text-sm font-semibold sm:col-span-2">Mô tả<textarea value={permissionForm.description} onChange={e => setPermissionForm({...permissionForm, description:e.target.value})} className="mt-2 min-h-20 w-full rounded-xl border border-outline-variant/50 p-3" /></label>
             <div className="rounded-lg bg-primary/5 p-3 text-sm text-primary sm:col-span-2">Người có quyền này sẽ được: <strong>{permissionLabel(permissionForm)}</strong></div>

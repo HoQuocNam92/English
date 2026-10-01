@@ -1,5 +1,7 @@
 'use client';
 
+import { LevelBadge } from '@/shared/ui/LevelBadge';
+import { Dropdown } from '@/shared/ui/Dropdown';
 import * as React from 'react';
 import { PageHeader, Pagination, SearchInput } from '@/shared/ui';
 import { apiClient, ApiClientError } from '@/shared/api/api-client';
@@ -77,7 +79,7 @@ export default function AdminProgressPage() {
           maxLength={100}
         />
         </div>
-        {([['levelCode', 'Trình độ', options.levels], ['domainCode', 'Lĩnh vực', options.domains], ['certificateId', 'Mục tiêu chứng chỉ', options.certificates]] as const).map(([key, label, list]) => <label key={key} className="grid min-w-0 gap-1 text-xs font-semibold text-on-surface-variant">{label}<select aria-label={label} value={filters[key]} onChange={event => { setFilters(current => ({ ...current, [key]: event.target.value })); setPage(1); }} className="h-11 w-full rounded-xl border border-outline-variant bg-white px-3 text-sm text-on-surface"><option value="">Tất cả</option>{list.map(item => <option key={item.id} value={key === 'certificateId' ? item.id : item.code}>{item.name}</option>)}</select></label>)}
+        {([['levelCode', 'Trình độ', options.levels], ['domainCode', 'Lĩnh vực', options.domains], ['certificateId', 'Mục tiêu chứng chỉ', options.certificates]] as const).map(([key, label, list]) => <label key={key} className="grid min-w-0 gap-1 text-xs font-semibold text-on-surface-variant">{label}<Dropdown aria-label={label} value={filters[key]} onChange={event => { setFilters(current => ({ ...current, [key]: event.target.value })); setPage(1); }} className="h-11 w-full rounded-xl border border-outline-variant bg-white px-3 text-sm text-on-surface"><option value="">Tất cả</option>{list.map(item => <option key={item.id} value={key === 'certificateId' ? item.id : item.code}>{item.name}</option>)}</Dropdown></label>)}
         <button type="button" onClick={() => { setFilters({ levelCode: '', domainCode: '', certificateId: '' }); setSearch(''); setSearchInput(''); setPage(1); }} className="h-11 rounded-xl border border-outline-variant px-4 text-sm">Xóa bộ lọc</button>
       </div>
 
@@ -134,9 +136,7 @@ export default function AdminProgressPage() {
                       <p className="text-xs text-on-surface-variant">{st.email}</p>
                     </td>
                     <td className="px-4 py-3 text-xs">
-                      <span className="bg-primary/10 text-primary px-2.5 py-0.5 rounded-full font-medium">
-                        {st.level}
-                      </span>
+                      <LevelBadge level={st.level} />
                     </td>
                     <td className="px-4 py-3 w-48">
                       <div className="flex items-center gap-2">

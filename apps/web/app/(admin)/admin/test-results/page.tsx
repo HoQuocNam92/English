@@ -1,5 +1,6 @@
 'use client';
 
+import { Dropdown } from '@/shared/ui/Dropdown';
 import * as React from 'react';
 import { StatusBadge } from '@/shared/ui/StatusBadge';
 import { PageHeader, Pagination, SearchInput } from '@/shared/ui';
@@ -166,7 +167,7 @@ export default function AdminTestResultsPage() {
           <h3 className="font-headline-h3 text-headline-h3 text-on-surface">Kết quả chi tiết</h3>
           <div className="flex w-full flex-col gap-3 sm:w-auto sm:flex-row sm:items-start">
             <SearchInput value={searchInput} onChange={setSearchInput} onSearch={value => { setPage(1); setSearch(value); }} placeholder="Tìm kiếm theo email, tên bài thi…" />
-            <select
+            <Dropdown
               value={status}
               onChange={(e) => { setStatus(e.target.value); setPage(1); }}
               className="py-sm px-3 rounded-lg border border-outline-variant text-sm bg-surface"
@@ -174,7 +175,7 @@ export default function AdminTestResultsPage() {
               <option value="">Tất cả</option>
               <option value="passed">Đạt</option>
               <option value="failed">Không đạt</option>
-            </select>
+            </Dropdown>
           </div>
         </div>
         <div className="overflow-x-auto">

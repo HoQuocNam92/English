@@ -1,5 +1,7 @@
 'use client';
 
+import { LevelBadge } from '@/shared/ui/LevelBadge';
+import { Dropdown } from '@/shared/ui/Dropdown';
 import * as React from 'react';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
@@ -78,7 +80,7 @@ export default function AdminStudentsPage() {
     <main className="flex-1 p-margin overflow-y-auto">
       <PageHeader
         className="mb-xl"
-        title={certificateGoalsView ? 'Mục tiêu chứng chỉ của học viên' : 'Danh sách người học'}
+        title={certificateGoalsView ? 'Mục tiêu chứng chỉ của học viên' : 'Danh sách học viên'}
         description={certificateGoalsView ? 'Theo dõi và lọc học viên theo chứng chỉ nghề nghiệp đang hướng tới.' : 'Quản lý và theo dõi lộ trình học tập của sinh viên.'}
         icon={certificateGoalsView ? 'workspace_premium' : 'school'}
         iconClassName={certificateGoalsView ? 'from-violet-500 to-fuchsia-600' : 'from-cyan-500 to-blue-600'}
@@ -98,7 +100,7 @@ export default function AdminStudentsPage() {
           onSearch={(value) => { setPage(1); setSearch(value); }}
           placeholder="Tìm theo tên, email..."
         />
-        <select 
+        <Dropdown
           value={status}
           onChange={(e) => { setStatus(e.target.value); setPage(1); }}
           className="rounded-lg border border-outline-variant bg-surface-bright py-sm pl-sm pr-xl font-body-md text-on-surface focus:border-primary focus:ring-1 focus:ring-primary focus:outline-none min-w-[150px]"
@@ -107,15 +109,15 @@ export default function AdminStudentsPage() {
           <option value="active">Đang học</option>
           <option value="suspended">Tạm khoá</option>
           <option value="inactive">Chưa kích hoạt</option>
-        </select>
-        <select value={domainId} onChange={(e) => { setDomainId(e.target.value); setPage(1); }} className="rounded-lg border border-outline-variant bg-surface-bright py-sm pl-sm pr-xl font-body-md text-on-surface focus:border-primary focus:ring-1 focus:ring-primary focus:outline-none min-w-[170px]">
+        </Dropdown>
+        <Dropdown value={domainId} onChange={(e) => { setDomainId(e.target.value); setPage(1); }} className="rounded-lg border border-outline-variant bg-surface-bright py-sm pl-sm pr-xl font-body-md text-on-surface focus:border-primary focus:ring-1 focus:ring-primary focus:outline-none min-w-[170px]">
           <option value="">Tất cả lĩnh vực</option>
           {domains.map(item => <option key={item.id} value={item.id}>{item.name}</option>)}
-        </select>
-        <select value={certificateId} onChange={(e) => { setCertificateId(e.target.value); setPage(1); }} className="rounded-lg border border-outline-variant bg-surface-bright py-sm pl-sm pr-xl font-body-md text-on-surface focus:border-primary focus:ring-1 focus:ring-primary focus:outline-none min-w-[210px]">
+        </Dropdown>
+        <Dropdown value={certificateId} onChange={(e) => { setCertificateId(e.target.value); setPage(1); }} className="rounded-lg border border-outline-variant bg-surface-bright py-sm pl-sm pr-xl font-body-md text-on-surface focus:border-primary focus:ring-1 focus:ring-primary focus:outline-none min-w-[210px]">
           <option value="">Tất cả mục tiêu chứng chỉ</option>
           {certificates.map(item => <option key={item.id} value={item.id}>{item.code} - {item.name}</option>)}
-        </select>
+        </Dropdown>
       </div>
 
       <div className="bg-surface-container-lowest rounded-xl border border-outline-variant overflow-hidden shadow-[0_1px_3px_rgba(15,23,24,0.06)]">
@@ -159,7 +161,7 @@ export default function AdminStudentsPage() {
                         }`}>
                           {u.status === 'active' ? 'Đang học' : u.status === 'suspended' ? 'Tạm khoá' : 'Chưa kích hoạt'}
                         </span>
-                        <span className="inline-flex items-center px-2 py-1 rounded-full bg-secondary-fixed text-on-secondary-fixed font-interface-sb text-[12px]">{u.level ?? 'Chưa thiết lập'}</span>
+                        <LevelBadge level={u.level} />
                       </div>
                     </td>
                     <td className="p-md">

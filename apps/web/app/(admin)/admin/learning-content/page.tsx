@@ -1,5 +1,7 @@
 'use client';
 
+import { LevelBadge } from '@/shared/ui/LevelBadge';
+import { Dropdown } from '@/shared/ui/Dropdown';
 import * as React from 'react';
 import { confirmDialog, PageHeader, SearchInput, Pagination } from '@/shared/ui';
 import { apiClient, ApiClientError } from '@/shared/api/api-client';
@@ -289,14 +291,14 @@ function VocabularyModal({ mode, initial, domains, levels, onClose, onSuccess }:
             </Field>
 
             <Field label="Cấp độ" required error={errors.levelId}>
-              <select
+              <Dropdown
                 value={form.levelId}
                 onChange={set('levelId')}
                 className={`admin-select ${inputCls} ${errors.levelId ? inputErrCls : ''}`}
               >
                 <option value="">— Chọn cấp độ —</option>
                 {levels.map((l) => <option key={l.id} value={l.id}>{l.name}</option>)}
-              </select>
+              </Dropdown>
             </Field>
           </div>
 
@@ -558,21 +560,21 @@ export default function AdminLearningContentPage() {
           placeholder="Tìm kiếm từ vựng, thuật ngữ, định nghĩa tiếng Anh hoặc tiếng Việt..."
           maxLength={100}
         />
-        <select
+        <Dropdown
           value={domainCode}
           onChange={(e) => { setDomainCode(e.target.value); setPage(1); }}
           className="rounded-xl border border-outline-variant/60 bg-surface-container-lowest px-3 py-2 text-sm text-on-surface focus:outline-none"
         >
           <option value="">Tất cả lĩnh vực</option>
           {domains.map((domain) => <option key={domain.id} value={domain.code}>{domain.name}</option>)}
-        </select>
-        <select
+        </Dropdown>
+        <Dropdown
           value={status}
           onChange={(e) => { setStatus(e.target.value); setPage(1); }}
           className="rounded-xl border border-outline-variant/60 bg-surface-container-lowest px-3 py-2 text-sm text-on-surface focus:outline-none"
         >
           {STATUSES.map((s) => <option key={s.value} value={s.value}>{s.label}</option>)}
-        </select>
+        </Dropdown>
       </div>
 
       {/* Summary */}
@@ -645,9 +647,7 @@ export default function AdminLearningContentPage() {
                     </span>
                   )}
                   {v.level && (
-                    <span className="text-[11px] text-tertiary bg-tertiary/10 px-2 py-0.5 rounded-md font-medium">
-                      {v.level.name}
-                    </span>
+                    <LevelBadge level={v.level} />
                   )}
                 </div>
 

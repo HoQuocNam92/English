@@ -75,8 +75,6 @@ export async function apiRequest<T>(
       headers,
       signal: controller.signal,
     });
-    clearTimeout(timeout);
-
     if (res.status === 401 && token && retryOnUnauth && !path.startsWith('/auth/')) {
       if (await refreshSession()) return apiRequest<T>(path, options, false);
       throw new ApiError(401, 'Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.');
@@ -88,11 +86,27 @@ export async function apiRequest<T>(
     }
 
     if (res.status === 204) return undefined as T;
-    return res.json() as Promise<T>;
+    try {
+      return await res.json() as T;
+    } catch {
+      throw new ApiError(res.status, 'Máy chủ trả về dữ liệu không hợp lệ. Vui lòng thử lại.');
+    }
   } catch (e) {
-    clearTimeout(timeout);
     if (e instanceof ApiError) throw e;
-    throw new ApiError(0, 'Không thể kết nối đến máy chủ. Kiểm tra kết nối mạng.');
+    if (__DEV__) {
+      // Log connection diagnostics only; never log credentials or tokens.
+      console.warn('[API] Request failed', {
+        url: `${API_BASE}${path}`,
+        method: options.method ?? 'GET',
+        timedOut: controller.signal.aborted,
+        error: e instanceof Error ? e.message : String(e),
+      });
+    }
+    throw new ApiError(0, controller.signal.aborted
+      ? 'Máy chủ phản hồi quá lâu. Vui lòng thử lại.'
+      : 'Không thể kết nối đến máy chủ. Kiểm tra kết nối mạng.');
+  } finally {
+    clearTimeout(timeout);
   }
 }
 

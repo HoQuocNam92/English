@@ -1,5 +1,6 @@
 'use client';
 
+import { Dropdown } from '@/shared/ui/Dropdown';
 import * as React from 'react';
 
 export type StudioSection = {
@@ -16,7 +17,7 @@ function Field({ label, value, onChange, placeholder, multiline = false, mono = 
 }
 
 function SelectField({ label, value, options, onChange }: { label: string; value?: string; options: string[]; onChange: (value: string) => void }) {
-  return <label className="text-sm font-bold text-on-surface">{label}<select value={value ?? options[0]} onChange={event => onChange(event.target.value)} className={inputClass}>{options.map(option => <option key={option}>{option}</option>)}</select></label>;
+  return <label className="text-sm font-bold text-on-surface">{label}<Dropdown value={value ?? options[0]} onChange={event => onChange(event.target.value)} className={inputClass}>{options.map(option => <option key={option}>{option}</option>)}</Dropdown></label>;
 }
 
 const templates: Record<string, () => StudioSection[]> = {

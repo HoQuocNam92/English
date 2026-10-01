@@ -1,5 +1,7 @@
 'use client';
 
+import { LevelBadge } from '@/shared/ui/LevelBadge';
+import { Dropdown } from '@/shared/ui/Dropdown';
 import * as React from 'react';
 import Link from 'next/link';
 import { PageHeader } from '@/shared/ui';
@@ -161,10 +163,7 @@ export default function AdminStudentDetailPage({
                 <p className="font-body-md text-body-md text-on-surface-variant mb-3">{email}</p>
 
                 <div className="flex flex-wrap justify-center gap-2 mb-4">
-                  <span className="bg-surface-container text-on-surface-variant font-label-caps text-xs px-3 py-1 rounded-full flex items-center gap-1">
-                    <span className="material-symbols-outlined text-[14px]">school</span>
-                    {level}
-                  </span>
+                  <LevelBadge level={level} />
                   {domains.length > 0 &&
                     domains.map((d: string) => (
                       <span
@@ -404,7 +403,7 @@ export default function AdminStudentDetailPage({
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4" role="dialog" aria-modal="true" aria-label="Chỉnh sửa hồ sơ học tập">
           <div className="max-h-[90vh] w-full max-w-2xl overflow-y-auto rounded-2xl bg-white p-6 shadow-2xl">
             <div className="flex items-start justify-between gap-4"><div><h2 className="text-xl font-bold">Chỉnh sửa hồ sơ học tập</h2><p className="mt-1 text-sm text-on-surface-variant">Cập nhật trình độ, lĩnh vực quan tâm và mục tiêu chứng chỉ.</p></div><button type="button" onClick={() => setEditingGoals(false)} aria-label="Đóng"><span className="material-symbols-outlined">close</span></button></div>
-            <label className="mt-6 block text-sm font-bold">Trình độ tiếng Anh<select value={goalForm.levelCode} onChange={event => setGoalForm(current => ({ ...current, levelCode: event.target.value }))} className="mt-2 h-11 w-full rounded-xl border border-outline-variant bg-white px-3 font-normal"><option value="">Chọn trình độ</option>{goalOptions.levels.map(item => <option key={item.id} value={item.code}>{item.name}</option>)}</select></label>
+            <label className="mt-6 block text-sm font-bold">Trình độ tiếng Anh<Dropdown value={goalForm.levelCode} onChange={event => setGoalForm(current => ({ ...current, levelCode: event.target.value }))} className="mt-2 h-11 w-full rounded-xl border border-outline-variant bg-white px-3 font-normal"><option value="">Chọn trình độ</option>{goalOptions.levels.map(item => <option key={item.id} value={item.code}>{item.name}</option>)}</Dropdown></label>
             <fieldset className="mt-5"><legend className="text-sm font-bold">Lĩnh vực CNTT quan tâm</legend><div className="mt-2 grid gap-2 rounded-xl border border-outline-variant p-4 sm:grid-cols-2">{goalOptions.domains.map(item => <label key={item.id} className="flex items-center gap-2 text-sm"><input type="checkbox" checked={goalForm.domainCodes.includes(item.code)} onChange={event => setGoalForm(current => ({ ...current, domainCodes: event.target.checked ? [...current.domainCodes, item.code] : current.domainCodes.filter(code => code !== item.code) }))} className="accent-primary" />{item.name}</label>)}</div></fieldset>
             <fieldset className="mt-5"><legend className="text-sm font-bold">Mục tiêu nghề nghiệp</legend><div className="mt-2 grid gap-2 rounded-xl border border-outline-variant p-4 sm:grid-cols-2">{goalOptions.careerGoals.map(item => <label key={item.id} className="flex items-center gap-2 text-sm"><input type="checkbox" checked={goalForm.careerGoalCodes.includes(item.code)} onChange={event => setGoalForm(current => ({ ...current, careerGoalCodes: event.target.checked ? [...current.careerGoalCodes, item.code] : current.careerGoalCodes.filter(code => code !== item.code) }))} className="accent-primary" />{item.name}</label>)}</div></fieldset>
             <fieldset className="mt-5"><legend className="text-sm font-bold">Mục tiêu chứng chỉ</legend><div className="mt-2 grid gap-2 rounded-xl border border-outline-variant p-4 sm:grid-cols-2">{goalOptions.certificates.map(item => <label key={item.id} className="flex items-center gap-2 text-sm"><input type="checkbox" checked={goalForm.certificateCodes.includes(item.code)} onChange={event => setGoalForm(current => ({ ...current, certificateCodes: event.target.checked ? [...current.certificateCodes, item.code] : current.certificateCodes.filter(code => code !== item.code) }))} className="accent-primary" />{item.code} - {item.name}</label>)}</div></fieldset>

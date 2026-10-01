@@ -23,6 +23,26 @@ function getAccessToken(): string | null {
   }
 }
 
+async function fetchWithTimeout(url: string, options: RequestInit): Promise<Response> {
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), 15000);
+  try {
+    const response = await fetch(url, { ...options, signal: controller.signal });
+    // Read the body within the same timeout, even if only headers arrived.
+    const body = await response.arrayBuffer();
+    return new Response(response.status === 204 ? null : body, {
+      status: response.status, statusText: response.statusText, headers: response.headers,
+    });
+  } catch (error) {
+    if (controller.signal.aborted) {
+      throw new Error('Máy chủ phản hồi quá lâu. Vui lòng thử lại.');
+    }
+    throw error;
+  } finally {
+    clearTimeout(timeout);
+  }
+}
+
 let refreshPromise: Promise<string | null> | null = null;
 
 async function refreshAccessToken(): Promise<string | null> {
@@ -36,7 +56,7 @@ async function refreshAccessToken(): Promise<string | null> {
       const session = JSON.parse(raw);
       if (!session?.refreshToken) return null;
 
-      const response = await fetch(`${API_BASE}/auth/refresh`, {
+      const response = await fetchWithTimeout(`${API_BASE}/auth/refresh`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ refreshToken: session.refreshToken }),
@@ -84,7 +104,7 @@ async function request<T>(path: string, options: RequestInit = {}, canRetry = tr
 
   let res: Response;
   try {
-    res = await fetch(`${API_BASE}${path}`, { ...options, headers });
+    res = await fetchWithTimeout(`${API_BASE}${path}`, { ...options, headers });
   } catch (error) {
     throw new ApiClientError(toVietnameseErrorMessage(error instanceof Error ? error.message : error), 0);
   }
