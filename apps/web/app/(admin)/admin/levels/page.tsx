@@ -12,7 +12,6 @@ interface LevelItem {
   description: string;
   isActive: boolean;
   _count?: {
-    lessons: number;
     vocabularies: number;
     questions: number;
     exams: number;
@@ -189,7 +188,6 @@ export default function AdminLevelsPage() {
   const getLinkedCount = (lvl: LevelItem | null) => {
     if (!lvl?._count) return 0;
     return (
-      (lvl._count.lessons ?? 0) +
       (lvl._count.vocabularies ?? 0) +
       (lvl._count.questions ?? 0) +
       (lvl._count.exams ?? 0) +
@@ -239,10 +237,9 @@ export default function AdminLevelsPage() {
       )}
 
       {/* Summary stats */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
         {[
           { label: 'Tổng cấp độ', value: loading ? '—' : String(levels.length), icon: 'stairs', color: 'text-primary' },
-          { label: 'Tổng bài học theo cấp', value: loading ? '—' : String(levels.reduce((s, l) => s + (l._count?.lessons ?? 0), 0)), icon: 'auto_stories', color: 'text-secondary' },
           { label: 'Tổng từ vựng', value: loading ? '—' : String(levels.reduce((s, l) => s + (l._count?.vocabularies ?? 0), 0)), icon: 'translate', color: 'text-tertiary' },
           { label: 'Ngân hàng câu hỏi', value: loading ? '—' : String(levels.reduce((s, l) => s + (l._count?.questions ?? 0), 0)), icon: 'quiz', color: 'text-error' },
         ].map((stat) => (
@@ -354,11 +351,7 @@ export default function AdminLevelsPage() {
                   </div>
 
                   {/* Counters */}
-                  <div className="grid grid-cols-4 gap-2 pt-4 border-t border-outline-variant/20 text-center">
-                    <div className="bg-surface-container-low/70 rounded-xl p-2.5">
-                      <p className="text-[11px] text-on-surface-variant mb-0.5">Bài học</p>
-                      <p className="text-sm font-bold text-on-surface">{lvl._count?.lessons ?? 0}</p>
-                    </div>
+                  <div className="grid grid-cols-3 gap-2 pt-4 border-t border-outline-variant/20 text-center">
                     <div className="bg-surface-container-low/70 rounded-xl p-2.5">
                       <p className="text-[11px] text-on-surface-variant mb-0.5">Từ vựng</p>
                       <p className="text-sm font-bold text-on-surface">{lvl._count?.vocabularies ?? 0}</p>
@@ -435,7 +428,7 @@ export default function AdminLevelsPage() {
                   type="text"
                   value={name}
                   onChange={(e) => setName(e.target.value)}
-                  placeholder="Ví dụ: Pre-Intermediate (Tiền trung cấp)"
+                  placeholder="Ví dụ: Tiền trung cấp"
                   className="w-full px-3.5 py-2 rounded-xl border border-outline-variant bg-surface-container-lowest text-sm focus:outline-hidden focus:border-primary"
                   required
                 />
@@ -526,7 +519,6 @@ export default function AdminLevelsPage() {
                     <strong>{getLinkedCount(deletingLevel)} mục dữ liệu liên kết</strong> trong hệ thống:
                   </p>
                   <ul className="mt-2 list-disc list-inside text-xs space-y-0.5 text-amber-800">
-                    {deletingLevel._count?.lessons ? <li>{deletingLevel._count.lessons} bài học</li> : null}
                     {deletingLevel._count?.vocabularies ? <li>{deletingLevel._count.vocabularies} từ vựng</li> : null}
                     {deletingLevel._count?.questions ? <li>{deletingLevel._count.questions} câu hỏi</li> : null}
                     {deletingLevel._count?.exams ? <li>{deletingLevel._count.exams} bài thi</li> : null}

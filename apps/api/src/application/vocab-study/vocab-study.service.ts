@@ -7,37 +7,14 @@ export class VocabStudyService {
 
   // Get study session: all words matching filters
   // Priority: 1) 'learning' words with nextReviewAt <= now, 2) 'new' words
-  // Accepts optional filters: domainCode, levelCode, lessonId
-  async getStudySession(learnerId: string, filters?: { domainCode?: string; levelCode?: string; lessonId?: string }) {
+  // Accepts optional filters: domainCode, levelCode
+  async getStudySession(learnerId: string, filters?: { domainCode?: string; levelCode?: string; continueLearning?: boolean }) {
     // Build vocab filter
     const vocabWhere: any = { status: 'published' }
     if (filters?.domainCode) vocabWhere.domain = { code: filters.domainCode }
     if (filters?.levelCode) {
       vocabWhere.level = { code: filters.levelCode }
-    } else if (!filters?.lessonId) {
-      const profile = await this.prisma.learnerProfile.findUnique({
-        where: { userId: learnerId },
-        include: { level: true },
-      })
-      if (profile?.level?.code) {
-        vocabWhere.level = { code: profile.level.code }
-      }
     }
-    if (filters?.lessonId) vocabWhere.lessonVocabs = { some: { lessonId: filters.lessonId } }
-
-    // Get words needing review (learning, nextReviewAt <= now)
-    const reviewWords = await this.prisma.vocabulary.findMany({
-      where: {
-        ...vocabWhere,
-        vocabProgress: { some: { learnerId, status: 'learning', nextReviewAt: { lte: new Date() } } },
-      },
-      include: {
-        examples: { orderBy: { order: 'asc' }, take: 3 },
-        domain: { select: { code: true, name: true } },
-        level: { select: { code: true, name: true } },
-        vocabProgress: { where: { learnerId }, take: 1 },
-      },
-    })
 
     // Get new words (no progress record)
     const newWords = await this.prisma.vocabulary.findMany({
@@ -53,14 +30,18 @@ export class VocabStudyService {
       },
     })
 
-    const words = [...reviewWords, ...newWords]
-
-    // Count studied today
+    // Phiên mặc định chỉ học từ hoàn toàn mới. Từ đã học được ôn ở phiên SRS riêng.
     const todayStart = new Date()
     todayStart.setHours(0, 0, 0, 0)
     const studiedToday = await this.prisma.vocabularyProgress.count({
-      where: { learnerId, lastReviewAt: { gte: todayStart } },
+      where: { learnerId, createdAt: { gte: todayStart } },
     })
+    const profile = await this.prisma.learnerProfile.findUnique({
+      where: { userId: learnerId }, select: { dailyVocabularyTarget: true },
+    })
+    const dailyTarget = profile?.dailyVocabularyTarget ?? 10
+    const remainingToday = filters?.continueLearning ? dailyTarget : Math.max(0, dailyTarget - studiedToday)
+    const words = newWords.slice(0, remainingToday)
 
     return {
       words: words.map(w => ({
@@ -75,12 +56,12 @@ export class VocabStudyService {
         level: w.level,
         studyStatus: w.vocabProgress?.[0]?.status ?? 'new',
       })),
-      meta: { total: words.length, studiedToday },
+      meta: { total: words.length, studiedToday, remainingToday, maxDailyNewWords: dailyTarget, dailyLimitReached: !filters?.continueLearning && remainingToday === 0, continuingAfterTarget: Boolean(filters?.continueLearning) },
     }
   }
 
   // Generate quiz from given vocabulary IDs
-  async generateQuiz(learnerId: string, vocabIds: string[]) {
+  async generateQuiz(learnerId: string, vocabIds: string[], repetitions: Record<string, number> = {}) {
     const vocabs = await this.prisma.vocabulary.findMany({
       where: { id: { in: vocabIds } },
       include: { examples: { orderBy: { order: 'asc' }, take: 3 } },
@@ -93,9 +74,9 @@ export class VocabStudyService {
       take: 50,
     })
 
-    const questions = vocabs.map(v => {
+    const questions = vocabs.flatMap(v => Array.from({ length: Math.max(1, Math.min(4, repetitions[v.id] ?? 1)) }, (_, repetitionIndex) => {
       const hasExample = v.examples.length > 0 && v.examples[0].sentenceEn?.includes(v.term)
-      const useFillBlank = hasExample && Math.random() > 0.4 // 60% fill-blank if example available
+      const useFillBlank = hasExample && repetitionIndex % 2 === 1
 
       if (useFillBlank) {
         // Fill-in-the-blank
@@ -108,23 +89,26 @@ export class VocabStudyService {
           hint: v.definitionVi,
           answer: v.term,
         }
-      } else {
-        // Multiple choice: show Vietnamese definition, pick correct English term
+      } else if (repetitionIndex % 2 === 0) {
+        // Hiện từ tiếng Anh, chọn nghĩa tiếng Việt.
         const distractors = allVocabs
           .filter(d => d.id !== v.id)
           .sort(() => Math.random() - 0.5)
           .slice(0, 3)
-          .map(d => d.term)
-        const options = [v.term, ...distractors].sort(() => Math.random() - 0.5)
+          .map(d => d.definitionVi)
+        const options = [v.definitionVi, ...distractors].sort(() => Math.random() - 0.5)
         return {
           type: 'multiple_choice' as const,
           vocabularyId: v.id,
-          prompt: v.definitionVi,
+          prompt: `Nghĩa của "${v.term}" là gì?`,
           options,
-          answer: v.term,
+          answer: v.definitionVi,
         }
+      } else {
+        const distractors = allVocabs.filter(d => d.id !== v.id).sort(() => Math.random() - 0.5).slice(0, 3).map(d => d.term)
+        return { type: 'multiple_choice' as const, vocabularyId: v.id, prompt: v.definitionVi, options: [v.term, ...distractors].sort(() => Math.random() - 0.5), answer: v.term }
       }
-    })
+    }))
 
     // Shuffle questions
     return { questions: questions.sort(() => Math.random() - 0.5) }
@@ -264,6 +248,7 @@ export class VocabStudyService {
           wrongCount,
           lastReviewAt: now,
           nextReviewAt: nextReview,
+          lastRating: rating,
         },
       })
     }
@@ -276,11 +261,12 @@ export class VocabStudyService {
         wrongCount,
         lastReviewAt: now,
         nextReviewAt: nextReview,
+        lastRating: rating,
       },
     })
   }
 
-  // Get flashcards dashboard stats, heatmap, and active studying lessons
+  // Get flashcards dashboard stats and heatmap
   async getDashboard(learnerId: string) {
     const now = new Date()
 
@@ -313,70 +299,6 @@ export class VocabStudyService {
     })
     const heatmap = Object.entries(heatmapMap).map(([date, count]) => ({ date, count }))
 
-    // 3. Studying lessons (from LearningProgress with status in_progress)
-    const progressList = await this.prisma.learningProgress.findMany({
-      where: {
-        learnerId,
-        resourceType: 'lesson',
-        status: 'in_progress',
-      },
-      include: {
-        lesson: {
-          include: {
-            domain: { select: { code: true, name: true } },
-            level: { select: { code: true, name: true } },
-            vocabularies: {
-              select: {
-                vocabularyId: true,
-                vocabulary: {
-                  select: {
-                    id: true,
-                    vocabProgress: {
-                      where: { learnerId },
-                      select: { status: true, nextReviewAt: true },
-                    },
-                  },
-                },
-              },
-            },
-          },
-        },
-      },
-      orderBy: { updatedAt: 'desc' },
-    })
-
-    const studyingLessons = progressList
-      .filter(p => p.lesson)
-      .map(p => {
-        const lesson = p.lesson!
-        const vocabs = lesson.vocabularies || []
-        const totalWords = vocabs.length
-
-        let rememberedCount = 0
-        let needsReviewCount = 0
-
-        vocabs.forEach(v => {
-          const prog = v.vocabulary?.vocabProgress?.[0]
-          if (prog?.status === 'mastered') rememberedCount++
-          else if (prog?.status === 'learning' && prog.nextReviewAt && prog.nextReviewAt <= now) {
-            needsReviewCount++
-          }
-        })
-
-        return {
-          id: lesson.id,
-          title: lesson.title,
-          summary: lesson.summary,
-          thumbnailUrl: lesson.thumbnailUrl,
-          domain: lesson.domain,
-          level: lesson.level,
-          totalWords,
-          rememberedCount,
-          needsReviewCount,
-          updatedAt: p.updatedAt,
-        }
-      })
-
     return {
       stats: {
         learned: learnedCount,
@@ -384,210 +306,49 @@ export class VocabStudyService {
         needsReview: needsReviewCount,
       },
       heatmap,
-      studyingLessons,
     }
   }
 
-  // Get lesson details & vocab list for detail view
-  async getLessonVocabList(learnerId: string, lessonId: string, sort?: 'default' | 'random') {
-    const lesson: any = await this.prisma.lesson.findUnique({
-      where: { id: lessonId },
-      include: {
-        domain: { select: { code: true, name: true } },
-        level: { select: { code: true, name: true } },
-        createdBy: { select: { userDetail: { select: { displayName: true } } } },
-      },
-    })
+  // Get SRS review session — words that are due for review
+  async getReviewSession(learnerId: string) {
+    const now = new Date()
 
-    if (!lesson) {
-      return null
-    }
-
-    // Mark as in_progress if not already marked
-    const progress = await this.prisma.learningProgress.findUnique({
+    const reviewVocabs = await this.prisma.vocabulary.findMany({
       where: {
-        learnerId_resourceType_resourceId: {
-          learnerId,
-          resourceType: 'lesson',
-          resourceId: lessonId,
-        },
-      },
-    })
-
-    const isStudying = progress?.status === 'in_progress'
-
-    // Get all vocabularies in this lesson
-    const lessonVocabs = await this.prisma.lessonVocabulary.findMany({
-      where: { lessonId },
-      include: {
-        vocabulary: {
-          include: {
-            examples: { orderBy: { order: 'asc' }, take: 2 },
-            vocabProgress: { where: { learnerId }, take: 1 },
+        status: 'published',
+        vocabProgress: {
+          some: {
+            learnerId,
+            status: 'learning',
+            nextReviewAt: { lte: now },
           },
         },
       },
+      include: {
+        examples: { orderBy: { order: 'asc' }, take: 2 },
+        vocabProgress: { where: { learnerId }, take: 1 },
+      },
     })
 
-    const now = new Date()
-    let words = lessonVocabs
-      .filter(lv => lv.vocabulary && lv.vocabulary.status === 'published')
-      .map(lv => {
-        const v = lv.vocabulary
-        const prog = v.vocabProgress?.[0]
-        const isMastered = prog?.status === 'mastered'
-        const isNeedsReview = prog?.status === 'learning' && !!prog.nextReviewAt && prog.nextReviewAt <= now
-        const isNew = !prog || prog.status === 'new'
-
-        return {
-          id: v.id,
-          term: v.term,
-          pronunciationIpa: v.pronunciationIpa,
-          audioUrl: v.audioUrl,
-          partOfSpeech: v.partOfSpeech,
-          definitionEn: v.definitionEn,
-          definitionVi: v.definitionVi,
-          examples: v.examples.map(ex => ({ sentenceEn: ex.sentenceEn, translationVi: ex.translationVi })),
-          status: prog?.status ?? 'new',
-          isMastered,
-          isNeedsReview,
-          isNew,
-          correctCount: prog?.correctCount ?? 0,
-        }
-      })
-
-    if (sort === 'random') {
-      words = words.sort(() => Math.random() - 0.5)
-    }
-
-    const total = words.length
-    const remembered = words.filter(w => w.isMastered).length
-    const needsReview = words.filter(w => w.isNeedsReview).length
-    const newCount = words.filter(w => w.isNew).length
-
-    return {
-      lesson: {
-        id: lesson.id,
-        title: lesson.title,
-        summary: lesson.summary,
-        domain: lesson.domain,
-        level: lesson.level,
-        thumbnailUrl: lesson.thumbnailUrl,
-        author: lesson.createdBy?.userDetail?.displayName || 'TechEnglish',
-      },
-      words,
-      stats: {
-        total,
-        remembered,
-        needsReview,
-        newCount,
-        isStudying,
-      },
-    }
-  }
-
-  // Get practice session for a lesson with optional onlyNew or onlyNeedsReview filter
-  async getPracticeSession(learnerId: string, lessonId: string, options?: { onlyNew?: boolean; onlyNeedsReview?: boolean }) {
-    if (lessonId === 'review') {
-      const now = new Date()
-      const reviewVocabs = await this.prisma.vocabulary.findMany({
-        where: {
-          status: 'published',
-          vocabProgress: { some: { learnerId, status: 'learning', nextReviewAt: { lte: now } } },
-        },
-        include: {
-          examples: { orderBy: { order: 'asc' }, take: 2 },
-          vocabProgress: { where: { learnerId }, take: 1 },
-        },
-      })
-
-      const words = reviewVocabs.map(v => {
-        const prog = v.vocabProgress?.[0]
-        return {
-          id: v.id,
-          term: v.term,
-          pronunciationIpa: v.pronunciationIpa,
-          audioUrl: v.audioUrl,
-          partOfSpeech: v.partOfSpeech,
-          definitionEn: v.definitionEn,
-          definitionVi: v.definitionVi,
-          examples: v.examples.map(ex => ({ sentenceEn: ex.sentenceEn, translationVi: ex.translationVi })),
-          status: prog?.status ?? 'learning',
-          isMastered: false,
-          isNeedsReview: true,
-          isNew: false,
-          correctCount: prog?.correctCount ?? 0,
-        }
-      })
-
-      const todayStart = new Date()
-      todayStart.setHours(0, 0, 0, 0)
-      const studiedToday = await this.prisma.vocabularyProgress.count({
-        where: { learnerId, lastReviewAt: { gte: todayStart } },
-      })
-
+    const words = reviewVocabs.map(v => {
+      const prog = v.vocabProgress?.[0]
       return {
-        lesson: {
-          id: 'review',
-          title: 'Ôn tập từ vựng đến hạn (SRS)',
-          summary: 'Tập trung ôn tập toàn bộ các từ vựng kỹ thuật đã đến lịch củng cố trí nhớ',
-          domain: { name: 'Toàn bộ từ đang học' },
-          level: { code: 'review', name: 'Ôn tập ngắt quãng' },
-          author: 'Hệ thống TechEnglish',
-        },
-        words,
-        stats: {
-          totalWords: words.length,
-          studiedToday,
-          maxDailyNewWords: 20,
-        },
+        id: v.id,
+        term: v.term,
+        pronunciationIpa: v.pronunciationIpa,
+        audioUrl: v.audioUrl,
+        partOfSpeech: v.partOfSpeech,
+        definitionEn: v.definitionEn,
+        definitionVi: v.definitionVi,
+        examples: v.examples.map(ex => ({ sentenceEn: ex.sentenceEn, translationVi: ex.translationVi })),
+        status: prog?.status ?? 'learning',
+        isMastered: false,
+        isNeedsReview: true,
+        isNew: false,
+        correctCount: prog?.correctCount ?? 0,
       }
-    }
-
-    // Automatically ensure the lesson is in "in_progress" state
-    await this.prisma.learningProgress.upsert({
-      where: {
-        learnerId_resourceType_resourceId: {
-          learnerId,
-          resourceType: 'lesson',
-          resourceId: lessonId,
-        },
-      },
-      create: {
-        learnerId,
-        resourceType: 'lesson',
-        resourceId: lessonId,
-        status: 'in_progress',
-        startedAt: new Date(),
-      },
-      update: {
-        status: 'in_progress',
-        updatedAt: new Date(),
-      },
     })
 
-    const lessonData = await this.getLessonVocabList(learnerId, lessonId)
-    if (!lessonData) return null
-
-    let words = lessonData.words
-
-    if (options?.onlyNeedsReview) {
-      words = words.filter(w => w.isNeedsReview)
-    } else if (options?.onlyNew) {
-      // Filter only words not yet mastered
-      words = words.filter(w => !w.isMastered)
-    }
-
-    // Sort priority: 1) needs review, 2) new, 3) others
-    words.sort((a, b) => {
-      if (a.isNeedsReview && !b.isNeedsReview) return -1
-      if (!a.isNeedsReview && b.isNeedsReview) return 1
-      if (a.isNew && !b.isNew) return -1
-      if (!a.isNew && b.isNew) return 1
-      return 0
-    })
-
-    // Count words studied today
     const todayStart = new Date()
     todayStart.setHours(0, 0, 0, 0)
     const studiedToday = await this.prisma.vocabularyProgress.count({
@@ -595,7 +356,8 @@ export class VocabStudyService {
     })
 
     return {
-      lesson: lessonData.lesson,
+      title: 'Ôn tập từ vựng đến hạn (SRS)',
+      summary: 'Tập trung ôn tập toàn bộ các từ vựng kỹ thuật đã đến lịch củng cố trí nhớ',
       words,
       stats: {
         totalWords: words.length,
@@ -605,52 +367,21 @@ export class VocabStudyService {
     }
   }
 
-  // Toggle study list: mark lesson as in_progress or not_started
-  async toggleStudyingList(learnerId: string, lessonId: string, isStudying: boolean) {
-    if (!isStudying) {
-      // Mark as not_started so it's removed from "Đang học" dashboard
-      await this.prisma.learningProgress.upsert({
-        where: {
-          learnerId_resourceType_resourceId: {
-            learnerId,
-            resourceType: 'lesson',
-            resourceId: lessonId,
-          },
-        },
-        create: {
-          learnerId,
-          resourceType: 'lesson',
-          resourceId: lessonId,
-          status: 'not_started',
-        },
-        update: {
-          status: 'not_started',
-          updatedAt: new Date(),
-        },
-      })
-    } else {
-      await this.prisma.learningProgress.upsert({
-        where: {
-          learnerId_resourceType_resourceId: {
-            learnerId,
-            resourceType: 'lesson',
-            resourceId: lessonId,
-          },
-        },
-        create: {
-          learnerId,
-          resourceType: 'lesson',
-          resourceId: lessonId,
-          status: 'in_progress',
-          startedAt: new Date(),
-        },
-        update: {
-          status: 'in_progress',
-          updatedAt: new Date(),
-        },
-      })
-    }
-
-    return { success: true, isStudying }
+  async getHistory(learnerId: string, period?: 'day' | 'month' | 'year' | 'all', rating?: string) {
+    const now = new Date()
+    let from: Date | undefined
+    if (period === 'day') { from = new Date(now); from.setHours(0, 0, 0, 0) }
+    if (period === 'month') from = new Date(now.getFullYear(), now.getMonth(), 1)
+    if (period === 'year') from = new Date(now.getFullYear(), 0, 1)
+    return this.prisma.vocabularyProgress.findMany({
+      where: {
+        learnerId,
+        ...(from && { lastReviewAt: { gte: from } }),
+        ...(rating && rating !== 'all' && { lastRating: rating }),
+      },
+      include: { vocabulary: { include: { domain: true, level: true } } },
+      orderBy: { lastReviewAt: 'desc' },
+      take: 200,
+    })
   }
 }

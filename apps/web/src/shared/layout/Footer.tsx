@@ -29,22 +29,22 @@ export function Footer() {
             </h4>
             <ul className="space-y-2 text-xs text-on-surface-variant font-medium">
               <li>
-                <Link href="/learn/lessons" className="hover:text-primary transition-colors">
+                <Link href="/learn/certifications" className="hover:text-primary transition-colors">
                   Lộ trình Cloud Computing (AWS/GCP)
                 </Link>
               </li>
               <li>
-                <Link href="/learn/lessons" className="hover:text-primary transition-colors">
+                <Link href="/learn/certifications" className="hover:text-primary transition-colors">
                   DevOps & CI/CD Pipelines
                 </Link>
               </li>
               <li>
-                <Link href="/learn/lessons" className="hover:text-primary transition-colors">
+                <Link href="/learn/certifications" className="hover:text-primary transition-colors">
                   Cybersecurity & Security+
                 </Link>
               </li>
               <li>
-                <Link href="/learn/lessons" className="hover:text-primary transition-colors">
+                <Link href="/learn/certifications" className="hover:text-primary transition-colors">
                   Software Engineering & System Design
                 </Link>
               </li>
@@ -58,13 +58,13 @@ export function Footer() {
             </h4>
             <ul className="space-y-2 text-xs text-on-surface-variant font-medium">
               <li>
-                <Link href="/learn/flashcards/les-1" className="hover:text-primary transition-colors">
+                <Link href="/learn/flashcards" className="hover:text-primary transition-colors">
                   Thẻ từ vựng Flashcards SRS
                 </Link>
               </li>
               <li>
-                <Link href="/learn/practice" className="hover:text-primary transition-colors">
-                  Kho đề thi thử Mock Exams
+                <Link href="/learn/lessons" className="hover:text-primary transition-colors">
+                  Bài học và luyện tập
                 </Link>
               </li>
               <li>
@@ -87,7 +87,7 @@ export function Footer() {
                 </Link>
               </li>
               <li>
-                <Link href="/admin-login" className="hover:text-primary transition-colors">
+                <Link href="/login" className="hover:text-primary transition-colors">
                   Cổng quản trị (Admin & Teacher)
                 </Link>
               </li>

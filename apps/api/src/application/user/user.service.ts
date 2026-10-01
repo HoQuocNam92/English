@@ -12,7 +12,7 @@ export class UsersService {
     const { search, role, status } = params
     const skip = (page - 1) * limit
 
-    const where: any = {}
+    const where: any = { deletedAt: null }
     if (search) {
       where.OR = [
         { email: { contains: search, mode: 'insensitive' } },
@@ -48,20 +48,20 @@ export class UsersService {
 
   async findOne(id: string) {
     const user = await this.prisma.user.findUnique({
-      where: { id },
+      where: { id, deletedAt: null },
       include: {
         userDetail: true,
         userRoles: { include: { role: { include: { rolePermissions: { include: { permission: true } } } } } },
-        learnerProfile: { include: { level: true, domains: { include: { domain: true } }, careerGoals: { include: { careerGoal: true } }, certGoals: { include: { certificate: true } } } }
+        learnerProfile: { include: { level: true, domains: { include: { domain: true } }, certGoals: { include: { certificate: true } }, careerGoals: { include: { careerGoal: true } } } }
       }
     })
-    if (!user) throw new NotFoundException('User not found')
+    if (!user) throw new NotFoundException('Không tìm thấy người dùng')
     return this.toDetailResponse(user)
   }
 
   async create(dto: any) {
     const exists = await this.prisma.user.findUnique({ where: { email: dto.email } })
-    if (exists) throw new ConflictException('Email already in use')
+    if (exists) throw new ConflictException('Email này đã được sử dụng')
 
     const passwordHash = await bcrypt.hash(dto.password, 12)
     const roleToAssign = dto.roleCode || dto.role || 'learner'
@@ -126,7 +126,7 @@ export class UsersService {
 
   async changePassword(id: string, dto: any) {
     const user = await this.prisma.user.findUnique({ where: { id } })
-    if (!user) throw new NotFoundException('User not found')
+    if (!user) throw new NotFoundException('Không tìm thấy người dùng')
 
     const isMatch = await bcrypt.compare(dto.currentPassword, user.passwordHash)
     if (!isMatch) throw new ConflictException('Mật khẩu hiện tại không đúng')
@@ -144,6 +144,18 @@ export class UsersService {
   async activate(id: string) {
     await this.findOne(id)
     await this.prisma.user.update({ where: { id }, data: { status: 'active' } })
+  }
+
+  async softDelete(id: string, actorId: string) {
+    if (id === actorId) throw new BadRequestException('Không thể xóa tài khoản đang đăng nhập')
+    const user = await this.findOne(id)
+    if (user.roles.includes('admin')) throw new BadRequestException('Không thể xóa tài khoản quản trị viên')
+    const now = new Date()
+    await this.prisma.$transaction([
+      this.prisma.user.update({ where: { id }, data: { status: 'inactive', deletedAt: now } }),
+      this.prisma.refreshToken.updateMany({ where: { userId: id, revokedAt: null }, data: { revokedAt: now } }),
+    ])
+    return { success: true }
   }
 
   private toResponse(user: any) {
@@ -176,8 +188,8 @@ export class UsersService {
         bio: user.learnerProfile.bio,
         weeklyStudyTargetMinutes: user.learnerProfile.weeklyStudyTargetMinutes,
         domains: user.learnerProfile.domains?.map((d: any) => d.domain.code) ?? [],
-        careerGoals: user.learnerProfile.careerGoals?.map((cg: any) => cg.careerGoal.code) ?? [],
         certGoals: user.learnerProfile.certGoals?.map((cg: any) => cg.certificate.code) ?? [],
+        careerGoals: user.learnerProfile.careerGoals?.map((cg: any) => cg.careerGoal.code) ?? [],
       } : null,
     }
   }

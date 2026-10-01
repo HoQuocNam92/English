@@ -1,9 +1,12 @@
+import { localizeLevelFields } from '@/shared/lib/level-label';
 /**
  * Shared API client — tự động đính kèm JWT từ localStorage session.
  * Dùng cho mọi API call từ client components.
  */
 
+import { sessionStorageTarget, clearAuthSession } from "@/shared/storage";
 import { API_BASE_URL } from "@/shared/config/env";
+import { toVietnameseErrorMessage } from "@/shared/lib/error-message";
 
 const SESSION_KEY = "techenglish.web.session";
 const API_BASE = API_BASE_URL;
@@ -11,7 +14,7 @@ const API_BASE = API_BASE_URL;
 function getAccessToken(): string | null {
   if (typeof window === "undefined") return null;
   try {
-    const raw = localStorage.getItem(SESSION_KEY);
+    const raw = sessionStorageTarget().getItem(SESSION_KEY);
     if (!raw) return null;
     const session = JSON.parse(raw);
     return session?.accessToken ?? null;
@@ -28,7 +31,7 @@ async function refreshAccessToken(): Promise<string | null> {
 
   refreshPromise = (async () => {
     try {
-      const raw = localStorage.getItem(SESSION_KEY);
+      const raw = sessionStorageTarget().getItem(SESSION_KEY);
       if (!raw) return null;
       const session = JSON.parse(raw);
       if (!session?.refreshToken) return null;
@@ -42,7 +45,7 @@ async function refreshAccessToken(): Promise<string | null> {
 
       const data = await response.json();
       if (!data?.accessToken) return null;
-      localStorage.setItem(
+      sessionStorageTarget().setItem(
         SESSION_KEY,
         JSON.stringify({ ...session, accessToken: data.accessToken }),
       );
@@ -79,29 +82,32 @@ async function request<T>(path: string, options: RequestInit = {}, canRetry = tr
   };
   if (token) headers["Authorization"] = `Bearer ${token}`;
 
-  const res = await fetch(`${API_BASE}${path}`, { ...options, headers });
+  let res: Response;
+  try {
+    res = await fetch(`${API_BASE}${path}`, { ...options, headers });
+  } catch (error) {
+    throw new ApiClientError(toVietnameseErrorMessage(error instanceof Error ? error.message : error), 0);
+  }
 
   if (res.status === 401 && canRetry && token && path !== "/auth/refresh") {
     const refreshedToken = await refreshAccessToken();
     if (refreshedToken) return request<T>(path, options, false);
 
-    localStorage.removeItem(SESSION_KEY);
+    clearAuthSession();
     if (window.location.pathname !== "/login") window.location.assign("/login");
   }
 
   if (!res.ok) {
     const err: ApiError = await res.json().catch(() => ({ message: "Lỗi không xác định" }));
     throw new ApiClientError(
-      Array.isArray((err as any).message)
-        ? (err as any).message.join(", ")
-        : (err.message ?? `HTTP ${res.status}`),
+      toVietnameseErrorMessage((err as any).message ?? err.message, res.status),
       res.status,
     );
   }
 
   // 204 No Content
   if (res.status === 204) return undefined as T;
-  return res.json() as Promise<T>;
+  return localizeLevelFields(await res.json() as T, /^\/levels(?:[/?]|$)/.test(path));
 }
 
 // ============================================================
@@ -136,31 +142,7 @@ export interface PaginatedResponse<T> {
   };
 }
 
-// Lessons
-export interface LessonItem {
-  id: string;
-  title: string;
-  slug: string;
-  summary: string | null;
-  type: string;
-  status: string;
-  estimatedMinutes: number | null;
-  publishedAt: string | null;
-  createdAt: string;
-  domain: { code: string; name: string } | null;
-  level: { code: string; name: string } | null;
-  createdBy: { userDetail: { displayName: string } | null } | null;
-}
 
-export interface LessonDetail extends LessonItem {
-  sections: Array<{
-    id: string;
-    type: string;
-    order: number;
-    title: string | null;
-    content: Record<string, unknown>;
-  }>;
-}
 
 // Vocabulary
 export interface VocabularyItem {
@@ -182,6 +164,7 @@ export interface VocabularyItem {
 export interface QuestionItem {
   id: string;
   type: string;
+  skill: string;
   prompt: string;
   context: string | null;
   explanation: string | null;
@@ -198,13 +181,14 @@ export interface QuestionItem {
     isCorrect: boolean;
     explanation: string | null;
   }>;
-  certificates?: Array<{ certificate: { id: string; code: string; name: string } }>;
+  certificationTopics?: Array<{ topic: { id: string; name: string; certificateDomain?: { certificate?: { id: string; code: string; name: string } } } }>;
   examQuestions?: Array<{ order: number; exam: { id: string; title: string } }>;
 }
 
 // Exams
 export interface ExamItem {
   id: string;
+  kind: string;
   title: string;
   description: string | null;
   durationMinutes: number;
@@ -233,7 +217,6 @@ export interface UserItem {
   updatedAt: string;
   level?: string;
   domains?: string[];
-  careerGoals?: string[];
   certGoals?: string[];
 }
 
@@ -260,8 +243,6 @@ export interface PermissionItem {
 
 // Dashboard stats
 export interface TeacherDashboardStats {
-  lessonCount: number;
   groupCount: number;
   activeExamCount: number;
-  recentLessons: LessonItem[];
 }

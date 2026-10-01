@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Patch, Body, Param, Query, UseGuards, HttpCode, HttpStatus } from '@nestjs/common'
+import { Controller, Delete, Get, Post, Patch, Body, Param, Query, UseGuards, HttpCode, HttpStatus } from '@nestjs/common'
 import { ApiTags, ApiBearerAuth, ApiOperation } from '@nestjs/swagger'
 import { UsersService } from '../application/user/user.service'
 import { CreateUserDto, UpdateUserDto, UserQueryDto } from './http-dto/user.dto'
@@ -76,5 +76,13 @@ export class UsersController {
   @ApiOperation({ summary: 'Activate user' })
   activate(@Param('id') id: string) {
     return this.usersService.activate(id)
+  }
+
+  @Delete(':id')
+  @RequirePermissions('users:manage')
+  @HttpCode(HttpStatus.NO_CONTENT)
+  @ApiOperation({ summary: 'Soft delete user' })
+  remove(@Param('id') id: string, @CurrentUser() actor: JwtPayload) {
+    return this.usersService.softDelete(id, actor.sub)
   }
 }

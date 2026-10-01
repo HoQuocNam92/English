@@ -42,10 +42,12 @@ export class AuthService {
 
   async login(dto: LoginDto) {
     const user = await this.prisma.user.findUnique({ where: { email: dto.email } })
-    if (!user || user.status !== 'active') throw new UnauthorizedException('Invalid credentials')
+    if (!user) throw new UnauthorizedException('Không tìm thấy tài khoản với email này')
+    if (user.deletedAt || user.status === 'inactive') throw new UnauthorizedException('Tài khoản đã bị vô hiệu hóa hoặc chưa được kích hoạt')
+    if (user.status === 'suspended') throw new UnauthorizedException('Tài khoản đã bị khóa. Vui lòng liên hệ quản trị viên')
 
     const valid = await bcrypt.compare(dto.password, user.passwordHash)
-    if (!valid) throw new UnauthorizedException('Invalid credentials')
+    if (!valid) throw new UnauthorizedException('Mật khẩu không chính xác')
 
     const full = await this.getUserWithPermissions(user.id)
     return this.generateTokensForUser(full)
@@ -140,7 +142,7 @@ export class AuthService {
         },
       })
     } else {
-      if (user.status !== 'active') throw new UnauthorizedException('Tài khoản đã bị vô hiệu hóa')
+      if (user.status !== 'active' || user.deletedAt) throw new UnauthorizedException('Tài khoản đã bị vô hiệu hóa')
       const full = profile.avatarUrl ? await this.getUserWithPermissions(user.id) : null
       if (profile.avatarUrl && !full?.userDetail?.avatarUrl) {
         await this.prisma.userDetail.update({
@@ -165,7 +167,7 @@ export class AuthService {
     } finally {
       clearTimeout(timeout)
     }
-    if (!response.ok) throw new UnauthorizedException('Invalid Google token')
+    if (!response.ok) throw new UnauthorizedException('Thông tin đăng nhập Google không hợp lệ hoặc đã hết hạn')
     const payload = await response.json() as any
 
     const allowedAudiences = [this.config.get<string>('GOOGLE_CLIENT_ID'), this.config.get<string>('GOOGLE_ANDROID_CLIENT_ID'), this.config.get<string>('GOOGLE_IOS_CLIENT_ID'), this.config.get<string>('GOOGLE_WEB_CLIENT_ID')].filter(Boolean)
@@ -186,11 +188,11 @@ export class AuthService {
     const stored = await this.prisma.refreshToken.findUnique({ where: { tokenHash } })
 
     if (!stored || stored.revokedAt || stored.expiresAt < new Date()) {
-      throw new UnauthorizedException('Invalid or expired refresh token')
+      throw new UnauthorizedException('Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại')
     }
 
     const full = await this.getUserWithPermissions(stored.userId)
-    if (!full || full.status !== 'active') throw new UnauthorizedException()
+    if (!full || full.status !== 'active' || full.deletedAt) throw new UnauthorizedException('Tài khoản không còn hoạt động hoặc phiên đăng nhập không hợp lệ')
 
     const payload = this.buildPayload(full)
     const accessToken = this.jwt.sign(payload, { expiresIn: '15m' })
@@ -208,7 +210,7 @@ export class AuthService {
 
   async me(userId: string) {
     const user = await this.getUserWithPermissions(userId)
-    if (!user) throw new UnauthorizedException()
+    if (!user) throw new UnauthorizedException('Không tìm thấy tài khoản hoặc phiên đăng nhập không hợp lệ')
     const payload = this.buildPayload(user)
     return {
       id: user.id,
@@ -227,10 +229,10 @@ export class AuthService {
 
   async changePassword(userId: string, dto: AuthChangePasswordDto) {
     const user = await this.prisma.user.findUnique({ where: { id: userId } })
-    if (!user) throw new UnauthorizedException()
+    if (!user) throw new UnauthorizedException('Không tìm thấy tài khoản hoặc phiên đăng nhập không hợp lệ')
 
     const valid = await bcrypt.compare(dto.currentPassword, user.passwordHash)
-    if (!valid) throw new UnauthorizedException('Current password is incorrect')
+    if (!valid) throw new UnauthorizedException('Mật khẩu hiện tại không chính xác')
 
     const passwordHash = await bcrypt.hash(dto.newPassword, 12)
     await this.prisma.user.update({ where: { id: userId }, data: { passwordHash } })

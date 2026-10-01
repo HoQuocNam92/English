@@ -56,7 +56,7 @@ export default function MobileRegisterScreen() {
         AsyncStorage.setItem('access_token', result.accessToken),
         AsyncStorage.setItem('refresh_token', result.refreshToken ?? ''),
       ]);
-      router.replace('/(onboarding)/level' as any);
+      router.replace('/(onboarding)/goal' as any);
     } catch (err: any) {
       if (err instanceof ApiError) {
         setRegisterError(err.message);

@@ -39,7 +39,7 @@ export function Modal({ open, onClose, children, maxWidth = 'max-w-lg', widthSty
       role="dialog"
       aria-modal="true"
       style={{ position: 'fixed', inset: 0, zIndex: 9999 }}
-      className="p-4"
+      className="p-4 md:p-8"
     >
       {/* Backdrop */}
       <div

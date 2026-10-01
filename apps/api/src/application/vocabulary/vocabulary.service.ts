@@ -8,16 +8,13 @@ export class VocabularyService {
   async findAll(params: any) {
     const page = Math.max(1, Number(params.page) || 1)
     const limit = Math.min(Math.max(1, Number(params.limit) || 20), 3000)
-    const { search, domainCode, levelCode, status, lessonId } = params
+    const { search, domainCode, levelCode, status } = params
     const skip = (page - 1) * limit
     const where: any = {}
     if (search) where.OR = [{ term: { contains: search, mode: 'insensitive' } }, { definitionEn: { contains: search, mode: 'insensitive' } }]
     if (domainCode) where.domain = { code: domainCode }
     if (levelCode) where.level = { code: levelCode }
     if (status) where.status = status
-    if (lessonId) {
-      where.lessonVocabs = { some: { lessonId } }
-    }
     const [data, total] = await Promise.all([
       this.prisma.vocabulary.findMany({ where, skip, take: limit, include: { domain: true, level: true, examples: true }, orderBy: { createdAt: 'desc' } }),
       this.prisma.vocabulary.count({ where })
@@ -27,7 +24,7 @@ export class VocabularyService {
 
   async findOne(id: string) {
     const v = await this.prisma.vocabulary.findUnique({ where: { id }, include: { domain: true, level: true, examples: { orderBy: { order: 'asc' } } } })
-    if (!v) throw new NotFoundException('Vocabulary not found')
+    if (!v) throw new NotFoundException('Không tìm thấy từ vựng')
     return v
   }
 
@@ -42,7 +39,7 @@ export class VocabularyService {
       : dto.levelCode
       ? await this.prisma.level.findUnique({ where: { code: dto.levelCode } })
       : null
-    if (!domain || !level) throw new NotFoundException('Domain or Level not found')
+    if (!domain || !level) throw new NotFoundException('Lĩnh vực hoặc cấp độ không tồn tại')
     return this.prisma.vocabulary.create({
       data: {
         term: dto.term,
@@ -121,3 +118,4 @@ export class VocabularyService {
 
   async delete(id: string) { await this.findOne(id); await this.prisma.vocabulary.delete({ where: { id } }) }
 }
+

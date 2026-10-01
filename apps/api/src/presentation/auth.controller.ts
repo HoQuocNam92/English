@@ -13,6 +13,31 @@ import { CurrentUser, JwtPayload } from './decorators/current-user.decorator'
 export class AuthController {
   constructor(private readonly authService: AuthService, private readonly config: ConfigService) {}
 
+  private resolveWebUrl() {
+    const configuredWebUrl = this.config.get<string>('WEB_URL')?.trim().replace(/\/$/, '')
+    const isProduction = this.config.get<string>('NODE_ENV', 'development') === 'production'
+    if (!isProduction) {
+      if (!configuredWebUrl) throw new Error('WEB_URL is required')
+      return configuredWebUrl
+    }
+
+    const productionCandidates = [
+      configuredWebUrl,
+      ...String(this.config.get<string>('CORS_ORIGIN') ?? '').split(',').map((origin) => origin.trim().replace(/\/$/, '')),
+    ].filter(Boolean) as string[]
+
+    const productionWebUrl = productionCandidates.find((candidate) => {
+      try {
+        const url = new URL(candidate)
+        return url.protocol === 'https:' && url.hostname !== 'localhost' && url.hostname !== '127.0.0.1'
+      } catch {
+        return false
+      }
+    })
+    if (!productionWebUrl) throw new Error('Production WEB_URL must be a public HTTPS URL')
+    return productionWebUrl
+  }
+
   @Get('google')
   @UseGuards(AuthGuard('google'))
   @ApiOperation({ summary: 'Bắt đầu Google Login trên web' })
@@ -22,7 +47,7 @@ export class AuthController {
   @UseGuards(AuthGuard('google'))
   @ApiOperation({ summary: 'Google OAuth callback trên web' })
   googleCallback(@Request() req: any, @Res() response: Response) {
-    const webUrl = this.config.getOrThrow<string>('WEB_URL').replace(/\/$/, '')
+    const webUrl = this.resolveWebUrl()
     const params = new URLSearchParams({ access_token: req.user.accessToken, refresh_token: req.user.refreshToken, user: JSON.stringify(req.user.user) })
     return response.redirect(`${webUrl}/google/callback?${params.toString()}`)
   }

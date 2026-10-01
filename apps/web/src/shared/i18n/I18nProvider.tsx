@@ -23,17 +23,10 @@ const I18nContext = createContext<I18nContextValue>({
 });
 
 export function I18nProvider({ children }: { children: ReactNode }) {
-  const [locale, setLocaleState] = useState<Locale>(() => {
-    if (typeof window !== 'undefined') {
-      return (localStorage.getItem('techenglish.locale') as Locale) || 'vi';
-    }
-    return 'vi';
-  });
+  const [locale] = useState<Locale>('vi');
 
   const setLocale = (l: Locale) => {
-    setLocaleState(l);
-    localStorage.setItem('techenglish.locale', l);
-    document.documentElement.lang = l;
+    document.documentElement.lang = 'vi';
   };
 
   return (

@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { LearnerShell } from '@/shared/layout';
 import { apiClient } from '@/shared/api/api-client';
-import { LoadingSpinner } from '@/shared/ui';
+import { LoadingSpinner, showToast } from '@/shared/ui';
 
 type TabType = 'studying' | 'explore' | 'my_lists';
 
@@ -26,6 +26,9 @@ export default function FlashcardsDashboardPage() {
   const [domain, setDomain] = useState('');
   const [level, setLevel] = useState('');
   const [userProfile, setUserProfile] = useState<any>(null);
+  const [historyPeriod, setHistoryPeriod] = useState<'day' | 'month' | 'year' | 'all'>('month');
+  const [historyRating, setHistoryRating] = useState('all');
+  const [historyWords, setHistoryWords] = useState<any[]>([]);
 
   useEffect(() => {
     async function loadData() {
@@ -33,19 +36,51 @@ export default function FlashcardsDashboardPage() {
         setLoading(true);
         const [dashRes, lessonRes, profileRes] = await Promise.allSettled<any>([
           apiClient.get('/vocab-study/dashboard'),
-          apiClient.get('/lessons?status=published&limit=100'),
+          apiClient.get('/vocabulary?status=published&limit=3000'),
           apiClient.get('/learner-profiles/me'),
         ]);
 
         if (dashRes.status === 'fulfilled' && dashRes.value) {
-          setDashboardData(dashRes.value);
+          const dashboard = dashRes.value;
+          setDashboardData({
+            stats: {
+              learned: dashboard.stats?.learned ?? 0,
+              remembered: dashboard.stats?.remembered ?? 0,
+              needsReview: dashboard.stats?.needsReview ?? 0,
+            },
+            heatmap: Array.isArray(dashboard.heatmap) ? dashboard.heatmap : [],
+            studyingLessons: Array.isArray(dashboard.studyingLessons)
+              ? dashboard.studyingLessons
+              : [],
+          });
         }
 
-        const allLessons =
+        const vocabularyItems =
           lessonRes.status === 'fulfilled'
             ? lessonRes.value?.data ?? lessonRes.value ?? []
             : [];
-        setLessons(Array.isArray(allLessons) ? allLessons : []);
+        const groupMap = new Map<string, any>();
+        if (Array.isArray(vocabularyItems)) {
+          vocabularyItems.forEach((word: any) => {
+            if (!word.domain?.code || !word.level?.code) return;
+            const key = `${word.domain.code}:${word.level.code}`;
+            const current = groupMap.get(key);
+            if (current) {
+              current._count.vocabularies += 1;
+              return;
+            }
+            groupMap.set(key, {
+              id: key,
+              title: `${word.domain.name} · ${word.level.name}`,
+              summary: `Học từ vựng ${word.domain.name} ở trình độ ${word.level.name}.`,
+              domain: word.domain,
+              level: word.level,
+              _count: { vocabularies: 1 },
+              studyHref: `/learn/flashcards/all/practice?domainCode=${encodeURIComponent(word.domain.code)}&levelCode=${encodeURIComponent(word.level.code)}`,
+            });
+          });
+        }
+        setLessons(Array.from(groupMap.values()));
 
         if (profileRes.status === 'fulfilled' && profileRes.value) {
           setUserProfile(profileRes.value);
@@ -59,6 +94,12 @@ export default function FlashcardsDashboardPage() {
     }
     loadData();
   }, []);
+
+  useEffect(() => {
+    apiClient.get<any[]>(`/vocab-study/history?period=${historyPeriod}&rating=${historyRating}`)
+      .then(data => setHistoryWords(Array.isArray(data) ? data : []))
+      .catch(() => setHistoryWords([]));
+  }, [historyPeriod, historyRating]);
 
   const domains = Array.from(
     new Map(lessons.filter(l => l.domain).map(l => [l.domain.code, l.domain])).values()
@@ -293,6 +334,21 @@ export default function FlashcardsDashboardPage() {
               </div>
             </div>
 
+            <div className="rounded-3xl border border-slate-200 bg-white p-5 shadow-2xs">
+              <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                <div><h2 className="text-base font-bold text-slate-800">Từ đã học / đã biết</h2><p className="text-xs text-slate-500">Mặc định các từ này không xuất hiện trong phiên học từ mới.</p></div>
+                <div className="flex flex-wrap gap-2">
+                  <select value={historyPeriod} onChange={event => setHistoryPeriod(event.target.value as any)} className="rounded-lg border border-slate-200 px-3 py-2 text-xs font-bold">
+                    <option value="day">Hôm nay</option><option value="month">Tháng này</option><option value="year">Năm nay</option><option value="all">Tất cả</option>
+                  </select>
+                  <select value={historyRating} onChange={event => setHistoryRating(event.target.value)} className="rounded-lg border border-slate-200 px-3 py-2 text-xs font-bold">
+                    <option value="all">Mọi độ khó</option><option value="easy">Dễ</option><option value="medium">Trung bình</option><option value="hard">Khó</option><option value="mastered">Đã biết</option>
+                  </select>
+                </div>
+              </div>
+              {historyWords.length ? <div className="divide-y divide-slate-100">{historyWords.slice(0, 30).map(item => <div key={item.id} className="flex items-center justify-between gap-4 py-3"><div className="min-w-0"><p className="truncate text-sm font-bold text-slate-900">{item.vocabulary?.term}</p><p className="truncate text-xs text-slate-500">{item.vocabulary?.definitionVi}</p></div><div className="shrink-0 text-right"><span className="rounded-full bg-slate-100 px-2 py-1 text-[10px] font-bold uppercase text-slate-600">{item.lastRating === 'easy' ? 'Dễ' : item.lastRating === 'medium' ? 'Trung bình' : item.lastRating === 'hard' ? 'Khó' : item.lastRating === 'mastered' ? 'Đã biết' : 'Đã học'}</span><p className="mt-1 text-[10px] text-slate-400">{item.lastReviewAt ? new Date(item.lastReviewAt).toLocaleDateString('vi-VN') : ''}</p></div></div>)}</div> : <p className="rounded-xl bg-slate-50 p-5 text-center text-xs text-slate-500">Không có từ phù hợp với bộ lọc.</p>}
+            </div>
+
             {/* List of Studying Lessons */}
             <div className="space-y-4">
               <div className="flex justify-between items-center">
@@ -400,7 +456,7 @@ export default function FlashcardsDashboardPage() {
               <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
                 <button
                   type="button"
-                  onClick={() => alert('Tính năng tạo list từ cá nhân đang được phát triển!')}
+                  onClick={() => showToast('Tính năng tạo list từ cá nhân đang được phát triển!', 'info', 'Sắp ra mắt')}
                   className="h-44 border-2 border-dashed border-slate-300 rounded-2xl flex flex-col items-center justify-center gap-2 text-slate-500 hover:border-primary hover:text-primary hover:bg-primary/5 transition-all p-6 text-center group"
                 >
                   <span className="material-symbols-outlined text-3xl group-hover:scale-110 transition-transform">
@@ -428,7 +484,7 @@ export default function FlashcardsDashboardPage() {
                   type="search"
                   value={search}
                   onChange={e => setSearch(e.target.value)}
-                  placeholder="Tìm theo tên bài học..."
+                  placeholder="Tìm theo lĩnh vực hoặc trình độ..."
                   className="h-10 w-full rounded-xl border border-slate-200 bg-slate-50 pl-9 pr-4 text-xs font-semibold outline-none focus:border-primary focus:bg-white"
                 />
               </div>
@@ -479,14 +535,22 @@ export default function FlashcardsDashboardPage() {
               </div>
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {filteredExplore.map((lesson: any) => (
+                {filteredExplore.map((lesson: any, lessonIndex: number) => {
+                  const iconStyles = [
+                    'bg-blue-50 text-blue-600',
+                    'bg-orange-50 text-orange-600',
+                    'bg-fuchsia-50 text-fuchsia-600',
+                    'bg-emerald-50 text-emerald-600',
+                    'bg-cyan-50 text-cyan-600',
+                  ];
+                  return (
                   <Link
                     key={lesson.id}
-                    href={`/learn/flashcards/${lesson.id}`}
+                    href={lesson.studyHref ?? `/learn/flashcards/${lesson.id}`}
                     className="bg-white border border-slate-200 rounded-2xl p-5 flex flex-col justify-between hover:-translate-y-1 hover:shadow-md hover:border-primary/40 transition-all group"
                   >
                     <div className="space-y-3">
-                      <div className="w-10 h-10 rounded-xl bg-primary/10 text-primary flex items-center justify-center">
+                      <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${iconStyles[lessonIndex % iconStyles.length]}`}>
                         <span className="material-symbols-outlined text-xl">style</span>
                       </div>
                       <div>
@@ -514,7 +578,8 @@ export default function FlashcardsDashboardPage() {
                       </span>
                     </div>
                   </Link>
-                ))}
+                  );
+                })}
               </div>
             )}
           </div>
@@ -531,7 +596,7 @@ export default function FlashcardsDashboardPage() {
               Bạn có thể tự tạo bộ flashcard từ vựng riêng của mình hoặc lưu lại những từ vựng cần lưu ý khi đọc bài học.
             </p>
             <button
-              onClick={() => alert('Tính năng tạo danh sách cá nhân đang được phát triển!')}
+              onClick={() => showToast('Tính năng tạo danh sách cá nhân đang được phát triển!', 'info', 'Sắp ra mắt')}
               className="px-6 py-2.5 rounded-xl bg-primary text-white text-xs font-bold shadow-xs hover:bg-primary/90 transition-colors inline-flex items-center gap-2"
             >
               <span className="material-symbols-outlined text-sm">add</span>

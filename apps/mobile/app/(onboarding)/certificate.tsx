@@ -1,325 +1,66 @@
-import { useState, useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useRouter } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
-import {
-  StyleSheet, Text, View, TouchableOpacity, ScrollView, Alert, ActivityIndicator
-} from 'react-native';
+import { ActivityIndicator, StyleSheet, Text, TouchableOpacity, View, ScrollView } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
-import { colors, spacing } from '@techenglish/design-tokens';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { colors, spacing } from '@techenglish/design-tokens';
 import { api } from '../../src/shared/api/api-client';
 
-interface Certificate {
-  id: string;
-  code: string;
-  name: string;
-  provider: string;
-  description: string;
-}
-
-// Icon mapping based on cert provider/code keywords
-const getCertIcon = (code: string, provider: string): keyof typeof MaterialIcons.glyphMap => {
-  const combined = `${code} ${provider}`.toUpperCase();
-  if (combined.includes('AWS') || combined.includes('AMAZON')) return 'cloud';
-  if (combined.includes('AZURE') || combined.includes('MICROSOFT')) return 'cloud-queue';
-  if (combined.includes('GCP') || combined.includes('GOOGLE')) return 'cloud-circle';
-  if (combined.includes('CISCO') || combined.includes('CCNA')) return 'router';
-  if (combined.includes('SECURITY') || combined.includes('COMPTIA')) return 'security';
-  if (combined.includes('KUBERNETES') || combined.includes('CKA')) return 'hub';
-  if (combined.includes('LINUX') || combined.includes('LFCS')) return 'terminal';
-  if (combined.includes('GITHUB')) return 'code';
-  return 'workspace-premium';
-};
+interface Certificate { id: string; code: string; name: string; provider: string; description: string }
 
 export default function OnboardingCertificateScreen() {
   const router = useRouter();
-  const [selectedCerts, setSelectedCerts] = useState<string[]>([]);
-  const [certs, setCerts] = useState<Certificate[]>([]);
+  const [certificates, setCertificates] = useState<Certificate[]>([]);
+  const [selected, setSelected] = useState<Certificate | null>(null);
   const [loading, setLoading] = useState(true);
-  const [submitting, setSubmitting] = useState(false);
+  const [loadError, setLoadError] = useState('');
 
   useEffect(() => {
-    api.get<Certificate[]>('/certificates')
-      .then(data => {
-        setCerts(Array.isArray(data) ? data : []);
-      })
-      .catch(() => setCerts([]))
+    api.get<{ data: Certificate[] }>('/certificates?activeOnly=true')
+      .then(response => setCertificates(response?.data ?? []))
+      .catch(() => setLoadError('Không thể tải danh sách chứng chỉ.'))
       .finally(() => setLoading(false));
   }, []);
 
-  const toggleCert = (code: string) => {
-    setSelectedCerts(prev =>
-      prev.includes(code) ? prev.filter(c => c !== code) : [...prev, code]
-    );
+  const next = async () => {
+    if (!selected) return;
+    await AsyncStorage.multiSet([
+      ['onboarding_certificate_code', selected.code],
+      ['onboarding_certificate_id', selected.id],
+    ]);
+    router.push('/(onboarding)/level' as any);
   };
 
-  const handleFinish = async () => {
-    setSubmitting(true);
-    try {
-      const [levelCode, domainsRaw, careerGoalsRaw] = await Promise.all([
-        AsyncStorage.getItem('onboarding_level'),
-        AsyncStorage.getItem('onboarding_domains'),
-        AsyncStorage.getItem('onboarding_career_goals'),
-      ]);
-
-      const domainCodes: string[] = domainsRaw ? JSON.parse(domainsRaw) : ['CLOUD'];
-      const careerGoalCodes: string[] = careerGoalsRaw ? JSON.parse(careerGoalsRaw) : [];
-
-      await api.post('/learner-profiles/me/complete-onboarding', {
-        levelCode: levelCode ?? 'intermediate',
-        domainCodes,
-        careerGoalCodes: careerGoalCodes.length > 0 ? careerGoalCodes : undefined,
-        certificateCodes: selectedCerts.length > 0 ? selectedCerts : undefined,
-        weeklyStudyTargetMinutes: 120,
-      });
-
-      await AsyncStorage.multiRemove([
-        'onboarding_level',
-        'onboarding_domains',
-        'onboarding_career_goals',
-      ]);
-
-      router.replace('/(tabs)/home' as any);
-    } catch (err: any) {
-      Alert.alert('Lỗi', err.message ?? 'Không thể hoàn tất onboarding. Vui lòng thử lại.');
-    } finally {
-      setSubmitting(false);
-    }
-  };
-
-  return (
-    <View style={styles.container}>
-      <StatusBar style="dark" />
-
-      {/* Top Header */}
-      <View style={styles.headerBar}>
-        <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
-          <MaterialIcons name="arrow-back" size={24} color={colors.text} />
-        </TouchableOpacity>
-        <Text style={styles.headerTitle}>Hoàn tất thiết lập</Text>
-        <View style={styles.stepBadge}>
-          <Text style={styles.stepBadgeText}>4/4</Text>
-        </View>
-      </View>
-
-      <View style={styles.progressBarBg}>
-        <View style={[styles.progressBarFill, { width: '100%' }]} />
-      </View>
-
-      <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
-        <View style={styles.headerRow}>
-          <View style={styles.stepDotRow}>
-            <Text style={styles.stepText}>BƯỚC 4/4</Text>
-            <View style={styles.dot} />
-            <Text style={styles.stepSubText}>Mục tiêu cuối cùng</Text>
-          </View>
-        </View>
-
-        <Text style={styles.title}>Chứng chỉ IT mục tiêu?</Text>
-        <Text style={styles.subtitle}>Chọn chứng chỉ bạn muốn ôn luyện. Có thể chọn nhiều hoặc bỏ qua.</Text>
-
-        {loading ? (
-          <View style={styles.loadingContainer}>
-            <ActivityIndicator size="large" color={colors.primary} />
-            <Text style={styles.loadingText}>Đang tải danh sách chứng chỉ...</Text>
-          </View>
-        ) : (
-          <View style={styles.optionsList}>
-            {certs.map((c) => {
-              const isSelected = selectedCerts.includes(c.code);
-              return (
-                <TouchableOpacity
-                  key={c.id}
-                  style={[styles.optionCard, isSelected && styles.optionCardSelected]}
-                  onPress={() => toggleCert(c.code)}
-                  activeOpacity={0.8}
-                >
-                  <View style={styles.optionContentRow}>
-                    <View style={[styles.iconBox, isSelected && styles.iconBoxSelected]}>
-                      <MaterialIcons name={getCertIcon(c.code, c.provider)} size={22} color={isSelected ? colors.primary : '#464555'} />
-                    </View>
-                    <View style={styles.optionTextContainer}>
-                      <View style={styles.optionTitleRow}>
-                        <Text style={styles.certName}>{c.name}</Text>
-                        {isSelected ? (
-                          <View style={styles.checkIconActive}>
-                            <MaterialIcons name="check" size={16} color="#ffffff" />
-                          </View>
-                        ) : (
-                          <View style={styles.checkIconInactive} />
-                        )}
-                      </View>
-                      <Text style={styles.certDesc}>{c.provider}</Text>
-                    </View>
-                  </View>
-                </TouchableOpacity>
-              );
-            })}
-          </View>
-        )}
-
-        <View style={styles.insightBanner}>
-          <MaterialIcons name="insights" size={20} color={colors.primary} />
-          <Text style={styles.insightText}>Lộ trình sẽ tích hợp bài đọc tài liệu kỹ thuật & từ vựng tương ứng với <Text style={{fontWeight: '700', color: '#191c1e'}}>chứng chỉ đã chọn</Text>.</Text>
-        </View>
-      </ScrollView>
-
-      <View style={styles.bottomBar}>
-        <TouchableOpacity style={styles.finishButton} onPress={handleFinish} disabled={submitting}>
-          {submitting ? (
-            <ActivityIndicator color="#fff" />
-          ) : (
-            <>
-              <Text style={styles.finishButtonText}>
-                {selectedCerts.length === 0 ? 'Bỏ qua & Bắt đầu học' : 'Hoàn tất & Bắt đầu học'}
-              </Text>
-              <MaterialIcons name="arrow-forward" size={18} color="#ffffff" />
-            </>
-          )}
-        </TouchableOpacity>
-        <Text style={styles.bottomHint}>Bạn có thể thay đổi mục tiêu bất kỳ lúc nào trong cài đặt</Text>
-      </View>
-    </View>
-  );
+  return <View style={styles.container}>
+    <StatusBar style="dark" />
+    <View style={styles.header}><TouchableOpacity onPress={() => router.back()}><MaterialIcons name="arrow-back" size={24} color="#191c1e" /></TouchableOpacity><Text style={styles.step}>Bước 2/4</Text><View style={{ width: 24 }} /></View>
+    <View style={styles.progress}><View style={[styles.progressFill, { width: '50%' }]} /></View>
+    <ScrollView contentContainerStyle={styles.content}>
+      <Text style={styles.title}>Chọn chứng chỉ mục tiêu</Text>
+      <Text style={styles.subtitle}>Danh sách được lấy trực tiếp từ chứng chỉ đang hoạt động trong hệ thống.</Text>
+      {loading && <ActivityIndicator color={colors.primary} size="large" />}
+      {loadError ? <Text style={styles.error}>{loadError}</Text> : null}
+      {!loading && certificates.length === 0 && !loadError ? <Text style={styles.empty}>Chưa có chứng chỉ đang hoạt động.</Text> : null}
+      {certificates.map(item => {
+        const active = selected?.id === item.id;
+        return <TouchableOpacity key={item.id} style={[styles.card, active && styles.cardActive]} onPress={() => setSelected(item)} activeOpacity={0.8}>
+          <View style={[styles.icon, active && styles.iconActive]}><MaterialIcons name="workspace-premium" size={24} color={active ? '#fff' : colors.primary} /></View>
+          <View style={styles.copy}><Text style={styles.cardTitle}>{item.name}</Text><Text style={styles.cardMeta}>{item.provider} · {item.code}</Text><Text numberOfLines={2} style={styles.cardDescription}>{item.description}</Text></View>
+          <MaterialIcons name={active ? 'check-circle' : 'radio-button-unchecked'} size={22} color={active ? colors.primary : '#c7c4d8'} />
+        </TouchableOpacity>;
+      })}
+    </ScrollView>
+    <View style={styles.bottom}><TouchableOpacity disabled={!selected} style={[styles.button, !selected && styles.buttonDisabled]} onPress={next}><Text style={styles.buttonText}>Tiếp tục</Text><MaterialIcons name="arrow-forward" size={20} color="#fff" /></TouchableOpacity></View>
+  </View>;
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#f8fafc' },
-  headerBar: {
-    height: 56,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: spacing.md,
-    backgroundColor: '#ffffff',
-    marginTop: 40 // safearea
-  },
-  backButton: {
-    width: 40, height: 40,
-    alignItems: 'center', justifyContent: 'center',
-    marginLeft: -8
-  },
-  headerTitle: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: '#191c1e'
-  },
-  stepBadge: {
-    backgroundColor: '#e2dfff',
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 12
-  },
-  stepBadgeText: {
-    fontSize: 12,
-    fontWeight: '700',
-    color: colors.primary
-  },
-  progressBarBg: {
-    height: 4,
-    backgroundColor: '#e6e8ea',
-    width: '100%'
-  },
-  progressBarFill: {
-    height: '100%',
-    backgroundColor: colors.primary,
-  },
-  scrollContent: { padding: spacing.md, paddingBottom: 120 },
-  headerRow: { marginBottom: spacing.sm },
-  stepDotRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: spacing.xs
-  },
-  stepText: { fontSize: 12, fontWeight: '700', color: colors.primary, textTransform: 'uppercase' },
-  dot: { width: 4, height: 4, borderRadius: 2, backgroundColor: '#c7c4d8' },
-  stepSubText: { fontSize: 12, color: '#464555' },
-  title: { fontSize: 24, fontWeight: '700', color: '#191c1e', marginBottom: spacing.xs, letterSpacing: -0.2 },
-  subtitle: { fontSize: 14, color: '#464555', marginBottom: spacing.lg, lineHeight: 20 },
-  loadingContainer: { alignItems: 'center', paddingVertical: 40 },
-  loadingText: { marginTop: spacing.sm, fontSize: 14, color: '#464555' },
-  optionsList: { gap: spacing.sm },
-  optionCard: {
-    backgroundColor: '#ffffff', borderRadius: 12, padding: spacing.md,
-    borderWidth: 1, borderColor: '#c7c4d8'
-  },
-  optionCardSelected: { borderColor: colors.primary, backgroundColor: '#ffffff', borderWidth: 2 },
-  optionContentRow: {
-    flexDirection: 'row',
-    alignItems: 'flex-start',
-    gap: spacing.md
-  },
-  iconBox: { width: 40, height: 40, borderRadius: 8, backgroundColor: '#f2f4f6', alignItems: 'center', justifyContent: 'center' },
-  iconBoxSelected: { backgroundColor: '#e2dfff' },
-  optionTextContainer: {
-    flex: 1,
-    paddingRight: 4
-  },
-  optionTitleRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    marginBottom: 4
-  },
-  certName: { fontSize: 14, fontWeight: '600', color: '#191c1e', flex: 1, paddingRight: 8 },
-  certDesc: { fontSize: 12, color: '#464555', lineHeight: 18 },
-  checkIconActive: {
-    width: 20, height: 20,
-    borderRadius: 6,
-    backgroundColor: colors.primary,
-    alignItems: 'center',
-    justifyContent: 'center'
-  },
-  checkIconInactive: {
-    width: 20, height: 20,
-    borderRadius: 10,
-    borderWidth: 1,
-    borderColor: '#c7c4d8'
-  },
-  insightBanner: {
-    marginTop: spacing.xl,
-    padding: spacing.sm,
-    backgroundColor: '#f2f4f6',
-    borderWidth: 1,
-    borderColor: '#e6e8ea',
-    borderRadius: 12,
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: spacing.sm
-  },
-  insightText: {
-    fontSize: 12,
-    color: '#464555',
-    flex: 1,
-    lineHeight: 18
-  },
-  bottomBar: {
-    position: 'absolute', bottom: 0, left: 0, right: 0,
-    backgroundColor: '#ffffff',
-    padding: spacing.md,
-    paddingBottom: 32, // safearea
-    borderTopWidth: 1,
-    borderTopColor: '#e6e8ea',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: -4 },
-    shadowOpacity: 0.05,
-    shadowRadius: 12,
-    elevation: 4
-  },
-  finishButton: {
-    backgroundColor: colors.primary,
-    height: 48,
-    borderRadius: 10,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: spacing.xs,
-    marginBottom: spacing.xs
-  },
-  finishButtonText: { color: '#ffffff', fontSize: 14, fontWeight: '600' },
-  bottomHint: {
-    textAlign: 'center',
-    fontSize: 12,
-    color: '#777587'
-  }
+  container: { flex: 1, backgroundColor: '#f8fafc' }, header: { paddingTop: 52, paddingHorizontal: spacing.lg, paddingBottom: spacing.md, backgroundColor: '#fff', flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }, step: { fontSize: 13, fontWeight: '700', color: '#777587' },
+  progress: { height: 4, backgroundColor: '#e6e8ea' }, progressFill: { height: 4, backgroundColor: colors.primary }, content: { padding: spacing.lg, paddingBottom: 120 },
+  title: { fontSize: 25, fontWeight: '800', color: '#191c1e', marginTop: 12 }, subtitle: { color: '#464555', marginTop: 8, marginBottom: 24, lineHeight: 20 },
+  card: { borderWidth: 1, borderColor: '#c7c4d8', borderRadius: 13, padding: spacing.md, marginBottom: spacing.sm, backgroundColor: '#fff', flexDirection: 'row', alignItems: 'flex-start', gap: spacing.sm }, cardActive: { borderColor: colors.primary, borderWidth: 2 },
+  icon: { width: 42, height: 42, borderRadius: 10, backgroundColor: '#f0efff', alignItems: 'center', justifyContent: 'center' }, iconActive: { backgroundColor: colors.primary }, copy: { flex: 1 }, cardTitle: { fontSize: 14, fontWeight: '800', color: '#191c1e' }, cardMeta: { marginTop: 3, fontSize: 12, fontWeight: '700', color: colors.primary }, cardDescription: { marginTop: 5, fontSize: 12, lineHeight: 17, color: '#464555' },
+  error: { padding: spacing.md, borderRadius: 10, backgroundColor: '#fff0f0', color: '#b42318' }, empty: { padding: spacing.md, borderRadius: 10, backgroundColor: '#fff8e7', color: '#7a5200' },
+  bottom: { position: 'absolute', bottom: 0, left: 0, right: 0, padding: spacing.md, paddingBottom: 32, backgroundColor: '#fff', borderTopWidth: 1, borderTopColor: '#e6e8ea' }, button: { height: 50, backgroundColor: colors.primary, borderRadius: 10, flexDirection: 'row', gap: 8, alignItems: 'center', justifyContent: 'center' }, buttonDisabled: { opacity: 0.4 }, buttonText: { color: '#fff', fontSize: 15, fontWeight: '700' },
 });

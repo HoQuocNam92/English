@@ -31,14 +31,14 @@ export class RolesService {
         userRoles: { include: { user: { include: { userDetail: true } } } },
       },
     })
-    if (!role) throw new NotFoundException('Role not found')
+    if (!role) throw new NotFoundException('Không tìm thấy nhóm quyền')
     return role
   }
 
   async create(dto: { code: string; name: string; description?: string }) {
     const code = dto.code.trim().toLowerCase()
     const exists = await this.prisma.role.findUnique({ where: { code } })
-    if (exists) throw new ConflictException('Role ' + code + ' already exists')
+    if (exists) throw new ConflictException(`Nhóm quyền có mã "${code}" đã tồn tại`)
     return this.prisma.role.create({ data: { code, name: dto.name.trim(), description: dto.description?.trim(), isSystem: false } })
   }
 
@@ -49,7 +49,7 @@ export class RolesService {
 
   async delete(id: string) {
     const role = await this.findOne(id)
-    if (role.isSystem) throw new ForbiddenException('System roles cannot be deleted')
+    if (role.isSystem) throw new ForbiddenException('Không thể xóa nhóm quyền mặc định của hệ thống')
     await this.prisma.rolePermission.deleteMany({ where: { roleId: id } })
     await this.prisma.userRole.deleteMany({ where: { roleId: id } })
     await this.prisma.role.delete({ where: { id } })
@@ -58,7 +58,7 @@ export class RolesService {
   async assignPermission(roleId: string, permissionId: string) {
     const role = await this.findOne(roleId)
     const permission = await this.prisma.permission.findUnique({ where: { id: permissionId } })
-    if (!permission) throw new NotFoundException('Permission not found')
+    if (!permission) throw new NotFoundException('Không tìm thấy quyền')
     await this.prisma.rolePermission.upsert({
       where: { roleId_permissionId: { roleId: role.id, permissionId: permission.id } },
       update: {},
@@ -71,9 +71,29 @@ export class RolesService {
     await this.prisma.rolePermission.deleteMany({ where: { roleId, permissionId } })
   }
 
+  async replacePermissions(roleId: string, permissionIds: string[]) {
+    await this.findOne(roleId)
+    const uniqueIds = [...new Set(permissionIds)]
+    const existingCount = uniqueIds.length
+      ? await this.prisma.permission.count({ where: { id: { in: uniqueIds } } })
+      : 0
+    if (existingCount !== uniqueIds.length) throw new NotFoundException('Có quyền không tồn tại hoặc đã bị xóa')
+
+    await this.prisma.$transaction(async (tx) => {
+      await tx.rolePermission.deleteMany({ where: { roleId } })
+      if (uniqueIds.length) {
+        await tx.rolePermission.createMany({
+          data: uniqueIds.map(permissionId => ({ roleId, permissionId })),
+          skipDuplicates: true,
+        })
+      }
+    })
+    return this.findOne(roleId)
+  }
+
   async assignRoleToUser(dto: { userId: string; roleId: string; expiresAt?: string; grantedById?: string }) {
     const user = await this.prisma.user.findUnique({ where: { id: dto.userId } })
-    if (!user) throw new NotFoundException('User not found')
+    if (!user) throw new NotFoundException('Không tìm thấy người dùng')
     const role = await this.findOne(dto.roleId)
     const coreRoleCodes = ['admin', 'teacher', 'learner']
     const defaultLevel = role.code === 'learner'
@@ -130,23 +150,23 @@ export class RolesService {
 
   async createPermission(dto: { code: string; name: string; resource: string; action: string; description?: string }) {
     const exists = await this.prisma.permission.findUnique({ where: { code: dto.code } })
-    if (exists) throw new ConflictException('Permission ' + dto.code + ' already exists')
+    if (exists) throw new ConflictException(`Quyền có mã "${dto.code}" đã tồn tại`)
     return this.prisma.permission.create({ data: dto })
   }
 
   async updatePermission(id: string, dto: { code?: string; name?: string; resource?: string; action?: string; description?: string }) {
     const permission = await this.prisma.permission.findUnique({ where: { id } })
-    if (!permission) throw new NotFoundException('Permission not found')
+    if (!permission) throw new NotFoundException('Không tìm thấy quyền')
     if (dto.code && dto.code !== permission.code) {
       const duplicate = await this.prisma.permission.findUnique({ where: { code: dto.code } })
-      if (duplicate) throw new ConflictException('Permission ' + dto.code + ' already exists')
+      if (duplicate) throw new ConflictException(`Quyền có mã "${dto.code}" đã tồn tại`)
     }
     return this.prisma.permission.update({ where: { id }, data: dto })
   }
 
   async deletePermission(id: string) {
     const permission = await this.prisma.permission.findUnique({ where: { id } })
-    if (!permission) throw new NotFoundException('Permission not found')
+    if (!permission) throw new NotFoundException('Không tìm thấy quyền')
     await this.prisma.permission.delete({ where: { id } })
   }
 

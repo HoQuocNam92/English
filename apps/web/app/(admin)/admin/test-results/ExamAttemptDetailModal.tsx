@@ -56,7 +56,7 @@ export function ExamAttemptDetailModal({ attemptId, onClose }: ExamAttemptDetail
   const learnerEmail = attempt?.learner?.email || '';
   const examTitle = attempt?.exam?.title || 'Bài kiểm tra';
   const domainName = attempt?.exam?.domain?.name || 'General IT';
-  const levelName = attempt?.exam?.level?.name || 'All Levels';
+  const levelName = attempt?.exam?.level?.name || 'Tất cả trình độ';
   const rawScore = attempt?.scorePercent ?? attempt?.score ?? 0;
   const scorePercent = Math.round(Number.isFinite(rawScore) ? rawScore : 0);
   const isPassed = Boolean(attempt?.isPassed ?? attempt?.passed);

@@ -21,23 +21,19 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
   const [theme, setThemeState] = useState<Theme>('light');
 
   useEffect(() => {
-    const saved = localStorage.getItem('techenglish.theme') as Theme | null;
-    const initial: Theme = saved === 'dark' ? 'dark' : 'light'; // default = light, never auto-detect system
-    applyTheme(initial);
-    setThemeState(initial);
+    document.documentElement.classList.remove('dark');
   }, []);
 
   const applyTheme = (t: Theme) => {
-    document.documentElement.classList.toggle('dark', t === 'dark');
-    localStorage.setItem('techenglish.theme', t);
+    document.documentElement.classList.remove('dark');
   };
 
   const setTheme = (t: Theme) => {
-    setThemeState(t);
-    applyTheme(t);
+    setThemeState('light');
+    applyTheme('light');
   };
 
-  const toggleTheme = () => setTheme(theme === 'light' ? 'dark' : 'light');
+  const toggleTheme = () => setTheme('light');
 
   return (
     <ThemeContext.Provider value={{ theme, toggleTheme, setTheme }}>

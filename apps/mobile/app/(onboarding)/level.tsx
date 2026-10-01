@@ -24,24 +24,30 @@ const levels: LevelOption[] = [
     id: 'intermediate',
     name: 'Intermediate',
     tag: '(Trung cấp)',
-    desc: 'Đọc hiểu tài liệu kỹ thuật, API docs nhưng thỉnh thoảng vẫn cần tra từ.',
+    desc: 'Đã có nền tảng từ vựng IT và có thể bắt đầu luyện câu hỏi chứng chỉ.',
   },
   {
     id: 'advanced',
     name: 'Advanced',
     tag: '(Thành thạo)',
     desc: 'Tự tin thảo luận kiến trúc hệ thống, tự tin phỏng vấn quốc tế.',
-  }
+  },
+  {
+    id: 'professional',
+    name: 'Professional',
+    tag: '(Chuyên nghiệp)',
+    desc: 'Tập trung luyện thi và củng cố các chủ đề còn yếu.',
+  },
 ];
 
 export default function OnboardingLevelScreen() {
   const router = useRouter();
-  const [selectedLevel, setSelectedLevel] = useState('intermediate');
+  const [selectedLevel, setSelectedLevel] = useState('beginner');
 
   const handleNext = async () => {
     // Lưu lựa chọn vào AsyncStorage để bước cuối tổng hợp gửi API
     await AsyncStorage.setItem('onboarding_level', selectedLevel);
-    router.push('/(onboarding)/it-field' as any);
+    router.push('/(onboarding)/plan' as any);
   };
 
   return (
@@ -57,20 +63,18 @@ export default function OnboardingLevelScreen() {
           <MaterialIcons name="terminal" size={20} color={colors.primary} />
           <Text style={styles.logoText}>TechEnglish Pro</Text>
         </View>
-        <TouchableOpacity onPress={() => router.push('/(onboarding)/it-field' as any)}>
-          <Text style={styles.skipButtonText}>Bỏ qua</Text>
-        </TouchableOpacity>
+        <Text style={styles.skipButtonText}>Bước 3/4</Text>
       </View>
 
       <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
         {/* Progress header */}
         <View style={styles.progressHeader}>
           <View style={styles.progressHeaderRow}>
-            <Text style={styles.stepIndicator}>BƯỚC 1/4</Text>
-            <Text style={styles.progressPercent}>25%</Text>
+            <Text style={styles.stepIndicator}>BƯỚC 3/4</Text>
+            <Text style={styles.progressPercent}>75%</Text>
           </View>
           <View style={styles.progressBar}>
-            <View style={[styles.progressFill, { width: '25%' }]} />
+            <View style={[styles.progressFill, { width: '75%' }]} />
           </View>
         </View>
 

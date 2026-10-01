@@ -376,6 +376,7 @@ export function ImportQuestionsModal({
       const q = r.question!;
       return {
         type: q.type,
+        skill: q.skill,
         prompt: q.prompt,
         context: q.context || undefined,
         explanation: q.explanation || undefined,

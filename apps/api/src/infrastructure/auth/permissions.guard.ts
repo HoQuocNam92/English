@@ -18,7 +18,7 @@ export class PermissionsGuard implements CanActivate {
     if (user?.roles?.includes('admin')) return true
 
     const hasAll = required.every((p: string) => user?.permissions?.includes(p))
-    if (!hasAll) throw new ForbiddenException('Insufficient permissions')
+    if (!hasAll) throw new ForbiddenException('Bạn không có đủ quyền để thực hiện thao tác này')
     return true
   }
 }

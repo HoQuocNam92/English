@@ -2,26 +2,19 @@
 
 import * as React from 'react';
 import Link from 'next/link';
-import { PageHeader, SearchInput, Pagination } from '@/shared/ui';
+import { StatusBadge } from '@/shared/ui/StatusBadge';
+import { confirmDialog, PageHeader, SearchInput, Pagination } from '@/shared/ui';
 import { apiClient, ApiClientError } from '@/shared/api/api-client';
 import type { ExamItem, PaginatedResponse } from '@/shared/api/api-client';
 
+const EXAM_KINDS: Record<string, string> = { practice: 'Luyện tập chủ đề', domain_test: 'Kiểm tra lĩnh vực', mock_exam: 'Thi thử chứng chỉ', scenario_assessment: 'Tình huống thực tế' };
+
 const STATUSES = [
   { value: '', label: 'Tất cả trạng thái' },
-  { value: 'published', label: 'Đang mở thi' },
+  { value: 'published', label: 'Đã xuất bản' },
   { value: 'draft', label: 'Bản nháp' },
-  { value: 'archived', label: 'Đã đóng' },
+  { value: 'archived', label: 'Đã lưu trữ' },
 ];
-
-function StatusBadge({ status }: { status: string }) {
-  const map: Record<string, { label: string; cls: string }> = {
-    published: { label: 'Đang mở thi', cls: 'bg-green-100 text-green-700' },
-    draft: { label: 'Bản nháp', cls: 'bg-amber-100 text-amber-700' },
-    archived: { label: 'Đã đóng', cls: 'bg-gray-100 text-gray-600' },
-  };
-  const s = map[status] ?? { label: status, cls: 'bg-gray-100 text-gray-600' };
-  return <span className={`inline-flex px-2.5 py-0.5 rounded-full text-xs font-semibold ${s.cls}`}>{s.label}</span>;
-}
 
 function SkeletonCard() {
   return (
@@ -42,8 +35,11 @@ export default function AdminTestsPage() {
   const [status, setStatus] = React.useState('');
   const [loading, setLoading] = React.useState(true);
   const [error, setError] = React.useState<string | null>(null);
-  const limit = 9;
+  const [limit, setLimit] = React.useState(30);
 
+  const [filters, setFilters] = React.useState({ domainCode: '', levelCode: '', certificateId: '', kind: '' });
+  const [options, setOptions] = React.useState<{ domains: any[]; levels: any[]; certificates: any[] }>({ domains: [], levels: [], certificates: [] });
+  React.useEffect(() => { Promise.all([apiClient.get<any>('/domains'), apiClient.get<any>('/levels'), apiClient.get<any>('/certificates')]).then(([d,l,c]) => setOptions({ domains: d.data ?? d, levels: l.data ?? l, certificates: c.data ?? c })).catch(() => setError('Không thể tải bộ lọc. Vui lòng tải lại trang.')); }, []);
   const totalPages = Math.ceil(total / limit);
 
   const load = React.useCallback(async () => {
@@ -55,16 +51,17 @@ export default function AdminTestsPage() {
         limit: String(limit),
         ...(search && { search }),
         ...(status && { status }),
+        ...filters,
       });
       const res = await apiClient.get<PaginatedResponse<ExamItem>>(`/exams?${params}`);
       setItems(res.data);
       setTotal(res.meta.total);
     } catch (e) {
-      setError(e instanceof ApiClientError ? e.message : 'Không thể tải danh sách bài thi');
+      setError(e instanceof ApiClientError ? e.message : 'Không thể tải danh sách bài kiểm tra chứng chỉ');
     } finally {
       setLoading(false);
     }
-  }, [page, search, status]);
+  }, [page, limit, search, status, filters]);
 
   React.useEffect(() => { void load(); }, [load]);
 
@@ -88,7 +85,7 @@ export default function AdminTestsPage() {
   };
 
   const removeExam = async (exam: ExamItem) => {
-    if (!window.confirm(`Xóa bài thi “${exam.title}”? Hành động này không thể hoàn tác.`)) return;
+    if (!(await confirmDialog(`Xóa bài thi “${exam.title}”? Hành động này không thể hoàn tác.`, { title: 'Xóa bài thi?', confirmLabel: 'Xóa bài thi', tone: 'danger' }))) return;
     try { await apiClient.delete(`/exams/${exam.id}`); await load(); }
     catch (e) { setError(e instanceof ApiClientError ? e.message : 'Không thể xóa bài thi'); }
   };
@@ -96,12 +93,12 @@ export default function AdminTestsPage() {
   return (
     <div>
       <div className="flex items-start justify-between gap-4">
-        <PageHeader title="Quản lý bài thi & Mock Exam" description="Toàn bộ đề thi chứng chỉ quốc tế và bài đánh giá năng lực" />
-        <Link href="/admin/tests/builder" className="inline-flex shrink-0 items-center gap-2 rounded-xl bg-primary px-4 py-2.5 text-sm font-semibold !text-white shadow-sm"><span className="material-symbols-outlined text-[19px]">add</span>Tạo bài thi</Link>
+        <PageHeader title="Bài kiểm tra chứng chỉ" description="Luyện tập chủ đề, kiểm tra lĩnh vực và thi thử theo chứng chỉ" />
+        <Link href="/admin/tests/builder" className="inline-flex shrink-0 items-center gap-2 rounded-xl bg-primary px-4 py-2.5 text-sm font-semibold !text-white shadow-sm"><span className="material-symbols-outlined text-[19px]">add</span>Tạo bài kiểm tra</Link>
       </div>
 
       {/* Filters */}
-      <div className="mt-6 flex flex-col sm:flex-row gap-3">
+      <div className="mt-6 flex flex-wrap items-start gap-3 rounded-2xl border border-outline-variant/50 bg-white p-4">
         <SearchInput
           value={searchInput}
           onChange={setSearchInput}
@@ -109,7 +106,7 @@ export default function AdminTestsPage() {
             setPage(1);
             setSearch(sanitized);
           }}
-          placeholder="Tìm kiếm bài thi theo tiêu đề, chủ đề, chứng chỉ..."
+          placeholder="Tìm kiếm theo tiêu đề bài kiểm tra..."
           maxLength={100}
         />
         <select
@@ -119,6 +116,9 @@ export default function AdminTestsPage() {
         >
           {STATUSES.map((s) => <option key={s.value} value={s.value}>{s.label}</option>)}
         </select>
+        {([['domainCode', 'Lĩnh vực', options.domains], ['levelCode', 'Trình độ', options.levels], ['certificateId', 'Chứng chỉ', options.certificates]] as const).map(([key,label,list]) => <label key={key} className="grid min-w-0 flex-1 basis-48 gap-1 text-xs font-semibold">{label}<select aria-label={label} value={filters[key]} onChange={e => { setFilters(f => ({ ...f, [key]: e.target.value })); setPage(1); }} className="h-11 min-w-0 rounded-xl border border-outline-variant px-3 text-sm"><option value="">Tất cả</option>{list.map(x => <option key={x.id} value={key === 'certificateId' ? x.id : x.code}>{x.name}</option>)}</select></label>)}
+        <label className="grid gap-1 text-xs font-semibold">Loại bài kiểm tra<select aria-label="Loại bài kiểm tra" value={filters.kind} onChange={e => { setFilters(f => ({ ...f, kind: e.target.value })); setPage(1); }} className="h-11 rounded-xl border border-outline-variant px-3 text-sm"><option value="">Tất cả</option>{Object.entries(EXAM_KINDS).map(([v,l]) => <option key={v} value={v}>{l}</option>)}</select></label>
+        <button onClick={() => { setFilters({ domainCode: '', levelCode: '', certificateId: '', kind: '' }); setStatus(''); setSearch(''); setSearchInput(''); setPage(1); }} className="h-11 rounded-xl border border-outline-variant px-4 text-sm">Xóa bộ lọc</button>
       </div>
 
       {!loading && (
@@ -151,6 +151,7 @@ export default function AdminTestsPage() {
                   <h3 className="font-bold text-on-surface text-base line-clamp-2 flex-1">{exam.title}</h3>
                   <StatusBadge status={exam.status} />
                 </div>
+                <span className="mb-3 inline-flex rounded-full bg-violet-50 px-2.5 py-1 text-[11px] font-bold text-violet-700">{EXAM_KINDS[exam.kind] ?? exam.kind}</span>
 
                 {exam.description && (
                   <p className="text-xs text-on-surface-variant line-clamp-2 mb-3 leading-relaxed">{exam.description}</p>
@@ -295,7 +296,7 @@ export default function AdminTestsPage() {
       </div>
 
       {/* Pagination */}
-      {totalPages > 1 && (
+      {total > 0 && (
         <Pagination
           className="mt-6 rounded-2xl border border-outline-variant/40 shadow-xs"
           page={page}
@@ -303,6 +304,7 @@ export default function AdminTestsPage() {
           total={total}
           totalPages={totalPages}
           onPageChange={setPage}
+          onLimitChange={(value) => { setLimit(value); setPage(1); }}
           showQuickJumper
         />
       )}

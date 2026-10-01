@@ -1,6 +1,24 @@
 @import "tailwindcss";
 
 :root {
+  /* shadcn/ui semantic tokens — one light theme for the whole product */
+  --foreground: #0f172a;
+  --card: #ffffff;
+  --card-foreground: #0f172a;
+  --popover: #ffffff;
+  --popover-foreground: #0f172a;
+  --primary-foreground: #ffffff;
+  --secondary-foreground: #1e293b;
+  --muted: #f1f5f9;
+  --muted-foreground: #64748b;
+  --accent: #eef2ff;
+  --accent-foreground: #3730a3;
+  --destructive: #dc2626;
+  --destructive-foreground: #ffffff;
+  --border: #e2e8f0;
+  --input: #cbd5e1;
+  --ring: #6366f1;
+  --radius: 0.75rem;
   --background: #f7f9fb;
   --on-background: #191c1e;
   --surface: #f7f9fb;
@@ -48,7 +66,7 @@
 
   --ai-accent: #7c3aed;
 
-  --outline: #777587;
+  --outline: #6b687b;
   --outline-variant: #c7c4d8;
 
   --error: #ba1a1a;
@@ -59,12 +77,38 @@
   --radius-control: 8px;
   --radius-card: 12px;
 
+  /* Product spacing rhythm (8px grid) */
+  --space-xs: 4px;
+  --space-sm: 8px;
+  --space-md: 16px;
+  --space-lg: 24px;
+  --space-xl: 32px;
+  --space-2xl: 48px;
+  --page-gutter: 32px;
+  --section-gap: 24px;
+  --card-padding: 24px;
+  --control-gap: 12px;
+
   /* Extra tokens used in design reference */
   --primary-light: #EEF2FF;
   --border-subtle: #E2E8F0;
   --surface-white: #FFFFFF;
   --ai-accent-bg: #F5F3FF;
   --ai-accent-border: #7C3AED;
+
+  /* Cross-platform semantic icon palette */
+  --icon-home: #4f46e5;
+  --icon-learning: #ea580c;
+  --icon-certificate: #c026d3;
+  --icon-progress: #059669;
+  --icon-profile: #0284c7;
+  --icon-search: #2563eb;
+  --icon-language: #0d9488;
+  --icon-theme: #7c3aed;
+  --icon-info: #2563eb;
+  --icon-success: #16a34a;
+  --icon-warning: #d97706;
+  --icon-danger: #dc2626;
 }
 
 .dark {
@@ -118,6 +162,22 @@
 }
 
 @theme {
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
   --color-background: var(--background);
   --color-on-background: var(--on-background);
   --color-surface: var(--surface);
@@ -459,10 +519,81 @@ body {
   min-height: 100%;
 }
 
+/* Unified interactive controls across admin and learner workspaces.  Pages may
+   control width through their grids, but visual height, surface and focus must
+   remain identical everywhere. */
+.ui-control,
+.admin-canvas :where(input:not([type='checkbox']):not([type='radio']):not([type='range']):not([type='file']), select, textarea),
+.learner-canvas :where(input:not([type='checkbox']):not([type='radio']):not([type='range']):not([type='file']), select, textarea) {
+  min-height: 44px !important;
+  border: 1px solid color-mix(in srgb, var(--outline-variant) 72%, white) !important;
+  border-radius: 12px !important;
+  background-color: var(--surface-container-lowest) !important;
+  color: var(--on-surface) !important;
+  outline: none !important;
+  transition: border-color 160ms ease, box-shadow 160ms ease, background-color 160ms ease;
+}
+
+.ui-control:hover,
+.admin-canvas :where(input:not([type='checkbox']):not([type='radio']):not([type='range']):not([type='file']), select, textarea):hover,
+.learner-canvas :where(input:not([type='checkbox']):not([type='radio']):not([type='range']):not([type='file']), select, textarea):hover {
+  border-color: color-mix(in srgb, var(--primary) 42%, var(--outline-variant)) !important;
+}
+
+.ui-control:focus,
+.ui-control:focus-visible,
+.admin-canvas :where(input:not([type='checkbox']):not([type='radio']):not([type='range']):not([type='file']), select, textarea):focus,
+.learner-canvas :where(input:not([type='checkbox']):not([type='radio']):not([type='range']):not([type='file']), select, textarea):focus {
+  border-color: var(--primary) !important;
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--primary) 14%, transparent) !important;
+}
+
+.ui-control:disabled,
+.admin-canvas :where(input, select, textarea):disabled,
+.learner-canvas :where(input, select, textarea):disabled {
+  background-color: var(--surface-container-low) !important;
+  color: var(--on-surface-variant) !important;
+  cursor: not-allowed;
+}
+
+.ui-button {
+  display: inline-flex;
+  min-height: 44px;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  border-radius: 12px;
+  padding: 8px 16px;
+  border: 1px solid transparent;
+  font-weight: 700;
+  line-height: 20px;
+  transition: background-color 160ms ease, border-color 160ms ease, box-shadow 160ms ease, transform 160ms ease;
+}
+
+.ui-button-primary {
+  border-color: var(--primary);
+  background: var(--primary);
+  color: white;
+  box-shadow: 0 2px 8px color-mix(in srgb, var(--primary) 18%, transparent);
+}
+
+.ui-button-primary:hover { background: color-mix(in srgb, var(--primary) 88%, black); }
+.ui-button:active { transform: translateY(1px); }
+.ui-button:disabled { cursor: not-allowed; opacity: .55; }
+
+/* Bring legacy page-local action buttons onto the same height/radius without
+   inflating icon-only actions used inside tables and toolbars. */
+.admin-canvas :where(button:not([aria-label]):not([title]), a.bg-primary),
+.learner-canvas :where(button:not([aria-label]):not([title]), a.bg-primary) {
+  min-height: 44px;
+  border-radius: 12px;
+}
+
+
 /* Admin references use one 32px canvas gutter. Pages that already provide their
    own full-page canvas opt out automatically, preventing the old double gutter. */
 .admin-canvas {
-  padding: 36px;
+  padding: var(--page-gutter);
   background:
     radial-gradient(circle at 100% 0%, rgba(79, 70, 229, 0.045), transparent 28rem),
     var(--background);
@@ -480,9 +611,36 @@ body {
 }
 
 @media (max-width: 767px) {
-  .admin-canvas { padding: 16px; }
+  :root {
+    --page-gutter: 16px;
+    --section-gap: 16px;
+    --card-padding: 16px;
+  }
+  .admin-canvas { padding: var(--page-gutter); }
   .admin-canvas > main { margin: 0; }
 }
+
+/* Shared page and surface rhythm. Width remains responsive, while outer
+   gutters and internal card/form spacing stay identical across features. */
+.learner-page {
+  padding: var(--page-gutter) !important;
+}
+
+.admin-canvas :where(form.rounded-xl, form.rounded-2xl),
+.learner-canvas :where(form.rounded-xl, form.rounded-2xl) {
+  padding: var(--card-padding) !important;
+}
+
+.admin-canvas :where(.page-stack),
+.learner-canvas :where(.page-stack) {
+  display: flex;
+  flex-direction: column;
+  gap: var(--section-gap);
+}
+
+.ui-card-padding { padding: var(--card-padding) !important; }
+.ui-section-gap { gap: var(--section-gap) !important; }
+.ui-control-gap { gap: var(--control-gap) !important; }
 
 .admin-canvas table tbody tr {
   border-color: color-mix(in srgb, var(--outline-variant) 52%, transparent);
@@ -558,8 +716,35 @@ body {
   font-variation-settings: 'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 24;
 }
 
+/* A consistent, lively icon palette across navigation instead of one flat grey. */
+[class*="nav-icon-"] { filter: saturate(1.08); }
+.nav-icon-dashboard, .nav-icon-insights, .nav-icon-analytics { color: #2563eb; }
+.nav-icon-manage_accounts, .nav-icon-groups, .nav-icon-badge { color: #0d9488; }
+.nav-icon-admin_panel_settings, .nav-icon-workspace_premium { color: #7c3aed; }
+.nav-icon-menu_book, .nav-icon-auto_stories { color: #ea580c; }
+.nav-icon-stairs { color: #0891b2; }
+.nav-icon-help, .nav-icon-quiz, .nav-icon-fact_check { color: #db2777; }
+
+/* Semantic icon colors shared by learner pages and common controls. */
+.icon-home { color: var(--icon-home); }
+.icon-learning { color: var(--icon-learning); }
+.icon-certificate { color: var(--icon-certificate); }
+.icon-progress { color: var(--icon-progress); }
+.icon-profile { color: var(--icon-profile); }
+.icon-search { color: var(--icon-search); }
+.icon-language { color: var(--icon-language); }
+.icon-theme { color: var(--icon-theme); }
+.icon-info { color: var(--icon-info); }
+.icon-success { color: var(--icon-success); }
+.icon-warning { color: var(--icon-warning); }
+.icon-danger { color: var(--icon-danger); }
+
 a {
   text-decoration: none;
+}
+
+.pagination-size-select option {
+  text-align: center;
 }
 
 /* Card and container components from design tokens */
@@ -652,4 +837,25 @@ a {
 @media (max-width: 720px) {
   .landing-difference-card { position: relative; top: auto !important; }
   .landing-difference-card:nth-child(2) { margin-top: 0; }
+}
+
+/* Header search owns the control surface; its input must stay unboxed. */
+.learner-canvas .learner-header-search input {
+  min-height: 0 !important;
+  height: 100%;
+  padding: 0;
+  border: 0 !important;
+  border-radius: 0 !important;
+  background-color: transparent !important;
+  box-shadow: none !important;
+}
+
+.learner-header-search:focus-within {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--primary) 14%, transparent);
+}
+
+.learner-canvas .learner-header-avatar {
+  min-height: 32px;
+  border-radius: 50%;
 }

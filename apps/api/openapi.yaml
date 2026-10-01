@@ -31,14 +31,10 @@ tags:
     description: Quản lý tài khoản và vai trò.
   - name: Learner Profiles
     description: Hồ sơ, sở thích và mục tiêu của học viên.
-  - name: Learner Groups
-    description: Lớp học, giảng viên phụ trách và danh sách thành viên.
   - name: Domains
     description: Lĩnh vực CNTT.
   - name: Levels
     description: Cấp độ học.
-  - name: Career Goals
-    description: Mục tiêu nghề nghiệp.
   - name: Certificates
     description: Chứng chỉ và nội dung ôn tập.
   - name: Vocabularies
@@ -308,11 +304,6 @@ paths:
           schema:
             type: string
             format: uuid
-        - name: careerGoalId
-          in: query
-          schema:
-            type: string
-            format: uuid
       responses:
         '200':
           description: Danh sách hồ sơ học viên.
@@ -563,98 +554,6 @@ paths:
       responses:
         '204':
           description: Cấp độ đã được lưu trữ.
-        '403':
-          $ref: '#/components/responses/Forbidden'
-        '404':
-          $ref: '#/components/responses/NotFound'
-
-  /career-goals:
-    get:
-      tags: [Career Goals]
-      summary: Danh sách mục tiêu nghề nghiệp
-      operationId: listCareerGoals
-      security: []
-      parameters:
-        - $ref: '#/components/parameters/Page'
-        - $ref: '#/components/parameters/Limit'
-        - $ref: '#/components/parameters/Search'
-        - $ref: '#/components/parameters/ActiveOnly'
-      responses:
-        '200':
-          description: Danh sách mục tiêu nghề nghiệp.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/CareerGoalListResponse'
-        '422':
-          $ref: '#/components/responses/ValidationError'
-    post:
-      tags: [Career Goals]
-      summary: Tạo mục tiêu nghề nghiệp
-      operationId: createCareerGoal
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/CareerGoalWriteRequest'
-      responses:
-        '201':
-          description: Mục tiêu nghề nghiệp đã tạo.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/CareerGoalResponse'
-        '403':
-          $ref: '#/components/responses/Forbidden'
-        '409':
-          $ref: '#/components/responses/Conflict'
-
-  /career-goals/{careerGoalId}:
-    parameters:
-      - $ref: '#/components/parameters/CareerGoalId'
-    get:
-      tags: [Career Goals]
-      summary: Chi tiết mục tiêu nghề nghiệp
-      operationId: getCareerGoal
-      security: []
-      responses:
-        '200':
-          description: Chi tiết mục tiêu.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/CareerGoalResponse'
-        '404':
-          $ref: '#/components/responses/NotFound'
-    patch:
-      tags: [Career Goals]
-      summary: Cập nhật mục tiêu nghề nghiệp
-      operationId: updateCareerGoal
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/CareerGoalWriteRequest'
-      responses:
-        '200':
-          description: Mục tiêu sau cập nhật.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/CareerGoalResponse'
-        '403':
-          $ref: '#/components/responses/Forbidden'
-        '404':
-          $ref: '#/components/responses/NotFound'
-    delete:
-      tags: [Career Goals]
-      summary: Ngừng sử dụng mục tiêu nghề nghiệp
-      operationId: archiveCareerGoal
-      responses:
-        '204':
-          description: Mục tiêu đã được lưu trữ.
         '403':
           $ref: '#/components/responses/Forbidden'
         '404':
@@ -1453,7 +1352,7 @@ paths:
           required: true
           schema:
             type: string
-            enum: [domain, level, career_goal, certificate]
+            enum: [domain, level, certificate]
       responses:
         '200':
           description: Số học viên theo nhóm.
@@ -1626,11 +1525,6 @@ components:
       schema: { type: string, format: uuid }
     LevelId:
       name: levelId
-      in: path
-      required: true
-      schema: { type: string, format: uuid }
-    CareerGoalId:
-      name: careerGoalId
       in: path
       required: true
       schema: { type: string, format: uuid }
@@ -1899,13 +1793,12 @@ components:
 
     LearnerProfile:
       type: object
-      required: [id, user, level, domains, careerGoals, certificateGoals, onboardingCompleted, createdAt, updatedAt]
+      required: [id, user, level, domains, certificateGoals, onboardingCompleted, createdAt, updatedAt]
       properties:
         id: { type: string, format: uuid }
         user: { $ref: '#/components/schemas/User' }
         level: { $ref: '#/components/schemas/Level' }
         domains: { type: array, items: { $ref: '#/components/schemas/Domain' } }
-        careerGoals: { type: array, items: { $ref: '#/components/schemas/CareerGoal' } }
         certificateGoals: { type: array, items: { $ref: '#/components/schemas/CertificateGoal' } }
         bio: { type: string, nullable: true, maxLength: 500 }
         weeklyStudyTargetMinutes: { type: integer, minimum: 0, maximum: 10080, example: 180 }
@@ -1915,16 +1808,12 @@ components:
     UpsertLearnerProfileRequest:
       type: object
       additionalProperties: false
-      required: [levelId, domainIds, careerGoalIds, certificateGoals]
+      required: [levelId, domainIds, certificateGoals]
       properties:
         levelId: { type: string, format: uuid }
         domainIds:
           type: array
           minItems: 1
-          uniqueItems: true
-          items: { type: string, format: uuid }
-        careerGoalIds:
-          type: array
           uniqueItems: true
           items: { type: string, format: uuid }
         certificateGoals:
@@ -2030,38 +1919,6 @@ components:
       properties:
         success: { type: boolean, enum: [true] }
         data: { type: array, items: { $ref: '#/components/schemas/Level' } }
-
-    CareerGoal:
-      type: object
-      required: [id, code, name, description, isActive]
-      properties:
-        id: { type: string, format: uuid }
-        code: { type: string, pattern: '^[A-Z0-9_]{2,40}$', example: BACKEND_ENGINEER }
-        name: { type: string, minLength: 2, maxLength: 100, example: Backend Engineer }
-        description: { type: string, maxLength: 500 }
-        isActive: { type: boolean }
-    CareerGoalWriteRequest:
-      type: object
-      additionalProperties: false
-      required: [code, name, description]
-      properties:
-        code: { type: string, pattern: '^[A-Z0-9_]{2,40}$' }
-        name: { type: string, minLength: 2, maxLength: 100 }
-        description: { type: string, minLength: 1, maxLength: 500 }
-        isActive: { type: boolean, default: true }
-    CareerGoalResponse:
-      type: object
-      required: [success, data]
-      properties:
-        success: { type: boolean, enum: [true] }
-        data: { $ref: '#/components/schemas/CareerGoal' }
-    CareerGoalListResponse:
-      type: object
-      required: [success, data, meta]
-      properties:
-        success: { type: boolean, enum: [true] }
-        data: { type: array, items: { $ref: '#/components/schemas/CareerGoal' } }
-        meta: { $ref: '#/components/schemas/PaginationMeta' }
 
     Certificate:
       type: object
@@ -2626,7 +2483,7 @@ components:
           maxLength: 1000
           description: Giải thích dễ hiểu dựa trên hồ sơ, mục tiêu hoặc kết quả; không tiết lộ prompt/model nội bộ.
         priority: { type: integer, minimum: 1, maximum: 100 }
-        basedOn: { type: array, items: { type: string, enum: [profile, level, interest, career_goal, certificate_goal, progress, weak_topic, recent_score] } }
+        basedOn: { type: array, items: { type: string, enum: [profile, level, interest, certificate_goal, progress, weak_topic, recent_score] } }
         generatedAt: { type: string, format: date-time }
         expiresAt: { type: string, format: date-time, nullable: true }
     RecommendationListResponse:

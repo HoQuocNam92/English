@@ -2,11 +2,10 @@
 
 import React from 'react';
 import Link from 'next/link';
-import { usePathname, useRouter } from 'next/navigation';
+import { usePathname } from 'next/navigation';
 import { useAuth } from '@/features/auth/presentation';
 import { useI18n } from '../i18n';
 import { Footer } from './Footer';
-import { ThemeLanguageToggle } from '../ui/ThemeLanguageToggle';
 
 interface LearnerShellProps {
   children: React.ReactNode;
@@ -14,15 +13,13 @@ interface LearnerShellProps {
 
 export function LearnerShell({ children }: LearnerShellProps) {
   const pathname = usePathname();
-  const router = useRouter();
   const { session } = useAuth();
   const { t } = useI18n();
-
   const navLinks = [
-    { href: '/learn', label: t.nav.home, exactMatch: true },
-    { href: '/learn/practice', label: t.nav.practice, exactMatch: false },
-    { href: '/learn/exams', label: t.nav.exams, exactMatch: false },
-    { href: '/learn/progress', label: t.nav.progress, exactMatch: false },
+    { href: '/learn', label: t.nav.home, exactMatch: true, icon: 'home', color: 'icon-home' },
+    { href: '/learn/lessons', label: 'Bài học', exactMatch: false, icon: 'menu_book', color: 'icon-learning' },
+    { href: '/learn/certifications', label: t.nav.certifications, exactMatch: false, icon: 'workspace_premium', color: 'icon-certificate' },
+    { href: '/learn/progress', label: t.nav.progress, exactMatch: false, icon: 'monitoring', color: 'icon-progress' },
   ];
 
   const displayName = session?.user?.displayName ?? 'Người dùng';
@@ -30,7 +27,7 @@ export function LearnerShell({ children }: LearnerShellProps) {
   const isAdminOrTeacher = session?.user?.role === 'admin' || session?.user?.role === 'teacher';
 
   return (
-    <div className="min-h-screen bg-background text-on-surface flex flex-col antialiased">
+    <div className="learner-canvas min-h-screen bg-background text-on-surface flex flex-col antialiased">
       {/* ── TopNav ─────────────────────────────────────────────────── */}
       <nav className="bg-surface-container-lowest sticky top-0 w-full z-50 h-16 border-b border-outline-variant shadow-sm">
         <div className="flex items-center justify-between max-w-[1280px] mx-auto px-8 w-full h-full">
@@ -56,12 +53,13 @@ export function LearnerShell({ children }: LearnerShellProps) {
                   <Link
                     key={item.href}
                     href={item.href}
-                    className={`h-full flex items-center text-[13px] font-semibold transition-colors duration-200 border-b-2 whitespace-nowrap ${
+                    className={`group h-full flex items-center gap-1.5 text-[13px] font-semibold transition-colors duration-200 border-b-2 whitespace-nowrap ${
                       isActive
                         ? 'text-primary border-primary pb-[2px]'
                         : 'text-on-surface-variant border-transparent hover:text-primary'
                     }`}
                   >
+                    <span className={`material-symbols-outlined !flex h-6 w-6 shrink-0 items-center justify-center text-center text-[19px] !leading-none transition-transform group-hover:scale-110 ${item.color} ${isActive ? 'fill-1' : ''}`}>{item.icon}</span>
                     {item.label}
                   </Link>
                 );
@@ -70,32 +68,21 @@ export function LearnerShell({ children }: LearnerShellProps) {
             </div>
           </div>
 
-          {/* Right: Search + Notifications + Avatar */}
+          {/* Right: Admin access + Avatar */}
           <div className="flex items-center gap-4">
-            <div className="hidden md:flex items-center bg-surface-container-low rounded-full px-3 py-2 border border-outline-variant gap-2">
-              <span className="material-symbols-outlined text-on-surface-variant" style={{ fontSize: '20px' }}>search</span>
-              <input
-                className="bg-transparent border-none outline-none text-[14px] text-on-surface w-48 placeholder:text-on-surface-variant"
-                placeholder={t.common.search}
-                type="text"
-              />
-            </div>
-
-            <ThemeLanguageToggle />
-
             {isAdminOrTeacher && (
               <Link
                 href="/admin/dashboard"
                 className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-surface-container-low border border-outline-variant text-[12px] font-bold text-on-surface-variant hover:text-primary transition-colors"
               >
-                <span className="material-symbols-outlined" style={{ fontSize: '16px' }}>admin_panel_settings</span>
+                <span className="material-symbols-outlined icon-certificate" style={{ fontSize: '16px' }}>admin_panel_settings</span>
                 {t.nav.admin}
               </Link>
             )}
 
             <Link
               href="/learn/profile"
-              className="w-8 h-8 rounded-full bg-primary border border-outline-variant flex items-center justify-center hover:ring-2 hover:ring-primary transition-all cursor-pointer"
+              className="learner-header-avatar shrink-0 w-8 h-8 rounded-full bg-primary border border-outline-variant flex items-center justify-center hover:ring-2 hover:ring-primary transition-all cursor-pointer"
             >
               <span className="text-white font-bold text-sm">{initial}</span>
             </Link>
@@ -104,7 +91,7 @@ export function LearnerShell({ children }: LearnerShellProps) {
       </nav>
 
       {/* ── Page Content ───────────────────────────────────────────── */}
-      <main className="flex-1 w-full max-w-[1280px] mx-auto px-4 md:px-8 py-8 pb-16">
+      <main className="learner-page flex-1 w-full max-w-[1280px] mx-auto">
         {children}
       </main>
 

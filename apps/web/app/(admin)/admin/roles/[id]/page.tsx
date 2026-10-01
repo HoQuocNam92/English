@@ -17,6 +17,7 @@ export default function RoleDetailPage() {
   const [allPermissions, setAllPermissions] = useState<any[]>([]);
   const [allUsers, setAllUsers] = useState<any[]>([]);
   const [editingPermissions, setEditingPermissions] = useState(false);
+  const [draftPermissionIds, setDraftPermissionIds] = useState<Set<string>>(new Set());
   const [assigningUser, setAssigningUser] = useState(false);
   const [busy, setBusy] = useState<string | null>(null);
   const normalizeRole = (value: any) => {
@@ -51,14 +52,31 @@ export default function RoleDetailPage() {
     fetchData();
   }, [id]);
 
-  const hasPermission = (permissionId: string) => role?.permissions?.some((p: any) => (p.permission?.id ?? p.id) === permissionId);
-  const togglePermission = async (permission: any) => {
-    setBusy(permission.id);
+  const beginPermissionEdit = () => {
+    setDraftPermissionIds(new Set(role.permissions.map((item: any) => item.permission?.id ?? item.id)));
+    setEditingPermissions(true);
+    setError(null);
+  };
+  const togglePermission = (permission: any) => {
+    setDraftPermissionIds((current) => {
+      const next = new Set(current);
+      if (next.has(permission.id)) next.delete(permission.id); else next.add(permission.id);
+      return next;
+    });
+  };
+  const togglePermissionGroup = (permissions: any[], selected: boolean) => {
+    setDraftPermissionIds((current) => {
+      const next = new Set(current);
+      permissions.forEach((permission) => selected ? next.add(permission.id) : next.delete(permission.id));
+      return next;
+    });
+  };
+  const savePermissions = async () => {
+    setBusy('permissions');
     try {
-      if (hasPermission(permission.id)) await apiClient.delete(`/roles/${id}/permissions/${permission.id}`);
-      else await apiClient.post(`/roles/${id}/permissions`, { permissionId: permission.id });
-      const refreshed: any = await apiClient.get(`/roles/${id}`);
+      const refreshed: any = await apiClient.patch(`/roles/${id}/permissions`, { permissionIds: [...draftPermissionIds] });
       setRole(normalizeRole(refreshed));
+      setEditingPermissions(false);
     } catch (e: any) { setError(e.message ?? 'Không thể cập nhật quyền'); }
     finally { setBusy(null); }
   };
@@ -144,18 +162,19 @@ export default function RoleDetailPage() {
               <span className="material-symbols-outlined text-primary">lock</span>
               Nhóm này được làm gì? ({role.permissions?.length || 0})
             </h2>
-            <button onClick={() => setEditingPermissions((value) => !value)} className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-semibold text-primary border border-outline-variant hover:bg-surface-container-low transition-colors">
+            <button disabled={busy === 'permissions'} onClick={() => editingPermissions ? void savePermissions() : beginPermissionEdit()} className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-semibold text-primary border border-outline-variant hover:bg-surface-container-low transition-colors disabled:opacity-50">
               <span className="material-symbols-outlined text-[18px]">edit</span>
-              {editingPermissions ? 'Hoàn tất' : 'Chọn quyền'}
+              {busy === 'permissions' ? 'Đang lưu…' : editingPermissions ? 'Hoàn tất' : 'Chọn quyền'}
             </button>
           </div>
           
           <div className="max-h-[520px] overflow-y-auto pr-1">
             <PermissionTree
               permissions={editingPermissions ? allPermissions : role.permissions.map((item: any) => item.permission ?? item)}
-              selectedIds={editingPermissions ? new Set(role.permissions.map((item: any) => item.permission?.id ?? item.id)) : undefined}
+              selectedIds={editingPermissions ? draftPermissionIds : undefined}
               busyId={busy}
               onToggle={editingPermissions ? togglePermission : undefined}
+              onToggleMany={editingPermissions ? togglePermissionGroup : undefined}
             />
           </div>
         </div>

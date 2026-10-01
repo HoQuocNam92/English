@@ -1,36 +1,48 @@
 import * as React from 'react';
+import { ChevronDown } from 'lucide-react';
 import { cn } from '@/shared/lib/cn';
 
 export interface SelectOption {
   value: string;
   label: string;
+  disabled?: boolean;
 }
 
 export interface SelectProps extends Omit<React.SelectHTMLAttributes<HTMLSelectElement>, 'children'> {
   label?: string;
   placeholder?: string;
   options: SelectOption[];
+  error?: string;
 }
 
-export function Select({ className, label, id, options, placeholder, ...props }: SelectProps) {
+export const Select = React.forwardRef<HTMLSelectElement, SelectProps>(function Select({ className, label, id, options, placeholder, error, ...props }, ref) {
+  const generatedId = React.useId();
+  const controlId = id ?? generatedId;
   return (
-    <label className="grid gap-1">
+    <label htmlFor={controlId} className="grid gap-1">
       {label ? <span className="text-sm font-semibold text-foreground">{label}</span> : null}
+      <span className="relative block">
       <select
-        id={id}
+        ref={ref}
+        id={controlId}
+        aria-invalid={Boolean(error)}
         className={cn(
-          'min-h-11 w-full rounded-[var(--radius-control)] border border-border bg-surface px-4 py-2 text-sm text-foreground outline-none focus:border-primary focus:ring-2 focus:ring-primary/20',
+          'ui-control w-full appearance-none px-4 pr-9 text-sm text-foreground disabled:cursor-not-allowed disabled:bg-surface-container-low disabled:opacity-60',
+          error && 'border-destructive',
           className
         )}
         {...props}
       >
         {placeholder ? <option value="">{placeholder}</option> : null}
         {options.map((option) => (
-          <option key={option.value} value={option.value}>
+          <option key={option.value} value={option.value} disabled={option.disabled}>
             {option.label}
           </option>
         ))}
       </select>
+      <ChevronDown className="pointer-events-none absolute right-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+      </span>
+      {error ? <span className="text-xs font-normal text-destructive">{error}</span> : null}
     </label>
   );
-}
+});

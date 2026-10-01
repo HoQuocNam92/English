@@ -32,7 +32,7 @@ export class MockAuthRepository implements AuthRepository {
     const account = demoAccounts[input.email.trim().toLowerCase()];
 
     if (!account || input.password.trim().length < 6) {
-      throw new Error('Invalid email or password.');
+      throw new Error('Email hoặc mật khẩu không chính xác.');
     }
 
     await this.storage.setItem(SESSION_KEY, JSON.stringify(account));

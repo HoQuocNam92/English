@@ -1,9 +1,10 @@
-import { Injectable } from '@nestjs/common'
+import { Inject, Injectable } from '@nestjs/common'
 import { PrismaService } from '../../infrastructure/database/prisma.service'
+import { AI_RECOMMENDATION_PORT, AiRecommendationPort } from './ai-recommendation.port'
 
 export interface LearningRecommendationItem {
   id: string
-  type: 'lesson' | 'exam' | 'vocab'
+  type: 'exam' | 'vocab'
   title: string
   summary?: string
   reason: string
@@ -18,9 +19,9 @@ export interface LearningRecommendationItem {
 
 @Injectable()
 export class RecommendationService {
-  constructor(private prisma: PrismaService) {}
+  constructor(private prisma: PrismaService, @Inject(AI_RECOMMENDATION_PORT) private readonly ai: AiRecommendationPort) {}
 
-  async getRecommendations(learnerId: string): Promise<{ recommendations: LearningRecommendationItem[] }> {
+  async getRecommendations(learnerId: string): Promise<{ recommendations: LearningRecommendationItem[]; personalizationSource: 'ai' | 'rules' }> {
     // 1. Lấy thông tin Learner Profile
     const profile = await this.prisma.learnerProfile.findUnique({
       where: { userId: learnerId },
@@ -28,7 +29,6 @@ export class RecommendationService {
         level: true,
         domains: { include: { domain: true } },
         certGoals: { include: { certificate: true } },
-        careerGoals: { include: { careerGoal: true } },
       },
     })
 
@@ -36,20 +36,8 @@ export class RecommendationService {
     const targetDomainIds = (profile?.domains ?? []).map((d) => d.domainId)
     const targetCertIds = (profile?.certGoals ?? []).map((c) => c.certificateId)
 
-    // 2. Lấy tiến độ học tập bài học của learner
-    const [allProgress, recentAttempts, weakVocabCount] = await Promise.all([
-      this.prisma.learningProgress.findMany({
-        where: { learnerId, resourceType: 'lesson' },
-        include: {
-          lesson: {
-            include: {
-              domain: true,
-              level: true,
-            },
-          },
-        },
-        orderBy: { updatedAt: 'desc' },
-      }),
+    // 2. Lấy dữ liệu bài thi và từ vựng
+    const [recentAttempts, weakVocabCount] = await Promise.all([
       this.prisma.examAttempt.findMany({
         where: { learnerId, status: { in: ['graded', 'submitted'] } },
         include: {
@@ -68,104 +56,27 @@ export class RecommendationService {
       }),
     ])
 
-    const completedLessonIds = new Set<string>()
-    const inProgressItems: any[] = []
-
-    for (const p of allProgress) {
-      if (p.status === 'completed' || p.completionPercent >= 100) {
-        completedLessonIds.add(p.resourceId)
-      } else if (p.status === 'in_progress' && p.completionPercent < 100 && p.lesson) {
-        inProgressItems.push(p)
-      }
-    }
-
     const hasTargetDomains = targetDomainIds.length > 0
     const hasTargetCerts = targetCertIds.length > 0
     const hasTargets = hasTargetDomains || hasTargetCerts
+
+    // Không đưa gợi ý chung chung khi học viên chưa chọn lộ trình.
+    if (!profile?.onboardingCompleted || !hasTargets || profile.learningPathMode === 'self') {
+      return { recommendations: [], personalizationSource: 'rules' }
+    }
 
     const matchesTarget = (domainId?: string | null) => {
       if (!hasTargetDomains) return true
       return !!(domainId && targetDomainIds.includes(domainId))
     }
 
-    const recommendedLessonIds = new Set<string>()
     const recommendations: LearningRecommendationItem[] = []
 
     // =========================================================================
     // TẦNG 1 (URGENT - 90-100đ): Cần củng cố gấp
     // =========================================================================
 
-    // 1.1. Bài thi gần nhất điểm thấp (< 70% hoặc không pass)
-    // Ưu tiên lọc nghiêm ngặt theo mục tiêu Domain của người học
-    const lowAttempts = recentAttempts.filter(
-      (a) =>
-        matchesTarget(a.exam?.domainId) &&
-        ((a.scorePercent !== null && a.scorePercent < 70) || a.passed === false)
-    )
-
-    if (lowAttempts.length > 0) {
-      const latestFailed = lowAttempts[0]
-      // Tìm bài học cùng domain với bài thi mà học viên chưa hoàn thành
-      const reinforceLessons = await this.prisma.lesson.findMany({
-        where: {
-          status: 'published',
-          domainId: latestFailed.exam.domainId,
-          id: { notIn: Array.from(completedLessonIds) },
-        },
-        include: { domain: true, level: true },
-        take: 2,
-      })
-
-      for (const l of reinforceLessons) {
-        if (recommendedLessonIds.has(l.id)) continue
-        recommendedLessonIds.add(l.id)
-
-        const scoreText = latestFailed.scorePercent !== null ? `${Math.round(latestFailed.scorePercent)}%` : 'chưa đạt'
-        recommendations.push({
-          id: `reinforce-exam-${latestFailed.id}-${l.id}`,
-          type: 'lesson',
-          title: l.title,
-          summary: l.summary ?? undefined,
-          reason: `Cần củng cố: Bài kiểm tra "${latestFailed.exam.title}" đạt ${scoreText}. Hãy ôn luyện bài học này để lấp lỗ hổng kiến thức!`,
-          priority: 'urgent',
-          priorityScore: 98,
-          domainName: l.domain?.name,
-          levelName: l.level?.name,
-          actionUrl: `/learn/lessons/${l.id}`,
-          actionText: 'Củng cố ngay',
-        })
-      }
-    }
-
-    // 1.2. Bài học đang học dở dang (in_progress)
-    // Ưu tiên lọc nghiêm ngặt theo mục tiêu Domain của học viên
-    const relevantInProgress = inProgressItems.filter((item) =>
-      matchesTarget(item.lesson?.domainId)
-    )
-
-    for (const item of relevantInProgress.slice(0, 2)) {
-      const lesson = item.lesson
-      if (recommendedLessonIds.has(lesson.id)) continue
-      recommendedLessonIds.add(lesson.id)
-
-      const percent = Math.round(item.completionPercent ?? 0)
-      recommendations.push({
-        id: `in-progress-${lesson.id}`,
-        type: 'lesson',
-        title: lesson.title,
-        summary: lesson.summary ?? undefined,
-        reason: `Tiếp tục bài dở dang: Bạn đã hoàn thành ${percent}%. Hoàn tất bài học để nắm trọn vẹn chủ đề!`,
-        priority: 'urgent',
-        priorityScore: 95,
-        domainName: lesson.domain?.name,
-        levelName: lesson.level?.name,
-        actionUrl: `/learn/lessons/${lesson.id}`,
-        actionText: 'Tiếp tục học',
-        progressPercent: percent,
-      })
-    }
-
-    // 1.3. Từ vựng trả lời sai cần ôn tập Flashcards
+    // 1.1. Từ vựng trả lời sai cần ôn tập Flashcards
     if (weakVocabCount > 0) {
       recommendations.push({
         id: `vocab-weak-reinforce`,
@@ -186,20 +97,15 @@ export class RecommendationService {
     // =========================================================================
 
     // 2.1. Đề xuất bài thi kiểm tra theo domain mục tiêu
-    const examWhere: any = {
-      status: 'published',
-    }
-    if (hasTargetDomains) {
-      examWhere.domainId = { in: targetDomainIds }
-    } else if (hasTargetCerts) {
-      examWhere.certificateId = { in: targetCertIds }
-    }
-
-    const availableExams = await this.prisma.exam.findMany({
-      where: examWhere,
+    const availableExams = hasTargetCerts ? await this.prisma.exam.findMany({
+      where: {
+        status: 'published',
+        certificateId: { in: targetCertIds },
+        ...(hasTargetDomains ? { domainId: { in: targetDomainIds } } : {}),
+      },
       include: { domain: true, level: true },
       take: 2,
-    })
+    }) : []
 
     for (const ex of availableExams) {
       // Chỉ đề xuất nếu chưa có lượt thi đạt điểm cao
@@ -210,91 +116,13 @@ export class RecommendationService {
           type: 'exam',
           title: ex.title,
           summary: ex.description,
-          reason: `Luyện tập tăng cường: Làm bài thi kiểm tra kiến thức về ${ex.domain?.name || 'CNTT'} và nhận kết quả đánh giá năng lực.`,
+          reason: `Ôn luyện chứng chỉ: Làm quiz về ${ex.domain?.name || 'CNTT'} trong lộ trình chứng chỉ đã chọn.`,
           priority: 'high',
           priorityScore: 84,
           domainName: ex.domain?.name,
           levelName: ex.level?.name,
           actionUrl: `/learn/quiz/${ex.id}`,
-          actionText: 'Làm bài kiểm tra',
-        })
-      }
-    }
-
-    // =========================================================================
-    // TẦNG 3 (NORMAL - 50-74đ): Lộ trình bài học tiếp theo
-    // =========================================================================
-
-    let nextLessons: any[] = []
-
-    if (hasTargetDomains) {
-      // 1. Ưu tiên tìm bài học khớp chính xác cả Domain đã chọn và Level
-      const lessonWhere: any = {
-        status: 'published',
-        id: { notIn: Array.from(completedLessonIds) },
-        domainId: { in: targetDomainIds },
-      }
-      if (levelId) {
-        lessonWhere.levelId = levelId
-      }
-
-      nextLessons = await this.prisma.lesson.findMany({
-        where: lessonWhere,
-        include: { domain: true, level: true },
-        take: 4,
-      })
-
-      // 2. Nếu chưa có bài đúng level, nới lỏng level nhưng BẮT BUỘC giữ đúng domain người dùng đã chọn
-      if (nextLessons.length === 0) {
-        nextLessons = await this.prisma.lesson.findMany({
-          where: {
-            status: 'published',
-            id: { notIn: Array.from(completedLessonIds) },
-            domainId: { in: targetDomainIds },
-          },
-          include: { domain: true, level: true },
-          take: 3,
-        })
-      }
-    } else {
-      // Chỉ khi người dùng chưa chọn lĩnh vực nào mới lấy bài học tổng quan theo level
-      const lessonWhere: any = {
-        status: 'published',
-        id: { notIn: Array.from(completedLessonIds) },
-      }
-      if (levelId) {
-        lessonWhere.levelId = levelId
-      }
-
-      nextLessons = await this.prisma.lesson.findMany({
-        where: lessonWhere,
-        include: { domain: true, level: true },
-        take: 3,
-      })
-    }
-
-    for (const l of nextLessons) {
-      // Tránh duplicate nếu bài học đã được thêm ở tầng 1
-      if (!recommendedLessonIds.has(l.id) && !recommendations.some((r) => r.actionUrl === `/learn/lessons/${l.id}`)) {
-        recommendedLessonIds.add(l.id)
-        const isExactLevel = levelId && l.levelId === levelId
-        const reasonText = isExactLevel
-          ? `Đề xuất theo lộ trình: Bài học tiếp theo phù hợp với trình độ ${l.level?.name || 'phù hợp'} và lĩnh vực ${l.domain?.name || 'CNTT'}.`
-          : `Đề xuất theo lĩnh vực ${l.domain?.name || 'bạn quan tâm'}: Bài học thuộc trình độ ${l.level?.name || 'cơ bản'} giúp bạn củng cố kiến thức nền tảng.`
-
-        recommendations.push({
-          id: `next-path-${l.id}`,
-          type: 'lesson',
-          title: l.title,
-          summary: l.summary ?? undefined,
-          reason: reasonText,
-          priority: 'normal',
-          priorityScore: 65,
-          domainName: l.domain?.name,
-          levelName: l.level?.name,
-          actionUrl: `/learn/lessons/${l.id}`,
-          actionText: 'Bắt đầu học',
-          progressPercent: 0,
+          actionText: ex.kind === 'mock_exam' ? 'Làm đề thi thử' : 'Làm quiz ôn luyện',
         })
       }
     }
@@ -302,6 +130,13 @@ export class RecommendationService {
     // Sắp xếp theo priorityScore giảm dần và lấy tối đa 5 gợi ý phù hợp nhất
     const sorted = recommendations.sort((a, b) => b.priorityScore - a.priorityScore).slice(0, 5)
 
-    return { recommendations: sorted }
+    const aiRanked = await this.ai.rerank(sorted, {
+      level: profile?.level?.code ?? null,
+      targetDomains: profile?.domains.map(item => item.domain.code) ?? [],
+      targetCertificates: profile?.certGoals.map(item => item.certificate.code) ?? [],
+      recentScores: recentAttempts.map(item => item.scorePercent).filter(score => score !== null),
+      weakVocabularyCount: weakVocabCount,
+    })
+    return { recommendations: aiRanked ?? sorted, personalizationSource: aiRanked ? 'ai' : 'rules' }
   }
 }

@@ -41,6 +41,9 @@ export default function MobileQuizScreen() {
   
   const [timeLeft, setTimeLeft] = useState<number | null>(null);
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const submitInFlight = useRef(false);
+  const autoSubmitAttempted = useRef(false);
+  const startRequestedRef = useRef(false);
 
   const unansweredQuestions = questions.reduce<number[]>((acc, q, index) => {
     const qAns = answers[q.id] || [];
@@ -66,8 +69,9 @@ export default function MobileQuizScreen() {
         setLoading(false);
       }
     };
-    if (id) {
-      startExam();
+    if (id && !startRequestedRef.current) {
+      startRequestedRef.current = true;
+      void startExam();
     }
   }, [id]);
 
@@ -75,7 +79,10 @@ export default function MobileQuizScreen() {
     if (timeLeft === null || submitting) return;
 
     if (timeLeft <= 0) {
-      submitExam();
+      if (!autoSubmitAttempted.current) {
+        autoSubmitAttempted.current = true;
+        void submitExam();
+      }
       return;
     }
 
@@ -103,7 +110,8 @@ export default function MobileQuizScreen() {
   };
 
   const submitExam = async () => {
-    if (!attemptId || submitting) return;
+    if (!attemptId || submitInFlight.current) return;
+    submitInFlight.current = true;
     setSubmitting(true);
     
     const formattedAnswers = Object.entries(answers).map(([questionId, selectedOptionIds]) => ({
@@ -115,7 +123,8 @@ export default function MobileQuizScreen() {
       await api.post(`/exams/attempts/${attemptId}/submit`, { answers: formattedAnswers });
       router.replace(`/test-result/${attemptId}` as any);
     } catch (error) {
-      Alert.alert('Lỗi', 'Không thể nộp bài. Vui lòng thử lại.');
+      submitInFlight.current = false;
+      Alert.alert('Không thể nộp bài', error instanceof Error ? error.message : 'Vui lòng thử lại.');
       setSubmitting(false);
     }
   };
@@ -288,7 +297,10 @@ export default function MobileQuizScreen() {
                 style={styles.modalSubmitBtn}
                 onPress={() => {
                   setShowSubmitModal(false);
-                  submitExam();
+                  if (!autoSubmitAttempted.current) {
+        autoSubmitAttempted.current = true;
+        void submitExam();
+      }
                 }}
                 disabled={submitting}
               >

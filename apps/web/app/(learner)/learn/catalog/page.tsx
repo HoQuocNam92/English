@@ -3,11 +3,10 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { LearnerShell } from '@/shared/layout';
+import { lessonTracks } from '@/shared/lib/lesson-tracks';
 
 export default function LearningCatalogPage() {
   const [searchQuery, setSearchQuery] = useState('');
-  const [itFieldFilter, setItFieldFilter] = useState('');
-  const [levelFilter, setLevelFilter] = useState('');
 
   const modules = [
     {
@@ -15,7 +14,7 @@ export default function LearningCatalogPage() {
       title: 'Vocabulary',
       description: 'Master essential words for coding, meetings, and daily tech operations.',
       icon: 'font_download',
-      href: '/learn/modules/vocab',
+      href: '/learn/flashcards',
       bgClass: 'bg-primary/10',
       bgOpacity: 'opacity-50',
       textClass: 'text-primary',
@@ -23,72 +22,9 @@ export default function LearningCatalogPage() {
       groupHoverTextClass: 'group-hover:text-white',
       borderLeftClass: '',
     },
-    {
-      id: 'terminology',
-      title: 'Technical Terminology',
-      description: 'Deep dive into specific jargon for networking, databases, and algorithms.',
-      icon: 'memory',
-      href: '/learn/modules/terminology',
-      bgClass: 'bg-tertiary/10',
-      bgOpacity: 'opacity-50',
-      textClass: 'text-tertiary',
-      groupHoverBgClass: 'group-hover:bg-tertiary',
-      groupHoverTextClass: 'group-hover:text-white',
-      borderLeftClass: '',
-    },
-    {
-      id: 'reading',
-      title: 'Technical Reading',
-      description: 'Improve comprehension with real-world articles, RFCs, and engineering blogs.',
-      icon: 'menu_book',
-      href: '/learn/modules/reading',
-      bgClass: 'bg-secondary/10',
-      bgOpacity: 'opacity-50',
-      textClass: 'text-secondary',
-      groupHoverBgClass: 'group-hover:bg-secondary',
-      groupHoverTextClass: 'group-hover:text-white',
-      borderLeftClass: '',
-    },
-    {
-      id: 'api-doc',
-      title: 'API Documentation',
-      description: 'Learn to read and write clear, standard API docs (REST, GraphQL).',
-      icon: 'api',
-      href: '/learn/modules/api-doc',
-      bgClass: 'bg-[#F5F3FF]', // ai-accent equivalent
-      bgOpacity: 'opacity-50',
-      textClass: 'text-secondary-container',
-      groupHoverBgClass: 'group-hover:bg-secondary-container',
-      groupHoverTextClass: 'group-hover:text-white',
-      borderLeftClass: 'border-l-4 border-l-[#F5F3FF]',
-    },
-    {
-      id: 'system-design',
-      title: 'System Design',
-      description: 'Language for describing architectures, trade-offs, and scalability.',
-      icon: 'architecture',
-      href: '/learn/modules/system-design',
-      bgClass: 'bg-surface-container-high',
-      bgOpacity: 'opacity-50',
-      textClass: 'text-on-surface',
-      groupHoverBgClass: 'group-hover:bg-on-surface',
-      groupHoverTextClass: 'group-hover:text-white',
-      borderLeftClass: '',
-    },
-    {
-      id: 'case-study',
-      title: 'Case Study',
-      description: 'Analyze tech company case studies and project post-mortems.',
-      icon: 'assignment',
-      href: '/learn/modules/case-study',
-      bgClass: 'bg-primary-container',
-      bgOpacity: 'opacity-10',
-      textClass: 'text-primary-container',
-      groupHoverBgClass: 'group-hover:bg-primary-container',
-      groupHoverTextClass: 'group-hover:text-white',
-      borderLeftClass: '',
-    },
+    ...lessonTracks.map(track => ({ id: track.type, title: track.label, description: track.description, icon: track.icon, href: `/learn/lessons?type=${track.type}`, bgClass: 'bg-primary/10', bgOpacity: 'opacity-50', textClass: 'text-primary', groupHoverBgClass: 'group-hover:bg-primary', groupHoverTextClass: 'group-hover:text-white', borderLeftClass: '' })),
   ];
+  const visibleModules = modules.filter(module => `${module.title} ${module.description}`.toLocaleLowerCase('vi').includes(searchQuery.trim().toLocaleLowerCase('vi')));
 
   return (
     <LearnerShell>
@@ -98,10 +34,10 @@ export default function LearningCatalogPage() {
           <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-4 mb-6">
             <div>
               <h1 className="text-[30px] font-bold text-on-surface mb-2 leading-[38px] tracking-[-0.02em]">
-                Learning Catalog
+                Danh mục học tập
               </h1>
               <p className="text-[14px] text-on-surface-variant">
-                Explore specialized technical English modules designed for your IT career path.
+                Khám phá các học phần tiếng Anh chuyên ngành phù hợp với định hướng nghề nghiệp CNTT của bạn.
               </p>
             </div>
           </div>
@@ -122,50 +58,13 @@ export default function LearningCatalogPage() {
               />
             </div>
 
-            {/* Filters */}
-            <div className="flex w-full md:w-auto gap-2">
-              {/* IT Field Filter */}
-              <div className="relative w-full md:w-48">
-                <select
-                  value={itFieldFilter}
-                  onChange={(e) => setItFieldFilter(e.target.value)}
-                  className="w-full appearance-none pl-3 pr-8 py-2 border border-outline-variant rounded bg-surface-container-lowest focus:outline-none focus:ring-2 focus:ring-primary text-[14px] text-on-surface cursor-pointer"
-                >
-                  <option value="">All IT Fields</option>
-                  <option value="frontend">Frontend Development</option>
-                  <option value="backend">Backend Development</option>
-                  <option value="data">Data Science</option>
-                  <option value="devops">DevOps &amp; Cloud</option>
-                </select>
-                <span className="material-symbols-outlined absolute right-2 top-1/2 -translate-y-1/2 text-outline pointer-events-none">
-                  arrow_drop_down
-                </span>
-              </div>
-
-              {/* Level Filter */}
-              <div className="relative w-full md:w-40">
-                <select
-                  value={levelFilter}
-                  onChange={(e) => setLevelFilter(e.target.value)}
-                  className="w-full appearance-none pl-3 pr-8 py-2 border border-outline-variant rounded bg-surface-container-lowest focus:outline-none focus:ring-2 focus:ring-primary text-[14px] text-on-surface cursor-pointer"
-                >
-                  <option value="">All Levels</option>
-                  <option value="beginner">Beginner</option>
-                  <option value="intermediate">Intermediate</option>
-                  <option value="advanced">Advanced</option>
-                </select>
-                <span className="material-symbols-outlined absolute right-2 top-1/2 -translate-y-1/2 text-outline pointer-events-none">
-                  arrow_drop_down
-                </span>
-              </div>
-            </div>
           </div>
         </section>
 
         {/* Catalog Grid */}
         <section>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {modules.map((module) => (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {visibleModules.map((module) => (
               <Link
                 key={module.id}
                 href={module.href}
@@ -186,13 +85,14 @@ export default function LearningCatalogPage() {
                   {module.description}
                 </p>
                 <div className={`flex items-center ${module.textClass} text-[14px] font-semibold`}>
-                  <span>Explore Modules</span>
+                  <span>Khám phá chuyên đề</span>
                   <span className="material-symbols-outlined ml-1 group-hover:translate-x-1 transition-transform duration-300 text-[18px]">
                     arrow_forward
                   </span>
                 </div>
               </Link>
             ))}
+            {!visibleModules.length && <p className="text-sm text-on-surface-variant">Không có chuyên đề phù hợp.</p>}
           </div>
         </section>
       </div>

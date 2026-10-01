@@ -6,6 +6,7 @@ import { useSearchParams } from 'next/navigation';
 import { LearnerShell } from '@/shared/layout';
 import { apiClient } from '@/shared/api/api-client';
 import { useAuth } from '@/features/auth/presentation';
+import { registerWebLearningNotifications } from '@/shared/notifications/firebase-client';
 
 type ProfileTab = 'info' | 'goals' | 'history';
 
@@ -28,15 +29,20 @@ function LearnerProfileContent() {
   // Mục tiêu & Trình độ
   const [levelCode, setLevelCode] = useState('beginner');
   const [selectedDomains, setSelectedDomains] = useState<string[]>([]);
-  const [careerGoalCode, setCareerGoalCode] = useState('');
+  const [learningGoal, setLearningGoal] = useState<'certification' | 'vocabulary' | 'both' | null>(null);
   const [certificateCode, setCertificateCode] = useState('');
-  const [weeklyTarget, setWeeklyTarget] = useState(120);
+  const [selectedCareerGoals, setSelectedCareerGoals] = useState<string[]>([]);
+  const [dailyVocabularyTarget, setDailyVocabularyTarget] = useState(10);
+  const [weeklyExamTarget, setWeeklyExamTarget] = useState(2);
+  const [dailyStudyTargetMinutes, setDailyStudyTargetMinutes] = useState(30);
+  const [reminderTime, setReminderTime] = useState('20:00');
+  const [reminderEnabled, setReminderEnabled] = useState(false);
 
   // Danh mục tham chiếu
   const [levels, setLevels] = useState<any[]>([]);
   const [domains, setDomains] = useState<any[]>([]);
-  const [careerGoals, setCareerGoals] = useState<any[]>([]);
   const [certificates, setCertificates] = useState<any[]>([]);
+  const [careerGoals, setCareerGoals] = useState<any[]>([]);
 
   useEffect(() => {
     Promise.allSettled([
@@ -45,21 +51,22 @@ function LearnerProfileContent() {
       apiClient.get<any>('/progress/me'),
       apiClient.get<any>('/lessons?limit=100&status=published'),
       apiClient.get<any>('/levels'),
-      apiClient.get<any>('/domains'),
+      apiClient.get<any>('/domains?activeOnly=true'),
+      apiClient.get<any>('/certificates?activeOnly=true'),
       apiClient.get<any>('/career-goals'),
-      apiClient.get<any>('/certificates'),
-    ]).then(([meResult, profileResult, progressResult, lessonsResult, levelsRes, domainsRes, careerRes, certsRes]) => {
+    ]).then(([meResult, profileResult, progressResult, lessonsResult, levelsRes, domainsRes, certsRes, careersRes]) => {
       const me = meResult.status === 'fulfilled' ? (meResult.value?.user ?? meResult.value) : null;
       const profile = profileResult.status === 'fulfilled' ? profileResult.value : null;
       const progress = progressResult.status === 'fulfilled' ? progressResult.value : null;
       const lessonsData = lessonsResult.status === 'fulfilled' ? (lessonsResult.value?.data ?? lessonsResult.value ?? []) : [];
       setLessons(Array.isArray(lessonsData) ? lessonsData : []);
 
-      // Taxonomy
-      if (levelsRes.status === 'fulfilled' && Array.isArray(levelsRes.value)) setLevels(levelsRes.value);
-      if (domainsRes.status === 'fulfilled' && Array.isArray(domainsRes.value)) setDomains(domainsRes.value);
-      if (careerRes.status === 'fulfilled' && Array.isArray(careerRes.value)) setCareerGoals(careerRes.value);
-      if (certsRes.status === 'fulfilled' && Array.isArray(certsRes.value)) setCertificates(certsRes.value);
+      // Taxonomy endpoints return { data }; keep array compatibility for older API responses.
+      const taxonomyItems = (value: any) => Array.isArray(value) ? value : (value?.data ?? []);
+      if (levelsRes.status === 'fulfilled') setLevels(taxonomyItems(levelsRes.value));
+      if (domainsRes.status === 'fulfilled') setDomains(taxonomyItems(domainsRes.value));
+      if (certsRes.status === 'fulfilled') setCertificates(taxonomyItems(certsRes.value));
+      if (careersRes.status === 'fulfilled') setCareerGoals(taxonomyItems(careersRes.value));
 
       setForm({
         displayName: me?.displayName ?? me?.name ?? '',
@@ -70,18 +77,25 @@ function LearnerProfileContent() {
 
       if (profile) {
         if (profile.level?.code) setLevelCode(profile.level.code);
-        if (Array.isArray(profile.domains)) {
-          setSelectedDomains(profile.domains.map((d: any) => d.domain?.code).filter(Boolean));
-        }
-        if (profile.careerGoals?.[0]?.careerGoal?.code) {
-          setCareerGoalCode(profile.careerGoals[0].careerGoal.code);
-        }
-        if (profile.certGoals?.[0]?.certificate?.code) {
-          setCertificateCode(profile.certGoals[0].certificate.code);
-        }
-        if (profile.weeklyStudyTargetMinutes) {
-          setWeeklyTarget(profile.weeklyStudyTargetMinutes);
-        }
+        const savedDomains = Array.isArray(profile.domains)
+          ? profile.domains.map((d: any) => d.domain?.code).filter(Boolean)
+          : [];
+        const savedCertificate = profile.certGoals?.[0]?.certificate?.code ?? '';
+        setSelectedDomains(savedDomains);
+        setCertificateCode(savedCertificate);
+        setSelectedCareerGoals(Array.isArray(profile.careerGoals) ? profile.careerGoals.map((item: any) => item.careerGoal?.code).filter(Boolean) : []);
+        setLearningGoal(profile.learningGoal === 'vocabulary' || profile.learningGoal === 'certification' || profile.learningGoal === 'both'
+          ? profile.learningGoal
+          : savedCertificate
+            ? 'certification'
+            : savedDomains.length > 0
+              ? 'vocabulary'
+              : null);
+        setDailyVocabularyTarget(profile.dailyVocabularyTarget ?? 10);
+        setWeeklyExamTarget(profile.weeklyExamTarget ?? 2);
+        setDailyStudyTargetMinutes(profile.dailyStudyTargetMinutes ?? 30);
+        setReminderTime(profile.reminderTime ?? '20:00');
+        setReminderEnabled(Boolean(profile.reminderEnabled));
       }
 
       const items = progress?.history ?? progress?.progress ?? [];
@@ -95,7 +109,7 @@ function LearnerProfileContent() {
     try {
       await apiClient.patch('/users/me', {
         displayName: form.displayName,
-        phoneNumber: form.phoneNumber,
+        phoneNumber: form.phoneNumber.trim() || null,
         bio: form.bio,
       });
       setMessage('Cập nhật hồ sơ thành công.');
@@ -106,16 +120,29 @@ function LearnerProfileContent() {
 
   async function saveGoals(event: React.FormEvent) {
     event.preventDefault();
+    if (!learningGoal) return setError('Vui lòng chọn mục tiêu học chính.');
+    if ((learningGoal === 'certification' || learningGoal === 'both') && !certificateCode) return setError('Vui lòng chọn một chứng chỉ mục tiêu.');
+    if (selectedDomains.length === 0) return setError('Vui lòng chọn ít nhất một lĩnh vực IT.');
     setSavingGoals(true); setMessage(''); setError('');
     try {
       await apiClient.put('/learner-profiles/me/goals', {
+        learningGoal,
         levelCode,
         domainCodes: selectedDomains,
-        careerGoalCodes: careerGoalCode ? [careerGoalCode] : [],
-        certificateCodes: certificateCode ? [certificateCode] : [],
-        weeklyStudyTargetMinutes: Number(weeklyTarget) || 120,
+        certificateCodes: (learningGoal === 'certification' || learningGoal === 'both') && certificateCode ? [certificateCode] : [],
+        careerGoalCodes: selectedCareerGoals,
+        weeklyStudyTargetMinutes: dailyStudyTargetMinutes * 7,
+        dailyVocabularyTarget,
+        weeklyExamTarget,
+        dailyStudyTargetMinutes,
+        reminderTime,
+        reminderEnabled,
+        learningPathMode: 'smart',
       });
-      setMessage('Cập nhật mục tiêu và trình độ học tập thành công!');
+      const notificationReady = reminderEnabled ? await registerWebLearningNotifications().catch(() => false) : true;
+      setMessage(notificationReady
+        ? 'Cập nhật mục tiêu và lịch nhắc học thành công!'
+        : 'Đã lưu mục tiêu. Hãy cấu hình Firebase hoặc cho phép thông báo để nhận nhắc học khi đóng trình duyệt.');
     } catch (cause: any) {
       setError(cause?.message || 'Không thể cập nhật mục tiêu học tập.');
     } finally { setSavingGoals(false); }
@@ -144,6 +171,7 @@ function LearnerProfileContent() {
       prev.includes(code) ? prev.filter(c => c !== code) : [...prev, code]
     );
   };
+  const toggleCareerGoal = (code: string) => setSelectedCareerGoals(current => current.includes(code) ? current.filter(item => item !== code) : [...current, code]);
 
   if (loading) return <LearnerShell><div className="flex h-64 items-center justify-center"><div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" /></div></LearnerShell>;
 
@@ -162,7 +190,7 @@ function LearnerProfileContent() {
             </div>
           </div>
           <div className="flex gap-3">
-            <Link href="/learn/lessons" className="rounded-xl bg-primary px-4 py-2.5 text-xs font-bold !text-white">Tiếp tục học</Link>
+            <Link href="/learn/certifications" className="rounded-xl bg-primary px-4 py-2.5 text-xs font-bold !text-white">Tiếp tục học</Link>
             <button type="button" onClick={signOut} className="rounded-xl border border-red-200 bg-red-50 px-4 py-2.5 text-xs font-bold text-red-700 hover:bg-red-100 transition-colors">Đăng xuất</button>
           </div>
         </section>
@@ -200,7 +228,9 @@ function LearnerProfileContent() {
               <div className="grid gap-4 sm:grid-cols-2">
                 <Field label="Tên hiển thị" value={form.displayName} onChange={(displayName) => setForm({ ...form, displayName })} />
                 <Field label="Email" value={form.email} disabled />
-                <Field label="Số điện thoại" value={form.phoneNumber} onChange={(phoneNumber) => setForm({ ...form, phoneNumber })} />
+                <div className="sm:col-span-2">
+                  <Field label="Số điện thoại" value={form.phoneNumber} onChange={(phoneNumber) => setForm({ ...form, phoneNumber })} />
+                </div>
               </div>
               <label className="block text-xs font-semibold">Giới thiệu<textarea rows={3} value={form.bio} onChange={(e) => setForm({ ...form, bio: e.target.value })} className="mt-1 w-full rounded-xl border border-outline-variant/60 bg-surface-bright px-3.5 py-2.5" /></label>
               <div className="flex justify-end"><button disabled={savingInfo} className="rounded-xl bg-primary px-6 py-2.5 text-xs font-bold text-white disabled:opacity-50">{savingInfo ? 'Đang lưu...' : 'Lưu thay đổi'}</button></div>
@@ -222,21 +252,34 @@ function LearnerProfileContent() {
           <form onSubmit={saveGoals} className="space-y-6 rounded-2xl border border-outline-variant/40 bg-surface-container-lowest p-6">
             <div>
               <h2 className="text-lg font-bold text-on-surface">Mục tiêu & Trình độ học tập</h2>
-              <p className="text-xs text-on-surface-variant mt-1">
-                Thiết lập trình độ hiện tại, lĩnh vực quan tâm và chứng chỉ mục tiêu để hệ thống đưa ra các gợi ý bài học và bài luyện tập chính xác nhất.
-              </p>
+              <p className="text-xs text-on-surface-variant mt-1">Chỉ giữ những lựa chọn trực tiếp ảnh hưởng tới lộ trình của bạn.</p>
             </div>
 
-            {/* 1. Trình độ tiếng Anh */}
             <div className="space-y-3">
-              <label className="block text-sm font-bold text-on-surface">
-                1. Trình độ tiếng Anh của bạn
-              </label>
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+              <label className="block text-sm font-bold text-on-surface">1. Mục tiêu học chính</label>
+              <div className="grid gap-3 sm:grid-cols-3">
+                {[
+                  { value: 'vocabulary', icon: 'translate', iconClass: 'icon-learning', title: 'Luyện từ vựng CNTT', description: 'Học từ vựng theo lĩnh vực chuyên ngành.' },
+                  { value: 'certification', icon: 'workspace_premium', iconClass: 'icon-certificate', title: 'Luyện chứng chỉ', description: 'Học theo Domain, Topic và Quiz của chứng chỉ.' },
+                  { value: 'both', icon: 'route', iconClass: 'icon-progress', title: 'Cả hai', description: 'Kết hợp từ vựng CNTT và chứng chỉ mục tiêu.' },
+                ].map((goal) => {
+                  const selected = learningGoal === goal.value;
+                  return <button key={goal.value} type="button" onClick={() => setLearningGoal(goal.value as 'certification' | 'vocabulary' | 'both')} className={`rounded-xl border p-4 text-left transition-all ${selected ? 'border-primary bg-primary/5 ring-2 ring-primary/20' : 'border-outline-variant/60 bg-surface-bright hover:border-primary/40'}`}>
+                    <span className="flex items-center gap-2 text-sm font-bold text-on-surface"><span className={`material-symbols-outlined ${goal.iconClass}`}>{goal.icon}</span>{goal.title}<span className={`ml-auto material-symbols-outlined ${selected ? 'icon-success' : 'text-outline-variant'}`}>{selected ? 'check_circle' : 'radio_button_unchecked'}</span></span>
+                    <span className="mt-2 block text-xs leading-relaxed text-on-surface-variant">{goal.description}</span>
+                  </button>;
+                })}
+              </div>
+            </div>
+
+            <div className="space-y-3">
+              <label className="block text-sm font-bold text-on-surface">2. Trình độ tiếng Anh</label>
+              <div className="grid grid-cols-1 sm:grid-cols-4 gap-3">
                 {(levels.length > 0 ? levels : [
-                  { code: 'beginner', name: 'Beginner', description: 'Mới bắt đầu, từ vựng cơ bản và cấu trúc kỹ thuật đơn giản' },
-                  { code: 'intermediate', name: 'Intermediate', description: 'Đã có nền tảng, đọc hiểu tài liệu kỹ thuật và API' },
-                  { code: 'advanced', name: 'Advanced', description: 'Thành thạo, kiến trúc hệ thống và ôn thi chứng chỉ chuyên sâu' },
+                  { code: 'beginner', name: 'Cơ bản', description: 'Mới bắt đầu, từ vựng cơ bản và cấu trúc kỹ thuật đơn giản' },
+                  { code: 'intermediate', name: 'Trung cấp', description: 'Đã có nền tảng từ vựng IT và sẵn sàng luyện thi chứng chỉ' },
+                  { code: 'advanced', name: 'Nâng cao', description: 'Thành thạo, kiến trúc hệ thống và ôn thi chứng chỉ chuyên sâu' },
+                  { code: 'professional', name: 'Professional', description: 'Tập trung luyện thi và củng cố chủ đề yếu' },
                 ]).map((lvl: any) => {
                   const isSelected = levelCode === lvl.code;
                   return (
@@ -262,11 +305,8 @@ function LearnerProfileContent() {
               </div>
             </div>
 
-            {/* 2. Lĩnh vực CNTT quan tâm */}
-            <div className="space-y-3">
-              <label className="block text-sm font-bold text-on-surface">
-                2. Lĩnh vực CNTT quan tâm (chọn một hoặc nhiều)
-              </label>
+            {learningGoal && <div className="space-y-3">
+              <label className="block text-sm font-bold text-on-surface">3. Lĩnh vực IT</label>
               <div className="flex flex-wrap gap-2">
                 {(domains.length > 0 ? domains : [
                   { code: 'CLOUD', name: 'Cloud Computing' },
@@ -297,20 +337,12 @@ function LearnerProfileContent() {
                   );
                 })}
               </div>
-            </div>
+            </div>}
 
-            {/* 3. Chứng chỉ mục tiêu */}
-            <div className="space-y-3">
-              <label className="block text-sm font-bold text-on-surface">
-                3. Chứng chỉ mục tiêu
-              </label>
+            {(learningGoal === 'certification' || learningGoal === 'both') && <div className="space-y-3">
+              <label className="block text-sm font-bold text-on-surface">4. Chứng chỉ mục tiêu</label>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                {(certificates.length > 0 ? certificates : [
-                  { code: 'AWS-SAA', name: 'AWS Certified Solutions Architect – Associate', provider: 'AWS' },
-                  { code: 'CKA', name: 'Certified Kubernetes Administrator', provider: 'CNCF' },
-                  { code: 'COMPTIA-SECURITY-PLUS', name: 'CompTIA Security+', provider: 'CompTIA' },
-                  { code: 'GCP-ACE', name: 'Google Cloud Associate Cloud Engineer', provider: 'Google Cloud' },
-                ]).map((cert: any) => {
+                {certificates.map((cert: any) => {
                   const isSelected = certificateCode === cert.code;
                   return (
                     <div
@@ -333,59 +365,41 @@ function LearnerProfileContent() {
                   );
                 })}
               </div>
-            </div>
+            </div>}
 
-            {/* 4. Mục tiêu nghề nghiệp */}
             <div className="space-y-3">
-              <label className="block text-sm font-bold text-on-surface">
-                4. Vị trí nghề nghiệp định hướng
-              </label>
-              <select
-                value={careerGoalCode}
-                onChange={(e) => setCareerGoalCode(e.target.value)}
-                className="w-full rounded-xl border border-outline-variant/60 bg-surface-bright px-3.5 py-2.5 text-xs text-on-surface outline-none focus:border-primary"
-              >
-                <option value="">-- Chọn vị trí mục tiêu --</option>
-                {(careerGoals.length > 0 ? careerGoals : [
-                  { code: 'BACKEND_ENGINEER', name: 'Backend Engineer' },
-                  { code: 'CLOUD_ARCHITECT', name: 'Cloud Architect' },
-                  { code: 'DEVOPS_ENGINEER', name: 'DevOps Engineer' },
-                  { code: 'DATA_ENGINEER', name: 'Data Engineer' },
-                  { code: 'SOLUTION_ARCHITECT', name: 'Solutions Architect' },
-                ]).map((cg: any) => (
-                  <option key={cg.code} value={cg.code}>{cg.name}</option>
-                ))}
-              </select>
+              <label className="block text-sm font-bold text-on-surface">Mục tiêu nghề nghiệp</label>
+              <p className="text-xs text-on-surface-variant">Chọn một hoặc nhiều định hướng để hệ thống ưu tiên nội dung phù hợp.</p>
+              <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+                {careerGoals.map((goal:any) => { const selected=selectedCareerGoals.includes(goal.code); return <button key={goal.code} type="button" onClick={()=>toggleCareerGoal(goal.code)} className={`rounded-xl border p-4 text-left transition-all ${selected?'border-primary bg-primary/5 ring-2 ring-primary/20':'border-outline-variant/60 bg-surface-bright hover:border-primary/40'}`}><span className="flex items-center gap-2 text-sm font-bold"><span className="material-symbols-outlined text-[19px] text-primary">work</span>{goal.name}<span className={`material-symbols-outlined ml-auto text-[18px] ${selected?'text-primary':'text-outline'}`}>{selected?'check_circle':'radio_button_unchecked'}</span></span><span className="mt-2 block text-xs leading-5 text-on-surface-variant">{goal.description||'Định hướng nghề nghiệp CNTT'}</span></button>; })}
+              </div>
             </div>
 
-            {/* 5. Thời gian học mỗi tuần */}
-            <div className="space-y-2">
-              <label className="block text-sm font-bold text-on-surface">
-                5. Mục tiêu thời gian học tập mỗi tuần (phút)
-              </label>
-              <div className="flex items-center gap-3">
-                <input
-                  type="number"
-                  min={30}
-                  max={2400}
-                  step={30}
-                  value={weeklyTarget}
-                  onChange={(e) => setWeeklyTarget(Number(e.target.value))}
-                  className="w-32 rounded-xl border border-outline-variant/60 bg-surface-bright px-3.5 py-2 text-xs font-bold text-on-surface"
-                />
-                <div className="flex gap-2">
-                  {[60, 120, 180, 240].map(mins => (
-                    <button
-                      key={mins}
-                      type="button"
-                      onClick={() => setWeeklyTarget(mins)}
-                      className={`px-3 py-1 rounded-lg text-xs font-semibold ${weeklyTarget === mins ? 'bg-primary text-white' : 'bg-surface-container text-on-surface-variant'}`}
-                    >
-                      {mins / 60}h/tuần
-                    </button>
-                  ))}
-                </div>
+            <div className="space-y-3">
+              <label className="block text-sm font-bold text-on-surface">{learningGoal === 'certification' || learningGoal === 'both' ? '5' : '4'}. Kế hoạch học</label>
+              <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+                <label className="rounded-xl border border-outline-variant/60 bg-surface-bright p-3 text-xs font-semibold text-on-surface-variant">
+                  Từ vựng mỗi ngày
+                  <input type="number" min={1} max={200} value={dailyVocabularyTarget} onChange={(e) => setDailyVocabularyTarget(Number(e.target.value))} className="mt-2 w-full rounded-lg border border-outline-variant px-3 py-2 text-sm font-bold text-on-surface" />
+                </label>
+                <label className="rounded-xl border border-outline-variant/60 bg-surface-bright p-3 text-xs font-semibold text-on-surface-variant">
+                  Bài Quiz mỗi tuần
+                  <input type="number" min={1} max={50} value={weeklyExamTarget} onChange={(e) => setWeeklyExamTarget(Number(e.target.value))} className="mt-2 w-full rounded-lg border border-outline-variant px-3 py-2 text-sm font-bold text-on-surface" />
+                </label>
+                <label className="rounded-xl border border-outline-variant/60 bg-surface-bright p-3 text-xs font-semibold text-on-surface-variant">
+                  Phút học mỗi ngày
+                  <input type="number" min={5} max={1440} value={dailyStudyTargetMinutes} onChange={(e) => setDailyStudyTargetMinutes(Number(e.target.value))} className="mt-2 w-full rounded-lg border border-outline-variant px-3 py-2 text-sm font-bold text-on-surface" />
+                </label>
               </div>
+              <p className="text-xs text-on-surface-variant">Tương ứng {weeklyExamTarget * 4} bài/tháng và {weeklyExamTarget * 52} bài/năm.</p>
+            </div>
+
+            <div className="flex flex-col gap-3 rounded-xl border border-outline-variant/60 bg-surface-container-low p-4 sm:flex-row sm:items-center sm:justify-between">
+              <label className="flex items-center gap-2 text-sm font-bold text-on-surface">
+                <input type="checkbox" checked={reminderEnabled} onChange={(e) => setReminderEnabled(e.target.checked)} className="h-4 w-4 rounded text-primary" />
+                Nhắc tôi học mỗi ngày
+              </label>
+              <input type="time" value={reminderTime} disabled={!reminderEnabled} onChange={(e) => setReminderTime(e.target.value)} className="rounded-lg border border-outline-variant bg-surface-bright px-3 py-2 text-sm font-bold disabled:opacity-50" />
             </div>
 
             <div className="flex justify-end pt-4 border-t border-outline-variant/40">
@@ -515,7 +529,7 @@ function LearnerProfileContent() {
                   Bắt đầu học các bài học chuyên ngành IT để tích lũy kiến thức ngay hôm nay!
                 </p>
                 <Link
-                  href="/learn/lessons"
+                  href="/learn/certifications"
                   className="inline-flex items-center gap-1.5 px-4 py-2 bg-primary text-white text-xs font-bold rounded-xl hover:opacity-90"
                 >
                   <span>Khám phá bài học</span>

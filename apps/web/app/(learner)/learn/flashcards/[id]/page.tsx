@@ -6,7 +6,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { LearnerShell } from '@/shared/layout';
 import { apiClient } from '@/shared/api/api-client';
-import { LoadingSpinner } from '@/shared/ui';
+import { LoadingSpinner, showToast } from '@/shared/ui';
 
 export default function LessonVocabularyDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const unwrappedParams = React.use(params);
@@ -21,7 +21,7 @@ export default function LessonVocabularyDetailPage({ params }: { params: Promise
 
   const [displayWords, setDisplayWords] = useState<any[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
-  const pageSize = 15;
+  const [pageSize, setPageSize] = useState(30);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [confirmStopModal, setConfirmStopModal] = useState(false);
@@ -104,7 +104,7 @@ export default function LessonVocabularyDetailPage({ params }: { params: Promise
       setConfirmStopModal(false);
       router.push('/learn/flashcards');
     } catch {
-      alert('Không thể cập nhật trạng thái.');
+      showToast('Không thể cập nhật trạng thái.', 'error');
     } finally {
       setStopping(false);
     }
@@ -351,10 +351,17 @@ export default function LessonVocabularyDetailPage({ params }: { params: Promise
         </div>
 
         {/* Pagination Controls */}
-        {totalPages > 1 && (
+        {displayWords.length > 0 && (
           <div className="flex flex-col sm:flex-row items-center justify-between gap-4 pt-4 border-t border-slate-200">
-            <div className="text-xs text-slate-500 font-medium">
-              Hiển thị <strong className="text-slate-800">{startIndex + 1} - {Math.min(startIndex + pageSize, displayWords.length)}</strong> trong tổng số <strong className="text-slate-800">{displayWords.length}</strong> từ
+            <div className="flex flex-wrap items-center gap-3 text-xs text-slate-500 font-medium">
+              <span>Hiển thị <strong className="text-slate-800">{startIndex + 1} - {Math.min(startIndex + pageSize, displayWords.length)}</strong> trong tổng số <strong className="text-slate-800">{displayWords.length}</strong> từ</span>
+              <label className="relative inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-3 py-2">
+                <span className="material-symbols-outlined text-[17px] text-sky-600">view_list</span>
+                <span>Số dòng</span>
+                <select value={pageSize} onChange={(event) => { setPageSize(Number(event.target.value)); setCurrentPage(1); }} className="cursor-pointer bg-transparent font-bold text-slate-800 outline-none">
+                  {[10, 20, 30, 40].map((size) => <option key={size} value={size}>{size}</option>)}
+                </select>
+              </label>
             </div>
 
             <div className="flex items-center gap-1.5 flex-wrap justify-center">

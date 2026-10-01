@@ -2,9 +2,22 @@ import type { Session } from "@techenglish/contracts";
 import { API_BASE_URL } from "@/shared/config/env";
 import type { StoragePort } from "@/shared/storage";
 import type { AuthRepository, LoginInput } from "../../application/ports/auth-repository";
+import { toVietnameseErrorMessage } from '@/shared/lib/error-message';
 
 const SESSION_KEY = "techenglish.web.session";
 const API_BASE = API_BASE_URL;
+
+function localizeLoginError(message: unknown, status: number): string {
+  const raw = Array.isArray(message) ? message.join(', ') : String(message ?? '').trim();
+  const normalized = raw.toLowerCase();
+  if (!raw && status === 401) return 'Email hoặc mật khẩu không chính xác.';
+  if (/invalid credentials|bad credentials|unauthorized/.test(normalized)) return 'Email hoặc mật khẩu không chính xác. Vui lòng kiểm tra lại.';
+  if (/password.*incorrect|incorrect.*password/.test(normalized)) return 'Mật khẩu không chính xác. Vui lòng thử lại.';
+  if (/user.*not found|account.*not found/.test(normalized)) return 'Không tìm thấy tài khoản với email này.';
+  if (/suspended|locked/.test(normalized)) return 'Tài khoản đã bị khóa. Vui lòng liên hệ quản trị viên.';
+  if (/inactive|disabled|not activated/.test(normalized)) return 'Tài khoản chưa được kích hoạt hoặc đã bị vô hiệu hóa.';
+  return toVietnameseErrorMessage(raw, status);
+}
 
 export class ApiAuthRepository implements AuthRepository {
   constructor(private readonly storage: StoragePort) {}
@@ -23,15 +36,7 @@ export class ApiAuthRepository implements AuthRepository {
 
     if (!res.ok) {
       const err = await res.json().catch(() => ({}));
-      const message = (err as any)?.message;
-      throw new Error(
-        Array.isArray(message)
-          ? message.join(", ")
-          : (message ??
-              (res.status === 401
-                ? "Email hoặc mật khẩu không đúng."
-                : `Đăng nhập thất bại (HTTP ${res.status}).`)),
-      );
+      throw new Error(localizeLoginError((err as any)?.message, res.status));
     }
 
     const data = await res.json();
@@ -51,7 +56,7 @@ export class ApiAuthRepository implements AuthRepository {
       },
     };
 
-    await this.storage.setItem(SESSION_KEY, JSON.stringify(session));
+    await this.storage.setItem(SESSION_KEY, JSON.stringify(session), input.rememberMe ?? true);
     return session;
   }
 

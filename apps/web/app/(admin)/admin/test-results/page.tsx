@@ -1,7 +1,8 @@
 'use client';
 
 import * as React from 'react';
-import { PageHeader, SearchInput } from '@/shared/ui';
+import { StatusBadge } from '@/shared/ui/StatusBadge';
+import { PageHeader, Pagination, SearchInput } from '@/shared/ui';
 import { apiClient, ApiClientError } from '@/shared/api/api-client';
 import type { PaginatedResponse } from '@/shared/api/api-client';
 import { ExamAttemptDetailModal } from './ExamAttemptDetailModal';
@@ -42,9 +43,12 @@ export default function AdminTestResultsPage() {
   const [selectedAttemptId, setSelectedAttemptId] = React.useState<string | null>(null);
   const [loading, setLoading] = React.useState(true);
   const [error, setError] = React.useState<string | null>(null);
-  const limit = 15;
+  const [limit, setLimit] = React.useState(30);
 
   const totalPages = Math.ceil(total / limit);
+  const scoredResults = results.filter(item => item.scorePercent !== undefined || item.score !== undefined);
+  const averageScore = scoredResults.length ? scoredResults.reduce((sum, item) => sum + Number(item.scorePercent ?? item.score ?? 0), 0) / scoredResults.length : 0;
+  const passRate = results.length ? Math.round(results.filter(item => item.passed ?? item.isPassed).length / results.length * 100) : 0;
 
   const load = React.useCallback(async () => {
     setLoading(true);
@@ -65,11 +69,23 @@ export default function AdminTestResultsPage() {
     } finally {
       setLoading(false);
     }
-  }, [page, search, status]);
+  }, [page, limit, search, status]);
 
   React.useEffect(() => {
     void load();
   }, [load]);
+
+  const exportExcel = async () => {
+    setError(null);
+    try {
+      const first = await apiClient.get<PaginatedResponse<TestResultItem>>('/test-results?page=1&limit=100');
+      const pages = await Promise.all(Array.from({ length: Math.max(0, first.meta.totalPages - 1) }, (_, index) => apiClient.get<PaginatedResponse<TestResultItem>>(`/test-results?page=${index + 2}&limit=100`)));
+      const all = [first, ...pages].flatMap(item => item.data);
+      const XLSX = await import('xlsx');
+      const rows = all.map(item => ({ 'Học viên': item.learner?.userDetail?.displayName ?? item.learner?.email ?? '', Email: item.learner?.email ?? '', 'Chủ đề/Bài thi': item.exam?.title ?? '', 'Lĩnh vực': item.exam?.domain?.name ?? '', 'Trình độ': item.exam?.level?.name ?? '', 'Điểm (%)': item.scorePercent ?? item.score ?? '', 'Kết quả': (item.passed ?? item.isPassed) ? 'Đạt' : 'Chưa đạt', 'Thời gian làm bài': item.timeSpentSeconds ? `${Math.round(item.timeSpentSeconds / 60)} phút` : '', 'Thời gian nộp': item.submittedAt ? new Date(item.submittedAt).toLocaleString('vi-VN') : '' }));
+      const book = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(book, XLSX.utils.json_to_sheet(rows), 'Kết quả bài thi'); XLSX.writeFile(book, `ket-qua-bai-thi-${new Date().toISOString().slice(0,10)}.xlsx`);
+    } catch (e) { setError(e instanceof ApiClientError ? e.message : 'Không thể xuất Excel'); }
+  };
 
   return (
     <main className="flex-1 overflow-y-auto p-4 md:p-margin bg-surface">
@@ -82,9 +98,9 @@ export default function AdminTestResultsPage() {
           </p>
         </div>
         <div className="flex gap-sm">
-          <button className="px-md py-sm bg-surface-container-lowest border border-outline-variant rounded-lg font-interface-sb text-interface-sb text-on-surface flex items-center gap-xs hover:bg-surface-container-low transition-colors">
+          <button onClick={() => void exportExcel()} className="px-4 py-2.5 bg-surface-container-lowest border border-outline-variant rounded-lg font-interface-sb text-interface-sb text-on-surface flex items-center gap-2 hover:bg-surface-container-low transition-colors">
             <span className="material-symbols-outlined text-[18px]">download</span>
-            Xuất CSV
+            Xuất Excel
           </button>
         </div>
       </div>
@@ -105,12 +121,12 @@ export default function AdminTestResultsPage() {
             </div>
           </div>
           <div className="flex items-end gap-sm">
-            <h3 className="font-headline-h2 text-headline-h2 text-on-surface">7.8</h3>
+            <h3 className="font-headline-h2 text-headline-h2 text-on-surface">{(averageScore / 10).toFixed(1)}</h3>
             <span className="font-body-sm text-body-sm text-on-surface-variant pb-1">/ 10</span>
           </div>
           <div className="mt-xs flex items-center gap-xs text-secondary">
             <span className="material-symbols-outlined text-[14px]">trending_up</span>
-            <span className="font-body-sm text-body-sm">+0.4 so với tuần trước</span>
+            <span className="font-body-sm text-body-sm">Tính từ dữ liệu đang lọc</span>
           </div>
         </div>
 
@@ -137,7 +153,7 @@ export default function AdminTestResultsPage() {
             </div>
           </div>
           <div className="flex items-end gap-sm">
-            <h3 className="font-headline-h2 text-headline-h2 text-on-surface">72%</h3>
+            <h3 className="font-headline-h2 text-headline-h2 text-on-surface">{passRate}%</h3>
           </div>
           <div className="mt-xs flex items-center gap-xs text-on-surface-variant">
             <span className="font-body-sm text-body-sm">Trung bình hệ thống</span>
@@ -148,18 +164,8 @@ export default function AdminTestResultsPage() {
       <div className="bg-surface-container-lowest rounded-xl border border-outline-variant overflow-hidden">
         <div className="p-md border-b border-outline-variant flex flex-col sm:flex-row justify-between items-center gap-md bg-surface-bright">
           <h3 className="font-headline-h3 text-headline-h3 text-on-surface">Kết quả chi tiết</h3>
-          <div className="relative w-full sm:w-auto min-w-[250px] flex gap-2">
-            <div className="relative flex-1">
-              <span className="material-symbols-outlined absolute left-sm top-1/2 -translate-y-1/2 text-outline">search</span>
-              <input 
-                value={searchInput}
-                onChange={(e) => setSearchInput(e.target.value)}
-                onKeyDown={(e) => { if (e.key === 'Enter') { setPage(1); setSearch(searchInput); } }}
-                className="w-full pl-xl pr-md py-sm rounded-lg border border-outline-variant bg-surface focus:border-primary focus:ring-1 focus:ring-primary font-body-sm text-body-sm text-on-surface" 
-                placeholder="Tìm theo email, tên thi..." 
-                type="text"
-              />
-            </div>
+          <div className="flex w-full flex-col gap-3 sm:w-auto sm:flex-row sm:items-start">
+            <SearchInput value={searchInput} onChange={setSearchInput} onSearch={value => { setPage(1); setSearch(value); }} placeholder="Tìm kiếm theo email, tên bài thi…" />
             <select
               value={status}
               onChange={(e) => { setStatus(e.target.value); setPage(1); }}
@@ -176,10 +182,10 @@ export default function AdminTestResultsPage() {
             <thead>
               <tr className="border-b border-outline-variant bg-surface-container-lowest font-label-caps text-label-caps text-on-surface-variant uppercase">
                 <th className="p-md font-semibold min-w-[200px]">Học viên</th>
-                <th className="p-md font-semibold min-w-[200px]">Bài thi</th>
+                <th className="p-md font-semibold min-w-[200px]">Thi theo chủ đề</th>
                 <th className="p-md font-semibold">Điểm</th>
-                <th className="p-md font-semibold hidden sm:table-cell">Thời gian</th>
-                <th className="p-md font-semibold hidden md:table-cell">Nộp lúc</th>
+                <th className="p-md font-semibold hidden sm:table-cell">Thời gian làm bài</th>
+                <th className="p-md font-semibold hidden md:table-cell">Thời gian nộp</th>
                 <th className="p-md font-semibold">Kết quả</th>
                 <th className="p-md font-semibold text-right">Thao tác</th>
               </tr>
@@ -219,7 +225,7 @@ export default function AdminTestResultsPage() {
                       </td>
                       <td className="p-md">
                         <div className="flex flex-col">
-                          <span className="font-interface-sb text-interface-sb truncate max-w-[180px]">{r.exam?.title ?? 'Unknown Exam'}</span>
+                          <span className="font-interface-sb text-interface-sb truncate max-w-[180px]">{r.exam?.title ?? 'Bài thi không xác định'}</span>
                           <span className="text-[11px] text-on-surface-variant">{r.exam?.domain?.name ?? 'General IT'}</span>
                         </div>
                       </td>
@@ -233,11 +239,7 @@ export default function AdminTestResultsPage() {
                         {submittedDate ? new Date(submittedDate).toLocaleString('vi-VN') : '—'}
                       </td>
                       <td className="p-md">
-                        {isPassed ? (
-                          <span className="inline-flex items-center px-2 py-1 rounded-full bg-[#dcfce7] text-[#166534] font-interface-sb text-[11px]">Đạt</span>
-                        ) : (
-                          <span className="inline-flex items-center px-2 py-1 rounded-full bg-error-container text-on-error-container font-interface-sb text-[11px]">Không đạt</span>
-                        )}
+                        <StatusBadge status={isPassed ? 'passed' : 'failed'} />
                       </td>
                       <td className="p-md text-right">
                         <button 
@@ -256,30 +258,7 @@ export default function AdminTestResultsPage() {
           </table>
         </div>
 
-        {total > 0 && (
-          <div className="p-md border-t border-outline-variant bg-surface-container-lowest flex items-center justify-between">
-            <span className="font-body-sm text-body-sm text-on-surface-variant">
-              Hiển thị {(page - 1) * limit + 1}-{Math.min(page * limit, total)} của {total} kết quả
-            </span>
-            <div className="flex gap-xs">
-              <button 
-                disabled={page <= 1}
-                onClick={() => setPage(p => p - 1)}
-                className="p-sm rounded border border-outline-variant text-outline disabled:opacity-50 cursor-pointer"
-              >
-                <span className="material-symbols-outlined text-[18px]">chevron_left</span>
-              </button>
-              <button className="w-8 h-8 rounded bg-primary text-on-primary font-interface-sb text-interface-sb flex items-center justify-center">{page}</button>
-              <button 
-                disabled={page * limit >= total}
-                onClick={() => setPage(p => p + 1)}
-                className="p-sm rounded border border-outline-variant text-outline disabled:opacity-50 cursor-pointer"
-              >
-                <span className="material-symbols-outlined text-[18px]">chevron_right</span>
-              </button>
-            </div>
-          </div>
-        )}
+        {total > 0 && <Pagination page={page} limit={limit} total={total} totalPages={totalPages} onPageChange={setPage} onLimitChange={(value) => { setLimit(value); setPage(1); }} showQuickJumper />}
       </div>
       <div className="h-24 md:h-8"></div>
 

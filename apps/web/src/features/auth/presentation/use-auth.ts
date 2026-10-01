@@ -9,6 +9,7 @@ import { ApiAuthRepository } from '../infrastructure/api/api-auth-repository';
 export interface LoginFormState {
   email: string;
   password: string;
+  rememberMe?: boolean;
 }
 
 export function useAuth() {

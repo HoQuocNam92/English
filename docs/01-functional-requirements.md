@@ -22,7 +22,6 @@
 
 ### Lessons
 - Technical terminology.
-- Technical reading.
 - Case study.
 - API/technical documentation.
 - Basic system design.

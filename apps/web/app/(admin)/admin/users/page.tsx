@@ -1,15 +1,10 @@
 'use client';
 
 import * as React from 'react';
-import { Modal, PageHeader, Pagination, SearchInput } from '@/shared/ui';
+import { StatusBadge } from '@/shared/ui/StatusBadge';
+import { Badge, confirmDialog, Modal, PageHeader, Pagination, SearchInput } from '@/shared/ui';
 import { apiClient, ApiClientError } from '@/shared/api/api-client';
 import type { UserItem, PaginatedResponse } from '@/shared/api/api-client';
-
-const ROLE_LABELS: Record<string, { label: string; cls: string }> = {
-  admin: { label: 'Admin', cls: 'bg-red-100 text-red-700' },
-  teacher: { label: 'Giảng viên', cls: 'bg-blue-100 text-blue-700' },
-  learner: { label: 'Học viên', cls: 'bg-green-100 text-green-700' },
-};
 
 const STATUS_OPTS = [
   { value: '', label: 'Tất cả trạng thái' },
@@ -18,38 +13,11 @@ const STATUS_OPTS = [
   { value: 'inactive', label: 'Chưa kích hoạt' },
 ];
 
-const ROLE_OPTS = [
-  { value: '', label: 'Tất cả vai trò' },
-  { value: 'admin', label: 'Admin' },
-  { value: 'teacher', label: 'Giảng viên' },
-  { value: 'learner', label: 'Học viên' },
-];
-
 const CREATE_ROLE_OPTS = [
   { value: 'learner', label: 'Học viên' },
   { value: 'teacher', label: 'Giảng viên' },
   { value: 'admin', label: 'Quản trị viên' },
 ];
-
-function RoleBadge({ role }: { role: string }) {
-  const r = ROLE_LABELS[role] ?? { label: role, cls: 'bg-gray-100 text-gray-600' };
-  return <span className={`inline-flex px-2 py-0.5 rounded-full text-xs font-medium ${r.cls}`}>{r.label}</span>;
-}
-
-function StatusBadge({ status }: { status: string }) {
-  const map: Record<string, { label: string; dot: string }> = {
-    active: { label: 'Hoạt động', dot: 'bg-green-500' },
-    suspended: { label: 'Bị khoá', dot: 'bg-red-500' },
-    inactive: { label: 'Chưa kích hoạt', dot: 'bg-gray-400' },
-  };
-  const s = map[status] ?? { label: status, dot: 'bg-gray-400' };
-  return (
-    <span className="flex items-center gap-1.5 text-xs text-on-surface-variant">
-      <span className={`w-2 h-2 rounded-full ${s.dot}`} />
-      {s.label}
-    </span>
-  );
-}
 
 function SkeletonRow() {
   return (
@@ -291,7 +259,7 @@ export default function AdminUsersPage() {
   const [actionError, setActionError] = React.useState<string | null>(null);
   const [showCreateModal, setShowCreateModal] = React.useState(false);
   const [successMessage, setSuccessMessage] = React.useState<string | null>(null);
-  const limit = 15;
+  const [limit, setLimit] = React.useState(30);
 
   const totalPages = Math.ceil(total / limit);
 
@@ -314,7 +282,7 @@ export default function AdminUsersPage() {
     } finally {
       setLoading(false);
     }
-  }, [page, search, statusFilter, roleFilter]);
+  }, [page, limit, search, statusFilter, roleFilter]);
 
   React.useEffect(() => { void load(); }, [load]);
 
@@ -323,7 +291,7 @@ export default function AdminUsersPage() {
     const validErr = validateStatusChange(user.status, newStatus);
     if (validErr) { setActionError(validErr); return; }
 
-    if (!confirm(`${newStatus === 'suspended' ? 'Khoá' : 'Mở khoá'} tài khoản ${user.email}?`)) return;
+    if (!(await confirmDialog(`${newStatus === 'suspended' ? 'Khoá' : 'Mở khoá'} tài khoản ${user.email}?`, { title: 'Thay đổi trạng thái tài khoản', confirmLabel: newStatus === 'suspended' ? 'Khoá tài khoản' : 'Mở khoá', tone: newStatus === 'suspended' ? 'warning' : 'primary' }))) return;
 
     setActionLoading(user.id);
     setActionError(null);
@@ -342,6 +310,22 @@ export default function AdminUsersPage() {
     }
   };
 
+  const handleDelete = async (user: UserItem) => {
+    if (!(await confirmDialog(`Bạn có muốn xóa tài khoản ${user.email} hay không? Dữ liệu sẽ được giữ lại để kiểm toán nhưng người dùng không thể đăng nhập.`, { title: 'Xóa tài khoản người dùng', confirmLabel: 'Xóa tài khoản', tone: 'danger' }))) return;
+    setActionLoading(user.id);
+    setActionError(null);
+    try {
+      await apiClient.delete(`/users/${user.id}`);
+      setUsers((prev) => prev.filter((item) => item.id !== user.id));
+      setTotal((value) => Math.max(0, value - 1));
+      setSuccessMessage('Đã xóa tài khoản.');
+    } catch (e) {
+      setActionError(e instanceof ApiClientError ? e.message : 'Không thể xóa tài khoản');
+    } finally {
+      setActionLoading(null);
+    }
+  };
+
   const handleCreated = () => {
     setShowCreateModal(false);
     setSuccessMessage('Tạo tài khoản thành công!');
@@ -352,19 +336,13 @@ export default function AdminUsersPage() {
   return (
     <main className="flex-1 p-6 lg:p-9 flex flex-col gap-7 w-full">
       {/* Page Header & Actions */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-md">
-        <div>
-          <h2 className="text-[28px] leading-9 font-bold tracking-[-0.025em] text-on-surface">Quản lý người dùng</h2>
-          <p className="text-sm text-on-surface-variant mt-1.5">Quản lý danh sách học viên, giảng viên và quản trị viên.</p>
-        </div>
-        <button
+      <PageHeader title="Quản lý người dùng" description="Quản lý danh sách học viên, giảng viên và quản trị viên." icon="manage_accounts" iconClassName="from-teal-500 to-emerald-600" action={<button
           onClick={() => setShowCreateModal(true)}
           className="flex h-11 items-center justify-center gap-2 text-on-primary px-5 rounded-xl text-sm font-semibold hover:bg-primary-container transition-all shadow-[0_8px_18px_rgba(53,37,205,0.18)] hover:-translate-y-0.5 whitespace-nowrap bg-primary"
         >
           <span className="material-symbols-outlined">add</span>
           Thêm người dùng
-        </button>
-      </div>
+        </button>} />
 
       {successMessage && (
         <div className="p-3 rounded-xl bg-green-100 text-green-800 text-sm flex items-center gap-2">
@@ -417,17 +395,7 @@ export default function AdminUsersPage() {
 
         {/* Toolbar */}
         <div className="p-5 flex flex-col md:flex-row gap-4 justify-between items-center bg-surface-container-low/55">
-          <div className="relative w-full">
-            <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-outline">search</span>
-            <input
-              value={searchInput}
-              onChange={(e) => setSearchInput(e.target.value)}
-              onKeyDown={(e) => { if (e.key === 'Enter') { setPage(1); setSearch(searchInput); } }}
-              className="w-full md:w-80 h-10 pl-10 pr-4 bg-surface-container-lowest rounded-xl border border-outline-variant/70 focus:border-primary focus:ring-4 focus:ring-primary/10 focus:outline-none transition-all text-sm"
-              placeholder="Tìm theo tên, email..."
-              type="text"
-            />
-          </div>
+          <SearchInput value={searchInput} onChange={setSearchInput} onSearch={value => { setPage(1); setSearch(value); }} placeholder="Tìm kiếm theo tên, email…" />
           <div className="flex w-full md:w-auto justify-end gap-sm ml-auto">
             <select
               value={statusFilter}
@@ -441,15 +409,15 @@ export default function AdminUsersPage() {
 
         {/* Data Table */}
         <div className="overflow-x-auto w-full">
-          <table className="w-full text-left border-collapse">
+          <table className="w-full table-fixed text-left border-collapse">
             <thead>
               <tr className="bg-surface-container-low/75 border-y border-outline-variant/50">
-                <th className="p-md font-interface-sb text-interface-sb text-on-surface-variant">Người dùng</th>
-                <th className="p-md font-interface-sb text-interface-sb text-on-surface-variant">Email</th>
-                <th className="p-md font-interface-sb text-interface-sb text-on-surface-variant">Vai trò</th>
-                <th className="p-md font-interface-sb text-interface-sb text-on-surface-variant">Trạng thái</th>
-                <th className="p-md font-interface-sb text-interface-sb text-on-surface-variant">Ngày tạo</th>
-                <th className="p-md font-interface-sb text-interface-sb text-on-surface-variant text-right">Hành động</th>
+                <th className="w-[23%] p-md font-interface-sb text-interface-sb text-on-surface-variant">Người dùng</th>
+                <th className="w-[23%] p-md font-interface-sb text-interface-sb text-on-surface-variant">Email</th>
+                <th className="w-[13%] p-md font-interface-sb text-interface-sb text-on-surface-variant">Vai trò</th>
+                <th className="w-[11%] p-md font-interface-sb text-interface-sb text-on-surface-variant">Trạng thái</th>
+                <th className="w-[12%] p-md font-interface-sb text-interface-sb text-on-surface-variant">Ngày tạo</th>
+                <th className="w-[18%] p-md font-interface-sb text-interface-sb text-on-surface-variant text-right">Hành động</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-outline-variant">
@@ -473,48 +441,40 @@ export default function AdminUsersPage() {
                         <span className="font-interface-sb text-interface-sb text-on-surface truncate">{user.displayName ?? '—'}</span>
                       </div>
                     </td>
-                    <td className="px-5 py-4 text-sm text-on-surface-variant">{user.email}</td>
+                    <td className="truncate px-5 py-4 text-sm text-on-surface-variant" title={user.email}>{user.email}</td>
                     <td className="px-5 py-4">
                       <div className="flex flex-wrap gap-1">
-                        {user.roles?.map((r) => {
-                          let cls = 'bg-surface-container-highest text-outline border-outline-variant';
-                          let label = r;
-                          if (r === 'learner') { cls = 'bg-secondary-fixed text-on-secondary-fixed'; label = 'Người học'; }
-                          else if (r === 'teacher') { cls = 'bg-tertiary-fixed text-on-tertiary-fixed'; label = 'Giảng viên'; }
-                          else if (r === 'admin') { cls = 'bg-primary-container text-on-primary'; label = 'Admin'; }
-                          return (
-                            <span key={r} className={`inline-flex items-center px-2 py-1 rounded-full font-label-caps text-label-caps ${cls}`}>
-                              {label}
-                            </span>
-                          );
-                        }) ?? <span className="text-on-surface-variant text-xs">—</span>}
+                        {user.roles?.map(r => <Badge key={r} tone="primary">{{ learner: 'Người học', teacher: 'Giảng viên', admin: 'Quản trị viên' }[r] ?? r}</Badge>) ?? <span className="text-on-surface-variant text-xs">—</span>}
                       </div>
                     </td>
                     <td className="px-5 py-4">
-                      <span className={`inline-flex items-center px-2 py-1 rounded-full font-label-caps text-label-caps border ${
-                        user.status === 'active' ? 'bg-[#E6F4EA] text-[#137333] border-[#CEEAD6]' :
-                        user.status === 'suspended' ? 'bg-[#FCE8E6] text-[#C5221F] border-[#FAD2CF]' :
-                        'bg-surface-container-highest text-outline border-outline-variant'
-                      }`}>
-                        {user.status === 'active' ? 'Active' : user.status === 'suspended' ? 'Suspended' : 'Inactive'}
-                      </span>
+                      <StatusBadge status={user.status} />
                     </td>
                     <td className="px-5 py-4 text-sm text-on-surface-variant">
                       {new Date(user.createdAt).toLocaleDateString('vi-VN')}
                     </td>
                     <td className="px-5 py-4 text-right">
                       {!user.roles?.includes('admin') && (
-                        <button
-                          disabled={actionLoading === user.id}
-                          onClick={() => handleToggleStatus(user)}
-                          className={`text-xs px-2.5 py-1 rounded-lg border transition-colors ${
-                            user.status === 'active'
-                              ? 'border-red-200 text-red-600 hover:bg-red-50'
-                              : 'border-green-200 text-green-600 hover:bg-green-50'
-                          } disabled:opacity-50`}
-                        >
-                          {actionLoading === user.id ? '...' : user.status === 'active' ? 'Khoá' : 'Mở khoá'}
-                        </button>
+                        <div className="flex justify-end gap-2">
+                          <button
+                            disabled={actionLoading === user.id}
+                            onClick={() => handleToggleStatus(user)}
+                            className={`text-xs px-2.5 py-1 rounded-lg border transition-colors ${
+                              user.status === 'active'
+                                ? 'border-amber-200 text-amber-700 hover:bg-amber-50'
+                                : 'border-green-200 text-green-600 hover:bg-green-50'
+                            } disabled:opacity-50`}
+                          >
+                            {actionLoading === user.id ? '...' : user.status === 'active' ? 'Khoá' : 'Mở khoá'}
+                          </button>
+                          <button
+                            disabled={actionLoading === user.id}
+                            onClick={() => handleDelete(user)}
+                            className="text-xs px-2.5 py-1 rounded-lg border border-red-200 text-red-600 hover:bg-red-50 disabled:opacity-50"
+                          >
+                            Xóa
+                          </button>
+                        </div>
                       )}
                     </td>
                   </tr>
@@ -525,7 +485,7 @@ export default function AdminUsersPage() {
         </div>
 
         {/* Pagination */}
-        {totalPages > 0 && <Pagination page={page} limit={limit} total={total} totalPages={totalPages} onPageChange={setPage} />}
+        {total > 0 && <Pagination page={page} limit={limit} total={total} totalPages={totalPages} onPageChange={setPage} onLimitChange={(value) => { setLimit(value); setPage(1); }} showQuickJumper />}
       </div>
 
       {showCreateModal && (

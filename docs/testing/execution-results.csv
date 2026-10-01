@@ -1,0 +1,2 @@
+﻿run_id,case_id,build_commit,environment,platform_version,dataset_variant,executed_at,tester,status,actual_result,evidence,bug_id
+,AUTH-001,,,,,,,Chưa chạy,,,

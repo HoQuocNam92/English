@@ -16,82 +16,31 @@ export default function LearnerHomePage() {
   useEffect(() => {
     async function loadData() {
       try {
-        const [meRes, profileRes, progressRes, attemptsRes, recsRes] = await Promise.allSettled([
+        const [meRes, profileRes, progressRes, attemptsRes, recsRes, journeyRes, certificatesRes] = await Promise.allSettled([
           apiClient.get('/auth/me'),
           apiClient.get('/learner-profiles/me'),
           apiClient.get('/progress/me'),
           apiClient.get('/exams/attempts/my?limit=3'),
           apiClient.get('/recommendations/me'),
+          apiClient.get('/learner-profiles/me/journey'),
+          apiClient.get('/certificates'),
         ]);
 
         const get = (r: PromiseSettledResult<any>) =>
           r.status === 'fulfilled' ? r.value : null;
 
         const profileData = get(profileRes);
-        const levelCode = profileData?.level?.code;
-        const domainCodes = (profileData?.domains ?? [])
-          .map((d: any) => d.domain?.code)
-          .filter(Boolean);
-        const domainParam = domainCodes.length > 0
-          ? encodeURIComponent(domainCodes.join(','))
-          : undefined;
-
-        let lessonsData: any = null;
-        try {
-          // Ưu tiên 1: Khớp cả Domain đã chọn và Level
-          let primaryUrl = '/lessons?limit=4&status=published';
-          if (domainParam && levelCode) {
-            primaryUrl += `&domainCode=${domainParam}&levelCode=${levelCode}`;
-          } else if (domainParam) {
-            primaryUrl += `&domainCode=${domainParam}`;
-          } else if (levelCode) {
-            primaryUrl += `&levelCode=${levelCode}`;
-          }
-
-          const res: any = await apiClient.get(primaryUrl);
-          let data = res?.data ?? res ?? [];
-          if (!Array.isArray(data)) data = [];
-
-          // Ưu tiên 2: Nếu chưa đủ 4 bài và có chọn domain, lấy thêm bài cùng domain để ưu tiên đúng chuyên ngành
-          if (domainParam && data.length < 4) {
-            const moreRes: any = await apiClient.get(`/lessons?limit=4&status=published&domainCode=${domainParam}`).catch(() => null);
-            const moreData = moreRes?.data ?? moreRes ?? [];
-            if (Array.isArray(moreData) && moreData.length > 0) {
-              const existingIds = new Set(data.map((l: any) => l.id));
-              for (const item of moreData) {
-                if (!existingIds.has(item.id)) {
-                  data.push(item);
-                  existingIds.add(item.id);
-                  if (data.length >= 4) break;
-                }
-              }
-            }
-          }
-
-          // Fallback: Chỉ khi không có bài nào thuộc domain mới fallback theo level tổng quát
-          if (data.length === 0) {
-            const fallbackUrl = levelCode
-              ? `/lessons?limit=4&status=published&levelCode=${levelCode}`
-              : '/lessons?limit=4&status=published';
-            const fallback: any = await apiClient.get(fallbackUrl).catch(() => []);
-            data = fallback?.data ?? fallback ?? [];
-          }
-
-          lessonsData = Array.isArray(data) ? data : [];
-        } catch {
-          const fallback: any = await apiClient.get('/lessons?limit=4&status=published').catch(() => []);
-          lessonsData = fallback?.data ?? fallback ?? [];
-        }
-
         const recsData = get(recsRes);
+        const certificatesData = get(certificatesRes);
 
         setData({
           me: get(meRes),
           profile: profileData,
           progress: get(progressRes),
-          lessons: Array.isArray(lessonsData) ? lessonsData : [],
+          certificates: Array.isArray(certificatesData?.data) ? certificatesData.data : [],
           attempts: (() => { const d = get(attemptsRes); return d?.data ?? d ?? []; })(),
           recommendations: Array.isArray(recsData?.recommendations) ? recsData.recommendations : [],
+          journey: get(journeyRes),
         });
       } catch (err: any) {
         setError(err?.message ?? 'Không thể tải dữ liệu');
@@ -101,6 +50,23 @@ export default function LearnerHomePage() {
     }
     loadData();
   }, []);
+
+  useEffect(() => {
+    const reminderTime = data?.journey?.targets?.reminderTime;
+    if (!data?.journey?.targets?.reminderEnabled || !reminderTime || typeof window === 'undefined') return;
+    const checkReminder = () => {
+      const now = new Date();
+      const current = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
+      const key = `learning-reminder-${now.toISOString().slice(0, 10)}`;
+      if (current === reminderTime && !localStorage.getItem(key) && 'Notification' in window && Notification.permission === 'granted') {
+        new Notification('Đến giờ học TechEnglish Pro', { body: 'Hãy tiếp tục hành trình và hoàn thành mục tiêu hôm nay nhé!' });
+        localStorage.setItem(key, 'sent');
+      }
+    };
+    checkReminder();
+    const timer = window.setInterval(checkReminder, 30000);
+    return () => window.clearInterval(timer);
+  }, [data?.journey]);
 
   if (loading) return <LearnerShell><LoadingSpinner /></LearnerShell>;
 
@@ -123,38 +89,17 @@ export default function LearnerHomePage() {
   const displayName = data?.me?.displayName ?? data?.me?.user?.displayName ?? 'bạn';
   const profile = data?.profile;
   const progress = data?.progress;
-  const lessons: any[] = data?.lessons ?? [];
+  const certificates: any[] = data?.certificates ?? [];
   const attempts: any[] = data?.attempts ?? [];
-  const recommendations: any[] = data?.recommendations ?? [];
-  const lessonProgressById = new Map((progress?.progress || []).filter((item: any) => item.resourceType === 'lesson').map((item: any) => [item.resourceId, item]));
+  const recommendations: any[] = (data?.recommendations ?? []).filter((item: any) => item.type !== 'lesson');
+  const journey = data?.journey;
+  const journeyConfigured = journey?.configured === true;
+  const smartPath = journey?.targets?.learningPathMode !== 'self';
+  const certificateProgressById = new Map((progress?.certProgress || []).map((item: any) => [item.certificateId, item]));
 
   const level = profile?.level?.name ?? profile?.level ?? 'Chưa thiết lập';
   const domain = profile?.domains?.[0]?.domain?.name ?? profile?.domain?.name ?? profile?.itField ?? 'Chưa thiết lập';
   const cert = profile?.certGoals?.[0]?.certificate?.name ?? profile?.targetCertification?.name ?? profile?.targetCert ?? 'Chưa thiết lập';
-  const overallProgress = progress?.summary?.overallCompletionPercent ?? progress?.overallPercent ?? 0;
-
-  // Xây dựng danh sách hoạt động gần đây thực tế từ tiến độ học & bài thi
-  const lessonById = new Map(lessons.map((l: any) => [l.id, l]));
-  const progressItems = Array.isArray(progress?.progress) ? progress.progress : [];
-
-  const lessonActivities = progressItems
-    .filter((p: any) => p.resourceType === 'lesson')
-    .map((p: any) => {
-      const lesson = p.lesson || lessonById.get(p.resourceId);
-      const title = lesson?.title || p.title || 'Bài học chuyên ngành';
-      const isDone = p.status === 'completed' || (p.completionPercent ?? 0) >= 100;
-      const time = p.completedAt || p.updatedAt || p.startedAt;
-      return {
-        id: `lesson-${p.id || p.resourceId}`,
-        text: isDone ? t.lessons.lessonComplete : 'Đang học bài',
-        bold: title,
-        timestamp: time ? new Date(time).getTime() : 0,
-        when: formatRelativeDate(time),
-        done: isDone,
-        link: `/learn/lessons/${p.resourceId}`,
-      };
-    });
-
   const examActivities = attempts.map((a: any) => {
     const title = a.exam?.title ?? a.examTitle ?? t.practice.exams;
     const scoreVal = a.score ?? a.correctCount;
@@ -171,7 +116,7 @@ export default function LearnerHomePage() {
     };
   });
 
-  const recentActivities = [...lessonActivities, ...examActivities]
+  const recentActivities = examActivities
     .sort((a, b) => b.timestamp - a.timestamp)
     .slice(0, 4);
 
@@ -189,17 +134,17 @@ export default function LearnerHomePage() {
         {/* Stat Cards — 3 col */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           {[
-            { icon: 'school', label: t.home.level, value: level, bg: 'bg-primary-container/20', text: 'text-primary' },
-            { icon: 'cloud', label: t.home.itField, value: domain, bg: 'bg-secondary-container/20', text: 'text-secondary' },
-            { icon: 'workspace_premium', label: t.home.certGoal, value: cert, bg: 'bg-tertiary-container/20', text: 'text-tertiary' },
+            { icon: '🎓', label: t.home.level, value: level, bg: 'bg-gradient-to-br from-indigo-100 to-violet-200' },
+            { icon: '💻', label: t.home.itField, value: domain, bg: 'bg-gradient-to-br from-sky-100 to-cyan-200' },
+            { icon: '🏆', label: t.home.certGoal, value: cert, bg: 'bg-gradient-to-br from-amber-100 to-orange-200' },
           ].map((s) => (
             <div
 
               key={s.label}
               className="bg-surface-container border border-outline-variant rounded-lg p-4 flex items-center gap-4 hover:shadow-[0_1px_3px_rgba(15,23,24,0.06)] transition-shadow"
             >
-              <div className={`w-12 h-12 rounded-full ${s.bg} ${s.text} flex items-center justify-center`}>
-                <span className="material-symbols-outlined" style={{ fontVariationSettings: "'FILL' 1" }}>{s.icon}</span>
+              <div className={`w-12 h-12 rounded-full ${s.bg} flex items-center justify-center shadow-xs ring-1 ring-white/70`}>
+                <span className="text-2xl leading-none" aria-hidden="true">{s.icon}</span>
               </div>
               <div>
                 <p className="text-[12px] font-bold text-on-surface-variant uppercase tracking-[0.05em]">{s.label}</p>
@@ -225,60 +170,53 @@ export default function LearnerHomePage() {
               <div className="flex justify-between items-start mb-4">
                 <div>
                   <span className="inline-block px-2 py-1 bg-surface-container-low text-on-surface-variant text-[12px] font-bold rounded mb-2 border border-border-subtle uppercase tracking-[0.05em]">
-                    {t.home.todayGoal}
+                    {journeyConfigured ? t.home.todayGoal : 'Thiết lập hành trình'}
                   </span>
                   <h2 className="text-[24px] font-bold text-on-surface" style={{ lineHeight: '32px', letterSpacing: '-0.01em' }}>
-                    {cert && cert !== 'Chưa thiết lập' ? cert : 'Chưa thiết lập mục tiêu chứng chỉ'}
+                    {journeyConfigured ? 'Mục tiêu học tập hôm nay' : 'Bạn chưa thiết lập lộ trình học tập'}
                   </h2>
                 </div>
-                <span className="material-symbols-outlined text-primary text-3xl">
-                  {cert && cert !== 'Chưa thiết lập' ? 'cloud_done' : 'flag'}
-                </span>
+                <span className="text-3xl" aria-hidden="true">{journeyConfigured ? '🗓️' : '🚩'}</span>
               </div>
               <p className="text-[14px] text-on-surface-variant mb-4">
-                {cert && cert !== 'Chưa thiết lập'
-                  ? `Hoàn thành lộ trình này để nắm vững các thuật ngữ cốt lõi và khái niệm cơ bản về ${cert} bằng tiếng Anh chuyên ngành.`
+                {journeyConfigured
+                  ? `Hôm nay: ${journey.targets.vocabularyPerDay} từ vựng, ${journey.targets.minutesPerDay} phút học. Mục tiêu bài thi: ${journey.targets.examsPerWeek}/tuần, ${journey.targets.examsPerMonth}/tháng và ${journey.targets.examsPerYear}/năm.`
                   : 'Hãy thiết lập trình độ, lĩnh vực CNTT và chứng chỉ mục tiêu trong hồ sơ để TechEnglish Pro cá nhân hoá nội dung học tập tối ưu cho bạn.'}
               </p>
             </div>
 
-            <div className="z-10 mt-auto">
-              <div className="flex justify-between items-center mb-1">
-                <span className="text-[14px] font-semibold text-on-surface">{t.nav.progress}</span>
-                <span className="text-[14px] font-semibold text-primary">{overallProgress}%</span>
-              </div>
-              <div className="w-full bg-surface-container h-2 rounded-full mb-4 overflow-hidden">
-                <div className="bg-primary h-2 rounded-full" style={{ width: `${overallProgress}%` }} />
-              </div>
+            {journeyConfigured ? <div className="z-10 mt-auto space-y-3">
+              {[
+                ['Từ vựng hôm nay', journey.progress.vocabularyToday, journey.targets.vocabularyPerDay, journey.progress.vocabularyPercent],
+                ['Thời gian học hôm nay', journey.progress.studyMinutesToday, journey.targets.minutesPerDay, journey.progress.studyMinutesPercent],
+                ['Bài thi tuần này', journey.progress.examsWeek, journey.targets.examsPerWeek, journey.progress.examWeekPercent],
+              ].map(([label, value, target, percent]) => (
+                <div key={String(label)}>
+                  <div className="mb-1 flex justify-between text-xs font-semibold"><span>{label}: {value}/{target}</span><span className="text-primary">{percent}%</span></div>
+                  <div className="h-2 overflow-hidden rounded-full bg-surface-container-highest"><div className="h-full rounded-full bg-primary" style={{ width: `${percent}%` }} /></div>
+                </div>
+              ))}
+              {journey.targets.reminderEnabled && journey.targets.reminderTime && <p className="flex items-center gap-1.5 text-xs font-semibold text-violet-700"><span className="text-base" aria-hidden="true">🔔</span>Nhắc học lúc {journey.targets.reminderTime} mỗi ngày</p>}
+              <Link href="/learn/profile?tab=goals" className="inline-flex items-center gap-2 rounded-lg bg-primary px-5 py-2 text-sm font-semibold text-white">Điều chỉnh mục tiêu<span className="text-lg" aria-hidden="true">⚙️</span></Link>
+            </div> : <div className="z-10 mt-auto">
               <div className="flex items-center gap-3">
                 <Link
-                  href="/learn/lessons"
-                  className="inline-flex items-center gap-2 px-6 py-2 bg-primary text-white rounded-lg text-[14px] font-semibold hover:opacity-90 active:opacity-80 transition-opacity"
-                >
-                  <span className="text-white">
-                    {overallProgress > 0 ? t.home.continueLearn : t.home.startLearn}
-                  </span>
-                  <span className="material-symbols-outlined text-[18px] text-white">arrow_forward</span>
-                </Link>
-                {(!cert || cert === 'Chưa thiết lập') && (
-                  <Link
-                    href="/learn/profile"
-                    className="inline-flex items-center gap-1.5 px-4 py-2 border border-primary text-primary rounded-lg text-[14px] font-semibold hover:bg-primary-light transition-colors"
+                    href="/learn/profile?tab=goals"
+                    className="inline-flex items-center gap-2 rounded-lg bg-primary px-5 py-2.5 text-[14px] font-semibold text-white hover:opacity-90 transition-opacity"
                   >
-                    <span>Thiết lập mục tiêu ngay</span>
-                    <span className="material-symbols-outlined text-[16px]">tune</span>
+                    <span>Thiết lập lộ trình học tập</span>
+                    <span className="text-[16px]" aria-hidden="true">⚙️</span>
                   </Link>
-                )}
               </div>
-            </div>
+            </div>}
           </div>
 
           {/* ─── Gợi ý học tập thích ứng (Adaptive Learning Recommendations) ─── */}
-          <div className="bg-surface-container border border-outline-variant rounded-xl p-6 relative overflow-hidden">
+          {journeyConfigured && smartPath && <div className="hidden bg-surface-container border border-outline-variant rounded-xl p-6 relative overflow-hidden">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-4">
               <div>
                 <div className="flex items-center gap-2">
-                  <span className="material-symbols-outlined text-violet-600 text-[22px]">auto_awesome</span>
+                  <span className="text-[22px]" aria-hidden="true">✨</span>
                   <h3 className="text-[20px] font-bold text-on-surface" style={{ lineHeight: '28px' }}>
                     Gợi ý học tập dành cho bạn
                   </h3>
@@ -288,7 +226,7 @@ export default function LearnerHomePage() {
                 </p>
               </div>
               <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-violet-100 text-violet-700 border border-violet-200 w-fit">
-                <span className="material-symbols-outlined text-[15px]">psychology</span>
+                <span className="text-[15px]" aria-hidden="true">🧠</span>
                 Cá nhân hoá theo năng lực
               </span>
             </div>
@@ -304,9 +242,9 @@ export default function LearnerHomePage() {
                     : isHigh
                       ? 'bg-violet-100 text-violet-800 border-violet-200'
                       : 'bg-emerald-100 text-emerald-800 border-emerald-200';
-                  const priorityIcon = isUrgent ? 'error' : isHigh ? 'psychology' : 'recommend';
+                  const priorityIcon = isUrgent ? '🚨' : isHigh ? '🧠' : '🎯';
 
-                  const typeLabel = rec.type === 'lesson' ? 'Bài học' : rec.type === 'exam' ? 'Bài kiểm tra' : rec.type === 'vocab' ? 'Từ vựng' : 'Tình huống';
+                  const typeLabel = rec.type === 'lesson' ? 'Bài học' : rec.type === 'exam' ? 'Quiz chứng chỉ' : rec.type === 'vocab' ? 'Từ vựng' : 'Tình huống';
 
                   return (
                     <div
@@ -322,7 +260,7 @@ export default function LearnerHomePage() {
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2 flex-wrap mb-1.5">
                           <span className={`inline-flex items-center gap-1 text-[11px] font-bold px-2.5 py-0.5 rounded-full border ${priorityClass}`}>
-                            <span className="material-symbols-outlined text-[13px]">{priorityIcon}</span>
+                            <span className="text-[13px]" aria-hidden="true">{priorityIcon}</span>
                             {priorityLabel}
                           </span>
                           <span className="text-[11px] font-semibold px-2 py-0.5 rounded bg-surface-container text-on-surface-variant border border-outline-variant/40">
@@ -370,7 +308,7 @@ export default function LearnerHomePage() {
                           }`}
                         >
                           <span>{rec.actionText}</span>
-                          <span className="material-symbols-outlined text-[16px]">arrow_forward</span>
+                          <span className="text-[16px]" aria-hidden="true">🚀</span>
                         </Link>
                       </div>
                     </div>
@@ -379,89 +317,72 @@ export default function LearnerHomePage() {
               </div>
             ) : (
               <div className="text-center py-6 border border-dashed border-outline-variant/60 rounded-xl bg-surface-container-low">
-                <span className="material-symbols-outlined text-3xl text-on-surface-variant/70 mb-2">lightbulb</span>
+                <span className="mb-2 block text-3xl" aria-hidden="true">💡</span>
                 <p className="text-sm font-semibold text-on-surface">Đang cập nhật gợi ý học tập</p>
                 <p className="text-xs text-on-surface-variant mt-1">
-                  Hãy tiếp tục học các bài học hoặc làm bài kiểm tra để hệ thống phân tích và đề xuất nội dung cần củng cố cho bạn.
+                  Hãy luyện từ vựng hoặc làm bài thi chứng chỉ để hệ thống phân tích và đề xuất nội dung cần củng cố cho bạn.
                 </p>
               </div>
             )}
-          </div>
+          </div>}
 
-          {/* Tiếp tục học / Bài học đề xuất — Lesson Grid */}
-          <div>
+          {/* Lộ trình chứng chỉ — bài học chỉ xuất hiện sau khi chọn Topic trong chứng chỉ */}
+          {journeyConfigured ? <div>
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-4">
               <h3 className="text-[20px] font-semibold text-on-surface" style={{ lineHeight: '28px' }}>
-                {lessons.slice(0, 4).some((l: any) => {
-                  const p = Math.round((lessonProgressById.get(l.id) as any)?.completionPercent ?? 0);
-                  return p > 0 && p < 100;
-                }) ? t.home.continueLearn : t.home.recommendedLessons}
+                Lộ trình chứng chỉ
               </h3>
-              {(domain !== 'Chưa thiết lập' || profile?.level?.name) && (
+              {cert !== 'Chưa thiết lập' && (
                 <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-primary/10 text-primary border border-primary/20 w-fit">
-                  <span className="material-symbols-outlined text-[15px]">recommend</span>
-                  {domain !== 'Chưa thiết lập'
-                    ? `Đề xuất theo chuyên ngành: ${domain}${profile?.level?.name ? ` • ${profile.level.name}` : ''}`
-                    : `Đề xuất theo trình độ: ${profile?.level?.name}`}
+                  <span className="text-[15px]" aria-hidden="true">🏆</span>
+                  Mục tiêu: {cert}
                 </span>
               )}
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              {lessons.length > 0 ? lessons.slice(0, 4).map((lesson: any) => {
-                const lessonProgress = Math.round((lessonProgressById.get(lesson.id) as any)?.completionPercent ?? 0);
-                const domain = lesson.domain?.name ?? lesson.domain?.code ?? 'IT';
-                const lessonLevelName = lesson.level?.name ?? lesson.level?.code ?? '';
-                const buttonLabel = lessonProgress >= 100
-                  ? t.lessons.reviewLesson
-                  : lessonProgress > 0
-                    ? t.common.continue
-                    : t.lessons.startLesson;
+              {certificates.length > 0 ? certificates.slice(0, 4).map((certificate: any) => {
+                const certificateProgress = certificateProgressById.get(certificate.id) as any;
+                const progressPercent = Math.round(certificateProgress?.completionPercent ?? certificateProgress?.avgScore ?? 0);
+                const domainNames = (certificate.domains ?? []).map((item: any) => item.domain?.name).filter(Boolean).join(' · ');
                 return (
                   <Link
-                    key={lesson.id}
-                    href={`/learn/lessons/${lesson.id}`}
-                    className="bg-surface-container border border-outline-variant rounded-lg overflow-hidden hover:shadow-[0_1px_3px_rgba(15,23,24,0.06)] transition-shadow flex flex-col"
+                    key={certificate.id}
+                    href={`/learn/certifications/${certificate.id}`}
+                    className="bg-surface-container border border-outline-variant rounded-lg p-5 hover:shadow-[0_1px_3px_rgba(15,23,24,0.08)] hover:border-primary/40 transition-all flex flex-col"
                   >
-                    {/* Thumbnail */}
-                    <div className="w-full h-32 bg-surface-container-low border-b border-outline-variant relative overflow-hidden">
-                      <div className="absolute inset-0 bg-gradient-to-br from-primary/10 to-surface-container flex items-center justify-center">
-                        <span className="material-symbols-outlined text-primary opacity-30" style={{ fontSize: '64px' }}>auto_stories</span>
+                    <div className="mb-4 flex items-start gap-3">
+                      <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-amber-100 to-orange-200 ring-1 ring-amber-200/70">
+                        <span className="text-2xl" aria-hidden="true">🏅</span>
                       </div>
-                      <div className="absolute top-2 left-2 flex items-center gap-1.5 flex-wrap max-w-[90%]">
-                        <span className="bg-surface-container/90 backdrop-blur text-primary text-[11px] font-bold px-2 py-0.5 rounded border border-outline-variant">
-                          {domain}
-                        </span>
-                        {lessonLevelName ? (
-                          <span className="bg-primary/90 backdrop-blur text-white text-[11px] font-bold px-2 py-0.5 rounded">
-                            {lessonLevelName}
-                          </span>
-                        ) : null}
+                      <div className="min-w-0">
+                        <span className="text-[11px] font-bold uppercase tracking-wide text-primary">{certificate.code}</span>
+                        <h4 className="line-clamp-2 text-[15px] font-bold text-on-surface">{certificate.name}</h4>
+                        <p className="mt-0.5 text-[12px] text-on-surface-variant">{certificate.provider}</p>
                       </div>
                     </div>
-
-                    <div className="p-4 flex flex-col flex-grow">
-                      <h4 className="text-[14px] font-semibold text-on-surface mb-1 truncate">{lesson.title}</h4>
-                      <p className="text-[12px] text-on-surface-variant mb-4 flex-grow line-clamp-2">
-                        {lesson.summary ?? lesson.description ?? ''}
-                      </p>
-                      <div className="mb-2">
-                        <div className="flex justify-between items-center mb-1">
-                          <span className="text-[12px] font-bold text-on-surface-variant uppercase tracking-[0.05em]">{t.nav.progress}</span>
-                          <span className="text-[12px] font-bold text-primary">{lessonProgress}%</span>
-                        </div>
-                        <div className="w-full bg-surface-container h-1.5 rounded-full overflow-hidden">
-                          <div className="bg-primary h-1.5 rounded-full" style={{ width: `${lessonProgress}%` }} />
-                        </div>
+                    <p className="mb-4 line-clamp-1 text-[12px] text-on-surface-variant">{domainNames || 'Chứng chỉ CNTT quốc tế'}</p>
+                    <div className="mt-auto">
+                      <div className="mb-1 flex items-center justify-between">
+                        <span className="text-[11px] font-bold uppercase tracking-wide text-on-surface-variant">Mức độ sẵn sàng</span>
+                        <span className="text-[12px] font-bold text-primary">{progressPercent}%</span>
                       </div>
-                      <button className="w-full text-center py-1.5 border border-outline-variant text-on-surface text-[14px] font-semibold rounded hover:bg-surface-container-low transition-colors">
-                        {buttonLabel}
-                      </button>
+                      <div className="h-1.5 overflow-hidden rounded-full bg-surface-container-highest">
+                        <div className="h-full rounded-full bg-primary" style={{ width: `${progressPercent}%` }} />
+                      </div>
+                      <div className="mt-4 flex items-center justify-end gap-1 text-[13px] font-bold text-primary">
+                        Xem lộ trình <span className="text-[16px]" aria-hidden="true">➡️</span>
+                      </div>
                     </div>
                   </Link>
                 );
-              }) : <p className="col-span-2 rounded-lg border border-outline-variant bg-surface-container p-6 text-sm text-on-surface-variant">Chưa có bài học đã xuất bản.</p>}
+              }) : <p className="col-span-2 rounded-lg border border-outline-variant bg-surface-container p-6 text-sm text-on-surface-variant">Chưa có chứng chỉ đang hoạt động.</p>}
             </div>
-          </div>
+          </div> : <div className="rounded-xl border border-dashed border-outline-variant bg-surface-container-low p-6 text-center">
+            <span className="mb-2 block text-4xl" aria-hidden="true">🏆</span>
+            <h3 className="text-base font-bold text-on-surface">Chọn chứng chỉ mục tiêu</h3>
+            <p className="mt-1 text-xs text-on-surface-variant">Chọn chứng chỉ để học theo lộ trình Domain → Topic → Lesson và luyện đề.</p>
+            <Link href="/learn/certifications" className="mt-4 inline-flex items-center gap-1 rounded-lg border border-primary px-4 py-2 text-sm font-bold text-primary">Xem chứng chỉ<span className="text-base" aria-hidden="true">➡️</span></Link>
+          </div>}
         </section>
 
         <aside className="lg:col-span-4 flex flex-col gap-6">
@@ -469,8 +390,8 @@ export default function LearnerHomePage() {
           {/* Kết quả kiểm tra gần đây */}
           <div>
             <h3 className="text-[14px] font-semibold text-on-surface mb-2 flex items-center gap-1">
-              <span className="material-symbols-outlined text-on-surface-variant text-[18px]">assignment_turned_in</span>
-              {t.practice.exams}
+              <span className="text-[18px]" aria-hidden="true">📋</span>
+              Kết quả kiểm tra gần đây
             </h3>
             <div className="flex flex-col gap-2">
               {attempts.length > 0 ? attempts.slice(0, 3).map((a: any) => (
@@ -486,7 +407,7 @@ export default function LearnerHomePage() {
                   </div>
                   <div className="flex flex-col items-end">
                     <span className="text-[14px] font-semibold text-primary">{a.score ?? a.correctCount}/{a.totalQuestions ?? 100}</span>
-                    <Link href={`/learn/quiz/${a.examId ?? ''}`} className="text-[12px] font-bold text-primary hover:underline">{t.mockInterview.result}</Link>
+                    <Link href={`/learn/quiz/${a.examId ?? ''}`} className="text-[12px] font-bold text-primary hover:underline">Xem kết quả</Link>
                   </div>
                 </div>
               )) : <p className="rounded bg-surface-container p-3 text-xs text-on-surface-variant">Bạn chưa có kết quả bài kiểm tra.</p>}
@@ -496,7 +417,7 @@ export default function LearnerHomePage() {
           {/* Hoạt động gần đây */}
           <div>
             <h3 className="text-[14px] font-semibold text-on-surface mb-2 flex items-center gap-1">
-              <span className="material-symbols-outlined text-on-surface-variant text-[18px]">history</span>
+              <span className="text-[18px]" aria-hidden="true">🕘</span>
               Hoạt động gần đây
             </h3>
             <div className="bg-surface-container border border-outline-variant rounded-lg p-4">
@@ -517,8 +438,8 @@ export default function LearnerHomePage() {
               ) : (
                 <div className="py-4 text-center">
                   <p className="text-[12px] text-on-surface-variant">Chưa có hoạt động học gần đây.</p>
-                  <Link href="/learn/lessons" className="mt-2 inline-block text-[12px] font-bold text-primary hover:underline">
-                    Bắt đầu bài học đầu tiên →
+                  <Link href="/learn/certifications" className="mt-2 inline-block text-[12px] font-bold text-primary hover:underline">
+                    Bắt đầu luyện thi chứng chỉ →
                   </Link>
                 </div>
               )}

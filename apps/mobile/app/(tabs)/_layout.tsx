@@ -1,10 +1,13 @@
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Tabs } from 'expo-router';
 import { MaterialIcons } from '@expo/vector-icons';
 import { useTheme } from '../../src/shared/store/theme-context';
 import { useI18n } from '../../src/shared/store/i18n-context';
+import { iconColors } from '@techenglish/design-tokens';
 
 export default function TabsLayout() {
   const { colors } = useTheme();
+  const insets = useSafeAreaInsets();
   const { t } = useI18n();
 
   return (
@@ -16,8 +19,8 @@ export default function TabsLayout() {
         tabBarStyle: {
           backgroundColor: colors.surfaceContainerLowest,
           borderTopColor: colors.border,
-          height: 60,
-          paddingBottom: 8,
+          height: 60 + insets.bottom,
+          paddingBottom: Math.max(8, insets.bottom),
           paddingTop: 6
         },
         tabBarLabelStyle: {
@@ -30,35 +33,30 @@ export default function TabsLayout() {
         name="home"
         options={{
           title: t.tabHome,
-          tabBarIcon: ({ color, size }) => <MaterialIcons name="home" size={size} color={color} />
+          tabBarIcon: ({ size }) => <MaterialIcons name="home" size={size} color={iconColors.home} />
         }}
       />
       <Tabs.Screen
         name="learning"
         options={{
-          title: t.tabLearning,
-          tabBarIcon: ({ color, size }) => <MaterialIcons name="menu-book" size={size} color={color} />
+          title: 'Bài học',
+          tabBarIcon: ({ size, color }) => <MaterialIcons name="menu-book" size={size} color={color} />,
         }}
       />
-      <Tabs.Screen
-        name="practice"
-        options={{
-          title: t.tabPractice,
-          tabBarIcon: ({ color, size }) => <MaterialIcons name="quiz" size={size} color={color} />
-        }}
-      />
+      <Tabs.Screen name="practice" options={{ href: null }} />
+      <Tabs.Screen name="certificates" options={{ href: null }} />
       <Tabs.Screen
         name="progress"
         options={{
           title: t.tabProgress,
-          tabBarIcon: ({ color, size }) => <MaterialIcons name="trending-up" size={size} color={color} />
+          tabBarIcon: ({ size }) => <MaterialIcons name="trending-up" size={size} color={iconColors.progress} />
         }}
       />
       <Tabs.Screen
         name="profile"
         options={{
           title: t.tabProfile,
-          tabBarIcon: ({ color, size }) => <MaterialIcons name="person" size={size} color={color} />
+          tabBarIcon: ({ size }) => <MaterialIcons name="person" size={size} color={iconColors.profile} />
         }}
       />
     </Tabs>

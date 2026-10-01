@@ -34,36 +34,49 @@ function buildTree(permissions: Permission[]): TreeNode {
   };
 }
 
-function TreeBranch({ node, depth, selectedIds, busyId, onToggle, renderMeta }: {
+function SelectionCheckbox({ checked, indeterminate, disabled, onChange, label }: {
+  checked: boolean; indeterminate?: boolean; disabled?: boolean; onChange: () => void; label: string;
+}) {
+  const ref = React.useRef<HTMLInputElement>(null);
+  React.useEffect(() => { if (ref.current) ref.current.indeterminate = Boolean(indeterminate); }, [indeterminate]);
+  return <input ref={ref} type="checkbox" aria-label={label} checked={checked} disabled={disabled} onChange={onChange} className="h-4 w-4 accent-primary" />;
+}
+
+function TreeBranch({ node, depth, selectedIds, busyId, onToggle, onToggleMany, renderMeta }: {
   node: TreeNode; depth: number; selectedIds?: Set<string>; busyId?: string | null;
-  onToggle?: (permission: Permission) => void; renderMeta?: (permission: Permission) => React.ReactNode;
+  onToggle?: (permission: Permission) => void; onToggleMany?: (permissions: Permission[], selected: boolean) => void;
+  renderMeta?: (permission: Permission) => React.ReactNode;
 }) {
   const [open, setOpen] = React.useState(false);
   const isLeaf = node.kind === 'permission';
   const descendants = (current: TreeNode): Permission[] => current.permission ? [current.permission] : current.children.flatMap(descendants);
   const childPermissions = descendants(node);
   const selectedChildren = childPermissions.filter((permission) => selectedIds?.has(permission.id)).length;
+  const allSelected = childPermissions.length > 0 && selectedChildren === childPermissions.length;
+  const partlySelected = selectedChildren > 0 && !allSelected;
 
   return <div>
     <div className={`group flex min-h-11 items-center gap-2 rounded-xl px-3 transition-colors ${isLeaf ? 'hover:bg-primary/5' : 'bg-surface-container-low/70 font-semibold'}`} style={{ marginLeft: depth * 22 }}>
       {!isLeaf ? <button type="button" onClick={() => setOpen((value) => !value)} className="flex h-7 w-7 items-center justify-center rounded-lg hover:bg-white" aria-label={open ? 'Thu gọn' : 'Mở rộng'}><span className="material-symbols-outlined text-[18px] text-on-surface-variant">{open ? 'keyboard_arrow_down' : 'keyboard_arrow_right'}</span></button> : <span className="ml-2 h-4 w-4 rounded-bl-lg border-b border-l border-outline-variant" />}
       <span className={`material-symbols-outlined text-[20px] ${isLeaf ? 'text-primary' : 'text-amber-500'}`}>{isLeaf ? 'task_alt' : open ? 'folder_open' : 'folder'}</span>
-      {isLeaf && onToggle && node.permission ? <input type="checkbox" checked={selectedIds?.has(node.permission.id) ?? false} disabled={busyId === node.permission.id} onChange={() => onToggle(node.permission!)} className="h-4 w-4 accent-primary" /> : null}
+      {isLeaf && onToggle && node.permission ? <SelectionCheckbox checked={selectedIds?.has(node.permission.id) ?? false} disabled={busyId === node.permission.id} onChange={() => onToggle(node.permission!)} label={`Chọn quyền ${node.label}`} /> : null}
+      {!isLeaf && onToggleMany ? <SelectionCheckbox checked={allSelected} indeterminate={partlySelected} disabled={Boolean(busyId)} onChange={() => onToggleMany(childPermissions, !allSelected)} label={node.kind === 'root' ? 'Chọn tất cả quyền' : `Chọn tất cả quyền trong ${node.label}`} /> : null}
       <span className={isLeaf ? 'text-sm text-on-surface' : 'text-sm capitalize text-on-surface'}>{node.label}</span>
       {!isLeaf && <span className="ml-auto rounded-full bg-white px-2 py-0.5 text-[11px] font-medium text-on-surface-variant">{selectedIds ? `${selectedChildren}/${childPermissions.length}` : childPermissions.length}</span>}
       {isLeaf && node.permission && renderMeta ? <div className="ml-auto">{renderMeta(node.permission)}</div> : null}
     </div>
     {!isLeaf && open && <div className="relative mt-1 space-y-1 before:absolute before:bottom-2 before:top-0 before:w-px before:bg-outline-variant/70" style={{ ['--tree-line' as string]: `${(depth + 1) * 22 + 16}px` }}>
       <style>{`.permission-tree-line-${depth}::before{left:var(--tree-line)}`}</style>
-      <div className={`permission-tree-line-${depth} space-y-1`}>{node.children.map((child) => <TreeBranch key={child.id} node={child} depth={depth + 1} selectedIds={selectedIds} busyId={busyId} onToggle={onToggle} renderMeta={renderMeta} />)}</div>
+      <div className={`permission-tree-line-${depth} space-y-1`}>{node.children.map((child) => <TreeBranch key={child.id} node={child} depth={depth + 1} selectedIds={selectedIds} busyId={busyId} onToggle={onToggle} onToggleMany={onToggleMany} renderMeta={renderMeta} />)}</div>
     </div>}
   </div>;
 }
 
-export function PermissionTree({ permissions, selectedIds, busyId, onToggle, renderMeta }: {
+export function PermissionTree({ permissions, selectedIds, busyId, onToggle, onToggleMany, renderMeta }: {
   permissions: Permission[]; selectedIds?: Set<string>; busyId?: string | null;
-  onToggle?: (permission: Permission) => void; renderMeta?: (permission: Permission) => React.ReactNode;
+  onToggle?: (permission: Permission) => void; onToggleMany?: (permissions: Permission[], selected: boolean) => void;
+  renderMeta?: (permission: Permission) => React.ReactNode;
 }) {
   const tree = React.useMemo(() => buildTree(permissions), [permissions]);
-  return <div className="rounded-2xl border border-outline-variant bg-white p-3 shadow-sm"><TreeBranch node={tree} depth={0} selectedIds={selectedIds} busyId={busyId} onToggle={onToggle} renderMeta={renderMeta} /></div>;
+  return <div className="rounded-2xl border border-outline-variant bg-white p-3 shadow-sm"><TreeBranch node={tree} depth={0} selectedIds={selectedIds} busyId={busyId} onToggle={onToggle} onToggleMany={onToggleMany} renderMeta={renderMeta} /></div>;
 }

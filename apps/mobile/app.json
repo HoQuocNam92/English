@@ -6,15 +6,17 @@
     "version": "1.0.0",
     "orientation": "portrait",
     "userInterfaceStyle": "light",
-    "android": {
-      "usesCleartextTraffic": true
-    },
     "ios": {
+      "bundleIdentifier": "com.techenglish.pro",
       "infoPlist": {
         "NSAppTransportSecurity": {
           "NSAllowsArbitraryLoads": true
         }
       }
+    },
+    "android": {
+      "package": "com.techenglish.pro",
+      "googleServicesFile": "./google-services.json"
     },
     "assetBundlePatterns": [
       "**/*"
@@ -24,8 +26,18 @@
     },
     "plugins": [
       "expo-router",
+      [
+        "expo-build-properties",
+        {
+          "android": {
+            "usesCleartextTraffic": true
+          }
+        }
+      ],
+      "expo-font",
+      "expo-status-bar",
       "expo-web-browser",
-      "@react-native-community/datetimepicker"
+      "expo-notifications"
     ]
   }
 }

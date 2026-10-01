@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
 import './globals.css';
-import { ThemeProvider } from '@/shared/theme';
 import { I18nProvider } from '@/shared/i18n';
+import { AppFeedbackProvider } from '@/shared/ui';
 
 export const metadata: Metadata = {
   title: 'TechEnglish Pro',
@@ -15,19 +15,11 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="" />
         <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
-        {/* Prevent flash of wrong theme - only apply dark if user explicitly chose it */}
-        <script
-          dangerouslySetInnerHTML={{
-            __html: `(function(){if(localStorage.getItem('techenglish.theme')==='dark'){document.documentElement.classList.add('dark')}})()`,
-          }}
-        />
       </head>
       <body className="bg-background text-on-surface antialiased">
-        <ThemeProvider>
-          <I18nProvider>
-            {children}
-          </I18nProvider>
-        </ThemeProvider>
+        <I18nProvider>
+          <AppFeedbackProvider>{children}</AppFeedbackProvider>
+        </I18nProvider>
       </body>
     </html>
   );

@@ -28,6 +28,7 @@ function GoogleCallbackInner() {
             permissions: user.permissions ?? [],
           },
         }
+        sessionStorage.removeItem('techenglish.web.session');
         localStorage.setItem('techenglish.web.session', JSON.stringify(session))
 
         const roles = user.roles ?? []

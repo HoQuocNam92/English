@@ -29,16 +29,18 @@ export default function TestBuilderPage() {
   const [description, setDescription] = React.useState('');
   const [durationMinutes, setDurationMinutes] = React.useState('30');
   const [passingScorePercent, setPassingScorePercent] = React.useState('70');
-  const [maxAttempts, setMaxAttempts] = React.useState('');
+  const [maxAttempts, setMaxAttempts] = React.useState('1');
   const [domainId, setDomainId] = React.useState('');
   const [levelId, setLevelId] = React.useState('');
   const [certificateId, setCertificateId] = React.useState('');
   const [topics, setTopics] = React.useState('');
   const [status, setStatus] = React.useState('draft');
+  const [kind, setKind] = React.useState('practice');
 
   const [qSearch, setQSearch] = React.useState('');
   const [qFilterDomain, setQFilterDomain] = React.useState('');
   const [qFilterLevel, setQFilterLevel] = React.useState('');
+  const [qFilterSkill, setQFilterSkill] = React.useState('');
   const [qOnlySelected, setQOnlySelected] = React.useState(false);
   const [errors, setErrors] = React.useState<Record<string, string>>({});
   const [loading, setLoading] = React.useState(false);
@@ -66,12 +68,13 @@ export default function TestBuilderPage() {
           setDescription(exam.description ?? '');
           setDurationMinutes(String(exam.durationMinutes ?? 30));
           setPassingScorePercent(String(exam.passingScorePercent ?? 70));
-          setMaxAttempts(exam.maxAttempts ? String(exam.maxAttempts) : '');
+          setMaxAttempts(String(exam.maxAttempts ?? 1));
           setDomainId(exam.domainId ?? '');
           setLevelId(exam.levelId ?? '');
           setCertificateId(exam.certificateId ?? '');
           setTopics((exam.topics ?? []).join(', '));
           setStatus(exam.status ?? 'draft');
+          setKind(exam.kind ?? 'practice');
           setSelectedQuestionIds((exam.questions ?? []).map((q: any) => q.id ?? q.questionId));
         }
       } catch (e) {
@@ -94,6 +97,7 @@ export default function TestBuilderPage() {
     if (!title.trim()) errs.title = 'Tiêu đề không được để trống';
     if (!domainId) errs.domainId = 'Vui lòng chọn lĩnh vực';
     if (!levelId) errs.levelId = 'Vui lòng chọn cấp độ';
+    if (!certificateId) errs.certificateId = 'Quiz hoặc đề thi phải thuộc một chứng chỉ';
     if (!durationMinutes || isNaN(Number(durationMinutes)) || Number(durationMinutes) < 1 || Number(durationMinutes) > 300) {
       errs.durationMinutes = 'Thời gian phải từ 1 đến 300 phút';
     }
@@ -121,12 +125,13 @@ export default function TestBuilderPage() {
         description: description.trim() || undefined,
         durationMinutes: Number(durationMinutes),
         passingScorePercent: Number(passingScorePercent),
-        maxAttempts: maxAttempts ? Number(maxAttempts) : undefined,
+        maxAttempts: Number(maxAttempts),
         domainId: domainId || undefined,
         levelId: levelId || undefined,
         certificateId: certificateId || undefined,
         topics: topics.trim() ? topics.split(',').map(t => t.trim()).filter(Boolean) : [],
         status: targetStatus,
+        kind,
         questions: selectedQuestionIds.map((id, idx) => ({ questionId: id, order: idx + 1 })),
       };
 
@@ -167,9 +172,10 @@ export default function TestBuilderPage() {
       if (qSearch.trim() && !q.prompt.toLowerCase().includes(qSearch.trim().toLowerCase())) {
         return false;
       }
+      if (qFilterSkill && q.skill !== qFilterSkill) return false;
       return true;
     });
-  }, [availableQuestions, qFilterDomain, qFilterLevel, qSearch, domains, levels]);
+  }, [availableQuestions, qFilterDomain, qFilterLevel, qFilterSkill, qSearch, domains, levels]);
 
   // Count of selected questions within the current filter criteria
   const matchingSelectedCount = React.useMemo(() => {
@@ -198,6 +204,7 @@ export default function TestBuilderPage() {
     setQSearch('');
     setQFilterDomain('');
     setQFilterLevel('');
+    setQFilterSkill('');
     setQOnlySelected(false);
   };
 
@@ -298,6 +305,12 @@ export default function TestBuilderPage() {
 
             {/* Certificate */}
             <div>
+              <label className="block text-sm font-semibold text-slate-900 mb-1.5">Loại bài kiểm tra</label>
+              <select value={kind} onChange={e => setKind(e.target.value)} className="w-full rounded-xl border border-slate-300 bg-white px-3.5 py-2.5 text-sm font-medium text-slate-900 shadow-2xs focus:outline-none focus:border-primary">
+                <option value="practice">Luyện tập theo chủ đề</option><option value="domain_test">Kiểm tra Domain</option><option value="mock_exam">Thi thử chứng chỉ</option><option value="scenario_assessment">Bài tập tình huống thực tế</option>
+              </select>
+            </div>
+            <div>
               <label className="block text-sm font-semibold text-slate-900 mb-1.5">Chứng chỉ liên quan</label>
               <select
                 value={certificateId}
@@ -348,7 +361,7 @@ export default function TestBuilderPage() {
                   value={maxAttempts}
                   onChange={e => setMaxAttempts(e.target.value)}
                   min={1}
-                  placeholder="Không giới hạn"
+                  placeholder="Ví dụ: 3"
                   className="w-full rounded-xl border border-slate-300 bg-white px-3.5 py-2.5 text-sm font-medium text-slate-900 placeholder:text-slate-400 shadow-2xs focus:outline-none focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all"
                 />
                 <FieldError msg={errors.maxAttempts} />
@@ -480,6 +493,11 @@ export default function TestBuilderPage() {
                 </select>
               </div>
               <div>
+                <select value={qFilterSkill} onChange={e => setQFilterSkill(e.target.value)} className="w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-xs font-semibold text-slate-700 shadow-2xs focus:outline-none focus:border-primary">
+                  <option value="">Tất cả kỹ năng</option><option value="vocabulary">Vocabulary</option><option value="reading">Reading</option><option value="technical_understanding">Technical Understanding</option><option value="scenario_based">Scenario-based</option>
+                </select>
+              </div>
+              <div>
                 <select
                   value={qFilterLevel}
                   onChange={e => setQFilterLevel(e.target.value)}
@@ -551,7 +569,7 @@ export default function TestBuilderPage() {
                   <p className="text-xs text-slate-400 mt-1 max-w-xs">
                     Thử thay đổi từ khóa tìm kiếm hoặc đặt lại các bộ lọc lĩnh vực, cấp độ.
                   </p>
-                  {(qSearch || qFilterDomain || qFilterLevel || qOnlySelected) && (
+                  {(qSearch || qFilterDomain || qFilterLevel || qFilterSkill || qOnlySelected) && (
                     <button
                       type="button"
                       onClick={handleResetFilters}

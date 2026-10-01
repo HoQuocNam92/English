@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "573486587449",
+    "project_id": "english-app-c42a9",
+    "storage_bucket": "english-app-c42a9.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:573486587449:android:74507fd33a95bb249ff7e8",
+        "android_client_info": {
+          "package_name": "com.techenglish.pro"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCQj2HFubdnvQ82euMHm6SZUk_lxkAXREE"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

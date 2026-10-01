@@ -1,6 +1,6 @@
 import {
   Controller, Post, UseGuards, UseInterceptors,
-  UploadedFile, BadRequestException, Param
+  UploadedFile, BadRequestException, Param, Body
 } from '@nestjs/common'
 import { FileInterceptor } from '@nestjs/platform-express'
 import { ApiTags, ApiBearerAuth, ApiConsumes, ApiBody } from '@nestjs/swagger'
@@ -44,27 +44,22 @@ export class UploadController {
     }
   }
 
-  @Post('lesson-image/:lessonId')
-  @ApiConsumes('multipart/form-data')
-  @ApiBody({ schema: { type: 'object', properties: { file: { type: 'string', format: 'binary' } } } })
-  @UseInterceptors(FileInterceptor('file', {
-    limits: { fileSize: MAX_FILE_SIZE },
-    fileFilter: (_, file, cb) => {
-      if (!ALLOWED_TYPES.includes(file.mimetype)) {
-        return cb(new BadRequestException('Chỉ cho phép ảnh JPG, PNG, WEBP, GIF'), false)
-      }
-      cb(null, true)
-    },
-  }))
-  async uploadLessonImage(
-    @UploadedFile() file: Express.Multer.File,
-    @Param('lessonId') lessonId: string,
+  @Post('avatar-base64')
+  async uploadAvatarBase64(
+    @Body() body: { base64?: string; mimeType?: string },
+    @CurrentUser() user: JwtPayload,
   ) {
-    if (!file) throw new BadRequestException('Vui lòng chọn file ảnh')
-    const result = await this.cloudinary.uploadLessonImage(file.buffer, lessonId)
-    return {
-      url: result.secure_url,
-      publicId: result.public_id,
+    const mimeType = body?.mimeType || 'image/jpeg'
+    if (!ALLOWED_TYPES.includes(mimeType)) {
+      throw new BadRequestException('Chỉ cho phép ảnh JPG, PNG, WEBP hoặc GIF')
     }
+    const encoded = body?.base64?.replace(/^data:image\/[^;]+;base64,/, '')
+    if (!encoded) throw new BadRequestException('Dữ liệu ảnh không hợp lệ')
+    const fileBuffer = Buffer.from(encoded, 'base64')
+    if (!fileBuffer.length) throw new BadRequestException('Ảnh đã chọn bị trống hoặc không đọc được')
+    if (fileBuffer.length > MAX_FILE_SIZE) throw new BadRequestException('Ảnh không được lớn hơn 5 MB')
+    const result = await this.cloudinary.uploadAvatar(fileBuffer, user.sub)
+    return { url: result.secure_url, publicId: result.public_id, width: result.width, height: result.height }
   }
 }
+

@@ -1,5 +1,6 @@
 import { IsString, IsOptional, MinLength, MaxLength, Matches, IsUrl } from 'class-validator'
 import { ApiPropertyOptional } from '@nestjs/swagger'
+import { Transform } from 'class-transformer'
 
 export class UpdateProfileDto {
   @ApiPropertyOptional({ example: 'Nguyễn Văn A' })
@@ -23,10 +24,11 @@ export class UpdateProfileDto {
   bio?: string
 
   @ApiPropertyOptional({ example: '+84912345678' })
+  @Transform(({ value }) => typeof value === 'string' && value.trim() === '' ? null : value)
   @IsOptional()
   @IsString()
   @Matches(/^[+]?[0-9]{9,15}$/, { message: 'Số điện thoại không hợp lệ' })
-  phoneNumber?: string
+  phoneNumber?: string | null
 
   @ApiPropertyOptional()
   @IsOptional()

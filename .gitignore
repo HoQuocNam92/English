@@ -1,9 +1,13 @@
 node_modules/
+.pnpm-store/
 design-reference/
 .next/
 dist/
 build/
+.expo/
 .env
 .env.*
 !.env.example
 !.env.local.example
+google-services.json
+GoogleService-Info.plist

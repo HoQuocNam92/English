@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import {
   Animated,
+  Alert,
   Dimensions,
   KeyboardAvoidingView,
   Platform,
@@ -33,6 +34,7 @@ interface VocabWord {
   domain?: { code: string; name: string };
   level?: { code: string; name: string };
   studyStatus: 'new' | 'learning' | 'mastered';
+  audioUrl?: string;
 }
 
 interface QuizQuestion {
@@ -51,12 +53,15 @@ type Phase = 'learn' | 'quiz' | 'summary';
 export default function FlashcardsScreen() {
   const { colors } = useTheme();
   const router = useRouter();
-  const params = useLocalSearchParams<{ lessonId?: string; domainCode?: string; levelCode?: string }>();
+  const params = useLocalSearchParams<{ lessonId?: string; domainCode?: string; levelCode?: string; mode?: string }>();
 
+  const isReview = params.mode === 'review';
   const [phase, setPhase] = useState<Phase>('learn');
   const [words, setWords] = useState<VocabWord[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [saving, setSaving] = useState(false);
+  const savingRef = useRef(false);
 
   // Batch learning state
   const [batchStart, setBatchStart] = useState(0);
@@ -74,8 +79,12 @@ export default function FlashcardsScreen() {
   const [userAnswer, setUserAnswer] = useState('');
   const [selectedOption, setSelectedOption] = useState<string | null>(null);
   const [showResult, setShowResult] = useState(false);
-  const [quizResults, setQuizResults] = useState<{ vocabId: string; term: string; correct: boolean }[]>([]);
-  const [allTimeResults, setAllTimeResults] = useState<{ vocabId: string; term: string; correct: boolean }[]>([]);
+  const [quizMarkedMastered, setQuizMarkedMastered] = useState(false);
+  const [quizResults, setQuizResults] = useState<{ vocabId: string; term: string; correct: boolean; selfReported?: boolean }[]>([]);
+  const [allTimeResults, setAllTimeResults] = useState<{ vocabId: string; term: string; correct: boolean; selfReported?: boolean }[]>([]);
+  const [ratings, setRatings] = useState<Record<string, 'easy' | 'medium' | 'hard' | 'mastered'>>({});
+  const [sessionMeta, setSessionMeta] = useState<any>(null);
+  const [dailyLimitNotice, setDailyLimitNotice] = useState(false);
 
   // Animation
   const flipAnim = useRef(new Animated.Value(0)).current;
@@ -90,7 +99,7 @@ export default function FlashcardsScreen() {
       ]);
       return words.filter(w => !alreadySeenIds.has(w.id)).slice(0, pendingWrongIds.length);
     }
-    return words.slice(batchStart, batchStart + BATCH_SIZE).filter(w => !masteredSet.has(w.id));
+    return words.slice(batchStart, batchStart + BATCH_SIZE);
   }, [words, batchStart, masteredSet, pendingWrongIds]);
 
   const currentBatch = getCurrentBatch();
@@ -101,7 +110,7 @@ export default function FlashcardsScreen() {
 
   // ── Load study session ──────────────────────────────────────────────────────
 
-  const loadSession = useCallback(async () => {
+  const loadSession = useCallback(async (continueLearning = false) => {
     setLoading(true);
     setError('');
     try {
@@ -109,15 +118,26 @@ export default function FlashcardsScreen() {
       if (params.lessonId) qs.set('lessonId', params.lessonId);
       if (params.domainCode) qs.set('domainCode', params.domainCode);
       if (params.levelCode) qs.set('levelCode', params.levelCode);
+      if (continueLearning) qs.set('continue', 'true');
       const query = qs.toString() ? `?${qs.toString()}` : '';
-      const res: any = await api.get(`/vocab-study/session${query}`);
+      let res: any = await api.get(isReview ? '/vocab-study/review-session' : `/vocab-study/session${query}`);
+      const initialMeta = res.meta ?? null;
+      const reachedDailyTarget = Boolean(initialMeta?.dailyLimitReached);
+      setDailyLimitNotice(reachedDailyTarget);
+      if (!isReview && !continueLearning && reachedDailyTarget && (res.words?.length ?? 0) === 0) {
+        qs.set('continue', 'true');
+        res = await api.get(`/vocab-study/session?${qs.toString()}`);
+        res.meta = { ...(res.meta ?? {}), ...initialMeta, dailyLimitReached: true };
+      }
       setWords(res.words ?? []);
+      setSessionMeta(res.meta ?? null);
       setBatchStart(0);
       setBatchIdx(0);
       setFlipped(false);
       setMasteredSet(new Set());
       setPendingWrongIds([]);
       setAllTimeResults([]);
+      setRatings({});
       batchNumberRef.current = 1;
       setPhase('learn');
     } catch (e: any) {
@@ -125,14 +145,27 @@ export default function FlashcardsScreen() {
     } finally {
       setLoading(false);
     }
-  }, [params.lessonId, params.domainCode, params.levelCode]);
+  }, [params.lessonId, params.domainCode, params.levelCode, isReview]);
 
   useEffect(() => { loadSession(); }, [loadSession]);
 
   // ── TTS ──────────────────────────────────────────────────────────────────────
 
-  const speak = (text: string) => {
-    Speech.speak(text, { language: 'en-US', rate: 0.85 });
+  const speak = async (text: string) => {
+    try {
+      await Speech.stop();
+      setTimeout(() => {
+        Speech.speak(text, {
+          language: 'en-US',
+          rate: 0.78,
+          pitch: 1,
+          volume: 1,
+          onError: () => Alert.alert('Không phát được âm thanh', 'Vui lòng bật giọng đọc tiếng Anh trong phần Chuyển văn bản thành giọng nói của điện thoại.'),
+        });
+      }, 150);
+    } catch {
+      Alert.alert('Không phát được âm thanh', 'Điện thoại chưa có giọng đọc tiếng Anh hoặc dịch vụ đọc đang bị tắt.');
+    }
   };
 
   // ── Flip animation ──────────────────────────────────────────────────────────
@@ -158,14 +191,18 @@ export default function FlashcardsScreen() {
 
   // ── Start quiz ──────────────────────────────────────────────────────────────
 
-  const startQuiz = async (vocabIds: string[]) => {
+  const startQuiz = async (vocabIds: string[], ratingMap?: Record<string, 'easy' | 'medium' | 'hard' | 'mastered'>) => {
     try {
-      const res: any = await api.get(`/vocab-study/quiz?ids=${vocabIds.join(',')}`);
+      const repetitions = ratingMap ? Object.fromEntries(Object.entries(ratingMap).filter(([, rating]) => rating !== 'mastered').map(([id, rating]) => [id, rating === 'easy' ? 2 : rating === 'medium' ? 3 : 4])) : undefined;
+      const ids = ratingMap ? vocabIds.filter(id => ratingMap[id] !== 'mastered') : vocabIds;
+      if (ids.length === 0) { setPhase('summary'); return; }
+      const res: any = await api.post('/vocab-study/quiz', { vocabIds: ids, repetitions });
       setQuestions(res.questions ?? []);
       setQuizIndex(0);
       setUserAnswer('');
       setSelectedOption(null);
       setShowResult(false);
+      setQuizMarkedMastered(false);
       setQuizResults([]);
       setPhase('quiz');
     } catch (e: any) {
@@ -175,21 +212,39 @@ export default function FlashcardsScreen() {
 
   // ── Submit quiz answer ──────────────────────────────────────────────────────
 
-  const submitQuizAnswer = async () => {
+  const submitQuizAnswer = async (submittedAnswer?: string) => {
+    if (showResult || savingRef.current) return;
     const q = questions[quizIndex];
     if (!q) return;
-
-    const answer = q.type === 'fill_blank' ? userAnswer.trim() : selectedOption ?? '';
+    const answer = submittedAnswer ?? (q.type === 'fill_blank' ? userAnswer.trim() : selectedOption ?? '');
     const isCorrect = answer.toLowerCase() === q.answer.toLowerCase();
-
-    setShowResult(true);
-    const result = { vocabId: q.vocabularyId, term: q.answer, correct: isCorrect };
-    setQuizResults(prev => [...prev, result]);
-    setAllTimeResults(prev => [...prev, result]);
-
+    savingRef.current = true; setSaving(true);
     try {
       await api.post('/vocab-study/answer', { vocabularyId: q.vocabularyId, isCorrect });
-    } catch { /* best-effort */ }
+      const result = { vocabId: q.vocabularyId, term: words.find(word => word.id === q.vocabularyId)?.term ?? q.answer, correct: isCorrect };
+      setQuizResults(prev => [...prev, result]);
+      setAllTimeResults(prev => [...prev, result]);
+      setShowResult(true);
+    } catch (cause) {
+      Alert.alert('Chưa lưu được đáp án', cause instanceof Error ? cause.message : 'Vui lòng thử lại.');
+    } finally { savingRef.current = false; setSaving(false); }
+  };
+
+  const markQuizWordMastered = async () => {
+    if (!currentQuestion || showResult || savingRef.current) return;
+    savingRef.current = true; setSaving(true);
+    try {
+      await api.post('/vocab-study/rate', { vocabularyId: currentQuestion.vocabularyId, rating: 'mastered' });
+      setQuizMarkedMastered(true);
+      setMasteredSet(previous => new Set(previous).add(currentQuestion.vocabularyId));
+      const result = { vocabId: currentQuestion.vocabularyId, term: words.find(word => word.id === currentQuestion.vocabularyId)?.term ?? currentQuestion.answer, correct: true, selfReported: true };
+      setQuizResults(previous => [...previous, result]);
+      setAllTimeResults(previous => [...previous, result]);
+      setQuestions(previous => previous.filter((question, index) => index <= quizIndex || question.vocabularyId !== currentQuestion.vocabularyId));
+      setShowResult(true);
+    } catch (cause) {
+      Alert.alert('Chưa lưu được đánh giá', cause instanceof Error ? cause.message : 'Vui lòng thử lại.');
+    } finally { savingRef.current = false; setSaving(false); }
   };
 
   // ── Handle quiz completion ──────────────────────────────────────────────────
@@ -245,10 +300,17 @@ export default function FlashcardsScreen() {
       setUserAnswer('');
       setSelectedOption(null);
       setShowResult(false);
+      setQuizMarkedMastered(false);
     } else {
       handleQuizComplete();
     }
   };
+
+  useEffect(() => {
+    if (phase !== 'quiz' || !showResult) return;
+    const timer = setTimeout(() => nextQuizQuestion(), 1500);
+    return () => clearTimeout(timer);
+  }, [phase, showResult, quizIndex, questions.length]);
 
   // ── Learn phase navigation ─────────────────────────────────────────────────
 
@@ -270,6 +332,26 @@ export default function FlashcardsScreen() {
     }
   };
 
+  const rateWord = async (rating: 'easy' | 'medium' | 'hard' | 'mastered') => {
+    if (!currentWord || savingRef.current) return;
+    savingRef.current = true; setSaving(true);
+    try {
+      await api.post('/vocab-study/rate', { vocabularyId: currentWord.id, rating });
+      if (rating === 'mastered') setMasteredSet(previous => new Set(previous).add(currentWord.id));
+      const nextRatings = { ...ratings, [currentWord.id]: rating };
+      setRatings(nextRatings);
+      if (batchIdx + 1 < currentBatch.length) {
+        setBatchIdx(index => index + 1);
+        setFlipped(false);
+        flipAnim.setValue(0);
+      } else {
+        await startQuiz(currentBatch.map(word => word.id), nextRatings);
+      }
+    } catch (cause) {
+      Alert.alert('Chưa lưu được đánh giá', cause instanceof Error ? cause.message : 'Vui lòng thử lại.');
+    } finally { savingRef.current = false; setSaving(false); }
+  };
+
   // ── Render helpers ─────────────────────────────────────────────────────────
 
   const currentQuestion = questions[quizIndex];
@@ -282,48 +364,23 @@ export default function FlashcardsScreen() {
 
   const renderLearnPhase = () => {
     if (!currentWord || currentBatch.length === 0 || allDone) {
-      setPhase('summary');
-      return <EmptyState icon="school" title="Hoàn thành!" detail="Bạn đã học hết tất cả từ vựng." />;
+      return <View style={styles.emptySession}><EmptyState icon="school" title={isReview ? "Chưa có từ đến hạn ôn" : "Không còn từ mới"} detail={isReview ? "Quay lại sau hoặc tiếp tục học từ mới." : "Những từ đã học và đã biết đã được loại khỏi phiên mặc định."} />
+        <TouchableOpacity onPress={() => router.push('/flashcards/history' as any)} style={styles.textBtn}><Text style={[styles.textBtnText, { color: colors.primary }]}>Xem từ đã học</Text></TouchableOpacity>
+      </View>;
     }
-
-    const isReviewBatch = pendingWrongIds.length > 0;
 
     return (
       <View style={styles.phaseContainer}>
-        {/* Batch info */}
-        <View style={[styles.batchInfoRow, { backgroundColor: colors.primaryContainer }]}>
-          <MaterialIcons name="layers" size={16} color={colors.onPrimaryContainer} />
-          <Text style={[styles.batchInfoText, { color: colors.onPrimaryContainer }]}>
-            {isReviewBatch ? `Học thêm từ mới (${pendingWrongIds.length} từ sai cần ôn)` : `Đợt ${batchNumber}/${totalBatches}`}
-          </Text>
-        </View>
-
-        {/* Overall progress */}
-        <View style={styles.overallProgressRow}>
-          <Text style={[styles.overallProgressLabel, { color: colors.onSurfaceVariant }]}>
-            Đã thuộc: {masteredCount}/{totalWords}
-          </Text>
-          <View style={[styles.progressContainer, { backgroundColor: colors.surfaceVariant }]}>
-            <View style={[styles.progressBar, { width: `${totalWords > 0 ? (masteredCount / totalWords) * 100 : 0}%`, backgroundColor: '#4CAF50' }]} />
-          </View>
-        </View>
-
-        {/* Batch progress */}
-        <View style={[styles.progressContainer, { backgroundColor: colors.surfaceVariant }]}>
-          <View style={[styles.progressBar, { width: `${((batchIdx + 1) / currentBatch.length) * 100}%`, backgroundColor: colors.primary }]} />
-        </View>
-        <Text style={[styles.progressText, { color: colors.onSurfaceVariant }]}>
-          {batchIdx + 1} / {currentBatch.length} từ trong đợt này
-        </Text>
+        <View style={styles.sessionToolbar}><Text style={[styles.dailyText, { color: colors.onSurfaceVariant }]}>{isReview ? `${totalWords} từ đến hạn ôn` : `Hôm nay: ${sessionMeta?.studiedToday ?? 0}/${sessionMeta?.maxDailyNewWords ?? '—'} từ mới`}</Text><TouchableOpacity onPress={() => router.push('/flashcards/history' as any)}><Text style={[styles.historyLink, { color: colors.primary }]}>Từ đã học</Text></TouchableOpacity></View>
+        {dailyLimitNotice && <View style={styles.dailyNotice}><MaterialIcons name="check-circle" size={14} color="#a16207" /><Text style={styles.dailyNoticeText}>Đã đủ mục tiêu hôm nay · đang học thêm</Text></View>}
+        <View style={styles.speakerRow}><TouchableOpacity onPress={() => void speak(currentWord.term)} style={[styles.speakerBtn, { backgroundColor: colors.surface }]} accessibilityRole="button" accessibilityLabel={`Phát âm ${currentWord.term}`}><MaterialIcons name="volume-up" size={28} color={colors.primary} /></TouchableOpacity></View>
 
         {/* Flip card */}
-        <TouchableOpacity activeOpacity={0.95} onPress={doFlip} style={styles.cardTouchArea}>
-          {/* Front */}
-          <Animated.View style={[styles.flipCard, { backgroundColor: colors.surface, borderColor: colors.outlineVariant, transform: [{ perspective: 1000 }, { rotateY: frontInterpolate }] }]}>
-            <TouchableOpacity onPress={() => speak(currentWord.term)} style={styles.speakerBtn}>
-              <MaterialIcons name="volume-up" size={28} color={colors.primary} />
-            </TouchableOpacity>
-            <Text style={[styles.termText, { color: colors.onSurface }]}>{currentWord.term}</Text>
+        <View style={styles.cardTouchArea}>
+          <TouchableOpacity activeOpacity={0.95} onPress={doFlip} style={styles.cardFlipArea}>
+            {/* Front */}
+            <Animated.View style={[styles.flipCard, { backgroundColor: colors.surface, borderColor: colors.outlineVariant, transform: [{ perspective: 1000 }, { rotateY: frontInterpolate }] }]}>
+            <Text style={[styles.termText, { color: colors.onSurface }]} numberOfLines={4} adjustsFontSizeToFit minimumFontScale={0.35}>{currentWord.term}</Text>
             {currentWord.pronunciationIpa ? (
               <Text style={[styles.ipaText, { color: colors.onSurfaceVariant }]}>{currentWord.pronunciationIpa}</Text>
             ) : null}
@@ -333,41 +390,36 @@ export default function FlashcardsScreen() {
               </View>
             ) : null}
             <Text style={[styles.tapHint, { color: colors.outline }]}>Chạm để xem nghĩa</Text>
-          </Animated.View>
+            </Animated.View>
 
-          {/* Back */}
-          <Animated.View style={[styles.flipCard, styles.flipCardBack, { backgroundColor: colors.surface, borderColor: colors.outlineVariant, transform: [{ perspective: 1000 }, { rotateY: backInterpolate }] }]}>
-            <Text style={[styles.defVi, { color: colors.onSurface }]}>{currentWord.definitionVi}</Text>
-            <Text style={[styles.defEn, { color: colors.onSurfaceVariant }]}>{currentWord.definitionEn}</Text>
+            {/* Back */}
+            <Animated.View style={[styles.flipCard, styles.flipCardBack, { backgroundColor: colors.surface, borderColor: colors.outlineVariant, transform: [{ perspective: 1000 }, { rotateY: backInterpolate }] }]}>
+            <Text style={[styles.defVi, { color: colors.onSurface }]} numberOfLines={5} adjustsFontSizeToFit minimumFontScale={0.4}>{currentWord.definitionVi}</Text>
+            <Text style={[styles.defEn, { color: colors.onSurfaceVariant }]} numberOfLines={5} adjustsFontSizeToFit minimumFontScale={0.7}>{currentWord.definitionEn}</Text>
             {currentWord.examples?.[0] ? (
               <View style={[styles.exampleBox, { backgroundColor: colors.surfaceVariant }]}>
-                <Text style={[styles.exampleText, { color: colors.primary }]}>"{currentWord.examples[0].sentenceEn}"</Text>
+                <Text style={[styles.exampleText, { color: colors.primary }]} numberOfLines={3}>"{currentWord.examples[0].sentenceEn}"</Text>
                 {currentWord.examples[0].translationVi ? (
-                  <Text style={[styles.exampleTranslation, { color: colors.onSurfaceVariant }]}>{currentWord.examples[0].translationVi}</Text>
+                  <Text style={[styles.exampleTranslation, { color: colors.onSurfaceVariant }]} numberOfLines={2}>{currentWord.examples[0].translationVi}</Text>
                 ) : null}
               </View>
             ) : null}
-          </Animated.View>
-        </TouchableOpacity>
-
-        {/* Navigation buttons */}
-        <View style={styles.navRow}>
-          <TouchableOpacity onPress={prevCard} disabled={batchIdx === 0} style={[styles.navBtn, { backgroundColor: colors.surface, opacity: batchIdx === 0 ? 0.4 : 1 }]}>
-            <MaterialIcons name="chevron-left" size={24} color={colors.onSurface} />
-            <Text style={{ color: colors.onSurface }}>Trước</Text>
+            </Animated.View>
           </TouchableOpacity>
+        </View>
 
-          <TouchableOpacity onPress={doFlip} style={[styles.flipBtn, { backgroundColor: colors.primary }]}>
-            <MaterialIcons name="flip" size={20} color="#fff" />
-            <Text style={styles.flipBtnText}>Lật thẻ</Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity onPress={nextCard} style={[styles.navBtn, { backgroundColor: batchIdx + 1 >= currentBatch.length ? colors.primary : colors.surface }]}>
-            <Text style={{ color: batchIdx + 1 >= currentBatch.length ? '#fff' : colors.onSurface, fontWeight: batchIdx + 1 >= currentBatch.length ? '800' : '400' }}>
-              {batchIdx + 1 >= currentBatch.length ? 'Kiểm tra' : 'Tiếp'}
-            </Text>
-            <MaterialIcons name={batchIdx + 1 >= currentBatch.length ? 'quiz' : 'chevron-right'} size={24} color={batchIdx + 1 >= currentBatch.length ? '#fff' : colors.onSurface} />
-          </TouchableOpacity>
+        <View style={[styles.ratingBar, { backgroundColor: colors.surface, borderColor: colors.outlineVariant }]}>
+          {([
+            ['easy', 'sentiment-satisfied', 'Dễ', '#059669'],
+            ['medium', 'sentiment-neutral', 'Trung bình', '#d97706'],
+            ['hard', 'sentiment-dissatisfied', 'Khó', '#dc2626'],
+            ['mastered', 'fast-forward', 'Đã biết', '#64748b'],
+          ] as const).map(([rating, icon, label, color]) => (
+            <TouchableOpacity key={rating} disabled={saving} style={[styles.ratingButton, saving && { opacity: 0.5 }]} onPress={() => rateWord(rating)}>
+              <MaterialIcons name={icon} size={22} color={color} />
+              <Text style={[styles.ratingText, { color }]}>{label}</Text>
+            </TouchableOpacity>
+          ))}
         </View>
 
       </View>
@@ -391,26 +443,6 @@ export default function FlashcardsScreen() {
 
     return (
       <KeyboardAvoidingView style={styles.phaseContainer} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
-        {/* Batch + mastered info */}
-        <View style={styles.quizHeader}>
-          <Text style={[styles.progressText, { color: colors.onSurfaceVariant }]}>
-            Câu {quizIndex + 1} / {questions.length}
-          </Text>
-          <View style={{ flexDirection: 'row', gap: 6 }}>
-            <Text style={[styles.roundBadge, { backgroundColor: colors.primaryContainer, color: colors.onPrimaryContainer }]}>
-              Đợt {batchNumber}
-            </Text>
-            <Text style={[styles.roundBadge, { backgroundColor: '#E8F5E9', color: '#2E7D32' }]}>
-              {masteredCount} thuộc
-            </Text>
-          </View>
-        </View>
-
-        {/* Quiz progress */}
-        <View style={[styles.progressContainer, { backgroundColor: colors.surfaceVariant }]}>
-          <View style={[styles.progressBar, { width: `${((quizIndex + 1) / questions.length) * 100}%`, backgroundColor: colors.secondary }]} />
-        </View>
-
         {/* Question card */}
         <View style={[styles.quizCard, { backgroundColor: colors.surface, borderColor: colors.outlineVariant }]}>
           <Text style={[styles.quizLabel, { color: colors.onSurfaceVariant }]}>
@@ -428,7 +460,7 @@ export default function FlashcardsScreen() {
                 style={[styles.answerInput, {
                   backgroundColor: colors.surfaceVariant,
                   color: colors.onSurface,
-                  borderColor: showResult ? (isCorrectAnswer ? '#4CAF50' : '#F44336') : colors.outlineVariant,
+                  borderColor: showResult ? (isCorrectAnswer ? '#15803d' : '#b91c1c') : colors.outlineVariant,
                 }]}
                 placeholder="Nhập từ tiếng Anh..."
                 placeholderTextColor={colors.outline}
@@ -436,7 +468,7 @@ export default function FlashcardsScreen() {
                 onChangeText={setUserAnswer}
                 autoCapitalize="none"
                 autoCorrect={false}
-                editable={!showResult}
+                editable={!showResult && !saving}
                 onSubmitEditing={() => !showResult && userAnswer.trim() && submitQuizAnswer()}
               />
             </View>
@@ -450,8 +482,8 @@ export default function FlashcardsScreen() {
                 const isAnswer = opt.toLowerCase() === currentQuestion.answer.toLowerCase();
                 let optionStyle = { backgroundColor: colors.surfaceVariant, borderColor: colors.outlineVariant };
                 if (showResult) {
-                  if (isAnswer) optionStyle = { backgroundColor: '#E8F5E9', borderColor: '#4CAF50' };
-                  else if (isSelected && !isAnswer) optionStyle = { backgroundColor: '#FFEBEE', borderColor: '#F44336' };
+                  if (isAnswer) optionStyle = { backgroundColor: '#E8F5E9', borderColor: '#15803d' };
+                  else if (isSelected && !isAnswer) optionStyle = { backgroundColor: '#FFEBEE', borderColor: '#b91c1c' };
                 } else if (isSelected) {
                   optionStyle = { backgroundColor: colors.primaryContainer, borderColor: colors.primary };
                 }
@@ -459,8 +491,8 @@ export default function FlashcardsScreen() {
                 return (
                   <TouchableOpacity
                     key={i}
-                    disabled={showResult}
-                    onPress={() => setSelectedOption(opt)}
+                    disabled={showResult || saving}
+                    onPress={() => { setSelectedOption(opt); void submitQuizAnswer(opt); }}
                     style={[styles.optionBtn, optionStyle]}
                   >
                     <Text style={[styles.optionKey, { color: showResult && isAnswer ? '#2E7D32' : colors.onSurface }]}>
@@ -469,8 +501,8 @@ export default function FlashcardsScreen() {
                     <Text style={[styles.optionText, { color: showResult && isAnswer ? '#2E7D32' : colors.onSurface }]}>
                       {opt}
                     </Text>
-                    {showResult && isAnswer ? <MaterialIcons name="check-circle" size={22} color="#4CAF50" /> : null}
-                    {showResult && isSelected && !isAnswer ? <MaterialIcons name="cancel" size={22} color="#F44336" /> : null}
+                    {showResult && isAnswer ? <MaterialIcons name="check-circle" size={22} color="#15803d" /> : null}
+                    {showResult && isSelected && !isAnswer ? <MaterialIcons name="cancel" size={22} color="#b91c1c" /> : null}
                   </TouchableOpacity>
                 );
               })}
@@ -479,13 +511,13 @@ export default function FlashcardsScreen() {
 
           {/* Result feedback */}
           {showResult ? (
-            <View style={[styles.feedbackBox, { backgroundColor: isCorrectAnswer ? '#E8F5E9' : '#FFEBEE' }]}>
-              <MaterialIcons name={isCorrectAnswer ? 'check-circle' : 'highlight-off'} size={24} color={isCorrectAnswer ? '#4CAF50' : '#F44336'} />
+            <View style={[styles.feedbackBox, { backgroundColor: quizMarkedMastered || isCorrectAnswer ? '#E8F5E9' : '#FFEBEE' }]}>
+              <MaterialIcons name={quizMarkedMastered || isCorrectAnswer ? 'check-circle' : 'highlight-off'} size={24} color={quizMarkedMastered || isCorrectAnswer ? '#15803d' : '#b91c1c'} />
               <View style={{ flex: 1 }}>
-                <Text style={{ fontWeight: '800', color: isCorrectAnswer ? '#2E7D32' : '#C62828' }}>
-                  {isCorrectAnswer ? 'Chính xác! 🎉' : 'Chưa đúng'}
+                <Text style={{ fontWeight: '800', color: quizMarkedMastered || isCorrectAnswer ? '#2E7D32' : '#C62828' }}>
+                  {quizMarkedMastered ? 'Đã đánh dấu là đã biết' : isCorrectAnswer ? 'Chính xác! 🎉' : 'Chưa đúng'}
                 </Text>
-                {!isCorrectAnswer ? (
+                {!quizMarkedMastered && !isCorrectAnswer ? (
                   <Text style={{ color: '#C62828', marginTop: 4 }}>Đáp án đúng: <Text style={{ fontWeight: '800' }}>{currentQuestion.answer}</Text></Text>
                 ) : null}
               </View>
@@ -494,24 +526,10 @@ export default function FlashcardsScreen() {
         </View>
 
         {/* Action button */}
-        {!showResult ? (
-          <TouchableOpacity
-            disabled={currentQuestion.type === 'fill_blank' ? !userAnswer.trim() : !selectedOption}
-            onPress={submitQuizAnswer}
-            style={[styles.primaryBtn, {
-              backgroundColor: colors.primary,
-              opacity: (currentQuestion.type === 'fill_blank' ? !userAnswer.trim() : !selectedOption) ? 0.5 : 1,
-            }]}
-          >
-            <Text style={styles.primaryBtnText}>Kiểm tra</Text>
-          </TouchableOpacity>
-        ) : (
-          <TouchableOpacity onPress={nextQuizQuestion} style={[styles.primaryBtn, { backgroundColor: colors.primary }]}>
-            <Text style={styles.primaryBtnText}>
-              {quizIndex + 1 < questions.length ? 'Câu tiếp theo →' : 'Xem kết quả'}
-            </Text>
-          </TouchableOpacity>
-        )}
+        {!showResult && <View style={styles.quizActions}>
+          {currentQuestion.type === 'fill_blank' && <TouchableOpacity disabled={saving || !userAnswer.trim()} onPress={() => void submitQuizAnswer()} style={[styles.primaryBtn, { flex: 1, backgroundColor: colors.primary, opacity: !userAnswer.trim() ? 0.5 : 1 }]}><Text style={styles.primaryBtnText}>Kiểm tra</Text></TouchableOpacity>}
+          <TouchableOpacity disabled={saving} onPress={markQuizWordMastered} style={[styles.secondaryBtn, { flex: 1, borderColor: colors.primary }]}><MaterialIcons name="done-all" size={20} color={colors.primary} /><Text style={[styles.secondaryBtnText, { color: colors.primary }]}>Đã biết</Text></TouchableOpacity>
+        </View>}
       </KeyboardAvoidingView>
     );
   };
@@ -526,35 +544,43 @@ export default function FlashcardsScreen() {
     const emoji = percentage >= 80 ? '🎉' : percentage >= 50 ? '💪' : '📚';
 
     // Deduplicate — show last result per vocabId
-    const resultMap = new Map<string, { vocabId: string; term: string; correct: boolean }>();
+    const resultMap = new Map<string, { vocabId: string; term: string; correct: boolean; selfReported?: boolean }>();
     allTimeResults.forEach(r => resultMap.set(r.vocabId, r));
     const finalResults = Array.from(resultMap.values());
-    const finalCorrect = finalResults.filter(r => r.correct).length;
+    const answers = allTimeResults.filter(result => !result.selfReported);
+    const finalCorrect = answers.filter(result => result.correct).length;
+    const selfReportedIds = new Set([
+      ...Object.entries(ratings).filter(([, rating]) => rating === 'mastered').map(([id]) => id),
+      ...allTimeResults.filter(result => result.selfReported).map(result => result.vocabId),
+    ]);
 
     return (
       <View style={styles.phaseContainer}>
         {/* Score circle */}
-        <View style={[styles.scoreCircle, { borderColor: percentage >= 80 ? '#4CAF50' : percentage >= 50 ? '#FF9800' : '#F44336' }]}>
+        <View style={[styles.scoreCircle, { borderColor: percentage >= 80 ? '#15803d' : percentage >= 50 ? '#FF9800' : '#b91c1c' }]}>
           <Text style={styles.scoreEmoji}>{emoji}</Text>
           <Text style={[styles.scoreText, { color: colors.onSurface }]}>{finalMastered}/{totalWords}</Text>
-          <Text style={[styles.scoreLabel, { color: colors.onSurfaceVariant }]}>từ đã thuộc</Text>
+          <Text style={[styles.scoreLabel, { color: colors.onSurfaceVariant }]}>từ hoàn tất trong phiên</Text>
         </View>
 
         <Text style={[styles.summaryTitle, { color: colors.onSurface }]}>
           {percentage >= 80 ? 'Xuất sắc!' : percentage >= 50 ? 'Khá tốt!' : 'Cần ôn thêm!'}
         </Text>
         <Text style={[styles.summarySubtitle, { color: colors.onSurfaceVariant }]}>
-          {batchNumber} đợt học · {finalCorrect}/{finalResults.length} câu trả lời đúng
+          {batchNumber} đợt học · {finalCorrect}/{answers.length} lượt trả lời đúng
         </Text>
 
+        <Text style={[styles.summarySubtitle, { color: colors.onSurfaceVariant }]}>
+          {selfReportedIds.size} từ tự đánh dấu đã biết · Kết quả trong phiên này
+        </Text>
         {/* Results list */}
         <View style={[styles.resultsList, { backgroundColor: colors.surface, borderColor: colors.outlineVariant }]}>
           {finalResults.map((r, i) => (
             <View key={i} style={[styles.resultRow, i < finalResults.length - 1 && { borderBottomWidth: 1, borderBottomColor: colors.outlineVariant }]}>
-              <MaterialIcons name={r.correct ? 'check-circle' : 'cancel'} size={20} color={r.correct ? '#4CAF50' : '#F44336'} />
+              <MaterialIcons name={r.correct ? 'check-circle' : 'cancel'} size={20} color={r.correct ? '#15803d' : '#b91c1c'} />
               <Text style={[styles.resultTerm, { color: colors.onSurface }]}>{r.term}</Text>
-              <Text style={[styles.resultStatus, { color: r.correct ? '#4CAF50' : '#F44336' }]}>
-                {r.correct ? 'Thuộc' : 'Chưa thuộc'}
+              <Text style={[styles.resultStatus, { color: r.correct ? '#15803d' : '#b91c1c' }]}>
+                {r.selfReported ? 'Tự đánh dấu đã biết' : r.correct ? 'Lần cuối đúng' : 'Lần cuối sai'}
               </Text>
             </View>
           ))}
@@ -562,9 +588,9 @@ export default function FlashcardsScreen() {
 
         {/* Action buttons */}
         <View style={styles.summaryActions}>
-          <TouchableOpacity onPress={loadSession} style={[styles.primaryBtn, { backgroundColor: colors.primary }]}>
+          <TouchableOpacity onPress={() => loadSession(true)} style={[styles.primaryBtn, { backgroundColor: colors.primary }]}>
             <MaterialIcons name="replay" size={20} color="#fff" />
-            <Text style={styles.primaryBtnText}>Học lại từ đầu</Text>
+            <Text style={styles.primaryBtnText}>{isReview ? 'Kiểm tra từ đến hạn' : 'Học thêm từ mới'}</Text>
           </TouchableOpacity>
 
           <TouchableOpacity onPress={() => router.back()} style={[styles.textBtn]}>
@@ -577,12 +603,8 @@ export default function FlashcardsScreen() {
 
   // ─── Title & subtitle ──────────────────────────────────────────────────────
 
-  const phaseTitle = phase === 'learn' ? 'Học từ vựng' : phase === 'quiz' ? 'Kiểm tra' : 'Kết quả';
-  const phaseSubtitle =
-    phase === 'learn' && currentBatch.length ? `Đợt ${batchNumber} · ${batchIdx + 1}/${currentBatch.length} từ` :
-    phase === 'quiz' && questions.length ? `Câu ${quizIndex + 1}/${questions.length}` :
-    phase === 'summary' ? `${masteredCount}/${totalWords} đã thuộc` :
-    'Ôn tập từ vựng IT';
+  const phaseTitle = phase === 'learn' ? (isReview ? 'Ôn tập đến hạn' : 'Học từ vựng') : phase === 'quiz' ? 'Kiểm tra' : 'Kết quả';
+  const phaseSubtitle = phase === 'summary' ? 'Hoàn thành phiên học' : 'Ôn tập từ vựng IT';
 
   return (
     <FeatureScreen title={phaseTitle} subtitle={phaseSubtitle} loading={loading} error={error} onRetry={loadSession}>
@@ -597,6 +619,12 @@ export default function FlashcardsScreen() {
 
 const styles = StyleSheet.create({
   phaseContainer: { flex: 1, gap: 16 },
+  emptySession: { gap: 12 },
+  sessionToolbar: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
+  dailyText: { fontSize: 12, fontWeight: '700' },
+  historyLink: { fontSize: 12, fontWeight: '800' },
+  dailyNotice: { alignSelf: 'flex-end', flexDirection: 'row', alignItems: 'center', gap: 5, borderRadius: 99, backgroundColor: '#fef3c7', paddingHorizontal: 10, paddingVertical: 5 },
+  dailyNoticeText: { fontSize: 10, fontWeight: '700', color: '#854d0e' },
 
   // Batch info
   batchInfoRow: { flexDirection: 'row', alignItems: 'center', gap: 8, paddingHorizontal: 14, paddingVertical: 8, borderRadius: 10 },
@@ -610,33 +638,36 @@ const styles = StyleSheet.create({
   progressText: { fontSize: 12, textAlign: 'center', marginTop: 4 },
 
   // Flip card
-  cardTouchArea: { height: 320 },
+  cardTouchArea: { height: 350 },
+  cardFlipArea: { flex: 1 },
   flipCard: {
     position: 'absolute', width: '100%', height: '100%',
-    borderWidth: 1, borderRadius: 20, padding: 24,
+    borderWidth: 1, borderRadius: 20, padding: 18,
     justifyContent: 'center', alignItems: 'center',
     backfaceVisibility: 'hidden',
     shadowColor: '#000', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.08, shadowRadius: 12,
     elevation: 4,
   },
   flipCardBack: { position: 'absolute', top: 0 },
-  speakerBtn: { position: 'absolute', top: 16, right: 16, padding: 8 },
-  termText: { fontSize: 32, fontWeight: '900', textAlign: 'center' },
+  speakerRow: { height: 44, alignItems: 'flex-end', justifyContent: 'center', marginBottom: -8, zIndex: 2 },
+  speakerBtn: { width: 44, height: 44, borderRadius: 22, alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderColor: '#ddd6fe', elevation: 2 },
+  termText: { fontSize: 27, lineHeight: 34, fontWeight: '900', textAlign: 'center' },
   ipaText: { fontSize: 16, marginTop: 8, textAlign: 'center' },
   posBadge: { paddingHorizontal: 12, paddingVertical: 4, borderRadius: 99, marginTop: 12 },
   posText: { fontSize: 12, fontWeight: '700' },
   tapHint: { fontSize: 12, marginTop: 20 },
-  defVi: { fontSize: 22, fontWeight: '800', textAlign: 'center' },
-  defEn: { fontSize: 14, textAlign: 'center', marginTop: 10, lineHeight: 20 },
-  exampleBox: { marginTop: 16, padding: 12, borderRadius: 12, width: '100%' },
-  exampleText: { fontStyle: 'italic', fontSize: 14, textAlign: 'center' },
-  exampleTranslation: { fontSize: 12, textAlign: 'center', marginTop: 6 },
+  defVi: { fontSize: 18, lineHeight: 24, fontWeight: '800', textAlign: 'center' },
+  defEn: { fontSize: 13, textAlign: 'center', marginTop: 8, lineHeight: 18 },
+  exampleBox: { marginTop: 10, padding: 10, borderRadius: 12, width: '100%' },
+  exampleText: { fontStyle: 'italic', fontSize: 12, lineHeight: 16, textAlign: 'center' },
+  exampleTranslation: { fontSize: 11, lineHeight: 15, textAlign: 'center', marginTop: 4 },
 
   // Navigation
   navRow: { flexDirection: 'row', justifyContent: 'space-between', gap: 10 },
   navBtn: { flexDirection: 'row', alignItems: 'center', gap: 4, paddingHorizontal: 16, paddingVertical: 12, borderRadius: 12 },
-  flipBtn: { flexDirection: 'row', alignItems: 'center', gap: 6, paddingHorizontal: 20, paddingVertical: 12, borderRadius: 12 },
-  flipBtnText: { color: '#fff', fontWeight: '800' },
+  ratingBar: { flexDirection: 'row', borderWidth: 1, borderRadius: 14, padding: 6 },
+  ratingButton: { flex: 1, minHeight: 52, alignItems: 'center', justifyContent: 'center', gap: 3, paddingHorizontal: 2 },
+  ratingText: { fontSize: 10, fontWeight: '800', textAlign: 'center' },
 
   // Quiz
   quizHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
@@ -652,6 +683,7 @@ const styles = StyleSheet.create({
   optionKey: { fontSize: 16, fontWeight: '800', width: 24 },
   optionText: { flex: 1, fontSize: 16, fontWeight: '600' },
   feedbackBox: { flexDirection: 'row', alignItems: 'center', gap: 12, padding: 14, borderRadius: 12 },
+  quizActions: { flexDirection: 'row', gap: 10 },
 
   // Buttons
   primaryBtn: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, paddingVertical: 16, borderRadius: 14 },

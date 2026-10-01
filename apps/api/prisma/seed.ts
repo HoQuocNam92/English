@@ -19,7 +19,7 @@ async function main() {
   // 1. LEARNING LEVELS
   // ============================================================
   const levels = await Promise.all([
-    prisma.level.upsert({ where: { code: LevelCode.beginner }, update: {}, create: { code: LevelCode.beginner, name: 'Beginner', order: 1, description: 'Phù hợp với người mới bắt đầu học tiếng Anh IT. Bao gồm từ vựng cơ bản và đọc hiểu tài liệu kỹ thuật đơn giản.', isActive: true } }),
+    prisma.level.upsert({ where: { code: LevelCode.beginner }, update: {}, create: { code: LevelCode.beginner, name: 'Beginner', order: 1, description: 'Phù hợp với người mới bắt đầu học tiếng Anh IT và xây dựng vốn từ vựng nền tảng.', isActive: true } }),
     prisma.level.upsert({ where: { code: LevelCode.intermediate }, update: {}, create: { code: LevelCode.intermediate, name: 'Intermediate', order: 2, description: 'Dành cho người đã quen với IT cơ bản. Bao gồm tài liệu kỹ thuật trung cấp và nội dung dựa trên tình huống.', isActive: true } }),
     prisma.level.upsert({ where: { code: LevelCode.advanced }, update: {}, create: { code: LevelCode.advanced, name: 'Advanced', order: 3, description: 'Cho kỹ sư có kinh nghiệm. Tài liệu API phức tạp, kiến trúc hệ thống và nội dung chuẩn bị chứng chỉ.', isActive: true } }),
   ])
@@ -42,26 +42,6 @@ async function main() {
     domains[d.code] = await prisma.domain.upsert({ where: { code: d.code }, update: {}, create: { ...d, isActive: true } })
   }
   console.log(`   ✅ ${Object.keys(domains).length} domains`)
-
-  // ============================================================
-  // 3. CAREER GOALS
-  // ============================================================
-  const careerGoalData = [
-    { code: 'BACKEND_ENGINEER', name: 'Backend Engineer', description: 'Thiết kế và xây dựng hệ thống server-side và API có khả năng mở rộng.' },
-    { code: 'FRONTEND_ENGINEER', name: 'Frontend Engineer', description: 'Xây dựng web interface responsive, accessible và client-side applications.' },
-    { code: 'FULLSTACK_ENGINEER', name: 'Full-Stack Engineer', description: 'Phát triển cả client-side và server-side của ứng dụng web.' },
-    { code: 'DEVOPS_ENGINEER', name: 'DevOps Engineer', description: 'Tự động hoá infrastructure, quản lý CI/CD và duy trì độ tin cậy hệ thống.' },
-    { code: 'CLOUD_ARCHITECT', name: 'Cloud Architect', description: 'Thiết kế kiến trúc cloud-native và chiến lược migration.' },
-    { code: 'DATA_ENGINEER', name: 'Data Engineer', description: 'Xây dựng và duy trì data pipelines, warehouses, và analytics infrastructure.' },
-    { code: 'ML_ENGINEER', name: 'ML Engineer', description: 'Thiết kế, huấn luyện và triển khai các mô hình machine learning quy mô lớn.' },
-    { code: 'SECURITY_ENGINEER', name: 'Security Engineer', description: 'Bảo vệ hệ thống và dữ liệu thông qua security engineering và threat modeling.' },
-    { code: 'SOLUTION_ARCHITECT', name: 'Solutions Architect', description: 'Thiết kế giải pháp kỹ thuật end-to-end và định hướng kiến trúc.' },
-    { code: 'SRE', name: 'Site Reliability Engineer', description: 'Đảm bảo độ tin cậy, khả năng mở rộng và hiệu suất của hệ thống production.' },
-  ]
-  for (const cg of careerGoalData) {
-    await prisma.careerGoal.upsert({ where: { code: cg.code }, update: {}, create: { ...cg, isActive: true } })
-  }
-  console.log(`   ✅ ${careerGoalData.length} career goals`)
 
   // ============================================================
   // 4. CERTIFICATES
@@ -116,11 +96,11 @@ async function main() {
     { code: 'roles:delete', name: 'Delete Roles', resource: 'roles', action: 'delete', description: 'Xoá non-system custom roles' },
     { code: 'roles:assign', name: 'Assign Roles', resource: 'roles', action: 'assign', description: 'Cấp hoặc thu hồi roles cho users' },
     { code: 'permissions:read', name: 'Read Permissions', resource: 'permissions', action: 'read', description: 'Xem tất cả permissions trong hệ thống' },
-    { code: 'lessons:read', name: 'Read Lessons', resource: 'lessons', action: 'read', description: 'Xem nội dung bài học' },
-    { code: 'lessons:create', name: 'Create Lessons', resource: 'lessons', action: 'create', description: 'Tạo bài học mới' },
-    { code: 'lessons:update', name: 'Update Lessons', resource: 'lessons', action: 'update', description: 'Chỉnh sửa nội dung bài học' },
-    { code: 'lessons:delete', name: 'Delete Lessons', resource: 'lessons', action: 'delete', description: 'Xoá bài học' },
-    { code: 'lessons:publish', name: 'Publish Lessons', resource: 'lessons', action: 'publish', description: 'Publish hoặc archive bài học' },
+
+
+
+
+
     { code: 'vocabulary:read', name: 'Read Vocabulary', resource: 'vocabulary', action: 'read', description: 'Xem từ vựng' },
     { code: 'vocabulary:manage', name: 'Manage Vocabulary', resource: 'vocabulary', action: 'manage', description: 'Tạo, sửa, xoá từ vựng' },
     { code: 'questions:read', name: 'Read Questions', resource: 'questions', action: 'read', description: 'Xem ngân hàng câu hỏi' },
@@ -151,15 +131,15 @@ async function main() {
     }
   }
   await rolePerm('admin', Object.keys(permissions))
-  await rolePerm('teacher', ['lessons:read','lessons:create','lessons:update','lessons:delete','lessons:publish','vocabulary:read','vocabulary:manage','questions:read','questions:manage','exams:read','exams:create','exams:publish','exams:grade','reports:read'])
-  await rolePerm('learner', ['lessons:read','vocabulary:read','exams:read','questions:read'])
-  await rolePerm('content_editor', ['lessons:read','lessons:create','lessons:update','vocabulary:read','vocabulary:manage'])
-  await rolePerm('content_reviewer', ['lessons:read','lessons:update','lessons:publish','vocabulary:read','questions:read'])
+  await rolePerm('teacher', ['vocabulary:read','vocabulary:manage','questions:read','questions:manage','exams:read','exams:create','exams:publish','exams:grade','reports:read'])
+  await rolePerm('learner', ['vocabulary:read','exams:read','questions:read'])
+  await rolePerm('content_editor', ['vocabulary:read','vocabulary:manage'])
+  await rolePerm('content_reviewer', ['vocabulary:read','questions:read'])
   await rolePerm('exam_manager', ['questions:read','questions:manage','exams:read','exams:create','exams:publish','exams:grade'])
-  await rolePerm('certificate_manager', ['certificates:manage','lessons:read','vocabulary:read','reports:read'])
+  await rolePerm('certificate_manager', ['certificates:manage','vocabulary:read','reports:read'])
   await rolePerm('community_moderator', ['community:manage','users:read'])
   await rolePerm('report_analyst', ['reports:read','users:read'])
-  await rolePerm('learner_support', ['users:read','lessons:read','vocabulary:read','reports:read'])
+  await rolePerm('learner_support', ['users:read','vocabulary:read','reports:read'])
   console.log('   ✅ Role permissions assigned')
 
   // ============================================================
@@ -188,30 +168,23 @@ async function main() {
   // ============================================================
   // 6. LEARNER PROFILES
   // ============================================================
-  const cloudArchGoal = await prisma.careerGoal.findUnique({ where: { code: 'CLOUD_ARCHITECT' } })
-  const devopsGoal    = await prisma.careerGoal.findUnique({ where: { code: 'DEVOPS_ENGINEER' } })
-  const secGoal       = await prisma.careerGoal.findUnique({ where: { code: 'SECURITY_ENGINEER' } })
-  const dataGoal      = await prisma.careerGoal.findUnique({ where: { code: 'DATA_ENGINEER' } })
-  const fullGoal      = await prisma.careerGoal.findUnique({ where: { code: 'FULLSTACK_ENGINEER' } })
-
-  const makeProfile = async (userId: string, levelIdx: number, bio: string, weeklyMin: number, domainCodes: string[], careerGoalId: string | null, certCode: string | null, targetDate: Date | null) => {
+  const makeProfile = async (userId: string, levelIdx: number, bio: string, weeklyMin: number, domainCodes: string[], certCode: string | null, targetDate: Date | null) => {
     const existing = await prisma.learnerProfile.findUnique({ where: { userId } })
     if (existing) return existing
     return prisma.learnerProfile.create({
       data: {
         userId, levelId: levels[levelIdx].id, bio, weeklyStudyTargetMinutes: weeklyMin, onboardingCompleted: true,
         domains: { create: domainCodes.map(c => ({ domainId: domains[c].id })) },
-        careerGoals: careerGoalId ? { create: [{ careerGoalId }] } : undefined,
         certGoals: (certCode && targetDate) ? { create: [{ certificateId: certs[certCode].id, targetDate }] } : undefined,
       },
     })
   }
 
-  await makeProfile(learner1.id, 1, 'Backend developer đang chuẩn bị AWS-SAA, focus vào Cloud và Software Engineering.', 300, ['CLOUD','SOFTWARE_ENG'], cloudArchGoal?.id ?? null, 'AWS-SAA', new Date('2026-12-31'))
-  await makeProfile(learner2.id, 0, 'DevOps intern, quan tâm đến Kubernetes và container orchestration.', 240, ['DEVOPS','CLOUD'], devopsGoal?.id ?? null, 'CKA', new Date('2027-03-31'))
-  await makeProfile(learner3.id, 1, 'Security analyst đang target CompTIA Security+ trong vòng 4 tháng.', 200, ['CYBERSEC','NETWORKING'], secGoal?.id ?? null, 'COMPTIA-SECURITY-PLUS', new Date('2026-12-15'))
-  await makeProfile(learner4.id, 2, 'Data engineer có kinh nghiệm, focus GCP và advanced data pipelines.', 180, ['DATA_ENG','CLOUD'], dataGoal?.id ?? null, 'GCP-ACE', new Date('2026-10-31'))
-  await makeProfile(learner5.id, 0, 'Fresh graduate, muốn học tiếng Anh IT để chuẩn bị đi làm.', 120, ['SOFTWARE_ENG','DEVOPS'], fullGoal?.id ?? null, null, null)
+  await makeProfile(learner1.id, 1, 'Backend developer đang chuẩn bị AWS-SAA, focus vào Cloud và Software Engineering.', 300, ['CLOUD','SOFTWARE_ENG'], 'AWS-SAA', new Date('2026-12-31'))
+  await makeProfile(learner2.id, 0, 'DevOps intern, quan tâm đến Kubernetes và container orchestration.', 240, ['DEVOPS','CLOUD'], 'CKA', new Date('2027-03-31'))
+  await makeProfile(learner3.id, 1, 'Security analyst đang target CompTIA Security+ trong vòng 4 tháng.', 200, ['CYBERSEC','NETWORKING'], 'COMPTIA-SECURITY-PLUS', new Date('2026-12-15'))
+  await makeProfile(learner4.id, 2, 'Data engineer có kinh nghiệm, focus GCP và advanced data pipelines.', 180, ['DATA_ENG','CLOUD'], 'GCP-ACE', new Date('2026-10-31'))
+  await makeProfile(learner5.id, 0, 'Fresh graduate, muốn học tiếng Anh IT để chuẩn bị đi làm.', 120, ['SOFTWARE_ENG','DEVOPS'], null, null)
   console.log('   ✅ 5 learner profiles')
 
   // ============================================================
@@ -274,132 +247,100 @@ async function main() {
   }
 
   // ============================================================
-  // 8. LESSONS (5 lessons)
+  // 8b. LESSONS — representative content for every required format
   // ============================================================
-  console.log('📖 Seed Lessons...')
+  console.log('📚 Seed Lessons...')
 
-  const lesson1 = await prisma.lesson.upsert({
-    where: { slug: 'understanding-rest-apis-in-production' }, update: {},
-    create: {
-      title: 'Understanding REST APIs in Production', slug: 'understanding-rest-apis-in-production',
-      summary: 'Học các nguyên tắc cốt lõi của RESTful APIs bao gồm HTTP methods, status codes, versioning và API design best practices cho môi trường production.',
-      type: 'technical_reading', domainId: domains['SOFTWARE_ENG'].id, levelId: levels[1].id,
-      estimatedMinutes: 35, status: ContentStatus.published, publishedAt: new Date(), createdById: teacher1.id,
-      sections: {
-        create: [
-          { type: 'heading', order: 1, title: 'What is a REST API?', content: { text: 'What is a REST API?' } },
-          { type: 'rich_text', order: 2, content: { text: 'REST (Representational State Transfer) is an architectural style for distributed hypermedia systems. A REST API uses HTTP requests to perform CRUD operations: Create (POST), Read (GET), Update (PUT/PATCH), and Delete (DELETE). REST APIs are stateless — each request contains all information needed to process it, with no server-side session state.' } },
-          { type: 'heading', order: 3, title: 'HTTP Methods and Idempotency', content: { text: 'HTTP Methods and Idempotency' } },
-          { type: 'rich_text', order: 4, content: { text: 'Understanding which HTTP methods are safe and idempotent is critical for building reliable APIs:\n\n- GET: Safe + Idempotent. Never modifies data.\n- HEAD: Safe + Idempotent. Same as GET but returns only headers.\n- PUT: Not safe, but Idempotent. Replaces the entire resource.\n- DELETE: Not safe, but Idempotent. Deletes once regardless of repeated calls.\n- POST: Neither safe nor idempotent. Creates new resources.\n- PATCH: Neither safe nor idempotent (unless designed carefully).' } },
-          { type: 'code', order: 5, title: 'Example: Idempotent PUT vs Non-idempotent POST', content: { language: 'http', code: '# Idempotent: calling 5 times produces same result\nPUT /api/v1/users/123 HTTP/1.1\nContent-Type: application/json\n\n{"displayName": "Nguyen Van An", "role": "senior-engineer"}\n\n# Non-idempotent: creates a new resource each time\nPOST /api/v1/orders HTTP/1.1\nContent-Type: application/json\n\n{"productId": "prod-456", "quantity": 2}' } },
-          { type: 'heading', order: 6, title: 'HTTP Status Codes', content: { text: 'HTTP Status Codes' } },
-          { type: 'rich_text', order: 7, content: { text: 'Correct status codes communicate intent clearly:\n\n2xx Success:\n- 200 OK: General success\n- 201 Created: Resource successfully created (with Location header)\n- 204 No Content: Success with no response body (common for DELETE)\n\n4xx Client Errors:\n- 400 Bad Request: Invalid request syntax or validation failure\n- 401 Unauthorized: Authentication required or token expired\n- 403 Forbidden: Authenticated but lacks permission\n- 404 Not Found: Resource does not exist\n- 409 Conflict: State conflict (e.g., duplicate email)\n- 429 Too Many Requests: Rate limit exceeded\n\n5xx Server Errors:\n- 500 Internal Server Error: Unexpected server-side failure\n- 503 Service Unavailable: Server overloaded or under maintenance' } },
-        ],
-      },
+  const lessonSeed = [
+    {
+      slug: 'it-terminology-foundations', title: 'Thuật ngữ IT nền tảng', type: 'terminology' as const,
+      summary: 'Làm quen với các thuật ngữ cốt lõi thường gặp trong phát triển phần mềm và vận hành hệ thống.',
+      domain: 'SOFTWARE_ENG', level: LevelCode.beginner, minutes: 25,
+      concepts: ['requirement', 'deployment', 'repository', 'database'], certificates: [] as string[],
+      sections: [
+        { type: 'heading' as const, title: 'Thuật ngữ trong vòng đời phần mềm', content: { text: 'Từ yêu cầu đến triển khai' } },
+        { type: 'rich_text' as const, title: 'Nội dung', content: { html: '<p><strong>Requirement</strong> là yêu cầu cần đáp ứng. <strong>Repository</strong> là nơi quản lý mã nguồn. <strong>Deployment</strong> là quá trình đưa phiên bản phần mềm vào môi trường chạy.</p>' } },
+        { type: 'callout' as const, title: 'Ghi nhớ', content: { text: 'Hãy học thuật ngữ cùng ngữ cảnh thay vì dịch từng từ riêng lẻ.', tone: 'tip' } },
+      ],
     },
-  })
-
-  const lesson2 = await prisma.lesson.upsert({
-    where: { slug: 'aws-high-availability-architecture' }, update: {},
-    create: {
-      title: 'AWS Solutions Architect — Designing for High Availability',
-      slug: 'aws-high-availability-architecture',
-      summary: 'Tìm hiểu cách thiết kế kiến trúc AWS có tính sẵn sàng cao sử dụng Multi-AZ deployments, ELB và Auto Scaling.',
-      type: 'technical_reading', domainId: domains['CLOUD'].id, levelId: levels[1].id,
-      estimatedMinutes: 50, status: ContentStatus.published, publishedAt: new Date(), createdById: teacher1.id,
-      certificates: { create: [{ certificateId: certs['AWS-SAA'].id }] },
-      sections: {
-        create: [
-          { type: 'heading', order: 1, title: 'Multi-AZ Architecture', content: { text: 'Multi-AZ Architecture' } },
-          { type: 'rich_text', order: 2, content: { text: 'High availability in AWS is achieved by distributing workloads across multiple Availability Zones (AZs). Each AZ is physically separate with independent power, cooling, and networking. A well-architected application should tolerate the complete failure of any single AZ without service disruption.\n\nKey principle: Design for failure. Assume any component can fail at any time and architect accordingly.' } },
-          { type: 'heading', order: 3, title: 'RDS Multi-AZ vs Read Replicas', content: { text: 'RDS Multi-AZ vs Read Replicas' } },
-          { type: 'rich_text', order: 4, content: { text: 'RDS Multi-AZ is for HIGH AVAILABILITY — automatic failover to standby in another AZ if the primary fails. Failover takes 60-120 seconds. The standby cannot serve reads.\n\nRDS Read Replicas are for PERFORMANCE — offload read traffic from the primary instance. Replication is asynchronous. Can be promoted to standalone DB. Can span across regions for disaster recovery.\n\nExam tip: If the question mentions "automatic failover" or "synchronous replication" → Multi-AZ. If it mentions "read scaling" or "async replication" → Read Replica.' } },
-          { type: 'heading', order: 5, title: 'Elastic Load Balancing Types', content: { text: 'Elastic Load Balancing Types' } },
-          { type: 'rich_text', order: 6, content: { text: 'AWS offers three load balancer types:\n\n1. Application Load Balancer (ALB) — Layer 7. Supports HTTP/HTTPS, WebSockets. Enables path-based routing (/api/* → api-service, /web/* → web-service) and host-based routing.\n\n2. Network Load Balancer (NLB) — Layer 4. Handles TCP/UDP/TLS. Designed for ultra-high performance (millions of requests/second). Preserves client IP. Use for non-HTTP protocols.\n\n3. Gateway Load Balancer (GWLB) — Layer 3. Routes traffic to virtual appliances (firewalls, IDS/IPS). Used for inline security inspection.' } },
-        ],
-      },
+    {
+      slug: 'reading-cloud-architecture-document', title: 'Đọc hiểu tài liệu kiến trúc Cloud', type: 'technical_reading' as const,
+      summary: 'Luyện đọc tài liệu kỹ thuật mô tả một hệ thống web có tính sẵn sàng cao trên AWS.',
+      domain: 'CLOUD', level: LevelCode.intermediate, minutes: 35,
+      concepts: ['high availability', 'fault tolerance', 'availability zone'], certificates: ['AWS-SAA'],
+      sections: [
+        { type: 'heading' as const, title: 'Technical document', content: { text: 'A highly available web workload' } },
+        { type: 'rich_text' as const, title: 'Reading passage', content: { html: '<p>The workload spans two Availability Zones. An Application Load Balancer distributes requests while an Auto Scaling group replaces unhealthy instances. The database uses a Multi-AZ deployment for automatic failover.</p>' } },
+        { type: 'quiz' as const, title: 'Kiểm tra đọc hiểu', content: { question: 'Which component replaces unhealthy compute instances?', answer: 'The Auto Scaling group.' } },
+      ],
     },
-  })
-
-  const lesson3 = await prisma.lesson.upsert({
-    where: { slug: 'kubernetes-pod-troubleshooting' }, update: {},
-    create: {
-      title: 'Kubernetes Troubleshooting — Common Pod Issues',
-      slug: 'kubernetes-pod-troubleshooting',
-      summary: 'Hướng dẫn thực tế để chẩn đoán và giải quyết các vấn đề pod Kubernetes phổ biến: CrashLoopBackOff, OOMKilled, ImagePullBackOff và Pending.',
-      type: 'case_study', domainId: domains['DEVOPS'].id, levelId: levels[2].id,
-      estimatedMinutes: 40, status: ContentStatus.published, publishedAt: new Date(), createdById: teacher2.id,
-      certificates: { create: [{ certificateId: certs['CKA'].id }] },
-      sections: {
-        create: [
-          { type: 'heading', order: 1, title: 'CrashLoopBackOff', content: { text: 'CrashLoopBackOff — Application Keeps Crashing' } },
-          { type: 'rich_text', order: 2, content: { text: 'CrashLoopBackOff means the container starts, crashes, Kubernetes restarts it, it crashes again — in a loop with increasing delays (1s, 2s, 4s, 8s... up to 5 minutes).\n\nCommon causes:\n- Application error on startup (check logs)\n- Missing environment variables or secrets\n- Wrong command/args in the pod spec\n- Failing health checks causing premature restarts\n- Missing ConfigMap or Secret mounts' } },
-          { type: 'code', order: 3, title: 'Diagnostic Commands', content: { language: 'bash', code: '# Step 1: Describe the pod to see events and status\nkubectl describe pod <pod-name> -n <namespace>\n\n# Step 2: Check logs from the current container\nkubectl logs <pod-name> -n <namespace>\n\n# Step 3: Check logs from the previous crashed container\nkubectl logs <pod-name> -n <namespace> --previous\n\n# Step 4: If the pod starts, exec in for debugging\nkubectl exec -it <pod-name> -n <namespace> -- /bin/sh' } },
-          { type: 'heading', order: 4, title: 'OOMKilled — Out of Memory', content: { text: 'OOMKilled — Container Killed by Memory Limit' } },
-          { type: 'rich_text', order: 5, content: { text: 'OOMKilled (exit code 137) means the container was killed by the Linux kernel\'s OOM killer because it exceeded its configured memory limit.\n\nInvestigating OOMKilled:\n1. Check kubectl describe pod — look for "OOMKilled" in Last State\n2. Check kubectl top pod — current memory usage\n3. Check application metrics — was memory growing over time (leak) or spiked suddenly?\n\nSolutions:\n- Increase memory limit in pod spec (quick fix)\n- Optimize code to reduce memory usage (sustainable fix)\n- Add memory profiling to identify leaks (engineering fix)\n- Process large data in streams/chunks instead of loading entirely into memory' } },
-        ],
-      },
+    {
+      slug: 'reading-rest-api-documentation', title: 'Đọc tài liệu REST API', type: 'api_documentation' as const,
+      summary: 'Hiểu endpoint, phương thức HTTP, mã trạng thái, xác thực và mẫu request/response trong tài liệu API.',
+      domain: 'SOFTWARE_ENG', level: LevelCode.intermediate, minutes: 40,
+      concepts: ['endpoint', 'authentication', 'request', 'response'], certificates: ['AWS-DVA'],
+      sections: [
+        { type: 'rich_text' as const, title: 'Endpoint specification', content: { html: '<p><code>POST /v1/orders</code> creates an order. Send a bearer token in the Authorization header. A successful request returns <code>201 Created</code>; invalid input returns <code>400 Bad Request</code>.</p>' } },
+        { type: 'code' as const, title: 'Request example', content: { language: 'json', code: '{\n  "productId": "p-101",\n  "quantity": 2\n}' } },
+        { type: 'callout' as const, title: 'Reading strategy', content: { text: 'Xác định method, path, authentication, required fields và error responses trước.', tone: 'info' } },
+      ],
     },
-  })
-
-  const lesson4 = await prisma.lesson.upsert({
-    where: { slug: 'network-security-fundamentals' }, update: {},
-    create: {
-      title: 'CompTIA Security+ — Network Security Fundamentals',
-      slug: 'network-security-fundamentals',
-      summary: 'Các khái niệm bảo mật mạng thiết yếu cho kỳ thi CompTIA Security+: firewall types, VPN protocols, IDS vs IPS và kiến trúc zero-trust.',
-      type: 'technical_reading', domainId: domains['CYBERSEC'].id, levelId: levels[1].id,
-      estimatedMinutes: 45, status: ContentStatus.published, publishedAt: new Date(), createdById: teacher2.id,
-      certificates: { create: [{ certificateId: certs['COMPTIA-SECURITY-PLUS'].id }] },
-      sections: {
-        create: [
-          { type: 'heading', order: 1, title: 'Firewall Types', content: { text: 'Firewall Types' } },
-          { type: 'rich_text', order: 2, content: { text: 'Packet Filtering Firewall: Examines packets at the network layer (Layer 3). Filters based on source/destination IP, port, and protocol. Stateless — does not track connection state. Fast but limited protection.\n\nStateful Inspection Firewall: Tracks the state of network connections. Understands context (e.g., allows return traffic for established TCP connections). More secure than packet filtering.\n\nNext-Generation Firewall (NGFW): Operates at Layer 7. Deep packet inspection, application awareness, SSL/TLS inspection, integrated IPS, and user identity tracking. The modern standard.' } },
-          { type: 'heading', order: 3, title: 'IDS vs IPS', content: { text: 'IDS vs IPS — Detection vs Prevention' } },
-          { type: 'rich_text', order: 4, content: { text: 'IDS (Intrusion Detection System): PASSIVE. Monitors traffic and generates alerts when suspicious patterns are detected. Does NOT block traffic. Think of it as a security camera.\n\nIPS (Intrusion Prevention System): ACTIVE. Sits inline in the traffic path. Detects AND blocks malicious traffic in real time. Can cause false positives that block legitimate traffic.\n\nExam tip: IDS = detect only. IPS = detect + prevent. HIDS/HIPS = host-based. NIDS/NIPS = network-based.' } },
-        ],
-      },
+    {
+      slug: 'system-design-scalable-service', title: 'System Design: Dịch vụ có khả năng mở rộng', type: 'system_design' as const,
+      summary: 'Phân tích bằng tiếng Anh các thành phần và đánh đổi khi thiết kế một dịch vụ web có khả năng mở rộng.',
+      domain: 'SOFTWARE_ENG', level: LevelCode.advanced, minutes: 50,
+      concepts: ['scalability', 'load balancing', 'cache', 'trade-off'], certificates: [],
+      sections: [
+        { type: 'heading' as const, title: 'Design goal', content: { text: 'Serve one million daily active users with predictable latency.' } },
+        { type: 'rich_text' as const, title: 'Architecture discussion', content: { html: '<p>Place stateless application servers behind a load balancer. Cache frequently accessed data, partition write-heavy workloads, and monitor latency, error rate, traffic, and saturation.</p>' } },
+        { type: 'quiz' as const, title: 'Trade-off question', content: { question: 'What consistency trade-off can a distributed cache introduce?', answer: 'Cached data can become stale unless invalidation is handled correctly.' } },
+      ],
     },
-  })
-
-  const lesson5 = await prisma.lesson.upsert({
-    where: { slug: 'devops-pipeline-design' }, update: {},
-    create: {
-      title: 'DevOps Pipeline Design — From Code to Production',
-      slug: 'devops-pipeline-design',
-      summary: 'Tìm hiểu cách thiết kế CI/CD pipeline hiệu quả với GitHub Actions, từ code commit đến production deployment.',
-      type: 'technical_reading', domainId: domains['DEVOPS'].id, levelId: levels[0].id,
-      estimatedMinutes: 30, status: ContentStatus.published, publishedAt: new Date(), createdById: teacher1.id,
-      sections: {
-        create: [
-          { type: 'heading', order: 1, title: 'CI/CD Pipeline Stages', content: { text: 'CI/CD Pipeline Stages' } },
-          { type: 'rich_text', order: 2, content: { text: 'A production-grade CI/CD pipeline typically consists of these stages:\n\n1. Source: Code commit triggers the pipeline (via webhook)\n2. Build: Compile code, install dependencies, create artifacts\n3. Test: Unit tests, integration tests, security scans (SAST)\n4. Package: Build Docker image, push to registry\n5. Deploy to Staging: Deploy to staging environment\n6. Acceptance Tests: End-to-end tests, performance tests\n7. Deploy to Production: Canary or blue-green deployment\n8. Monitor: Health checks, error rates, alerting' } },
-          { type: 'code', order: 3, title: 'Example: GitHub Actions CI Pipeline', content: { language: 'yaml', code: 'name: CI Pipeline\n\non:\n  pull_request:\n    branches: [main, develop]\n\njobs:\n  test:\n    runs-on: ubuntu-latest\n    steps:\n      - uses: actions/checkout@v4\n      \n      - name: Setup Node.js\n        uses: actions/setup-node@v4\n        with:\n          node-version: "20"\n          cache: "pnpm"\n      \n      - name: Install dependencies\n        run: pnpm install --frozen-lockfile\n      \n      - name: Run unit tests\n        run: pnpm test --coverage\n      \n      - name: Run linting\n        run: pnpm lint\n      \n      - name: Build\n        run: pnpm build\n      \n      - name: Upload coverage\n        uses: codecov/codecov-action@v3' } },
-        ],
-      },
+    {
+      slug: 'ba-payment-requirement-case-study', title: 'Tình huống BA: Làm rõ yêu cầu thanh toán', type: 'case_study' as const,
+      summary: 'Thực hành xử lý tình huống thực tế của Business Analyst khi yêu cầu nghiệp vụ còn mơ hồ.',
+      domain: 'SOFTWARE_ENG', level: LevelCode.intermediate, minutes: 45,
+      concepts: ['stakeholder', 'acceptance criteria', 'edge case', 'scope'], certificates: [],
+      sections: [
+        { type: 'rich_text' as const, title: 'Scenario', content: { html: '<p>A stakeholder asks the team to “make checkout faster” without defining a target or affected user journey. The current flow supports cards, bank transfer, and promotional codes.</p>' } },
+        { type: 'callout' as const, title: 'Your task', content: { text: 'Prepare clarification questions, define measurable acceptance criteria, and identify edge cases such as payment timeout, duplicate submission, and invalid promo codes.', tone: 'warning' } },
+        { type: 'quiz' as const, title: 'Suggested outcome', content: { question: 'Give one measurable acceptance criterion.', answer: 'For 95% of valid card payments, confirmation is displayed within three seconds.' } },
+      ],
     },
-  })
-  console.log('   ✅ 5 lessons seeded')
+    {
+      slug: 'aws-saa-high-availability-review', title: 'Ôn tập AWS SAA: High Availability', type: 'certification_review' as const,
+      summary: 'Tổng hợp khái niệm và cách đọc câu hỏi tình huống về tính sẵn sàng cao cho mục tiêu AWS SAA.',
+      domain: 'CLOUD', level: LevelCode.intermediate, minutes: 55,
+      concepts: ['Multi-AZ', 'Auto Scaling', 'Elastic Load Balancing', 'RTO', 'RPO'], certificates: ['AWS-SAA'],
+      sections: [
+        { type: 'rich_text' as const, title: 'Review notes', content: { html: '<p>Multi-AZ focuses on high availability. Read replicas primarily scale reads. Auto Scaling maintains capacity, while load balancers distribute traffic across healthy targets.</p>' } },
+        { type: 'callout' as const, title: 'Exam technique', content: { text: 'Khoanh vùng các từ khóa về RTO, RPO, automatic failover và operational overhead.', tone: 'tip' } },
+        { type: 'quiz' as const, title: 'Quick check', content: { question: 'Which RDS option provides automatic failover?', answer: 'A Multi-AZ deployment.' } },
+      ],
+    },
+  ]
 
-  // Link vocabularies to lessons
-  if (!skipVocabularySeed) {
-    console.log('🔗 Link Vocabulary to Lessons...')
-    const allVocab = await prisma.vocabulary.findMany()
-    const seededLessons = await prisma.lesson.findMany()
-    for (const lesson of seededLessons) {
-      // Find vocabularies matching the lesson's domain or grab a sample
-      let matchingVocab = allVocab.filter(v => v.domainId === lesson.domainId)
-      if (matchingVocab.length === 0) matchingVocab = allVocab.slice(0, 6)
-      for (const v of matchingVocab) {
-        await prisma.lessonVocabulary.upsert({
-          where: { lessonId_vocabularyId: { lessonId: lesson.id, vocabularyId: v.id } },
-          update: {},
-          create: { lessonId: lesson.id, vocabularyId: v.id }
-        })
-      }
-    }
-    console.log('   ✅ Vocabulary linked to lessons')
+  for (const lesson of lessonSeed) {
+    const level = levels.find((item) => item.code === lesson.level)!
+    await prisma.lesson.upsert({
+      where: { slug: lesson.slug },
+      update: {
+        title: lesson.title, summary: lesson.summary, type: lesson.type,
+        domainId: domains[lesson.domain].id, levelId: level.id,
+        estimatedMinutes: lesson.minutes, keyConcepts: lesson.concepts,
+        status: ContentStatus.published,
+      },
+      create: {
+        title: lesson.title, slug: lesson.slug, summary: lesson.summary, type: lesson.type,
+        domainId: domains[lesson.domain].id, levelId: level.id,
+        estimatedMinutes: lesson.minutes, keyConcepts: lesson.concepts,
+        status: ContentStatus.published, publishedAt: new Date(), createdById: teacher1.id,
+        sections: { create: lesson.sections.map((section, index) => ({ ...section, order: index + 1 })) },
+        certificates: { create: lesson.certificates.map((code) => ({ certificateId: certs[code].id })) },
+      },
+    })
   }
+  console.log(`   ✅ ${lessonSeed.length} lessons seeded`)
 
   // ============================================================
   // 9. QUESTIONS (15)
@@ -414,7 +355,6 @@ async function main() {
       data: {
         type, prompt, context: context ?? undefined, explanation,
         domainId: domains[domainCode].id, levelId: lvl!.id, topics, points, status: ContentStatus.published,
-        certificates: certCodes.length > 0 ? { create: certCodes.map(c => ({ certificateId: certs[c].id })) } : undefined,
         options: { create: options.map((o, i) => ({ key: o.key, text: o.text, isCorrect: o.correct, explanation: o.exp, order: i + 1 })) },
       },
     })
@@ -532,15 +472,82 @@ async function main() {
     console.log(`   ⏭️  Skip Questions seed (${existingQuestionCount} restored records found)`)
   }
 
+  // Keep this category available even when the database was restored with
+  // vocabulary/reading/scenario questions but no technical-understanding set.
+  const technicalQuestions = [
+    {
+      id: '91000000-0000-4000-8000-000000000001',
+      prompt: 'In a REST API, why is an idempotency key useful when creating a payment?',
+      explanation: 'An idempotency key lets the server recognize retried requests and return the original result instead of creating a duplicate payment.',
+      domain: 'SOFTWARE_ENG', level: LevelCode.intermediate,
+      topics: ['REST API', 'idempotency', 'payments'],
+      options: [
+        { key: 'A', text: 'It encrypts the payment payload', correct: false },
+        { key: 'B', text: 'It prevents a retried request from creating a duplicate payment', correct: true },
+        { key: 'C', text: 'It increases the API rate limit', correct: false },
+        { key: 'D', text: 'It replaces user authentication', correct: false },
+      ],
+    },
+    {
+      id: '91000000-0000-4000-8000-000000000002',
+      prompt: 'What is the main purpose of a health check used by a load balancer?',
+      explanation: 'A health check identifies targets that can safely receive traffic; unhealthy targets are removed from rotation until they recover.',
+      domain: 'CLOUD', level: LevelCode.beginner,
+      topics: ['load balancing', 'health check', 'availability'],
+      options: [
+        { key: 'A', text: 'To compress every response', correct: false },
+        { key: 'B', text: 'To route traffic only to healthy service instances', correct: true },
+        { key: 'C', text: 'To create database backups', correct: false },
+        { key: 'D', text: 'To assign permissions to users', correct: false },
+      ],
+    },
+    {
+      id: '91000000-0000-4000-8000-000000000003',
+      prompt: 'A cache uses a time-to-live (TTL) of 300 seconds. What does this mean?',
+      explanation: 'TTL specifies how long a cached entry remains valid. After 300 seconds it expires and must be refreshed or fetched from the source.',
+      domain: 'SOFTWARE_ENG', level: LevelCode.beginner,
+      topics: ['cache', 'TTL', 'performance'],
+      options: [
+        { key: 'A', text: 'The cached entry expires after 300 seconds', correct: true },
+        { key: 'B', text: 'The cache accepts only 300 users', correct: false },
+        { key: 'C', text: 'The request timeout is always 300 milliseconds', correct: false },
+        { key: 'D', text: 'The database keeps 300 backups', correct: false },
+      ],
+    },
+  ]
+
+  for (const question of technicalQuestions) {
+    const level = levels.find((item) => item.code === question.level)!
+    await prisma.question.upsert({
+      where: { id: question.id },
+      update: {
+        skill: 'technical_understanding', prompt: question.prompt,
+        explanation: question.explanation, domainId: domains[question.domain].id,
+        levelId: level.id, topics: question.topics, status: ContentStatus.published,
+      },
+      create: {
+        id: question.id, type: QuestionType.single_choice,
+        skill: 'technical_understanding', prompt: question.prompt,
+        explanation: question.explanation, domainId: domains[question.domain].id,
+        levelId: level.id, topics: question.topics, points: 1,
+        status: ContentStatus.published,
+        options: { create: question.options.map((option, index) => ({
+          key: option.key, text: option.text, isCorrect: option.correct,
+          explanation: option.correct ? question.explanation : 'Lựa chọn này không mô tả đúng khái niệm kỹ thuật được hỏi.',
+          order: index + 1,
+        })) },
+      },
+    })
+  }
+  console.log(`   ✅ ${technicalQuestions.length} technical-understanding questions seeded`)
+
   // ============================================================
-  // 10. EXAMS (2)
+  // 10. CERTIFICATION EXAMS
   // ============================================================
   console.log('📝 Seed Exams...')
 
   const allQuestions = await prisma.question.findMany({ where: { status: ContentStatus.published } })
   const awsQuestions = allQuestions.filter(q => q.domainId === domains['CLOUD'].id)
-  const restQuestions = allQuestions.filter(q => q.domainId === domains['SOFTWARE_ENG'].id)
-  const devopsQuestions = allQuestions.filter(q => q.domainId === domains['DEVOPS'].id)
 
   if (!await prisma.exam.findFirst({ where: { title: 'AWS SAA Mock Exam — High Availability & Networking' } })) {
     await prisma.exam.create({
@@ -556,20 +563,25 @@ async function main() {
     })
   }
 
-  if (!await prisma.exam.findFirst({ where: { title: 'REST API & DevOps Fundamentals Quiz' } })) {
+  const scenarioQuestions = allQuestions.filter((question) => question.skill === 'scenario_based').slice(0, 5)
+  if (scenarioQuestions.length > 0 && !await prisma.exam.findFirst({ where: { title: 'Bài tập tình huống thực tế cho chuyên viên IT' } })) {
     await prisma.exam.create({
       data: {
-        title: 'REST API & DevOps Fundamentals Quiz',
-        description: 'Bài kiểm tra kết hợp các câu hỏi về REST API design, HTTP methods, status codes và DevOps fundamentals. Phù hợp cho Software Engineers và DevOps Engineers.',
+        title: 'Bài tập tình huống thực tế cho chuyên viên IT',
+        description: 'Đánh giá khả năng đọc tình huống, xác định vấn đề và lựa chọn giải pháp phù hợp trong công việc thực tế.',
         domainId: domains['SOFTWARE_ENG'].id, levelId: levels[1].id,
-        topics: ['REST API','HTTP methods','CI/CD','Kubernetes','deployment'], durationMinutes: 15,
-        passingScorePercent: 60.0, maxAttempts: 5, shuffleQuestions: true,
-        status: ContentStatus.published, publishedAt: new Date(), createdById: teacher2.id,
-        questions: { create: [...restQuestions.slice(0, 5), ...devopsQuestions.slice(0, 5)].map((q, i) => ({ questionId: q.id, order: i + 1, weight: 1.0 })) },
+        kind: 'scenario_assessment', topics: ['case study', 'problem solving', 'workplace English'],
+        durationMinutes: 30, passingScorePercent: 70, maxAttempts: 3,
+        shuffleQuestions: false, status: ContentStatus.published,
+        publishedAt: new Date(), createdById: teacher1.id,
+        questions: { create: scenarioQuestions.map((question, index) => ({
+          questionId: question.id, order: index + 1, weight: 1,
+        })) },
       },
     })
   }
-  console.log('   ✅ 2 exams seeded')
+
+  console.log('   ✅ Certification exams seeded')
 
   // ============================================================
   // 12. PHASE 3: SEED EXAM ATTEMPTS, PROGRESS, CACHE, RECOMMENDATIONS
@@ -579,7 +591,6 @@ async function main() {
   const learners = await prisma.user.findMany({
     where: { userRoles: { some: { role: { code: 'learner' } } } }
   });
-  const allLessons = await prisma.lesson.findMany();
   const allExams = await prisma.exam.findMany({
     include: {
       questions: {
@@ -588,25 +599,6 @@ async function main() {
     }
   });
   const allLevels = await prisma.level.findMany({ orderBy: { order: 'asc' } });
-
-  // 1. Ensure all lessons have at least 3 sections
-  for (const lesson of allLessons) {
-    const sectionCount = await prisma.lessonSection.count({ where: { lessonId: lesson.id } });
-    if (sectionCount === 0) {
-      await prisma.lessonSection.create({
-        data: { lessonId: lesson.id, type: 'heading', order: 1, title: 'Introduction to ' + lesson.title, content: { text: 'Introduction to ' + lesson.title } }
-      });
-      await prisma.lessonSection.create({
-        data: { lessonId: lesson.id, type: 'rich_text', order: 2, content: { text: 'This is a detailed reading passage for ' + lesson.title + '. It covers the key concepts in Vietnamese while keeping the English technical terms intact. Ví dụ: REST APIs, HTTP methods, authentication tokens, và rate limiting.' } }
-      });
-      await prisma.lessonSection.create({
-        data: { lessonId: lesson.id, type: 'vocabulary_list', order: 3, title: 'Vocabulary List', content: { text: 'Key terms used in this lesson.' } }
-      });
-      await prisma.lessonSection.create({
-        data: { lessonId: lesson.id, type: 'quiz', order: 4, title: 'Exercise', content: { text: 'Practice exercise for ' + lesson.title } }
-      });
-    }
-  }
 
   for (const learner of learners) {
     const existingProfile = await prisma.learnerProfile.findUnique({ where: { userId: learner.id } });
@@ -658,7 +650,7 @@ async function main() {
                isCorrect,
                earnedPoints,
                maxPoints: q.points * eq.weight,
-               selectedOptions: { create: [{ optionId: selectedOptionId }] }
+               selectedOptionIds: [selectedOptionId]
              });
           }
         }
@@ -688,35 +680,6 @@ async function main() {
       }
     }
 
-    const lpCount = await prisma.learningProgress.count({ where: { learnerId: learner.id } });
-    if (lpCount === 0 && allLessons.length > 0) {
-      for (const lesson of allLessons) {
-        const statuses = [ProgressStatus.completed, ProgressStatus.in_progress, ProgressStatus.not_started];
-        const status = statuses[Math.floor(Math.random() * statuses.length)];
-        let completionPercent = 0;
-        let completedLessonCount = 0;
-        
-        if (status === ProgressStatus.completed) {
-           completionPercent = 100;
-           completedLessonCount = 1;
-        } else if (status === ProgressStatus.in_progress) {
-           completionPercent = Math.floor(Math.random() * 90) + 10;
-        }
-
-        await prisma.learningProgress.create({
-          data: {
-            learnerId: learner.id,
-            resourceType: ProgressResourceType.lesson,
-            resourceId: lesson.id,
-            status,
-            completionPercent,
-            completedLessonCount,
-            totalLessonCount: 1,
-            averageScorePercent: status !== ProgressStatus.not_started ? (Math.floor(Math.random() * 35) + 60) : null
-          }
-        });
-      }
-    }
     }
 
   // ─── SEED: MOCK INTERVIEWS ───────────────────────────────────────────────

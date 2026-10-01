@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Query, Param, UseGuards, Request } from '@nestjs/common'
+import { Controller, Get, Post, Body, Query, UseGuards, Request } from '@nestjs/common'
 import { ApiTags, ApiBearerAuth, ApiOperation } from '@nestjs/swagger'
 import { VocabStudyService } from '../application/vocab-study/vocab-study.service'
 import { JwtAuthGuard } from '../infrastructure/auth/jwt-auth.guard'
@@ -11,7 +11,7 @@ export class VocabStudyController {
   constructor(private readonly svc: VocabStudyService) {}
 
   @Get('dashboard')
-  @ApiOperation({ summary: 'Get flashcards dashboard (stats, heatmap, studying lessons)' })
+  @ApiOperation({ summary: 'Get flashcards dashboard (stats, heatmap)' })
   getDashboard(@Request() req: any) {
     return this.svc.getDashboard(req.user.sub)
   }
@@ -22,64 +22,33 @@ export class VocabStudyController {
     @Request() req: any,
     @Query('domainCode') domainCode?: string,
     @Query('levelCode') levelCode?: string,
-    @Query('lessonId') lessonId?: string,
+    @Query('continue') continueLearning?: string,
   ) {
-    return this.svc.getStudySession(req.user.sub, { domainCode, levelCode, lessonId })
+    return this.svc.getStudySession(req.user.sub, { domainCode, levelCode, continueLearning: continueLearning === 'true' })
   }
 
-  @Get('lesson/:lessonId')
-  @ApiOperation({ summary: 'Get lesson details and vocabulary list' })
-  getLessonVocabList(
-    @Request() req: any,
-    @Param('lessonId') lessonId: string,
-    @Query('sort') sort?: 'default' | 'random',
-  ) {
-    return this.svc.getLessonVocabList(req.user.sub, lessonId, sort)
+  @Get('review-session')
+  @ApiOperation({ summary: 'Get SRS review session (words due for review)' })
+  getReviewSession(@Request() req: any) {
+    return this.svc.getReviewSession(req.user.sub)
   }
 
-  @Get('practice-session/:lessonId')
-  @ApiOperation({ summary: 'Get practice session vocabularies for a lesson' })
-  getPracticeSession(
-    @Request() req: any,
-    @Param('lessonId') lessonId: string,
-    @Query('onlyNew') onlyNew?: string,
-    @Query('onlyNeedsReview') onlyNeedsReview?: string,
-  ) {
-    return this.svc.getPracticeSession(req.user.sub, lessonId, {
-      onlyNew: onlyNew === 'true',
-      onlyNeedsReview: onlyNeedsReview === 'true',
-    })
-  }
-
-  @Post('rate')
-  @ApiOperation({ summary: 'Rate word memory level (easy, medium, hard, mastered)' })
-  rateWord(
-    @Request() req: any,
-    @Body() body: { vocabularyId: string; rating: 'easy' | 'medium' | 'hard' | 'mastered' },
-  ) {
-    return this.svc.rateWord(req.user.sub, body.vocabularyId, body.rating)
-  }
-
-  @Post('toggle-studying')
-  @ApiOperation({ summary: 'Toggle studying status of a lesson' })
-  toggleStudyingList(
-    @Request() req: any,
-    @Body() body: { lessonId: string; isStudying: boolean },
-  ) {
-    return this.svc.toggleStudyingList(req.user.sub, body.lessonId, body.isStudying)
-  }
-
-  @Get('quiz')
-  @ApiOperation({ summary: 'Generate quiz for given vocabulary IDs' })
-  getQuiz(@Request() req: any, @Query('ids') ids: string) {
-    const vocabIds = ids?.split(',').filter(Boolean) ?? []
-    return this.svc.generateQuiz(req.user.sub, vocabIds)
+  @Post('quiz')
+  @ApiOperation({ summary: 'Generate quiz from vocabulary IDs' })
+  generateQuiz(@Request() req: any, @Body() body: { vocabIds: string[]; repetitions?: Record<string, number> }) {
+    return this.svc.generateQuiz(req.user.sub, body.vocabIds, body.repetitions)
   }
 
   @Post('answer')
-  @ApiOperation({ summary: 'Submit quiz answer' })
+  @ApiOperation({ summary: 'Submit answer and update SRS progress' })
   submitAnswer(@Request() req: any, @Body() body: { vocabularyId: string; isCorrect: boolean }) {
     return this.svc.submitAnswer(req.user.sub, body.vocabularyId, body.isCorrect)
+  }
+
+  @Post('rate')
+  @ApiOperation({ summary: 'Rate word with 4-level SRS' })
+  rateWord(@Request() req: any, @Body() body: { vocabularyId: string; rating: 'easy' | 'medium' | 'hard' | 'mastered' }) {
+    return this.svc.rateWord(req.user.sub, body.vocabularyId, body.rating)
   }
 
   @Get('summary')
@@ -87,5 +56,14 @@ export class VocabStudyController {
   getSummary(@Request() req: any) {
     return this.svc.getSummary(req.user.sub)
   }
-}
 
+  @Get('history')
+  @ApiOperation({ summary: 'Get vocabulary study history' })
+  getHistory(
+    @Request() req: any,
+    @Query('period') period?: 'day' | 'month' | 'year' | 'all',
+    @Query('rating') rating?: string,
+  ) {
+    return this.svc.getHistory(req.user.sub, period, rating)
+  }
+}

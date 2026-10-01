@@ -5,7 +5,7 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { LearnerShell } from '@/shared/layout';
 import { apiClient } from '@/shared/api/api-client';
-import { LoadingSpinner } from '@/shared/ui';
+import { LoadingSpinner, Pagination } from '@/shared/ui';
 
 export default function LearnerQuizResultPage({ params }: { params: Promise<{ id: string }> }) {
   const unwrappedParams = React.use(params);
@@ -14,14 +14,18 @@ export default function LearnerQuizResultPage({ params }: { params: Promise<{ id
   const [attempt, setAttempt] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [reviewPage, setReviewPage] = useState(1);
+  const [reviewLimit, setReviewLimit] = useState(10);
+  const reviewRef = React.useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     async function loadAttempt() {
       try {
         const res: any = await apiClient.get(`/exams/attempts/${attemptId}`);
         setAttempt(res?.data || res);
+        setReviewPage(1);
       } catch (err) {
-        setError('Failed to load attempt result');
+        setError('Không thể tải kết quả làm bài. Vui lòng thử lại.');
       } finally {
         setLoading(false);
       }
@@ -39,6 +43,15 @@ export default function LearnerQuizResultPage({ params }: { params: Promise<{ id
   const questions = Array.isArray(attempt.questionsSnapshot) ? attempt.questionsSnapshot : [];
   const correctCount = Number(attempt.correctAnswersCount ?? questions.filter((q: any) => q.isUserCorrect).length);
   const totalCount = Number(attempt.totalQuestions ?? questions.length);
+  const reviewTotalPages = Math.max(1, Math.ceil(questions.length / reviewLimit));
+  const safeReviewPage = Math.min(reviewPage, reviewTotalPages);
+  const reviewStart = (safeReviewPage - 1) * reviewLimit;
+  const visibleQuestions = questions.slice(reviewStart, reviewStart + reviewLimit);
+
+  const changeReviewPage = (page: number) => {
+    setReviewPage(page);
+    window.requestAnimationFrame(() => reviewRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' }));
+  };
 
   return (
     <LearnerShell>
@@ -66,7 +79,7 @@ export default function LearnerQuizResultPage({ params }: { params: Promise<{ id
 
           <div className="flex flex-col sm:flex-row gap-3 w-full md:w-auto">
             <Link
-              href="/learn/quiz/tech"
+              href="/learn/certifications"
               className="px-5 py-2.5 bg-primary hover:bg-indigo-700 !text-white font-bold text-xs rounded-xl transition-colors shadow-2xs text-center"
             >
               <span className="!text-white">Làm đề thi khác</span>
@@ -74,11 +87,23 @@ export default function LearnerQuizResultPage({ params }: { params: Promise<{ id
           </div>
         </div>
 
+        {(attempt.performanceByDomain?.length > 0 || attempt.performanceByTopic?.length > 0) && (
+          <div className="grid gap-4 md:grid-cols-2">
+            {[['Kết quả theo Domain', attempt.performanceByDomain], ['Kết quả theo Topic', attempt.performanceByTopic]].map(([title, items]: any) => (
+              <section key={title} className="rounded-2xl border border-outline-variant/40 bg-surface-container-lowest p-6">
+                <h3 className="font-bold text-on-surface">{title}</h3>
+                <div className="mt-4 space-y-3">{items.map((item: any) => <div key={item.key}><div className="flex justify-between gap-3 text-xs"><span className="font-semibold">{item.name}</span><span className={item.scorePercent < 70 ? 'font-bold text-red-600' : 'font-bold text-green-700'}>{item.scorePercent}%</span></div><div className="mt-1 h-2 overflow-hidden rounded-full bg-surface-container-high"><div className={item.scorePercent < 70 ? 'h-full bg-red-500' : 'h-full bg-green-600'} style={{ width: `${item.scorePercent}%` }}/></div></div>)}</div>
+              </section>
+            ))}
+          </div>
+        )}
+
         {/* Detailed Question Review */}
-        <div className="p-6 rounded-2xl bg-surface-container-lowest border border-outline-variant/40 shadow-2xs space-y-4">
-          <h3 className="text-sm font-bold text-on-surface">Xem lại đáp án chi tiết</h3>
+        <div ref={reviewRef} className="scroll-mt-20 overflow-hidden rounded-2xl bg-surface-container-lowest border border-outline-variant/40 shadow-2xs">
+          <div className="p-6 pb-4"><h3 className="text-sm font-bold text-on-surface">Xem lại đáp án chi tiết</h3></div>
           <div className="space-y-4">
-            {questions.map((q: any, idx: number) => {
+            <div className="space-y-4 px-6 pb-6">{visibleQuestions.map((q: any, idx: number) => {
+              const questionNumber = reviewStart + idx + 1;
               const selectedIds = Array.isArray(q.userSelectedOptionIds) ? q.userSelectedOptionIds : [];
               const selectedOptions = q.options?.filter((o: any) => selectedIds.includes(o.id || o.key)) ?? [];
               const correctOptions = q.options?.filter((o: any) => o.isCorrect) ?? [];
@@ -86,7 +111,7 @@ export default function LearnerQuizResultPage({ params }: { params: Promise<{ id
               
               return (
                 <div
-                  key={q.id || idx}
+                  key={q.id || questionNumber}
                   className="p-5 rounded-xl bg-surface-bright border border-outline-variant/40 space-y-3"
                 >
                   <div className="flex justify-between items-center">
@@ -100,7 +125,7 @@ export default function LearnerQuizResultPage({ params }: { params: Promise<{ id
                       </span>
                       {isCorrect ? 'Chính xác' : 'Chưa đúng'}
                     </span>
-                    <span className="text-xs text-outline font-semibold">Câu #{idx + 1}</span>
+                    <span className="text-xs text-outline font-semibold">Câu #{questionNumber}</span>
                   </div>
 
                   <h4 className="text-xs lg:text-sm font-bold text-on-surface leading-relaxed whitespace-pre-wrap">{q.prompt}</h4>
@@ -128,11 +153,23 @@ export default function LearnerQuizResultPage({ params }: { params: Promise<{ id
                   )}
                 </div>
               );
-            })}
+            })}</div>
             {!questions.length && (
               <p className="py-8 text-center text-sm text-on-surface-variant">
                 Chưa có dữ liệu câu hỏi để xem lại.
               </p>
+            )}
+            {questions.length > 0 && (
+              <Pagination
+                page={safeReviewPage}
+                limit={reviewLimit}
+                total={questions.length}
+                totalPages={reviewTotalPages}
+                onPageChange={changeReviewPage}
+                onLimitChange={(limit) => { setReviewLimit(limit); changeReviewPage(1); }}
+                limitOptions={[5, 10, 20]}
+                showQuickJumper
+              />
             )}
           </div>
         </div>

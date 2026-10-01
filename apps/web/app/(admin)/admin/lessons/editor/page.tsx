@@ -35,7 +35,7 @@ export default function LessonEditorPage() {
   const category = CONTENT_TYPES[form.type];
 
   if (loading) return <div><PageHeader title="Quản lý bài học" description="Đang tải biểu mẫu..." /><p className="mt-10 text-center text-on-surface-variant">Đang tải...</p></div>;
-  return <div><PageHeader title={`${lessonId ? 'Chỉnh sửa' : 'Thêm'} ${category?.item ?? 'bài học'}`} description={category?.intro ?? 'Biên soạn nội dung học tập'} />
+  return <div><PageHeader icon={category?.icon} iconClassName={category?.iconClassName} title={`${lessonId ? 'Chỉnh sửa' : 'Thêm'} ${category?.item ?? 'bài học'}`} description={category?.intro ?? 'Biên soạn nội dung học tập'} />
     <form onSubmit={submit} className="mt-6 max-w-5xl space-y-6">
       {error && <div className="rounded-xl bg-error-container p-3 text-sm text-on-error-container">{error}</div>}
       <section className="grid gap-4 rounded-2xl bg-surface-container-lowest p-6 shadow-sm md:grid-cols-2">

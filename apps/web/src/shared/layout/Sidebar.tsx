@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { usePathname, useSearchParams } from 'next/navigation';
 import { combinedNavigation, teacherNavigation, type NavigationGroup, type NavigationItem } from './navigation';
 import { useAuth } from '@/features/auth/presentation';
@@ -13,7 +13,7 @@ function NavItem({ item, isCollapsed }: { item: NavigationItem; isCollapsed?: bo
   const expectedQuery = new URLSearchParams(itemQuery);
   const queryMatches = [...expectedQuery.entries()].every(([key, value]) => searchParams.get(key) === value);
   const isLessonIndex = itemPath === '/admin/lessons' && expectedQuery.size === 0;
-  const isActive = expectedQuery.size > 0
+  const routeMatches = expectedQuery.size > 0
     ? pathname === itemPath && queryMatches
     : (pathname === itemPath && (!isLessonIndex || !searchParams.has('type')))
       || (pathname.startsWith(`${itemPath}/`) && itemPath.split('/').length > 2);
@@ -21,14 +21,18 @@ function NavItem({ item, isCollapsed }: { item: NavigationItem; isCollapsed?: bo
   const childIsActive = item.children?.some((child) => {
     const [childPath, childQuery = ''] = child.href.split('?');
     const query = new URLSearchParams(childQuery);
-    return pathname === childPath && [...query.entries()].every(([key, value]) => searchParams.get(key) === value);
+    return (pathname === childPath || pathname.startsWith(`${childPath}/`)) && [...query.entries()].every(([key, value]) => searchParams.get(key) === value);
   }) ?? false;
-  const [expanded, setExpanded] = useState(false);
+  // A child owns the selected state; its parent only stays expanded.
+  const isActive = routeMatches && !childIsActive;
+  const [expanded, setExpanded] = useState(childIsActive);
+  useEffect(() => { if (childIsActive) setExpanded(true); }, [childIsActive]);
 
   if (isCollapsed) {
     return (
       <Link
         href={item.href}
+        aria-current={isActive || childIsActive ? 'page' : undefined}
         title={item.badge ? `${item.label} (${item.badge})` : item.label}
         className={`group relative flex h-10 w-10 mx-auto items-center justify-center rounded-xl text-[13px] font-medium transition-all duration-200 ${
           isActive || childIsActive
@@ -55,6 +59,7 @@ function NavItem({ item, isCollapsed }: { item: NavigationItem; isCollapsed?: bo
       <div className="flex items-center">
         <Link
           href={item.href}
+          aria-current={isActive ? 'page' : undefined}
           className={`group flex min-w-0 flex-1 items-center rounded-xl transition-all duration-200 ${
         level === 2
           ? 'ml-9 min-h-8 gap-2 px-2.5 py-1.5 text-[11px] font-medium border-l border-outline-variant/60 rounded-l-none'
@@ -146,7 +151,7 @@ export function Sidebar({ isMobile = false, onClose, isCollapsed = false, onTogg
         <div className="px-2 mb-6 flex flex-col items-center gap-3">
           <Link
             href="/admin/dashboard"
-            title={isAdmin ? 'TechEnglish Pro — Admin workspace' : 'Teacher Workspace'}
+            title={isAdmin ? 'TechEnglish Pro — Khu vực quản trị' : 'Khu vực giảng viên'}
             className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-primary to-tertiary text-white shadow-[0_8px_18px_rgba(53,37,205,0.22)]"
           >
             <span className="material-symbols-outlined text-[24px] fill-1">school</span>
@@ -169,9 +174,9 @@ export function Sidebar({ isMobile = false, onClose, isCollapsed = false, onTogg
             </div>
             <div className="min-w-0">
               <h1 className="text-[17px] font-bold tracking-tight text-on-surface leading-tight truncate">
-                {isAdmin ? 'TechEnglish Pro' : 'Teacher Workspace'}
+                {isAdmin ? 'TechEnglish Pro' : 'Khu vực giảng viên'}
               </h1>
-              <p className="text-[11px] text-on-surface-variant mt-1">{isAdmin ? 'Admin workspace' : 'Giảng viên'}</p>
+              <p className="text-[11px] text-on-surface-variant mt-1">{isAdmin ? 'Khu vực quản trị' : 'Giảng viên'}</p>
             </div>
           </Link>
           {!isMobile && onToggleCollapse ? (

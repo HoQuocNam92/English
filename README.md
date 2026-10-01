@@ -29,7 +29,7 @@ TechEnglish Pro hỗ trợ ba nhóm người dùng:
 - Hồ sơ học viên, mục tiêu nghề nghiệp/chứng chỉ và lộ trình học.
 - Báo cáo tiến độ, phân tích kết quả và gợi ý học tập bằng luật hoặc AI tùy chọn.
 - Nhóm học viên và thông báo đẩy qua Firebase.
-- Upload hình ảnh qua Cloudinary và cache qua Redis.
+- Upload hình ảnh qua Cloudinary.
 
 ## Cấu trúc dự án
 
@@ -50,7 +50,6 @@ English/
 │   ├── design-tokens/          # Màu sắc và design tokens
 │   └── shared-kernel/          # Tiện ích nghiệp vụ dùng chung
 ├── docs/                       # Tài liệu phân tích và kiểm thử
-├── docker-compose.yml          # Redis và Redis Commander
 ├── pnpm-workspace.yaml
 └── tsconfig.base.json
 ```
@@ -60,7 +59,6 @@ English/
 - Node.js 20 trở lên.
 - pnpm 11 (phiên bản dự án: `11.9.0`).
 - PostgreSQL 15 trở lên.
-- Docker Desktop nếu chạy Redis bằng Docker Compose.
 - Expo Go hoặc Android/iOS emulator nếu chạy ứng dụng mobile.
 
 ## Cài đặt nhanh
@@ -87,15 +85,7 @@ Tối thiểu cần cấu hình `DATABASE_URL` và `JWT_SECRET` trong `apps/api/
 
 Không commit file `.env` chứa khóa bí mật lên Git.
 
-### 3. Khởi động Redis
-
-```bash
-docker compose up -d
-```
-
-Redis Commander mặc định chạy tại `http://localhost:8081`.
-
-### 4. Chuẩn bị Prisma và database
+### 3. Chuẩn bị Prisma và database
 
 Tạo Prisma Client (không thay đổi dữ liệu):
 
@@ -117,7 +107,7 @@ pnpm --filter @techenglish/api db:seed
 
 > `db:generate` chỉ tạo mã Prisma Client. Không dùng `db:reset` trên database có dữ liệu cần giữ vì lệnh đó xóa và tạo lại database.
 
-### 5. Chạy ứng dụng
+### 4. Chạy ứng dụng
 
 Mở các terminal riêng từ thư mục gốc.
 

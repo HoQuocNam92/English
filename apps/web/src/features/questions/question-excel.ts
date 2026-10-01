@@ -9,6 +9,7 @@ export interface QuestionOptionItem {
 
 export interface ParsedQuestionItem {
   type: 'single_choice' | 'multiple_choice';
+  skill: 'vocabulary' | 'reading' | 'technical_understanding' | 'scenario_based';
   prompt: string;
   context?: string;
   domainId?: string;
@@ -51,6 +52,7 @@ export function downloadQuestionExcelTemplate() {
     'Đoạn văn ngữ cảnh',
     'Chuyên ngành (*)',
     'Cấp độ (*)',
+    'Kỹ năng (*)',
     'Đáp án A (*)',
     'Đáp án B (*)',
     'Đáp án C',
@@ -67,6 +69,7 @@ export function downloadQuestionExcelTemplate() {
       'AWS Identity and Access Management provides fine-grained access control.',
       'CLOUD',
       'beginner',
+      'technical_understanding',
       'Identity and Access Management',
       'Internet Access Module',
       'Integrated Application Manager',
@@ -81,6 +84,7 @@ export function downloadQuestionExcelTemplate() {
       '',
       'CLOUD',
       'intermediate',
+      'technical_understanding',
       'Amazon RDS',
       'Amazon Aurora',
       'Amazon DynamoDB',
@@ -95,6 +99,7 @@ export function downloadQuestionExcelTemplate() {
       '',
       'SOFTWARE_ENG',
       'beginner',
+      'vocabulary',
       'Model',
       'View',
       'Controller',
@@ -115,6 +120,7 @@ export function downloadQuestionExcelTemplate() {
     { wch: 35 }, // Đoạn văn ngữ cảnh
     { wch: 18 }, // Chuyên ngành
     { wch: 16 }, // Cấp độ
+    { wch: 26 }, // Kỹ năng
     { wch: 30 }, // Đáp án A
     { wch: 30 }, // Đáp án B
     { wch: 30 }, // Đáp án C
@@ -144,11 +150,12 @@ export function downloadQuestionExcelTemplate() {
     ['   - beginner: Mới bắt đầu (Beginner)'],
     ['   - intermediate: Trung cấp (Intermediate)'],
     ['   - advanced: Nâng cao (Advanced)'],
-    ['5. Đáp án: Bắt buộc có ít nhất 2 đáp án A và B.'],
-    ['6. Đáp án đúng: Điền chữ cái tương ứng:'],
+    ['5. Kỹ năng: vocabulary, reading, technical_understanding hoặc scenario_based.'],
+    ['6. Đáp án: Bắt buộc có ít nhất 2 đáp án A và B.'],
+    ['7. Đáp án đúng: Điền chữ cái tương ứng:'],
     ['   - Câu 1 đáp án: điền A hoặc B hoặc C hoặc D'],
     ['   - Câu nhiều đáp án: điền các chữ cái cách nhau bằng dấu phẩy (Ví dụ: A,B hoặc A,C,D)'],
-    ['7. Điểm: Số điểm nhận được khi trả lời đúng (mặc định 1).'],
+    ['8. Điểm: Số điểm nhận được khi trả lời đúng (mặc định 1).'],
   ];
 
   const wsGuide = XLSX.utils.aoa_to_sheet(guideSheet);
@@ -216,13 +223,14 @@ export async function parseQuestionsFromExcel(
     const context = row[2] ? String(row[2]).trim() : undefined;
     const domainRaw = String(row[3] || '').trim().toLowerCase();
     const levelRaw = String(row[4] || '').trim().toLowerCase();
-    const optA = row[5] !== undefined ? String(row[5]).trim() : '';
-    const optB = row[6] !== undefined ? String(row[6]).trim() : '';
-    const optC = row[7] !== undefined ? String(row[7]).trim() : '';
-    const optD = row[8] !== undefined ? String(row[8]).trim() : '';
-    const correctRaw = String(row[9] || '').trim().toUpperCase();
-    const explanation = row[10] ? String(row[10]).trim() : '';
-    const pointsNum = Number(row[11]) || 1;
+    const skillRaw = String(row[5] || '').trim().toLowerCase();
+    const optA = row[6] !== undefined ? String(row[6]).trim() : '';
+    const optB = row[7] !== undefined ? String(row[7]).trim() : '';
+    const optC = row[8] !== undefined ? String(row[8]).trim() : '';
+    const optD = row[9] !== undefined ? String(row[9]).trim() : '';
+    const correctRaw = String(row[10] || '').trim().toUpperCase();
+    const explanation = row[11] ? String(row[11]).trim() : '';
+    const pointsNum = Number(row[12]) || 1;
 
     const rawObj = {
       type: row[0],
@@ -230,6 +238,7 @@ export async function parseQuestionsFromExcel(
       context,
       domain: row[3],
       level: row[4],
+      skill: row[5],
       optA, optB, optC, optD,
       correct: correctRaw,
       explanation,
@@ -268,6 +277,12 @@ export async function parseQuestionsFromExcel(
       errors.push('Cấp độ không được để trống');
     }
 
+    const allowedSkills = ['vocabulary', 'reading', 'technical_understanding', 'scenario_based'] as const;
+    const skill = allowedSkills.find((value) => value === skillRaw);
+    if (!skill) {
+      errors.push('Kỹ năng không hợp lệ (vocabulary, reading, technical_understanding hoặc scenario_based)');
+    }
+
     // 5. Options
     if (!optA || !optB) {
       errors.push('Bắt buộc phải có ít nhất Đáp án A và Đáp án B');
@@ -300,9 +315,10 @@ export async function parseQuestionsFromExcel(
     const isValid = errors.length === 0;
 
     let question: ParsedQuestionItem | undefined;
-    if (isValid && domainMatch && levelMatch) {
+    if (isValid && domainMatch && levelMatch && skill) {
       question = {
         type,
+        skill,
         prompt,
         context,
         domainId: domainMatch.id,

@@ -60,13 +60,6 @@ export class CloudinaryService {
     })
   }
 
-  async uploadLessonImage(fileBuffer: Buffer, lessonId: string): Promise<UploadApiResponse> {
-    return this.uploadImage(fileBuffer, {
-      folder: 'techenglish/lessons',
-      publicId: `lesson-${lessonId}-${Date.now()}`,
-    })
-  }
-
   async uploadBannerImage(fileBuffer: Buffer, bannerId: string): Promise<UploadApiResponse> {
     return this.uploadImage(fileBuffer, {
       folder: 'techenglish/landing-banners',

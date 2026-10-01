@@ -30,7 +30,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
         },
       },
     })
-    if (!user || user.status !== 'active') throw new UnauthorizedException()
+    if (!user || user.status !== 'active') throw new UnauthorizedException('Phiên đăng nhập không hợp lệ hoặc tài khoản không còn hoạt động')
 
     const roles = user.userRoles.map((ur) => ur.role.code)
     const permissions = [

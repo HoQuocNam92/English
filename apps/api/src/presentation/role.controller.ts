@@ -1,6 +1,6 @@
 import { Controller, Get, Post, Patch, Delete, Body, Param, Query, UseGuards, HttpCode, HttpStatus } from '@nestjs/common'
 import { ApiTags, ApiBearerAuth, ApiOperation } from '@nestjs/swagger'
-import { IsString, IsOptional, IsBoolean, IsDateString, Matches, MinLength, MaxLength } from 'class-validator'
+import { ArrayUnique, IsArray, IsString, IsOptional, IsBoolean, IsDateString, IsUUID, Matches, MinLength, MaxLength } from 'class-validator'
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger'
 import { RolesService } from '../application/role/role.service'
 import { JwtAuthGuard } from '../infrastructure/auth/jwt-auth.guard'
@@ -24,6 +24,9 @@ class AssignRoleDto {
 }
 class AssignPermissionDto {
   @ApiProperty() @IsString() permissionId: string
+}
+class ReplacePermissionsDto {
+  @ApiProperty({ type: [String] }) @IsArray() @ArrayUnique() @IsUUID('4', { each: true }) permissionIds: string[]
 }
 class CreatePermissionDto {
   @ApiProperty() @IsString() code: string
@@ -81,6 +84,9 @@ export class RolesController {
 
   @Post(':id/permissions') @RequirePermissions('roles:update') @HttpCode(HttpStatus.NO_CONTENT) @ApiOperation({ summary: 'Assign permission to role' })
   assignPermission(@Param('id') id: string, @Body() dto: AssignPermissionDto) { return this.rolesService.assignPermission(id, dto.permissionId) }
+
+  @Patch(':id/permissions') @RequirePermissions('roles:update') @ApiOperation({ summary: 'Replace all permissions of a role' })
+  replacePermissions(@Param('id') id: string, @Body() dto: ReplacePermissionsDto) { return this.rolesService.replacePermissions(id, dto.permissionIds) }
 
   @Delete(':id/permissions/:permId') @RequirePermissions('roles:update') @HttpCode(HttpStatus.NO_CONTENT) @ApiOperation({ summary: 'Revoke permission from role' })
   revokePermission(@Param('id') id: string, @Param('permId') permId: string) { return this.rolesService.revokePermission(id, permId) }

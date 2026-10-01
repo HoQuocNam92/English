@@ -17,3 +17,5 @@ allowBuilds:
   'esbuild': true
   'sharp': true
   '@scarf/scarf': true
+  '@firebase/util': true
+  protobufjs: true

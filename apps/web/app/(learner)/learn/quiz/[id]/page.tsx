@@ -6,12 +6,13 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { LearnerShell } from '@/shared/layout';
 import { apiClient } from '@/shared/api/api-client';
-import { LoadingSpinner } from '@/shared/ui';
+import { LoadingSpinner, showToast } from '@/shared/ui';
 
 export default function LearnerQuizTakingPage({ params }: { params: Promise<{ id: string }> }) {
   const unwrappedParams = React.use(params);
   const examId = unwrappedParams.id;
   const router = useRouter();
+  const startRequested = React.useRef(false);
   
   const [exam, setExam] = useState<any>(null);
   const [attemptId, setAttemptId] = useState<string>('');
@@ -27,22 +28,23 @@ export default function LearnerQuizTakingPage({ params }: { params: Promise<{ id
   useEffect(() => {
     async function startExam() {
       try {
-        const [attemptRes, examRes] = await Promise.all<any>([
-          apiClient.post(`/exams/${examId}/attempts`, {}),
-          apiClient.get(`/exams/${examId}`)
-        ]);
+        const attemptRes: any = await apiClient.post(`/exams/${examId}/attempts`, {});
+        const examRes: any = await apiClient.get(`/exams/${examId}`);
         
         setAttemptId(attemptRes?.id || attemptRes?.data?.id || attemptRes);
         const examData = examRes?.data || examRes;
         setExam(examData);
         setTimeLeft((examData.durationMinutes || 60) * 60);
-      } catch (err) {
-        setError('Failed to load exam or start attempt');
+      } catch (err: any) {
+        setError(err?.message || 'Không thể tải đề hoặc bắt đầu lượt luyện tập.');
       } finally {
         setLoading(false);
       }
     }
-    if (examId) startExam();
+    if (examId && !startRequested.current) {
+      startRequested.current = true;
+      void startExam();
+    }
   }, [examId]);
 
   const executeSubmit = async () => {
@@ -60,7 +62,7 @@ export default function LearnerQuizTakingPage({ params }: { params: Promise<{ id
       await apiClient.post(`/exams/attempts/${attemptId}/submit`, { answers: formattedAnswers });
       router.push(`/learn/quiz/result/${attemptId}`);
     } catch (err: any) {
-      alert(err?.message || 'Không thể nộp bài thi. Vui lòng thử lại.');
+      showToast(err?.message || 'Không thể nộp bài thi. Vui lòng thử lại.', 'error');
       setSubmitting(false);
       setShowSubmitModal(false);
     }
@@ -455,4 +457,3 @@ interface UnansweredQuestion {
     </LearnerShell>
   );
 }
-

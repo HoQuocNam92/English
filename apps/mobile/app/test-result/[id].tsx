@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, ScrollView, ActivityIndicator } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
@@ -17,6 +17,8 @@ interface AttemptResult {
   incorrectAnswersCount: number;
   exam: { title: string; passingScorePercent: number };
   questionsSnapshot?: any[];
+  performanceByDomain?: Array<{ key: string; name: string; scorePercent: number }>;
+  performanceByTopic?: Array<{ key: string; name: string; scorePercent: number }>;
 }
 
 export default function MobileTestResultScreen() {
@@ -25,6 +27,10 @@ export default function MobileTestResultScreen() {
   
   const [loading, setLoading] = useState(true);
   const [result, setResult] = useState<AttemptResult | null>(null);
+  const [reviewPage, setReviewPage] = useState(1);
+  const scrollRef = useRef<ScrollView>(null);
+  const reviewSectionY = useRef(0);
+  const reviewPageSize = 10;
 
   useEffect(() => {
     const fetchResult = async () => {
@@ -32,6 +38,7 @@ export default function MobileTestResultScreen() {
         const res = await api.get<AttemptResult>(`/exams/attempts/${id}`);
         const data = (res as any).data || res;
         setResult(data);
+        setReviewPage(1);
       } catch (error) {
         console.error('Failed to fetch test result', error);
       } finally {
@@ -75,6 +82,16 @@ export default function MobileTestResultScreen() {
   const isPassed = result.isPassed;
   const primaryColor = isPassed ? '#16a34a' : '#ba1a1a';
   const bgColor = isPassed ? '#dcfce7' : '#ffdad6';
+  const reviewQuestions = result.questionsSnapshot ?? [];
+  const reviewTotalPages = Math.max(1, Math.ceil(reviewQuestions.length / reviewPageSize));
+  const safeReviewPage = Math.min(reviewPage, reviewTotalPages);
+  const reviewStart = (safeReviewPage - 1) * reviewPageSize;
+  const visibleReviewQuestions = reviewQuestions.slice(reviewStart, reviewStart + reviewPageSize);
+
+  const changeReviewPage = (page: number) => {
+    setReviewPage(page);
+    requestAnimationFrame(() => scrollRef.current?.scrollTo({ y: Math.max(0, reviewSectionY.current - 12), animated: true }));
+  };
 
   return (
     <View style={styles.container}>
@@ -89,7 +106,7 @@ export default function MobileTestResultScreen() {
         <View style={{ width: 40 }} />
       </View>
 
-      <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
+      <ScrollView ref={scrollRef} contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
         {/* Score Section */}
         <View style={styles.scoreSection}>
           <View style={styles.circleWrapper}>
@@ -162,20 +179,28 @@ export default function MobileTestResultScreen() {
           </View>
         </View>
 
+        {[['Kết quả theo Domain', result.performanceByDomain], ['Kết quả theo Topic', result.performanceByTopic]].map(([title, items]: any) => items?.length ? (
+          <View key={title} style={styles.detailsCard}>
+            <View style={styles.detailsHeader}><Text style={styles.detailsTitle}>{title}</Text></View>
+            {items.map((item: any) => <View key={item.key} style={styles.detailRow}><MaterialIcons name={item.scorePercent < 70 ? 'warning' : 'check-circle'} size={20} color={item.scorePercent < 70 ? '#ba1a1a' : '#16a34a'} /><View style={styles.detailContent}><Text style={styles.detailLabel}>{item.name}</Text><Text style={[styles.detailValue, { color: item.scorePercent < 70 ? '#ba1a1a' : '#16a34a' }]}>{item.scorePercent}%</Text></View></View>)}
+          </View>
+        ) : null)}
+
         {/* Inline Answer Review */}
         {result.questionsSnapshot && result.questionsSnapshot.length > 0 && (
-          <View style={styles.reviewSection}>
+          <View style={styles.reviewSection} onLayout={(event) => { reviewSectionY.current = event.nativeEvent.layout.y; }}>
             <View style={styles.detailsHeader}>
               <Text style={styles.detailsTitle}>Xem lại đáp án chi tiết</Text>
             </View>
-            {result.questionsSnapshot.map((q: any, idx: number) => {
+            {visibleReviewQuestions.map((q: any, idx: number) => {
+              const questionNumber = reviewStart + idx + 1;
               const selectedIds = Array.isArray(q.userSelectedOptionIds) ? q.userSelectedOptionIds : [];
               const selectedOpts = q.options?.filter((o: any) => selectedIds.includes(o.id || o.key)) ?? [];
               const correctOpts = q.options?.filter((o: any) => o.isCorrect) ?? [];
               const isCorrect = Boolean(q.isUserCorrect);
 
               return (
-                <View key={q.id || idx} style={styles.reviewItem}>
+                <View key={q.id || questionNumber} style={styles.reviewItem}>
                   <View style={styles.reviewHeader}>
                     <View style={[styles.reviewBadge, { backgroundColor: isCorrect ? '#dcfce7' : '#ffdad6' }]}>
                       <MaterialIcons name={isCorrect ? 'check' : 'close'} size={14} color={isCorrect ? '#16a34a' : '#ba1a1a'} />
@@ -183,7 +208,7 @@ export default function MobileTestResultScreen() {
                         {isCorrect ? 'Đúng' : 'Sai'}
                       </Text>
                     </View>
-                    <Text style={styles.reviewQNum}>Câu #{idx + 1}</Text>
+                    <Text style={styles.reviewQNum}>Câu #{questionNumber}</Text>
                   </View>
 
                   <Text style={styles.reviewPrompt}>{q.prompt}</Text>
@@ -212,6 +237,27 @@ export default function MobileTestResultScreen() {
                 </View>
               );
             })}
+            {reviewTotalPages > 1 && (
+              <View style={styles.reviewPagination}>
+                <TouchableOpacity
+                  disabled={safeReviewPage <= 1}
+                  onPress={() => changeReviewPage(safeReviewPage - 1)}
+                  style={[styles.reviewPageButton, safeReviewPage <= 1 && styles.reviewPageButtonDisabled]}
+                >
+                  <MaterialIcons name="chevron-left" size={18} color={safeReviewPage <= 1 ? '#a8a6b1' : colors.primary} />
+                  <Text style={[styles.reviewPageButtonText, safeReviewPage <= 1 && styles.reviewPageButtonTextDisabled]}>Trước</Text>
+                </TouchableOpacity>
+                <Text style={styles.reviewPageStatus}>Trang {safeReviewPage}/{reviewTotalPages}</Text>
+                <TouchableOpacity
+                  disabled={safeReviewPage >= reviewTotalPages}
+                  onPress={() => changeReviewPage(safeReviewPage + 1)}
+                  style={[styles.reviewPageButton, safeReviewPage >= reviewTotalPages && styles.reviewPageButtonDisabled]}
+                >
+                  <Text style={[styles.reviewPageButtonText, safeReviewPage >= reviewTotalPages && styles.reviewPageButtonTextDisabled]}>Sau</Text>
+                  <MaterialIcons name="chevron-right" size={18} color={safeReviewPage >= reviewTotalPages ? '#a8a6b1' : colors.primary} />
+                </TouchableOpacity>
+              </View>
+            )}
           </View>
         )}
       </ScrollView>
@@ -519,5 +565,44 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: '#191c1e',
     lineHeight: 18,
+  },
+  reviewPagination: {
+    minHeight: 58,
+    paddingHorizontal: spacing.md,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    borderTopWidth: 1,
+    borderTopColor: '#e6e8ea',
+    backgroundColor: '#f8fafc',
+  },
+  reviewPageButton: {
+    minWidth: 82,
+    height: 38,
+    paddingHorizontal: 10,
+    borderRadius: 9,
+    borderWidth: 1,
+    borderColor: colors.primary,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 2,
+  },
+  reviewPageButtonDisabled: {
+    borderColor: '#d7d5df',
+    backgroundColor: '#f1f3f5',
+  },
+  reviewPageButtonText: {
+    color: colors.primary,
+    fontSize: 12,
+    fontWeight: '700',
+  },
+  reviewPageButtonTextDisabled: {
+    color: '#a8a6b1',
+  },
+  reviewPageStatus: {
+    color: '#464555',
+    fontSize: 12,
+    fontWeight: '700',
   },
 });

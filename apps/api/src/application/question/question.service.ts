@@ -1,14 +1,26 @@
-import { Injectable, NotFoundException } from '@nestjs/common'
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common'
 import { PrismaService } from '../../infrastructure/database/prisma.service'
 
 @Injectable()
 export class QuestionsService {
   constructor(private prisma: PrismaService) {}
 
+  private validateAnswerDefinition(dto: any) {
+    if (dto.type === 'short_answer') {
+      if (!Array.isArray(dto.acceptedAnswers) || !dto.acceptedAnswers.some((answer: unknown) => String(answer ?? '').trim())) {
+        throw new BadRequestException('Câu hỏi short_answer phải có ít nhất một câu trả lời được chấp nhận')
+      }
+      return
+    }
+    if (!Array.isArray(dto.options) || dto.options.length === 0) {
+      throw new BadRequestException('Câu hỏi lựa chọn phải có ít nhất một phương án')
+    }
+  }
+
   async findAll(params: any) {
     const page = Math.max(1, Number(params?.page) || 1)
     const limit = Math.min(Math.max(1, Number(params?.limit) || 20), 100)
-    const { search, domainCode, levelCode, status, type, examId } = params || {}
+    const { search, domainCode, levelCode, status, type, skill, examId } = params || {}
     const skip = (page - 1) * limit
     const where: any = {}
     if (search) where.prompt = { contains: search, mode: 'insensitive' }
@@ -16,6 +28,7 @@ export class QuestionsService {
     if (levelCode) where.level = { code: levelCode }
     if (status) where.status = status
     if (type) where.type = type
+    if (skill) where.skill = skill
     if (examId) where.examQuestions = { some: { examId } }
     const [data, total] = await Promise.all([
       this.prisma.question.findMany({
@@ -24,7 +37,7 @@ export class QuestionsService {
           domain: true,
           level: true,
           options: { orderBy: { order: 'asc' } },
-          certificates: { include: { certificate: true } },
+          certificationTopics: { include: { topic: { include: { certificateDomain: { include: { certificate: true } } } } } },
           examQuestions: { include: { exam: { select: { id: true, title: true } } }, orderBy: { order: 'asc' } },
         },
         orderBy: { createdAt: 'desc' },
@@ -41,34 +54,36 @@ export class QuestionsService {
         domain: true,
         level: true,
         options: { orderBy: { order: 'asc' } },
-        certificates: { include: { certificate: true } },
+        certificationTopics: { include: { topic: { include: { certificateDomain: { include: { certificate: true } } } } } },
         examQuestions: { include: { exam: { select: { id: true, title: true } } }, orderBy: { order: 'asc' } },
       },
     })
-    if (!q) throw new NotFoundException('Question not found')
+    if (!q) throw new NotFoundException('Không tìm thấy câu hỏi')
     return q
   }
 
   async create(dto: any) {
+    this.validateAnswerDefinition(dto)
     const domain = await this.prisma.domain.findUnique({ where: { id: dto.domainId } })
     const level = await this.prisma.level.findUnique({ where: { id: dto.levelId } })
-    if (!domain || !level) throw new NotFoundException('Domain or Level not found')
+    if (!domain || !level) throw new NotFoundException('Lĩnh vực hoặc cấp độ không tồn tại')
     return this.prisma.question.create({
       data: {
-        type: dto.type, prompt: dto.prompt, context: dto.context,
-        explanation: dto.explanation, points: dto.points ?? 1.0,
+        type: dto.type, skill: dto.skill, prompt: dto.prompt, context: dto.context,
+        explanation: dto.explanation ?? '', points: dto.points ?? 1.0,
+        acceptedAnswers: dto.acceptedAnswers ?? [],
         status: dto.status ?? 'draft', topics: dto.topics ?? [],
         domainId: domain.id, levelId: level.id,
         options: dto.options ? { create: dto.options.map((o: any, i: number) => ({ key: o.key, text: o.text, isCorrect: o.isCorrect ?? false, explanation: o.explanation, order: i + 1 })) } : undefined,
-        certificates: dto.certificateIds?.length ? { create: dto.certificateIds.map((certificateId: string) => ({ certificateId })) } : undefined,
       },
     })
   }
 
   async update(id: string, dto: any) {
-    await this.findOne(id)
+    const existing = await this.findOne(id)
+    this.validateAnswerDefinition({ type: dto.type ?? existing.type, acceptedAnswers: dto.acceptedAnswers ?? existing.acceptedAnswers, options: dto.options ?? existing.options })
     const data: any = {}
-    const fields = ['type','prompt','context','explanation','points','status','topics']
+    const fields = ['type','skill','prompt','context','explanation','points','acceptedAnswers','status','topics']
     for (const f of fields) if (dto[f] !== undefined) data[f] = dto[f]
     if (dto.domainId !== undefined) data.domain = { connect: { id: dto.domainId } }
     if (dto.levelId !== undefined) data.level = { connect: { id: dto.levelId } }
@@ -76,10 +91,6 @@ export class QuestionsService {
       if (dto.options !== undefined) {
         await tx.questionOption.deleteMany({ where: { questionId: id } })
         data.options = { create: dto.options.map((option: any, index: number) => ({ ...option, order: index + 1 })) }
-      }
-      if (dto.certificateIds !== undefined) {
-        await tx.questionCertificate.deleteMany({ where: { questionId: id } })
-        data.certificates = { create: dto.certificateIds.map((certificateId: string) => ({ certificateId })) }
       }
       return tx.question.update({ where: { id }, data })
     })
@@ -89,7 +100,6 @@ export class QuestionsService {
     const q = await this.findOne(id)
     await this.prisma.$transaction([
       this.prisma.examQuestion.deleteMany({ where: { questionId: q.id } }),
-      this.prisma.questionCertificate.deleteMany({ where: { questionId: q.id } }),
       this.prisma.questionOption.deleteMany({ where: { questionId: q.id } }),
       this.prisma.question.delete({ where: { id: q.id } }),
     ])
@@ -125,6 +135,7 @@ export class QuestionsService {
     const created = await this.prisma.$transaction(async (tx) => {
       const results = []
       for (const item of dtos) {
+        this.validateAnswerDefinition(item)
         const dKey = String(item.domainId || item.domainCode || item.domainName || item.domain || '').trim().toLowerCase()
         const domainId = domainMap.get(dKey) || defaultDomainId
 
@@ -136,10 +147,12 @@ export class QuestionsService {
         const q = await tx.question.create({
           data: {
             type: item.type || 'single_choice',
+            skill: item.skill || (item.type === 'scenario' ? 'scenario_based' : 'vocabulary'),
             prompt: item.prompt,
             context: item.context || null,
             explanation: item.explanation || '',
             points: Number(item.points) || 1.0,
+            acceptedAnswers: Array.isArray(item.acceptedAnswers) ? item.acceptedAnswers : [],
             status: item.status || 'published',
             topics: Array.isArray(item.topics) ? item.topics : [],
             domainId,

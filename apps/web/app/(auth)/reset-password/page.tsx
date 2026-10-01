@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useState, Suspense } from 'react';
 import { API_BASE_URL } from '@/shared/config/env';
+import { toVietnameseErrorMessage } from '@/shared/lib/error-message';
 
 const API_URL = API_BASE_URL;
 
@@ -45,7 +46,7 @@ function ResetPasswordForm() {
       });
       const data = await res.json();
       if (!res.ok) {
-        setError(data?.message ?? 'Đã xảy ra lỗi. Vui lòng thử lại.');
+        setError(toVietnameseErrorMessage(data?.message, res.status));
       } else {
         setSuccess(true);
         setTimeout(() => router.push('/login'), 3000);

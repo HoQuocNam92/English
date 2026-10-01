@@ -3,14 +3,16 @@ import { ActivityIndicator, ScrollView, StyleSheet, Text, TouchableOpacity, View
 import { MaterialIcons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { useTheme } from '../store/theme-context';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 export function FeatureScreen({ title, subtitle, children, loading = false, error = '', onRetry }: {
   title: string; subtitle?: string; children: ReactNode; loading?: boolean; error?: string; onRetry?: () => void;
 }) {
   const router = useRouter();
+  const insets = useSafeAreaInsets();
   const { colors } = useTheme();
   return <View style={[s.root, { backgroundColor: colors.background }]}>
-    <View style={[s.header, { backgroundColor: colors.surface, borderBottomColor: colors.outlineVariant }]}>
+    <View style={[s.header, { paddingTop: insets.top + 12, backgroundColor: colors.surface, borderBottomColor: colors.outlineVariant }]}>
       <TouchableOpacity onPress={() => router.back()} style={s.back}><MaterialIcons name="arrow-back" size={24} color={colors.onSurface} /></TouchableOpacity>
       <View style={{ flex: 1 }}><Text style={[s.title, { color: colors.onSurface }]}>{title}</Text>{subtitle ? <Text style={[s.subtitle, { color: colors.onSurfaceVariant }]}>{subtitle}</Text> : null}</View>
     </View>

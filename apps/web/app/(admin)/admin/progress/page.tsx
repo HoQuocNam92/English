@@ -1,7 +1,7 @@
 'use client';
 
 import * as React from 'react';
-import { PageHeader, SearchInput } from '@/shared/ui';
+import { PageHeader, Pagination, SearchInput } from '@/shared/ui';
 import { apiClient, ApiClientError } from '@/shared/api/api-client';
 import type { PaginatedResponse } from '@/shared/api/api-client';
 
@@ -25,8 +25,15 @@ export default function AdminProgressPage() {
   const [search, setSearch] = React.useState('');
   const [loading, setLoading] = React.useState(true);
   const [error, setError] = React.useState<string | null>(null);
-  const limit = 10;
+  const [limit, setLimit] = React.useState(30);
 
+  const [filters, setFilters] = React.useState({ levelCode: '', domainCode: '', certificateId: '' });
+  const [options, setOptions] = React.useState<{ levels: any[]; domains: any[]; certificates: any[] }>({ levels: [], domains: [], certificates: [] });
+  React.useEffect(() => {
+    Promise.all([apiClient.get<any>('/levels'), apiClient.get<any>('/domains'), apiClient.get<any>('/certificates')])
+      .then(([levels, domains, certificates]) => setOptions({ levels: levels.data ?? levels, domains: domains.data ?? domains, certificates: certificates.data ?? certificates }))
+      .catch(() => setError('Không thể tải danh mục bộ lọc. Vui lòng tải lại trang.'));
+  }, []);
   const totalPages = Math.ceil(total / limit);
 
   const load = React.useCallback(async () => {
@@ -37,6 +44,7 @@ export default function AdminProgressPage() {
         page: String(page),
         limit: String(limit),
         ...(search && { search }),
+        ...filters,
       });
       const res = await apiClient.get<PaginatedResponse<StudentProgressItem>>(`/progress-overview?${params}`);
       setItems(res.data);
@@ -46,7 +54,7 @@ export default function AdminProgressPage() {
     } finally {
       setLoading(false);
     }
-  }, [page, search]);
+  }, [page, limit, search, filters]);
 
   React.useEffect(() => { void load(); }, [load]);
 
@@ -55,8 +63,10 @@ export default function AdminProgressPage() {
       <PageHeader title="Tiến độ học tập toàn hệ thống" description="Báo cáo tiến độ hoàn thành bài học, tỷ lệ đạt bài thi và năng lực học viên" />
 
       {/* Filters */}
-      <div className="mt-6 flex flex-col sm:flex-row gap-3">
+      <div className="mt-6 grid grid-cols-1 items-end gap-3 sm:grid-cols-2 xl:grid-cols-[minmax(260px,1.5fr)_repeat(3,minmax(140px,1fr))_auto] rounded-2xl border border-outline-variant/50 bg-white p-4">
+        <div className="grid min-w-0 gap-1 text-xs font-semibold text-on-surface-variant"><span>Tìm học viên</span>
         <SearchInput
+          className="!w-full !max-w-none"
           value={searchInput}
           onChange={setSearchInput}
           onSearch={(sanitized) => {
@@ -66,6 +76,9 @@ export default function AdminProgressPage() {
           placeholder="Tìm theo tên học viên hoặc email..."
           maxLength={100}
         />
+        </div>
+        {([['levelCode', 'Trình độ', options.levels], ['domainCode', 'Lĩnh vực', options.domains], ['certificateId', 'Mục tiêu chứng chỉ', options.certificates]] as const).map(([key, label, list]) => <label key={key} className="grid min-w-0 gap-1 text-xs font-semibold text-on-surface-variant">{label}<select aria-label={label} value={filters[key]} onChange={event => { setFilters(current => ({ ...current, [key]: event.target.value })); setPage(1); }} className="h-11 w-full rounded-xl border border-outline-variant bg-white px-3 text-sm text-on-surface"><option value="">Tất cả</option>{list.map(item => <option key={item.id} value={key === 'certificateId' ? item.id : item.code}>{item.name}</option>)}</select></label>)}
+        <button type="button" onClick={() => { setFilters({ levelCode: '', domainCode: '', certificateId: '' }); setSearch(''); setSearchInput(''); setPage(1); }} className="h-11 rounded-xl border border-outline-variant px-4 text-sm">Xóa bộ lọc</button>
       </div>
 
       {!loading && (
@@ -130,7 +143,7 @@ export default function AdminProgressPage() {
                         <div className="flex-1 bg-surface-container h-2 rounded-full overflow-hidden">
                           <div
                             className="bg-primary h-full rounded-full transition-all"
-                            style={{ width: `${Math.max(10, st.avgCompletion)}%` }}
+                            style={{ width: `${Math.min(100, Math.max(0, st.avgCompletion))}%` }}
                           />
                         </div>
                         <span className="text-xs font-bold text-on-surface">{st.avgCompletion}%</span>
@@ -157,15 +170,7 @@ export default function AdminProgressPage() {
         </div>
 
         {/* Pagination */}
-        {totalPages > 1 && (
-          <div className="px-4 py-3 border-t border-outline-variant/30 flex items-center justify-between">
-            <p className="text-xs text-on-surface-variant">Trang {page}/{totalPages}</p>
-            <div className="flex gap-2">
-              <button disabled={page <= 1} onClick={() => setPage((p) => p - 1)} className="px-3 py-1.5 rounded-lg text-xs border border-outline-variant disabled:opacity-40 hover:bg-surface-container transition-colors">← Trước</button>
-              <button disabled={page >= totalPages} onClick={() => setPage((p) => p + 1)} className="px-3 py-1.5 rounded-lg text-xs border border-outline-variant disabled:opacity-40 hover:bg-surface-container transition-colors">Sau →</button>
-            </div>
-          </div>
-        )}
+        {total > 0 && <Pagination page={page} limit={limit} total={total} totalPages={totalPages} onPageChange={setPage} onLimitChange={(value) => { setLimit(value); setPage(1); }} showQuickJumper />}
       </div>
     </div>
   );

@@ -2,7 +2,7 @@
 
 import * as React from 'react';
 import Link from 'next/link';
-import { PageHeader, Pagination, SearchInput } from '@/shared/ui';
+import { confirmDialog, PageHeader, Pagination, SearchInput } from '@/shared/ui';
 import { apiClient, ApiClientError } from '@/shared/api/api-client';
 import type { ExamItem, QuestionItem, PaginatedResponse } from '@/shared/api/api-client';
 import { downloadQuestionExcelTemplate } from '@/features/questions/question-excel';
@@ -21,6 +21,7 @@ const STATUSES = [
   { value: 'published', label: 'Đã xuất bản' },
   { value: 'draft', label: 'Bản nháp' },
 ];
+const SKILLS: Record<string, string> = { vocabulary: 'Vocabulary', reading: 'Reading', technical_understanding: 'Technical Understanding', scenario_based: 'Scenario-based' };
 
 type FilterOption = { id: string; code?: string; name?: string; title?: string };
 
@@ -37,12 +38,13 @@ export default function AdminQuestionsPage() {
   const [items, setItems] = React.useState<QuestionItem[]>([]);
   const [total, setTotal] = React.useState(0);
   const [page, setPage] = React.useState(1);
-  const limit = 20;
+  const [limit, setLimit] = React.useState(30);
   const totalPages = Math.max(1, Math.ceil(total / limit));
   const [searchInput, setSearchInput] = React.useState('');
   const [search, setSearch] = React.useState('');
   const [status, setStatus] = React.useState('');
   const [type, setType] = React.useState('');
+  const [skill, setSkill] = React.useState('');
   const [domainCode, setDomainCode] = React.useState('');
   const [examId, setExamId] = React.useState('');
   const [domains, setDomains] = React.useState<FilterOption[]>([]);
@@ -64,6 +66,7 @@ export default function AdminQuestionsPage() {
         ...(search && { search }),
         ...(status && { status }),
         ...(type && { type }),
+        ...(skill && { skill }),
         ...(domainCode && { domainCode }),
         ...(examId && { examId }),
       });
@@ -75,7 +78,7 @@ export default function AdminQuestionsPage() {
     } finally {
       setLoading(false);
     }
-  }, [page, search, status, type, domainCode, examId]);
+  }, [page, limit, search, status, type, skill, domainCode, examId]);
 
   React.useEffect(() => { void load(); }, [load]);
 
@@ -92,7 +95,7 @@ export default function AdminQuestionsPage() {
   }, []);
 
   const handleDelete = async (question: QuestionItem) => {
-    if (!window.confirm(`Xóa câu hỏi “${question.prompt.slice(0, 80)}${question.prompt.length > 80 ? '…' : ''}”? Câu hỏi cũng sẽ được gỡ khỏi các bộ đề liên quan.`)) return;
+    if (!(await confirmDialog(`Xóa câu hỏi “${question.prompt.slice(0, 80)}${question.prompt.length > 80 ? '…' : ''}”? Câu hỏi cũng sẽ được gỡ khỏi các bộ đề liên quan.`, { title: 'Xóa câu hỏi?', confirmLabel: 'Xóa câu hỏi', tone: 'danger' }))) return;
     setDeletingId(question.id);
     setError(null);
     try {
@@ -152,8 +155,9 @@ export default function AdminQuestionsPage() {
             </span>
           ))}
         </div>
-        <div className="grid gap-3 xl:grid-cols-[minmax(280px,1fr)_190px_190px_240px_180px]">
+        <div className="grid min-w-0 gap-3 md:grid-cols-2 xl:grid-cols-3">
         <SearchInput
+          className="min-w-0"
           value={searchInput}
           onChange={setSearchInput}
           onSearch={(sanitized) => {
@@ -166,16 +170,19 @@ export default function AdminQuestionsPage() {
         <select
           value={type}
           onChange={(e) => { setType(e.target.value); setPage(1); }}
-          className="rounded-xl bg-surface-container-lowest px-3 py-2 text-sm text-on-surface shadow-[inset_0_0_0_1px_rgba(99,102,241,0.16)] focus:outline-none"
+          className="min-w-0 w-full rounded-xl bg-surface-container-lowest px-3 py-2 text-sm text-on-surface shadow-[inset_0_0_0_1px_rgba(99,102,241,0.16)] focus:outline-none"
           aria-label="Lọc theo loại câu hỏi"
         >
           <option value="">Tất cả loại câu hỏi</option>
           {Object.entries(QUESTION_TYPES).map(([value, item]) => <option key={value} value={value}>{item.label}</option>)}
         </select>
+        <select value={skill} onChange={(e) => { setSkill(e.target.value); setPage(1); }} className="min-w-0 w-full rounded-xl bg-surface-container-lowest px-3 py-2 text-sm text-on-surface shadow-[inset_0_0_0_1px_rgba(99,102,241,0.16)] focus:outline-none" aria-label="Lọc theo kỹ năng">
+          <option value="">Tất cả kỹ năng</option>{Object.entries(SKILLS).map(([value,label]) => <option key={value} value={value}>{label}</option>)}
+        </select>
         <select
           value={domainCode}
           onChange={(e) => { setDomainCode(e.target.value); setPage(1); }}
-          className="rounded-xl bg-surface-container-lowest px-3 py-2 text-sm text-on-surface shadow-[inset_0_0_0_1px_rgba(99,102,241,0.16)] focus:outline-none"
+          className="min-w-0 w-full rounded-xl bg-surface-container-lowest px-3 py-2 text-sm text-on-surface shadow-[inset_0_0_0_1px_rgba(99,102,241,0.16)] focus:outline-none"
           aria-label="Lọc theo chuyên ngành"
         >
           <option value="">Tất cả chuyên ngành</option>
@@ -184,7 +191,7 @@ export default function AdminQuestionsPage() {
         <select
           value={examId}
           onChange={(e) => { setExamId(e.target.value); setPage(1); }}
-          className="rounded-xl bg-surface-container-lowest px-3 py-2 text-sm text-on-surface shadow-[inset_0_0_0_1px_rgba(99,102,241,0.16)] focus:outline-none"
+          className="min-w-0 w-full rounded-xl bg-surface-container-lowest px-3 py-2 text-sm text-on-surface shadow-[inset_0_0_0_1px_rgba(99,102,241,0.16)] focus:outline-none"
           aria-label="Lọc theo bộ đề"
         >
           <option value="">Tất cả bộ đề</option>
@@ -193,7 +200,7 @@ export default function AdminQuestionsPage() {
         <select
           value={status}
           onChange={(e) => { setStatus(e.target.value); setPage(1); }}
-          className="rounded-xl bg-surface-container-lowest px-3 py-2 text-sm text-on-surface shadow-[inset_0_0_0_1px_rgba(99,102,241,0.16)] focus:outline-none"
+          className="min-w-0 w-full rounded-xl bg-surface-container-lowest px-3 py-2 text-sm text-on-surface shadow-[inset_0_0_0_1px_rgba(99,102,241,0.16)] focus:outline-none"
         >
           {STATUSES.map((s) => <option key={s.value} value={s.value}>{s.label}</option>)}
         </select>
@@ -262,6 +269,7 @@ export default function AdminQuestionsPage() {
                           <span className="text-xs font-medium text-on-surface-variant bg-surface-container px-2 py-0.5 rounded">
                             {qType.label}
                           </span>
+                          <span className="rounded bg-violet-50 px-2 py-0.5 text-xs font-semibold text-violet-700">{SKILLS[q.skill] ?? q.skill}</span>
                           {q.domain && (
                             <span className="text-xs text-secondary bg-secondary/10 px-2 py-0.5 rounded font-medium">
                               {q.domain.name}
@@ -313,13 +321,13 @@ export default function AdminQuestionsPage() {
                           </div>
                         </div>
                         <div className="rounded-xl bg-secondary/5 p-3.5">
-                          <p className="mb-2 text-xs font-semibold text-on-surface-variant">Chứng chỉ liên quan</p>
+                          <p className="mb-2 text-xs font-semibold text-on-surface-variant">Topic chứng chỉ</p>
                           <div className="flex flex-wrap gap-2">
-                            {q.certificates?.length ? q.certificates.map(({ certificate }) => (
-                              <span key={certificate.id} className="rounded-full bg-surface-container-lowest px-2.5 py-1 text-xs font-medium text-secondary">
-                                {certificate.name}
+                            {q.certificationTopics?.length ? q.certificationTopics.map(({ topic }: any) => (
+                              <span key={topic.id} className="rounded-full bg-surface-container-lowest px-2.5 py-1 text-xs font-medium text-secondary">
+                                {topic.certificateDomain?.certificate?.name} · {topic.name}
                               </span>
-                            )) : <span className="text-sm text-on-surface-variant">Chưa gắn chứng chỉ</span>}
+                            )) : <span className="text-sm text-on-surface-variant">Chưa gắn Topic</span>}
                           </div>
                         </div>
                       </div>
@@ -375,8 +383,8 @@ export default function AdminQuestionsPage() {
       </div>
 
       {/* Pagination */}
-      {totalPages > 1 && (
-        <Pagination className="mt-4 rounded-2xl" page={page} limit={limit} total={total} totalPages={totalPages} onPageChange={setPage} />
+      {total > 0 && (
+        <Pagination className="mt-4 rounded-2xl" page={page} limit={limit} total={total} totalPages={totalPages} onPageChange={setPage} onLimitChange={(value) => { setLimit(value); setPage(1); }} showQuickJumper />
       )}
 
       {/* Import Questions Modal */}

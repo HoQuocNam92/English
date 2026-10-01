@@ -9,6 +9,15 @@ const config = getDefaultConfig(projectRoot);
 // 1. Watch all files within the monorepo (shared packages)
 config.watchFolders = [monorepoRoot];
 
+// Exclude archived dependencies and the package-manager cache from crawling
+// and watching. Keep the active node_modules/.pnpm store available to Metro.
+const existingBlockList = config.resolver.blockList;
+config.resolver.blockList = [
+  ...(Array.isArray(existingBlockList) ? existingBlockList : existingBlockList ? [existingBlockList] : []),
+  /[/\\]node_modules_old(?:[/\\]|$)/,
+  /[/\\]\.pnpm-store(?:[/\\]|$)/,
+];
+
 // 2. Let Metro know where to resolve packages and in what order.
 // IMPORTANT: For pnpm, we must NOT use disableHierarchicalLookup = true
 // because pnpm uses symlinks + a virtual store (.pnpm), and Metro needs

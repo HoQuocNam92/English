@@ -1,7 +1,7 @@
 'use client';
 
 import * as React from 'react';
-import { Modal, PageHeader } from '@/shared/ui';
+import { confirmDialog, Modal, PageHeader } from '@/shared/ui';
 import { apiClient, ApiClientError } from '@/shared/api/api-client';
 import type { RoleItem, PermissionItem } from '@/shared/api/api-client';
 import { actionLabel, permissionLabel, PERMISSION_ACTIONS, PERMISSION_RESOURCES, resourceLabel, roleLabel } from '@/shared/auth/permission-labels';
@@ -165,7 +165,7 @@ export default function AdminRolesPage() {
   const openCreatePermission = () => { setEditingPermission(null); setPermissionForm({ resource: '', action: 'read', name: '', description: '' }); setPermissionError(null); setPermissionModal(true); };
   const openEditPermission = (permission: PermissionItem) => { setEditingPermission(permission); setPermissionForm({ resource: permission.resource, action: permission.action, name: permission.name, description: permission.description ?? '' }); setPermissionError(null); setPermissionModal(true); };
   const deletePermission = async (permission: PermissionItem) => {
-    if (!window.confirm(`Xóa quyền “${permissionLabel(permission)}”? Quyền này sẽ bị gỡ khỏi tất cả nhóm đang sử dụng.`)) return;
+    if (!(await confirmDialog(`Xóa quyền “${permissionLabel(permission)}”? Quyền này sẽ bị gỡ khỏi tất cả nhóm đang sử dụng.`, { title: 'Xóa quyền hệ thống?', confirmLabel: 'Xóa quyền', tone: 'danger' }))) return;
     try { await apiClient.delete(`/roles/permissions/${permission.id}`); setPermissions((current) => current.filter((p) => p.id !== permission.id)); }
     catch (e) { setError(e instanceof ApiClientError ? e.message : 'Không thể xóa quyền hạn'); }
   };

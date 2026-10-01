@@ -1,18 +1,18 @@
 'use client';
 
 import * as React from 'react';
+import { ActivityChart } from '@/shared/ui/ActivityChart';
 import Link from 'next/link';
 import { PageHeader } from '@/shared/ui';
 import { apiClient, ApiClientError } from '@/shared/api/api-client';
-import type { PaginatedResponse, UserItem, LessonItem, ExamItem } from '@/shared/api/api-client';
+import type { PaginatedResponse, UserItem, ExamItem } from '@/shared/api/api-client';
 import { useAuth } from '@/features/auth/presentation';
 
 interface AnalyticsData {
   overview: {
     totalUsers: number;
     activeUsers: number;
-    totalLessons: number;
-    totalExams: number;
+        totalExams: number;
     totalVocab: number;
     passRate: number;
   };
@@ -71,38 +71,37 @@ export default function AdminDashboardPage() {
   const [stats, setStats] = React.useState<{
     totalUsers: number;
     activeUsers: number;
-    totalLessons: number;
-    totalExams: number;
+        totalExams: number;
     totalVocab: number;
   } | null>(null);
   const [analytics, setAnalytics] = React.useState<AnalyticsData | null>(null);
   const [recentUsers, setRecentUsers] = React.useState<UserItem[]>([]);
-  const [recentLessons, setRecentLessons] = React.useState<LessonItem[]>([]);
   const [loading, setLoading] = React.useState(true);
   const [error, setError] = React.useState<string | null>(null);
 
+  const [period, setPeriod] = React.useState('week');
   React.useEffect(() => {
     async function load() {
+      setLoading(true);
+      setError(null);
       try {
-        const [allUsers, allLessons, allExams, allVocab, analyticsRes] = await Promise.all<any>([
+        const [allUsers, allExams, allVocab, analyticsRes, activeUsers] = await Promise.all<any>([
           isAdmin ? apiClient.get<PaginatedResponse<UserItem>>('/users?limit=5') : Promise.resolve({ data: [], meta: { total: 0 } }),
-          apiClient.get<PaginatedResponse<LessonItem>>('/lessons?limit=4'),
           apiClient.get<PaginatedResponse<ExamItem>>('/exams?limit=1'),
           apiClient.get<PaginatedResponse<unknown>>('/vocabulary?limit=1'),
-          isAdmin ? apiClient.get<AnalyticsData>('/analytics/dashboard').catch(() => null) : Promise.resolve(null),
+          isAdmin ? apiClient.get<AnalyticsData>(`/analytics/dashboard?dateFrom=${period === 'month' ? new Date().toISOString().slice(0, 8) + '01' : new Date(Date.now() - 6 * 86400000).toISOString().slice(0, 10)}&dateTo=${new Date().toISOString().slice(0, 10)}`).catch(() => null) : Promise.resolve(null),
+          isAdmin ? apiClient.get<any>('/users?limit=1&status=active') : Promise.resolve({ meta: { total: 0 } }),
         ]);
 
         const activeCount = allUsers.data.filter((u: any) => u.status === 'active').length;
 
         setStats({
           totalUsers: allUsers.meta.total,
-          activeUsers: activeCount > 0 ? allUsers.meta.total : allUsers.meta.total,
-          totalLessons: allLessons.meta.total,
+          activeUsers: activeUsers.meta.total,
           totalExams: allExams.meta.total,
           totalVocab: allVocab.meta.total,
         });
         setRecentUsers(allUsers.data.slice(0, 5));
-        setRecentLessons(allLessons.data.slice(0, 4));
         if (analyticsRes) setAnalytics(analyticsRes);
       } catch (e: unknown) {
         setError(e instanceof ApiClientError ? e.message : 'Không thể tải dữ liệu Dashboard');
@@ -111,11 +110,10 @@ export default function AdminDashboardPage() {
       }
     }
     void load();
-  }, [isAdmin]);
+  }, [isAdmin, period]);
 
   const statCards = [
     { label: 'Tổng người dùng', value: stats?.totalUsers ?? 0, sub: `${stats?.totalUsers ?? 0} tài khoản hệ thống`, icon: 'people', color: 'text-primary' },
-    { label: 'Bài giảng xuất bản', value: stats?.totalLessons ?? 0, sub: 'Kho học liệu chuẩn CEFR', icon: 'auto_stories', color: 'text-secondary' },
     { label: 'Đề thi chứng chỉ', value: stats?.totalExams ?? 0, sub: 'AWS, CKA, Security+ Mock', icon: 'quiz', color: 'text-tertiary' },
     { label: 'Kho thuật ngữ IT', value: stats?.totalVocab ?? 0, sub: 'Thuật ngữ có IPA & ví dụ', icon: 'translate', color: 'text-emerald-600' },
   ];
@@ -128,10 +126,9 @@ export default function AdminDashboardPage() {
       <div><h2 className="text-3xl font-bold tracking-tight text-on-surface">Không gian giảng viên</h2><p className="mt-1 text-sm text-on-surface-variant">Quản lý nội dung giảng dạy và theo dõi học viên của bạn.</p></div>
       {error && <div className="rounded-xl bg-error-container p-4 text-sm text-on-error-container">{error}</div>}
       <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
-        {[['Bài học', stats?.totalLessons ?? 0, 'auto_stories'], ['Bài thi', stats?.totalExams ?? 0, 'quiz'], ['Từ vựng', stats?.totalVocab ?? 0, 'translate']].map(([label,value,icon]) => <div key={String(label)} className="rounded-2xl bg-white p-6 shadow-[0_8px_28px_rgba(15,23,42,0.05)]"><span className="material-symbols-outlined text-primary">{icon}</span><p className="mt-5 text-sm text-on-surface-variant">{label}</p><p className="mt-1 text-3xl font-bold">{loading ? '—' : value}</p></div>)}
       </div>
       <section><h3 className="mb-4 text-xl font-bold">Công việc giảng dạy</h3><div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-        {[['Tạo bài học','/admin/lessons/editor','add_box'],['Thêm câu hỏi','/admin/questions/editor','post_add'],['Tạo bài kiểm tra','/admin/tests/builder','quiz'],['Xem kết quả thi','/admin/test-results','fact_check'],['Theo dõi tiến độ','/admin/progress','insights']].map(([label,href,icon]) => <Link key={href} href={href} className="flex items-center gap-4 rounded-2xl bg-white p-5 shadow-[0_8px_28px_rgba(15,23,42,0.05)] transition hover:-translate-y-0.5 hover:text-primary"><span className="material-symbols-outlined text-primary">{icon}</span><span className="font-semibold">{label}</span><span className="material-symbols-outlined ml-auto text-outline">chevron_right</span></Link>)}
+        {[['Thêm câu hỏi','/admin/questions/editor','post_add'],['Tạo quiz chứng chỉ','/admin/tests/builder','quiz'],['Xem kết quả thi','/admin/test-results','fact_check'],['Theo dõi tiến độ','/admin/progress','insights']].map(([label,href,icon]) => <Link key={href} href={href} className="flex items-center gap-4 rounded-2xl bg-white p-5 shadow-[0_8px_28px_rgba(15,23,42,0.05)] transition hover:-translate-y-0.5 hover:text-primary"><span className="material-symbols-outlined text-primary">{icon}</span><span className="font-semibold">{label}</span><span className="material-symbols-outlined ml-auto text-outline">chevron_right</span></Link>)}
       </div></section>
     </main>
   );
@@ -152,7 +149,7 @@ export default function AdminDashboardPage() {
         </div>
       )}
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-md mb-xl">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-md mb-xl">
         <div className="stat-card bg-surface-container-lowest p-md flex flex-col justify-between h-[120px] rounded-lg border border-outline-variant hover:shadow-[0_1px_3px_rgba(15,23,24,0.06)] hover:-translate-y-0.5 transition-all">
           <div className="flex justify-between items-start">
             <span className="font-body-sm text-body-sm text-on-surface-variant">Tổng người học</span>
@@ -167,24 +164,12 @@ export default function AdminDashboardPage() {
         
         <div className="stat-card bg-surface-container-lowest p-md flex flex-col justify-between h-[120px] rounded-lg border border-outline-variant hover:shadow-[0_1px_3px_rgba(15,23,24,0.06)] hover:-translate-y-0.5 transition-all">
           <div className="flex justify-between items-start">
-            <span className="font-body-sm text-body-sm text-on-surface-variant">Bài giảng xuất bản</span>
-            <span className="material-symbols-outlined text-outline text-[20px]">school</span>
-          </div>
-          <div>
-            <div className="font-headline-h2 text-headline-h2 text-on-surface">
-              {loading ? '...' : (stats?.totalLessons ?? 0).toLocaleString('vi-VN')}
-            </div>
-          </div>
-        </div>
-        
-        <div className="stat-card bg-surface-container-lowest p-md flex flex-col justify-between h-[120px] rounded-lg border border-outline-variant hover:shadow-[0_1px_3px_rgba(15,23,24,0.06)] hover:-translate-y-0.5 transition-all">
-          <div className="flex justify-between items-start">
             <span className="font-body-sm text-body-sm text-on-surface-variant">Nội dung học</span>
             <span className="material-symbols-outlined text-outline text-[20px]">library_books</span>
           </div>
           <div>
             <div className="font-headline-h2 text-headline-h2 text-on-surface flex items-baseline gap-sm">
-              {loading ? '...' : (stats?.totalVocab ?? 0).toLocaleString('vi-VN')} <span className="font-body-sm text-body-sm text-on-surface-variant font-normal">items</span>
+              {loading ? '...' : (stats?.totalVocab ?? 0).toLocaleString('vi-VN')} <span className="font-body-sm text-body-sm text-on-surface-variant font-normal">từ vựng</span>
             </div>
           </div>
         </div>
@@ -196,7 +181,7 @@ export default function AdminDashboardPage() {
           </div>
           <div>
             <div className="font-headline-h2 text-headline-h2 text-on-surface flex items-baseline gap-sm">
-              {loading ? '...' : (stats?.totalExams ?? 0).toLocaleString('vi-VN')} <span className="font-body-sm text-body-sm text-on-surface-variant font-normal">active</span>
+              {loading ? '...' : (stats?.totalExams ?? 0).toLocaleString('vi-VN')} <span className="font-body-sm text-body-sm text-on-surface-variant font-normal">đề thi</span>
             </div>
           </div>
         </div>
@@ -238,46 +223,13 @@ export default function AdminDashboardPage() {
         
         <div className="stat-card bg-surface-container-lowest p-lg col-span-12 lg:col-span-8 min-h-[360px] flex flex-col rounded-lg border border-outline-variant hover:shadow-[0_1px_3px_rgba(15,23,24,0.06)] hover:-translate-y-0.5 transition-all">
           <div className="flex justify-between items-center mb-xl">
-            <h3 className="font-headline-h3 text-headline-h3 text-on-surface">Tiến độ học tập theo tuần</h3>
-            <select className="bg-surface-bright border border-outline-variant rounded-md px-sm py-xs font-body-sm text-body-sm outline-none focus:border-primary">
-              <option>Tuần này</option>
-              <option>Tháng này</option>
+            <h3 className="font-headline-h3 text-headline-h3 text-on-surface">Hoạt động học tập</h3>
+            <select aria-label="Khoảng thời gian hoạt động" value={period} onChange={e => setPeriod(e.target.value)} className="bg-surface-bright border border-outline-variant rounded-md px-sm py-xs font-body-sm text-body-sm outline-none focus:border-primary">
+              <option value="week">7 ngày gần nhất</option>
+              <option value="month">Tháng này</option>
             </select>
           </div>
-          <div className="flex-1 relative flex items-end">
-            <div className="absolute inset-0 flex items-end justify-between px-md pb-md">
-              <div className="absolute inset-0 flex flex-col justify-between border-l border-b border-outline-variant/30 pb-xl ml-lg z-0">
-                <div className="w-full border-t border-outline-variant/20"></div>
-                <div className="w-full border-t border-outline-variant/20"></div>
-                <div className="w-full border-t border-outline-variant/20"></div>
-                <div className="w-full border-t border-outline-variant/20"></div>
-              </div>
-              <div className="relative w-full h-[80%] ml-xl z-10 flex items-end gap-2 justify-between">
-                {(analytics?.weeklyActivity ?? [
-                  { day: 'T2', activityCount: 0, activeUsers: 0 },
-                  { day: 'T3', activityCount: 0, activeUsers: 0 },
-                  { day: 'T4', activityCount: 0, activeUsers: 0 },
-                  { day: 'T5', activityCount: 0, activeUsers: 0 },
-                  { day: 'T6', activityCount: 0, activeUsers: 0 },
-                  { day: 'T7', activityCount: 0, activeUsers: 0 },
-                  { day: 'CN', activityCount: 0, activeUsers: 0 },
-                ]).map((item, idx) => {
-                  const heightPercent = Math.round((item.activityCount / (maxWeeklyActivity || 100)) * 100);
-                  const isMax = heightPercent >= 90;
-                  return (
-                    <div key={item.day} className="w-2 bg-primary/20 rounded-t-sm relative group" style={{ height: `${Math.max(15, heightPercent)}%` }}>
-                      <div className={`absolute -top-3 left-1/2 -translate-x-1/2 w-2 h-2 rounded-full bg-primary group-hover:scale-150 transition-transform ${isMax ? 'shadow-[0_0_8px_rgba(79,70,229,0.5)]' : ''}`}></div>
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-            <div className="absolute bottom-0 left-0 w-full flex justify-between ml-xl pr-md font-label-caps text-label-caps text-on-surface-variant">
-               {(analytics?.weeklyActivity ?? [
-                  { day: 'T2' }, { day: 'T3' }, { day: 'T4' }, { day: 'T5' }, { day: 'T6' }, { day: 'T7' }, { day: 'CN' }
-                ]).map(item => <span key={item.day}>{item.day}</span>)}
-            </div>
-          </div>
+          <ActivityChart data={analytics?.weeklyActivity ?? []} />
         </div>
       </div>
 
@@ -324,46 +276,18 @@ export default function AdminDashboardPage() {
           <div className="stat-card bg-surface-container-lowest p-lg rounded-lg border border-outline-variant hover:shadow-[0_1px_3px_rgba(15,23,24,0.06)] hover:-translate-y-0.5 transition-all">
             <h3 className="font-headline-h3 text-headline-h3 text-on-surface mb-md">Thao tác nhanh</h3>
             <div className="grid grid-cols-2 gap-md">
-              <Link href="/admin/lessons/editor" className="flex flex-col items-center justify-center p-md border border-outline-variant rounded-lg hover:border-primary hover:bg-surface-bright transition-all group">
-                <span className="material-symbols-outlined text-outline group-hover:text-primary mb-xs">add_box</span>
-                <span className="font-interface-sb text-body-sm text-on-surface group-hover:text-primary">Tạo bài học</span>
-              </Link>
               <Link href="/admin/questions/editor" className="flex flex-col items-center justify-center p-md border border-outline-variant rounded-lg hover:border-primary hover:bg-surface-bright transition-all group">
                 <span className="material-symbols-outlined text-outline group-hover:text-primary mb-xs">post_add</span>
                 <span className="font-interface-sb text-body-sm text-on-surface group-hover:text-primary">Thêm câu hỏi</span>
               </Link>
               <Link href="/admin/tests/builder" className="flex flex-col items-center justify-center p-md border border-outline-variant rounded-lg hover:border-primary hover:bg-surface-bright transition-all group">
                 <span className="material-symbols-outlined text-outline group-hover:text-primary mb-xs">quiz</span>
-                <span className="font-interface-sb text-body-sm text-on-surface group-hover:text-primary">Tạo bài kiểm tra</span>
+                <span className="font-interface-sb text-body-sm text-on-surface group-hover:text-primary">Tạo quiz chứng chỉ</span>
               </Link>
-              <Link href="/admin/students" className="flex flex-col items-center justify-center p-md border border-outline-variant rounded-lg hover:border-primary hover:bg-surface-bright transition-all group">
+              <Link href="/admin/students" className="flex flex-col items-center justify-center p-md border border-outline-variant rounded-lg hover:border-primary hover:bg-surface-bright transition-all group col-span-2">
                 <span className="material-symbols-outlined text-outline group-hover:text-primary mb-xs">person_search</span>
                 <span className="font-interface-sb text-body-sm text-on-surface group-hover:text-primary">Tìm người học</span>
               </Link>
-            </div>
-          </div>
-          
-          <div className="stat-card bg-surface-container-lowest p-lg flex-1 rounded-lg border border-outline-variant hover:shadow-[0_1px_3px_rgba(15,23,24,0.06)] hover:-translate-y-0.5 transition-all">
-            <div className="flex justify-between items-center mb-md">
-              <h3 className="font-headline-h3 text-headline-h3 text-on-surface">Bài học trên hệ thống</h3>
-              <button className="material-symbols-outlined text-on-surface-variant hover:text-primary">more_horiz</button>
-            </div>
-            <div className="flex items-center gap-md">
-              <div className="flex -space-x-4">
-                {recentLessons.slice(0, 3).map((l, i) => (
-                  <div key={l.id} className="w-10 h-10 rounded-full border-2 border-surface-container-lowest bg-surface-container-high flex items-center justify-center font-interface-sb text-body-sm text-on-surface-variant z-10" style={{ zIndex: 10 - i }}>
-                    {l.title.charAt(0).toUpperCase()}
-                  </div>
-                ))}
-                {recentLessons.length > 3 && (
-                  <div className="w-10 h-10 rounded-full border-2 border-surface-container-lowest bg-surface-container-high flex items-center justify-center font-interface-sb text-body-sm text-on-surface-variant z-10">
-                    +{stats?.totalLessons ? stats.totalLessons - 3 : 0}
-                  </div>
-                )}
-              </div>
-              <div className="ml-sm">
-                <p className="font-body-sm text-body-sm text-on-surface-variant">Bài học mới cập nhật.</p>
-              </div>
             </div>
           </div>
         </div>

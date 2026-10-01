@@ -122,7 +122,7 @@ export default function LandingPage() {
           </h1>
 
           <p className="text-lg text-on-surface-variant w-full leading-relaxed [overflow-wrap:anywhere]">
-            Từ vựng, thuật ngữ kỹ thuật, đọc hiểu API documentation và kỹ năng giao tiếp chuyên sâu —
+            Từ vựng, thuật ngữ kỹ thuật và luyện thi chứng chỉ công nghệ —
             tất cả trong một nền tảng được thiết kế riêng cho Developer &amp; Engineer.
           </p>
 

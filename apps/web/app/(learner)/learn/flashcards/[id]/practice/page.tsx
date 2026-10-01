@@ -6,9 +6,10 @@ import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { LearnerShell } from '@/shared/layout';
 import { apiClient } from '@/shared/api/api-client';
-import { LoadingSpinner } from '@/shared/ui';
+import { LoadingSpinner, showToast } from '@/shared/ui';
 
 type Rating = 'easy' | 'medium' | 'hard' | 'mastered';
+type QuizQuestion = { type: 'fill_blank' | 'multiple_choice'; vocabularyId: string; prompt: string; hint?: string; options?: string[]; answer: string };
 
 export default function FlashcardPracticePage({ params }: { params: Promise<{ id: string }> }) {
   const unwrappedParams = React.use(params);
@@ -16,6 +17,8 @@ export default function FlashcardPracticePage({ params }: { params: Promise<{ id
   const router = useRouter();
   const searchParams = useSearchParams();
   const onlyNeedsReview = searchParams?.get('onlyNeedsReview') === 'true';
+  const domainCode = searchParams?.get('domainCode') ?? '';
+  const levelCode = searchParams?.get('levelCode') ?? '';
 
   const [lesson, setLesson] = useState<any>(null);
   const [words, setWords] = useState<any[]>([]);
@@ -25,6 +28,14 @@ export default function FlashcardPracticePage({ params }: { params: Promise<{ id
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [isFinished, setIsFinished] = useState(false);
+  const [sessionStats, setSessionStats] = useState<any>(null);
+  const [quizMode, setQuizMode] = useState(false);
+  const [quizQuestions, setQuizQuestions] = useState<QuizQuestion[]>([]);
+  const [quizIndex, setQuizIndex] = useState(0);
+  const [quizAnswer, setQuizAnswer] = useState('');
+  const [quizCorrect, setQuizCorrect] = useState(0);
+  const [quizFeedback, setQuizFeedback] = useState<boolean | null>(null);
+  const [quizMarkedMastered, setQuizMarkedMastered] = useState(false);
 
   // Settings & modals
   const [showSettingsModal, setShowSettingsModal] = useState(false);
@@ -41,16 +52,28 @@ export default function FlashcardPracticePage({ params }: { params: Promise<{ id
   }[]>([]);
 
   // Load practice words
-  const loadPracticeSession = useCallback(async (filterOnlyNew: boolean) => {
+  const loadPracticeSession = useCallback(async (filterOnlyNew: boolean, continueLearning = false) => {
     setLoading(true);
     setError('');
     try {
       if (lessonId === 'all') {
-        const res: any = await apiClient.get('/vocab-study/session');
+        const sessionParams = new URLSearchParams();
+        if (domainCode) sessionParams.set('domainCode', domainCode);
+        if (levelCode) sessionParams.set('levelCode', levelCode);
+        if (continueLearning) sessionParams.set('continue', 'true');
+        const sessionUrl = `/vocab-study/session${sessionParams.toString() ? `?${sessionParams.toString()}` : ''}`;
+        let res: any = await apiClient.get(sessionUrl);
+        const initialMeta = res?.meta ?? null;
+        if (!continueLearning && initialMeta?.dailyLimitReached && (res?.words?.length ?? 0) === 0) {
+          sessionParams.set('continue', 'true');
+          res = await apiClient.get(`/vocab-study/session?${sessionParams.toString()}`);
+          res.meta = { ...(res?.meta ?? {}), ...initialMeta, dailyLimitReached: true };
+        }
         const allWords = res?.words ?? [];
         const filtered = filterOnlyNew ? allWords.filter((w: any) => w.studyStatus !== 'mastered') : allWords;
-        setLesson({ id: 'all', title: 'Toàn bộ từ vựng IT Chuyên ngành' });
+        setLesson({ id: 'all', title: domainCode ? `Từ vựng ${domainCode}${levelCode ? ` · ${levelCode}` : ''}` : 'Toàn bộ từ vựng IT Chuyên ngành' });
         setWords(filtered);
+        setSessionStats(res?.meta ?? null);
         setCurrentIdx(0);
         setIsFlipped(false);
         setIsFinished(false);
@@ -62,6 +85,7 @@ export default function FlashcardPracticePage({ params }: { params: Promise<{ id
         }
         setLesson(res.lesson);
         setWords(res.words);
+        setSessionStats(res.stats ?? null);
         setCurrentIdx(0);
         setIsFlipped(false);
         setIsFinished(false);
@@ -72,24 +96,33 @@ export default function FlashcardPracticePage({ params }: { params: Promise<{ id
         } else if (filterOnlyNew) {
           queryParams.set('onlyNew', 'true');
         }
+        if (continueLearning) queryParams.set('continue', 'true');
         const queryString = queryParams.toString() ? `?${queryParams.toString()}` : '';
-        const res: any = await apiClient.get(`/vocab-study/practice-session/${lessonId}${queryString}`);
+        let res: any = await apiClient.get(`/vocab-study/practice-session/${lessonId}${queryString}`);
+        const initialStats = res?.stats ?? null;
+        if (!continueLearning && initialStats?.dailyLimitReached && (res?.words?.length ?? 0) === 0) {
+          queryParams.set('continue', 'true');
+          res = await apiClient.get(`/vocab-study/practice-session/${lessonId}?${queryParams.toString()}`);
+          res.stats = { ...(res?.stats ?? {}), ...initialStats, dailyLimitReached: true };
+        }
         if (!res || !res.words) {
           setError('Không thể tải bài học để luyện tập.');
           return;
         }
         setLesson(res.lesson);
         setWords(res.words);
+        setSessionStats(res.stats ?? null);
         setCurrentIdx(0);
         setIsFlipped(false);
         setIsFinished(false);
+        setQuizMode(false);
       }
     } catch {
       setError('Lỗi kết nối khi tải danh sách từ vựng.');
     } finally {
       setLoading(false);
     }
-  }, [lessonId, onlyNeedsReview]);
+  }, [lessonId, onlyNeedsReview, domainCode, levelCode]);
 
   useEffect(() => {
     if (lessonId) {
@@ -131,12 +164,27 @@ export default function FlashcardPracticePage({ params }: { params: Promise<{ id
     }
   };
 
+  const startQuiz = async (results: { word: any; rating: Rating }[]) => {
+    const included = results.filter(item => item.rating !== 'mastered');
+    if (included.length === 0) { setIsFinished(true); return; }
+    const repetitions = Object.fromEntries(included.map(item => [item.word.id, item.rating === 'easy' ? 2 : item.rating === 'medium' ? 3 : 4]));
+    try {
+      const response: any = await apiClient.post('/vocab-study/quiz', { ids: included.map(item => item.word.id), repetitions });
+      setQuizQuestions(response?.questions ?? []);
+      setQuizIndex(0); setQuizAnswer(''); setQuizCorrect(0); setQuizFeedback(null); setQuizMarkedMastered(false); setQuizMode(true);
+    } catch {
+      showToast('Không thể tạo bài kiểm tra từ vựng.', 'error');
+      setIsFinished(true);
+    }
+  };
+
   // Submit Rating
   const handleRate = async (rating: Rating) => {
     if (!currentWord) return;
 
     // Record session result
-    setSessionResults(prev => [...prev, { word: currentWord, rating }]);
+    const nextResults = [...sessionResults, { word: currentWord, rating }];
+    setSessionResults(nextResults);
 
     if (rating === 'mastered') {
       setSkippedWords(prev => [...prev, currentWord]);
@@ -152,19 +200,45 @@ export default function FlashcardPracticePage({ params }: { params: Promise<{ id
       /* best effort */
     }
 
-    // If hard, optionally repeat at end of queue
-    if (rating === 'hard') {
-      setWords(prev => [...prev, currentWord]);
-    }
-
     // Next card
     if (currentIdx + 1 < words.length) {
       setCurrentIdx(currentIdx + 1);
       setIsFlipped(false);
     } else {
-      setIsFinished(true);
+      await startQuiz(nextResults);
     }
   };
+
+  const submitQuizAnswer = async (submittedAnswer?: string) => {
+    const question = quizQuestions[quizIndex];
+    const answer = submittedAnswer ?? quizAnswer;
+    if (!question || quizFeedback !== null || !answer.trim()) return;
+    if (submittedAnswer !== undefined) setQuizAnswer(submittedAnswer);
+    const correct = answer.trim().toLocaleLowerCase('vi') === question.answer.trim().toLocaleLowerCase('vi');
+    setQuizFeedback(correct);
+    if (correct) setQuizCorrect(value => value + 1);
+    apiClient.post('/vocab-study/answer', { vocabularyId: question.vocabularyId, isCorrect: correct }).catch(() => undefined);
+  };
+
+  const nextQuizQuestion = () => {
+    if (quizIndex + 1 >= quizQuestions.length) { setQuizMode(false); setIsFinished(true); return; }
+    setQuizIndex(value => value + 1); setQuizAnswer(''); setQuizFeedback(null); setQuizMarkedMastered(false);
+  };
+
+  const markQuizWordMastered = () => {
+    const question = quizQuestions[quizIndex];
+    if (!question || quizFeedback !== null) return;
+    setQuizMarkedMastered(true);
+    setQuizFeedback(true);
+    setQuizQuestions(previous => previous.filter((item, index) => index <= quizIndex || item.vocabularyId !== question.vocabularyId));
+    apiClient.post('/vocab-study/rate', { vocabularyId: question.vocabularyId, rating: 'mastered' }).catch(() => undefined);
+  };
+
+  useEffect(() => {
+    if (!quizMode || quizFeedback === null) return;
+    const timer = window.setTimeout(nextQuizQuestion, 1500);
+    return () => window.clearTimeout(timer);
+  }, [quizMode, quizFeedback, quizIndex, quizQuestions.length]);
 
   // Keyboard navigation
   useEffect(() => {
@@ -203,7 +277,7 @@ export default function FlashcardPracticePage({ params }: { params: Promise<{ id
       setConfirmStopModal(false);
       router.push('/learn/flashcards');
     } catch {
-      alert('Không thể cập nhật trạng thái.');
+      showToast('Không thể cập nhật trạng thái.', 'error');
     } finally {
       setStopping(false);
     }
@@ -216,7 +290,7 @@ export default function FlashcardPracticePage({ params }: { params: Promise<{ id
         <div className="p-12 text-center text-slate-500 space-y-4 max-w-lg mx-auto">
           <span className="material-symbols-outlined text-5xl text-slate-300">task_alt</span>
           <h2 className="text-xl font-bold text-slate-800">
-            {error || (lessonId === 'review' ? 'Hiện tại không có từ nào cần ôn tập!' : 'Không có từ vựng nào để ôn tập!')}
+            {error || (lessonId === 'review' ? 'Hiện tại không có từ nào cần ôn tập!' : 'Không còn từ mới trong bộ này!')}
           </h2>
           <p className="text-xs text-slate-500 leading-relaxed">
             {lessonId === 'review'
@@ -242,6 +316,19 @@ export default function FlashcardPracticePage({ params }: { params: Promise<{ id
         </div>
       </LearnerShell>
     );
+  }
+
+  if (quizMode && quizQuestions.length > 0) {
+    const question = quizQuestions[quizIndex];
+    return <LearnerShell><div className="mx-auto w-full max-w-2xl space-y-5 px-4 py-10">
+      <div><p className="text-xs font-bold uppercase text-primary">Kiểm tra sau phiên học</p><h1 className="text-2xl font-black text-slate-900">Kiểm tra từ vựng</h1></div>
+      <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-xs">
+        <p className="mb-5 text-lg font-bold text-slate-900">{question.prompt}</p>
+        {question.type === 'multiple_choice' ? <div className="grid gap-3">{question.options?.map(option => <button key={option} type="button" disabled={quizFeedback !== null} onClick={() => void submitQuizAnswer(option)} className={`rounded-xl border p-3 text-left text-sm font-semibold ${quizAnswer === option ? 'border-primary bg-primary/5 text-primary' : 'border-slate-200'}`}>{option}</button>)}</div> : <input autoFocus value={quizAnswer} disabled={quizFeedback !== null} onChange={event => setQuizAnswer(event.target.value)} onKeyDown={event => event.key === 'Enter' && void submitQuizAnswer()} placeholder="Điền từ còn thiếu..." className="w-full rounded-xl border border-slate-300 px-4 py-3 text-base outline-none focus:border-primary" />}
+        {quizFeedback !== null && <div className={`mt-4 rounded-xl p-3 text-sm font-bold ${quizFeedback ? 'bg-emerald-50 text-emerald-700' : 'bg-rose-50 text-rose-700'}`}>{quizMarkedMastered ? 'Đã đánh dấu là đã biết.' : quizFeedback ? 'Chính xác!' : `Chưa đúng. Đáp án: ${question.answer}`}</div>}
+      </div>
+      {quizFeedback === null && <div className={`grid gap-3 ${question.type === 'fill_blank' ? 'sm:grid-cols-2' : 'grid-cols-1'}`}>{question.type === 'fill_blank' && <button type="button" onClick={() => void submitQuizAnswer()} disabled={!quizAnswer.trim()} className="w-full rounded-xl bg-primary py-3 text-sm font-bold text-white disabled:opacity-50">Kiểm tra đáp án</button>}<button type="button" onClick={markQuizWordMastered} className="w-full rounded-xl border border-primary py-3 text-sm font-bold text-primary">Đã biết</button></div>}
+    </div></LearnerShell>;
   }
 
   // Summary View
@@ -284,12 +371,12 @@ export default function FlashcardPracticePage({ params }: { params: Promise<{ id
             <button
               onClick={() => {
                 setSessionResults([]);
-                loadPracticeSession(onlyNew);
+                loadPracticeSession(onlyNew, true);
               }}
               className="flex-1 py-3.5 rounded-xl bg-primary text-white text-xs font-bold hover:bg-indigo-700 transition-colors shadow-xs flex items-center justify-center gap-2"
             >
               <span className="material-symbols-outlined text-base">replay</span>
-              Luyện tập tiếp
+              Học thêm từ mới
             </button>
             <Link
               href={lessonId === 'review' ? '/learn/flashcards' : `/learn/flashcards/${lessonId}`}
@@ -365,10 +452,7 @@ export default function FlashcardPracticePage({ params }: { params: Promise<{ id
           )}
         </div>
 
-        {/* Notice Banner */}
-        <div className="p-3.5 rounded-xl bg-amber-50/80 border border-amber-200/80 text-amber-900 text-xs leading-relaxed">
-          Chú ý: bạn được học tối đa 20 từ mới một ngày. Đây là lượng từ phù hợp để bạn có thể học hiệu quả.
-        </div>
+        {sessionStats?.studiedToday >= 20 && <div className="ml-auto w-fit rounded-full border border-amber-200 bg-amber-50 px-3 py-1.5 text-[11px] font-bold text-amber-800">✓ Đã đủ mục tiêu hôm nay · đang học thêm</div>}
 
         {/* Card Progress Indicator */}
         <div className="flex justify-between items-center text-xs font-bold text-slate-500 pt-1">

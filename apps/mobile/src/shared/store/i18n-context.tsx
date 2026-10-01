@@ -121,21 +121,10 @@ const I18nContext = createContext<I18nContextValue>({
 });
 
 export function I18nProvider({ children }: { children: ReactNode }) {
-  const [locale, setLocaleState] = useState<Locale>('vi');
-
-  useEffect(() => {
-    AsyncStorage.getItem('techenglish.locale').then(saved => {
-      if (saved === 'vi' || saved === 'en') setLocaleState(saved);
-    });
-  }, []);
-
-  const setLocale = async (l: Locale) => {
-    setLocaleState(l);
-    await AsyncStorage.setItem('techenglish.locale', l);
-  };
+  const setLocale = (_l: Locale) => {};
 
   return (
-    <I18nContext.Provider value={{ locale, t: translations[locale], setLocale }}>
+    <I18nContext.Provider value={{ locale: 'vi', t: translations.vi, setLocale }}>
       {children}
     </I18nContext.Provider>
   );

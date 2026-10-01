@@ -39,7 +39,6 @@ export default function MobileLoginScreen() {
   const [passwordError, setPasswordError] = useState('');
   const [loginError, setLoginError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const [passwordFocused, setPasswordFocused] = useState(false);
 
   const [request, response, promptAsync] = Google.useAuthRequest(
     GOOGLE_CLIENT_ID
@@ -52,15 +51,6 @@ export default function MobileLoginScreen() {
         }
       : null as any
   );
-
-  // Password rules
-  const rules = [
-    { label: 'Ít nhất 8 ký tự', ok: password.length >= 8 },
-    { label: 'Có chữ hoa (A-Z)', ok: /[A-Z]/.test(password) },
-    { label: 'Có chữ số (0-9)', ok: /[0-9]/.test(password) },
-    { label: 'Có ký tự đặc biệt (!@#...)', ok: /[^A-Za-z0-9]/.test(password) },
-  ];
-  const showRules = passwordFocused && password.length > 0;
 
   useEffect(() => {
     if (response?.type === 'success') {
@@ -92,7 +82,6 @@ export default function MobileLoginScreen() {
 
     let passErr = '';
     if (!password) passErr = 'Mật khẩu không được để trống';
-    else if (password.length < 8) passErr = 'Mật khẩu phải có ít nhất 8 ký tự';
 
     if (passErr) setPasswordError(passErr);
     if (emailErr || passErr) return;
@@ -150,8 +139,6 @@ export default function MobileLoginScreen() {
               onChangeText={setPassword}
               secureTextEntry={!showPassword}
               editable={!isLoading}
-              onFocus={() => setPasswordFocused(true)}
-              onBlur={() => setPasswordFocused(false)}
             />
             <TouchableOpacity onPress={() => setShowPassword(!showPassword)} style={styles.eyeIcon} disabled={isLoading}>
               <MaterialIcons name={showPassword ? 'visibility-off' : 'visibility'} size={20} color={colors.outline} />
@@ -159,21 +146,6 @@ export default function MobileLoginScreen() {
           </View>
           {passwordError ? <Text style={styles.errorTextSmall}>{passwordError}</Text> : null}
 
-          {/* Password requirements */}
-          {showRules && (
-            <View style={styles.rulesBox}>
-              {rules.map((r) => (
-                <View key={r.label} style={styles.ruleRow}>
-                  <MaterialIcons
-                    name={r.ok ? 'check-circle' : 'radio-button-unchecked'}
-                    size={14}
-                    color={r.ok ? '#16a34a' : '#94a3b8'}
-                  />
-                  <Text style={[styles.ruleText, r.ok && styles.ruleTextOk]}>{r.label}</Text>
-                </View>
-              ))}
-            </View>
-          )}
         </View>
 
         <TouchableOpacity style={styles.forgotPassword} onPress={() => router.push('/(auth)/forgot-password' as any)} disabled={isLoading}>
@@ -191,7 +163,14 @@ export default function MobileLoginScreen() {
           )}
         </TouchableOpacity>
 
-        {/* Google login — chỉ hiện nếu có Client ID */}
+        <View style={styles.footerRow}>
+          <Text style={styles.footerText}>Chưa có tài khoản? </Text>
+          <TouchableOpacity onPress={() => router.push('/(auth)/register' as any)} disabled={isLoading}>
+            <Text style={styles.registerLink}>Đăng ký ngay</Text>
+          </TouchableOpacity>
+        </View>
+
+        {/* Google login — đặt sau luồng đăng nhập/đăng ký chính */}
         {GOOGLE_CLIENT_ID ? (
           <>
             <View style={styles.dividerRow}>
@@ -210,13 +189,6 @@ export default function MobileLoginScreen() {
             </TouchableOpacity>
           </>
         ) : null}
-
-        <View style={styles.footerRow}>
-          <Text style={styles.footerText}>Chưa có tài khoản? </Text>
-          <TouchableOpacity onPress={() => router.push('/(auth)/register' as any)} disabled={isLoading}>
-            <Text style={styles.registerLink}>Đăng ký ngay</Text>
-          </TouchableOpacity>
-        </View>
       </View>
     </ScrollView>
   );
@@ -355,25 +327,6 @@ const styles = StyleSheet.create({
   inputError: {
     borderColor: '#ef4444',
     borderWidth: 1
-  },
-  rulesBox: {
-    backgroundColor: '#f8fafc',
-    borderRadius: 8,
-    padding: spacing.sm,
-    gap: 6,
-    marginTop: 4
-  },
-  ruleRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6
-  },
-  ruleText: {
-    fontSize: 12,
-    color: '#94a3b8'
-  },
-  ruleTextOk: {
-    color: '#16a34a'
   },
   dividerRow: {
     flexDirection: 'row',

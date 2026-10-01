@@ -1,362 +1,139 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { apiClient } from '@/shared/api/api-client';
+import { registerWebLearningNotifications } from '@/shared/notifications/firebase-client';
+
+type LearningGoal = 'certification' | 'vocabulary' | 'both';
+interface CertificateOption { id: string; code: string; name: string; provider: string; description: string }
+interface DomainOption { id: string; code: string; name: string; description: string; icon?: string | null }
 
 const LEVELS = [
-  { id: 'beginner', title: 'Mới bắt đầu', subtitle: 'Beginner', icon: 'school' },
-  { id: 'intermediate', title: 'Trung cấp', subtitle: 'Intermediate', icon: 'trending_up' },
-  { id: 'advanced', title: 'Nâng cao', subtitle: 'Advanced', icon: 'workspace_premium' },
-  { id: 'professional', title: 'Chuyên nghiệp', subtitle: 'Professional', icon: 'diamond' },
+  { id: 'beginner', title: 'Cơ bản', subtitle: 'Cần giải thích thuật ngữ và câu hỏi từ nền tảng.', icon: 'school' },
+  { id: 'intermediate', title: 'Trung cấp', subtitle: 'Đã có nền tảng và có thể bắt đầu luyện câu hỏi.', icon: 'trending_up' },
+  { id: 'advanced', title: 'Nâng cao', subtitle: 'Đọc hiểu tài liệu kỹ thuật và tình huống phức tạp.', icon: 'workspace_premium' },
+  { id: 'professional', title: 'Chuyên nghiệp', subtitle: 'Tập trung luyện thi và củng cố điểm yếu.', icon: 'diamond' },
 ];
 
-const IT_FIELDS = [
-  { id: 'CLOUD', title: 'Cloud Computing', icon: 'cloud' },
-  { id: 'CYBERSEC', title: 'Cybersecurity', icon: 'security' },
-  { id: 'NETWORKING', title: 'Networking', icon: 'router' },
-  { id: 'DATA_ENG', title: 'Data Engineering', icon: 'database' },
-  { id: 'DATA_SCI', title: 'Data Science', icon: 'insights' },
-  { id: 'SOFTWARE_ENG', title: 'Software Engineering', icon: 'code' },
-  { id: 'DEVOPS', title: 'DevOps', icon: 'all_inclusive' },
-];
-
-const CAREER_GOALS = [
-  { id: 'BACKEND_ENGINEER', title: 'Backend Engineer', subtitle: 'Xây dựng hệ thống server-side, API và cơ sở dữ liệu mở rộng.', icon: 'code' },
-  { id: 'SOLUTION_ARCHITECT', title: 'Solution Architect', subtitle: 'Tiếng Anh chuyên sâu để thiết kế hệ thống, viết tài liệu kỹ thuật và thuyết trình.', icon: 'architecture' },
-  { id: 'DATA_ENGINEER', title: 'Data Engineer', subtitle: 'Xây dựng data pipeline, analytics và kiến trúc xử lý dữ liệu lớn.', icon: 'monitoring' },
-  { id: 'DEVOPS_ENGINEER', title: 'DevOps Engineer', subtitle: 'Tự động hóa hạ tầng đám mây, quy trình CI/CD và tối ưu độ tin cậy.', icon: 'manage_accounts' },
-  { id: 'OTHER', title: 'Lĩnh vực / Mục tiêu khác', subtitle: 'Frontend, Mobile, Fullstack, Tester hoặc chưa xác định mục tiêu cụ thể.', icon: 'work_outline' },
-];
-
-const TARGET_CERTS = [
-  { id: 'AWS-SAA', title: 'AWS Solutions Architect – Associate', subtitle: 'Nền tảng và kiến trúc điện toán đám mây AWS.', icon: 'cloud' },
-  { id: 'COMPTIA-SECURITY-PLUS', title: 'CompTIA Security+', subtitle: 'Kiến thức an ninh mạng và bảo mật hệ thống.', icon: 'security' },
-  { id: 'CKA', title: 'Certified Kubernetes Administrator', subtitle: 'Quản trị cụm Kubernetes và container orchestration.', icon: 'hub' },
-  { id: 'GCP-ACE', title: 'Google Cloud Associate Cloud Engineer', subtitle: 'Triển khai và vận hành trên Google Cloud Platform.', icon: 'memory' },
-  { id: 'NONE', title: 'Chưa có nhu cầu thi chứng chỉ', subtitle: 'Tôi muốn tập trung học tiếng Anh giao tiếp & tài liệu chuyên ngành, chưa cần thi chứng chỉ.', icon: 'check_box_outline_blank' },
+const GOALS = [
+  { id: 'vocabulary' as const, icon: 'translate', title: 'Học từ vựng CNTT', description: 'Tập trung từ vựng theo Cloud, Security, DevOps và các chuyên ngành khác.' },
+  { id: 'certification' as const, icon: 'workspace_premium', title: 'Luyện chứng chỉ', description: 'Học theo domain, topic và làm quiz đúng cấu trúc chứng chỉ.' },
+  { id: 'both' as const, icon: 'route', title: 'Cả hai', description: 'Kết hợp từ vựng CNTT với lộ trình luyện chứng chỉ mục tiêu.' },
 ];
 
 export default function OnboardingPage() {
   const router = useRouter();
   const [step, setStep] = useState(1);
-  const [level, setLevel] = useState<string>('beginner');
-  const [itFields, setItFields] = useState<string[]>([]);
-  const [careerGoal, setCareerGoal] = useState<string>('');
-  const [targetCert, setTargetCert] = useState<string>('');
+  const [goal, setGoal] = useState<LearningGoal | null>(null);
+  const [certificates, setCertificates] = useState<CertificateOption[]>([]);
+  const [domains, setDomains] = useState<DomainOption[]>([]);
+  const [targetCertificateCode, setTargetCertificateCode] = useState('');
+  const [domainCodes, setDomainCodes] = useState<string[]>([]);
+  const [level, setLevel] = useState('beginner');
+  const [takePlacementTest, setTakePlacementTest] = useState(true);
+  const [dailyVocabularyTarget, setDailyVocabularyTarget] = useState(10);
+  const [weeklyExamTarget, setWeeklyExamTarget] = useState(2);
+  const [dailyStudyTargetMinutes, setDailyStudyTargetMinutes] = useState(30);
+  const [reminderEnabled, setReminderEnabled] = useState(false);
+  const [reminderTime, setReminderTime] = useState('20:00');
+  const [loadingOptions, setLoadingOptions] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
-
+  const [errorMessage, setErrorMessage] = useState('');
   const totalSteps = 4;
 
-  const handleNext = () => {
-    if (step < totalSteps) {
-      setStep(step + 1);
-    }
-  };
+  const selectedCertificate = useMemo(() => certificates.find(item => item.code === targetCertificateCode), [certificates, targetCertificateCode]);
 
-  const handleBack = () => {
-    if (step > 1) {
-      setStep(step - 1);
-    }
-  };
+  useEffect(() => {
+    Promise.all([
+      apiClient.get<{ data: CertificateOption[] }>('/certificates?activeOnly=true'),
+      apiClient.get<{ data: DomainOption[] }>('/domains?activeOnly=true'),
+    ])
+      .then(([certificateResponse, domainResponse]) => {
+        setCertificates(certificateResponse?.data ?? []);
+        setDomains(domainResponse?.data ?? []);
+      })
+      .catch(() => setErrorMessage('Không thể tải danh sách chứng chỉ và lĩnh vực. Vui lòng thử lại.'))
+      .finally(() => setLoadingOptions(false));
+  }, []);
 
-  const toggleItField = (id: string) => {
-    setItFields(prev => 
-      prev.includes(id) ? prev.filter(f => f !== id) : [...prev, id]
-    );
-  };
+  const canContinue = step === 1
+    ? goal !== null
+    : step === 2
+      ? goal === 'certification'
+        ? Boolean(targetCertificateCode) && domainCodes.length > 0
+        : goal === 'both'
+          ? Boolean(targetCertificateCode) && domainCodes.length > 0
+          : domainCodes.length > 0
+      : true;
+
+  const toggleDomain = (code: string) => setDomainCodes(current => current.includes(code) ? current.filter(item => item !== code) : [...current, code]);
+  const destination = () => (goal === 'certification' || goal === 'both') && selectedCertificate ? `/learn/certifications/${selectedCertificate.id}` : '/learn/flashcards';
 
   const handleSubmit = async () => {
+    if (!goal || !canContinue) return;
     setIsSubmitting(true);
+    setErrorMessage('');
     try {
       await apiClient.post('/learner-profiles/me/complete-onboarding', {
-        levelCode: level ? level.toLowerCase() : 'beginner',
-        domainCodes: itFields.length > 0 ? itFields : ['SOFTWARE_ENG'],
-        careerGoalCodes: careerGoal && careerGoal !== 'OTHER' ? [careerGoal] : undefined,
-        certificateCodes: targetCert && targetCert !== 'NONE' ? [targetCert] : undefined,
-        weeklyStudyTargetMinutes: 120,
+        learningGoal: goal,
+        levelCode: level,
+        domainCodes,
+        certificateCodes: goal === 'certification' || goal === 'both' ? [targetCertificateCode] : [],
+        weeklyStudyTargetMinutes: dailyStudyTargetMinutes * 7,
+        learningPathMode: 'smart',
+        dailyVocabularyTarget,
+        weeklyExamTarget,
+        dailyStudyTargetMinutes,
+        reminderEnabled,
+        reminderTime: reminderEnabled ? reminderTime : undefined,
       });
-      router.push('/learn');
+      if (reminderEnabled) await registerWebLearningNotifications().catch(() => false);
+      if (takePlacementTest) {
+        router.replace(`/onboarding/placement-test?next=${encodeURIComponent(destination())}`);
+        return;
+      }
+      router.replace(destination());
     } catch (error) {
-      console.error('Failed to complete onboarding:', error);
+      setErrorMessage(error instanceof Error ? error.message : 'Không thể tạo lộ trình. Vui lòng thử lại.');
       setIsSubmitting(false);
     }
   };
 
-  const handleSkipAll = async () => {
-    setIsSubmitting(true);
-    try {
-      await apiClient.post('/learner-profiles/me/complete-onboarding', {
-        levelCode: level ? level.toLowerCase() : 'beginner',
-        domainCodes: itFields.length > 0 ? itFields : ['SOFTWARE_ENG'],
-        careerGoalCodes: careerGoal && careerGoal !== 'OTHER' ? [careerGoal] : undefined,
-        certificateCodes: targetCert && targetCert !== 'NONE' ? [targetCert] : undefined,
-        weeklyStudyTargetMinutes: 120,
-      });
-      router.push('/learn');
-    } catch (error) {
-      console.error('Failed to skip onboarding:', error);
-      router.push('/learn');
-    }
-  };
-
-  const isStepValid = () => {
-    // Tất cả các bước đều cho phép tiếp tục linh hoạt
-    return true;
-  };
-
-  const renderProgressBar = () => (
-    <div className="w-full max-w-[600px] flex gap-2 mb-10">
-      {Array.from({ length: totalSteps }).map((_, i) => (
-        <div 
-          key={i} 
-          className={`h-2 flex-1 rounded-full ${
-            i + 1 <= step ? 'bg-primary' : 'bg-surface-container-highest'
-          }`} 
-        />
-      ))}
-    </div>
-  );
-
   return (
-    <main className="min-h-screen bg-surface flex flex-col items-center justify-center p-6 md:p-8 w-full">
-      <div className="w-full max-w-[800px] flex flex-col items-center relative z-10">
-        {/* Top header with Skip All button */}
-        <div className="w-full flex items-center justify-between mb-6">
-          <span className="text-xs font-semibold text-on-surface-variant uppercase tracking-wider">
-            Bước {step} / {totalSteps}
-          </span>
-          <button
-            type="button"
-            onClick={handleSkipAll}
-            disabled={isSubmitting}
-            className="text-xs md:text-sm font-semibold text-on-surface-variant hover:text-primary transition-colors flex items-center gap-1 px-3 py-1.5 rounded-lg hover:bg-surface-container-low"
-          >
-            <span>Bỏ qua thiết lập</span>
-            <span className="material-symbols-outlined text-[16px]">chevron_right</span>
-          </button>
+    <main className="min-h-screen bg-surface px-5 py-8 md:px-8">
+      <div className="mx-auto flex w-full max-w-[820px] flex-col">
+        <div className="mb-6 flex items-center justify-between">
+          <div><p className="text-xs font-bold uppercase tracking-wider text-primary">Thiết lập lộ trình</p><p className="mt-1 text-sm text-on-surface-variant">Bước {step} / {totalSteps}</p></div>
+          <span className="rounded-full bg-primary/10 px-3 py-1 text-xs font-bold text-primary">Tiến trình mới: 0%</span>
         </div>
+        <div className="mb-10 flex gap-2">{Array.from({ length: totalSteps }).map((_, index) => <div key={index} className={`h-2 flex-1 rounded-full ${index + 1 <= step ? 'bg-primary' : 'bg-surface-container-highest'}`} />)}</div>
 
-        {renderProgressBar()}
+        {step === 1 && <section><Header title="Bạn học để làm gì?" subtitle="Chọn mục tiêu phù hợp nhất. Bạn vẫn có thể thay đổi sau trong hồ sơ." /><div className="grid gap-4 md:grid-cols-3">{GOALS.map(item => <ChoiceCard key={item.id} selected={goal === item.id} icon={item.icon} title={item.title} description={item.description} onClick={() => { setGoal(item.id); setTargetCertificateCode(''); setDomainCodes([]); }} />)}</div></section>}
 
-        {step === 1 && (
-          <div className="w-full animate-in fade-in duration-300">
-            <div className="text-center mb-10 w-full">
-              <h1 className="text-[24px] md:text-[30px] font-bold text-on-surface mb-3">
-                Trình độ tiếng Anh của bạn?
-              </h1>
-              <p className="text-[14px] text-on-surface-variant max-w-md mx-auto">
-                Chọn mức độ phù hợp nhất hiện tại để chúng tôi thiết lập không gian học tập tối ưu cho bạn.
-              </p>
-            </div>
-            
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 w-full">
-              {LEVELS.map(item => (
-                <div 
-                  key={item.id}
-                  onClick={() => setLevel(item.id)}
-                  className={`bg-white border rounded-xl p-6 cursor-pointer transition-all duration-200 flex items-start gap-4 group ${
-                    level === item.id 
-                      ? 'border-primary bg-primary-light shadow-[0_0_0_1px_#3525cd]' 
-                      : 'border-border-subtle hover:border-primary-fixed-dim hover:shadow-sm'
-                  }`}
-                >
-                  <div className={`w-12 h-12 rounded-lg flex items-center justify-center shrink-0 transition-colors duration-200 ${
-                    level === item.id ? 'bg-primary text-white' : 'bg-surface text-on-surface-variant group-hover:text-primary'
-                  }`}>
-                    <span className="material-symbols-outlined" style={{ fontVariationSettings: "'FILL' 0" }}>{item.icon}</span>
-                  </div>
-                  <div className="flex-1">
-                    <h3 className="text-[14px] font-semibold text-on-surface mb-1">{item.title}</h3>
-                    <p className="text-[12px] text-on-surface-variant">{item.subtitle}</p>
-                  </div>
-                  <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center mt-1 shrink-0 ${
-                    level === item.id ? 'border-primary' : 'border-outline-variant'
-                  }`}>
-                    <div className={`w-2.5 h-2.5 rounded-full transition-transform duration-200 ${
-                      level === item.id ? 'bg-primary scale-100' : 'bg-transparent scale-0'
-                    }`} />
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
+        {step === 2 && <section>
+          <Header title={goal === 'vocabulary' ? 'Chọn lĩnh vực CNTT' : goal === 'certification' ? 'Chọn chứng chỉ mục tiêu' : 'Chọn nội dung và chứng chỉ'} subtitle="Hệ thống sẽ dùng lựa chọn này để cá nhân hóa từ vựng, bài học và câu hỏi luyện tập." />
+          {loadingOptions ? <p className="py-12 text-center text-sm text-on-surface-variant">Đang tải dữ liệu...</p> : <div className="space-y-7">
+            <div><h2 className="mb-3 text-sm font-bold text-on-surface">Lĩnh vực IT</h2><div className="grid gap-3 md:grid-cols-2">{domains.map(item => <ChoiceCard key={item.id} selected={domainCodes.includes(item.code)} icon={item.icon || 'code'} title={item.name} description={item.description} onClick={() => toggleDomain(item.code)} />)}</div></div>
+            {(goal === 'certification' || goal === 'both') && <div><h2 className="mb-3 text-sm font-bold text-on-surface">Chứng chỉ mục tiêu</h2><div className="grid gap-3 md:grid-cols-2">{certificates.map(item => <ChoiceCard key={item.id} selected={targetCertificateCode === item.code} icon="workspace_premium" title={item.name} description={`${item.provider} · ${item.code}`} onClick={() => setTargetCertificateCode(item.code)} />)}</div></div>}
+            {(domains.length === 0 || (goal !== 'vocabulary' && certificates.length === 0)) && <p className="rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-800">Chưa có đủ nội dung đang hoạt động để lựa chọn.</p>}
+          </div>}
+        </section>}
 
-        {step === 2 && (
-          <div className="w-full animate-in fade-in duration-300">
-            <div className="text-center mb-10 w-full">
-              <h1 className="text-[24px] md:text-[30px] font-bold text-on-surface mb-3">
-                Lĩnh vực CNTT bạn quan tâm?
-              </h1>
-              <p className="text-[14px] text-on-surface-variant max-w-md mx-auto">
-                Chọn một hoặc nhiều lĩnh vực để chúng tôi tùy chỉnh lộ trình học thuật thuật ngữ chuyên ngành phù hợp nhất cho bạn.
-              </p>
-            </div>
-            
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 w-full">
-              {IT_FIELDS.map((item, index) => {
-                const isSelected = itFields.includes(item.id);
-                const isLastOdd = IT_FIELDS.length % 2 !== 0 && index === IT_FIELDS.length - 1;
-                return (
-                  <div 
-                    key={item.id}
-                    onClick={() => toggleItField(item.id)}
-                    className={`bg-white border rounded-lg p-4 flex flex-col items-center justify-center gap-4 text-center h-full min-h-[140px] cursor-pointer transition-all duration-200 ${
-                      isSelected 
-                        ? 'border-primary bg-primary-light shadow-[0_0_0_2px_#3525cd]' 
-                        : 'border-border-subtle hover:border-primary-fixed-dim hover:-translate-y-0.5 hover:shadow-md'
-                    } ${isLastOdd ? 'sm:col-span-2 md:col-span-1' : ''}`}
-                  >
-                    <div className={`w-12 h-12 rounded-full flex items-center justify-center transition-colors duration-200 ${
-                      isSelected ? 'bg-primary-fixed text-primary' : 'bg-surface-container text-on-surface-variant'
-                    }`}>
-                      <span className="material-symbols-outlined text-[24px]">{item.icon}</span>
-                    </div>
-                    <span className="text-[14px] font-semibold text-on-surface">{item.title}</span>
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-        )}
+        {step === 3 && <section><Header title="Xác định trình độ tiếng Anh" subtitle="Làm bài kiểm tra nhanh để hệ thống đề xuất lộ trình vừa sức, hoặc tự chọn nếu bạn đã biết trình độ của mình." /><div className="grid gap-4 md:grid-cols-2"><ChoiceCard selected={takePlacementTest} icon="quiz" title="Làm bài kiểm tra nhanh" description="10–15 câu · khoảng 5 phút · nhận trình độ đề xuất ngay" onClick={() => setTakePlacementTest(true)} /><ChoiceCard selected={!takePlacementTest} icon="tune" title="Tôi muốn tự chọn trình độ" description="Chọn trực tiếp mức phù hợp với kinh nghiệm hiện tại" onClick={() => setTakePlacementTest(false)} /></div>{!takePlacementTest && <div className="mt-5 grid gap-3 md:grid-cols-2">{LEVELS.map(item => <ChoiceCard key={item.id} selected={level === item.id} icon={item.icon} title={item.title} description={item.subtitle} onClick={() => setLevel(item.id)} />)}</div>}</section>}
 
-        {step === 3 && (
-          <div className="w-full animate-in fade-in duration-300">
-            <div className="text-center mb-10 w-full">
-              <h1 className="text-[24px] md:text-[30px] font-bold text-on-surface mb-3">
-                Mục tiêu nghề nghiệp của bạn?
-              </h1>
-              <p className="text-[14px] text-on-surface-variant max-w-md mx-auto">
-                Chọn mục tiêu phù hợp nhất để chúng tôi cá nhân hóa lộ trình học tiếng Anh chuyên ngành của bạn.
-              </p>
-            </div>
-            
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 w-full">
-              {CAREER_GOALS.map((item, index) => {
-                const isLast = index === CAREER_GOALS.length - 1;
-                return (
-                  <div 
-                    key={item.id}
-                    onClick={() => setCareerGoal(prev => prev === item.id ? '' : item.id)}
-                    className={`bg-white rounded-lg p-4 border relative flex items-start gap-4 cursor-pointer transition-all duration-200 ${
-                      isLast ? 'md:col-span-2' : ''
-                    } ${
-                      careerGoal === item.id
-                        ? 'border-primary bg-primary-light shadow-[0_0_0_1px_#3525cd]'
-                        : 'border-border-subtle hover:border-primary hover:-translate-y-0.5 hover:shadow-md'
-                    }`}
-                  >
-                    <div className={`flex-shrink-0 w-12 h-12 rounded-lg flex items-center justify-center transition-colors ${
-                      careerGoal === item.id ? 'bg-primary text-white' : 'bg-surface-container-low text-on-surface-variant'
-                    }`}>
-                      <span className="material-symbols-outlined">{item.icon}</span>
-                    </div>
-                    <div className="flex-grow pr-8">
-                      <h3 className="text-[14px] font-semibold text-on-surface mb-1">{item.title}</h3>
-                      <p className="text-[12px] text-on-surface-variant">{item.subtitle}</p>
-                    </div>
-                    <div className="absolute top-4 right-4">
-                      <span className={`material-symbols-outlined text-primary transition-all duration-200 ${
-                        careerGoal === item.id ? 'opacity-100 scale-100' : 'opacity-0 scale-50'
-                      }`} style={{ fontVariationSettings: "'FILL' 1" }}>check_circle</span>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-        )}
+        {step === 4 && <section><Header title="Thiết lập kế hoạch học" subtitle="Mỗi ngày một lượng nhỏ, có ôn tập ngắt quãng và tổng kết vào cuối tuần." /><div className="rounded-2xl border border-outline-variant bg-white p-5"><div className="mb-5 rounded-xl bg-primary/5 p-4"><p className="text-sm font-bold text-primary">Nhịp học gợi ý mỗi ngày</p><p className="mt-1 text-sm text-on-surface-variant">10 từ mới → 1 bài học ngắn → 5 câu luyện tập</p><p className="mt-2 text-xs text-on-surface-variant">Ngày 2 trở đi sẽ xen kẽ ôn từ cũ; ngày 7 có Weekly Review và Weekly Quiz.</p></div><div className="grid gap-4 sm:grid-cols-3"><NumberField label="Từ vựng/ngày" value={dailyVocabularyTarget} min={1} max={200} onChange={setDailyVocabularyTarget} /><NumberField label="Bài Quiz/tuần" value={weeklyExamTarget} min={1} max={50} onChange={setWeeklyExamTarget} /><NumberField label="Phút học/ngày" value={dailyStudyTargetMinutes} min={5} max={1440} onChange={setDailyStudyTargetMinutes} /></div><div className="mt-5 flex flex-wrap items-center gap-3 border-t border-border-subtle pt-5"><label className="flex items-center gap-2 text-sm font-semibold text-on-surface"><input type="checkbox" checked={reminderEnabled} onChange={event => setReminderEnabled(event.target.checked)} />Nhắc học mỗi ngày</label><input type="time" value={reminderTime} disabled={!reminderEnabled} onChange={event => setReminderTime(event.target.value)} className="rounded-lg border border-outline-variant px-3 py-2 text-sm disabled:opacity-50" /></div></div></section>}
 
-        {step === 4 && (
-          <div className="w-full max-w-[600px] mx-auto animate-in fade-in duration-300">
-            <div className="text-center mb-10 w-full">
-              <h1 className="text-[24px] md:text-[30px] font-bold text-on-surface mb-3">
-                Chứng chỉ mục tiêu?
-              </h1>
-              <p className="text-[14px] text-on-surface-variant max-w-md mx-auto">
-                Chọn chứng chỉ bạn muốn đạt được (không bắt buộc) để chúng tôi cá nhân hóa lộ trình học.
-              </p>
-            </div>
-            
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 w-full">
-              {TARGET_CERTS.map((item, index) => {
-                const isLast = index === TARGET_CERTS.length - 1;
-                return (
-                  <div 
-                    key={item.id}
-                    onClick={() => setTargetCert(prev => prev === item.id ? '' : item.id)}
-                    className={`bg-white border rounded-lg p-5 flex items-start gap-4 cursor-pointer transition-all duration-200 relative ${
-                      isLast ? 'md:col-span-2' : ''
-                    } ${
-                      targetCert === item.id
-                        ? 'border-primary bg-primary-light shadow-[0_0_0_1px_#3525cd]'
-                        : 'border-border-subtle hover:shadow-md'
-                    }`}
-                  >
-                    <div className="w-10 h-10 rounded bg-surface-container flex items-center justify-center shrink-0">
-                      <span className="material-symbols-outlined text-primary">{item.icon}</span>
-                    </div>
-                    <div className="flex-1 pr-6">
-                      <h3 className="text-[14px] font-semibold text-on-surface mb-1">{item.title}</h3>
-                      <p className="text-[12px] text-on-surface-variant">{item.subtitle}</p>
-                    </div>
-                    <div className={`absolute right-5 transition-opacity duration-200 ${
-                      targetCert === item.id ? 'opacity-100' : 'opacity-0'
-                    }`}>
-                      <span className="material-symbols-outlined text-primary" style={{ fontVariationSettings: "'FILL' 1" }}>check_circle</span>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-        )}
-
-        {/* Bottom Actions */}
-        <div className="w-full mt-12 flex items-center justify-between border-t border-border-subtle pt-8">
-          <button 
-            type="button"
-            onClick={handleBack}
-            disabled={step === 1 || isSubmitting}
-            className={`px-6 py-2.5 rounded-lg text-[14px] font-semibold border flex items-center gap-2 transition-colors ${
-              step === 1 
-                ? 'bg-transparent border-surface-container-highest text-outline opacity-60 cursor-not-allowed'
-                : 'bg-transparent border-border-subtle text-on-surface hover:bg-surface-container-low'
-            }`}
-          >
-            <span className="material-symbols-outlined text-[20px]">arrow_back</span>
-            Quay lại
-          </button>
-          
-          <div className="flex items-center gap-3">
-            {(step === 3 || step === 4) && (
-              <button 
-                type="button"
-                onClick={step === totalSteps ? handleSubmit : handleNext}
-                disabled={isSubmitting}
-                className="px-5 py-2.5 rounded-lg text-[14px] font-semibold text-on-surface-variant hover:text-on-surface hover:bg-surface-container-low transition-colors"
-              >
-                Bỏ qua bước này
-              </button>
-            )}
-
-            <button 
-              type="button"
-              onClick={step === totalSteps ? handleSubmit : handleNext}
-              disabled={isSubmitting}
-              className="px-8 py-2.5 rounded-lg text-[14px] font-semibold flex items-center gap-2 transition-all bg-primary text-white hover:bg-primary-container shadow-sm cursor-pointer"
-            >
-              {isSubmitting ? 'Đang xử lý...' : step === totalSteps ? 'Hoàn tất' : 'Tiếp tục'}
-              {!isSubmitting && (
-                <span className="material-symbols-outlined text-[20px]">
-                  {step === totalSteps ? 'check' : 'arrow_forward'}
-                </span>
-              )}
-            </button>
-          </div>
+        {errorMessage && <p className="mt-6 rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-700">{errorMessage}</p>}
+        <div className="mt-10 flex items-center justify-between border-t border-border-subtle pt-6">
+          <button type="button" disabled={step === 1 || isSubmitting} onClick={() => setStep(current => Math.max(1, current - 1))} className="rounded-lg border border-outline-variant px-5 py-2.5 text-sm font-semibold text-on-surface disabled:opacity-40">Quay lại</button>
+          <button type="button" disabled={!canContinue || isSubmitting || loadingOptions} onClick={step === totalSteps ? handleSubmit : () => { setErrorMessage(''); setStep(current => current + 1); }} className="flex items-center gap-2 rounded-lg bg-primary px-7 py-2.5 text-sm font-semibold text-white disabled:cursor-not-allowed disabled:opacity-40">{isSubmitting ? 'Đang tạo lộ trình...' : step === totalSteps ? 'Tạo lộ trình' : 'Tiếp tục'}{!isSubmitting && <span className="material-symbols-outlined text-[19px]">{step === totalSteps ? 'check' : 'arrow_forward'}</span>}</button>
         </div>
       </div>
     </main>
   );
 }
+
+function Header({ title, subtitle }: { title: string; subtitle: string }) { return <div className="mb-8 text-center"><h1 className="text-2xl font-bold text-on-surface md:text-3xl">{title}</h1><p className="mx-auto mt-2 max-w-xl text-sm text-on-surface-variant">{subtitle}</p></div>; }
+function ChoiceCard({ selected, icon, title, description, onClick }: { selected: boolean; icon: string; title: string; description: string; onClick: () => void }) { return <button type="button" onClick={onClick} className={`flex min-h-[112px] items-start gap-4 rounded-xl border bg-white p-5 text-left transition-all ${selected ? 'border-primary ring-2 ring-primary/20' : 'border-outline-variant hover:border-primary/60'}`}><span className={`material-symbols-outlined rounded-lg p-2.5 ${selected ? 'bg-primary text-white' : 'bg-surface-container text-primary'}`}>{icon}</span><span className="flex-1"><strong className="block text-sm text-on-surface">{title}</strong><span className="mt-1 block text-xs leading-relaxed text-on-surface-variant">{description}</span></span><span className={`material-symbols-outlined text-primary ${selected ? 'opacity-100' : 'opacity-0'}`}>check_circle</span></button>; }
+function NumberField({ label, value, min, max, onChange }: { label: string; value: number; min: number; max: number; onChange: (value: number) => void }) { return <label className="text-xs font-semibold text-on-surface-variant">{label}<input type="number" min={min} max={max} value={value} onChange={event => onChange(Math.min(max, Math.max(min, Number(event.target.value) || min)))} className="mt-1.5 w-full rounded-lg border border-outline-variant px-3 py-2.5 text-sm text-on-surface" /></label>; }

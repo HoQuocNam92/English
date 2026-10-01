@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { API_BASE_URL } from '@/shared/config/env';
+import { toVietnameseErrorMessage } from '@/shared/lib/error-message';
 
 const API_URL = API_BASE_URL;
 
@@ -26,7 +27,7 @@ export default function ForgotPasswordPage() {
       });
       const data = await res.json();
       if (!res.ok) {
-        setError(data?.message ?? 'Đã xảy ra lỗi. Vui lòng thử lại.');
+        setError(toVietnameseErrorMessage(data?.message, res.status));
       } else {
         setSent(true);
       }

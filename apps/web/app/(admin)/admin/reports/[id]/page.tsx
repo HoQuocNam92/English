@@ -46,7 +46,7 @@ export default function ReportDetailPage() {
         setData(response)
       } catch (err: any) {
         console.error('Failed to fetch report data:', err)
-        setError('Failed to load report data.')
+        setError('Không thể tải dữ liệu báo cáo. Vui lòng thử lại.')
       } finally {
         setLoading(false)
       }
@@ -60,7 +60,7 @@ export default function ReportDetailPage() {
   if (loading) {
     return (
       <div className="p-6">
-        <PageHeader title="Loading Report..." description="Please wait while we fetch the data." />
+        <PageHeader title="Đang tải báo cáo..." description="Vui lòng chờ trong khi hệ thống tải dữ liệu." />
         <div className="mt-8 flex justify-center">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
         </div>
@@ -71,7 +71,7 @@ export default function ReportDetailPage() {
   if (error || !data) {
     return (
       <div className="p-6">
-        <PageHeader title="Error" description={error || 'Report not found'} />
+        <PageHeader title="Không thể tải báo cáo" description={error || 'Không tìm thấy báo cáo.'} />
       </div>
     )
   }
@@ -120,22 +120,22 @@ export default function ReportDetailPage() {
                 <thead className="bg-gray-50">
                   <tr>
                     <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Learner
+                      Học viên
                     </th>
                     <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Level
+                      Trình độ
                     </th>
                     <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Cert Goal
+                      Mục tiêu chứng chỉ
                     </th>
                     <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Avg Completion
+                      Tiến độ trung bình
                     </th>
                     <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Exams (Passed/Total)
+                      Bài thi (Đạt/Tổng)
                     </th>
                     <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Last Active
+                      Hoạt động gần nhất
                     </th>
                   </tr>
                 </thead>
@@ -177,7 +177,7 @@ export default function ReportDetailPage() {
                           {learner.passedExams} / {learner.examCount}
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                          {new Date(learner.lastActive).toLocaleDateString()}
+                          {new Date(learner.lastActive).toLocaleDateString('vi-VN')}
                         </td>
                       </tr>
                     ))

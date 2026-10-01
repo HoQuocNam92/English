@@ -1,29 +1,36 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useRouter } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
-import { StyleSheet, Text, View, TouchableOpacity, ScrollView } from 'react-native';
+import { ActivityIndicator, StyleSheet, Text, View, TouchableOpacity, ScrollView } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
 import { colors, spacing } from '@techenglish/design-tokens';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { api } from '../../src/shared/api/api-client';
 
 interface FieldOption {
   id: string;
+  code: string;
   name: string;
-  icon: keyof typeof MaterialIcons.glyphMap;
+  description: string;
 }
 
-const fields: FieldOption[] = [
-  { id: 'CLOUD', name: 'Cloud Computing', icon: 'cloud' },
-  { id: 'CYBERSEC', name: 'Cybersecurity', icon: 'security' },
-  { id: 'NETWORKING', name: 'Networking', icon: 'router' },
-  { id: 'DATA_ENG', name: 'Data Engineering', icon: 'storage' },
-  { id: 'SOFTWARE_ENG', name: 'Software Engineering', icon: 'code' },
-  { id: 'DEVOPS', name: 'DevOps', icon: 'settings-suggest' },
-];
+const iconForDomain = (code: string): keyof typeof MaterialIcons.glyphMap => ({
+  CLOUD: 'cloud', CYBERSEC: 'security', NETWORKING: 'router', DATA_ENG: 'storage', DATA_SCI: 'insights', SOFTWARE_ENG: 'code', DEVOPS: 'settings-suggest',
+}[code] as keyof typeof MaterialIcons.glyphMap) || 'terminal';
 
 export default function OnboardingFieldScreen() {
   const router = useRouter();
   const [selectedFields, setSelectedFields] = useState<string[]>([]);
+  const [fields, setFields] = useState<FieldOption[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState('');
+
+  useEffect(() => {
+    api.get<{ data: FieldOption[] }>('/domains?activeOnly=true')
+      .then(response => setFields(response?.data ?? []))
+      .catch(() => setLoadError('Không thể tải danh sách lĩnh vực.'))
+      .finally(() => setLoading(false));
+  }, []);
 
   const toggleField = (id: string) => {
     setSelectedFields(prev =>
@@ -32,9 +39,8 @@ export default function OnboardingFieldScreen() {
   };
 
   const handleNext = async () => {
-    const toSave = selectedFields.length > 0 ? selectedFields : ['CLOUD'];
-    await AsyncStorage.setItem('onboarding_domains', JSON.stringify(toSave));
-    router.push('/(onboarding)/career-goal' as any);
+    await AsyncStorage.setItem('onboarding_domains', JSON.stringify(selectedFields));
+    router.push('/(onboarding)/level' as any);
   };
 
   return (
@@ -59,18 +65,21 @@ export default function OnboardingFieldScreen() {
         <Text style={styles.title}>Lĩnh vực bạn quan tâm?</Text>
         <Text style={styles.subtitle}>Chọn chuyên ngành CNTT bạn muốn tập trung học tiếng Anh.</Text>
 
+        {loading && <ActivityIndicator color={colors.primary} size="large" />}
+        {loadError ? <Text style={styles.errorText}>{loadError}</Text> : null}
+
         <View style={styles.gridContainer}>
           {fields.map((f) => {
-            const isSelected = selectedFields.includes(f.id);
+            const isSelected = selectedFields.includes(f.code);
             return (
               <TouchableOpacity
                 key={f.id}
                 style={[styles.gridItem, isSelected && styles.gridItemSelected]}
-                onPress={() => toggleField(f.id)}
+                onPress={() => toggleField(f.code)}
                 activeOpacity={0.8}
               >
                 <View style={[styles.iconBox, isSelected && styles.iconBoxSelected]}>
-                  <MaterialIcons name={f.icon} size={24} color={isSelected ? colors.primary : '#464555'} />
+                  <MaterialIcons name={iconForDomain(f.code)} size={24} color={isSelected ? colors.primary : '#464555'} />
                 </View>
                 <Text style={[styles.fieldName, isSelected && styles.fieldNameSelected]}>{f.name}</Text>
               </TouchableOpacity>
@@ -135,6 +144,7 @@ const styles = StyleSheet.create({
   scrollContent: { padding: spacing.lg, paddingTop: spacing.md, paddingBottom: 100 },
   title: { fontSize: 30, fontWeight: '700', color: '#191c1e', marginBottom: spacing.xs, letterSpacing: -0.5 },
   subtitle: { fontSize: 14, color: '#464555', marginBottom: spacing.xl, lineHeight: 20 },
+  errorText: { color: '#b42318', backgroundColor: '#fff0f0', padding: spacing.md, borderRadius: 10, marginBottom: spacing.md },
   
   gridContainer: {
     flexDirection: 'row',

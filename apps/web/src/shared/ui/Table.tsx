@@ -30,3 +30,7 @@ export function TableHead({ className, ...props }: TableHeadProps) {
 export function TableCell({ className, ...props }: TableCellProps) {
   return <td className={cn('p-4 align-middle text-sm', className)} {...props} />;
 }
+
+export function TableCaption({ className, ...props }: React.HTMLAttributes<HTMLTableCaptionElement>) {
+  return <caption className={cn('mt-4 text-sm text-muted-foreground', className)} {...props} />;
+}

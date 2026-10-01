@@ -1,4 +1,5 @@
 import { NestFactory } from '@nestjs/core'
+import { NestExpressApplication } from '@nestjs/platform-express'
 import { ValidationPipe } from '@nestjs/common'
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger'
 import { ConfigService } from '@nestjs/config'
@@ -8,10 +9,12 @@ import { HttpExceptionFilter } from './presentation/filters/http-exception.filte
 import { SanitizeInputPipe } from './presentation/pipes/sanitize-input.pipe'
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule, {
+  const app = await NestFactory.create<NestExpressApplication>(AppModule, {
     // rawBody: true allows access to req.rawBody in webhook handler for HMAC verification
     rawBody: true,
   })
+  // Ảnh mobile được gửi dưới dạng base64 để tránh lỗi FormData của React Native.
+  app.useBodyParser('json', { limit: '7mb' })
 
   const configService = app.get(ConfigService)
   const port = Number(configService.getOrThrow<string>('PORT'))

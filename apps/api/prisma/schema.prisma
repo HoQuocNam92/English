@@ -46,6 +46,7 @@ enum LessonType {
   api_documentation
   system_design
   case_study
+  certification_review
 
   @@map("lesson_type")
 }
@@ -72,6 +73,24 @@ enum QuestionType {
   scenario
 
   @@map("question_type")
+}
+
+enum QuestionSkill {
+  vocabulary
+  reading
+  technical_understanding
+  scenario_based
+
+  @@map("question_skill")
+}
+
+enum ExamKind {
+  practice
+  domain_test
+  mock_exam
+  scenario_assessment
+
+  @@map("exam_kind")
 }
 
 enum AttemptStatus {
@@ -127,6 +146,7 @@ model User {
   email        String     @unique @db.VarChar(254)
   passwordHash String     @map("password_hash") @db.VarChar(255)
   status       UserStatus @default(active)
+  deletedAt    DateTime?  @map("deleted_at") @db.Timestamptz(6)
   createdAt    DateTime   @default(now()) @map("created_at") @db.Timestamptz(6)
   updatedAt    DateTime   @updatedAt @map("updated_at") @db.Timestamptz(6)
 
@@ -136,20 +156,23 @@ model User {
   userRoles     UserRole[]
 
   // Content & learning
-  learnerProfile  LearnerProfile?
-  createdLessons  Lesson[]           @relation("LessonCreatedBy")
-  createdExams    Exam[]             @relation("ExamCreatedBy")
-  examAttempts    ExamAttempt[]
-  learnerProgress LearningProgress[]
-  vocabProgress   VocabularyProgress[]
+  learnerProfile    LearnerProfile?
+  createdExams      Exam[]               @relation("ExamCreatedBy")
+  createdLessons    Lesson[]             @relation("LessonCreatedBy")
+  examAttempts      ExamAttempt[]
+  learnerProgress   LearningProgress[]
+  vocabProgress     VocabularyProgress[]
+  savedQuestions    SavedQuestion[]
+  pushSubscriptions PushSubscription[]
+  ownedLearnerGroups LearnerGroup[]       @relation("LearnerGroupOwner")
+  learnerGroupLinks  LearnerGroupMember[] @relation("LearnerGroupMemberUser")
 
-  // Group management
   // Roles granted by this user
   grantedRoles UserRole[] @relation("RoleGrantedBy")
 
-
   @@index([email])
   @@index([status])
+  @@index([deletedAt])
   @@map("users")
 }
 
@@ -277,7 +300,7 @@ model PasswordResetToken {
 }
 
 // =============================================================================
-// MASTER DATA — Domains, Levels, Career Goals, Certificates
+// MASTER DATA — Domains, Levels, Certificates
 // =============================================================================
 
 /// Lĩnh vực CNTT (Cloud Computing, DevOps, Security, …).
@@ -294,9 +317,9 @@ model Domain {
   profileDomains     LearnerProfileDomain[]
   certificateDomains CertificateDomain[]
   vocabularies       Vocabulary[]
-  lessons            Lesson[]
   questions          Question[]
   exams              Exam[]
+  lessons            Lesson[]
 
   @@index([code])
   @@index([isActive])
@@ -305,72 +328,97 @@ model Domain {
 
 /// Cấp độ học tập (Beginner → Professional).
 model Level {
-  id          String    @id @default(uuid()) @db.Uuid
-  code        String    @unique @db.VarChar(50)
-  name        String    @db.VarChar(50)
-  order       Int
-  description String    @db.VarChar(500)
-  isActive    Boolean   @default(true) @map("is_active")
-  createdAt   DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
-  updatedAt   DateTime  @updatedAt @map("updated_at") @db.Timestamptz(6)
-
-  learnerProfiles LearnerProfile[]
-  vocabularies    Vocabulary[]
-  lessons         Lesson[]
-  questions       Question[]
-  exams           Exam[]
-
-  @@map("levels")
-}
-
-/// Mục tiêu nghề nghiệp (Backend Engineer, DevOps Engineer, …).
-model CareerGoal {
   id          String   @id @default(uuid()) @db.Uuid
-  code        String   @unique @db.VarChar(40)
-  name        String   @db.VarChar(100)
+  code        String   @unique @db.VarChar(50)
+  name        String   @db.VarChar(50)
+  order       Int
   description String   @db.VarChar(500)
   isActive    Boolean  @default(true) @map("is_active")
   createdAt   DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
   updatedAt   DateTime @updatedAt @map("updated_at") @db.Timestamptz(6)
 
-  profileCareerGoals LearnerProfileCareerGoal[]
+  learnerProfiles LearnerProfile[]
+  vocabularies    Vocabulary[]
+  questions       Question[]
+  exams           Exam[]
+  lessons         Lesson[]
 
-  @@index([code])
-  @@map("career_goals")
+  @@map("levels")
 }
 
 /// Chứng chỉ CNTT (AWS-SAA, CKA, CompTIA Security+, …).
 model Certificate {
+  id                  String   @id @default(uuid()) @db.Uuid
+  code                String   @unique @db.VarChar(40)
+  name                String   @db.VarChar(150)
+  provider            String   @db.VarChar(100)
+  description         String   @db.VarChar(1000)
+  category            String?  @db.VarChar(50)
+  examDurationMinutes Int?     @map("exam_duration_minutes")
+  examQuestionCount   Int?     @map("exam_question_count")
+  passingScaledScore  Int?     @map("passing_scaled_score")
+  examUrl             String?  @map("exam_url") @db.VarChar(2048)
+  isActive            Boolean  @default(true) @map("is_active")
+  createdAt           DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt           DateTime @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  domains      CertificateDomain[]
+  profileGoals LearnerCertificateGoal[]
+  exams        Exam[]
+  lessons      LessonCertificate[]
+
+  @@index([code])
+  @@map("certificates")
+}
+
+model CareerGoal {
   id          String   @id @default(uuid()) @db.Uuid
   code        String   @unique @db.VarChar(40)
-  name        String   @db.VarChar(150)
-  provider    String   @db.VarChar(100)
-  description String   @db.VarChar(1000)
-  examUrl     String?  @map("exam_url") @db.VarChar(2048)
+  name        String   @db.VarChar(120)
+  description String   @db.VarChar(500)
   isActive    Boolean  @default(true) @map("is_active")
   createdAt   DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
   updatedAt   DateTime @updatedAt @map("updated_at") @db.Timestamptz(6)
 
-  domains       CertificateDomain[]
-  profileGoals  LearnerCertificateGoal[]
-  lessonCerts   LessonCertificate[]
-  questionCerts QuestionCertificate[]
-  exams         Exam[]
+  profileGoals LearnerProfileCareerGoal[]
+  learnerGroups LearnerGroup[]
 
-  @@index([code])
-  @@map("certificates")
+  @@index([isActive])
+  @@map("career_goals")
 }
 
 /// Bảng nối Certificate ↔ Domain (N:N).
 model CertificateDomain {
   certificateId String @map("certificate_id") @db.Uuid
   domainId      String @map("domain_id") @db.Uuid
+  order         Int    @default(0)
+  weightPercent Float  @default(0) @map("weight_percent")
 
-  certificate Certificate @relation(fields: [certificateId], references: [id], onDelete: Cascade)
-  domain      Domain      @relation(fields: [domainId], references: [id], onDelete: Cascade)
+  certificate         Certificate          @relation(fields: [certificateId], references: [id], onDelete: Cascade)
+  domain              Domain               @relation(fields: [domainId], references: [id], onDelete: Cascade)
+  certificationTopics CertificationTopic[]
 
   @@id([certificateId, domainId])
   @@map("certificate_domains")
+}
+
+model CertificationTopic {
+  id            String @id @default(uuid()) @db.Uuid
+  certificateId String @map("certificate_id") @db.Uuid
+  domainId      String @map("domain_id") @db.Uuid
+  code          String @db.VarChar(20)
+  name          String @db.VarChar(200)
+  description   String @db.VarChar(1000)
+  order         Int
+
+  certificateDomain CertificateDomain              @relation(fields: [certificateId, domainId], references: [certificateId, domainId], onDelete: Cascade)
+  vocabularies      CertificationTopicVocabulary[]
+  questions         CertificationTopicQuestion[]
+
+  @@unique([certificateId, code])
+  @@unique([certificateId, domainId, order])
+  @@index([certificateId, domainId])
+  @@map("certification_topics")
 }
 
 // =============================================================================
@@ -385,6 +433,13 @@ model LearnerProfile {
   levelId                  String   @map("level_id") @db.Uuid
   bio                      String?  @db.VarChar(500)
   weeklyStudyTargetMinutes Int      @default(180) @map("weekly_study_target_minutes")
+  dailyVocabularyTarget    Int      @default(10) @map("daily_vocabulary_target")
+  weeklyExamTarget         Int      @default(2) @map("weekly_exam_target")
+  dailyStudyTargetMinutes  Int      @default(30) @map("daily_study_target_minutes")
+  reminderTime             String?  @map("reminder_time") @db.VarChar(5)
+  reminderEnabled          Boolean  @default(false) @map("reminder_enabled")
+  learningGoal             String?  @map("learning_goal") @db.VarChar(20)
+  learningPathMode         String   @default("smart") @map("learning_path_mode") @db.VarChar(20)
   onboardingCompleted      Boolean  @default(false) @map("onboarding_completed")
   createdAt                DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
   updatedAt                DateTime @updatedAt @map("updated_at") @db.Timestamptz(6)
@@ -392,9 +447,9 @@ model LearnerProfile {
   user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
   level Level @relation(fields: [levelId], references: [id])
 
-  domains     LearnerProfileDomain[]
+  domains   LearnerProfileDomain[]
+  certGoals LearnerCertificateGoal[]
   careerGoals LearnerProfileCareerGoal[]
-  certGoals   LearnerCertificateGoal[]
 
   @@index([levelId])
   @@map("learner_profiles")
@@ -412,18 +467,6 @@ model LearnerProfileDomain {
   @@map("learner_profile_domains")
 }
 
-/// N:N — LearnerProfile ↔ CareerGoal.
-model LearnerProfileCareerGoal {
-  profileId    String @map("profile_id") @db.Uuid
-  careerGoalId String @map("career_goal_id") @db.Uuid
-
-  profile    LearnerProfile @relation(fields: [profileId], references: [id], onDelete: Cascade)
-  careerGoal CareerGoal     @relation(fields: [careerGoalId], references: [id], onDelete: Cascade)
-
-  @@id([profileId, careerGoalId])
-  @@map("learner_profile_career_goals")
-}
-
 /// Mục tiêu chứng chỉ của học viên.
 model LearnerCertificateGoal {
   id            String    @id @default(uuid()) @db.Uuid
@@ -437,6 +480,67 @@ model LearnerCertificateGoal {
 
   @@unique([profileId, certificateId])
   @@map("learner_certificate_goals")
+}
+
+model LearnerProfileCareerGoal {
+  profileId   String @map("profile_id") @db.Uuid
+  careerGoalId String @map("career_goal_id") @db.Uuid
+
+  profile    LearnerProfile @relation(fields: [profileId], references: [id], onDelete: Cascade)
+  careerGoal CareerGoal     @relation(fields: [careerGoalId], references: [id], onDelete: Cascade)
+
+  @@id([profileId, careerGoalId])
+  @@index([careerGoalId])
+  @@map("learner_profile_career_goals")
+}
+
+model LearnerGroup {
+  id           String   @id @default(uuid()) @db.Uuid
+  name         String   @db.VarChar(150)
+  description  String?  @db.VarChar(500)
+  ownerId      String   @map("owner_id") @db.Uuid
+  careerGoalId String?  @map("career_goal_id") @db.Uuid
+  createdAt    DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt    DateTime @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  owner      User        @relation("LearnerGroupOwner", fields: [ownerId], references: [id])
+  careerGoal CareerGoal? @relation(fields: [careerGoalId], references: [id], onDelete: SetNull)
+  members    LearnerGroupMember[]
+
+  @@index([ownerId])
+  @@index([careerGoalId])
+  @@map("learner_groups")
+}
+
+model LearnerGroupMember {
+  groupId   String   @map("group_id") @db.Uuid
+  learnerId String   @map("learner_id") @db.Uuid
+  joinedAt  DateTime @default(now()) @map("joined_at") @db.Timestamptz(6)
+
+  group   LearnerGroup @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  learner User         @relation("LearnerGroupMemberUser", fields: [learnerId], references: [id], onDelete: Cascade)
+
+  @@id([groupId, learnerId])
+  @@index([learnerId])
+  @@map("learner_group_members")
+}
+
+/// Thiết bị/trình duyệt đã cho phép nhận thông báo học tập.
+model PushSubscription {
+  id           String    @id @default(uuid()) @db.Uuid
+  userId       String    @map("user_id") @db.Uuid
+  token        String    @unique @db.Text
+  platform     String    @db.VarChar(20)
+  active       Boolean   @default(true)
+  lastSentDate DateTime? @map("last_sent_date") @db.Date
+  createdAt    DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt    DateTime  @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([active])
+  @@map("push_subscriptions")
 }
 
 // =============================================================================
@@ -462,15 +566,28 @@ model Vocabulary {
   domain Domain @relation(fields: [domainId], references: [id])
   level  Level  @relation(fields: [levelId], references: [id])
 
-  examples      VocabularyExample[]
-  lessonVocabs  LessonVocabulary[]
-  vocabProgress VocabularyProgress[]
+  examples            VocabularyExample[]
+  vocabProgress       VocabularyProgress[]
+  certificationTopics CertificationTopicVocabulary[]
+  lessons             LessonVocabulary[]
 
   @@unique([term, domainId])
   @@index([domainId])
   @@index([levelId])
   @@index([status])
   @@map("vocabularies")
+}
+
+model CertificationTopicVocabulary {
+  topicId      String @map("topic_id") @db.Uuid
+  vocabularyId String @map("vocabulary_id") @db.Uuid
+
+  topic      CertificationTopic @relation(fields: [topicId], references: [id], onDelete: Cascade)
+  vocabulary Vocabulary         @relation(fields: [vocabularyId], references: [id], onDelete: Cascade)
+
+  @@id([topicId, vocabularyId])
+  @@index([vocabularyId])
+  @@map("certification_topic_vocabularies")
 }
 
 /// Câu ví dụ cho từ vựng.
@@ -488,10 +605,9 @@ model VocabularyExample {
 }
 
 // =============================================================================
-// CONTENT — Lessons
+// CONTENT — Lessons, technical reading, case studies and certification review
 // =============================================================================
 
-/// Bài học kỹ thuật.
 model Lesson {
   id               String        @id @default(uuid()) @db.Uuid
   title            String        @db.VarChar(200)
@@ -509,24 +625,20 @@ model Lesson {
   createdAt        DateTime      @default(now()) @map("created_at") @db.Timestamptz(6)
   updatedAt        DateTime      @updatedAt @map("updated_at") @db.Timestamptz(6)
 
-  domain    Domain @relation(fields: [domainId], references: [id])
-  level     Level  @relation(fields: [levelId], references: [id])
-  createdBy User   @relation("LessonCreatedBy", fields: [createdById], references: [id])
-
-  sections      LessonSection[]
-  vocabularies  LessonVocabulary[]
-  certificates  LessonCertificate[]
-  progressItems LearningProgress[]
+  domain       Domain              @relation(fields: [domainId], references: [id])
+  level        Level               @relation(fields: [levelId], references: [id])
+  createdBy    User                @relation("LessonCreatedBy", fields: [createdById], references: [id])
+  sections     LessonSection[]
+  vocabularies LessonVocabulary[]
+  certificates LessonCertificate[]
 
   @@index([domainId])
   @@index([levelId])
   @@index([status])
-  @@index([slug])
   @@index([type])
   @@map("lessons")
 }
 
-/// Các section nội dung bên trong một bài học (JSONB content).
 model LessonSection {
   id       String            @id @default(uuid()) @db.Uuid
   lessonId String            @map("lesson_id") @db.Uuid
@@ -537,11 +649,11 @@ model LessonSection {
 
   lesson Lesson @relation(fields: [lessonId], references: [id], onDelete: Cascade)
 
+  @@unique([lessonId, order])
   @@index([lessonId])
   @@map("lesson_sections")
 }
 
-/// N:N — Lesson ↔ Vocabulary.
 model LessonVocabulary {
   lessonId     String @map("lesson_id") @db.Uuid
   vocabularyId String @map("vocabulary_id") @db.Uuid
@@ -553,7 +665,6 @@ model LessonVocabulary {
   @@map("lesson_vocabularies")
 }
 
-/// N:N — Lesson ↔ Certificate (bài học ôn chứng chỉ).
 model LessonCertificate {
   lessonId      String @map("lesson_id") @db.Uuid
   certificateId String @map("certificate_id") @db.Uuid
@@ -573,6 +684,7 @@ model LessonCertificate {
 model Question {
   id              String        @id @default(uuid()) @db.Uuid
   type            QuestionType
+  skill           QuestionSkill @default(vocabulary)
   prompt          String        @db.Text
   context         String?       @db.Text
   codeSnippet     String?       @map("code_snippet") @db.Text
@@ -589,15 +701,42 @@ model Question {
   domain Domain @relation(fields: [domainId], references: [id])
   level  Level  @relation(fields: [levelId], references: [id])
 
-  options       QuestionOption[]
-  certificates  QuestionCertificate[]
-  examQuestions ExamQuestion[]
+  options             QuestionOption[]
+  examQuestions       ExamQuestion[]
+  certificationTopics CertificationTopicQuestion[]
+  savedBy             SavedQuestion[]
 
   @@index([domainId])
   @@index([levelId])
   @@index([type])
   @@index([status])
+  @@index([skill])
   @@map("questions")
+}
+
+model CertificationTopicQuestion {
+  topicId    String @map("topic_id") @db.Uuid
+  questionId String @map("question_id") @db.Uuid
+
+  topic    CertificationTopic @relation(fields: [topicId], references: [id], onDelete: Cascade)
+  question Question           @relation(fields: [questionId], references: [id], onDelete: Cascade)
+
+  @@id([topicId, questionId])
+  @@index([questionId])
+  @@map("certification_topic_questions")
+}
+
+model SavedQuestion {
+  learnerId  String   @map("learner_id") @db.Uuid
+  questionId String   @map("question_id") @db.Uuid
+  createdAt  DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  learner  User     @relation(fields: [learnerId], references: [id], onDelete: Cascade)
+  question Question @relation(fields: [questionId], references: [id], onDelete: Cascade)
+
+  @@id([learnerId, questionId])
+  @@index([questionId])
+  @@map("saved_questions")
 }
 
 /// Các lựa chọn (options) cho câu hỏi.
@@ -612,21 +751,8 @@ model QuestionOption {
 
   question Question @relation(fields: [questionId], references: [id], onDelete: Cascade)
 
-
   @@index([questionId])
   @@map("question_options")
-}
-
-/// N:N — Question ↔ Certificate.
-model QuestionCertificate {
-  questionId    String @map("question_id") @db.Uuid
-  certificateId String @map("certificate_id") @db.Uuid
-
-  question    Question    @relation(fields: [questionId], references: [id], onDelete: Cascade)
-  certificate Certificate @relation(fields: [certificateId], references: [id], onDelete: Cascade)
-
-  @@id([questionId, certificateId])
-  @@map("question_certificates")
 }
 
 // =============================================================================
@@ -641,6 +767,7 @@ model Exam {
   domainId            String        @map("domain_id") @db.Uuid
   levelId             String        @map("level_id") @db.Uuid
   certificateId       String?       @map("certificate_id") @db.Uuid
+  kind                ExamKind      @default(practice)
   topics              String[]      @default([])
   durationMinutes     Int           @map("duration_minutes")
   passingScorePercent Float         @default(70.0) @map("passing_score_percent")
@@ -744,24 +871,23 @@ model AttemptAnswer {
 // PROGRESS
 // =============================================================================
 
-/// Tiến độ học tập của học viên theo resource (lesson / domain / certificate).
+/// Tiến độ học tập của học viên theo Domain hoặc Certificate.
 model LearningProgress {
-  id                   String               @id @default(uuid()) @db.Uuid
-  learnerId            String               @map("learner_id") @db.Uuid
-  resourceType         ProgressResourceType @map("resource_type")
-  resourceId           String               @map("resource_id") @db.Uuid
-  status               ProgressStatus       @default(not_started)
-  completionPercent    Float                @default(0.0) @map("completion_percent")
-  completedLessonCount Int                  @default(0) @map("completed_lesson_count")
-  totalLessonCount     Int                  @default(0) @map("total_lesson_count")
-  averageScorePercent  Float?               @map("average_score_percent")
-  startedAt            DateTime?            @map("started_at") @db.Timestamptz(6)
-  completedAt          DateTime?            @map("completed_at") @db.Timestamptz(6)
-  updatedAt            DateTime             @updatedAt @map("updated_at") @db.Timestamptz(6)
+  id                  String               @id @default(uuid()) @db.Uuid
+  learnerId           String               @map("learner_id") @db.Uuid
+  resourceType        ProgressResourceType @map("resource_type")
+  resourceId          String               @map("resource_id") @db.Uuid
+  status              ProgressStatus       @default(not_started)
+  completionPercent   Float                @default(0.0) @map("completion_percent")
+  averageScorePercent Float?               @map("average_score_percent")
+  startedAt           DateTime?            @map("started_at") @db.Timestamptz(6)
+  completedAt         DateTime?            @map("completed_at") @db.Timestamptz(6)
+  updatedAt           DateTime             @updatedAt @map("updated_at") @db.Timestamptz(6)
 
-  learner User    @relation(fields: [learnerId], references: [id], onDelete: Cascade)
-  /// resourceId points to a lesson, domain, or certificate depending on resourceType (no FK enforced for non-lesson types)
-  lesson  Lesson? @relation(fields: [resourceId], references: [id], onUpdate: NoAction, onDelete: NoAction, map: "fk_progress_lesson")
+  learner User @relation(fields: [learnerId], references: [id], onDelete: Cascade)
+  /// resourceId points to a domain or certificate depending on resourceType.
+  /// Referential integrity is checked in the application because PostgreSQL cannot attach
+  /// two conditional foreign keys to the same polymorphic column.
 
   @@unique([learnerId, resourceType, resourceId])
   @@index([learnerId])
@@ -775,16 +901,17 @@ model LearningProgress {
 
 /// Tiến độ học từ vựng của mỗi learner — SRS đơn giản.
 model VocabularyProgress {
-  id            String           @id @default(uuid()) @db.Uuid
-  learnerId     String           @map("learner_id") @db.Uuid
-  vocabularyId  String           @map("vocabulary_id") @db.Uuid
-  status        VocabStudyStatus @default(new)
-  correctCount  Int              @default(0) @map("correct_count")
-  wrongCount    Int              @default(0) @map("wrong_count")
-  lastReviewAt  DateTime?        @map("last_review_at") @db.Timestamptz(6)
-  nextReviewAt  DateTime?        @map("next_review_at") @db.Timestamptz(6)
-  createdAt     DateTime         @default(now()) @map("created_at") @db.Timestamptz(6)
-  updatedAt     DateTime         @updatedAt @map("updated_at") @db.Timestamptz(6)
+  id           String           @id @default(uuid()) @db.Uuid
+  learnerId    String           @map("learner_id") @db.Uuid
+  vocabularyId String           @map("vocabulary_id") @db.Uuid
+  status       VocabStudyStatus @default(new)
+  correctCount Int              @default(0) @map("correct_count")
+  wrongCount   Int              @default(0) @map("wrong_count")
+  lastReviewAt DateTime?        @map("last_review_at") @db.Timestamptz(6)
+  nextReviewAt DateTime?        @map("next_review_at") @db.Timestamptz(6)
+  lastRating   String?          @map("last_rating") @db.VarChar(20)
+  createdAt    DateTime         @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt    DateTime         @updatedAt @map("updated_at") @db.Timestamptz(6)
 
   learner    User       @relation(fields: [learnerId], references: [id], onDelete: Cascade)
   vocabulary Vocabulary @relation(fields: [vocabularyId], references: [id], onDelete: Cascade)

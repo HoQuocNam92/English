@@ -1,3 +1,4 @@
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useState, useEffect } from 'react';
 import { useRouter } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
@@ -23,39 +24,11 @@ interface CertificateItem {
   examUrl?: string;
   domains?: { domain: { id: string; code: string; name: string } }[];
   readinessPercent?: number;
-  skillsAchieved?: string[];
-  skillsToLearn?: string[];
 }
 
-const DEFAULT_SKILLS: Record<string, { achieved: string[]; toLearn: string[] }> = {
-  'AWS-SAA': {
-    achieved: ['Multi-AZ Architecture', 'EC2 & S3 Basics', 'VPC Fundamentals'],
-    toLearn: ['IAM Policies', 'RDS Failover & Read Replicas', 'Cost Optimization'],
-  },
-  'AWS-DVA': {
-    achieved: ['REST APIs on AWS', 'Lambda Serverless', 'DynamoDB Basics'],
-    toLearn: ['CI/CD with CodePipeline', 'Kinesis Streaming', 'API Gateway Security'],
-  },
-  'CKA': {
-    achieved: ['Pod Troubleshooting', 'ConfigMaps & Secrets', 'ReplicaSets'],
-    toLearn: ['Cluster Architecture', 'Ingress Controllers', 'Network Policies'],
-  },
-  'COMPTIA-SECURITY-PLUS': {
-    achieved: ['Firewall & IDS/IPS', 'Network Security Basics', 'Authentication'],
-    toLearn: ['Threat Analysis', 'Cryptography & PKI', 'Zero Trust Architecture'],
-  },
-  'GCP-ACE': {
-    achieved: ['Cloud Run & App Engine', 'IAM in Google Cloud'],
-    toLearn: ['Cloud Spanner', 'GKE Operations', 'Cloud Monitoring'],
-  },
-  'AZURE-AZ900': {
-    achieved: ['Cloud Concepts', 'Core Azure Services'],
-    toLearn: ['Azure Security & Governance', 'Cost Management'],
-  },
-};
-
-export default function MobileCertificationsScreen() {
+export default function MobileCertificationsScreen({ embedded = false }: { embedded?: boolean }) {
   const router = useRouter();
+  const insets = useSafeAreaInsets();
   const { colors: themeColors } = useTheme();
 
   const [certificates, setCertificates] = useState<CertificateItem[]>([]);
@@ -75,21 +48,16 @@ export default function MobileCertificationsScreen() {
         api.get<any>('/progress/me'),
       ]);
 
+      if (certsRes.status === 'rejected') throw certsRes.reason;
       const rawCerts = certsRes.status === 'fulfilled' ? (certsRes.value?.data ?? certsRes.value ?? []) : [];
       const certProgressList = progressRes.status === 'fulfilled' ? (progressRes.value?.certProgress ?? []) : [];
       const certProgressMap = new Map(certProgressList.map((cp: any) => [cp.certificateId, Math.round(cp.completionPercent ?? 0)]));
 
       const items: CertificateItem[] = (Array.isArray(rawCerts) ? rawCerts : []).map((c: any) => {
-        const readiness = certProgressMap.get(c.id) ?? (c.code === 'AWS-SAA' ? 62 : c.code === 'COMPTIA-SECURITY-PLUS' ? 45 : 30);
-        const skillData = DEFAULT_SKILLS[c.code] ?? {
-          achieved: ['Kiến thức cốt lõi', 'Thuật ngữ kỹ thuật'],
-          toLearn: ['Kiến trúc nâng cao', 'Thực hành bài thi mẫu'],
-        };
+        const readiness = certProgressMap.get(c.id) ?? 0;
         return {
           ...c,
           readinessPercent: readiness,
-          skillsAchieved: skillData.achieved,
-          skillsToLearn: skillData.toLearn,
         };
       });
 
@@ -101,17 +69,11 @@ export default function MobileCertificationsScreen() {
     }
   };
 
-  const handleStartReview = (cert: CertificateItem) => {
-    const domainCode = cert.domains?.[0]?.domain?.code;
-    if (domainCode) {
-      router.push(`/lessons?domainCode=${domainCode}` as any);
-    } else {
-      router.push('/lessons' as any);
-    }
-  };
-
-  const handleTakeExam = () => {
-    router.push('/exams' as any);
+  const handleOpenCertification = (cert: CertificateItem) => {
+    router.push({
+      pathname: '/certifications/[id]',
+      params: { id: cert.id || cert.code, code: cert.code, name: cert.name, progress: String(cert.readinessPercent ?? 0) },
+    } as any);
   };
 
   return (
@@ -119,10 +81,10 @@ export default function MobileCertificationsScreen() {
       <StatusBar style="dark" />
 
       {/* Top Header */}
-      <View style={[styles.headerBar, { backgroundColor: themeColors.surface, borderBottomColor: themeColors.border }]}>
-        <TouchableOpacity onPress={() => router.back()} style={styles.backButton} hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}>
+      <View style={[styles.headerBar, { paddingTop: insets.top + 12, backgroundColor: themeColors.surface, borderBottomColor: themeColors.border }]}>
+        {!embedded && <TouchableOpacity onPress={() => router.back()} style={styles.backButton} hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}>
           <MaterialIcons name="arrow-back" size={24} color={themeColors.onSurface} />
-        </TouchableOpacity>
+        </TouchableOpacity>}
         <Text style={[styles.headerTitle, { color: themeColors.onSurface }]}>Tiến độ chứng chỉ</Text>
         <View style={{ width: 40 }} />
       </View>
@@ -193,51 +155,25 @@ export default function MobileCertificationsScreen() {
                     {cert.description}
                   </Text>
 
-                  {/* Skills Grid */}
                   <View style={styles.skillsContainer}>
-                    {/* Achieved */}
-                    <View style={[styles.skillBox, { backgroundColor: themeColors.surfaceContainerLow, borderColor: themeColors.border }]}>
-                      <View style={styles.skillBoxTitleRow}>
-                        <MaterialIcons name="check-circle" size={16} color="#10b981" />
-                        <Text style={[styles.skillBoxTitle, { color: themeColors.onSurface }]}>Kỹ năng đã đạt</Text>
-                      </View>
-                      {(cert.skillsAchieved ?? []).map((skill, sIdx) => (
-                        <View key={sIdx} style={styles.skillItemRow}>
-                          <View style={[styles.dot, { backgroundColor: '#10b981' }]} />
-                          <Text style={[styles.skillItemText, { color: themeColors.onSurfaceVariant }]}>{skill}</Text>
-                        </View>
-                      ))}
-                    </View>
-
-                    {/* To Learn */}
-                    <View style={[styles.skillBox, { backgroundColor: themeColors.surfaceContainerLow, borderColor: themeColors.border }]}>
-                      <View style={styles.skillBoxTitleRow}>
-                        <MaterialIcons name="pending" size={16} color="#f59e0b" />
-                        <Text style={[styles.skillBoxTitle, { color: themeColors.onSurface }]}>Kỹ năng cần học</Text>
-                      </View>
-                      {(cert.skillsToLearn ?? []).map((skill, sIdx) => (
-                        <View key={sIdx} style={styles.skillItemRow}>
-                          <View style={[styles.dot, { backgroundColor: themeColors.outlineVariant }]} />
-                          <Text style={[styles.skillItemText, { color: themeColors.onSurfaceVariant }]}>{skill}</Text>
-                        </View>
-                      ))}
-                    </View>
+                    {(cert.domains ?? []).map((item) => <View key={item.domain.id} style={[styles.codeBadge, { backgroundColor: themeColors.surfaceContainerLow }]}><Text style={{ color: colors.primary, fontSize: 12, fontWeight: '700' }}>{item.domain.name}</Text></View>)}
+                    {!(cert.domains ?? []).length && <Text style={[styles.certDesc, { color: themeColors.onSurfaceVariant }]}>Chưa cấu hình Domain.</Text>}
                   </View>
 
                   {/* Actions */}
                   <View style={[styles.actionRow, { borderTopColor: themeColors.border }]}>
                     <TouchableOpacity
                       style={[styles.outlineBtn, { borderColor: colors.primary }]}
-                      onPress={() => handleStartReview(cert)}
+                      onPress={() => handleOpenCertification(cert)}
                       activeOpacity={0.8}
                     >
                       <MaterialIcons name="auto-stories" size={18} color={colors.primary} />
-                      <Text style={[styles.outlineBtnText, { color: colors.primary }]}>Ôn bài học</Text>
+                      <Text style={[styles.outlineBtnText, { color: colors.primary }]}>Xem lộ trình</Text>
                     </TouchableOpacity>
 
                     <TouchableOpacity
                       style={[styles.primaryBtn, { backgroundColor: colors.primary }]}
-                      onPress={handleTakeExam}
+                      onPress={() => handleOpenCertification(cert)}
                       activeOpacity={0.8}
                     >
                       <MaterialIcons name="assignment" size={18} color="#ffffff" />
@@ -259,13 +195,13 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   headerBar: {
-    height: 64,
+    minHeight: 64,
+    paddingBottom: 12,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
     paddingHorizontal: spacing.md,
     borderBottomWidth: 1,
-    marginTop: 40,
   },
   backButton: {
     padding: spacing.xs,

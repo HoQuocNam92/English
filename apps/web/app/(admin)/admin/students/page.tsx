@@ -2,7 +2,8 @@
 
 import * as React from 'react';
 import Link from 'next/link';
-import { PageHeader, SearchInput } from '@/shared/ui';
+import { useSearchParams } from 'next/navigation';
+import { PageHeader, Pagination, SearchInput } from '@/shared/ui';
 import { apiClient, ApiClientError } from '@/shared/api/api-client';
 import type { UserItem, PaginatedResponse } from '@/shared/api/api-client';
 
@@ -22,6 +23,8 @@ function StatusBadge({ status }: { status: string }) {
 }
 
 export default function AdminStudentsPage() {
+  const searchParams = useSearchParams();
+  const certificateGoalsView = searchParams.get('view') === 'certificate-goals';
   const [students, setStudents] = React.useState<UserItem[]>([]);
   const [total, setTotal] = React.useState(0);
   const [page, setPage] = React.useState(1);
@@ -29,12 +32,12 @@ export default function AdminStudentsPage() {
   const [search, setSearch] = React.useState('');
   const [status, setStatus] = React.useState('');
   const [domainId, setDomainId] = React.useState('');
-  const [careerGoalId, setCareerGoalId] = React.useState('');
+  const [certificateId, setCertificateId] = React.useState('');
   const [domains, setDomains] = React.useState<Array<{ id: string; name: string }>>([]);
-  const [careerGoals, setCareerGoals] = React.useState<Array<{ id: string; name: string }>>([]);
+  const [certificates, setCertificates] = React.useState<Array<{ id: string; name: string; code: string }>>([]);
   const [loading, setLoading] = React.useState(true);
   const [error, setError] = React.useState<string | null>(null);
-  const limit = 12;
+  const [limit, setLimit] = React.useState(30);
 
   const totalPages = Math.ceil(total / limit);
 
@@ -49,7 +52,7 @@ export default function AdminStudentsPage() {
         ...(search && { search }),
         ...(status && { status }),
         ...(domainId && { domainId }),
-        ...(careerGoalId && { careerGoalId }),
+        ...(certificateId && { certificateId }),
       });
       const res = await apiClient.get<PaginatedResponse<UserItem>>(`/students?${params}`);
       setStudents(res.data);
@@ -59,24 +62,27 @@ export default function AdminStudentsPage() {
     } finally {
       setLoading(false);
     }
-  }, [page, search, status, domainId, careerGoalId]);
+  }, [page, limit, search, status, domainId, certificateId]);
 
   React.useEffect(() => { void load(); }, [load]);
   React.useEffect(() => {
-    Promise.all([apiClient.get<any>('/domains'), apiClient.get<any>('/career-goals')])
-      .then(([domainResult, goalResult]) => {
+    Promise.all([apiClient.get<any>('/domains'), apiClient.get<any>('/certificates')])
+      .then(([domainResult, certificateResult]) => {
         setDomains(domainResult?.data ?? domainResult ?? []);
-        setCareerGoals(goalResult?.data ?? goalResult ?? []);
+        setCertificates(certificateResult?.data ?? certificateResult ?? []);
       })
       .catch(() => {});
   }, []);
 
   return (
     <main className="flex-1 p-margin overflow-y-auto">
-      <div className="mb-xl">
-        <h2 className="font-headline-h1 text-headline-h1 text-on-surface mb-xs">Danh sách người học</h2>
-        <p className="font-body-md text-body-md text-on-surface-variant">Quản lý và theo dõi lộ trình học tập của sinh viên.</p>
-      </div>
+      <PageHeader
+        className="mb-xl"
+        title={certificateGoalsView ? 'Mục tiêu chứng chỉ của học viên' : 'Danh sách người học'}
+        description={certificateGoalsView ? 'Theo dõi và lọc học viên theo chứng chỉ nghề nghiệp đang hướng tới.' : 'Quản lý và theo dõi lộ trình học tập của sinh viên.'}
+        icon={certificateGoalsView ? 'workspace_premium' : 'school'}
+        iconClassName={certificateGoalsView ? 'from-violet-500 to-fuchsia-600' : 'from-cyan-500 to-blue-600'}
+      />
       
       {error && (
         <div className="mb-xl p-3 rounded-xl bg-error-container text-on-error-container text-sm flex items-center gap-2">
@@ -111,9 +117,9 @@ export default function AdminStudentsPage() {
           <option value="">Tất cả lĩnh vực</option>
           {domains.map(item => <option key={item.id} value={item.id}>{item.name}</option>)}
         </select>
-        <select value={careerGoalId} onChange={(e) => { setCareerGoalId(e.target.value); setPage(1); }} className="rounded-lg border border-outline-variant bg-surface-bright py-sm pl-sm pr-xl font-body-md text-on-surface focus:border-primary focus:ring-1 focus:ring-primary focus:outline-none min-w-[190px]">
-          <option value="">Tất cả mục tiêu nghề nghiệp</option>
-          {careerGoals.map(item => <option key={item.id} value={item.id}>{item.name}</option>)}
+        <select value={certificateId} onChange={(e) => { setCertificateId(e.target.value); setPage(1); }} className="rounded-lg border border-outline-variant bg-surface-bright py-sm pl-sm pr-xl font-body-md text-on-surface focus:border-primary focus:ring-1 focus:ring-primary focus:outline-none min-w-[210px]">
+          <option value="">Tất cả mục tiêu chứng chỉ</option>
+          {certificates.map(item => <option key={item.id} value={item.id}>{item.code} - {item.name}</option>)}
         </select>
       </div>
 
@@ -125,7 +131,7 @@ export default function AdminStudentsPage() {
                 <th className="p-md font-bold">Học viên</th>
                 <th className="p-md font-bold">Trạng thái / Cấp độ</th>
                 <th className="p-md font-bold">Lĩnh vực CNTT</th>
-                <th className="p-md font-bold">Mục tiêu nghề nghiệp</th>
+                <th className="p-md font-bold">Mục tiêu chứng chỉ</th>
                 <th className="p-md font-bold">Ngày đăng ký</th>
                 <th className="p-md font-bold text-center">Thao tác</th>
               </tr>
@@ -164,7 +170,9 @@ export default function AdminStudentsPage() {
                     <td className="p-md">
                       <span className="inline-flex items-center px-2 py-1 rounded-md border border-outline-variant bg-surface text-on-surface-variant font-body-sm text-[12px]">{u.domains?.join(', ') || 'Chưa thiết lập'}</span>
                     </td>
-                    <td className="p-md text-on-surface-variant">{u.careerGoals?.join(', ') || 'Chưa thiết lập'}</td>
+                    <td className="p-md">
+                      <span className="inline-flex items-center px-2 py-1 rounded-md border border-violet-200 bg-violet-50 text-violet-800 font-body-sm text-[12px]">{(u as UserItem & { certGoals?: string[] }).certGoals?.join(', ') || 'Chưa chọn'}</span>
+                    </td>
                     <td className="p-md text-on-surface-variant">
                       {new Date(u.createdAt).toLocaleDateString('vi-VN')}
                     </td>
@@ -184,30 +192,7 @@ export default function AdminStudentsPage() {
           </table>
         </div>
 
-        {total > 0 && (
-          <div className="p-md border-t border-outline-variant flex flex-col sm:flex-row items-center justify-between bg-surface-container-lowest gap-3">
-            <span className="font-body-sm text-body-sm text-on-surface-variant">
-              Hiển thị {(page - 1) * limit + 1}-{Math.min(page * limit, total)} của {total} học viên
-            </span>
-            <div className="flex items-center gap-xs">
-              <button 
-                disabled={page <= 1}
-                onClick={() => setPage(p => p - 1)}
-                className="p-sm rounded-lg border border-outline-variant text-on-surface-variant hover:bg-surface-container disabled:opacity-50 transition-colors flex items-center justify-center cursor-pointer"
-              >
-                <span className="material-symbols-outlined text-[20px]">chevron_left</span>
-              </button>
-              <button className="w-8 h-8 rounded-lg bg-primary text-on-primary font-interface-sb flex items-center justify-center">{page}</button>
-              <button 
-                disabled={page >= totalPages}
-                onClick={() => setPage(p => p + 1)}
-                className="p-sm rounded-lg border border-outline-variant text-on-surface hover:bg-surface-container disabled:opacity-50 transition-colors flex items-center justify-center cursor-pointer"
-              >
-                <span className="material-symbols-outlined text-[20px]">chevron_right</span>
-              </button>
-            </div>
-          </div>
-        )}
+        {total > 0 && <Pagination page={page} limit={limit} total={total} totalPages={totalPages} onPageChange={setPage} onLimitChange={(value) => { setLimit(value); setPage(1); }} showQuickJumper />}
       </div>
       <div className="h-24 md:h-8"></div>
     </main>

@@ -1,4 +1,3 @@
-import { useEffect } from 'react';
 import { useRouter } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { StyleSheet, Text, View, TouchableOpacity } from 'react-native';
@@ -25,13 +24,7 @@ export default function EntryScreen() {
           <MaterialIcons name="arrow-forward" size={20} color="#ffffff" />
         </TouchableOpacity>
 
-        <TouchableOpacity style={styles.secondaryButton} activeOpacity={0.8} onPress={() => router.push('/(onboarding)/level' as any)}>
-          <Text style={styles.secondaryButtonText}>Bắt đầu thiết lập lộ trình mới</Text>
-        </TouchableOpacity>
 
-        <TouchableOpacity style={styles.textButton} activeOpacity={0.8} onPress={() => router.push('/(tabs)/home' as any)}>
-          <Text style={styles.textButtonText}>Vào thẳng trang chủ (Demo Mode)</Text>
-        </TouchableOpacity>
       </View>
     </View>
   );
@@ -87,27 +80,5 @@ const styles = StyleSheet.create({
     color: colors.onPrimary,
     fontSize: 15,
     fontWeight: '700'
-  },
-  secondaryButton: {
-    backgroundColor: '#EEF2FF',
-    height: 50,
-    borderRadius: 12,
-    alignItems: 'center',
-    justifyContent: 'center'
-  },
-  secondaryButtonText: {
-    color: colors.primary,
-    fontSize: 14,
-    fontWeight: '700'
-  },
-  textButton: {
-    alignItems: 'center',
-    paddingVertical: spacing.sm
-  },
-  textButtonText: {
-    color: colors.mutedText,
-    fontSize: 13,
-    fontWeight: '600'
   }
 });
-

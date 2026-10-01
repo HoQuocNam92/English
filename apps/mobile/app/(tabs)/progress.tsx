@@ -1,330 +1,47 @@
-import { useEffect, useState } from 'react';
-import { useRouter } from 'expo-router';
+import { useCallback, useState } from 'react';
+import { useFocusEffect, useRouter } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
-import { StyleSheet, Text, View, TouchableOpacity, ScrollView, ActivityIndicator } from 'react-native';
+import { ActivityIndicator, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
-import { colors, spacing } from '@techenglish/design-tokens';
 import { api } from '../../src/shared/api/api-client';
-import Svg, { Path } from 'react-native-svg';
+import { progressViewModel, type ProgressPayload } from '../../../../packages/shared-kernel/src/progress';
+
+const accent: Record<string, { background: string; foreground: string }> = {
+  violet: { background: '#ede9fe', foreground: '#6d28d9' }, blue: { background: '#e0f2fe', foreground: '#0369a1' },
+  fuchsia: { background: '#fae8ff', foreground: '#a21caf' }, orange: { background: '#ffedd5', foreground: '#c2410c' }, amber: { background: '#fef3c7', foreground: '#b45309' },
+};
 
 export default function MobileProgressScreen() {
   const router = useRouter();
+  const [data, setData] = useState<ProgressPayload | null>(null);
   const [loading, setLoading] = useState(true);
-  const [progress, setProgress] = useState<any>(null);
-  const [learnerProfile, setLearnerProfile] = useState<any>(null);
-
-  useEffect(() => {
-    Promise.all([
-      api.get('/progress/me'),
-      api.get('/learner-profiles/me')
-    ])
-      .then(([progData, profData]) => {
-        setProgress(progData);
-        setLearnerProfile(profData);
-      })
-      .catch(err => console.error(err))
-      .finally(() => setLoading(false));
+  const [error, setError] = useState('');
+  const load = useCallback(async () => {
+    setLoading(true); setError('');
+    try { setData(await api.get<ProgressPayload>('/progress/me')); }
+    catch (cause) { setError(cause instanceof Error ? cause.message : 'Không thể tải tiến độ học tập.'); }
+    finally { setLoading(false); }
   }, []);
+  useFocusEffect(useCallback(() => { void load(); }, [load]));
+  const view = progressViewModel(data);
 
-  if (loading) {
-    return (
-      <View style={[styles.container, { justifyContent: 'center', alignItems: 'center' }]}>
-        <ActivityIndicator size="large" color={colors.primary} />
-      </View>
-    );
-  }
-
-  const summary = progress?.summary || {};
-  const progressItems = Array.isArray(progress?.progress) ? progress.progress : [];
-  const attempts = Array.isArray(progress?.recentAttempts) ? progress.recentAttempts : [];
-  const lessonProgress = progressItems.filter((item: any) => item.resourceType === 'lesson');
-  const certProgressData = Array.isArray(progress?.certProgress) ? progress.certProgress : [];
-  const completedLessons = lessonProgress.filter((item: any) => item.status === 'completed').length;
-  const overallPercent = Math.round(summary.overallCompletionPercent ?? (lessonProgress.length ? lessonProgress.reduce((sum: number, item: any) => sum + (item.completionPercent ?? 0), 0) / lessonProgress.length : 0));
-  const learnedCount = summary.wordsLearned ?? completedLessons;
-  const testCount = attempts.length;
-  const averagePercent = summary.averageScorePercent ?? (attempts.length ? attempts.reduce((sum: number, item: any) => sum + (item.scorePercent ?? 0), 0) / attempts.length : 0);
-  const averageScore = (averagePercent / 10).toFixed(1);
-
-  const certGoals = learnerProfile?.certGoals || [];
-  const mainCert = certGoals[0]?.certificate?.name || 'Chưa chọn chứng chỉ';
-
-
-  return (
-    <View style={styles.container}>
-      <StatusBar style="dark" />
-      
-      {/* TopAppBar */}
-      <View style={styles.headerBar}>
-        <Text style={styles.headerTitle}>IT English Pro</Text>
-        <View style={{ width: 24 }} />
-      </View>
-
-      <ScrollView contentContainerStyle={styles.contentContainer} showsVerticalScrollIndicator={false}>
-        
-        {/* Header */}
-        <View style={styles.header}>
-          <Text style={styles.title}>Tiến độ học tập</Text>
-          <Text style={styles.subtitle}>Theo dõi hành trình chinh phục tiếng Anh IT của bạn.</Text>
-        </View>
-
-        {/* Overall Progress Donut Chart */}
-        <View style={styles.card}>
-          <Text style={styles.cardTitleCenter}>Tổng quan khóa học</Text>
-          <View style={styles.chartContainer}>
-            <Svg viewBox="0 0 36 36" width="100%" height="100%">
-              <Path
-                d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
-                fill="none"
-                stroke="#e2dfff"
-                strokeWidth="3.8"
-              />
-              <Path
-                d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
-                fill="none"
-                stroke={colors.primary}
-                strokeWidth="2.8"
-                strokeDasharray={`${overallPercent}, 100`}
-                strokeLinecap="round"
-              />
-            </Svg>
-            <View style={styles.chartTextContainer}>
-              <Text style={styles.chartPercent}>{overallPercent}%</Text>
-              <Text style={styles.chartLabel}>Hoàn thành</Text>
-            </View>
-          </View>
-        </View>
-
-        {/* Summary Cards Grid */}
-        <View style={styles.summaryGrid}>
-          <View style={styles.summaryCard}>
-            <View style={styles.summaryHeader}>
-              <MaterialIcons name="check-circle" size={20} color="#464555" />
-              <Text style={styles.summaryTitle}>Bài đã học</Text>
-            </View>
-            <Text style={styles.summaryValue}>{learnedCount}</Text>
-          </View>
-
-          <View style={styles.summaryCard}>
-            <View style={styles.summaryHeader}>
-              <MaterialIcons name="quiz" size={20} color="#464555" />
-              <Text style={styles.summaryTitle}>Bài kiểm tra</Text>
-            </View>
-            <Text style={styles.summaryValue}>{testCount}</Text>
-          </View>
-
-          <View style={[styles.summaryCard, styles.summaryCardFull]}>
-            <View style={styles.summaryHeader}>
-              <MaterialIcons name="analytics" size={20} color="#464555" />
-              <Text style={styles.summaryTitle}>Điểm trung bình</Text>
-            </View>
-            <Text style={[styles.summaryValue, { color: colors.primary }]}>{averageScore}</Text>
-          </View>
-        </View>
-
-        {/* Certification Progress */}
-        <View style={styles.card}>
-          <View style={styles.cardHeaderRow}>
-            <Text style={styles.cardTitle}>Tiến độ chứng chỉ</Text>
-            <MaterialIcons name="workspace-premium" size={24} color={colors.outline} />
-          </View>
-          
-          {certProgressData.length > 0 ? certProgressData.map((cp: any) => (
-            <View key={cp.certificateId} style={styles.certItem}>
-              <View style={styles.certRow}>
-                <Text style={styles.certName}>{cp.certificateName}</Text>
-                <Text style={styles.certPercentText}>{cp.completionPercent}%</Text>
-              </View>
-              <View style={styles.progressBarBg}>
-                <View style={[styles.progressBarFill, { width: `${cp.completionPercent}%` }]} />
-              </View>
-              <Text style={styles.certTime}>
-                {cp.totalLessons > 0
-                  ? `${cp.completedLessons}/${cp.totalLessons} bài học hoàn thành`
-                  : 'Chưa có bài học liên kết'}
-              </Text>
-            </View>
-          )) : (
-            <View style={styles.certItem}>
-              <View style={styles.certRow}>
-                <Text style={styles.certName}>{mainCert}</Text>
-                <Text style={styles.certPercentText}>0%</Text>
-              </View>
-              <View style={styles.progressBarBg}>
-                <View style={[styles.progressBarFill, { width: '0%' }]} />
-              </View>
-              <Text style={styles.certTime}>Chọn chứng chỉ trong hồ sơ để theo dõi</Text>
-            </View>
-          )}
-        </View>
-
-
-      </ScrollView>
-    </View>
-  );
+  return <View style={s.root}><StatusBar style="dark" /><View style={s.topbar}><Text style={s.brand}>IT English Pro</Text></View>
+    {loading ? <View style={s.center}><ActivityIndicator size="large" color="#3525cd" /></View> : error ? <View style={s.center}><Text style={s.error}>{error}</Text><TouchableOpacity onPress={() => void load()} style={s.retry}><Text style={s.retryText}>Thử lại</Text></TouchableOpacity></View> : <ScrollView contentContainerStyle={s.content}>
+      <View><Text style={s.eyebrow}>HÀNH TRÌNH CỦA BẠN</Text><Text style={s.heading}>Milestone học tập</Text><Text style={s.subheading}>Học đều mỗi ngày, mở khóa thành tích và chinh phục lộ trình của bạn.</Text></View>
+      <View style={s.pillRow}><View style={s.pill}><Text style={s.pillIcon}>⚡</Text><View><Text style={s.pillValue}>{view.totalXp} XP</Text><Text style={s.pillLabel}>Điểm thành tích</Text></View></View><View style={s.pill}><Text style={s.pillIcon}>🔥</Text><View><Text style={s.pillValue}>{view.studyStreak} ngày</Text><Text style={s.pillLabel}>Chuỗi hiện tại</Text></View></View></View>
+      <View style={s.hero}><Text style={s.heroLabel}>Tiến độ thành tích</Text><Text style={s.heroValue}>{view.unlockedCount}/{view.totalMilestones}</Text><Text style={s.heroCaption}>milestone đã được mở khóa</Text><View style={s.heroBarLabels}><Text style={s.heroLabel}>Cấp độ hành trình</Text><Text style={s.heroLabel}>{view.overallPercent}%</Text></View><View style={s.barBackground}><View style={[s.heroBar, { width: `${view.overallPercent}%` }]} /></View><Text style={s.heroFootnote}>Mỗi milestone mở khóa sẽ cộng XP và đánh dấu một cột mốc mới.</Text></View>
+      <View><Text style={s.sectionHeading}>Thử thách milestone</Text><Text style={s.sectionHint}>Hoàn thành theo bất kỳ thứ tự nào phù hợp với lộ trình học của bạn.</Text>{view.milestones.length ? view.milestones.map(item => { const tone = accent[item.color] ?? accent.violet; return <View key={item.id} style={[s.milestone, { backgroundColor: tone.background }]}><View style={s.milestoneHeader}><Text style={s.milestoneIcon}>{item.icon}</Text>{item.unlocked && <Text style={s.unlocked}>✓ ĐÃ MỞ KHÓA</Text>}</View><Text style={s.milestoneTitle}>{item.title}</Text><Text style={s.milestoneDescription}>{item.description}</Text><View style={s.milestoneNumbers}><Text style={[s.milestoneCurrent, { color: tone.foreground }]}>{item.current}/{item.target}</Text><Text style={s.xp}>⚡ +{item.xp} XP</Text></View><View style={s.milestoneBarBackground}><View style={[s.milestoneBar, { width: `${item.progressPercent}%`, backgroundColor: tone.foreground }]} /></View></View>; }) : <Text style={s.empty}>Chưa có milestone nào.</Text>}</View>
+      <View style={s.panel}><Text style={s.panelTitle}>Bước tiếp theo</Text><Text style={s.sectionHint}>Tiếp tục hướng học đã chọn để tăng tiến độ milestone.</Text>{view.includesVocabulary && <TouchableOpacity style={[s.nextCard, { backgroundColor: '#2563eb' }]} onPress={() => router.push('/flashcards' as never)}><Text style={s.nextIcon}>📚</Text><View style={s.nextBody}><Text style={s.nextTitle}>Học từ vựng CNTT</Text><Text style={s.nextDescription}>Tăng milestone số từ và chuỗi ngày học</Text></View><MaterialIcons name="arrow-forward" size={19} color="white" /></TouchableOpacity>}{view.includesCertification && <TouchableOpacity style={[s.nextCard, { backgroundColor: '#9333ea' }]} onPress={() => router.push('/certifications' as never)}><Text style={s.nextIcon}>🏆</Text><View style={s.nextBody}><Text style={s.nextTitle}>Luyện chứng chỉ</Text><Text style={s.nextDescription}>Làm quiz và hoàn thành domain</Text></View><MaterialIcons name="arrow-forward" size={19} color="white" /></TouchableOpacity>}</View>
+      {view.includesCertification && <View style={s.panel}><Text style={s.panelTitle}>Quiz chứng chỉ gần đây</Text>{view.recentAttempts.length ? view.recentAttempts.map(attempt => <View key={attempt.id} style={s.attempt}><Text style={s.attemptIcon}>🧠</Text><View style={s.attemptBody}><Text style={s.attemptTitle} numberOfLines={1}>{attempt.exam?.title ?? 'Bài thi chứng chỉ'}</Text><Text style={s.attemptStatus}>{attempt.passed ? 'Đã đạt' : 'Đã hoàn thành'}</Text></View><Text style={s.attemptScore}>{Math.round(attempt.scorePercent ?? 0)}%</Text></View>) : <Text style={s.empty}>Chưa có quiz nào được hoàn thành.</Text>}</View>}
+    </ScrollView>}
+  </View>;
 }
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#f8fafc'
-  },
-  headerBar: {
-    height: 64,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: spacing.md,
-    backgroundColor: '#ffffff',
-    borderBottomWidth: 1,
-    borderBottomColor: '#e0e3e5',
-    marginTop: 40 // safearea substitute
-  },
-  headerTitle: {
-    fontSize: 20,
-    fontWeight: '700',
-    color: colors.primary,
-  },
-  contentContainer: {
-    padding: spacing.md,
-    paddingTop: spacing.lg,
-    paddingBottom: 80,
-    gap: spacing.lg
-  },
-  header: {
-    marginBottom: spacing.xs
-  },
-  title: {
-    fontSize: 30,
-    fontWeight: '700',
-    color: '#191c1e',
-    marginBottom: 4,
-    letterSpacing: -0.5,
-  },
-  subtitle: {
-    fontSize: 14,
-    color: '#464555',
-  },
-  card: {
-    backgroundColor: '#ffffff',
-    borderWidth: 1,
-    borderColor: '#e2e8f0',
-    borderRadius: 12,
-    padding: spacing.lg,
-    shadowColor: '#0f1718',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.05,
-    shadowRadius: 2,
-    elevation: 1,
-  },
-  cardTitleCenter: {
-    fontSize: 20,
-    fontWeight: '600',
-    color: '#191c1e',
-    textAlign: 'center',
-    marginBottom: spacing.md,
-  },
-  chartContainer: {
-    position: 'relative',
-    width: 192,
-    height: 192,
-    alignSelf: 'center',
-  },
-  chartTextContainer: {
-    position: 'absolute',
-    top: 0, left: 0, right: 0, bottom: 0,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  chartPercent: {
-    fontSize: 30,
-    fontWeight: '700',
-    color: colors.primary,
-    letterSpacing: -0.5,
-  },
-  chartLabel: {
-    fontSize: 12,
-    color: '#464555',
-  },
-  summaryGrid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: spacing.md,
-  },
-  summaryCard: {
-    width: '47.5%', // approx half width with gap
-    backgroundColor: '#ffffff',
-    borderWidth: 1,
-    borderColor: '#e2e8f0',
-    borderRadius: 12,
-    padding: spacing.md,
-    justifyContent: 'space-between',
-    minHeight: 100,
-  },
-  summaryCardFull: {
-    width: '100%',
-  },
-  summaryHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: spacing.sm,
-    marginBottom: spacing.sm,
-  },
-  summaryTitle: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: '#464555',
-  },
-  summaryValue: {
-    fontSize: 24,
-    fontWeight: '700',
-    color: '#191c1e',
-    marginTop: 'auto',
-  },
-  cardHeaderRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: spacing.md,
-  },
-  cardTitle: {
-    fontSize: 20,
-    fontWeight: '600',
-    color: '#191c1e',
-    marginBottom: spacing.md,
-  },
-  certItem: {
-    marginBottom: spacing.md,
-  },
-  certRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginBottom: 4,
-  },
-  certName: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: '#191c1e',
-  },
-  certPercentText: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: colors.primary,
-  },
-  progressBarBg: {
-    width: '100%',
-    height: 8,
-    backgroundColor: '#e6e8ea',
-    borderRadius: 4,
-  },
-  progressBarFill: {
-    height: '100%',
-    backgroundColor: colors.primary,
-    borderRadius: 4,
-  },
-  certTime: {
-    fontSize: 12,
-    color: '#464555',
-    marginTop: spacing.sm,
-  },
+const s = StyleSheet.create({
+  root: { flex: 1, backgroundColor: '#f7f9fb' }, topbar: { paddingTop: 48, paddingHorizontal: 18, paddingBottom: 14, backgroundColor: '#fff', borderBottomWidth: 1, borderBottomColor: '#e0e3e5' }, brand: { fontSize: 19, fontWeight: '800', color: '#3525cd' }, center: { flex: 1, alignItems: 'center', justifyContent: 'center', gap: 14, padding: 24 }, error: { color: '#b91c1c', textAlign: 'center' }, retry: { backgroundColor: '#3525cd', borderRadius: 10, paddingHorizontal: 20, paddingVertical: 11 }, retryText: { color: '#fff', fontWeight: '700' },
+  content: { padding: 18, gap: 22, paddingBottom: 90 }, eyebrow: { fontSize: 11, fontWeight: '900', letterSpacing: 2, color: '#3525cd' }, heading: { marginTop: 5, fontSize: 29, fontWeight: '900', color: '#191c1e' }, subheading: { marginTop: 8, fontSize: 14, lineHeight: 21, color: '#464555' },
+  pillRow: { flexDirection: 'row', gap: 10 }, pill: { flex: 1, flexDirection: 'row', alignItems: 'center', gap: 8, backgroundColor: '#fff', borderWidth: 1, borderColor: '#e2e8f0', borderRadius: 15, padding: 11 }, pillIcon: { fontSize: 21 }, pillValue: { fontSize: 14, fontWeight: '800', color: '#191c1e' }, pillLabel: { fontSize: 10, color: '#64748b' },
+  hero: { borderRadius: 22, padding: 22, backgroundColor: '#5b3ddd' }, heroLabel: { color: '#eeeaff', fontSize: 13, fontWeight: '700' }, heroValue: { marginTop: 4, fontSize: 38, fontWeight: '900', color: '#fff' }, heroCaption: { color: '#eeeaff', fontSize: 13 }, heroBarLabels: { marginTop: 28, marginBottom: 8, flexDirection: 'row', justifyContent: 'space-between' }, barBackground: { height: 14, backgroundColor: '#4630aa', borderRadius: 10, overflow: 'hidden' }, heroBar: { height: 14, backgroundColor: '#fcd34d', borderRadius: 10 }, heroFootnote: { marginTop: 13, color: '#eeeaff', fontSize: 11, lineHeight: 17 },
+  sectionHeading: { fontSize: 20, fontWeight: '900', color: '#191c1e' }, sectionHint: { marginTop: 5, marginBottom: 12, color: '#64748b', fontSize: 12, lineHeight: 18 }, milestone: { marginTop: 11, borderRadius: 17, padding: 17, borderWidth: 1, borderColor: '#e2e8f0' }, milestoneHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }, milestoneIcon: { fontSize: 29 }, unlocked: { backgroundColor: '#10b981', color: '#fff', overflow: 'hidden', borderRadius: 8, paddingHorizontal: 8, paddingVertical: 5, fontSize: 10, fontWeight: '900' }, milestoneTitle: { marginTop: 11, fontSize: 16, fontWeight: '800', color: '#191c1e' }, milestoneDescription: { marginTop: 4, color: '#464555', fontSize: 12, lineHeight: 18 }, milestoneNumbers: { marginTop: 18, flexDirection: 'row', justifyContent: 'space-between' }, milestoneCurrent: { fontSize: 12, fontWeight: '800' }, xp: { color: '#92400e', fontSize: 12, fontWeight: '800' }, milestoneBarBackground: { marginTop: 8, height: 9, backgroundColor: '#fff', borderRadius: 6, overflow: 'hidden' }, milestoneBar: { height: 9, borderRadius: 6 }, empty: { padding: 16, textAlign: 'center', color: '#64748b', backgroundColor: '#f2f4f6', borderRadius: 12 },
+  panel: { backgroundColor: '#fff', borderWidth: 1, borderColor: '#e2e8f0', borderRadius: 17, padding: 18 }, panelTitle: { fontSize: 16, fontWeight: '800', color: '#191c1e' }, nextCard: { flexDirection: 'row', alignItems: 'center', gap: 10, padding: 14, borderRadius: 13, marginTop: 10 }, nextIcon: { fontSize: 23 }, nextBody: { flex: 1 }, nextTitle: { fontSize: 14, fontWeight: '800', color: '#fff' }, nextDescription: { marginTop: 3, fontSize: 11, color: '#eeeaff' }, attempt: { flexDirection: 'row', alignItems: 'center', gap: 10, backgroundColor: '#f2f4f6', padding: 11, borderRadius: 11, marginTop: 9 }, attemptIcon: { fontSize: 20 }, attemptBody: { flex: 1 }, attemptTitle: { fontSize: 12, fontWeight: '700', color: '#191c1e' }, attemptStatus: { fontSize: 11, color: '#64748b' }, attemptScore: { fontSize: 14, fontWeight: '900', color: '#3525cd' },
 });

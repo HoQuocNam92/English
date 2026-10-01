@@ -1,7 +1,7 @@
 'use client';
 
 import * as React from 'react';
-import { PageHeader, SearchInput, Pagination } from '@/shared/ui';
+import { confirmDialog, PageHeader, SearchInput, Pagination } from '@/shared/ui';
 import { apiClient, ApiClientError } from '@/shared/api/api-client';
 import type { VocabularyItem, PaginatedResponse } from '@/shared/api/api-client';
 
@@ -60,6 +60,15 @@ const EMPTY_FORM: FormState = {
   levelId: '',
   tags: '',
 };
+
+function HighlightedExample({ sentence, term }: { sentence: string; term: string }) {
+  if (!term.trim()) return <>{sentence}</>;
+  const escaped = term.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  const parts = sentence.split(new RegExp(`(${escaped})`, 'gi'));
+  return <>{parts.map((part, index) => part.toLocaleLowerCase() === term.toLocaleLowerCase()
+    ? <strong key={`${part}-${index}`} className="font-bold text-on-surface">{part}</strong>
+    : <React.Fragment key={`${part}-${index}`}>{part}</React.Fragment>)}</>;
+}
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
@@ -251,23 +260,26 @@ function VocabularyModal({ mode, initial, domains, levels, onClose, onSuccess }:
           </Field>
 
           <Field label="Từ loại" error={errors.partOfSpeech}>
-            <select value={form.partOfSpeech} onChange={set('partOfSpeech')} className={inputCls}>
-              {PARTS_OF_SPEECH_OPTIONS.map((o) => (
-                <option key={o.value} value={o.value}>{o.label}</option>
+            <div className="grid grid-cols-2 gap-2 rounded-xl border border-outline-variant bg-surface-container-low/40 p-3 sm:grid-cols-3">
+              {PARTS_OF_SPEECH_OPTIONS.filter((option) => option.value).map((option) => (
+                <label key={option.value} className="flex cursor-pointer items-center gap-2 rounded-lg bg-white px-3 py-2 text-sm font-medium text-on-surface hover:bg-primary/5">
+                  <input type="checkbox" checked={form.partOfSpeech === option.value} onChange={() => setForm((current) => ({ ...current, partOfSpeech: current.partOfSpeech === option.value ? '' : option.value }))} className="h-4 w-4 rounded border-outline-variant accent-primary" />
+                  {option.label}
+                </label>
               ))}
-            </select>
+            </div>
           </Field>
 
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid gap-3 sm:grid-cols-2">
             <Field label="Lĩnh vực" required error={errors.domainId}>
-              <select
-                value={form.domainId}
-                onChange={set('domainId')}
-                className={`${inputCls} ${errors.domainId ? inputErrCls : ''}`}
-              >
-                <option value="">— Chọn lĩnh vực —</option>
-                {domains.map((d) => <option key={d.id} value={d.id}>{d.name}</option>)}
-              </select>
+              <div className={`max-h-44 space-y-1 overflow-y-auto rounded-xl border bg-surface-container-low/40 p-2 ${errors.domainId ? 'border-error' : 'border-outline-variant'}`}>
+                {domains.map((domain) => (
+                  <label key={domain.id} className="flex cursor-pointer items-center gap-2 rounded-lg bg-white px-3 py-2 text-sm font-medium text-on-surface hover:bg-primary/5">
+                    <input type="checkbox" checked={form.domainId === domain.id} onChange={() => setForm((current) => ({ ...current, domainId: domain.id }))} className="h-4 w-4 rounded border-outline-variant accent-primary" />
+                    <span className="truncate">{domain.name}</span>
+                  </label>
+                ))}
+              </div>
             </Field>
 
             <Field label="Cấp độ" required error={errors.levelId}>
@@ -432,7 +444,7 @@ export default function AdminLearningContentPage() {
   const [bulkBusy, setBulkBusy]       = React.useState(false);
   const [loading, setLoading]         = React.useState(true);
   const [error, setError]             = React.useState<string | null>(null);
-  const limit = 12;
+  const [limit, setLimit] = React.useState(30);
   const totalPages = Math.ceil(total / limit);
 
   // ── Domain / Level options ──
@@ -474,7 +486,7 @@ export default function AdminLearningContentPage() {
     } finally {
       setLoading(false);
     }
-  }, [page, search, status, domainCode]);
+  }, [page, limit, search, status, domainCode]);
 
   React.useEffect(() => { void load(); }, [load]);
 
@@ -484,7 +496,7 @@ export default function AdminLearningContentPage() {
   const handleModalSuccess  = () => { closeModal();       void load(); };
   const handleDeleteSuccess = () => { setDeleteTarget(null); void load(); };
 
-  React.useEffect(() => { setSelectedIds(new Set()); }, [page, search, status, domainCode]);
+  React.useEffect(() => { setSelectedIds(new Set()); }, [page, limit, search, status, domainCode]);
 
   const toggleSelected = (id: string) => setSelectedIds((current) => {
     const next = new Set(current);
@@ -497,7 +509,7 @@ export default function AdminLearningContentPage() {
     if (scope === 'selected' && selectedCount === 0) return;
     const affected = scope === 'selected' ? `${selectedCount} từ đã chọn` : `${total} kết quả đang lọc`;
     const action = targetStatus === 'published' ? 'xuất bản' : 'chuyển về bản nháp';
-    if (!window.confirm(`Bạn có chắc muốn ${action} ${affected}?`)) return;
+    if (!(await confirmDialog(`Bạn có chắc muốn ${action} ${affected}?`, { title: 'Xác nhận cập nhật hàng loạt', confirmLabel: action, tone: targetStatus === 'published' ? 'primary' : 'warning' }))) return;
     setBulkBusy(true); setError(null);
     try {
       await apiClient.patch('/vocabulary/bulk-status', scope === 'selected'
@@ -646,7 +658,7 @@ export default function AdminLearningContentPage() {
                   <div className="mt-3 border-t border-outline-variant/20 pt-2.5">
                     <p className="text-xs text-on-surface-variant line-clamp-2">
                       <span className="font-semibold text-on-surface">Ví dụ: </span>
-                      {v.examples[0].sentenceEn}
+                      <HighlightedExample sentence={v.examples[0].sentenceEn} term={v.term} />
                     </p>
                   </div>
                 )}
@@ -690,7 +702,7 @@ export default function AdminLearningContentPage() {
       </div>
 
       {/* Pagination */}
-      {totalPages > 1 && (
+      {total > 0 && (
         <Pagination
           className="mt-6 rounded-2xl border border-outline-variant/40 shadow-xs"
           page={page}
@@ -698,6 +710,7 @@ export default function AdminLearningContentPage() {
           total={total}
           totalPages={totalPages}
           onPageChange={setPage}
+          onLimitChange={(value) => { setLimit(value); setPage(1); }}
           showQuickJumper
         />
       )}

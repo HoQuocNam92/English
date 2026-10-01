@@ -100,7 +100,7 @@ export function SearchInput({
   const isNearLimit = charCount >= maxLength * 0.8;
 
   return (
-    <form onSubmit={handleSubmit} className={`flex flex-col gap-1 flex-1 ${className}`}>
+    <form onSubmit={handleSubmit} className={`admin-search-field flex w-full min-w-0 flex-col gap-1 sm:w-96 sm:max-w-full sm:flex-none ${className}`}>
       <div className="flex gap-2 items-center">
         <div className="relative flex-1">
           {/* Search Icon */}
@@ -115,16 +115,17 @@ export function SearchInput({
             onKeyDown={handleKeyDown}
             onFocus={() => setIsFocused(true)}
             onBlur={() => setIsFocused(false)}
+            aria-label={placeholder}
             placeholder={placeholder}
             maxLength={maxLength}
             autoComplete="off"
             spellCheck={false}
-            className={`w-full rounded-xl border pl-10 pr-16 py-2 text-sm text-on-surface transition-all
+          className={`ui-control h-11 w-full pl-10 pr-16 text-sm text-on-surface
               ${error
                 ? 'border-red-500 bg-red-50/20 text-on-surface focus:outline-none focus:ring-2 focus:ring-red-300'
                 : isFocused
-                  ? 'border-primary bg-surface-container-low focus:outline-none focus:ring-2 focus:ring-primary/20'
-                  : 'border-outline-variant/60 bg-surface-container-low hover:border-outline-variant'
+                  ? 'border-primary'
+                  : ''
               }`}
           />
 
@@ -154,7 +155,7 @@ export function SearchInput({
         <button
           type="submit"
           disabled={!!error}
-          className="px-4 py-2 rounded-xl bg-primary text-white text-sm font-semibold hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-sm shrink-0"
+          className="ui-button ui-button-primary h-11 shrink-0 px-5 text-sm"
         >
           Tìm
         </button>

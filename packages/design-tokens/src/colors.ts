@@ -60,9 +60,26 @@ export const colors = {
   onErrorContainer: '#93000a',
 
   // ── Outline / Border ──────────────────────────────────────────────
-  outline: '#777587',
+  outline: '#6b687b',
   outlineVariant: '#c7c4d8',
   borderSubtle: '#E2E8F0',    // design-ref "border-subtle"
 } as const;
 
 export type Color = keyof typeof colors;
+
+/** Shared semantic icon palette for web and mobile surfaces. */
+export const iconColors = {
+  home: '#4f46e5',
+  learning: '#ea580c',
+  certificate: '#c026d3',
+  progress: '#059669',
+  profile: '#0284c7',
+  search: '#2563eb',
+  language: '#0d9488',
+  theme: '#7c3aed',
+  info: '#2563eb',
+  success: '#16a34a',
+  warning: '#d97706',
+  danger: '#dc2626',
+  muted: '#64748b',
+} as const;

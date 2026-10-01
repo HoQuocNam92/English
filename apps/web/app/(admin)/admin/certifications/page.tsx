@@ -2,7 +2,7 @@
 
 import * as React from 'react';
 import Link from 'next/link';
-import { Modal, PageHeader, SearchInput } from '@/shared/ui';
+import { confirmDialog, Modal, PageHeader, SearchInput } from '@/shared/ui';
 import { apiClient, ApiClientError } from '@/shared/api/api-client';
 
 interface CertificateItem {
@@ -11,13 +11,15 @@ interface CertificateItem {
   name: string;
   provider: string;
   description: string;
+  category?: string | null;
+  examDurationMinutes?: number | null;
+  examQuestionCount?: number | null;
+  passingScaledScore?: number | null;
   examUrl: string | null;
   isActive: boolean;
-  domains?: Array<{ domain: { code: string; name: string } }>;
+  domains?: Array<{ domain: { code: string; name: string }; certificationTopics?: Array<{ _count?: { questions?: number } }> }>;
   _count?: {
     exams: number;
-    lessonCerts: number;
-    questionCerts: number;
   };
 }
 
@@ -78,7 +80,7 @@ export default function AdminCertificationsPage() {
   };
 
   const remove = async (cert: CertificateItem) => {
-    if (!window.confirm(`Xóa chứng chỉ “${cert.name}”? Chỉ chứng chỉ chưa có nội dung liên kết mới có thể xóa.`)) return;
+    if (!(await confirmDialog(`Xóa chứng chỉ “${cert.name}”? Chỉ chứng chỉ chưa có nội dung liên kết mới có thể xóa.`, { title: 'Xóa chứng chỉ?', confirmLabel: 'Xóa chứng chỉ', tone: 'danger' }))) return;
     setError(null);
     try {
       await apiClient.delete(`/certificates/${cert.id}`);
@@ -127,16 +129,7 @@ export default function AdminCertificationsPage() {
         )}
 
         <div className="flex flex-wrap items-center gap-sm mt-md md:mt-0">
-          <div className="relative">
-            <span className="material-symbols-outlined absolute left-sm top-1/2 -translate-y-1/2 text-outline text-[20px]">search</span>
-            <input 
-              value={searchInput}
-              onChange={(e) => setSearchInput(e.target.value)}
-              onKeyDown={(e) => { if (e.key === 'Enter') { handleSearch(searchInput); } }}
-              className="appearance-none bg-surface-container-lowest border border-outline-variant rounded-lg py-sm pl-[36px] pr-md font-body-md text-on-surface focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-colors min-w-[200px]"
-              placeholder="Tìm chứng chỉ..."
-            />
-          </div>
+          <SearchInput value={searchInput} onChange={setSearchInput} onSearch={value => { handleSearch(value); }} placeholder="Tìm kiếm chứng chỉ…" />
           <button 
             onClick={openCreate}
             className="bg-primary text-on-primary font-interface-sb py-sm px-md rounded-lg hover:bg-primary-container transition-colors flex items-center gap-xs"
@@ -161,9 +154,10 @@ export default function AdminCertificationsPage() {
               'bg-tertiary-fixed text-on-tertiary-fixed',
             ];
             const badgeClass = badgeClasses[idx % badgeClasses.length];
-            
-            const readyParts = Number((c._count?.lessonCerts ?? 0) > 0) + Number((c._count?.questionCerts ?? 0) > 0) + Number((c._count?.exams ?? 0) > 0);
-            const contentProgress = Math.round(readyParts / 3 * 100);
+            const topicList = c.domains?.flatMap(domain => domain.certificationTopics ?? []) ?? [];
+            const questionCount = topicList.reduce((sum, topic) => sum + Number(topic._count?.questions ?? 0), 0);
+            const readyParts = Number(questionCount > 0) + Number((c._count?.exams ?? 0) > 0);
+            const contentProgress = Math.round(readyParts / 2 * 100);
             
             return (
               <div key={c.id} className="bg-surface-container-lowest rounded-xl border border-outline-variant p-lg hover:shadow-[0_1px_3px_rgba(15,23,24,0.06)] transition-all flex flex-col gap-md">
@@ -186,22 +180,18 @@ export default function AdminCertificationsPage() {
                   </div>
                 </div>
                 
-                <div className="grid grid-cols-2 gap-sm py-md border-y border-outline-variant/50">
+                <div className="grid grid-cols-3 gap-sm py-md border-y border-outline-variant/50">
                   <div className="flex flex-col">
                     <span className="font-body-sm text-body-sm text-on-surface-variant">Đề thi</span>
                     <span className="font-interface-sb text-interface-sb text-on-surface">{c._count?.exams || 0}</span>
                   </div>
                   <div className="flex flex-col">
-                    <span className="font-body-sm text-body-sm text-on-surface-variant">Bài học</span>
-                    <span className="font-interface-sb text-interface-sb text-on-surface">{c._count?.lessonCerts || 0}</span>
-                  </div>
-                  <div className="flex flex-col">
                     <span className="font-body-sm text-body-sm text-on-surface-variant">Câu hỏi</span>
-                    <span className="font-interface-sb text-interface-sb text-on-surface">{c._count?.questionCerts || 0}</span>
+                    <span className="font-interface-sb text-interface-sb text-on-surface">{questionCount}</span>
                   </div>
                   <div className="flex flex-col">
                     <span className="font-body-sm text-body-sm text-on-surface-variant">Tổng nội dung</span>
-                    <span className="font-interface-sb text-interface-sb text-on-surface">{(c._count?.lessonCerts ?? 0) + (c._count?.questionCerts ?? 0) + (c._count?.exams ?? 0)}</span>
+                    <span className="font-interface-sb text-interface-sb text-on-surface">{questionCount + (c._count?.exams ?? 0)}</span>
                   </div>
                 </div>
                 
@@ -225,12 +215,12 @@ export default function AdminCertificationsPage() {
 }
 
 function CertificateModal({ open, initial, onClose, onSaved }: { open: boolean; initial: CertificateItem | null; onClose: () => void; onSaved: (item: CertificateItem) => void }) {
-  const blank = { code: '', name: '', provider: '', description: '', examUrl: '', isActive: true };
+  const blank = { code: '', name: '', provider: '', description: '', category: '', examDurationMinutes: '', examQuestionCount: '', passingScaledScore: '', examUrl: '', isActive: true };
   const [form, setForm] = React.useState(blank);
   const [saving, setSaving] = React.useState(false);
   const [error, setError] = React.useState('');
   React.useEffect(() => {
-    setForm(initial ? { code: initial.code, name: initial.name, provider: initial.provider, description: initial.description, examUrl: initial.examUrl ?? '', isActive: initial.isActive } : blank);
+    setForm(initial ? { code: initial.code, name: initial.name, provider: initial.provider, description: initial.description, category: initial.category ?? '', examDurationMinutes: initial.examDurationMinutes?.toString() ?? '', examQuestionCount: initial.examQuestionCount?.toString() ?? '', passingScaledScore: initial.passingScaledScore?.toString() ?? '', examUrl: initial.examUrl ?? '', isActive: initial.isActive } : blank);
     setError('');
   }, [initial, open]);
   const save = async (event: React.FormEvent) => {
@@ -238,7 +228,7 @@ function CertificateModal({ open, initial, onClose, onSaved }: { open: boolean; 
     if (!form.code.trim() || !form.name.trim() || !form.provider.trim()) { setError('Vui lòng nhập đầy đủ mã, tên và đơn vị cấp.'); return; }
     setSaving(true); setError('');
     try {
-      const payload = { ...form, code: form.code.trim().toUpperCase(), examUrl: form.examUrl || null };
+      const payload = { ...form, code: form.code.trim().toUpperCase(), category: form.category || null, examDurationMinutes: form.examDurationMinutes ? Number(form.examDurationMinutes) : null, examQuestionCount: form.examQuestionCount ? Number(form.examQuestionCount) : null, passingScaledScore: form.passingScaledScore ? Number(form.passingScaledScore) : null, examUrl: form.examUrl || null };
       const response: any = initial ? await apiClient.patch(`/certificates/${initial.id}`, payload) : await apiClient.post('/certificates', payload);
       onSaved(response?.data ?? response);
     } catch (e) { setError(e instanceof ApiClientError ? e.message : 'Không thể lưu chứng chỉ.'); }
@@ -251,6 +241,10 @@ function CertificateModal({ open, initial, onClose, onSaved }: { open: boolean; 
       <label className="text-sm font-semibold">Mã chứng chỉ *<input className={`${cls} uppercase`} value={form.code} onChange={e => setForm({...form, code:e.target.value})} placeholder="AWS-CLF-C02" /></label>
       <label className="text-sm font-semibold">Đơn vị cấp *<input className={cls} value={form.provider} onChange={e => setForm({...form, provider:e.target.value})} placeholder="Amazon Web Services" /></label>
       <label className="text-sm font-semibold sm:col-span-2">Tên chứng chỉ *<input className={cls} value={form.name} onChange={e => setForm({...form, name:e.target.value})} placeholder="AWS Certified Cloud Practitioner" /></label>
+      <label className="text-sm font-semibold sm:col-span-2">Nhóm chứng chỉ<input className={cls} value={form.category} onChange={e => setForm({...form, category:e.target.value})} placeholder="Cloud / Security / Network" /></label>
+      <label className="text-sm font-semibold">Thời gian thi (phút)<input type="number" min="1" className={cls} value={form.examDurationMinutes} onChange={e => setForm({...form, examDurationMinutes:e.target.value})} placeholder="90" /></label>
+      <label className="text-sm font-semibold">Số câu trong đề thật<input type="number" min="1" className={cls} value={form.examQuestionCount} onChange={e => setForm({...form, examQuestionCount:e.target.value})} placeholder="65" /></label>
+      <label className="text-sm font-semibold sm:col-span-2">Điểm chuẩn quy đổi<input type="number" min="0" className={cls} value={form.passingScaledScore} onChange={e => setForm({...form, passingScaledScore:e.target.value})} placeholder="700" /></label>
       <label className="text-sm font-semibold sm:col-span-2">Liên kết kỳ thi<input className={cls} value={form.examUrl} onChange={e => setForm({...form, examUrl:e.target.value})} placeholder="https://..." /></label>
       <label className="text-sm font-semibold sm:col-span-2">Mô tả<textarea className="mt-2 min-h-24 w-full rounded-xl border border-outline-variant/70 bg-white p-3 text-sm outline-none focus:border-primary focus:ring-4 focus:ring-primary/10" value={form.description} onChange={e => setForm({...form, description:e.target.value})} /></label>
       <label className="flex items-center gap-2 text-sm font-medium sm:col-span-2"><input type="checkbox" className="accent-primary" checked={form.isActive} onChange={e => setForm({...form, isActive:e.target.checked})} />Hiển thị trong hệ thống</label>

@@ -29,10 +29,9 @@ export default function QuestionEditorPage() {
 
   const [domains, setDomains] = React.useState<SelectOption[]>([]);
   const [levels, setLevels] = React.useState<SelectOption[]>([]);
-  const [certificates, setCertificates] = React.useState<SelectOption[]>([]);
-  const [certificateIds, setCertificateIds] = React.useState<string[]>(params.get('certificateId') ? [params.get('certificateId')!] : []);
 
   const [type, setType] = React.useState('multiple_choice');
+  const [skill, setSkill] = React.useState('vocabulary');
   const [prompt, setPrompt] = React.useState('');
   const [context, setContext] = React.useState('');
   const [explanation, setExplanation] = React.useState('');
@@ -40,6 +39,7 @@ export default function QuestionEditorPage() {
   const [domainId, setDomainId] = React.useState('');
   const [levelId, setLevelId] = React.useState('');
   const [topics, setTopics] = React.useState('');
+  const [acceptedAnswers, setAcceptedAnswers] = React.useState('');
   const [options, setOptions] = React.useState<OptionState[]>([
     { key: 'A', text: '', isCorrect: false, explanation: '' },
     { key: 'B', text: '', isCorrect: false, explanation: '' },
@@ -56,18 +56,17 @@ export default function QuestionEditorPage() {
     const init = async () => {
       setLoading(true);
       try {
-        const [domainsRes, levelsRes, certificatesRes] = await Promise.all<any>([
+        const [domainsRes, levelsRes] = await Promise.all<any>([
           apiClient.get<any>('/domains'),
           apiClient.get<any>('/levels'),
-          apiClient.get<any>('/certificates'),
         ]);
         setDomains(domainsRes?.data ?? domainsRes ?? []);
         setLevels(levelsRes?.data ?? levelsRes ?? []);
-        setCertificates(certificatesRes?.data ?? certificatesRes ?? []);
 
         if (isEdit) {
           const q = await apiClient.get<any>(`/questions/${questionId}`);
           setType(q.type ?? 'multiple_choice');
+          setSkill(q.skill ?? 'vocabulary');
           setPrompt(q.prompt ?? '');
           setContext(q.context ?? '');
           setExplanation(q.explanation ?? '');
@@ -75,7 +74,7 @@ export default function QuestionEditorPage() {
           setDomainId(q.domainId ?? '');
           setLevelId(q.levelId ?? '');
           setTopics((q.topics ?? []).join(', '));
-          setCertificateIds(q.certificates?.map((item: any) => item.certificateId ?? item.certificate?.id) ?? []);
+          setAcceptedAnswers((q.acceptedAnswers ?? []).join('\n'));
           if (q.options?.length) {
             setOptions(q.options.map((o: any) => ({
               key: o.key,
@@ -109,9 +108,13 @@ export default function QuestionEditorPage() {
     else if (prompt.trim().length > 1000) errs.prompt = 'Câu hỏi tối đa 1000 ký tự';
     if (!domainId) errs.domainId = 'Vui lòng chọn lĩnh vực';
     if (!levelId) errs.levelId = 'Vui lòng chọn cấp độ';
-    if (options.some(o => !o.text.trim())) errs.options = 'Tất cả các đáp án phải có nội dung';
-    if (new Set(options.map(o => o.text.trim().toLocaleLowerCase())).size !== options.length) errs.options = 'Các đáp án không được trùng nhau';
-    if (!options.some(o => o.isCorrect)) errs.options = 'Phải chọn ít nhất 1 đáp án đúng';
+    if (type === 'short_answer') {
+      if (!acceptedAnswers.split('\n').some(answer => answer.trim())) errs.acceptedAnswers = 'Phải nhập ít nhất một câu trả lời được chấp nhận';
+    } else {
+      if (options.some(o => !o.text.trim())) errs.options = 'Tất cả các đáp án phải có nội dung';
+      if (new Set(options.map(o => o.text.trim().toLocaleLowerCase())).size !== options.length) errs.options = 'Các đáp án không được trùng nhau';
+      if (!options.some(o => o.isCorrect)) errs.options = 'Phải chọn ít nhất 1 đáp án đúng';
+    }
     const pts = Number(points);
     if (isNaN(pts) || pts < 1 || pts > 100) errs.points = 'Điểm phải từ 1 đến 100';
     const topicList = topics.split(',').map(t => t.trim()).filter(Boolean);
@@ -130,6 +133,7 @@ export default function QuestionEditorPage() {
     try {
       const payload = {
         type,
+        skill,
         prompt: prompt.trim(),
         context: context.trim() || undefined,
         explanation: explanation.trim() || undefined,
@@ -137,13 +141,13 @@ export default function QuestionEditorPage() {
         domainId: domainId || undefined,
         levelId: levelId || undefined,
         topics: topics.trim() ? topics.split(',').map(t => t.trim()).filter(Boolean) : [],
-        options: options.map(o => ({
+        acceptedAnswers: type === 'short_answer' ? acceptedAnswers.split('\n').map(answer => answer.trim()).filter(Boolean) : [],
+        options: type === 'short_answer' ? undefined : options.map(o => ({
           key: o.key,
           text: o.text.trim(),
           isCorrect: o.isCorrect,
           explanation: o.explanation.trim() || undefined,
         })),
-        certificateIds,
       };
 
       if (isEdit) {
@@ -186,7 +190,8 @@ export default function QuestionEditorPage() {
         )}
 
         {/* Type */}
-        <div>
+        <div className="grid gap-4 md:grid-cols-2">
+          <div>
           <label className="block text-sm font-semibold text-on-surface mb-1">Loại câu hỏi</label>
           <select
             value={type}
@@ -199,6 +204,16 @@ export default function QuestionEditorPage() {
             <option value="short_answer">Trả lời ngắn</option>
             <option value="scenario">Tình huống kỹ thuật</option>
           </select>
+          </div>
+          <div>
+            <label className="block text-sm font-semibold text-on-surface mb-1">Kỹ năng đánh giá</label>
+            <select value={skill} onChange={e => setSkill(e.target.value)} className="w-full rounded-xl border border-outline-variant px-4 py-2.5 text-sm text-on-surface bg-surface-container-low focus:outline-none focus:border-primary">
+              <option value="vocabulary">Vocabulary</option>
+              <option value="reading">Reading</option>
+              <option value="technical_understanding">Technical Understanding</option>
+              <option value="scenario_based">Scenario-based</option>
+            </select>
+          </div>
         </div>
 
         {/* Prompt */}
@@ -260,12 +275,6 @@ export default function QuestionEditorPage() {
         </div>
 
         {/* Points & Topics */}
-        <div>
-          <label className="block text-sm font-semibold text-on-surface mb-2">Chứng chỉ liên quan</label>
-          <div className="grid gap-2 rounded-xl border border-outline-variant bg-surface-container-low p-3 sm:grid-cols-2">{certificates.map(cert => <label key={cert.id} className="flex items-center gap-2 text-sm"><input type="checkbox" checked={certificateIds.includes(cert.id)} onChange={event => setCertificateIds(current => event.target.checked ? [...current, cert.id] : current.filter(id => id !== cert.id))} className="accent-primary" />{cert.name}</label>)}{!certificates.length && <p className="text-sm text-on-surface-variant">Chưa có chứng chỉ.</p>}</div>
-        </div>
-
-        {/* Points & Topics */}
         <div className="grid grid-cols-2 gap-4">
           <div>
             <label className="block text-sm font-semibold text-on-surface mb-1">Điểm</label>
@@ -293,6 +302,22 @@ export default function QuestionEditorPage() {
         </div>
 
         {/* Options */}
+        {type === 'short_answer' ? (
+        <div>
+          <label className="block text-sm font-semibold text-on-surface mb-1">
+            Câu trả lời được chấp nhận <span className="text-error">*</span>
+          </label>
+          <textarea
+            value={acceptedAnswers}
+            onChange={e => setAcceptedAnswers(e.target.value)}
+            rows={4}
+            placeholder={'Nhập mỗi cách trả lời đúng trên một dòng\nVí dụ:\nautoscaling\nauto scaling'}
+            className="w-full rounded-xl border border-outline-variant px-4 py-2.5 text-sm text-on-surface bg-surface-container-low focus:outline-none focus:border-primary"
+          />
+          <p className="mt-1 text-xs text-on-surface-variant">Hệ thống bỏ qua chữ hoa, chữ thường và khoảng trắng thừa khi chấm.</p>
+          <FieldError msg={errors.acceptedAnswers} />
+        </div>
+        ) : (
         <div>
           <label className="block text-sm font-semibold text-on-surface mb-3">
             Đáp án <span className="text-error">*</span>
@@ -337,6 +362,7 @@ export default function QuestionEditorPage() {
           </div>
           <FieldError msg={errors.options} />
         </div>
+        )}
 
         {/* Global explanation */}
         <div>

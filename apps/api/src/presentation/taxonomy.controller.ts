@@ -12,6 +12,18 @@ import { RequirePermissions } from './decorators/require-permissions.decorator'
 export class TaxonomyController {
   constructor(private readonly svc: TaxonomyService) {}
 
+  @Get('career-goals')
+  @ApiOperation({ summary: 'List career goals' })
+  getCareerGoals() { return this.svc.getCareerGoals() }
+
+  @Post('career-goals')
+  @RequirePermissions('users:update')
+  createCareerGoal(@Body() dto: any) { return this.svc.createCareerGoal(dto) }
+
+  @Patch('career-goals/:id')
+  @RequirePermissions('users:update')
+  updateCareerGoal(@Param('id') id: string, @Body() dto: any) { return this.svc.updateCareerGoal(id, dto) }
+
   @Get('levels')
   @ApiOperation({ summary: 'List all levels' })
   getLevels() {
@@ -47,20 +59,14 @@ export class TaxonomyController {
 
   @Get('domains')
   @ApiOperation({ summary: 'List all domains' })
-  getDomains() {
-    return this.svc.getDomains()
-  }
-
-  @Get('career-goals')
-  @ApiOperation({ summary: 'List active career goals' })
-  getCareerGoals() {
-    return this.svc.getCareerGoals()
+  getDomains(@Query('activeOnly') activeOnly?: string) {
+    return this.svc.getDomains(activeOnly === 'true')
   }
 
   @Get('certificates')
   @ApiOperation({ summary: 'List all certificates' })
-  getCertificates() {
-    return this.svc.getCertificates()
+  getCertificates(@Query('activeOnly') activeOnly?: string) {
+    return this.svc.getCertificates(activeOnly === 'true')
   }
 
   @Get('certificates/:id')
@@ -84,8 +90,26 @@ export class TaxonomyController {
 
   @Patch('certificates/:id/content-links')
   @RequirePermissions('certificates:manage')
-  updateCertificateLinks(@Param('id') id: string, @Body() dto: { lessons?: string[]; questions?: string[]; exams?: string[] }) {
+  updateCertificateLinks(@Param('id') id: string, @Body() dto: { exams?: string[] }) {
     return this.svc.updateCertificateLinks(id, dto)
+  }
+
+  @Post('certificates/:id/domains')
+  @RequirePermissions('certificates:manage')
+  addCertificateDomain(@Param('id') id: string, @Body() dto: { domainId: string; weightPercent?: number; order?: number }) {
+    return this.svc.addCertificateDomain(id, dto)
+  }
+
+  @Post('certificates/:id/topics')
+  @RequirePermissions('certificates:manage')
+  addCertificationTopic(@Param('id') id: string, @Body() dto: { domainId: string; code: string; name: string; description?: string; order?: number }) {
+    return this.svc.addCertificationTopic(id, dto)
+  }
+
+  @Patch('certification-topics/:topicId/content-links')
+  @RequirePermissions('certificates:manage')
+  updateCertificationTopicLinks(@Param('topicId') topicId: string, @Body() dto: { vocabularies?: string[]; questions?: string[] }) {
+    return this.svc.updateCertificationTopicLinks(topicId, dto)
   }
 
   @Delete('certificates/:id')
@@ -118,8 +142,8 @@ export class TaxonomyController {
   @Get('analytics/dashboard')
   @RequirePermissions('reports:read')
   @ApiOperation({ summary: 'Get dashboard analytics & chart data' })
-  getDashboardAnalytics() {
-    return this.svc.getDashboardAnalytics()
+  getDashboardAnalytics(@Query() query: any) {
+    return this.svc.getDashboardAnalytics(query)
   }
 
   @Get('reports/domain/:domainId')
@@ -129,4 +153,5 @@ export class TaxonomyController {
     return this.svc.getDomainReport(domainId)
   }
 }
+
 

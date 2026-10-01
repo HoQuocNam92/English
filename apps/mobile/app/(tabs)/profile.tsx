@@ -1,28 +1,32 @@
-import { useEffect, useState } from 'react';
-import { useRouter } from 'expo-router';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useCallback, useState } from 'react';
+import { useFocusEffect, useRouter } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
-import { StyleSheet, Text, View, TouchableOpacity, ScrollView, Alert, ActivityIndicator, Image, Switch } from 'react-native';
+import { StyleSheet, Text, View, TouchableOpacity, ScrollView, Alert, ActivityIndicator, Image } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
 import { spacing } from '@techenglish/design-tokens';
 import { useTheme } from '../../src/shared/store/theme-context';
-import { useI18n } from '../../src/shared/store/i18n-context';
 import { api } from '../../src/shared/api/api-client';
 import { useAuth } from '../../src/shared/store/auth-context';
 
 export default function MobileProfileScreen() {
   const router = useRouter();
+  const insets = useSafeAreaInsets();
   const { logout, user } = useAuth();
   const [profile, setProfile] = useState<any>(null);
+  const [learnerProfile, setLearnerProfile] = useState<any>(null);
   const [loading, setLoading] = useState(true);
-  const { theme, toggleTheme, isDark, colors } = useTheme();
-  const { locale, setLocale, t } = useI18n();
+  const { colors } = useTheme();
 
-  useEffect(() => {
-    api.get('/auth/me')
-      .then(data => setProfile(data))
-      .catch(err => console.error(err))
+  useFocusEffect(useCallback(() => {
+    setLoading(true);
+    Promise.allSettled([api.get('/auth/me'), api.get('/learner-profiles/me')])
+      .then(([meResult, learnerResult]) => {
+        if (meResult.status === 'fulfilled') setProfile(meResult.value);
+        if (learnerResult.status === 'fulfilled') setLearnerProfile(learnerResult.value);
+      })
       .finally(() => setLoading(false));
-  }, []);
+  }, []));
 
   const handleLogout = () => {
     Alert.alert('Đăng xuất', 'Bạn có chắc chắn muốn đăng xuất tài khoản?', [
@@ -51,20 +55,16 @@ export default function MobileProfileScreen() {
   const avatarLetter = displayName.charAt(0).toUpperCase();
   const avatarUrl = profile?.avatarUrl || profile?.userDetail?.avatarUrl || user?.avatarUrl;
   
-  const currentLevelRaw = profile?.learnerProfile?.currentLevel;
-  const currentLevel = typeof currentLevelRaw === 'object' && currentLevelRaw !== null
-    ? (currentLevelRaw.name ?? currentLevelRaw.code ?? '')
-    : (currentLevelRaw || '');
-  const mainDomain = profile?.learnerProfile?.mainDomain || '';
-  const careerGoal = profile?.learnerProfile?.careerGoal || '';
-  const certGoal = profile?.certGoal || profile?.learnerProfile?.certGoal || '';
+  const currentLevel = learnerProfile?.level?.name || learnerProfile?.level?.code || 'Chưa thiết lập';
+  const mainDomain = learnerProfile?.domains?.map((item: any) => item.domain?.name).filter(Boolean).join(', ') || 'Chưa thiết lập';
+  const certGoal = learnerProfile?.certGoals?.map((item: any) => item.certificate?.name).filter(Boolean).join(', ') || 'Chưa thiết lập';
 
   return (
     <View style={[styles.container, { backgroundColor: colors.background }]}>
-      <StatusBar style={isDark ? "light" : "dark"} />
+      <StatusBar style="dark" />
       
       {/* TopAppBar */}
-      <View style={[styles.header, { backgroundColor: colors.surface }]}>
+      <View style={[styles.header, { backgroundColor: colors.surface, marginTop: insets.top }]}>
         <View style={styles.headerButton} />
         <Text style={[styles.headerTitle, { color: colors.primary }]}>Cá nhân</Text>
         <View style={styles.headerButton} />
@@ -98,7 +98,7 @@ export default function MobileProfileScreen() {
               <MaterialIcons name="language" size={20} color="#1d4ed8" />
             </View>
             <View style={styles.bentoContent}>
-              <Text style={[styles.bentoLabel, { color: colors.onSurfaceVariant }]}>ENGLISH LEVEL</Text>
+              <Text style={[styles.bentoLabel, { color: colors.onSurfaceVariant }]}>TRÌNH ĐỘ TIẾNG ANH</Text>
               <Text style={[styles.bentoValue, { color: colors.onSurface }]}>{currentLevel}</Text>
             </View>
           </View>
@@ -109,19 +109,8 @@ export default function MobileProfileScreen() {
               <MaterialIcons name="terminal" size={20} color="#5c00ca" />
             </View>
             <View style={styles.bentoContent}>
-              <Text style={[styles.bentoLabel, { color: colors.onSurfaceVariant }]}>IT FIELD</Text>
+              <Text style={[styles.bentoLabel, { color: colors.onSurfaceVariant }]}>LĨNH VỰC CNTT</Text>
               <Text style={[styles.bentoValue, { color: colors.onSurface }]}>{mainDomain}</Text>
-            </View>
-          </View>
-
-          {/* Career Goal */}
-          <View style={[styles.bentoCard, { backgroundColor: colors.surfaceContainerLowest, borderColor: colors.outlineVariant }]}>
-            <View style={[styles.bentoIconBox, { backgroundColor: '#EEF2FF' }]}>
-              <MaterialIcons name="rocket-launch" size={20} color="#4F46E5" />
-            </View>
-            <View style={styles.bentoContent}>
-              <Text style={[styles.bentoLabel, { color: colors.onSurfaceVariant }]}>CAREER GOAL</Text>
-              <Text style={[styles.bentoValue, { color: colors.onSurface }]}>{careerGoal}</Text>
             </View>
           </View>
 
@@ -131,7 +120,7 @@ export default function MobileProfileScreen() {
               <MaterialIcons name="workspace-premium" size={20} color={colors.onSurface} />
             </View>
             <View style={styles.bentoContent}>
-              <Text style={[styles.bentoLabel, { color: colors.onSurfaceVariant }]}>TARGET CERTIFICATION</Text>
+              <Text style={[styles.bentoLabel, { color: colors.onSurfaceVariant }]}>CHỨNG CHỈ MỤC TIÊU</Text>
               <Text style={[styles.bentoValue, { color: colors.onSurface }]}>{certGoal}</Text>
             </View>
           </View>
@@ -140,7 +129,9 @@ export default function MobileProfileScreen() {
         {/* Action List */}
         <View style={[styles.menuList, { backgroundColor: colors.surfaceContainerLowest, borderColor: colors.outlineVariant }]}>
           {[
-            ['style', 'Flashcards', '/flashcards'],
+            ['style', 'Tổng quan từ vựng', '/flashcards/dashboard'],
+            ['history', 'Từ đã học', '/flashcards/history'],
+            ['school', 'Kiểm tra trình độ', '/placement-test'],
           ].map(([icon, label, route], index, list) => (
             <TouchableOpacity key={route} style={[styles.menuListItem, { borderBottomColor: colors.outlineVariant, borderBottomWidth: index === list.length - 1 ? 0 : 1 }]} onPress={() => router.push(route as any)}>
               <View style={styles.menuListLeft}><MaterialIcons name={icon as any} size={22} color={colors.primary} /><Text style={[styles.menuListText, { color: colors.onSurface }]}>{label}</Text></View>
@@ -170,37 +161,6 @@ export default function MobileProfileScreen() {
               <Text style={[styles.menuListText, { color: colors.onSurface }]}>Đổi mật khẩu</Text>
             </View>
             <MaterialIcons name="chevron-right" size={24} color={colors.outlineVariant} />
-          </TouchableOpacity>
-        </View>
-
-        {/* Settings - Theme & Language (Keep existing but style to match) */}
-        <View style={[styles.menuList, { backgroundColor: colors.surfaceContainerLowest, borderColor: colors.outlineVariant }]}>
-          <View style={[styles.menuListItem, { borderBottomColor: colors.outlineVariant, paddingVertical: spacing.sm }]}>
-            <View style={styles.menuListLeft}>
-              <Text style={{ fontSize: 18 }}>🌙</Text>
-              <Text style={[styles.menuListText, { color: colors.onSurface }]}>{isDark ? t.lightMode : t.darkMode}</Text>
-            </View>
-            <Switch
-              value={isDark}
-              onValueChange={toggleTheme}
-              trackColor={{ false: colors.outlineVariant, true: colors.primary }}
-              thumbColor={colors.onPrimary}
-            />
-          </View>
-          
-          <TouchableOpacity
-            style={[styles.menuListItem, { borderBottomWidth: 0 }]}
-            onPress={() => setLocale(locale === 'vi' ? 'en' : 'vi')}
-          >
-            <View style={styles.menuListLeft}>
-              <Text style={{ fontSize: 18 }}>🌐</Text>
-              <Text style={[styles.menuListText, { color: colors.onSurface }]}>{t.language}</Text>
-            </View>
-            <View style={[styles.langBadge, { backgroundColor: colors.primary }]}>
-              <Text style={{ color: colors.onPrimary, fontWeight: '700', fontSize: 12 }}>
-                {locale === 'vi' ? 'VI' : 'EN'}
-              </Text>
-            </View>
           </TouchableOpacity>
         </View>
 
@@ -234,7 +194,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing.lg,
     borderBottomWidth: 1,
     borderBottomColor: '#e0e3e5',
-    marginTop: 40 // safearea substitute
   },
   headerButton: {
     padding: spacing.xs,

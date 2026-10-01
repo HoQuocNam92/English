@@ -1,284 +1,71 @@
 'use client';
 
 import * as React from 'react';
+import { StatusBadge } from '@/shared/ui/StatusBadge';
 import Link from 'next/link';
-import { PageHeader, SearchInput, Pagination } from '@/shared/ui';
+import { useSearchParams } from 'next/navigation';
+import { PageHeader, Pagination, SearchInput } from '@/shared/ui';
 import { apiClient, ApiClientError } from '@/shared/api/api-client';
-import type { LessonItem, PaginatedResponse } from '@/shared/api/api-client';
+import type { PaginatedResponse } from '@/shared/api/api-client';
+import { ContentPreview } from './ContentPreview';
+import { CONTENT_TYPES } from '@/shared/lib/admin-content-types';
 
-const LESSON_TYPES: Record<string, string> = {
-  vocabulary: 'Từ vựng',
-  terminology: 'Thuật ngữ chuyên ngành',
-  technical_reading: 'Đọc hiểu kỹ thuật',
-  api_documentation: 'Tài liệu API',
-  system_design: 'System Design',
-  case_study: 'Case Study thực tế',
-};
+type Lesson = { id: string; title: string; summary: string; type: string; keyConcepts?: string[]; estimatedMinutes: number; status: string; domain: { name: string }; level: { name: string }; _count?: { sections: number } };
+const TYPES: Record<string, string> = { vocabulary: 'Từ vựng', terminology: 'Thuật ngữ CNTT', technical_reading: 'Đọc hiểu kỹ thuật', api_documentation: 'Tài liệu API', system_design: 'System Design', case_study: 'Tình huống thực tế', certification_review: 'Ôn tập chứng chỉ' };
+const STATUS: Record<string, string> = { draft: 'Bản nháp', published: 'Đã xuất bản', archived: 'Đã lưu trữ' };
 
-const STATUSES = [
-  { value: '', label: 'Tất cả trạng thái' },
-  { value: 'published', label: 'Đã xuất bản' },
-  { value: 'draft', label: 'Bản nháp' },
-  { value: 'archived', label: 'Đã lưu trữ' },
-];
-
-function StatusBadge({ status }: { status: string }) {
-  const map: Record<string, { label: string; cls: string }> = {
-    published: { label: 'Đã xuất bản', cls: 'bg-emerald-50 text-emerald-700 border border-emerald-200/60' },
-    draft: { label: 'Bản nháp', cls: 'bg-amber-50 text-amber-700 border border-amber-200/60' },
-    archived: { label: 'Đã lưu trữ', cls: 'bg-gray-100 text-gray-600 border border-gray-200/60' },
-  };
-  const s = map[status] ?? { label: status, cls: 'bg-gray-100 text-gray-600 border border-gray-200/60' };
-  return <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold ${s.cls}`}>{s.label}</span>;
-}
-
-export default function AdminLessonsPage() {
-  const [lessons, setLessons] = React.useState<LessonItem[]>([]);
-  const [total, setTotal] = React.useState(0);
+export default function LessonsPage() {
+  const searchParams = useSearchParams();
+  const [items, setItems] = React.useState<Lesson[]>([]);
   const [page, setPage] = React.useState(1);
+  const [totalPages, setTotalPages] = React.useState(1);
   const [search, setSearch] = React.useState('');
   const [searchInput, setSearchInput] = React.useState('');
+  const [total, setTotal] = React.useState(0);
+  const [type, setType] = React.useState(() => searchParams.get('type') ?? '');
   const [status, setStatus] = React.useState('');
   const [loading, setLoading] = React.useState(true);
-  const [updatingId, setUpdatingId] = React.useState<string | null>(null);
-  const [error, setError] = React.useState<string | null>(null);
-  const limit = 10;
-
-  const totalPages = Math.ceil(total / limit);
+  const [error, setError] = React.useState('');
+  const pageTitle = type ? TYPES[type] ?? 'Quản lý bài học' : 'Tất cả bài học';
+  const category = CONTENT_TYPES[type];
+  const itemName = category?.item ?? 'bài học';
 
   const load = React.useCallback(async () => {
-    setLoading(true);
-    setError(null);
+    setLoading(true); setError('');
     try {
-      const params = new URLSearchParams({
-        page: String(page),
-        limit: String(limit),
-        ...(search && { search }),
-        ...(status && { status }),
-      });
-      const res = await apiClient.get<PaginatedResponse<LessonItem>>(`/lessons?${params}`);
-      setLessons(res.data);
-      setTotal(res.meta.total);
-    } catch (e) {
-      setError(e instanceof ApiClientError ? e.message : 'Không thể tải bài học');
-    } finally {
-      setLoading(false);
-    }
-  }, [page, search, status]);
-
+      const query = new URLSearchParams({ page: String(page), limit: '10', ...(search && { search }), ...(type && { type }), ...(status && { status }) });
+      const result = await apiClient.get<PaginatedResponse<Lesson>>(`/lessons?${query}`);
+      setItems(result.data); setTotal(result.meta.total); setTotalPages(result.meta.totalPages || 1);
+    } catch (e) { setError(e instanceof ApiClientError ? e.message : 'Không thể tải danh sách bài học'); }
+    finally { setLoading(false); }
+  }, [page, search, type, status]);
   React.useEffect(() => { void load(); }, [load]);
+  React.useEffect(() => {
+    const requestedType = searchParams.get('type') ?? '';
+    if (requestedType !== type) { setType(requestedType); setPage(1); }
+  }, [searchParams]);
 
-  const updateStatus = async (lessonId: string, newStatus: string) => {
-    setUpdatingId(lessonId);
-    setError(null);
-    try {
-      await apiClient.patch(`/lessons/${lessonId}`, { status: newStatus });
-      await load();
-    } catch (e) {
-      setError(e instanceof ApiClientError ? e.message : 'Không thể cập nhật trạng thái bài học');
-    } finally {
-      setUpdatingId(null);
-    }
-  };
+  const changeStatus = async (id: string, next: string) => { try { await apiClient.patch(`/lessons/${id}`, { status: next }); await load(); } catch (e) { setError(e instanceof ApiClientError ? e.message : 'Không thể cập nhật bài học'); } };
+  const remove = async (item: Lesson) => { if (!window.confirm(`Bạn có muốn xóa bài học “${item.title}” hay không?`)) return; try { await apiClient.delete(`/lessons/${item.id}`); await load(); } catch (e) { setError(e instanceof ApiClientError ? e.message : 'Không thể xóa bài học'); } };
 
-  const removeLesson = async (lesson: LessonItem) => {
-    if (!window.confirm(`Xóa bài học “${lesson.title}”? Hành động này không thể hoàn tác.`)) return;
-    try { await apiClient.delete(`/lessons/${lesson.id}`); await load(); }
-    catch (e) { setError(e instanceof ApiClientError ? e.message : 'Không thể xóa bài học'); }
-  };
-
-  return (
-    <div>
-      <div className="flex items-start justify-between gap-4">
-        <PageHeader title="Quản lý bài học" description="Toàn bộ bài giảng và học liệu trên toàn hệ thống" />
-        <Link href="/admin/lessons/editor" className="inline-flex shrink-0 items-center gap-2 rounded-xl bg-primary px-4 py-2.5 text-sm font-semibold !text-white shadow-sm"><span className="material-symbols-outlined text-[19px]">add</span>Thêm bài học</Link>
-      </div>
-
-      {/* Filters */}
-      <div className="mt-6 flex flex-col sm:flex-row gap-3">
-        <SearchInput
-          value={searchInput}
-          onChange={setSearchInput}
-          onSearch={(sanitized) => {
-            setPage(1);
-            setSearch(sanitized);
-          }}
-          placeholder="Tìm kiếm bài học theo tiêu đề, tóm tắt..."
-          maxLength={100}
-        />
-        <select
-          value={status}
-          onChange={(e) => { setStatus(e.target.value); setPage(1); }}
-          className="rounded-xl border border-outline-variant/60 bg-surface-container-lowest px-3 py-2 text-sm text-on-surface focus:outline-none"
-        >
-          {STATUSES.map((s) => (
-            <option key={s.value} value={s.value}>{s.label}</option>
-          ))}
-        </select>
-      </div>
-
-      {/* Summary */}
-      {!loading && (
-        <p className="mt-3 text-xs text-on-surface-variant">
-          Tổng cộng {total} bài học {search && `— kết quả cho "${search}"`}
-        </p>
-      )}
-
-      {error && (
-        <div className="mt-4 p-3 rounded-xl bg-error-container text-on-error-container text-sm flex items-center gap-2">
-          <span className="material-symbols-outlined text-[18px]">error</span>
-          <span>{error}</span>
-        </div>
-      )}
-
-      {/* Table */}
-      <div className="mt-4 rounded-2xl bg-surface-container-lowest border border-outline-variant/50 overflow-hidden shadow-[0_8px_28px_rgba(15,23,42,0.04)]">
-        <div className="overflow-x-auto">
-          <table className="w-full text-sm">
-            <thead>
-              <tr className="border-b border-outline-variant/30 text-xs text-on-surface-variant bg-surface-container-low/65">
-                <th className="px-4 py-3 text-left font-medium">Tiêu đề bài giảng</th>
-                <th className="px-4 py-3 text-left font-medium">Loại bài</th>
-                <th className="px-4 py-3 text-left font-medium">Lĩnh vực</th>
-                <th className="px-4 py-3 text-left font-medium">Cấp độ</th>
-                <th className="px-4 py-3 text-left font-medium">Người tạo</th>
-                <th className="px-4 py-3 text-left font-medium">Trạng thái</th>
-                <th className="px-4 py-3 text-right font-medium">Thao tác</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-outline-variant/20">
-              {loading ? (
-                Array.from({ length: 5 }).map((_, i) => (
-                  <tr key={i}>
-                    {[1, 2, 3, 4, 5, 6].map((j) => (
-                      <td key={j} className="px-4 py-3">
-                        <div className="h-4 rounded bg-outline-variant/20 animate-pulse" />
-                      </td>
-                    ))}
-                  </tr>
-                ))
-              ) : lessons.length === 0 ? (
-                <tr>
-                  <td colSpan={7} className="py-16 text-center">
-                    <span className="material-symbols-outlined text-[40px] text-outline mb-2 block">auto_stories</span>
-                    <p className="text-on-surface-variant text-sm">Không tìm thấy bài học nào</p>
-                  </td>
-                </tr>
-              ) : (
-                lessons.map((lesson) => (
-                  <tr key={lesson.id} className="hover:bg-surface-container/50 transition-colors">
-                    <td className="px-4 py-3 max-w-xs">
-                      <p className="font-medium text-on-surface line-clamp-1">{lesson.title}</p>
-                      <p className="text-xs text-on-surface-variant mt-0.5">
-                        {lesson.estimatedMinutes ? `${lesson.estimatedMinutes} phút` : '—'}
-                      </p>
-                    </td>
-                    <td className="px-4 py-3 text-on-surface-variant">
-                      {LESSON_TYPES[lesson.type] ?? lesson.type}
-                    </td>
-                    <td className="px-4 py-3 text-on-surface-variant">{lesson.domain?.name ?? '—'}</td>
-                    <td className="px-4 py-3 text-on-surface-variant">{lesson.level?.name ?? '—'}</td>
-                    <td className="px-4 py-3 text-xs text-on-surface-variant">
-                      {lesson.createdBy?.userDetail?.displayName ?? 'Hệ thống'}
-                    </td>
-                    <td className="px-4 py-3">
-                      <StatusBadge status={lesson.status} />
-                    </td>
-                    <td className="px-4 py-3">
-                      <div className="flex justify-end items-center gap-1">
-                        {lesson.status === 'draft' && (
-                          <button
-                            type="button"
-                            title="Xuất bản bài học"
-                            disabled={updatingId === lesson.id}
-                            onClick={() => void updateStatus(lesson.id, 'published')}
-                            className="rounded-lg p-2 text-green-700 hover:bg-green-100 disabled:opacity-40 transition-colors"
-                          >
-                            <span className="material-symbols-outlined text-[18px]">publish</span>
-                          </button>
-                        )}
-                        {lesson.status === 'published' && (
-                          <>
-                            <button
-                              type="button"
-                              title="Chuyển về bản nháp"
-                              disabled={updatingId === lesson.id}
-                              onClick={() => void updateStatus(lesson.id, 'draft')}
-                              className="rounded-lg p-2 text-amber-700 hover:bg-amber-100 disabled:opacity-40 transition-colors"
-                            >
-                              <span className="material-symbols-outlined text-[18px]">edit_note</span>
-                            </button>
-                            <button
-                              type="button"
-                              title="Chuyển vào lưu trữ"
-                              disabled={updatingId === lesson.id}
-                              onClick={() => void updateStatus(lesson.id, 'archived')}
-                              className="rounded-lg p-2 text-gray-500 hover:bg-gray-200 disabled:opacity-40 transition-colors"
-                            >
-                              <span className="material-symbols-outlined text-[18px]">archive</span>
-                            </button>
-                          </>
-                        )}
-                        {lesson.status === 'archived' && (
-                          <>
-                            <button
-                              type="button"
-                              title="Xuất bản lại bài học"
-                              disabled={updatingId === lesson.id}
-                              onClick={() => void updateStatus(lesson.id, 'published')}
-                              className="rounded-lg p-2 text-green-700 hover:bg-green-100 disabled:opacity-40 transition-colors"
-                            >
-                              <span className="material-symbols-outlined text-[18px]">publish</span>
-                            </button>
-                            <button
-                              type="button"
-                              title="Khôi phục về bản nháp"
-                              disabled={updatingId === lesson.id}
-                              onClick={() => void updateStatus(lesson.id, 'draft')}
-                              className="rounded-lg p-2 text-amber-700 hover:bg-amber-100 disabled:opacity-40 transition-colors"
-                            >
-                              <span className="material-symbols-outlined text-[18px]">edit_note</span>
-                            </button>
-                          </>
-                        )}
-                        <Link
-                          href={`/admin/lessons/editor?id=${lesson.id}`}
-                          title="Sửa bài học"
-                          className="rounded-lg p-2 text-primary hover:bg-primary/10 transition-colors"
-                        >
-                          <span className="material-symbols-outlined text-[18px]">edit</span>
-                        </Link>
-                        <button
-                          type="button"
-                          title="Xóa bài học"
-                          disabled={updatingId === lesson.id}
-                          onClick={() => void removeLesson(lesson)}
-                          className="rounded-lg p-2 text-error hover:bg-error-container disabled:opacity-40 transition-colors"
-                        >
-                          <span className="material-symbols-outlined text-[18px]">delete</span>
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                ))
-              )}
-            </tbody>
-          </table>
-        </div>
-
-        {/* Pagination */}
-        {totalPages > 1 && (
-          <Pagination
-            className="border-t border-outline-variant/30"
-            page={page}
-            limit={limit}
-            total={total}
-            totalPages={totalPages}
-            onPageChange={setPage}
-            showQuickJumper
-          />
-        )}
-      </div>
+  return <div>
+    <div className="flex items-start justify-between gap-4"><PageHeader icon={category?.icon} iconClassName={category?.iconClassName} title={pageTitle} description={category?.description ?? 'Quản lý các loại nội dung học tập'} /><Link href={`/admin/lessons/editor${type ? `?type=${type}` : ''}`} className="inline-flex items-center gap-2 rounded-xl bg-primary px-4 py-2.5 text-sm font-semibold !text-white"><span className="material-symbols-outlined text-[19px]">add</span>Thêm {itemName}</Link></div>
+    <div className="mt-6 grid gap-3 md:grid-cols-[minmax(280px,1fr)_220px_190px]">
+      <SearchInput value={searchInput} onChange={setSearchInput} onSearch={value => { setSearch(value); setPage(1); }} placeholder="Tìm theo tiêu đề, tóm tắt..." />
+      <select value={type} onChange={e => { setType(e.target.value); setPage(1); }} className="rounded-xl border border-outline-variant bg-surface-container-lowest px-3 text-sm"><option value="">Tất cả loại bài học</option>{Object.entries(TYPES).map(([value, label]) => <option key={value} value={value}>{label}</option>)}</select>
+      <select value={status} onChange={e => { setStatus(e.target.value); setPage(1); }} className="rounded-xl border border-outline-variant bg-surface-container-lowest px-3 text-sm"><option value="">Tất cả trạng thái</option>{Object.entries(STATUS).map(([value, label]) => <option key={value} value={value}>{label}</option>)}</select>
     </div>
-  );
+    {error && <div className="mt-4 rounded-xl bg-error-container p-3 text-sm text-on-error-container">{error}</div>}
+    {category ? <div className="mt-5 space-y-4">
+      {loading ? <p role="status" className="py-12 text-center">Đang tải nội dung...</p> : error ? null : !items.length ? <p className="py-12 text-center text-on-surface-variant">Chưa có {itemName} phù hợp.</p> : items.map(item => <article key={item.id} className="rounded-2xl border border-outline-variant/50 bg-white p-5 shadow-sm">
+        <div className="mb-4 flex flex-wrap items-center gap-3 text-xs text-on-surface-variant"><span>{item.level.name}</span><span>{item.estimatedMinutes} phút</span><span>{item._count?.sections ?? 0} khối nội dung</span><StatusBadge status={item.status} /></div>
+        <ContentPreview item={item} />
+        <div className="mt-5 flex flex-wrap items-center justify-between gap-3 border-t border-outline-variant/40 pt-4"><span className="text-sm text-on-surface-variant">{item.domain.name}</span><div className="flex flex-wrap gap-2"><Link href={`/admin/lessons/editor?id=${item.id}`} className="rounded-lg bg-primary px-4 py-2 text-sm font-semibold !text-white">Biên soạn {category.item}</Link><button onClick={() => void changeStatus(item.id, item.status === 'published' ? 'archived' : 'published')} className="rounded-lg border border-outline-variant px-3 py-2 text-sm text-on-surface">{item.status === 'published' ? 'Lưu trữ' : 'Xuất bản'}</button><button onClick={() => void remove(item)} className="rounded-lg px-3 py-2 text-sm text-error">Xóa</button></div></div>
+      </article>)}
+    </div> : (
+    <div className="mt-4 overflow-hidden rounded-2xl border border-outline-variant/50 bg-surface-container-lowest"><div className="overflow-x-auto"><table className="w-full table-fixed text-left text-sm"><colgroup><col className="w-[30%]" /><col className="w-[11%]" /><col className="w-[13%]" /><col className="w-[10%]" /><col className="w-[8%]" /><col className="w-[12%]" /><col className="w-[16%]" /></colgroup><thead className="bg-surface-container-low"><tr>{[type ? `Tên ${itemName}` : 'Bài học','Loại nội dung','Lĩnh vực','Trình độ','Thời lượng','Trạng thái','Thao tác'].map(x => <th key={x} className="px-4 py-3 font-semibold">{x}</th>)}</tr></thead><tbody className="divide-y divide-outline-variant/30">
+      {loading ? <tr><td colSpan={7} className="px-4 py-12 text-center text-on-surface-variant">Đang tải bài học...</td></tr> : items.length === 0 ? <tr><td colSpan={7} className="px-4 py-14 text-center text-on-surface-variant">Chưa có bài học phù hợp bộ lọc.</td></tr> : items.map(item => <tr key={item.id} className="hover:bg-surface-container-low/60"><td className="min-w-0 px-4 py-3"><p className="truncate font-semibold" title={item.title}>{item.title}</p><p className="mt-1 truncate text-xs text-on-surface-variant" title={item.summary}>{item.summary}</p></td><td className="px-4 py-3">{TYPES[item.type] ?? item.type}</td><td className="px-4 py-3">{item.domain.name}</td><td className="px-4 py-3">{item.level.name}</td><td className="whitespace-nowrap px-4 py-3">{item.estimatedMinutes} phút</td><td className="whitespace-nowrap px-4 py-3"><StatusBadge status={item.status} /></td><td className="px-4 py-3"><div className="flex items-center justify-end gap-1"><Link title="Chỉnh sửa" href={`/admin/lessons/editor?id=${item.id}`} className="rounded-lg p-2 text-primary hover:bg-primary/10"><span className="material-symbols-outlined text-[18px]">edit</span></Link><button title={item.status === 'published' ? 'Lưu trữ' : 'Xuất bản'} onClick={() => void changeStatus(item.id, item.status === 'published' ? 'archived' : 'published')} className="rounded-lg p-2 text-emerald-700 hover:bg-emerald-50"><span className="material-symbols-outlined text-[18px]">{item.status === 'published' ? 'archive' : 'publish'}</span></button><button title="Xóa" onClick={() => void remove(item)} className="rounded-lg p-2 text-error hover:bg-error-container"><span className="material-symbols-outlined text-[18px]">delete</span></button></div></td></tr>)}</tbody></table></div></div>
+    )}
+    <div className="mt-5"><Pagination page={page} limit={10} total={total} totalPages={totalPages} onPageChange={setPage} /></div>
+  </div>;
 }

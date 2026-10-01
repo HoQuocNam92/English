@@ -6,9 +6,12 @@ import { RouteGuard } from '@/shared/layout/RouteGuard';
 import { useAuth } from '@/features/auth/presentation';
 
 const TEACHER_ROUTES = [
-  '/admin/dashboard', '/admin/learning-content', '/admin/lessons',
+  '/admin/dashboard', '/admin/learning-content',
+  '/admin/lessons',
   '/admin/questions', '/admin/tests',
   '/admin/test-results', '/admin/progress',
+  '/admin/learner-groups',
+  '/admin/search',
 ];
 
 function AdminRoleBoundary({ children }: { children: React.ReactNode }) {

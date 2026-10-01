@@ -23,6 +23,14 @@ export class LearnerProfilesController {
   @ApiOperation({ summary: 'Get my learner profile' })
   getMe(@CurrentUser() u: JwtPayload) { return this.svc.findByUser(u.sub) }
 
+  @Get('me/journey')
+  @ApiOperation({ summary: 'Get configured learning journey targets and current progress' })
+  getMyJourney(@CurrentUser() u: JwtPayload) { return this.svc.getJourney(u.sub) }
+
+  @Get('me/placement-exam')
+  @ApiOperation({ summary: 'Find a placement exam matching the selected path' })
+  getPlacementExam(@CurrentUser() u: JwtPayload) { return this.svc.findPlacementExam(u.sub) }
+
   @Put('me')
   @ApiOperation({ summary: 'Update my learner profile' })
   updateMe(@CurrentUser() u: JwtPayload, @Body() dto: UpdateLearnerProfileDto) {
@@ -35,6 +43,13 @@ export class LearnerProfilesController {
     return this.svc.updateGoals(u.sub, dto)
   }
 
+  @Put(':userId/goals')
+  @RequirePermissions('users:manage')
+  @ApiOperation({ summary: 'Update a learner level, domains, career goals, and certificate goals (admin)' })
+  updateLearnerGoals(@Param('userId') userId: string, @Body() dto: UpdateLearnerGoalsDto) {
+    return this.svc.updateGoals(userId, dto)
+  }
+
   @Put('me/domains')
   @ApiOperation({ summary: 'Update my domain interests' })
   updateDomains(@CurrentUser() u: JwtPayload, @Body() body: { domainCodes: string[] }) {
@@ -43,7 +58,7 @@ export class LearnerProfilesController {
 
   @Post('me/complete-onboarding')
   @HttpCode(HttpStatus.OK)
-  @ApiOperation({ summary: 'Complete onboarding — lưu level, domain, career goal, chứng chỉ mục tiêu' })
+  @ApiOperation({ summary: 'Complete onboarding — lưu level, domain và chứng chỉ mục tiêu' })
   completeOnboarding(@CurrentUser() u: JwtPayload, @Body() dto: CompleteOnboardingDto) {
     return this.svc.completeOnboarding(u.sub, dto)
   }

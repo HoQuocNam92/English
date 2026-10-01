@@ -19,6 +19,10 @@ export default function AdminStudentDetailPage({
   const [loading, setLoading] = React.useState(true);
   const [error, setError] = React.useState<string | null>(null);
   const [selectedAttemptId, setSelectedAttemptId] = React.useState<string | null>(null);
+  const [editingGoals, setEditingGoals] = React.useState(false);
+  const [savingGoals, setSavingGoals] = React.useState(false);
+  const [goalOptions, setGoalOptions] = React.useState<{ levels: any[]; domains: any[]; certificates: any[]; careerGoals: any[] }>({ levels: [], domains: [], certificates: [], careerGoals: [] });
+  const [goalForm, setGoalForm] = React.useState({ levelCode: '', domainCodes: [] as string[], certificateCodes: [] as string[], careerGoalCodes: [] as string[] });
 
   React.useEffect(() => {
     if (!studentId) return;
@@ -57,15 +61,39 @@ export default function AdminStudentDetailPage({
     };
   }, [studentId]);
 
+  const openGoalEditor = async () => {
+    setError(null);
+    setGoalForm({ levelCode: student?.learnerProfile?.level ?? '', domainCodes: student?.learnerProfile?.domains ?? [], certificateCodes: student?.learnerProfile?.certGoals ?? [], careerGoalCodes: student?.learnerProfile?.careerGoals ?? [] });
+    setEditingGoals(true);
+    try {
+      const [levelsResult, domainsResult, certificatesResult, careerGoalsResult] = await Promise.all([
+        apiClient.get<any>('/levels'), apiClient.get<any>('/domains'), apiClient.get<any>('/certificates'), apiClient.get<any>('/career-goals'),
+      ]);
+      setGoalOptions({ levels: levelsResult?.data ?? levelsResult ?? [], domains: domainsResult?.data ?? domainsResult ?? [], certificates: certificatesResult?.data ?? certificatesResult ?? [], careerGoals: careerGoalsResult?.data ?? careerGoalsResult ?? [] });
+    } catch (cause) { setError(cause instanceof ApiClientError ? cause.message : 'Không thể tải đầy đủ danh mục hồ sơ học tập'); }
+  };
+
+  const saveGoals = async () => {
+    setSavingGoals(true); setError(null);
+    try {
+      await apiClient.put(`/learner-profiles/${studentId}/goals`, goalForm);
+      const refreshed: any = await apiClient.get(`/users/${studentId}`);
+      setStudent(refreshed?.data ?? refreshed);
+      setEditingGoals(false);
+    } catch (cause) { setError(cause instanceof ApiClientError ? cause.message : 'Không thể cập nhật mục tiêu học tập'); }
+    finally { setSavingGoals(false); }
+  };
+
   const displayName = student?.displayName || student?.email || 'Học viên';
   const email = student?.email || '';
   const status = student?.status || 'active';
   const level = student?.learnerProfile?.level || 'Chưa thiết lập';
   const domains = student?.learnerProfile?.domains ?? [];
-  const careerGoals = student?.learnerProfile?.careerGoals ?? [];
   const certGoals = student?.learnerProfile?.certGoals ?? [];
   const createdAt = student?.createdAt ? new Date(student.createdAt).toLocaleDateString('vi-VN') : '—';
-  const lastLogin = student?.lastLoginAt ? new Date(student.lastLoginAt).toLocaleString('vi-VN') : 'Chưa ghi nhận';
+  const lastLogin = student?.lastLoginAt
+    ? `${new Date(student.lastLoginAt).toLocaleDateString('vi-VN')} ${new Date(student.lastLoginAt).toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' })}`
+    : 'Chưa ghi nhận';
 
   const summary = progressData?.summary;
   const completedLessons = summary?.completedLessons ?? 0;
@@ -149,12 +177,11 @@ export default function AdminStudentDetailPage({
                     ))}
                 </div>
 
-                {careerGoals.length > 0 && (
-                  <div className="mb-4 text-xs text-on-surface-variant">
-                    <span className="font-medium text-on-surface">Mục tiêu: </span>
-                    {careerGoals.join(', ')}
-                  </div>
-                )}
+                <button type="button" onClick={() => void openGoalEditor()} className="inline-flex items-center gap-2 rounded-xl border border-primary px-4 py-2 text-sm font-bold text-primary hover:bg-primary/5">
+                  <span className="material-symbols-outlined text-[18px]">edit</span>
+                  Chỉnh sửa hồ sơ học tập
+                </button>
+
               </div>
 
               <div className="mt-4 pt-4 border-t border-outline-variant space-y-3">
@@ -370,6 +397,18 @@ export default function AdminStudentDetailPage({
                 </ul>
               )}
             </div>
+          </div>
+        </div>
+      )}
+      {editingGoals && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4" role="dialog" aria-modal="true" aria-label="Chỉnh sửa hồ sơ học tập">
+          <div className="max-h-[90vh] w-full max-w-2xl overflow-y-auto rounded-2xl bg-white p-6 shadow-2xl">
+            <div className="flex items-start justify-between gap-4"><div><h2 className="text-xl font-bold">Chỉnh sửa hồ sơ học tập</h2><p className="mt-1 text-sm text-on-surface-variant">Cập nhật trình độ, lĩnh vực quan tâm và mục tiêu chứng chỉ.</p></div><button type="button" onClick={() => setEditingGoals(false)} aria-label="Đóng"><span className="material-symbols-outlined">close</span></button></div>
+            <label className="mt-6 block text-sm font-bold">Trình độ tiếng Anh<select value={goalForm.levelCode} onChange={event => setGoalForm(current => ({ ...current, levelCode: event.target.value }))} className="mt-2 h-11 w-full rounded-xl border border-outline-variant bg-white px-3 font-normal"><option value="">Chọn trình độ</option>{goalOptions.levels.map(item => <option key={item.id} value={item.code}>{item.name}</option>)}</select></label>
+            <fieldset className="mt-5"><legend className="text-sm font-bold">Lĩnh vực CNTT quan tâm</legend><div className="mt-2 grid gap-2 rounded-xl border border-outline-variant p-4 sm:grid-cols-2">{goalOptions.domains.map(item => <label key={item.id} className="flex items-center gap-2 text-sm"><input type="checkbox" checked={goalForm.domainCodes.includes(item.code)} onChange={event => setGoalForm(current => ({ ...current, domainCodes: event.target.checked ? [...current.domainCodes, item.code] : current.domainCodes.filter(code => code !== item.code) }))} className="accent-primary" />{item.name}</label>)}</div></fieldset>
+            <fieldset className="mt-5"><legend className="text-sm font-bold">Mục tiêu nghề nghiệp</legend><div className="mt-2 grid gap-2 rounded-xl border border-outline-variant p-4 sm:grid-cols-2">{goalOptions.careerGoals.map(item => <label key={item.id} className="flex items-center gap-2 text-sm"><input type="checkbox" checked={goalForm.careerGoalCodes.includes(item.code)} onChange={event => setGoalForm(current => ({ ...current, careerGoalCodes: event.target.checked ? [...current.careerGoalCodes, item.code] : current.careerGoalCodes.filter(code => code !== item.code) }))} className="accent-primary" />{item.name}</label>)}</div></fieldset>
+            <fieldset className="mt-5"><legend className="text-sm font-bold">Mục tiêu chứng chỉ</legend><div className="mt-2 grid gap-2 rounded-xl border border-outline-variant p-4 sm:grid-cols-2">{goalOptions.certificates.map(item => <label key={item.id} className="flex items-center gap-2 text-sm"><input type="checkbox" checked={goalForm.certificateCodes.includes(item.code)} onChange={event => setGoalForm(current => ({ ...current, certificateCodes: event.target.checked ? [...current.certificateCodes, item.code] : current.certificateCodes.filter(code => code !== item.code) }))} className="accent-primary" />{item.code} - {item.name}</label>)}</div></fieldset>
+            <div className="mt-6 flex justify-end gap-3"><button type="button" onClick={() => setEditingGoals(false)} className="rounded-xl border border-outline-variant px-4 py-2.5 text-sm font-bold">Hủy</button><button type="button" disabled={savingGoals} onClick={() => void saveGoals()} className="rounded-xl bg-primary px-5 py-2.5 text-sm font-bold text-white disabled:opacity-60">{savingGoals ? 'Đang lưu...' : 'Lưu hồ sơ'}</button></div>
           </div>
         </div>
       )}

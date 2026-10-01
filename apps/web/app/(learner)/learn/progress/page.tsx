@@ -1,153 +1,47 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { LearnerShell } from '@/shared/layout';
 import { apiClient } from '@/shared/api/api-client';
 import { LoadingSpinner } from '@/shared/ui';
+import { progressViewModel, type ProgressMilestone, type ProgressPayload } from '@techenglish/shared-kernel';
 
-export default function LearnerPersonalProgressPage() {
-  const [data, setData] = useState<any>({ progress: null, profile: null });
+const styles = {
+  violet: { card: 'from-violet-50 to-indigo-50 border-violet-200', icon: 'from-violet-400 to-indigo-600', bar: 'from-violet-500 to-indigo-600', text: 'text-violet-700' },
+  blue: { card: 'from-sky-50 to-blue-50 border-blue-200', icon: 'from-sky-400 to-blue-600', bar: 'from-sky-400 to-blue-600', text: 'text-blue-700' },
+  fuchsia: { card: 'from-fuchsia-50 to-purple-50 border-fuchsia-200', icon: 'from-fuchsia-400 to-purple-600', bar: 'from-fuchsia-500 to-purple-600', text: 'text-fuchsia-700' },
+  orange: { card: 'from-orange-50 to-rose-50 border-orange-200', icon: 'from-orange-400 to-rose-500', bar: 'from-orange-400 to-rose-500', text: 'text-orange-700' },
+  amber: { card: 'from-amber-50 to-yellow-50 border-amber-200', icon: 'from-amber-400 to-orange-500', bar: 'from-amber-400 to-orange-500', text: 'text-amber-700' },
+};
+
+export default function LearnerProgressPage() {
+  const [data, setData] = useState<ProgressPayload | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
   useEffect(() => {
-    async function loadData() {
-      try {
-        const [progressResult, profileResult] = await Promise.allSettled([
-          apiClient.get('/progress/me'),
-          apiClient.get('/learner-profiles/me')
-        ]);
-
-        const progress = progressResult.status === 'fulfilled' ? progressResult.value : null;
-        const profile = profileResult.status === 'fulfilled' ? profileResult.value : null;
-
-        setData({ progress, profile });
-      } catch (err) {
-        setError('Failed to load progress data');
-      } finally {
-        setLoading(false);
-      }
-    }
-    loadData();
+    apiClient.get<ProgressPayload>('/progress/me').then(setData).catch(error => setError(error instanceof Error ? error.message : 'Không thể tải tiến độ học tập.')).finally(() => setLoading(false));
   }, []);
 
   if (loading) return <LearnerShell><LoadingSpinner /></LearnerShell>;
-  if (error) return <LearnerShell><div className="p-8 text-center text-error">{error}</div></LearnerShell>;
+  if (error) return <LearnerShell><div className="rounded-2xl border border-red-200 bg-red-50 p-6 text-center text-sm text-red-700">{error}</div></LearnerShell>;
 
-  const { progress, profile } = data;
-  const overallCompletion = progress?.summary?.overallCompletionPercent ?? 0;
-  const certGoal = profile?.certGoals?.[0]?.certificate?.name || null;
-  const hasCertGoal = Boolean(certGoal);
-  const certProgressList = progress?.certProgress || [];
-  const activeCertProg = certProgressList.find(
-    (cp: any) => cp.certificateName === certGoal || cp.certificateId === profile?.certGoals?.[0]?.certificateId
-  );
-  const displayPercent = hasCertGoal
-    ? (activeCertProg?.completionPercent ?? overallCompletion)
-    : overallCompletion;
+  const view = progressViewModel(data);
+  const { milestones, recentAttempts, overallPercent, includesVocabulary, includesCertification } = view;
+  const game = view;
 
-  const domains = profile?.domains || [];
-  const recentAttempts = progress?.recentAttempts || [];
+  return <LearnerShell><div className="mx-auto flex w-full max-w-6xl flex-col gap-7 pb-10">
+    <header className="flex flex-col justify-between gap-4 sm:flex-row sm:items-end"><div><p className="text-xs font-black uppercase tracking-[0.18em] text-primary">Hành trình của bạn</p><h1 className="mt-1 text-3xl font-black tracking-tight text-on-surface">Milestone học tập</h1><p className="mt-2 text-sm text-on-surface-variant">Học đều mỗi ngày, mở khóa thành tích và chinh phục lộ trình của bạn.</p></div><div className="flex gap-3"><SummaryPill icon="⚡" value={`${game.totalXp} XP`} label="Điểm thành tích" /><SummaryPill icon="🔥" value={`${game.studyStreak} ngày`} label="Chuỗi hiện tại" /></div></header>
 
-  return (
-    <LearnerShell>
-      <div className="flex flex-col gap-6">
-        {/* Header */}
-        <div>
-          <h2 className="text-2xl font-bold text-on-surface tracking-tight">Báo cáo Năng lực & Tiến độ Cá nhân</h2>
-          <p className="text-sm text-on-surface-variant mt-1">
-            Theo dõi sự tiến bộ, tỷ lệ ghi nhớ thuật ngữ và kết quả học tập của bạn.
-          </p>
-        </div>
+    <section className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-indigo-600 via-violet-600 to-fuchsia-600 p-6 text-white shadow-lg sm:p-8"><div className="absolute -right-12 -top-16 h-52 w-52 rounded-full bg-white/10" /><div className="absolute -bottom-20 left-1/3 h-44 w-44 rounded-full bg-fuchsia-300/20" /><div className="relative flex flex-col justify-between gap-6 sm:flex-row sm:items-center"><div><p className="text-sm font-bold text-white/80">Tiến độ thành tích</p><p className="mt-1 text-4xl font-black">{game.unlockedCount}/{game.totalMilestones}</p><p className="mt-2 text-sm text-white/80">milestone đã được mở khóa</p></div><div className="w-full max-w-xl"><div className="mb-2 flex justify-between text-xs font-bold"><span>Cấp độ hành trình</span><span>{overallPercent}%</span></div><div className="h-4 overflow-hidden rounded-full bg-black/20 p-1"><div className="h-full rounded-full bg-gradient-to-r from-amber-300 to-yellow-200 transition-all duration-700" style={{ width: `${overallPercent}%` }} /></div><p className="mt-3 text-xs text-white/75">Mỗi milestone mở khóa sẽ cộng XP và đánh dấu một cột mốc mới.</p></div></div></section>
 
-        {/* Certificate Readiness Hero Card */}
-        <div className="p-8 rounded-2xl bg-surface-container-lowest border border-outline-variant/40 shadow-2xs space-y-4">
-          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
-            <div>
-              <div className="flex items-center gap-2 mb-1">
-                <span className="px-2.5 py-0.5 rounded text-[11px] font-bold bg-amber-100 text-amber-900 border border-amber-300">
-                  MỤC TIÊU
-                </span>
-                <span className="text-xs font-semibold text-primary">
-                  {hasCertGoal ? certGoal : 'Chưa thiết lập mục tiêu'}
-                </span>
-              </div>
-              <h3 className="text-xl font-extrabold text-on-surface">
-                {hasCertGoal ? `Độ sẵn sàng chứng chỉ: ${displayPercent}%` : `Tiến độ học tập bài học: ${displayPercent}%`}
-              </h3>
-              <p className="text-xs text-on-surface-variant mt-1">
-                {hasCertGoal
-                  ? `Độ hoàn thiện bài học và ôn luyện chuẩn bị cho chứng chỉ ${certGoal}.`
-                  : 'Tỷ lệ hoàn thành các bài học bạn đã tham gia. Độ sẵn sàng cho từng bài thi sẽ được tính riêng theo chuyên đề bài thi đó.'}
-              </p>
-            </div>
-            {!hasCertGoal && (
-              <Link
-                href="/learn/profile"
-                className="text-xs font-semibold text-primary hover:underline flex items-center gap-1"
-              >
-                <span>Thiết lập mục tiêu</span>
-                <span className="material-symbols-outlined text-[14px]">arrow_forward</span>
-              </Link>
-            )}
-          </div>
+    <section><div className="mb-4 flex items-center justify-between"><div><h2 className="text-xl font-black text-on-surface">Thử thách milestone</h2><p className="mt-1 text-xs text-on-surface-variant">Hoàn thành theo bất kỳ thứ tự nào phù hợp với lộ trình học của bạn.</p></div><span className="hidden rounded-full bg-emerald-50 px-3 py-1 text-xs font-bold text-emerald-700 sm:inline">🎮 Game hóa đang bật</span></div><div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">{milestones.map(m => { const s = styles[m.color]; return <article key={m.id} className={`relative overflow-hidden rounded-2xl border bg-gradient-to-br p-5 transition-all hover:-translate-y-1 hover:shadow-md ${s.card} ${m.unlocked ? 'ring-2 ring-emerald-300/70' : ''}`}>{m.unlocked && <span className="absolute right-3 top-3 rounded-full bg-emerald-500 px-2 py-1 text-[10px] font-black text-white">✓ ĐÃ MỞ KHÓA</span>}<div className={`flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br text-3xl shadow-sm ${s.icon}`}>{m.icon}</div><h3 className="mt-4 text-base font-black text-on-surface">{m.title}</h3><p className="mt-1 min-h-9 text-xs leading-relaxed text-on-surface-variant">{m.description}</p><div className="mt-5 flex items-center justify-between text-xs font-bold"><span className={s.text}>{m.current}/{m.target}</span><span className="rounded-full bg-white/80 px-2 py-1 text-amber-700">⚡ +{m.xp} XP</span></div><div className="mt-2 h-2.5 overflow-hidden rounded-full bg-white/80"><div className={`h-full rounded-full bg-gradient-to-r transition-all duration-700 ${s.bar}`} style={{ width: `${m.progressPercent}%` }} /></div></article>; })}</div></section>
 
-          <div className="w-full h-3 rounded-full bg-surface-container overflow-hidden">
-            <div
-              className="h-full rounded-full bg-primary transition-all duration-300"
-              style={{ width: `${displayPercent}%` }}
-            />
-          </div>
-        </div>
+    <section className={`grid gap-5 ${includesCertification ? 'lg:grid-cols-[1fr_360px]' : ''}`}><div className="rounded-2xl border border-outline-variant/50 bg-white p-6"><h2 className="text-base font-black text-on-surface">Bước tiếp theo</h2><p className="mt-1 text-xs text-on-surface-variant">Tiếp tục hướng học đã chọn để tăng tiến độ milestone.</p><div className={`mt-5 grid gap-3 ${includesVocabulary && includesCertification ? 'sm:grid-cols-2' : ''}`}>{includesVocabulary && <Link href="/learn/flashcards" className="rounded-xl bg-gradient-to-r from-sky-500 to-blue-600 p-4 text-white transition-transform hover:scale-[1.02]"><span className="text-2xl">📚</span><strong className="mt-2 block text-sm">Học từ vựng CNTT</strong><span className="mt-1 block text-xs text-white/80">Tăng milestone số từ và chuỗi ngày học</span></Link>}{includesCertification && <Link href="/learn/certifications" className="rounded-xl bg-gradient-to-r from-violet-500 to-fuchsia-600 p-4 text-white transition-transform hover:scale-[1.02]"><span className="text-2xl">🏆</span><strong className="mt-2 block text-sm">Luyện chứng chỉ</strong><span className="mt-1 block text-xs text-white/80">Làm quiz và hoàn thành domain</span></Link>}</div></div>{includesCertification && <div className="rounded-2xl border border-outline-variant/50 bg-white p-6"><h2 className="text-base font-black text-on-surface">Quiz chứng chỉ gần đây</h2><div className="mt-4 space-y-3">{recentAttempts.length ? recentAttempts.slice(0, 3).map((attempt: any) => <div key={attempt.id} className="flex items-center gap-3 rounded-xl bg-surface-container-low p-3"><span className="text-xl">🧠</span><div className="min-w-0 flex-1"><p className="truncate text-xs font-bold text-on-surface">{attempt.exam?.title}</p><p className="mt-0.5 text-[11px] text-on-surface-variant">{attempt.passed ? 'Đã đạt' : 'Đã hoàn thành'}</p></div><strong className={attempt.passed ? 'text-emerald-600' : 'text-primary'}>{Math.round(attempt.scorePercent ?? 0)}%</strong></div>) : <p className="rounded-xl bg-surface-container-low p-4 text-center text-xs text-on-surface-variant">Chưa có quiz nào được hoàn thành.</p>}</div></div>}</section>
+  </div></LearnerShell>;
+}
 
-        {/* 2-Column Skills & Pathways */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-          {/* Domain Skills (7 cols) */}
-          <div className="lg:col-span-7 p-6 rounded-2xl bg-surface-container-lowest border border-outline-variant/40 shadow-2xs space-y-4">
-            <h3 className="text-sm font-bold text-on-surface">Độ thành thạo theo chuyên ngành</h3>
-            <div className="space-y-4">
-              {domains.length > 0 ? (
-                domains.map((d: any, idx: number) => (
-                  <div key={idx} className="space-y-1.5">
-                    <div className="flex justify-between text-xs">
-                      <span className="font-semibold text-on-surface">
-                        {d.domain?.name} ({d.domain?.code})
-                      </span>
-                    </div>
-                  </div>
-                ))
-              ) : (
-                <p className="text-xs text-slate-500">Chưa có dữ liệu chuyên ngành.</p>
-              )}
-            </div>
-          </div>
-
-          {/* Recent Exam Attempts (5 cols) */}
-          <div className="lg:col-span-5 p-6 rounded-2xl bg-surface-container-lowest border border-outline-variant/40 shadow-2xs space-y-4">
-            <h3 className="text-sm font-bold text-on-surface">Kết quả thi gần đây</h3>
-            <div className="space-y-2.5 text-xs">
-              {recentAttempts.length > 0 ? (
-                recentAttempts.map((attempt: any, idx: number) => (
-                  <div
-                    key={idx}
-                    className="flex items-center gap-3 p-3 rounded-xl bg-surface-bright border border-outline-variant/30"
-                  >
-                    <span className="flex-1 font-semibold text-on-surface">
-                      Bài thi #{attempt.exam?.title || attempt.examId || idx + 1}
-                    </span>
-                    <span className={`font-bold ${attempt.passed ? 'text-green-600' : 'text-red-500'}`}>
-                      {Math.round(attempt.scorePercent ?? 0)}%
-                    </span>
-                  </div>
-                ))
-              ) : (
-                <p className="text-slate-500">Chưa có dữ liệu bài thi.</p>
-              )}
-            </div>
-          </div>
-        </div>
-      </div>
-    </LearnerShell>
-  );
+function SummaryPill({ icon, value, label }: { icon: string; value: string; label: string }) {
+  return <div className="flex items-center gap-2 rounded-2xl border border-outline-variant/50 bg-white px-4 py-2 shadow-xs"><span className="text-xl">{icon}</span><span><strong className="block text-sm text-on-surface">{value}</strong><span className="block text-[10px] text-on-surface-variant">{label}</span></span></div>;
 }
