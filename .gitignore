@@ -11,3 +11,5 @@ build/
 !.env.local.example
 google-services.json
 GoogleService-Info.plist
+
+!.env.compose.example

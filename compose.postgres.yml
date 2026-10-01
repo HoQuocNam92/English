@@ -1,0 +1,81 @@
+# Connect to existing PostgreSQL. No database creation or automatic migrations.
+name: techenglish
+services:
+  api:
+    image: ${API_IMAGE:-techenglish-api:local}
+    build:
+      context: .
+      target: api
+    restart: unless-stopped
+    env_file:
+    - path: apps/api/.env
+      required: false
+    environment:
+      NODE_ENV: production
+      DATABASE_URL: ${DATABASE_URL:?Set the existing PostgreSQL connection URL}
+      JWT_SECRET: ${JWT_SECRET:?Set JWT_SECRET in .env.compose}
+      HOST: 0.0.0.0
+      PORT: 8080
+      API_PUBLIC_URL: ${API_PUBLIC_URL:-http://localhost:8080}
+      GOOGLE_CALLBACK_URL: ${GOOGLE_CALLBACK_URL:-http://localhost:8080/api/v1/auth/google/callback}
+      SMTP_HOST: ${SMTP_HOST:-localhost}
+      SMTP_PORT: ${SMTP_PORT:-587}
+      SMTP_FROM: ${SMTP_FROM:-TechEnglish <no-reply@example.com>}
+      WEB_URL: ${WEB_URL:-http://localhost:3000}
+      CORS_ORIGIN: ${CORS_ORIGIN:-http://localhost:3000}
+    ports:
+    - ${API_PORT:-8080}:8080
+    healthcheck:
+      test:
+      - CMD
+      - node
+      - -e
+      - fetch('http://127.0.0.1:8080/api/docs-json').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))
+      interval: 15s
+      timeout: 5s
+      start_period: 30s
+      retries: 5
+    extra_hosts:
+    - host.docker.internal:host-gateway
+  web:
+    image: ${WEB_IMAGE:-techenglish-web:local}
+    build:
+      context: .
+      target: web
+      args:
+        NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-http://localhost:8080/api/v1}
+    restart: unless-stopped
+    ports:
+    - ${WEB_PORT:-3000}:3000
+    depends_on:
+      api:
+        condition: service_healthy
+    healthcheck:
+      test:
+      - CMD
+      - node
+      - -e
+      - fetch('http://127.0.0.1:3000/login').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))
+      interval: 15s
+      timeout: 5s
+      start_period: 30s
+      retries: 5
+  mobile:
+    profiles:
+    - mobile
+    build:
+      context: .
+      target: mobile
+    environment:
+      EXPO_PUBLIC_API_URL: ${EXPO_PUBLIC_API_URL:-http://10.0.2.2:8080/api/v1}
+      REACT_NATIVE_PACKAGER_HOSTNAME: ${MOBILE_LAN_HOST:-localhost}
+    env_file:
+    - path: apps/mobile/.env
+      required: false
+    ports:
+    - 8081:8081
+    stdin_open: true
+    tty: true
+    depends_on:
+      api:
+        condition: service_healthy

@@ -1,0 +1,105 @@
+name: techenglish
+services:
+  db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: techenglish
+      POSTGRES_USER: techenglish
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in .env.compose}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U techenglish -d techenglish"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+  migrate:
+    image: ${API_IMAGE:-techenglish-api:local}
+    build:
+      context: .
+      target: api
+    environment:
+      DATABASE_URL: postgresql://techenglish:${POSTGRES_PASSWORD}@db:5432/techenglish?schema=public
+    command: ["./node_modules/.bin/prisma", "migrate", "deploy"]
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: "no"
+
+  api:
+    image: ${API_IMAGE:-techenglish-api:local}
+    build:
+      context: .
+      target: api
+    restart: unless-stopped
+    env_file:
+      - path: apps/api/.env
+        required: false
+    environment:
+      NODE_ENV: production
+      DATABASE_URL: postgresql://techenglish:${POSTGRES_PASSWORD}@db:5432/techenglish?schema=public
+      JWT_SECRET: ${JWT_SECRET:?Set JWT_SECRET in .env.compose}
+      HOST: 0.0.0.0
+      PORT: 8080
+      API_PUBLIC_URL: ${API_PUBLIC_URL:-http://localhost:8080}
+      GOOGLE_CALLBACK_URL: ${GOOGLE_CALLBACK_URL:-http://localhost:8080/api/v1/auth/google/callback}
+      SMTP_HOST: ${SMTP_HOST:-localhost}
+      SMTP_PORT: ${SMTP_PORT:-587}
+      SMTP_FROM: ${SMTP_FROM:-TechEnglish <no-reply@example.com>}
+      WEB_URL: ${WEB_URL:-http://localhost:3000}
+      CORS_ORIGIN: ${CORS_ORIGIN:-http://localhost:3000}
+    ports:
+      - "${API_PORT:-8080}:8080"
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:8080/api/docs-json').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"]
+      interval: 15s
+      timeout: 5s
+      start_period: 30s
+      retries: 5
+
+  web:
+    image: ${WEB_IMAGE:-techenglish-web:local}
+    build:
+      context: .
+      target: web
+      args:
+        NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-http://localhost:8080/api/v1}
+    restart: unless-stopped
+    ports:
+      - "${WEB_PORT:-3000}:3000"
+    depends_on:
+      api:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:3000/login').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"]
+      interval: 15s
+      timeout: 5s
+      start_period: 30s
+      retries: 5
+
+  mobile:
+    profiles: ["mobile"]
+    build:
+      context: .
+      target: mobile
+    environment:
+      EXPO_PUBLIC_API_URL: ${EXPO_PUBLIC_API_URL:-http://10.0.2.2:8080/api/v1}
+      REACT_NATIVE_PACKAGER_HOSTNAME: ${MOBILE_LAN_HOST:-localhost}
+    env_file:
+      - path: apps/mobile/.env
+        required: false
+    ports:
+      - "8081:8081"
+    stdin_open: true
+    tty: true
+    depends_on:
+      api:
+        condition: service_healthy
+
+volumes:
+  postgres_data:

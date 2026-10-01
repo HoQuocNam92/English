@@ -399,6 +399,7 @@ model CertificateDomain {
   certificationTopics CertificationTopic[]
 
   @@id([certificateId, domainId])
+  @@index([certificateId, order])
   @@map("certificate_domains")
 }
 
@@ -793,6 +794,7 @@ model Exam {
   @@index([levelId])
   @@index([certificateId])
   @@index([status])
+  @@index([certificateId, kind])
   @@map("exams")
 }
 
@@ -877,6 +879,8 @@ model LearningProgress {
   learnerId           String               @map("learner_id") @db.Uuid
   resourceType        ProgressResourceType @map("resource_type")
   resourceId          String               @map("resource_id") @db.Uuid
+  completedLessonCount Int @default(0) @map("completed_lesson_count")
+  totalLessonCount Int @default(0) @map("total_lesson_count")
   status              ProgressStatus       @default(not_started)
   completionPercent   Float                @default(0.0) @map("completion_percent")
   averageScorePercent Float?               @map("average_score_percent")

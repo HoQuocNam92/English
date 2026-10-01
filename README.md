@@ -220,3 +220,18 @@ Hồ Quốc Nam — Đại học Công nghiệp TP.HCM (IUH)
 ## Giấy phép
 
 Private — All rights reserved.
+
+## Docker Compose và CI/CD
+
+Cấu hình gồm PostgreSQL, API NestJS, web Next.js và profile Expo mobile; không dùng Redis.
+
+**Lưu ý hiện tại:** kiểm tra trên database rỗng phát hiện lỗi lịch sử migration ở `20260908220000_add_discussion_moderation` (thiếu bảng `discussion_posts`). CI cố ý dừng tại lỗi này; cần xử lý migration trước khi khởi động stack mới hoặc publish image.
+
+Xem [hướng dẫn Docker, CI/CD, mobile EAS và triển khai](docker/README.md) để biết cấu hình môi trường, secrets, các lệnh chạy, backup và rollback.
+
+- [Docker Compose](docker-compose.yml), [Dockerfile](Dockerfile), [env mẫu](.env.compose.example).
+- [CI và publish image GHCR](.github/workflows/ci.yml).
+- [Triển khai server](.github/workflows/deploy.yml).
+- [Build APK/IPA qua EAS](.github/workflows/mobile-build.yml).
+
+Để dùng PostgreSQL hiện tại làm nguồn dữ liệu, dùng [compose.postgres.yml](compose.postgres.yml) theo mục “Dùng PostgreSQL hiện có làm nguồn chuẩn” trong [hướng dẫn Docker](docker/README.md). Cấu hình này không tự chạy migration hoặc seed.
