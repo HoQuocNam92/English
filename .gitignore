@@ -13,3 +13,5 @@ google-services.json
 GoogleService-Info.plist
 
 !.env.compose.example
+
+/docker/prisma/schema.prisma

@@ -40,7 +40,8 @@ jobs:
           cache: pnpm
       - run: pnpm install --frozen-lockfile
       - run: pnpm --filter @techenglish/api db:generate
-      - run: pnpm --filter @techenglish/api db:migrate:deploy
+      - run: node docker/migrate.cjs
+      - run: pnpm --filter @techenglish/api exec prisma migrate diff --from-schema-datasource prisma/schema.prisma --to-schema-datamodel prisma/schema.prisma --exit-code
       - run: pnpm typecheck
       - run: pnpm --filter web typecheck
       - run: pnpm --filter mobile typecheck

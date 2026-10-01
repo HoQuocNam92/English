@@ -4,7 +4,7 @@
 
 Đã kiểm tra cú pháp YAML và shell. Máy phát triển hiện chưa có Docker nên chưa xác nhận build/run container.
 
-**Đang bị chặn với database mới:** chạy thật `prisma migrate deploy` trên database tạm rỗng thất bại ở migration `20260908220000_add_discussion_moderation`: bảng `discussion_posts` chưa tồn tại. Không tự động bỏ qua lỗi, reset database, hoặc đánh dấu migration chưa chạy là đã chạy. CI giữ bước migration để báo lỗi này; các job phát hành image sẽ không chạy khi bước đó thất bại. Cần sửa/baseline lịch sử migration được duyệt trước khi đưa hệ thống này vào sử dụng từ database rỗng.
+Database mới dùng lịch sử khởi tạo riêng tại `docker/prisma/migrations`. Đã chạy SQL thật trên database tạm rỗng, đối chiếu schema không có khác biệt và chạy lại thành công. Database có lịch sử cũ vẫn dùng `apps/api/prisma/migrations`; không sửa checksum, không đánh dấu migration chưa chạy là đã chạy. PostgreSQL thật không bị thay đổi trong quá trình kiểm tra.
 
 ## Thành phần
 
@@ -28,7 +28,7 @@ docker compose --env-file .env.compose up -d --build --wait
 docker compose --env-file .env.compose logs -f migrate api web
 ```
 
-Các lệnh khởi động trên chỉ hoàn tất sau khi xử lý lỗi migration nêu đầu tài liệu.
+Lần đầu chỉ tạo cấu trúc database, không sao chép dữ liệu PostgreSQL thật. Muốn dùng dữ liệu đang có, xem mục Compose kết nối PostgreSQL hiện có bên dưới.
 
 Truy cập web http://localhost:3000, Swagger http://localhost:8080/api/docs.
 Không dùng hostname `api` trong `NEXT_PUBLIC_API_URL`: trình duyệt phải truy cập được URL công khai này. URL được đóng vào bundle lúc build; thay URL phải build/publish image web mới.
@@ -127,6 +127,18 @@ docker compose --env-file .env.compose -f compose.postgres.yml up -d --build --w
 
 PostgreSQL cần cho phép kết nối từ mạng Docker qua listen_addresses/pg_hba.conf; giới hạn đúng subnet và dùng xác thực mật khẩu. Không mở database ra Internet. Nếu PostgreSQL nằm ở server khác, dùng hostname và TLS theo cấu hình server.
 
-Ứng dụng sẽ đọc/ghi database thật khi người dùng thao tác. Cấu hình này không sao chép dữ liệu, không seed, không reset và không chạy migration tự động. Lịch sử migration cho database mới và workflow deploy mặc định vẫn cần xử lý riêng trước khi dùng.
+Ứng dụng sẽ đọc/ghi database thật khi người dùng thao tác. Cấu hình này không sao chép dữ liệu, không seed, không reset và không chạy migration tự động. Workflow deploy mặc định dùng migration runner phân biệt database mới và lịch sử hiện có.
 
 Bản sao dữ liệu thật, nếu được tạo sau khi có xác nhận, phải giữ ngoài Git, Docker image và CI artifacts.
+
+
+## Bảo trì migration
+
+Chạy `node docker/migrate.cjs` từ root với DATABASE_URL đã cấu hình. Runner chỉ chọn lịch sử:
+- Database public rỗng: thực thi initial-schema SQL của nhánh fresh-install.
+- Database có bản ghi baseline fresh-install hoàn tất: tiếp tục nhánh fresh-install.
+- Database có lịch sử cũ: tiếp tục lịch sử cũ.
+- Database có bảng nhưng không có lịch sử Prisma: dừng để kiểm tra thủ công.
+
+Không sử dụng db push, reset hoặc migrate resolve. Schema trong docker/prisma/schema.prisma là bản sao sinh từ schema chính, không commit.
+Mọi thay đổi schema tiếp theo phải có migration tương đương cho **cả hai lịch sử**. CI kiểm tra schema sau migration fresh-install để phát hiện thiếu migration. Không sửa initial-schema SQL sau khi đã triển khai nó.

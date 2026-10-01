@@ -96,7 +96,7 @@ pnpm --filter @techenglish/api db:generate
 Áp dụng các migration đã có:
 
 ```bash
-pnpm --filter @techenglish/api db:migrate:deploy
+node docker/migrate.cjs
 ```
 
 Nạp dữ liệu mẫu khi cần:
@@ -130,7 +130,7 @@ pnpm --filter mobile dev
 | `pnpm --filter @techenglish/api build` | Build API |
 | `pnpm --filter @techenglish/api test` | Chạy test API |
 | `pnpm --filter @techenglish/api db:generate` | Tạo lại Prisma Client |
-| `pnpm --filter @techenglish/api db:migrate:deploy` | Áp dụng migration hiện có |
+| `node docker/migrate.cjs` | Áp dụng migration hiện có |
 | `pnpm --filter @techenglish/api db:seed` | Nạp dữ liệu mẫu |
 | `pnpm --filter @techenglish/api db:studio` | Mở Prisma Studio |
 | `pnpm --filter web dev` | Chạy Next.js dev server |
@@ -151,7 +151,7 @@ Prisma schema hiện có 38 model, thuộc các nhóm:
 - Đánh giá: question, option, exam, attempt và answer.
 - Tiến độ: learning progress, vocabulary progress và thông báo đẩy.
 
-Mọi thay đổi schema phải đi kèm migration trong `apps/api/prisma/migrations`.
+Mọi thay đổi schema phải có migration tương đương cho lịch sử hiện có (`apps/api/prisma/migrations`) và cài đặt mới (`docker/prisma/migrations`).
 
 ## API và Swagger
 
@@ -225,7 +225,7 @@ Private — All rights reserved.
 
 Cấu hình gồm PostgreSQL, API NestJS, web Next.js và profile Expo mobile; không dùng Redis.
 
-**Lưu ý hiện tại:** kiểm tra trên database rỗng phát hiện lỗi lịch sử migration ở `20260908220000_add_discussion_moderation` (thiếu bảng `discussion_posts`). CI cố ý dừng tại lỗi này; cần xử lý migration trước khi khởi động stack mới hoặc publish image.
+Database mới dùng migration khởi tạo riêng đã kiểm tra trên PostgreSQL tạm; database hiện có giữ lịch sử migration cũ. Runner không reset hoặc tự seed dữ liệu.
 
 Xem [hướng dẫn Docker, CI/CD, mobile EAS và triển khai](docker/README.md) để biết cấu hình môi trường, secrets, các lệnh chạy, backup và rollback.
 

@@ -9,6 +9,7 @@ RUN pnpm --filter @techenglish/api db:generate
 
 FROM workspace AS api
 RUN pnpm --filter @techenglish/api build
+RUN cp apps/api/prisma/schema.prisma docker/prisma/schema.prisma && chown -R node:node docker/prisma
 ENV NODE_ENV=production HOST=0.0.0.0 PORT=8080
 WORKDIR /app/apps/api
 USER node
