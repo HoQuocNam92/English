@@ -290,7 +290,7 @@ export default function AdminQuestionsPage() {
                           )}
                           <span className="text-xs text-on-surface-variant">· {q.points} điểm</span>
                           {q.status === 'published' ? (
-                            <span className="text-xs text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full font-medium">Đã đăng</span>
+                            <span className="text-xs text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full font-medium">Đã xuất bản</span>
                           ) : (
                             <span className="text-xs text-amber-700 bg-amber-50 px-2 py-0.5 rounded-full font-medium">Bản nháp</span>
                           )}

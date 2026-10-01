@@ -2,7 +2,7 @@ import {
   IsString, IsNotEmpty, IsOptional, IsEnum, IsInt, IsArray,
   IsBoolean, IsUrl, Min, Max, MaxLength, ValidateNested, ArrayNotEmpty,
   IsUUID, ArrayMaxSize, MinLength, IsDateString, IsNumber,
-  IsObject,
+  IsObject, ArrayUnique, ValidateIf,
 } from 'class-validator'
 import { Type } from 'class-transformer'
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger'
@@ -38,6 +38,15 @@ export class CreateVocabularyDto {
   @IsOptional() @IsEnum(['noun', 'verb', 'adjective', 'adverb', 'phrase', 'abbreviation'])
   partOfSpeech?: string
 
+  @ApiPropertyOptional({ type: [String] })
+  @IsOptional() @IsArray() @ArrayMaxSize(6) @ArrayUnique()
+  @IsEnum(['noun', 'verb', 'adjective', 'adverb', 'phrase', 'abbreviation'], { each: true })
+  partsOfSpeech?: string[]
+
+  @ApiPropertyOptional({ type: [String] })
+  @IsOptional() @IsArray() @ArrayNotEmpty() @ArrayMaxSize(100) @ArrayUnique() @IsUUID('4', { each: true })
+  domainIds?: string[]
+
   @ApiProperty({ example: 'The automatic adjustment of compute resources based on demand.' })
   @IsString() @IsNotEmpty({ message: 'Định nghĩa tiếng Anh không được để trống' })
   @MaxLength(1000)
@@ -48,6 +57,7 @@ export class CreateVocabularyDto {
   definitionVi?: string
 
   @ApiProperty()
+  @ValidateIf((dto) => dto.domainId !== undefined || dto.domainIds === undefined)
   @IsUUID('4', { message: 'domainId không hợp lệ' })
   domainId: string
 
@@ -76,6 +86,15 @@ export class UpdateVocabularyDto {
   @ApiPropertyOptional({ enum: ['noun', 'verb', 'adjective', 'adverb', 'phrase', 'abbreviation'] })
   @IsOptional() @IsEnum(['noun', 'verb', 'adjective', 'adverb', 'phrase', 'abbreviation'])
   partOfSpeech?: string
+
+  @ApiPropertyOptional({ type: [String] })
+  @IsOptional() @IsArray() @ArrayMaxSize(6) @ArrayUnique()
+  @IsEnum(['noun', 'verb', 'adjective', 'adverb', 'phrase', 'abbreviation'], { each: true })
+  partsOfSpeech?: string[]
+
+  @ApiPropertyOptional({ type: [String] })
+  @IsOptional() @IsArray() @ArrayNotEmpty() @ArrayMaxSize(100) @ArrayUnique() @IsUUID('4', { each: true })
+  domainIds?: string[]
 
   @ApiPropertyOptional()
   @IsOptional() @IsString() @MaxLength(1000)

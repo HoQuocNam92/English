@@ -859,3 +859,24 @@ a {
   min-height: 32px;
   border-radius: 50%;
 }
+
+/* Reserve space for the dropdown arrow even in portal-mounted admin forms. */
+.admin-canvas select:not([multiple]):not(.appearance-none),
+select.admin-select {
+  appearance: none;
+  padding-right: 2.75rem !important;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' fill='none' stroke='%2364748b' stroke-width='1.8'%3E%3Cpath d='m6 8 4 4 4-4'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 0.875rem center;
+  background-size: 1.125rem;
+}
+
+.ui-button-outline {
+  border-color: var(--primary);
+  color: var(--primary);
+  background-color: color-mix(in srgb, var(--primary) 5%, white);
+}
+
+.ui-button-outline:hover {
+  background-color: color-mix(in srgb, var(--primary) 10%, white);
+}

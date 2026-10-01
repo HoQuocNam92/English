@@ -244,7 +244,7 @@ export default function AdminTestResultsPage() {
                       <td className="p-md text-right">
                         <button 
                           onClick={() => setSelectedAttemptId(r.id)}
-                          className="inline-flex items-center gap-1 text-primary hover:text-primary-variant font-interface-sb text-interface-sb transition-colors whitespace-nowrap cursor-pointer hover:underline px-2 py-1 rounded hover:bg-primary-fixed/30"
+                          className="ui-button ui-button-outline inline-flex min-h-10 items-center justify-center gap-2 rounded-xl border border-primary bg-primary/5 px-3 py-2 text-sm font-semibold text-primary hover:bg-primary/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 whitespace-nowrap"
                         >
                           <span>Chi tiết</span>
                           <span className="material-symbols-outlined text-[16px]">visibility</span>

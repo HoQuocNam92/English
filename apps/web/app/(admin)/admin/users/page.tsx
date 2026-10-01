@@ -8,8 +8,8 @@ import type { UserItem, PaginatedResponse } from '@/shared/api/api-client';
 
 const STATUS_OPTS = [
   { value: '', label: 'Tất cả trạng thái' },
-  { value: 'active', label: 'Hoạt động' },
-  { value: 'suspended', label: 'Bị khoá' },
+  { value: 'active', label: 'Đang hoạt động' },
+  { value: 'suspended', label: 'Đã khóa' },
   { value: 'inactive', label: 'Chưa kích hoạt' },
 ];
 
@@ -200,7 +200,7 @@ function CreateUserModal({ onClose, onCreated }: CreateUserModalProps) {
               Vai trò <span className="text-red-500">*</span>
             </label>
             <select
-              className={inputCls(!!errors.role)}
+              className={`admin-select ${inputCls(!!errors.role)}`}
               {...field('role')}
             >
               {CREATE_ROLE_OPTS.map((r) => (
@@ -461,8 +461,8 @@ export default function AdminUsersPage() {
                             onClick={() => handleToggleStatus(user)}
                             className={`text-xs px-2.5 py-1 rounded-lg border transition-colors ${
                               user.status === 'active'
-                                ? 'border-amber-200 text-amber-700 hover:bg-amber-50'
-                                : 'border-green-200 text-green-600 hover:bg-green-50'
+                                ? 'border-amber-600 text-amber-800 hover:bg-amber-50'
+                                : 'border-green-600 text-green-800 hover:bg-green-50'
                             } disabled:opacity-50`}
                           >
                             {actionLoading === user.id ? '...' : user.status === 'active' ? 'Khoá' : 'Mở khoá'}
@@ -470,7 +470,7 @@ export default function AdminUsersPage() {
                           <button
                             disabled={actionLoading === user.id}
                             onClick={() => handleDelete(user)}
-                            className="text-xs px-2.5 py-1 rounded-lg border border-red-200 text-red-600 hover:bg-red-50 disabled:opacity-50"
+                            className="text-xs px-2.5 py-1 rounded-lg border border-red-600 text-red-700 hover:bg-red-50 disabled:opacity-50"
                           >
                             Xóa
                           </button>

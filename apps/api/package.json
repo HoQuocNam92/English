@@ -5,7 +5,7 @@
   "scripts": {
     "dev": "nest start --watch",
     "build": "nest build",
-    "test": "node --test -r ts-node/register src/application/user/user.service.spec.ts src/infrastructure/ai/openai-recommendation.provider.spec.ts src/application/progress/progress.service.spec.ts",
+    "test": "node --test -r ts-node/register src/application/user/user.service.spec.ts src/infrastructure/ai/openai-recommendation.provider.spec.ts src/application/progress/progress.service.spec.ts src/application/vocabulary/vocabulary.service.spec.ts",
     "start": "node dist/src/main.js",
     "db:generate": "prisma generate",
     "db:migrate:dev": "prisma migrate dev",

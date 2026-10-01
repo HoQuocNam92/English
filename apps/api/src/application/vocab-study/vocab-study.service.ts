@@ -11,7 +11,7 @@ export class VocabStudyService {
   async getStudySession(learnerId: string, filters?: { domainCode?: string; levelCode?: string; continueLearning?: boolean }) {
     // Build vocab filter
     const vocabWhere: any = { status: 'published' }
-    if (filters?.domainCode) vocabWhere.domain = { code: filters.domainCode }
+    if (filters?.domainCode) vocabWhere.OR = [{ domain: { code: filters.domainCode } }, { domains: { some: { domain: { code: filters.domainCode } } } }]
     if (filters?.levelCode) {
       vocabWhere.level = { code: filters.levelCode }
     }
@@ -48,7 +48,7 @@ export class VocabStudyService {
         id: w.id,
         term: w.term,
         pronunciationIpa: w.pronunciationIpa,
-        partOfSpeech: w.partOfSpeech,
+        partOfSpeech: w.partsOfSpeech.length ? w.partsOfSpeech.join(', ') : w.partOfSpeech,
         definitionEn: w.definitionEn,
         definitionVi: w.definitionVi,
         examples: w.examples.map(ex => ({ sentenceEn: ex.sentenceEn, translationVi: ex.translationVi })),
@@ -337,7 +337,7 @@ export class VocabStudyService {
         term: v.term,
         pronunciationIpa: v.pronunciationIpa,
         audioUrl: v.audioUrl,
-        partOfSpeech: v.partOfSpeech,
+        partOfSpeech: v.partsOfSpeech.length ? v.partsOfSpeech.join(', ') : v.partOfSpeech,
         definitionEn: v.definitionEn,
         definitionVi: v.definitionVi,
         examples: v.examples.map(ex => ({ sentenceEn: ex.sentenceEn, translationVi: ex.translationVi })),

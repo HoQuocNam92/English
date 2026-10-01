@@ -92,17 +92,12 @@ export default function AdminStudentsPage() {
       )}
 
       <div className="bg-surface-container-lowest rounded-xl border border-outline-variant p-md mb-xl flex flex-wrap gap-md items-center shadow-[0_1px_3px_rgba(15,23,24,0.06)]">
-        <div className="flex-1 min-w-[200px] relative">
-          <span className="material-symbols-outlined absolute left-sm top-1/2 -translate-y-1/2 text-outline">search</span>
-          <input 
-            value={searchInput}
-            onChange={(e) => setSearchInput(e.target.value)}
-            onKeyDown={(e) => { if (e.key === 'Enter') { setPage(1); setSearch(searchInput); } }}
-            className="w-full pl-xl pr-sm py-sm rounded-lg border border-outline-variant bg-surface-bright focus:border-primary focus:ring-1 focus:ring-primary focus:outline-none font-body-md text-on-surface transition-colors placeholder:text-outline" 
-            placeholder="Tìm theo tên, email..." 
-            type="text"
-          />
-        </div>
+        <SearchInput
+          value={searchInput}
+          onChange={setSearchInput}
+          onSearch={(value) => { setPage(1); setSearch(value); }}
+          placeholder="Tìm theo tên, email..."
+        />
         <select 
           value={status}
           onChange={(e) => { setStatus(e.target.value); setPage(1); }}
@@ -179,7 +174,7 @@ export default function AdminStudentsPage() {
                     <td className="p-md text-center">
                       <Link
                         href={`/admin/students/${u.id}`}
-                        className="inline-flex items-center gap-1 text-primary hover:text-primary-variant font-interface-sb text-interface-sb hover:underline transition-colors px-3 py-1.5 rounded-lg hover:bg-primary-fixed/30 cursor-pointer whitespace-nowrap"
+                        className="ui-button ui-button-outline inline-flex min-h-10 items-center justify-center gap-2 rounded-xl border border-primary bg-primary/5 px-3 py-2 text-sm font-semibold text-primary hover:bg-primary/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 whitespace-nowrap"
                       >
                         <span>Xem chi tiết</span>
                         <span className="material-symbols-outlined text-[16px]">arrow_forward</span>

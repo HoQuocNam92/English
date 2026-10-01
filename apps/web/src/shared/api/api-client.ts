@@ -150,6 +150,8 @@ export interface VocabularyItem {
   term: string;
   pronunciationIpa: string | null;
   partOfSpeech: string | null;
+  partsOfSpeech?: string[];
+  domains?: Array<{ domainId: string; domain: { id: string; code: string; name: string } }>;
   definitionEn: string;
   definitionVi: string | null;
   tags: string[];

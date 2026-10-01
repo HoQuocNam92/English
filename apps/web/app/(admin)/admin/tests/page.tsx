@@ -98,8 +98,11 @@ export default function AdminTestsPage() {
       </div>
 
       {/* Filters */}
-      <div className="mt-6 flex flex-wrap items-start gap-3 rounded-2xl border border-outline-variant/50 bg-white p-4">
+      <div className="mt-6 grid grid-cols-1 items-start gap-3 sm:grid-cols-2 xl:grid-cols-4 rounded-2xl border border-outline-variant/50 bg-white p-4">
+        <div className="grid gap-1 sm:col-span-2">
+          <span className="text-xs font-semibold">Tìm kiếm</span>
         <SearchInput
+          className="sm:!w-full"
           value={searchInput}
           onChange={setSearchInput}
           onSearch={(sanitized) => {
@@ -109,16 +112,19 @@ export default function AdminTestsPage() {
           placeholder="Tìm kiếm theo tiêu đề bài kiểm tra..."
           maxLength={100}
         />
+        </div>
+        <label className="grid gap-1 text-xs font-semibold">Trạng thái
         <select
           value={status}
           onChange={(e) => { setStatus(e.target.value); setPage(1); }}
-          className="rounded-xl border border-outline-variant/60 bg-surface-container-lowest px-3 py-2 text-sm text-on-surface focus:outline-none"
+          className="h-11 w-full rounded-xl border border-outline-variant/60 bg-surface-container-lowest px-3 py-2 text-sm text-on-surface focus:outline-none"
         >
           {STATUSES.map((s) => <option key={s.value} value={s.value}>{s.label}</option>)}
         </select>
+        </label>
         {([['domainCode', 'Lĩnh vực', options.domains], ['levelCode', 'Trình độ', options.levels], ['certificateId', 'Chứng chỉ', options.certificates]] as const).map(([key,label,list]) => <label key={key} className="grid min-w-0 flex-1 basis-48 gap-1 text-xs font-semibold">{label}<select aria-label={label} value={filters[key]} onChange={e => { setFilters(f => ({ ...f, [key]: e.target.value })); setPage(1); }} className="h-11 min-w-0 rounded-xl border border-outline-variant px-3 text-sm"><option value="">Tất cả</option>{list.map(x => <option key={x.id} value={key === 'certificateId' ? x.id : x.code}>{x.name}</option>)}</select></label>)}
         <label className="grid gap-1 text-xs font-semibold">Loại bài kiểm tra<select aria-label="Loại bài kiểm tra" value={filters.kind} onChange={e => { setFilters(f => ({ ...f, kind: e.target.value })); setPage(1); }} className="h-11 rounded-xl border border-outline-variant px-3 text-sm"><option value="">Tất cả</option>{Object.entries(EXAM_KINDS).map(([v,l]) => <option key={v} value={v}>{l}</option>)}</select></label>
-        <button onClick={() => { setFilters({ domainCode: '', levelCode: '', certificateId: '', kind: '' }); setStatus(''); setSearch(''); setSearchInput(''); setPage(1); }} className="h-11 rounded-xl border border-outline-variant px-4 text-sm">Xóa bộ lọc</button>
+        <button onClick={() => { setFilters({ domainCode: '', levelCode: '', certificateId: '', kind: '' }); setStatus(''); setSearch(''); setSearchInput(''); setPage(1); }} className="ui-button ui-button-outline h-11 self-start sm:mt-5 rounded-xl border border-outline-variant px-4 text-sm">Xóa bộ lọc</button>
       </div>
 
       {!loading && (

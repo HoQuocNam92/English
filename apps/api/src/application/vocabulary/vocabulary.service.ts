@@ -5,6 +5,21 @@ import { PrismaService } from '../../infrastructure/database/prisma.service'
 export class VocabularyService {
   constructor(private prisma: PrismaService) {}
 
+  private async resolveDomainIds(dto: any): Promise<string[]> {
+    if (dto.domainIds !== undefined) {
+      if (!Array.isArray(dto.domainIds) || !dto.domainIds.length) throw new BadRequestException('Vui lòng chọn ít nhất một lĩnh vực')
+      const ids = [...new Set<string>(dto.domainIds)]
+      const domains = await this.prisma.domain.findMany({ where: { id: { in: ids } }, select: { id: true } })
+      if (domains.length !== ids.length) throw new NotFoundException('Lĩnh vực không tồn tại')
+      return ids
+    }
+    const domain = dto.domainId
+      ? await this.prisma.domain.findUnique({ where: { id: dto.domainId } })
+      : dto.domainCode ? await this.prisma.domain.findUnique({ where: { code: dto.domainCode } }) : null
+    if (!domain) throw new NotFoundException('Lĩnh vực không tồn tại')
+    return [domain.id]
+  }
+
   async findAll(params: any) {
     const page = Math.max(1, Number(params.page) || 1)
     const limit = Math.min(Math.max(1, Number(params.limit) || 20), 3000)
@@ -12,44 +27,43 @@ export class VocabularyService {
     const skip = (page - 1) * limit
     const where: any = {}
     if (search) where.OR = [{ term: { contains: search, mode: 'insensitive' } }, { definitionEn: { contains: search, mode: 'insensitive' } }]
-    if (domainCode) where.domain = { code: domainCode }
+    if (domainCode) where.AND = [{ OR: [{ domain: { code: domainCode } }, { domains: { some: { domain: { code: domainCode } } } }] }]
     if (levelCode) where.level = { code: levelCode }
     if (status) where.status = status
     const [data, total] = await Promise.all([
-      this.prisma.vocabulary.findMany({ where, skip, take: limit, include: { domain: true, level: true, examples: true }, orderBy: { createdAt: 'desc' } }),
+      this.prisma.vocabulary.findMany({ where, skip, take: limit, include: { domain: true, domains: { include: { domain: true } }, level: true, examples: true }, orderBy: { createdAt: 'desc' } }),
       this.prisma.vocabulary.count({ where })
     ])
     return { data, meta: { total, page, limit, totalPages: Math.ceil(total / limit) } }
   }
 
   async findOne(id: string) {
-    const v = await this.prisma.vocabulary.findUnique({ where: { id }, include: { domain: true, level: true, examples: { orderBy: { order: 'asc' } } } })
+    const v = await this.prisma.vocabulary.findUnique({ where: { id }, include: { domain: true, domains: { include: { domain: true } }, level: true, examples: { orderBy: { order: 'asc' } } } })
     if (!v) throw new NotFoundException('Không tìm thấy từ vựng')
     return v
   }
 
   async create(dto: any) {
-    const domain = dto.domainId
-      ? await this.prisma.domain.findUnique({ where: { id: dto.domainId } })
-      : dto.domainCode
-      ? await this.prisma.domain.findUnique({ where: { code: dto.domainCode } })
-      : null
+    const domainIds = await this.resolveDomainIds(dto)
+    const partsOfSpeech = dto.partsOfSpeech ?? (dto.partOfSpeech ? [dto.partOfSpeech] : [])
     const level = dto.levelId
       ? await this.prisma.level.findUnique({ where: { id: dto.levelId } })
       : dto.levelCode
       ? await this.prisma.level.findUnique({ where: { code: dto.levelCode } })
       : null
-    if (!domain || !level) throw new NotFoundException('Lĩnh vực hoặc cấp độ không tồn tại')
+    if (!level) throw new NotFoundException('Lĩnh vực hoặc cấp độ không tồn tại')
     return this.prisma.vocabulary.create({
       data: {
         term: dto.term,
         pronunciationIpa: dto.pronunciationIpa,
         audioUrl: dto.audioUrl,
-        partOfSpeech: dto.partOfSpeech,
+        partOfSpeech: partsOfSpeech[0] ?? null,
+        partsOfSpeech,
         definitionEn: dto.definitionEn,
         definitionVi: dto.definitionVi,
         tags: dto.tags ?? [],
-        domainId: domain.id,
+        domainId: domainIds[0],
+        domains: { create: domainIds.map(domainId => ({ domainId })) },
         levelId: level.id,
         status: dto.status ?? 'draft',
         examples: dto.examples
@@ -62,7 +76,7 @@ export class VocabularyService {
             }
           : undefined,
       },
-      include: { domain: true, level: true, examples: true },
+      include: { domain: true, domains: { include: { domain: true } }, level: true, examples: true },
     })
   }
 
@@ -73,16 +87,17 @@ export class VocabularyService {
     if (dto.definitionEn !== undefined) data.definitionEn = dto.definitionEn
     if (dto.definitionVi !== undefined) data.definitionVi = dto.definitionVi
     if (dto.pronunciationIpa !== undefined) data.pronunciationIpa = dto.pronunciationIpa
-    if (dto.partOfSpeech !== undefined) data.partOfSpeech = dto.partOfSpeech
+    if (dto.partsOfSpeech !== undefined || dto.partOfSpeech !== undefined) {
+      data.partsOfSpeech = dto.partsOfSpeech ?? (dto.partOfSpeech ? [dto.partOfSpeech] : [])
+      data.partOfSpeech = data.partsOfSpeech[0] ?? null
+    }
     if (dto.audioUrl !== undefined) data.audioUrl = dto.audioUrl
     if (dto.tags !== undefined) data.tags = dto.tags
     if (dto.status !== undefined) data.status = dto.status
-    if (dto.domainId) {
-      const d = await this.prisma.domain.findUnique({ where: { id: dto.domainId } })
-      if (d) data.domainId = d.id
-    } else if (dto.domainCode) {
-      const d = await this.prisma.domain.findUnique({ where: { code: dto.domainCode } })
-      if (d) data.domainId = d.id
+    if (dto.domainIds !== undefined || dto.domainId !== undefined || dto.domainCode !== undefined) {
+      const domainIds = await this.resolveDomainIds(dto)
+      data.domainId = domainIds[0]
+      data.domains = { deleteMany: {}, create: domainIds.map(domainId => ({ domainId })) }
     }
     if (dto.levelId) {
       const l = await this.prisma.level.findUnique({ where: { id: dto.levelId } })
@@ -94,7 +109,7 @@ export class VocabularyService {
     return this.prisma.vocabulary.update({
       where: { id },
       data,
-      include: { domain: true, level: true, examples: true },
+      include: { domain: true, domains: { include: { domain: true } }, level: true, examples: true },
     })
   }
 
@@ -105,7 +120,7 @@ export class VocabularyService {
       throw new BadRequestException('Cần chọn từ vựng, dùng bộ lọc hoặc xác nhận cập nhật toàn bộ kho')
     }
     const where: any = hasIds ? { id: { in: dto.ids } } : {}
-    if (!hasIds && dto.domainCode) where.domain = { code: dto.domainCode }
+    if (!hasIds && dto.domainCode) where.AND = [{ OR: [{ domain: { code: dto.domainCode } }, { domains: { some: { domain: { code: dto.domainCode } } } }] }]
     if (!hasIds && dto.currentStatus) where.status = dto.currentStatus
     if (!hasIds && dto.search) where.OR = [
       { term: { contains: dto.search, mode: 'insensitive' } },

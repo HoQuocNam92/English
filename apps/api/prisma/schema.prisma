@@ -316,6 +316,7 @@ model Domain {
 
   profileDomains     LearnerProfileDomain[]
   certificateDomains CertificateDomain[]
+  vocabularyDomains  VocabularyDomain[]
   vocabularies       Vocabulary[]
   questions          Question[]
   exams              Exam[]
@@ -555,6 +556,7 @@ model Vocabulary {
   pronunciationIpa String?       @map("pronunciation_ipa") @db.VarChar(100)
   audioUrl         String?       @map("audio_url") @db.VarChar(2048)
   partOfSpeech     String?       @map("part_of_speech") @db.VarChar(50)
+  partsOfSpeech    String[]      @default([]) @map("parts_of_speech")
   definitionEn     String        @map("definition_en") @db.VarChar(1000)
   definitionVi     String        @map("definition_vi") @db.VarChar(1000)
   tags             String[]      @default([])
@@ -567,6 +569,7 @@ model Vocabulary {
   domain Domain @relation(fields: [domainId], references: [id])
   level  Level  @relation(fields: [levelId], references: [id])
 
+  domains             VocabularyDomain[]
   examples            VocabularyExample[]
   vocabProgress       VocabularyProgress[]
   certificationTopics CertificationTopicVocabulary[]
@@ -577,6 +580,17 @@ model Vocabulary {
   @@index([levelId])
   @@index([status])
   @@map("vocabularies")
+}
+
+model VocabularyDomain {
+  vocabularyId String @map("vocabulary_id") @db.Uuid
+  domainId     String @map("domain_id") @db.Uuid
+  vocabulary   Vocabulary @relation(fields: [vocabularyId], references: [id], onDelete: Cascade)
+  domain       Domain @relation(fields: [domainId], references: [id], onDelete: Restrict)
+
+  @@id([vocabularyId, domainId])
+  @@index([domainId])
+  @@map("vocabulary_domains")
 }
 
 model CertificationTopicVocabulary {

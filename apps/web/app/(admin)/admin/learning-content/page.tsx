@@ -42,8 +42,8 @@ interface FormState {
   definitionEn: string;
   definitionVi: string;
   pronunciationIpa: string;
-  partOfSpeech: string;
-  domainId: string;
+  partsOfSpeech: string[];
+  domainIds: string[];
   levelId: string;
   tags: string;
 }
@@ -55,8 +55,8 @@ const EMPTY_FORM: FormState = {
   definitionEn: '',
   definitionVi: '',
   pronunciationIpa: '',
-  partOfSpeech: '',
-  domainId: '',
+  partsOfSpeech: [],
+  domainIds: [],
   levelId: '',
   tags: '',
 };
@@ -77,7 +77,7 @@ function validateForm(form: FormState): FormErrors {
   if (!form.term.trim())         errors.term         = 'Vui lòng nhập từ / thuật ngữ';
   if (!form.definitionEn.trim()) errors.definitionEn = 'Vui lòng nhập định nghĩa tiếng Anh';
   if (!form.definitionVi.trim()) errors.definitionVi = 'Vui lòng nhập định nghĩa tiếng Việt';
-  if (!form.domainId)            errors.domainId     = 'Vui lòng chọn lĩnh vực';
+  if (!form.domainIds.length)    errors.domainIds     = 'Vui lòng chọn lĩnh vực';
   if (!form.levelId)             errors.levelId      = 'Vui lòng chọn cấp độ';
   return errors;
 }
@@ -136,8 +136,8 @@ function VocabularyModal({ mode, initial, domains, levels, onClose, onSuccess }:
         definitionEn: initial.definitionEn,
         definitionVi: initial.definitionVi ?? '',
         pronunciationIpa: initial.pronunciationIpa ?? '',
-        partOfSpeech: initial.partOfSpeech ?? '',
-        domainId: '',
+        partsOfSpeech: initial.partsOfSpeech?.length ? initial.partsOfSpeech : initial.partOfSpeech ? [initial.partOfSpeech] : [],
+        domainIds: [],
         levelId: '',
         tags: initial.tags?.join(', ') ?? '',
       };
@@ -152,7 +152,7 @@ function VocabularyModal({ mode, initial, domains, levels, onClose, onSuccess }:
       const matchedLevel  = levels.find((l)  => l.name  === initial.level?.name);
       setForm((prev) => ({
         ...prev,
-        domainId: matchedDomain?.id ?? '',
+        domainIds: initial.domains?.length ? initial.domains.map(item => item.domainId) : matchedDomain ? [matchedDomain.id] : [],
         levelId:  matchedLevel?.id  ?? '',
       }));
     }
@@ -169,6 +169,12 @@ function VocabularyModal({ mode, initial, domains, levels, onClose, onSuccess }:
     setErrors((prev) => ({ ...prev, [key]: undefined }));
   };
 
+  const toggleSelection = (key: 'domainIds' | 'partsOfSpeech', value: string) => {
+    setForm(current => ({ ...current, [key]: current[key].includes(value)
+      ? current[key].filter(item => item !== value) : [...current[key], value] }));
+    setErrors(current => ({ ...current, [key]: undefined }));
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     const errs = validateForm(form);
@@ -182,8 +188,8 @@ function VocabularyModal({ mode, initial, domains, levels, onClose, onSuccess }:
         definitionEn: form.definitionEn.trim(),
         definitionVi: form.definitionVi.trim(),
         ...(form.pronunciationIpa.trim() && { pronunciationIpa: form.pronunciationIpa.trim() }),
-        ...(form.partOfSpeech            && { partOfSpeech: form.partOfSpeech }),
-        domainId: form.domainId,
+        partsOfSpeech: form.partsOfSpeech,
+        domainIds: form.domainIds,
         levelId:  form.levelId,
         ...(form.tags.trim() && {
           tags: form.tags.split(',').map((t) => t.trim()).filter(Boolean),
@@ -259,11 +265,11 @@ function VocabularyModal({ mode, initial, domains, levels, onClose, onSuccess }:
             />
           </Field>
 
-          <Field label="Từ loại" error={errors.partOfSpeech}>
+          <Field label="Từ loại" error={errors.partsOfSpeech}>
             <div className="grid grid-cols-2 gap-2 rounded-xl border border-outline-variant bg-surface-container-low/40 p-3 sm:grid-cols-3">
               {PARTS_OF_SPEECH_OPTIONS.filter((option) => option.value).map((option) => (
                 <label key={option.value} className="flex cursor-pointer items-center gap-2 rounded-lg bg-white px-3 py-2 text-sm font-medium text-on-surface hover:bg-primary/5">
-                  <input type="checkbox" checked={form.partOfSpeech === option.value} onChange={() => setForm((current) => ({ ...current, partOfSpeech: current.partOfSpeech === option.value ? '' : option.value }))} className="h-4 w-4 rounded border-outline-variant accent-primary" />
+                  <input type="checkbox" checked={form.partsOfSpeech.includes(option.value)} onChange={() => toggleSelection('partsOfSpeech', option.value)} className="h-4 w-4 rounded border-outline-variant accent-primary" />
                   {option.label}
                 </label>
               ))}
@@ -271,11 +277,11 @@ function VocabularyModal({ mode, initial, domains, levels, onClose, onSuccess }:
           </Field>
 
           <div className="grid gap-3 sm:grid-cols-2">
-            <Field label="Lĩnh vực" required error={errors.domainId}>
-              <div className={`max-h-44 space-y-1 overflow-y-auto rounded-xl border bg-surface-container-low/40 p-2 ${errors.domainId ? 'border-error' : 'border-outline-variant'}`}>
+            <Field label="Lĩnh vực" required error={errors.domainIds}>
+              <div className={`max-h-44 space-y-1 overflow-y-auto rounded-xl border bg-surface-container-low/40 p-2 ${errors.domainIds ? 'border-error' : 'border-outline-variant'}`}>
                 {domains.map((domain) => (
                   <label key={domain.id} className="flex cursor-pointer items-center gap-2 rounded-lg bg-white px-3 py-2 text-sm font-medium text-on-surface hover:bg-primary/5">
-                    <input type="checkbox" checked={form.domainId === domain.id} onChange={() => setForm((current) => ({ ...current, domainId: domain.id }))} className="h-4 w-4 rounded border-outline-variant accent-primary" />
+                    <input type="checkbox" checked={form.domainIds.includes(domain.id)} onChange={() => toggleSelection('domainIds', domain.id)} className="h-4 w-4 rounded border-outline-variant accent-primary" />
                     <span className="truncate">{domain.name}</span>
                   </label>
                 ))}
@@ -286,7 +292,7 @@ function VocabularyModal({ mode, initial, domains, levels, onClose, onSuccess }:
               <select
                 value={form.levelId}
                 onChange={set('levelId')}
-                className={`${inputCls} ${errors.levelId ? inputErrCls : ''}`}
+                className={`admin-select ${inputCls} ${errors.levelId ? inputErrCls : ''}`}
               >
                 <option value="">— Chọn cấp độ —</option>
                 {levels.map((l) => <option key={l.id} value={l.id}>{l.name}</option>)}
@@ -617,14 +623,14 @@ export default function AdminLearningContentPage() {
                       <p className="text-xs text-primary font-mono mt-0.5 font-medium">{v.pronunciationIpa}</p>
                     )}
                   </div>
-                  <div className="flex flex-col items-end gap-1 shrink-0">
-                    {v.partOfSpeech && (
+                  <div className="flex max-w-[55%] flex-col items-end gap-1 text-right">
+                    {(v.partsOfSpeech?.length || v.partOfSpeech) && (
                       <span className="text-[10px] text-primary bg-primary/10 px-2 py-0.5 rounded-full font-semibold">
-                        {PARTS_OF_SPEECH[v.partOfSpeech] ?? v.partOfSpeech}
+                        {(v.partsOfSpeech?.length ? v.partsOfSpeech : [v.partOfSpeech!]).map(part => PARTS_OF_SPEECH[part] ?? part).join(', ')}
                       </span>
                     )}
                     {v.status === 'published' ? (
-                      <span className="text-[10px] text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full font-medium">Đã đăng</span>
+                      <span className="text-[10px] text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full font-medium">Đã xuất bản</span>
                     ) : (
                       <span className="text-[10px] text-amber-700 bg-amber-50 px-2 py-0.5 rounded-full font-medium">Bản nháp</span>
                     )}
@@ -635,7 +641,7 @@ export default function AdminLearningContentPage() {
                 <div className="mt-2 flex items-center gap-1.5 flex-wrap">
                   {v.domain && (
                     <span className="text-[11px] text-secondary bg-secondary/10 px-2 py-0.5 rounded-md font-medium">
-                      {v.domain.name}
+                      {v.domains?.length ? v.domains.map(item => item.domain.name).join(', ') : v.domain.name}
                     </span>
                   )}
                   {v.level && (
