@@ -1,4 +1,5 @@
 'use client';
+import { ActionButton } from '@/shared/ui/ActionButton';
 
 import { Dropdown } from '@/shared/ui/Dropdown';
 import * as React from 'react';
@@ -243,13 +244,7 @@ export default function AdminTestResultsPage() {
                         <StatusBadge status={isPassed ? 'passed' : 'failed'} />
                       </td>
                       <td className="p-md text-right">
-                        <button 
-                          onClick={() => setSelectedAttemptId(r.id)}
-                          className="ui-button ui-button-outline inline-flex min-h-10 items-center justify-center gap-2 rounded-xl border border-primary bg-primary/5 px-3 py-2 text-sm font-semibold text-primary hover:bg-primary/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 whitespace-nowrap"
-                        >
-                          <span>Chi tiết</span>
-                          <span className="material-symbols-outlined text-[16px]">visibility</span>
-                        </button>
+                        <ActionButton action="view" onClick={() => setSelectedAttemptId(r.id)} />
                       </td>
                     </tr>
                   );

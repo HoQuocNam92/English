@@ -1,9 +1,9 @@
 'use client';
+import { ActionButton } from '@/shared/ui/ActionButton';
 
 import { LevelBadge } from '@/shared/ui/LevelBadge';
 import { Dropdown } from '@/shared/ui/Dropdown';
 import * as React from 'react';
-import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 import { PageHeader, Pagination, SearchInput } from '@/shared/ui';
 import { apiClient, ApiClientError } from '@/shared/api/api-client';
@@ -174,13 +174,7 @@ export default function AdminStudentsPage() {
                       {new Date(u.createdAt).toLocaleDateString('vi-VN')}
                     </td>
                     <td className="p-md text-center">
-                      <Link
-                        href={`/admin/students/${u.id}`}
-                        className="ui-button ui-button-outline inline-flex min-h-10 items-center justify-center gap-2 rounded-xl border border-primary bg-primary/5 px-3 py-2 text-sm font-semibold text-primary hover:bg-primary/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 whitespace-nowrap"
-                      >
-                        <span>Xem chi tiết</span>
-                        <span className="material-symbols-outlined text-[16px]">arrow_forward</span>
-                      </Link>
+                      <ActionButton action="view" href={`/admin/students/${u.id}`} />
                     </td>
                   </tr>
                 ))

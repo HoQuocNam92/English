@@ -1,4 +1,5 @@
 'use client';
+import { ActionButton, ActionGroup } from '@/shared/ui/ActionButton';
 
 import { LevelBadge } from '@/shared/ui/LevelBadge';
 import { Dropdown } from '@/shared/ui/Dropdown';
@@ -682,26 +683,10 @@ export default function AdminLearningContentPage() {
               )}
 
               {/* Card action buttons */}
-              <div className="mt-4 pt-3 border-t border-outline-variant/20 flex justify-end gap-2">
-                <button
-                  type="button"
-                  onClick={() => openEdit(v)}
-                  title="Chỉnh sửa"
-                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs text-on-surface-variant border border-outline-variant/50 hover:bg-surface-container hover:text-on-surface transition-colors"
-                >
-                  <span className="material-symbols-outlined text-[15px]">edit</span>
-                  Sửa
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setDeleteTarget(v)}
-                  title="Xóa"
-                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs text-error border border-error/30 hover:bg-error/10 transition-colors"
-                >
-                  <span className="material-symbols-outlined text-[15px]">delete</span>
-                  Xóa
-                </button>
-              </div>
+              <ActionGroup className="mt-4 pt-3 border-t border-outline-variant/20">
+                <ActionButton action="edit" type="button" onClick={() => openEdit(v)} title="Chỉnh sửa" />
+                <ActionButton action="delete" type="button" onClick={() => setDeleteTarget(v)} title="Xóa" />
+              </ActionGroup>
             </div>
           ))
         )}

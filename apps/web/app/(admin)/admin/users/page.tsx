@@ -1,4 +1,5 @@
 'use client';
+import { ActionButton, ActionGroup } from '@/shared/ui/ActionButton';
 
 import { Dropdown } from '@/shared/ui/Dropdown';
 import * as React from 'react';
@@ -456,26 +457,10 @@ export default function AdminUsersPage() {
                     </td>
                     <td className="px-5 py-4 text-right">
                       {!user.roles?.includes('admin') && (
-                        <div className="flex justify-end gap-2">
-                          <button
-                            disabled={actionLoading === user.id}
-                            onClick={() => handleToggleStatus(user)}
-                            className={`text-xs px-2.5 py-1 rounded-lg border transition-colors ${
-                              user.status === 'active'
-                                ? 'border-amber-600 text-amber-800 hover:bg-amber-50'
-                                : 'border-green-600 text-green-800 hover:bg-green-50'
-                            } disabled:opacity-50`}
-                          >
-                            {actionLoading === user.id ? '...' : user.status === 'active' ? 'Khoá' : 'Mở khoá'}
-                          </button>
-                          <button
-                            disabled={actionLoading === user.id}
-                            onClick={() => handleDelete(user)}
-                            className="text-xs px-2.5 py-1 rounded-lg border border-red-600 text-red-700 hover:bg-red-50 disabled:opacity-50"
-                          >
-                            Xóa
-                          </button>
-                        </div>
+                        <ActionGroup>
+                          <ActionButton action={user.status === 'active' ? 'lock' : 'unlock'} loading={actionLoading === user.id} onClick={() => handleToggleStatus(user)} />
+                          <ActionButton action="delete" disabled={actionLoading === user.id} onClick={() => handleDelete(user)} />
+                        </ActionGroup>
                       )}
                     </td>
                   </tr>

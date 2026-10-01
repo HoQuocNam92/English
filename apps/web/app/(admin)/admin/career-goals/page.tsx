@@ -1,4 +1,5 @@
 'use client';
+import { ActionButton } from '@/shared/ui/ActionButton';
 
 import * as React from 'react';
 import { PageHeader } from '@/shared/ui';
@@ -42,7 +43,7 @@ export default function CareerGoalsPage() {
     </form>
     <div className="mt-5 overflow-hidden rounded-2xl border border-outline-variant bg-white">
       <table className="w-full text-left text-sm"><thead className="bg-surface-container-low"><tr><th className="p-4">Mã</th><th className="p-4">Mục tiêu nghề nghiệp</th><th className="p-4">Học viên</th><th className="p-4">Nhóm</th><th className="p-4 text-right">Thao tác</th></tr></thead><tbody className="divide-y divide-outline-variant/40">
-        {loading ? <tr><td colSpan={5} className="p-10 text-center">Đang tải...</td></tr> : items.length ? items.map(item => <tr key={item.id}><td className="p-4 font-mono text-xs font-bold text-primary">{item.code}</td><td className="p-4"><strong>{item.name}</strong><p className="mt-1 text-xs text-on-surface-variant">{item.description || 'Chưa có mô tả'}</p></td><td className="p-4">{item._count?.profileGoals ?? 0}</td><td className="p-4">{item._count?.learnerGroups ?? 0}</td><td className="p-4 text-right"><button type="button" onClick={() => setForm({ id: item.id, code: item.code, name: item.name, description: item.description ?? '' })} className="rounded-lg p-2 text-primary hover:bg-primary/10"><span className="material-symbols-outlined">edit</span></button></td></tr>) : <tr><td colSpan={5} className="p-10 text-center text-on-surface-variant">Chưa có mục tiêu nghề nghiệp.</td></tr>}
+        {loading ? <tr><td colSpan={5} className="p-10 text-center">Đang tải...</td></tr> : items.length ? items.map(item => <tr key={item.id}><td className="p-4 font-mono text-xs font-bold text-primary">{item.code}</td><td className="p-4"><strong>{item.name}</strong><p className="mt-1 text-xs text-on-surface-variant">{item.description || 'Chưa có mô tả'}</p></td><td className="p-4">{item._count?.profileGoals ?? 0}</td><td className="p-4">{item._count?.learnerGroups ?? 0}</td><td className="p-4 text-right"><ActionButton action="edit" type="button" onClick={() => setForm({ id: item.id, code: item.code, name: item.name, description: item.description ?? '' })} /></td></tr>) : <tr><td colSpan={5} className="p-10 text-center text-on-surface-variant">Chưa có mục tiêu nghề nghiệp.</td></tr>}
       </tbody></table>
     </div>
   </main>;

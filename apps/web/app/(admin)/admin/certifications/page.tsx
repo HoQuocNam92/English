@@ -1,4 +1,5 @@
 'use client';
+import { ActionButton, ActionGroup } from '@/shared/ui/ActionButton';
 
 import * as React from 'react';
 import Link from 'next/link';
@@ -161,7 +162,7 @@ export default function AdminCertificationsPage() {
             
             return (
               <div key={c.id} className="bg-surface-container-lowest rounded-xl border border-outline-variant p-lg hover:shadow-[0_1px_3px_rgba(15,23,24,0.06)] transition-all flex flex-col gap-md">
-                <div className="flex justify-between items-start">
+                <div className="flex flex-col gap-3 sm:flex-row sm:justify-between sm:items-start">
                   <div className="flex flex-col gap-xs">
                     <span className={`inline-block font-label-caps text-label-caps px-sm py-xs rounded-full w-fit ${badgeClass}`}>
                       {domainName}
@@ -174,10 +175,10 @@ export default function AdminCertificationsPage() {
                     </Link>
                     <span className="text-xs text-on-surface-variant">{c.code} • {c.provider}</span>
                   </div>
-                  <div className="flex gap-2">
-                    <button onClick={() => openEdit(c)} className="text-outline hover:text-primary transition-colors p-1"><span className="material-symbols-outlined text-[20px]">edit</span></button>
-                    <button onClick={() => void remove(c)} className="text-outline hover:text-error transition-colors p-1"><span className="material-symbols-outlined text-[20px]">delete</span></button>
-                  </div>
+                  <ActionGroup>
+                    <ActionButton action="edit" onClick={() => openEdit(c)} />
+                    <ActionButton action="delete" onClick={() => void remove(c)} />
+                  </ActionGroup>
                 </div>
                 
                 <div className="grid grid-cols-3 gap-sm py-md border-y border-outline-variant/50">

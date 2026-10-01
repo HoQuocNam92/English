@@ -1,4 +1,5 @@
 'use client';
+import { ActionButton, ActionGroup } from '@/shared/ui/ActionButton';
 
 import { LevelBadge } from '@/shared/ui/LevelBadge';
 import { Dropdown } from '@/shared/ui/Dropdown';
@@ -307,10 +308,10 @@ export default function AdminQuestionsPage() {
                   {/* Expanded content */}
                   {isExpanded && (
                     <div className="px-14 pb-5 space-y-4">
-                      <div className="flex justify-end gap-2">
-                        <Link href={`/admin/questions/editor?id=${q.id}`} className="inline-flex items-center gap-1.5 rounded-lg bg-primary/10 px-3 py-2 text-xs font-semibold text-primary"><span className="material-symbols-outlined text-[16px]">edit</span>Sửa câu hỏi</Link>
-                        <button type="button" disabled={deletingId === q.id} onClick={() => void handleDelete(q)} className="inline-flex items-center gap-1.5 rounded-lg bg-error-container px-3 py-2 text-xs font-semibold text-error disabled:opacity-50"><span className="material-symbols-outlined text-[16px]">delete</span>{deletingId === q.id ? 'Đang xóa...' : 'Xóa câu hỏi'}</button>
-                      </div>
+                      <ActionGroup>
+                        <ActionButton action="edit" href={`/admin/questions/editor?id=${q.id}`} />
+                        <ActionButton action="delete" type="button" disabled={deletingId === q.id} onClick={() => void handleDelete(q)} loading={deletingId === q.id} />
+                      </ActionGroup>
                       <div className="grid gap-3 md:grid-cols-2">
                         <div className="rounded-xl bg-primary/5 p-3.5">
                           <p className="mb-2 text-xs font-semibold text-on-surface-variant">Thuộc bộ đề</p>

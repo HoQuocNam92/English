@@ -1,4 +1,5 @@
 'use client';
+import { ActionButton } from '@/shared/ui/ActionButton';
 
 import { getLevelTheme } from '@/shared/lib/level-theme';
 import * as React from 'react';
@@ -288,7 +289,7 @@ export default function AdminLevelsPage() {
                 >
                   <div>
                     {/* Header */}
-                    <div className="flex items-start justify-between mb-3">
+                    <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between mb-3">
                       <div className="flex items-center gap-3">
                         <div className={`w-10 h-10 rounded-xl flex items-center justify-center border ${meta.bg}`}>
                           <span className="material-symbols-outlined text-[20px]">{meta.icon}</span>
@@ -305,7 +306,7 @@ export default function AdminLevelsPage() {
                       </div>
 
                       {/* Action buttons + Status */}
-                      <div className="flex items-center gap-1.5">
+                      <div className="flex flex-wrap items-center justify-end gap-2">
                         {lvl.isActive ? (
                           <span className="inline-flex items-center gap-1 text-xs text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full font-semibold border border-emerald-200">
                             <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
@@ -317,23 +318,9 @@ export default function AdminLevelsPage() {
                           </span>
                         )}
 
-                        <button
-                          type="button"
-                          onClick={() => handleOpenEdit(lvl)}
-                          className="p-1.5 rounded-lg text-on-surface-variant hover:text-primary hover:bg-surface-container-low transition-colors ml-1"
-                          title="Chỉnh sửa cấp độ"
-                        >
-                          <span className="material-symbols-outlined text-[19px]">edit</span>
-                        </button>
+                        <ActionButton action="edit" type="button" onClick={() => handleOpenEdit(lvl)} title="Chỉnh sửa cấp độ" />
 
-                        <button
-                          type="button"
-                          onClick={() => handleOpenDelete(lvl)}
-                          className="p-1.5 rounded-lg text-on-surface-variant hover:text-error hover:bg-red-50 transition-colors"
-                          title="Xóa cấp độ"
-                        >
-                          <span className="material-symbols-outlined text-[19px]">delete</span>
-                        </button>
+                        <ActionButton action="delete" type="button" onClick={() => handleOpenDelete(lvl)} title="Xóa cấp độ" />
                       </div>
                     </div>
 

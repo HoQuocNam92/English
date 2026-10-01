@@ -1,4 +1,5 @@
 'use client';
+import { ActionButton } from '@/shared/ui/ActionButton';
 
 import { Dropdown } from '@/shared/ui/Dropdown';
 import * as React from 'react';
@@ -265,7 +266,7 @@ export default function AdminRolesPage() {
           ) : (
             <PermissionTree permissions={permissions} renderMeta={(permission) => {
               const rolesWithPerm = roles.filter((role) => role.permissions?.some((item) => item.id === permission.id));
-              return <div className="flex items-center gap-2"><div className="hidden flex-wrap justify-end gap-1.5 md:flex">{rolesWithPerm.map((role) => <span key={role.id} className="rounded-full border border-primary/20 bg-primary/5 px-2 py-1 text-[11px] font-semibold text-primary">{roleLabel(role.code, role.name)}</span>)}</div><button type="button" onClick={() => openEditPermission(permission as PermissionItem)} className="rounded-lg p-1.5 text-primary hover:bg-primary/10" title="Sửa"><span className="material-symbols-outlined text-[17px]">edit</span></button><button type="button" onClick={() => void deletePermission(permission as PermissionItem)} className="rounded-lg p-1.5 text-error hover:bg-error-container" title="Xóa"><span className="material-symbols-outlined text-[17px]">delete</span></button></div>;
+              return <div className="flex flex-wrap items-center justify-end gap-2"><div className="hidden flex-wrap justify-end gap-1.5 md:flex">{rolesWithPerm.map((role) => <span key={role.id} className="rounded-full border border-primary/20 bg-primary/5 px-2 py-1 text-[11px] font-semibold text-primary">{roleLabel(role.code, role.name)}</span>)}</div><ActionButton action="edit" type="button" onClick={() => openEditPermission(permission as PermissionItem)} title="Sửa" /><ActionButton action="delete" type="button" onClick={() => void deletePermission(permission as PermissionItem)} title="Xóa" /></div>;
             }} />
           )}
       </div>}
