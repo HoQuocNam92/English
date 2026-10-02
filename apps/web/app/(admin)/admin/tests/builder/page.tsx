@@ -1,4 +1,5 @@
 'use client';
+import { FormPageLayout } from '@/shared/ui/CreatePage';
 
 import { LevelBadge } from '@/shared/ui/LevelBadge';
 import { Dropdown } from '@/shared/ui/Dropdown';
@@ -212,17 +213,17 @@ export default function TestBuilderPage() {
 
   if (loading) {
     return (
-      <div>
+      <FormPageLayout>
         <PageHeader title={isEdit ? 'Chỉnh sửa bài thi' : 'Tạo bài thi mới'} description="Xây dựng cấu trúc bài thi" />
         <div className="mt-6 flex items-center justify-center h-64">
           <span className="animate-spin material-symbols-outlined text-primary">progress_activity</span>
         </div>
-      </div>
+      </FormPageLayout>
     );
   }
 
   return (
-    <div>
+    <FormPageLayout>
       <PageHeader
         title={isEdit ? 'Chỉnh sửa bài thi' : 'Tạo bài thi mới'}
         description="Cấu hình thông tin và chọn câu hỏi cho bài thi"
@@ -665,7 +666,7 @@ export default function TestBuilderPage() {
           </button>
         </div>
       </form>
-    </div>
+    </FormPageLayout>
   );
 }
 

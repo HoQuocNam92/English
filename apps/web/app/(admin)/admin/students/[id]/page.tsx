@@ -1,5 +1,6 @@
 'use client';
 
+import { ActionButton, ActionGroup } from '@/shared/ui/ActionButton';
 import { LevelBadge } from '@/shared/ui/LevelBadge';
 import { Dropdown } from '@/shared/ui/Dropdown';
 import * as React from 'react';
@@ -176,10 +177,7 @@ export default function AdminStudentDetailPage({
                     ))}
                 </div>
 
-                <button type="button" onClick={() => void openGoalEditor()} className="inline-flex items-center gap-2 rounded-xl border border-primary px-4 py-2 text-sm font-bold text-primary hover:bg-primary/5">
-                  <span className="material-symbols-outlined text-[18px]">edit</span>
-                  Chỉnh sửa hồ sơ học tập
-                </button>
+                <ActionGroup><ActionButton action="edit" label="Chỉnh sửa hồ sơ học tập" onClick={() => void openGoalEditor()} /></ActionGroup>
 
               </div>
 

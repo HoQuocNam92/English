@@ -3,6 +3,7 @@
 import { LevelBadge } from '@/shared/ui/LevelBadge';
 import { Dropdown } from '@/shared/ui/Dropdown';
 import * as React from 'react';
+import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { apiClient } from '@/shared/api/api-client';
 import { Modal } from '@/shared/ui';
@@ -11,15 +12,13 @@ const statusLabel: Record<string, string> = { draft: 'Bản nháp', published: '
 
 export default function AdminCertificationDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = React.use(params);
+  const router = useRouter();
   const [certificate, setCertificate] = React.useState<any>(null);
   const [error, setError] = React.useState('');
   const [manageType, setManageType] = React.useState<'questions' | 'exams' | null>(null);
   const [options, setOptions] = React.useState<any[]>([]);
   const [selectedIds, setSelectedIds] = React.useState<string[]>([]);
   const [saving, setSaving] = React.useState(false);
-  const [structureMode, setStructureMode] = React.useState<'domain' | 'topic' | null>(null);
-  const [domainOptions, setDomainOptions] = React.useState<any[]>([]);
-  const [structureForm, setStructureForm] = React.useState({ domainId: '', code: '', name: '', description: '', weightPercent: '' });
   const [topicManager, setTopicManager] = React.useState<{ topic: any; type: 'vocabularies' | 'questions' } | null>(null);
 
   const load = React.useCallback(() => apiClient.get(`/certificates/${id}`).then(setCertificate).catch((cause: any) => setError(cause.message || 'Không thể tải chứng chỉ')), [id]);
@@ -65,28 +64,9 @@ export default function AdminCertificationDetailPage({ params }: { params: Promi
     finally { setSaving(false); }
   }
 
-  async function openStructure(mode: 'domain' | 'topic', domainId = '') {
-    setStructureMode(mode); setError('');
-    setStructureForm({ domainId, code: '', name: '', description: '', weightPercent: '' });
-    try {
-      const response: any = await apiClient.get('/domains');
-      setDomainOptions(response?.data ?? response ?? []);
-    } catch (cause: any) { setError(cause.message || 'Không thể tải danh sách Domain'); setStructureMode(null); }
-  }
-
-  async function saveStructure(event: React.FormEvent) {
-    event.preventDefault();
-    if (!structureMode || !structureForm.domainId) return;
-    setSaving(true); setError('');
-    try {
-      if (structureMode === 'domain') {
-        await apiClient.post(`/certificates/${id}/domains`, { domainId: structureForm.domainId, weightPercent: Number(structureForm.weightPercent || 0) });
-      } else {
-        await apiClient.post(`/certificates/${id}/topics`, { domainId: structureForm.domainId, code: structureForm.code, name: structureForm.name, description: structureForm.description });
-      }
-      setStructureMode(null); await load();
-    } catch (cause: any) { setError(cause.message || 'Không thể lưu cấu trúc chứng chỉ'); }
-    finally { setSaving(false); }
+  function openStructure(mode: 'domain' | 'topic', domainId = '') {
+    const query = new URLSearchParams({ mode, ...(domainId ? { domainId } : {}) });
+    router.push(`/admin/certifications/${id}/structure/new?${query}`);
   }
 
   async function openTopicManager(topic: any, type: 'vocabularies' | 'questions') {
@@ -124,7 +104,7 @@ export default function AdminCertificationDetailPage({ params }: { params: Promi
     <ContentSection title={`Ngân hàng câu hỏi (${questions.length})`} empty="Chưa có câu hỏi nào được gắn với chứng chỉ.">{questions.map((item: any) => <ContentRow key={item.id} title={item.prompt} meta={<>{item.domain?.name} · <LevelBadge level={item.level} /></>} status={item.status} href={`/admin/questions/editor?id=${item.id}`} />)}</ContentSection>
     <ContentSection title={`Bài thi (${exams.length})`} empty="Chưa có bài thi nào được gắn với chứng chỉ.">{exams.map((item: any) => <ContentRow key={item.id} title={item.title} meta={`${item._count?.questions ?? 0} câu hỏi · ${item._count?.attempts ?? 0} lượt làm`} status={item.status} href="/admin/tests" />)}</ContentSection>
     {manageType && <ContentLinkManager manageType={manageType} certificateId={id} certificateName={certificate.name} options={options} selectedIds={selectedIds} setSelectedIds={setSelectedIds} saving={saving} onSave={() => void saveLinks()} onClose={() => setManageType(null)} />}
-    {structureMode && <Modal open onClose={() => { if (!saving) setStructureMode(null); }} maxWidth="max-w-xl"><form onSubmit={saveStructure} className="p-6"><h2 className="text-xl font-bold">{structureMode === 'domain' ? 'Thêm Domain vào chứng chỉ' : 'Thêm Topic vào Domain'}</h2><div className="mt-5 space-y-4"><label className="block text-sm font-semibold">Domain<Dropdown required value={structureForm.domainId} onChange={event => setStructureForm(current => ({ ...current, domainId: event.target.value }))} className="mt-2 h-11 w-full rounded-xl border border-outline-variant bg-white px-3"><option value="">Chọn Domain</option>{domainOptions.filter((domain: any) => structureMode === 'topic' || !certificate.domains?.some((entry: any) => entry.domainId === domain.id)).map((domain: any) => <option key={domain.id} value={domain.id}>{domain.name}</option>)}</Dropdown></label>{structureMode === 'domain' ? <label className="block text-sm font-semibold">Trọng số trong đề thi (%)<input type="number" min="0" max="100" step="0.1" value={structureForm.weightPercent} onChange={event => setStructureForm(current => ({ ...current, weightPercent: event.target.value }))} className="mt-2 h-11 w-full rounded-xl border border-outline-variant px-3" /></label> : <><label className="block text-sm font-semibold">Mã Topic<input required value={structureForm.code} onChange={event => setStructureForm(current => ({ ...current, code: event.target.value }))} className="mt-2 h-11 w-full rounded-xl border border-outline-variant px-3" placeholder="D1-T1" /></label><label className="block text-sm font-semibold">Tên Topic<input required value={structureForm.name} onChange={event => setStructureForm(current => ({ ...current, name: event.target.value }))} className="mt-2 h-11 w-full rounded-xl border border-outline-variant px-3" /></label><label className="block text-sm font-semibold">Mô tả<textarea value={structureForm.description} onChange={event => setStructureForm(current => ({ ...current, description: event.target.value }))} className="mt-2 min-h-24 w-full rounded-xl border border-outline-variant p-3" /></label></>}</div><div className="mt-6 flex justify-end gap-3"><button type="button" onClick={() => setStructureMode(null)} className="rounded-xl border px-4 py-2.5 font-semibold">Hủy</button><button disabled={saving} className="rounded-xl bg-primary px-5 py-2.5 font-bold text-white disabled:opacity-50">{saving ? 'Đang lưu…' : 'Lưu'}</button></div></form></Modal>}
+
     {topicManager && <TopicContentManager topicManager={topicManager} options={options} selectedIds={selectedIds} setSelectedIds={setSelectedIds} saving={saving} onSave={() => void saveTopicLinks()} onClose={() => setTopicManager(null)} />}
   </main>;
 }

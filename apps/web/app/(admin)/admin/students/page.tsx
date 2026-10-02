@@ -1,5 +1,5 @@
 'use client';
-import { ActionButton } from '@/shared/ui/ActionButton';
+import { ActionButton, ActionGroup } from '@/shared/ui/ActionButton';
 
 import { LevelBadge } from '@/shared/ui/LevelBadge';
 import { Dropdown } from '@/shared/ui/Dropdown';
@@ -174,7 +174,7 @@ export default function AdminStudentsPage() {
                       {new Date(u.createdAt).toLocaleDateString('vi-VN')}
                     </td>
                     <td className="p-md text-center">
-                      <ActionButton action="view" href={`/admin/students/${u.id}`} />
+                      <ActionGroup><ActionButton action="view" href={`/admin/students/${u.id}`} /></ActionGroup>
                     </td>
                   </tr>
                 ))

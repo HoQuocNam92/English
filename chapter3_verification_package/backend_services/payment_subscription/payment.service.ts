@@ -6,28 +6,28 @@ import {
   InternalServerErrorException,
   Logger,
   UnauthorizedException,
-} from '@nestjs/common';
-import * as crypto from 'crypto';
-import { PrismaService } from '../../infrastructure/database/prisma.service';
-import { RedisLockService } from '../../infrastructure/cache/redis-lock.service';
-import { OrderStatus } from '@prisma/client';
+} from "@nestjs/common";
+import * as crypto from "crypto";
+import { PrismaService } from "../../infrastructure/database/prisma.service";
+import { RedisLockService } from "../../infrastructure/cache/redis-lock.service";
+import { OrderStatus } from "@prisma/client";
 
-const SEPAY_API_URL = 'https://my.sepay.vn/userapi';
+const SEPAY_API_URL = "https://my.sepay.vn/userapi";
 
 // ─── Plan definitions ────────────────────────────────────────────────────────
 // amount: VND (không dùng float)
 export const PLANS = {
-  pro_monthly:   { name: 'TechEnglish PRO - 1 Tháng', amount: 99_000,  durationDays: 30 },
-  pro_quarterly: { name: 'TechEnglish PRO - 3 Tháng', amount: 249_000, durationDays: 90 },
-  pro_halfyear:  { name: 'TechEnglish PRO - 6 Tháng', amount: 449_000, durationDays: 180 },
-  pro_yearly:    { name: 'TechEnglish PRO - 1 Năm',   amount: 799_000, durationDays: 365 },
+  pro_monthly: { name: "TechEnglish PRO - 1 Tháng", amount: 99_000, durationDays: 30 },
+  pro_quarterly: { name: "TechEnglish PRO - 3 Tháng", amount: 249_000, durationDays: 90 },
+  pro_halfyear: { name: "TechEnglish PRO - 6 Tháng", amount: 449_000, durationDays: 180 },
+  pro_yearly: { name: "TechEnglish PRO - 1 Năm", amount: 799_000, durationDays: 365 },
 } as const;
 
 export type PlanId = keyof typeof PLANS;
 
-const ORDER_TTL_MS  = 15 * 60 * 1000;  // 15 phút
-const WEBHOOK_LOCK_TTL_MS = 30_000;    // 30 giây
-const ORDER_LOCK_TTL_MS   = 10_000;    // 10 giây
+const ORDER_TTL_MS = 15 * 60 * 1000; // 15 phút
+const WEBHOOK_LOCK_TTL_MS = 30_000; // 30 giây
+const ORDER_LOCK_TTL_MS = 10_000; // 10 giây
 
 @Injectable()
 export class PaymentService {
@@ -63,7 +63,7 @@ export class PaymentService {
     const plan = PLANS[planId as PlanId];
     if (!plan) throw new BadRequestException(`Plan không hợp lệ: ${planId}`);
     if (!idempotencyKey || idempotencyKey.length > 128) {
-      throw new BadRequestException('Idempotency-Key header bắt buộc và tối đa 128 ký tự');
+      throw new BadRequestException("Idempotency-Key header bắt buộc và tối đa 128 ký tự");
     }
 
     const existing = await this.prisma.paymentOrder.findUnique({
@@ -76,9 +76,13 @@ export class PaymentService {
     }
 
     const lockKey = `order:create:${userId}:${planId}`;
-    const result = await this.redisLock.withLock(lockKey, async () => {
-      return this.createOrderInTransaction(userId, planId, plan, idempotencyKey, voucherCode);
-    }, ORDER_LOCK_TTL_MS);
+    const result = await this.redisLock.withLock(
+      lockKey,
+      async () => {
+        return this.createOrderInTransaction(userId, planId, plan, idempotencyKey, voucherCode);
+      },
+      ORDER_LOCK_TTL_MS,
+    );
 
     if (result === null) {
       const retryCheck = await this.prisma.paymentOrder.findUnique({
@@ -86,7 +90,7 @@ export class PaymentService {
         include: { voucher: true },
       });
       if (retryCheck) return this.formatOrderResponse(retryCheck);
-      throw new ConflictException('Đơn hàng đang được xử lý, vui lòng thử lại sau giây lát');
+      throw new ConflictException("Đơn hàng đang được xử lý, vui lòng thử lại sau giây lát");
     }
 
     return result;
@@ -95,7 +99,7 @@ export class PaymentService {
   private async createOrderInTransaction(
     userId: string,
     planId: string,
-    plan: typeof PLANS[PlanId],
+    plan: (typeof PLANS)[PlanId],
     idempotencyKey: string,
     voucherCode?: string,
   ) {
@@ -130,20 +134,22 @@ export class PaymentService {
         where: { code: voucherCode.toUpperCase().trim() },
       });
       if (!voucher || !voucher.isActive) {
-        throw new BadRequestException('Mã giảm giá không hợp lệ hoặc đã bị vô hiệu hóa.');
+        throw new BadRequestException("Mã giảm giá không hợp lệ hoặc đã bị vô hiệu hóa.");
       }
       if (now < voucher.startDate || now > voucher.endDate) {
-        throw new BadRequestException('Mã giảm giá đã hết hạn sử dụng.');
+        throw new BadRequestException("Mã giảm giá đã hết hạn sử dụng.");
       }
       if (voucher.usageLimit !== null && voucher.usedCount >= voucher.usageLimit) {
-        throw new BadRequestException('Mã giảm giá đã hết lượt sử dụng.');
+        throw new BadRequestException("Mã giảm giá đã hết lượt sử dụng.");
       }
       if (originalAmount < voucher.minOrderAmount) {
-        throw new BadRequestException(`Mã giảm giá yêu cầu đơn hàng tối thiểu ${voucher.minOrderAmount.toLocaleString('vi-VN')} VNĐ.`);
+        throw new BadRequestException(
+          `Mã giảm giá yêu cầu đơn hàng tối thiểu ${voucher.minOrderAmount.toLocaleString("vi-VN")} VNĐ.`,
+        );
       }
 
       let vDiscount = 0;
-      if (voucher.discountType === 'percentage') {
+      if (voucher.discountType === "percentage") {
         vDiscount = Math.floor((originalAmount * voucher.discountValue) / 100);
         if (voucher.maxDiscountAmount && vDiscount > voucher.maxDiscountAmount) {
           vDiscount = voucher.maxDiscountAmount;
@@ -161,11 +167,11 @@ export class PaymentService {
 
     let paymentUrl: string;
     const apiKey = process.env.SEPAY_API_KEY;
-    if (apiKey && apiKey !== 'placeholder' && apiKey.trim() !== '') {
+    if (apiKey && apiKey !== "placeholder" && apiKey.trim() !== "") {
       paymentUrl = await this.callSePayAPI(shortRef, { ...plan, amount: finalAmount });
     } else {
-      const bankAcc = process.env.SEPAY_BANK_ACC || '0901234567';
-      const bankName = process.env.SEPAY_BANK_NAME || 'MBBank';
+      const bankAcc = process.env.SEPAY_BANK_ACC || "0901234567";
+      const bankName = process.env.SEPAY_BANK_NAME || "MBBank";
       paymentUrl = `https://qr.sepay.vn/img?bank=${bankName}&acc=${bankAcc}&amount=${finalAmount}&des=${shortRef}`;
     }
 
@@ -180,7 +186,7 @@ export class PaymentService {
         voucherId,
         voucherCode: matchedVoucherCode,
         idempotencyKey,
-        status: 'pending',
+        status: "pending",
         expiresAt,
       },
     });
@@ -189,14 +195,15 @@ export class PaymentService {
   }
 
   private formatOrderResponse(order: any, paymentUrl?: string, shortRef?: string) {
-    const bankAcc = process.env.SEPAY_BANK_ACC || '0901234567';
-    const bankName = process.env.SEPAY_BANK_NAME || 'MBBank';
-    const accountName = process.env.SEPAY_ACCOUNT_NAME || 'HO QUOC NAM';
+    const bankAcc = process.env.SEPAY_BANK_ACC || "0901234567";
+    const bankName = process.env.SEPAY_BANK_NAME || "MBBank";
+    const accountName = process.env.SEPAY_ACCOUNT_NAME || "HO QUOC NAM";
     const ref = shortRef || order.shortRef || `TE${order.id.slice(0, 6).toUpperCase()}`;
     const amount = order.amount;
-    const qrUrl = paymentUrl && paymentUrl.includes('qr.sepay.vn')
-      ? paymentUrl
-      : `https://qr.sepay.vn/img?bank=${bankName}&acc=${bankAcc}&amount=${amount}&des=${ref}`;
+    const qrUrl =
+      paymentUrl && paymentUrl.includes("qr.sepay.vn")
+        ? paymentUrl
+        : `https://qr.sepay.vn/img?bank=${bankName}&acc=${bankAcc}&amount=${amount}&des=${ref}`;
 
     return {
       orderId: order.id,
@@ -241,41 +248,38 @@ export class PaymentService {
    */
   async handleWebhook(rawBody: string, signature: string, payload: any) {
     // ── 1. Verify HMAC-SHA256 signature ──────────────────────────────────────
-    const webhookSecret = process.env.SEPAY_WEBHOOK_SECRET ?? '';
-    if (webhookSecret && webhookSecret.trim() !== '') {
-      const expectedSig = crypto
-        .createHmac('sha256', webhookSecret)
-        .update(rawBody)
-        .digest('hex');
+    const webhookSecret = process.env.SEPAY_WEBHOOK_SECRET ?? "";
+    if (webhookSecret && webhookSecret.trim() !== "") {
+      const expectedSig = crypto.createHmac("sha256", webhookSecret).update(rawBody).digest("hex");
       if (signature !== expectedSig) {
-        this.logger.warn('SePay webhook signature mismatch');
-        throw new UnauthorizedException('Invalid webhook signature');
+        this.logger.warn("SePay webhook signature mismatch");
+        throw new UnauthorizedException("Invalid webhook signature");
       }
     } else {
-      this.logger.warn('SEPAY_WEBHOOK_SECRET not set — skipping signature verification (dev mode)');
+      this.logger.warn("SEPAY_WEBHOOK_SECRET not set — skipping signature verification (dev mode)");
     }
 
     // ── 2. Parse key fields từ SePay payload ─────────────────────────────────
     // SePay webhook format (theo docs): transaction_id, transfer_amount, transfer_type, ...
-    const transId: string = String(payload.transaction_id ?? payload.id ?? '');
-    const status: string  = String(payload.status ?? payload.transfer_type ?? '');
-    const amount: number  = Number(payload.transfer_amount ?? payload.amount ?? 0);
+    const transId: string = String(payload.transaction_id ?? payload.id ?? "");
+    const status: string = String(payload.status ?? payload.transfer_type ?? "");
+    const amount: number = Number(payload.transfer_amount ?? payload.amount ?? 0);
 
     if (!transId) {
-      this.logger.warn('SePay webhook missing transaction_id', payload);
-      return { received: true, processed: false, reason: 'missing_transaction_id' };
+      this.logger.warn("SePay webhook missing transaction_id", payload);
+      return { received: true, processed: false, reason: "missing_transaction_id" };
     }
 
     // Chỉ xử lý khi thanh toán thành công
-    const isSuccess = ['success', 'completed', 'paid', 'IN'].includes(status);
+    const isSuccess = ["success", "completed", "paid", "IN"].includes(status);
 
     // ── 3. Idempotency check — đã xử lý rồi thì trả về ngay ─────────────────
     const existingOrder = await this.prisma.paymentOrder.findUnique({
       where: { sepayTransactionId: transId },
     });
-    if (existingOrder?.status === 'paid') {
+    if (existingOrder?.status === "paid") {
       this.logger.log(`Webhook idempotent: transId=${transId} already paid`);
-      return { received: true, processed: false, reason: 'already_processed' };
+      return { received: true, processed: false, reason: "already_processed" };
     }
 
     // ── 4. Redis distributed lock (TTL 30s) ───────────────────────────────────
@@ -284,16 +288,16 @@ export class PaymentService {
     if (!acquired) {
       this.logger.log(`Webhook lock busy: transId=${transId} — another process is handling`);
       // Trả 200 để SePay không retry (idempotent)
-      return { received: true, processed: false, reason: 'processing_by_another_instance' };
+      return { received: true, processed: false, reason: "processing_by_another_instance" };
     }
 
     try {
       // ── 5. DB lookup theo content (nếu không match transId, tìm theo amount+time) ──
       // SePay gửi content dạng "TE<shortRef>" hoặc orderId
-      const content: string = String(payload.content ?? payload.description ?? '');
+      const content: string = String(payload.content ?? payload.description ?? "");
       let order = await this.prisma.paymentOrder.findFirst({
         where: {
-          status: 'pending',
+          status: "pending",
           OR: [
             { idempotencyKey: content },
             // match theo shortRef trong content
@@ -302,26 +306,30 @@ export class PaymentService {
       });
 
       if (!order) {
-        this.logger.warn(`Webhook: no pending order matched for transId=${transId}, content=${content}`);
-        return { received: true, processed: false, reason: 'order_not_found' };
+        this.logger.warn(
+          `Webhook: no pending order matched for transId=${transId}, content=${content}`,
+        );
+        return { received: true, processed: false, reason: "order_not_found" };
       }
 
       // ── 6. Kiểm tra số tiền khớp ─────────────────────────────────────────────
       if (isSuccess && amount < order.amount) {
         this.logger.warn(`Webhook: amount mismatch — expected ${order.amount}, got ${amount}`);
-        return { received: true, processed: false, reason: 'amount_mismatch' };
+        return { received: true, processed: false, reason: "amount_mismatch" };
       }
 
       // ── 7. DB transaction: mark paid + upsert subscription ────────────────────
       if (isSuccess) {
         await this.processSuccessfulPayment(order, transId, payload);
-        this.logger.log(`Payment success: orderId=${order.id}, transId=${transId}, userId=${order.userId}`);
+        this.logger.log(
+          `Payment success: orderId=${order.id}, transId=${transId}, userId=${order.userId}`,
+        );
       } else {
         // Thanh toán thất bại
         await this.prisma.paymentOrder.update({
           where: { id: order.id },
           data: {
-            status: 'failed',
+            status: "failed",
             sepayTransactionId: transId,
             webhookPayload: payload,
             webhookReceivedAt: new Date(),
@@ -345,7 +353,7 @@ export class PaymentService {
       const updatedOrder = await tx.paymentOrder.update({
         where: { id: order.id },
         data: {
-          status: 'paid',
+          status: "paid",
           sepayTransactionId: transId,
           webhookPayload: payload,
           webhookReceivedAt: now,
@@ -358,9 +366,12 @@ export class PaymentService {
         where: { userId: order.userId },
       });
 
-      const newExpiry = existingSub?.status === 'active' && existingSub.expiresAt > now
-        ? new Date(existingSub.expiresAt.getTime() + (plan?.durationDays ?? 30) * 24 * 60 * 60 * 1000)
-        : subExpiry;
+      const newExpiry =
+        existingSub?.status === "active" && existingSub.expiresAt > now
+          ? new Date(
+              existingSub.expiresAt.getTime() + (plan?.durationDays ?? 30) * 24 * 60 * 60 * 1000,
+            )
+          : subExpiry;
 
       await tx.userSubscription.upsert({
         where: { userId: order.userId },
@@ -368,14 +379,14 @@ export class PaymentService {
           userId: order.userId,
           planId: order.planId,
           orderId: updatedOrder.id,
-          status: 'active',
+          status: "active",
           startedAt: now,
           expiresAt: newExpiry,
         },
         update: {
           planId: order.planId,
           orderId: updatedOrder.id,
-          status: 'active',
+          status: "active",
           startedAt: now,
           expiresAt: newExpiry,
         },
@@ -392,15 +403,15 @@ export class PaymentService {
       where: { id: orderId },
       include: { subscription: true },
     });
-    if (!order) throw new BadRequestException('Order không tìm thấy');
+    if (!order) throw new BadRequestException("Order không tìm thấy");
 
     // Auto-expire nếu quá hạn
-    if (order.status === 'pending' && order.expiresAt < new Date()) {
+    if (order.status === "pending" && order.expiresAt < new Date()) {
       await this.prisma.paymentOrder.update({
         where: { id: orderId },
-        data: { status: 'expired' },
+        data: { status: "expired" },
       });
-      return { orderId, status: 'expired', amount: order.amount, planId: order.planId };
+      return { orderId, status: "expired", amount: order.amount, planId: order.planId };
     }
 
     return {
@@ -432,17 +443,17 @@ export class PaymentService {
 
     // Auto-mark expired
     const isExpired = sub.expiresAt < new Date();
-    if (isExpired && sub.status === 'active') {
+    if (isExpired && sub.status === "active") {
       await this.prisma.userSubscription.update({
         where: { userId },
-        data: { status: 'expired' },
+        data: { status: "expired" },
       });
     }
 
     return {
       hasSubscription: true,
       planId: sub.planId,
-      status: isExpired ? 'expired' : sub.status,
+      status: isExpired ? "expired" : sub.status,
       startedAt: sub.startedAt,
       expiresAt: sub.expiresAt,
       daysRemaining: isExpired ? 0 : Math.ceil((sub.expiresAt.getTime() - Date.now()) / 86_400_000),
@@ -455,15 +466,15 @@ export class PaymentService {
 
   private async callSePayAPI(shortRef: string, plan: { name: string; amount: number }) {
     const apiKey = process.env.SEPAY_API_KEY!;
-    const appUrl = process.env.APP_URL ?? 'http://localhost:8080';
+    const appUrl = process.env.APP_URL;
 
     try {
       const res = await fetch(`${SEPAY_API_URL}/transactions/create`, {
-        method: 'POST',
+        method: "POST",
         headers: {
           Authorization: `Bearer ${apiKey}`,
-          'Content-Type': 'application/json',
-          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)',
+          "Content-Type": "application/json",
+          "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)",
         },
         body: JSON.stringify({
           order_id: shortRef,
@@ -482,22 +493,22 @@ export class PaymentService {
       this.logger.warn(`SePay API call error: ${e.message}`);
     }
 
-    const bankAcc = process.env.SEPAY_BANK_ACC || '0901234567';
-    const bankName = process.env.SEPAY_BANK_NAME || 'MBBank';
+    const bankAcc = process.env.SEPAY_BANK_ACC || "0901234567";
+    const bankName = process.env.SEPAY_BANK_NAME || "MBBank";
     return `https://qr.sepay.vn/img?bank=${bankName}&acc=${bankAcc}&amount=${plan.amount}&des=${shortRef}`;
   }
 
   async getMyOrders(userId: string) {
     const orders = await this.prisma.paymentOrder.findMany({
       where: { userId },
-      orderBy: { createdAt: 'desc' },
+      orderBy: { createdAt: "desc" },
       take: 50,
     });
 
     return orders.map((o) => {
-      const bankAcc = process.env.SEPAY_BANK_ACC || '0901234567';
-      const bankName = process.env.SEPAY_BANK_NAME || 'MBBank';
-      const accountName = process.env.SEPAY_ACCOUNT_NAME || 'HO QUOC NAM';
+      const bankAcc = process.env.SEPAY_BANK_ACC || "0901234567";
+      const bankName = process.env.SEPAY_BANK_NAME || "MBBank";
+      const accountName = process.env.SEPAY_ACCOUNT_NAME || "HO QUOC NAM";
       const ref = o.sepayTransactionId || `TE${o.id.slice(0, 6).toUpperCase()}`;
 
       return {

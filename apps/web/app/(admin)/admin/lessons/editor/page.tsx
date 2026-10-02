@@ -1,5 +1,6 @@
 'use client';
 
+import { FormPageLayout } from '@/shared/ui/CreatePage';
 import { Dropdown } from '@/shared/ui/Dropdown';
 import * as React from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
@@ -35,9 +36,9 @@ export default function LessonEditorPage() {
   const field = (key: keyof typeof form, value: unknown) => setForm(current => ({ ...current, [key]: value }));
   const category = CONTENT_TYPES[form.type];
 
-  if (loading) return <div><PageHeader title="Quản lý bài học" description="Đang tải biểu mẫu..." /><p className="mt-10 text-center text-on-surface-variant">Đang tải...</p></div>;
-  return <div><PageHeader icon={category?.icon} iconClassName={category?.iconClassName} title={`${lessonId ? 'Chỉnh sửa' : 'Thêm'} ${category?.item ?? 'bài học'}`} description={category?.intro ?? 'Biên soạn nội dung học tập'} />
-    <form onSubmit={submit} className="mt-6 max-w-5xl space-y-6">
+  if (loading) return <FormPageLayout><PageHeader title="Quản lý bài học" description="Đang tải biểu mẫu..." /><p className="mt-10 text-center text-on-surface-variant">Đang tải...</p></FormPageLayout>;
+  return <FormPageLayout><PageHeader icon={category?.icon} iconClassName={category?.iconClassName} title={`${lessonId ? 'Chỉnh sửa' : 'Thêm'} ${category?.item ?? 'bài học'}`} description={category?.intro ?? 'Biên soạn nội dung học tập'} />
+    <form onSubmit={submit} className="mt-6 w-full space-y-6">
       {error && <div className="rounded-xl bg-error-container p-3 text-sm text-on-error-container">{error}</div>}
       <section className="grid gap-4 rounded-2xl bg-surface-container-lowest p-6 shadow-sm md:grid-cols-2">
         <label className="md:col-span-2 text-sm font-semibold">Tên {category?.item ?? 'bài học'}<input value={form.title} onChange={e => field('title', e.target.value)} maxLength={200} className="mt-1.5 w-full rounded-xl border border-outline-variant bg-surface-container-low px-4 py-2.5 font-normal" /></label>
@@ -53,5 +54,5 @@ export default function LessonEditorPage() {
       <LessonContentStudio type={form.type} sections={sections} onChange={setSections} />
       <div className="flex justify-end gap-3"><button type="button" onClick={() => router.push(`/admin/lessons?type=${form.type}`)} className="rounded-xl border border-outline-variant px-5 py-2.5 text-sm font-semibold">Hủy</button><button disabled={saving} className="rounded-xl bg-primary px-5 py-2.5 text-sm font-semibold text-white disabled:opacity-50">{saving ? 'Đang lưu...' : `Lưu ${category?.item ?? 'bài học'}`}</button></div>
     </form>
-  </div>;
+  </FormPageLayout>;
 }

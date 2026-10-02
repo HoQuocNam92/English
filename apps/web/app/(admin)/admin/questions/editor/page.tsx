@@ -1,4 +1,5 @@
 'use client';
+import { FormPageLayout } from '@/shared/ui/CreatePage';
 
 import { Dropdown } from '@/shared/ui/Dropdown';
 import * as React from 'react';
@@ -166,23 +167,23 @@ export default function QuestionEditorPage() {
 
   if (loading) {
     return (
-      <div>
+      <FormPageLayout>
         <PageHeader title={isEdit ? 'Chỉnh sửa câu hỏi' : 'Soạn câu hỏi mới'} description="Tạo và chỉnh sửa câu hỏi trắc nghiệm" />
         <div className="mt-6 flex items-center justify-center h-64">
           <span className="animate-spin material-symbols-outlined text-primary">progress_activity</span>
         </div>
-      </div>
+      </FormPageLayout>
     );
   }
 
   return (
-    <div>
+    <FormPageLayout>
       <PageHeader
         title={isEdit ? 'Chỉnh sửa câu hỏi' : 'Soạn câu hỏi mới'}
         description="Tạo câu hỏi trắc nghiệm để đưa vào bài thi hoặc flashcard"
       />
 
-      <form onSubmit={handleSubmit} className="mx-auto mt-6 w-full max-w-[900px] space-y-6 rounded-2xl bg-surface-container-lowest p-6 shadow-[0_8px_28px_rgba(15,23,42,0.05)]">
+      <form onSubmit={handleSubmit} className="mt-6 w-full space-y-6 rounded-2xl bg-surface-container-lowest p-6 shadow-[0_8px_28px_rgba(15,23,42,0.05)]">
         {globalError && (
           <div className="p-3 rounded-xl bg-error-container text-on-error-container text-sm flex gap-2 items-center">
             <span className="material-symbols-outlined text-[18px]">error</span>
@@ -402,7 +403,7 @@ export default function QuestionEditorPage() {
           </button>
         </div>
       </form>
-    </div>
+    </FormPageLayout>
   );
 }
 

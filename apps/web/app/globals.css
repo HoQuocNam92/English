@@ -599,10 +599,15 @@ body {
     var(--background);
 }
 
-.admin-canvas > main {
+.admin-canvas > main:not(.admin-form-page) {
   margin: 0;
   padding: 0 !important;
   max-width: none;
+}
+
+/* Form pages keep their width limit and center within the canvas. */
+.admin-canvas > .admin-form-page {
+  margin-inline: auto;
 }
 
 .admin-canvas > .p-6,
@@ -617,7 +622,7 @@ body {
     --card-padding: 16px;
   }
   .admin-canvas { padding: var(--page-gutter); }
-  .admin-canvas > main { margin: 0; }
+  .admin-canvas > main:not(.admin-form-page) { margin: 0; }
 }
 
 /* Shared page and surface rhythm. Width remains responsive, while outer

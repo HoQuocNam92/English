@@ -1,5 +1,5 @@
 'use client';
-import { ActionButton } from '@/shared/ui/ActionButton';
+import { ActionButton, ActionGroup } from '@/shared/ui/ActionButton';
 
 import { Dropdown } from '@/shared/ui/Dropdown';
 import * as React from 'react';
@@ -244,7 +244,7 @@ export default function AdminTestResultsPage() {
                         <StatusBadge status={isPassed ? 'passed' : 'failed'} />
                       </td>
                       <td className="p-md text-right">
-                        <ActionButton action="view" onClick={() => setSelectedAttemptId(r.id)} />
+                        <ActionGroup><ActionButton action="view" onClick={() => setSelectedAttemptId(r.id)} /></ActionGroup>
                       </td>
                     </tr>
                   );

@@ -1,5 +1,6 @@
 'use client';
 
+import { ActionButton, ActionGroup } from '@/shared/ui/ActionButton';
 import { Dropdown } from '@/shared/ui/Dropdown';
 import * as React from 'react';
 
@@ -81,7 +82,7 @@ export function hasStudioContent(section: StudioSection) {
 }
 
 function SectionShell({ eyebrow, icon, title, description, children, onRemove, removable }: { eyebrow: string; icon: string; title: string; description: string; children: React.ReactNode; onRemove?: () => void; removable?: boolean }) {
-  return <article className="overflow-hidden rounded-2xl border border-outline-variant/60 bg-white shadow-sm"><header className="flex items-start justify-between gap-4 border-b border-outline-variant/40 bg-surface-container-low px-5 py-4"><div className="flex gap-3"><span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary"><span className="material-symbols-outlined">{icon}</span></span><div><p className="text-[10px] font-black uppercase tracking-[.16em] text-primary">{eyebrow}</p><h3 className="mt-1 font-black text-on-surface">{title}</h3><p className="mt-1 text-xs leading-5 text-on-surface-variant">{description}</p></div></div>{removable && <button type="button" onClick={onRemove} aria-label={`Xóa ${title}`} className="rounded-lg p-2 text-error hover:bg-error-container"><span className="material-symbols-outlined text-[20px]">delete</span></button>}</header><div className="grid gap-4 p-5 md:grid-cols-2">{children}</div></article>;
+  return <article className="overflow-hidden rounded-2xl border border-outline-variant/60 bg-white shadow-sm"><header className="flex items-start justify-between gap-4 border-b border-outline-variant/40 bg-surface-container-low px-5 py-4"><div className="flex gap-3"><span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary"><span className="material-symbols-outlined">{icon}</span></span><div><p className="text-[10px] font-black uppercase tracking-[.16em] text-primary">{eyebrow}</p><h3 className="mt-1 font-black text-on-surface">{title}</h3><p className="mt-1 text-xs leading-5 text-on-surface-variant">{description}</p></div></div>{removable && <ActionGroup><ActionButton action="delete" label={`Xóa ${title}`} onClick={onRemove} /></ActionGroup>}</header><div className="grid gap-4 p-5 md:grid-cols-2">{children}</div></article>;
 }
 
 function TerminologyStudio({ sections, update, remove }: StudioBodyProps) {
