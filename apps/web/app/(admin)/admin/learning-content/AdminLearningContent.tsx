@@ -735,4 +735,3 @@ export default function AdminLearningContent({ createOnly = false }: { createOnl
     </div>
   );
 }
-

@@ -123,7 +123,7 @@ export default function AdminCertifications({ createOnly = false }: { createOnly
           <h2 className="font-headline-h1 text-headline-h1 text-on-surface">Quản lý Chứng chỉ</h2>
           <p className="font-body-md text-body-md text-on-surface-variant mt-xs">Quản lý và tổ chức nội dung học tập theo chứng chỉ IT.</p>
         </div>
-        
+
         {error && (
           <div className="p-3 rounded-xl bg-error-container text-on-error-container text-sm flex items-center gap-2">
             <span className="material-symbols-outlined text-[18px]">error</span>
@@ -133,7 +133,7 @@ export default function AdminCertifications({ createOnly = false }: { createOnly
 
         <div className="flex flex-wrap items-center gap-sm mt-md md:mt-0">
           <SearchInput value={searchInput} onChange={setSearchInput} onSearch={value => { handleSearch(value); }} placeholder="Tìm kiếm chứng chỉ…" />
-          <button 
+          <button
             onClick={openCreate}
             className="bg-primary text-on-primary font-interface-sb py-sm px-md rounded-lg hover:bg-primary-container transition-colors flex items-center gap-xs"
           >
@@ -161,7 +161,7 @@ export default function AdminCertifications({ createOnly = false }: { createOnly
             const questionCount = topicList.reduce((sum, topic) => sum + Number(topic._count?.questions ?? 0), 0);
             const readyParts = Number(questionCount > 0) + Number((c._count?.exams ?? 0) > 0);
             const contentProgress = Math.round(readyParts / 2 * 100);
-            
+
             return (
               <div key={c.id} className="bg-surface-container-lowest rounded-xl border border-outline-variant p-lg hover:shadow-[0_1px_3px_rgba(15,23,24,0.06)] transition-all flex flex-col gap-md">
                 <div className="flex flex-col gap-3 sm:flex-row sm:justify-between sm:items-start">
@@ -182,7 +182,7 @@ export default function AdminCertifications({ createOnly = false }: { createOnly
                     <ActionButton action="delete" onClick={() => void remove(c)} />
                   </ActionGroup>
                 </div>
-                
+
                 <div className="grid grid-cols-3 gap-sm py-md border-y border-outline-variant/50">
                   <div className="flex flex-col">
                     <span className="font-body-sm text-body-sm text-on-surface-variant">Đề thi</span>
@@ -197,7 +197,7 @@ export default function AdminCertifications({ createOnly = false }: { createOnly
                     <span className="font-interface-sb text-interface-sb text-on-surface">{questionCount + (c._count?.exams ?? 0)}</span>
                   </div>
                 </div>
-                
+
                 <div className="flex flex-col gap-xs mt-auto">
                   <div className="flex justify-between items-center">
                     <span className="font-body-sm text-body-sm text-on-surface-variant">Mức hoàn thiện nội dung</span>
