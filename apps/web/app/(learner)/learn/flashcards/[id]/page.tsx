@@ -1,4 +1,5 @@
 'use client';
+import { AppIcon } from '@/shared/ui/AppIcon';
 
 import { Dropdown } from '@/shared/ui/Dropdown';
 import * as React from 'react';
@@ -164,7 +165,7 @@ export default function LessonVocabularyDetailPage({ params }: { params: Promise
             href="/learn/flashcards"
             className="text-xs font-bold text-slate-500 hover:text-primary flex items-center gap-1.5 transition-colors"
           >
-            <span className="material-symbols-outlined text-sm">arrow_back</span>
+            <AppIcon className=" text-sm">arrow_back</AppIcon>
             Danh mục Flashcards
           </Link>
         </div>
@@ -186,7 +187,7 @@ export default function LessonVocabularyDetailPage({ params }: { params: Promise
           <div className="p-4 rounded-2xl bg-gradient-to-r from-amber-50 to-orange-50 border-2 border-amber-200 flex flex-col sm:flex-row items-center justify-between gap-3 shadow-2xs">
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 rounded-xl bg-amber-500 text-white flex items-center justify-center shrink-0 shadow-xs">
-                <span className="material-symbols-outlined text-xl">alarm</span>
+                <AppIcon className=" text-xl">alarm</AppIcon>
               </div>
               <div className="space-y-0.5">
                 <div className="text-xs font-bold text-amber-950">
@@ -201,7 +202,7 @@ export default function LessonVocabularyDetailPage({ params }: { params: Promise
               href={`/learn/flashcards/${lessonId}/practice?onlyNeedsReview=true`}
               className="w-full sm:w-auto px-4 py-2 rounded-xl bg-amber-600 hover:bg-amber-700 text-white text-xs font-black transition-all shadow-xs flex items-center justify-center gap-1.5 shrink-0"
             >
-              <span className="material-symbols-outlined text-base">play_circle</span>
+              <AppIcon className=" text-base">play_circle</AppIcon>
               <span>Ôn ngay {stats.needsReview} từ đến hạn</span>
             </Link>
           </div>
@@ -213,9 +214,9 @@ export default function LessonVocabularyDetailPage({ params }: { params: Promise
             href={`/learn/flashcards/${lessonId}/practice`}
             className="w-full py-4 rounded-2xl bg-indigo-50 border-2 border-indigo-200 text-primary hover:bg-primary hover:text-white hover:border-primary transition-all shadow-xs flex items-center justify-center gap-2 text-base font-black text-center group"
           >
-            <span className="material-symbols-outlined text-xl group-hover:scale-110 transition-transform">
+            <AppIcon className=" text-xl group-hover:scale-110 transition-transform">
               style
-            </span>
+            </AppIcon>
             <span>Luyện tập flashcards</span>
           </Link>
         </div>
@@ -227,7 +228,7 @@ export default function LessonVocabularyDetailPage({ params }: { params: Promise
               href={`/learn/flashcards/${lessonId}/quiz`}
               className="px-3.5 py-1.5 rounded-xl border border-slate-200 bg-white text-slate-700 hover:text-primary hover:border-primary/40 text-xs font-bold flex items-center gap-1.5 transition-all shadow-xs"
             >
-              <span className="material-symbols-outlined text-sm text-indigo-600">quiz</span>
+              <AppIcon className=" text-sm text-indigo-600">quiz</AppIcon>
               <span>Kiểm tra trắc nghiệm (Quiz)</span>
             </Link>
           </div>
@@ -237,7 +238,7 @@ export default function LessonVocabularyDetailPage({ params }: { params: Promise
             onClick={() => setConfirmStopModal(true)}
             className="text-xs font-bold text-red-600 hover:text-red-700 hover:underline flex items-center gap-1 transition-colors"
           >
-            <span className="material-symbols-outlined text-sm">archive</span>
+            <AppIcon className=" text-sm">archive</AppIcon>
             <span>Dừng học list từ này</span>
           </button>
         </div>
@@ -300,7 +301,7 @@ export default function LessonVocabularyDetailPage({ params }: { params: Promise
                       aria-label={`Phát âm từ ${word.term}`}
                       className="w-7 h-7 rounded-full bg-slate-100 text-slate-600 hover:bg-primary hover:text-white flex items-center justify-center transition-colors"
                     >
-                      <span className="material-symbols-outlined text-base">volume_up</span>
+                      <AppIcon className=" text-base">volume_up</AppIcon>
                     </button>
 
                     {word.isMastered && (
@@ -357,9 +358,9 @@ export default function LessonVocabularyDetailPage({ params }: { params: Promise
             <div className="flex flex-wrap items-center gap-3 text-xs text-slate-500 font-medium">
               <span>Hiển thị <strong className="text-slate-800">{startIndex + 1} - {Math.min(startIndex + pageSize, displayWords.length)}</strong> trong tổng số <strong className="text-slate-800">{displayWords.length}</strong> từ</span>
               <label className="relative inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-3 py-2">
-                <span className="material-symbols-outlined text-[17px] text-sky-600">view_list</span>
+                <AppIcon className=" text-[17px] text-sky-600">view_list</AppIcon>
                 <span>Số dòng</span>
-                <Dropdown value={pageSize} onChange={(event) => { setPageSize(Number(event.target.value)); setCurrentPage(1); }} className="cursor-pointer bg-transparent font-bold text-slate-800 outline-none">
+                <Dropdown value={pageSize} onChange={(event) => { setPageSize(Number(event.target.value)); setCurrentPage(1); }} aria-label="Số dòng trên mỗi trang" className="pagination-size-select cursor-pointer bg-transparent font-bold text-slate-800 outline-none">
                   {[10, 20, 30, 40].map((size) => <option key={size} value={size}>{size}</option>)}
                 </Dropdown>
               </label>
@@ -372,7 +373,7 @@ export default function LessonVocabularyDetailPage({ params }: { params: Promise
                 disabled={currentPage === 1}
                 className="px-3 py-1.5 rounded-xl border border-slate-200 bg-white text-xs font-bold text-slate-600 hover:bg-slate-50 hover:text-primary disabled:opacity-40 disabled:pointer-events-none transition-colors flex items-center gap-1 shadow-2xs"
               >
-                <span className="material-symbols-outlined text-sm">chevron_left</span>
+                <AppIcon className=" text-sm">chevron_left</AppIcon>
                 <span>Trước</span>
               </button>
 
@@ -411,7 +412,7 @@ export default function LessonVocabularyDetailPage({ params }: { params: Promise
                 className="px-3 py-1.5 rounded-xl border border-slate-200 bg-white text-xs font-bold text-slate-600 hover:bg-slate-50 hover:text-primary disabled:opacity-40 disabled:pointer-events-none transition-colors flex items-center gap-1 shadow-2xs"
               >
                 <span>Sau</span>
-                <span className="material-symbols-outlined text-sm">chevron_right</span>
+                <AppIcon className=" text-sm">chevron_right</AppIcon>
               </button>
             </div>
           </div>
@@ -422,7 +423,7 @@ export default function LessonVocabularyDetailPage({ params }: { params: Promise
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 p-4">
             <div className="bg-white rounded-3xl max-w-[480px] w-full p-6 space-y-5 shadow-xl animate-in fade-in zoom-in-95">
               <div className="w-12 h-12 rounded-2xl bg-red-100 text-red-600 flex items-center justify-center mx-auto">
-                <span className="material-symbols-outlined text-2xl">archive</span>
+                <AppIcon className=" text-2xl">archive</AppIcon>
               </div>
 
               <div className="text-center space-y-2">

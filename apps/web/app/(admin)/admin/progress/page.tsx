@@ -1,4 +1,5 @@
 'use client';
+import { AppIcon } from '@/shared/ui/AppIcon';
 
 import { LevelBadge } from '@/shared/ui/LevelBadge';
 import { Dropdown } from '@/shared/ui/Dropdown';
@@ -91,7 +92,7 @@ export default function AdminProgressPage() {
 
       {error && (
         <div className="mt-4 p-3 rounded-xl bg-error-container text-on-error-container text-sm flex items-center gap-2">
-          <span className="material-symbols-outlined text-[18px]">error</span>
+          <AppIcon className=" text-[18px]">error</AppIcon>
           <span>{error}</span>
         </div>
       )}
@@ -124,7 +125,7 @@ export default function AdminProgressPage() {
               ) : items.length === 0 ? (
                 <tr>
                   <td colSpan={6} className="py-16 text-center">
-                    <span className="material-symbols-outlined text-[40px] text-outline mb-2 block">insights</span>
+                    <AppIcon className=" text-[40px] text-outline mb-2 block">insights</AppIcon>
                     <p className="text-on-surface-variant text-sm">Chưa có dữ liệu tiến độ</p>
                   </td>
                 </tr>

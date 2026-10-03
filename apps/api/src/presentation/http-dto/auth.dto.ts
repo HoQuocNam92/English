@@ -26,11 +26,8 @@ export class RegisterDto {
 
   @ApiProperty({ example: 'Password123!' })
   @IsString()
-  @MinLength(8, { message: 'Mật khẩu phải có ít nhất 8 ký tự' })
+  @MinLength(6, { message: 'Mật khẩu phải có ít nhất 6 ký tự' })
   @MaxLength(72, { message: 'Mật khẩu tối đa 72 ký tự' })
-  @Matches(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]/, {
-    message: 'Mật khẩu phải có ít nhất 1 chữ hoa, 1 chữ thường, 1 số và 1 ký tự đặc biệt (@$!%*?&)',
-  })
   password: string
 }
 
@@ -49,11 +46,8 @@ export class AuthChangePasswordDto {
 
   @ApiProperty()
   @IsString()
-  @MinLength(8, { message: 'Mật khẩu mới phải có ít nhất 8 ký tự' })
+  @MinLength(6, { message: 'Mật khẩu mới phải có ít nhất 6 ký tự' })
   @MaxLength(72, { message: 'Mật khẩu tối đa 72 ký tự' })
-  @Matches(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]/, {
-    message: 'Mật khẩu phải có ít nhất 1 chữ hoa, 1 chữ thường, 1 số và 1 ký tự đặc biệt (@$!%*?&)',
-  })
   newPassword: string
 }
 
@@ -70,22 +64,17 @@ export class ForgotPasswordDto {
   email: string
 }
 
-export class ResetPasswordDto {
-  @ApiProperty({ example: 'learner1@techenglish.pro' })
-  @IsEmail({}, { message: 'Email không hợp lệ' })
-  email: string
-
-  @ApiProperty({ example: '123456' })
+export class ValidatePasswordResetDto {
+  @ApiProperty()
   @IsString()
-  @IsNotEmpty({ message: 'Mã OTP không được để trống' })
-  otp: string
+  @Matches(/^[a-f0-9]{64}$/, { message: 'Liên kết đặt lại mật khẩu không hợp lệ' })
+  token: string
+}
 
-  @ApiProperty({ example: 'Password123!' })
+export class ResetPasswordDto extends ValidatePasswordResetDto {
+  @ApiProperty()
   @IsString()
-  @MinLength(8, { message: 'Mật khẩu mới phải có ít nhất 8 ký tự' })
+  @MinLength(6, { message: 'Mật khẩu mới phải có ít nhất 6 ký tự' })
   @MaxLength(72, { message: 'Mật khẩu tối đa 72 ký tự' })
-  @Matches(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]/, {
-    message: 'Mật khẩu phải có ít nhất 1 chữ hoa, 1 chữ thường, 1 số và 1 ký tự đặc biệt (@$!%*?&)',
-  })
   newPassword: string
 }

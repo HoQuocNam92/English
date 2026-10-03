@@ -1,4 +1,6 @@
 'use client';
+import { showToast } from '@/shared/ui/AppFeedback';
+import { AppIcon } from '@/shared/ui/AppIcon';
 
 import { LevelBadge } from '@/shared/ui/LevelBadge';
 import { useEffect, useState, Suspense } from 'react';
@@ -22,7 +24,6 @@ function LearnerProfileContent() {
   const [savingInfo, setSavingInfo] = useState(false);
   const [savingPassword, setSavingPassword] = useState(false);
   const [savingGoals, setSavingGoals] = useState(false);
-  const [message, setMessage] = useState('');
   const [error, setError] = useState('');
   const [form, setForm] = useState({ displayName: '', email: '', phoneNumber: '', bio: '' });
   const [password, setPassword] = useState({ currentPassword: '', newPassword: '', confirmPassword: '' });
@@ -106,14 +107,14 @@ function LearnerProfileContent() {
 
   async function saveInfo(event: React.FormEvent) {
     event.preventDefault();
-    setSavingInfo(true); setMessage(''); setError('');
+    setSavingInfo(true); setError('');
     try {
       await apiClient.patch('/users/me', {
         displayName: form.displayName,
         phoneNumber: form.phoneNumber.trim() || null,
         bio: form.bio,
       });
-      setMessage('Cập nhật hồ sơ thành công.');
+
     } catch (cause: any) {
       setError(cause?.message || 'Không thể cập nhật hồ sơ.');
     } finally { setSavingInfo(false); }
@@ -124,7 +125,7 @@ function LearnerProfileContent() {
     if (!learningGoal) return setError('Vui lòng chọn mục tiêu học chính.');
     if ((learningGoal === 'certification' || learningGoal === 'both') && !certificateCode) return setError('Vui lòng chọn một chứng chỉ mục tiêu.');
     if (selectedDomains.length === 0) return setError('Vui lòng chọn ít nhất một lĩnh vực IT.');
-    setSavingGoals(true); setMessage(''); setError('');
+    setSavingGoals(true); setError('');
     try {
       await apiClient.put('/learner-profiles/me/goals', {
         learningGoal,
@@ -141,9 +142,7 @@ function LearnerProfileContent() {
         learningPathMode: 'smart',
       });
       const notificationReady = reminderEnabled ? await registerWebLearningNotifications().catch(() => false) : true;
-      setMessage(notificationReady
-        ? 'Cập nhật mục tiêu và lịch nhắc học thành công!'
-        : 'Đã lưu mục tiêu. Hãy cấu hình Firebase hoặc cho phép thông báo để nhận nhắc học khi đóng trình duyệt.');
+      if (!notificationReady) showToast('Mục tiêu đã lưu. Chưa bật được nhắc học; bạn có thể cho phép thông báo trong trình duyệt rồi thử lại.', 'warning', 'Đã lưu mục tiêu');
     } catch (cause: any) {
       setError(cause?.message || 'Không thể cập nhật mục tiêu học tập.');
     } finally { setSavingGoals(false); }
@@ -151,7 +150,7 @@ function LearnerProfileContent() {
 
   async function changePassword(event: React.FormEvent) {
     event.preventDefault();
-    setMessage(''); setError('');
+    setError('');
     if (password.newPassword.length < 6) return setError('Mật khẩu mới phải có ít nhất 6 ký tự.');
     if (password.newPassword !== password.confirmPassword) return setError('Xác nhận mật khẩu không khớp.');
     setSavingPassword(true);
@@ -161,7 +160,7 @@ function LearnerProfileContent() {
         newPassword: password.newPassword,
       });
       setPassword({ currentPassword: '', newPassword: '', confirmPassword: '' });
-      setMessage('Đổi mật khẩu thành công.');
+
     } catch (cause: any) {
       setError(cause?.message || 'Không thể đổi mật khẩu.');
     } finally { setSavingPassword(false); }
@@ -218,7 +217,6 @@ function LearnerProfileContent() {
           </button>
         </div>
 
-        {message && <p className="rounded-xl border border-green-200 bg-green-50 p-3 text-sm font-semibold text-green-700">{message}</p>}
         {error && <p className="rounded-xl border border-red-200 bg-red-50 p-3 text-sm font-semibold text-red-700">{error}</p>}
 
         {/* Tab 1: Info */}
@@ -266,7 +264,7 @@ function LearnerProfileContent() {
                 ].map((goal) => {
                   const selected = learningGoal === goal.value;
                   return <button key={goal.value} type="button" onClick={() => setLearningGoal(goal.value as 'certification' | 'vocabulary' | 'both')} className={`rounded-xl border p-4 text-left transition-all ${selected ? 'border-primary bg-primary/5 ring-2 ring-primary/20' : 'border-outline-variant/60 bg-surface-bright hover:border-primary/40'}`}>
-                    <span className="flex items-center gap-2 text-sm font-bold text-on-surface"><span className={`material-symbols-outlined ${goal.iconClass}`}>{goal.icon}</span>{goal.title}<span className={`ml-auto material-symbols-outlined ${selected ? 'icon-success' : 'text-outline-variant'}`}>{selected ? 'check_circle' : 'radio_button_unchecked'}</span></span>
+                    <span className="flex items-center gap-2 text-sm font-bold text-on-surface"><AppIcon className={` ${goal.iconClass}`}>{goal.icon}</AppIcon>{goal.title}<AppIcon className={`ml-auto  ${selected ? 'icon-success' : 'text-outline-variant'}`}>{selected ? 'check_circle' : 'radio_button_unchecked'}</AppIcon></span>
                     <span className="mt-2 block text-xs leading-relaxed text-on-surface-variant">{goal.description}</span>
                   </button>;
                 })}
@@ -295,9 +293,9 @@ function LearnerProfileContent() {
                     >
                       <div className="flex items-center justify-between mb-1">
                         <LevelBadge level={lvl} />
-                        <span className={`material-symbols-outlined text-[18px] ${isSelected ? 'text-primary' : 'text-outline-variant'}`}>
+                        <AppIcon className={` text-[18px] ${isSelected ? 'text-primary' : 'text-outline-variant'}`}>
                           {isSelected ? 'check_circle' : 'radio_button_unchecked'}
-                        </span>
+                        </AppIcon>
                       </div>
                       <p className="text-xs text-on-surface-variant line-clamp-2">{lvl.description}</p>
                     </div>
@@ -330,9 +328,9 @@ function LearnerProfileContent() {
                           : 'bg-surface-bright border border-outline-variant/60 text-on-surface hover:border-primary/40'
                       }`}
                     >
-                      <span className="material-symbols-outlined text-[16px]">
+                      <AppIcon className=" text-[16px]">
                         {isSelected ? 'check' : 'add'}
-                      </span>
+                      </AppIcon>
                       <span>{dom.name}</span>
                     </button>
                   );
@@ -359,9 +357,9 @@ function LearnerProfileContent() {
                         <span className="text-[11px] font-bold text-primary block uppercase tracking-wider">{cert.provider}</span>
                         <h4 className="font-semibold text-xs text-on-surface truncate">{cert.name}</h4>
                       </div>
-                      <span className={`material-symbols-outlined text-[18px] shrink-0 ${isSelected ? 'text-primary' : 'text-outline-variant'}`}>
+                      <AppIcon className={` text-[18px] shrink-0 ${isSelected ? 'text-primary' : 'text-outline-variant'}`}>
                         {isSelected ? 'check_circle' : 'radio_button_unchecked'}
-                      </span>
+                      </AppIcon>
                     </div>
                   );
                 })}
@@ -372,7 +370,7 @@ function LearnerProfileContent() {
               <label className="block text-sm font-bold text-on-surface">Mục tiêu nghề nghiệp</label>
               <p className="text-xs text-on-surface-variant">Chọn một hoặc nhiều định hướng để hệ thống ưu tiên nội dung phù hợp.</p>
               <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-                {careerGoals.map((goal:any) => { const selected=selectedCareerGoals.includes(goal.code); return <button key={goal.code} type="button" onClick={()=>toggleCareerGoal(goal.code)} className={`rounded-xl border p-4 text-left transition-all ${selected?'border-primary bg-primary/5 ring-2 ring-primary/20':'border-outline-variant/60 bg-surface-bright hover:border-primary/40'}`}><span className="flex items-center gap-2 text-sm font-bold"><span className="material-symbols-outlined text-[19px] text-primary">work</span>{goal.name}<span className={`material-symbols-outlined ml-auto text-[18px] ${selected?'text-primary':'text-outline'}`}>{selected?'check_circle':'radio_button_unchecked'}</span></span><span className="mt-2 block text-xs leading-5 text-on-surface-variant">{goal.description||'Định hướng nghề nghiệp CNTT'}</span></button>; })}
+                {careerGoals.map((goal:any) => { const selected=selectedCareerGoals.includes(goal.code); return <button key={goal.code} type="button" onClick={()=>toggleCareerGoal(goal.code)} className={`rounded-xl border p-4 text-left transition-all ${selected?'border-primary bg-primary/5 ring-2 ring-primary/20':'border-outline-variant/60 bg-surface-bright hover:border-primary/40'}`}><span className="flex items-center gap-2 text-sm font-bold"><AppIcon className=" text-[19px] text-primary">work</AppIcon>{goal.name}<AppIcon className={` ml-auto text-[18px] ${selected?'text-primary':'text-outline'}`}>{selected?'check_circle':'radio_button_unchecked'}</AppIcon></span><span className="mt-2 block text-xs leading-5 text-on-surface-variant">{goal.description||'Định hướng nghề nghiệp CNTT'}</span></button>; })}
               </div>
             </div>
 
@@ -453,9 +451,9 @@ function LearnerProfileContent() {
                       >
                         <div className="flex items-start gap-3.5 min-w-0 flex-1">
                           <div className={`mt-0.5 flex h-10 w-10 shrink-0 items-center justify-center rounded-xl ${isCompleted ? 'bg-green-100 text-green-700' : 'bg-primary/10 text-primary'}`}>
-                            <span className="material-symbols-outlined text-[22px]">
+                            <AppIcon className=" text-[22px]">
                               {isCompleted ? 'check_circle' : 'play_circle'}
-                            </span>
+                            </AppIcon>
                           </div>
 
                           <div className="min-w-0 flex-1">
@@ -507,9 +505,9 @@ function LearnerProfileContent() {
                               }`}
                             >
                               <span>{isCompleted ? 'Xem lại' : 'Học tiếp'}</span>
-                              <span className="material-symbols-outlined text-[16px]">
+                              <AppIcon className=" text-[16px]">
                                 {isCompleted ? 'refresh' : 'arrow_forward'}
-                              </span>
+                              </AppIcon>
                             </Link>
                           </div>
                         )}
@@ -521,7 +519,7 @@ function LearnerProfileContent() {
             ) : (
               <div className="py-12 text-center">
                 <div className="w-12 h-12 mx-auto rounded-full bg-surface-container flex items-center justify-center text-on-surface-variant mb-3">
-                  <span className="material-symbols-outlined text-2xl">menu_book</span>
+                  <AppIcon className=" text-2xl">menu_book</AppIcon>
                 </div>
                 <p className="text-sm font-semibold text-on-surface">Chưa có lịch sử học tập</p>
                 <p className="text-xs text-on-surface-variant mt-1 mb-4">
@@ -532,7 +530,7 @@ function LearnerProfileContent() {
                   className="inline-flex items-center gap-1.5 px-4 py-2 bg-primary text-white text-xs font-bold rounded-xl hover:opacity-90"
                 >
                   <span>Khám phá bài học</span>
-                  <span className="material-symbols-outlined text-[16px]">arrow_forward</span>
+                  <AppIcon className=" text-[16px]">arrow_forward</AppIcon>
                 </Link>
               </div>
             )}

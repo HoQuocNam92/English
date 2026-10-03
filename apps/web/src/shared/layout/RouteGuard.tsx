@@ -1,4 +1,5 @@
 'use client';
+import { AppIcon } from '@/shared/ui/AppIcon';
 
 import * as React from 'react';
 import { useRouter } from 'next/navigation';
@@ -38,9 +39,9 @@ export function RouteGuard({ children, allowedRoles = [], redirectTo }: RouteGua
     return (
       <div className="flex min-h-screen items-center justify-center">
         <div className="flex flex-col items-center gap-3">
-          <span className="material-symbols-outlined text-[40px] text-primary animate-spin">
+          <AppIcon className=" text-[40px] text-primary animate-spin">
             progress_activity
-          </span>
+          </AppIcon>
           <p className="text-sm text-on-surface-variant">Đang xác thực...</p>
         </div>
       </div>

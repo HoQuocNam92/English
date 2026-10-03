@@ -1,4 +1,5 @@
 'use client';
+import { AppIcon } from '@/shared/ui/AppIcon';
 import { ActionButton, ActionGroup } from '@/shared/ui/ActionButton';
 
 import { LevelBadge } from '@/shared/ui/LevelBadge';
@@ -97,7 +98,7 @@ export default function AdminTestsPage() {
     <div>
       <div className="flex items-start justify-between gap-4">
         <PageHeader title="Bài kiểm tra chứng chỉ" description="Luyện tập chủ đề, kiểm tra lĩnh vực và thi thử theo chứng chỉ" />
-        <Link href="/admin/tests/builder" className="inline-flex shrink-0 items-center gap-2 rounded-xl bg-primary px-4 py-2.5 text-sm font-semibold !text-white shadow-sm"><span className="material-symbols-outlined text-[19px]">add</span>Tạo bài kiểm tra</Link>
+        <Link href="/admin/tests/builder" className="inline-flex shrink-0 items-center gap-2 rounded-xl bg-primary px-4 py-2.5 text-sm font-semibold !text-white shadow-sm"><AppIcon className=" text-[19px]">add</AppIcon>Tạo bài kiểm tra</Link>
       </div>
 
       {/* Filters */}
@@ -138,7 +139,7 @@ export default function AdminTestsPage() {
 
       {error && (
         <div className="mt-4 p-3 rounded-xl bg-error-container text-on-error-container text-sm flex items-center gap-2">
-          <span className="material-symbols-outlined text-[18px]">error</span>
+          <AppIcon className=" text-[18px]">error</AppIcon>
           <span>{error}</span>
         </div>
       )}
@@ -149,7 +150,7 @@ export default function AdminTestsPage() {
           Array.from({ length: 6 }).map((_, i) => <SkeletonCard key={i} />)
         ) : items.length === 0 ? (
           <div className="col-span-full py-16 text-center bg-surface-container-low rounded-2xl border border-outline-variant/30">
-            <span className="material-symbols-outlined text-[48px] text-outline mb-3 block">quiz</span>
+            <AppIcon className=" text-[48px] text-outline mb-3 block">quiz</AppIcon>
             <p className="text-sm text-on-surface-variant">Không tìm thấy bài thi nào</p>
           </div>
         ) : (

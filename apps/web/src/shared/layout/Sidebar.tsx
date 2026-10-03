@@ -1,4 +1,5 @@
 'use client';
+import { AppIcon } from '@/shared/ui/AppIcon';
 
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
@@ -40,13 +41,11 @@ function NavItem({ item, isCollapsed }: { item: NavigationItem; isCollapsed?: bo
             : 'text-on-surface-variant hover:bg-surface-container-low hover:text-on-surface'
         }`}
       >
-        <span
-          className={`material-symbols-outlined text-[20px] transition-colors ${
-            isActive || childIsActive ? 'text-primary fill-1' : `nav-icon-${item.icon} group-hover:scale-110`
-          }`}
-        >
+        <AppIcon className={` text-[20px] transition-colors ${
+            isActive || childIsActive ? 'text-primary ' : `nav-icon-${item.icon} group-hover:scale-110`
+          }`}>
           {item.icon}
-        </span>
+        </AppIcon>
         {item.badge ? (
           <span className="absolute top-1 right-1 h-2 w-2 rounded-full bg-primary ring-2 ring-surface-container-lowest" />
         ) : null}
@@ -72,19 +71,17 @@ function NavItem({ item, isCollapsed }: { item: NavigationItem; isCollapsed?: bo
             : 'text-on-surface-variant hover:bg-surface-container-low hover:text-on-surface'
       }`}
         >
-          <span
-            className={`material-symbols-outlined transition-colors ${level === 2 ? 'text-[16px]' : level === 1 ? 'text-[18px]' : 'text-[20px]'} ${
-              isActive ? 'text-primary fill-1' : `nav-icon-${item.icon} group-hover:scale-110`
-            }`}
-          >
+          <AppIcon className={` transition-colors ${level === 2 ? 'text-[16px]' : level === 1 ? 'text-[18px]' : 'text-[20px]'} ${
+              isActive ? 'text-primary ' : `nav-icon-${item.icon} group-hover:scale-110`
+            }`}>
             {item.icon}
-          </span>
+          </AppIcon>
           <span className="truncate">{item.label}</span>
           {item.badge ? <span className="ml-auto px-1.5 py-0.5 text-[10px] rounded bg-primary text-white font-bold">{item.badge}</span> : null}
         </Link>
         {item.children?.length ? (
           <button type="button" onClick={() => setExpanded(value => !value)} aria-label={`${expanded ? 'Thu gọn' : 'Mở rộng'} ${item.label}`} aria-expanded={expanded} className="ml-1 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-on-surface-variant hover:bg-surface-container-low hover:text-primary">
-            <span className="material-symbols-outlined text-[18px]">{expanded ? 'expand_less' : 'expand_more'}</span>
+            <AppIcon className=" text-[18px]">{expanded ? 'expand_less' : 'expand_more'}</AppIcon>
           </button>
         ) : null}
       </div>
@@ -154,7 +151,7 @@ export function Sidebar({ isMobile = false, onClose, isCollapsed = false, onTogg
             title={isAdmin ? 'TechEnglish Pro — Khu vực quản trị' : 'Khu vực giảng viên'}
             className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-primary to-tertiary text-white shadow-[0_8px_18px_rgba(53,37,205,0.22)]"
           >
-            <span className="material-symbols-outlined text-[24px] fill-1">school</span>
+            <AppIcon className=" text-[24px] ">school</AppIcon>
           </Link>
           <button
             type="button"
@@ -163,14 +160,14 @@ export function Sidebar({ isMobile = false, onClose, isCollapsed = false, onTogg
             aria-label="Mở rộng menu"
             className="p-1.5 rounded-lg text-on-surface-variant hover:bg-surface-container-high hover:text-primary transition-colors cursor-pointer"
           >
-            <span className="material-symbols-outlined text-[20px]">menu</span>
+            <AppIcon className=" text-[20px]">menu</AppIcon>
           </button>
         </div>
       ) : (
         <div className="px-5 mb-7 flex items-center justify-between">
           <Link href="/admin/dashboard" onClick={onClose} className="flex items-center gap-3 min-w-0">
             <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-primary to-tertiary text-white shadow-[0_8px_18px_rgba(53,37,205,0.22)]">
-              <span className="material-symbols-outlined text-[24px] fill-1">school</span>
+              <AppIcon className=" text-[24px] ">school</AppIcon>
             </div>
             <div className="min-w-0">
               <h1 className="text-[17px] font-bold tracking-tight text-on-surface leading-tight truncate">
@@ -187,7 +184,7 @@ export function Sidebar({ isMobile = false, onClose, isCollapsed = false, onTogg
               title="Thu gọn sidebar"
               className="p-1.5 rounded-lg text-on-surface-variant hover:bg-surface-container-high hover:text-primary transition-colors cursor-pointer"
             >
-              <span className="material-symbols-outlined text-[20px]">menu_open</span>
+              <AppIcon className=" text-[20px]">menu_open</AppIcon>
             </button>
           ) : null}
           {isMobile ? (
@@ -197,7 +194,7 @@ export function Sidebar({ isMobile = false, onClose, isCollapsed = false, onTogg
               aria-label="Đóng menu"
               className="p-1.5 rounded-lg text-on-surface-variant hover:bg-surface-container-high transition-colors"
             >
-              <span className="material-symbols-outlined text-[20px]">close</span>
+              <AppIcon className=" text-[20px]">close</AppIcon>
             </button>
           ) : null}
         </div>
@@ -206,9 +203,9 @@ export function Sidebar({ isMobile = false, onClose, isCollapsed = false, onTogg
       {/* Role badge */}
       <div className="hidden">
         <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider bg-primary/10 text-primary">
-          <span className="material-symbols-outlined text-[13px]">
+          <AppIcon className=" text-[13px]">
             {isAdmin ? 'shield_person' : 'school'}
-          </span>
+          </AppIcon>
           {roleDisplay}
         </span>
       </div>
@@ -237,7 +234,7 @@ export function Sidebar({ isMobile = false, onClose, isCollapsed = false, onTogg
               aria-label="Đăng xuất"
               className="p-1.5 rounded-lg text-on-surface-variant hover:text-red-600 hover:bg-error-container/20 transition-all cursor-pointer shrink-0 active:scale-95"
             >
-              <span className="material-symbols-outlined text-[18px]">logout</span>
+              <AppIcon className=" text-[18px]">logout</AppIcon>
             </button>
           </div>
         ) : (
@@ -262,7 +259,7 @@ export function Sidebar({ isMobile = false, onClose, isCollapsed = false, onTogg
               aria-label="Đăng xuất"
               className="p-1.5 rounded-lg text-on-surface-variant hover:text-red-600 hover:bg-error-container/20 transition-all cursor-pointer shrink-0 active:scale-95"
             >
-              <span className="material-symbols-outlined text-[18px]">logout</span>
+              <AppIcon className=" text-[18px]">logout</AppIcon>
             </button>
           </div>
         )}

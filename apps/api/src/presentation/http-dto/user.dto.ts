@@ -3,7 +3,7 @@ import { ApiProperty, ApiPropertyOptional, PartialType } from '@nestjs/swagger'
 
 export class CreateUserDto {
   @ApiProperty({ example: 'user@example.com' }) @IsEmail() email: string
-  @ApiProperty({ example: 'Password123!' }) @IsString() @MinLength(8) password: string
+  @ApiProperty({ example: 'Password123!' }) @IsString() @MinLength(6) password: string
   @ApiProperty({ example: 'Nguyen Van A' }) @IsString() displayName: string
   @ApiPropertyOptional({ example: 'learner', enum: ['admin','teacher','learner'] }) @IsOptional() @IsString() roleCode?: string
   @ApiPropertyOptional() @IsOptional() @IsString() phoneNumber?: string

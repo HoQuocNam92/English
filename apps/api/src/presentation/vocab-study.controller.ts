@@ -10,6 +10,11 @@ import { JwtAuthGuard } from '../infrastructure/auth/jwt-auth.guard'
 export class VocabStudyController {
   constructor(private readonly svc: VocabStudyService) {}
 
+  @Get('recommendations')
+  getRecommendations(@Request() req: any) {
+    return this.svc.getRecommendations(req.user.sub)
+  }
+
   @Get('dashboard')
   @ApiOperation({ summary: 'Get flashcards dashboard (stats, heatmap)' })
   getDashboard(@Request() req: any) {
@@ -23,8 +28,9 @@ export class VocabStudyController {
     @Query('domainCode') domainCode?: string,
     @Query('levelCode') levelCode?: string,
     @Query('continue') continueLearning?: string,
+    @Query('sourceLessonId') sourceLessonId?: string,
   ) {
-    return this.svc.getStudySession(req.user.sub, { domainCode, levelCode, continueLearning: continueLearning === 'true' })
+    return this.svc.getStudySession(req.user.sub, { domainCode, levelCode, sourceLessonId, continueLearning: continueLearning === 'true' })
   }
 
   @Get('review-session')
@@ -63,7 +69,9 @@ export class VocabStudyController {
     @Request() req: any,
     @Query('period') period?: 'day' | 'month' | 'year' | 'all',
     @Query('rating') rating?: string,
+    @Query('page') page?: string,
+    @Query('limit') limit?: string,
   ) {
-    return this.svc.getHistory(req.user.sub, period, rating)
+    return this.svc.getHistory(req.user.sub, period, rating, Number(page ?? 1), Number(limit ?? 10))
   }
 }

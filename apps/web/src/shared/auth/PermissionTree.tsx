@@ -1,4 +1,5 @@
 'use client';
+import { AppIcon } from '@/shared/ui/AppIcon';
 
 import * as React from 'react';
 import { actionLabel, resourceLabel } from './permission-labels';
@@ -57,8 +58,8 @@ function TreeBranch({ node, depth, selectedIds, busyId, onToggle, onToggleMany, 
 
   return <div>
     <div className={`group flex min-h-11 items-center gap-2 rounded-xl px-3 transition-colors ${isLeaf ? 'hover:bg-primary/5' : 'bg-surface-container-low/70 font-semibold'}`} style={{ marginLeft: depth * 22 }}>
-      {!isLeaf ? <button type="button" onClick={() => setOpen((value) => !value)} className="flex h-7 w-7 items-center justify-center rounded-lg hover:bg-white" aria-label={open ? 'Thu gọn' : 'Mở rộng'}><span className="material-symbols-outlined text-[18px] text-on-surface-variant">{open ? 'keyboard_arrow_down' : 'keyboard_arrow_right'}</span></button> : <span className="ml-2 h-4 w-4 rounded-bl-lg border-b border-l border-outline-variant" />}
-      <span className={`material-symbols-outlined text-[20px] ${isLeaf ? 'text-primary' : 'text-amber-500'}`}>{isLeaf ? 'task_alt' : open ? 'folder_open' : 'folder'}</span>
+      {!isLeaf ? <button type="button" onClick={() => setOpen((value) => !value)} className="flex h-7 w-7 items-center justify-center rounded-lg hover:bg-white" aria-label={open ? 'Thu gọn' : 'Mở rộng'}><AppIcon className=" text-[18px] text-on-surface-variant">{open ? 'keyboard_arrow_down' : 'keyboard_arrow_right'}</AppIcon></button> : <span className="ml-2 h-4 w-4 rounded-bl-lg border-b border-l border-outline-variant" />}
+      <AppIcon className={` text-[20px] ${isLeaf ? 'text-primary' : 'text-amber-500'}`}>{isLeaf ? 'task_alt' : open ? 'folder_open' : 'folder'}</AppIcon>
       {isLeaf && onToggle && node.permission ? <SelectionCheckbox checked={selectedIds?.has(node.permission.id) ?? false} disabled={busyId === node.permission.id} onChange={() => onToggle(node.permission!)} label={`Chọn quyền ${node.label}`} /> : null}
       {!isLeaf && onToggleMany ? <SelectionCheckbox checked={allSelected} indeterminate={partlySelected} disabled={Boolean(busyId)} onChange={() => onToggleMany(childPermissions, !allSelected)} label={node.kind === 'root' ? 'Chọn tất cả quyền' : `Chọn tất cả quyền trong ${node.label}`} /> : null}
       <span className={isLeaf ? 'text-sm text-on-surface' : 'text-sm capitalize text-on-surface'}>{node.label}</span>

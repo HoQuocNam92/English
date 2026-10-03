@@ -1,4 +1,5 @@
 'use client';
+import { AppIcon } from '@/shared/ui/AppIcon';
 import { ActionButton, ActionGroup } from '@/shared/ui/ActionButton';
 
 import { LevelBadge } from '@/shared/ui/LevelBadge';
@@ -85,10 +86,10 @@ export default function AdminStudentsPage() {
         icon={certificateGoalsView ? 'workspace_premium' : 'school'}
         iconClassName={certificateGoalsView ? 'from-violet-500 to-fuchsia-600' : 'from-cyan-500 to-blue-600'}
       />
-      
+
       {error && (
         <div className="mb-xl p-3 rounded-xl bg-error-container text-on-error-container text-sm flex items-center gap-2">
-          <span className="material-symbols-outlined text-[18px]">error</span>
+          <AppIcon className=" text-[18px]">error</AppIcon>
           <span>{error}</span>
         </div>
       )}

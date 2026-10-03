@@ -1,4 +1,5 @@
 'use client';
+import { IconText, AppIcon } from '@/shared/ui/AppIcon';
 
 import { LevelBadge } from '@/shared/ui/LevelBadge';
 import { useState, useEffect } from 'react';
@@ -145,7 +146,7 @@ export default function LearnerHomePage() {
               className="bg-surface-container border border-outline-variant rounded-lg p-4 flex items-center gap-4 hover:shadow-[0_1px_3px_rgba(15,23,24,0.06)] transition-shadow"
             >
               <div className={`w-12 h-12 rounded-full ${s.bg} flex items-center justify-center shadow-xs ring-1 ring-white/70`}>
-                <span className="text-2xl leading-none" aria-hidden="true">{s.icon}</span>
+                <span className="text-2xl leading-none" aria-hidden="true"><AppIcon>{s.icon}</AppIcon></span>
               </div>
               <div>
                 <p className="text-[12px] font-bold text-on-surface-variant uppercase tracking-[0.05em]">{s.label}</p>
@@ -177,7 +178,7 @@ export default function LearnerHomePage() {
                     {journeyConfigured ? 'Mục tiêu học tập hôm nay' : 'Bạn chưa thiết lập lộ trình học tập'}
                   </h2>
                 </div>
-                <span className="text-3xl" aria-hidden="true">{journeyConfigured ? '🗓️' : '🚩'}</span>
+                <span className="text-3xl" aria-hidden="true"><IconText>{journeyConfigured ? '🗓️' : '🚩'}</IconText></span>
               </div>
               <p className="text-[14px] text-on-surface-variant mb-4">
                 {journeyConfigured
@@ -197,8 +198,8 @@ export default function LearnerHomePage() {
                   <div className="h-2 overflow-hidden rounded-full bg-surface-container-highest"><div className="h-full rounded-full bg-primary" style={{ width: `${percent}%` }} /></div>
                 </div>
               ))}
-              {journey.targets.reminderEnabled && journey.targets.reminderTime && <p className="flex items-center gap-1.5 text-xs font-semibold text-violet-700"><span className="text-base" aria-hidden="true">🔔</span>Nhắc học lúc {journey.targets.reminderTime} mỗi ngày</p>}
-              <Link href="/learn/profile?tab=goals" className="inline-flex items-center gap-2 rounded-lg bg-primary px-5 py-2 text-sm font-semibold text-white">Điều chỉnh mục tiêu<span className="text-lg" aria-hidden="true">⚙️</span></Link>
+              {journey.targets.reminderEnabled && journey.targets.reminderTime && <p className="flex items-center gap-1.5 text-xs font-semibold text-violet-700"><span className="text-base" aria-hidden="true"><IconText>{"🔔"}</IconText></span>Nhắc học lúc {journey.targets.reminderTime} mỗi ngày</p>}
+              <Link href="/learn/profile?tab=goals" className="inline-flex items-center gap-2 rounded-lg bg-primary px-5 py-2 text-sm font-semibold text-white">Điều chỉnh mục tiêu<span className="text-lg" aria-hidden="true"><IconText>{"⚙️"}</IconText></span></Link>
             </div> : <div className="z-10 mt-auto">
               <div className="flex items-center gap-3">
                 <Link
@@ -206,7 +207,7 @@ export default function LearnerHomePage() {
                     className="inline-flex items-center gap-2 rounded-lg bg-primary px-5 py-2.5 text-[14px] font-semibold text-white hover:opacity-90 transition-opacity"
                   >
                     <span>Thiết lập lộ trình học tập</span>
-                    <span className="text-[16px]" aria-hidden="true">⚙️</span>
+                    <span className="text-[16px]" aria-hidden="true"><IconText>{"⚙️"}</IconText></span>
                   </Link>
               </div>
             </div>}
@@ -217,7 +218,7 @@ export default function LearnerHomePage() {
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-4">
               <div>
                 <div className="flex items-center gap-2">
-                  <span className="text-[22px]" aria-hidden="true">✨</span>
+                  <span className="text-[22px]" aria-hidden="true"><IconText>{"✨"}</IconText></span>
                   <h3 className="text-[20px] font-bold text-on-surface" style={{ lineHeight: '28px' }}>
                     Gợi ý học tập dành cho bạn
                   </h3>
@@ -227,7 +228,7 @@ export default function LearnerHomePage() {
                 </p>
               </div>
               <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-violet-100 text-violet-700 border border-violet-200 w-fit">
-                <span className="text-[15px]" aria-hidden="true">🧠</span>
+                <span className="text-[15px]" aria-hidden="true"><IconText>{"🧠"}</IconText></span>
                 Cá nhân hoá theo năng lực
               </span>
             </div>
@@ -307,7 +308,7 @@ export default function LearnerHomePage() {
                           }`}
                         >
                           <span>{rec.actionText}</span>
-                          <span className="text-[16px]" aria-hidden="true">🚀</span>
+                          <span className="text-[16px]" aria-hidden="true"><IconText>{"🚀"}</IconText></span>
                         </Link>
                       </div>
                     </div>
@@ -316,7 +317,7 @@ export default function LearnerHomePage() {
               </div>
             ) : (
               <div className="text-center py-6 border border-dashed border-outline-variant/60 rounded-xl bg-surface-container-low">
-                <span className="mb-2 block text-3xl" aria-hidden="true">💡</span>
+                <span className="mb-2 block text-3xl" aria-hidden="true"><IconText>{"💡"}</IconText></span>
                 <p className="text-sm font-semibold text-on-surface">Đang cập nhật gợi ý học tập</p>
                 <p className="text-xs text-on-surface-variant mt-1">
                   Hãy luyện từ vựng hoặc làm bài thi chứng chỉ để hệ thống phân tích và đề xuất nội dung cần củng cố cho bạn.
@@ -333,7 +334,7 @@ export default function LearnerHomePage() {
               </h3>
               {cert !== 'Chưa thiết lập' && (
                 <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-primary/10 text-primary border border-primary/20 w-fit">
-                  <span className="text-[15px]" aria-hidden="true">🏆</span>
+                  <span className="text-[15px]" aria-hidden="true"><IconText>{"🏆"}</IconText></span>
                   Mục tiêu: {cert}
                 </span>
               )}
@@ -351,7 +352,7 @@ export default function LearnerHomePage() {
                   >
                     <div className="mb-4 flex items-start gap-3">
                       <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-amber-100 to-orange-200 ring-1 ring-amber-200/70">
-                        <span className="text-2xl" aria-hidden="true">🏅</span>
+                        <span className="text-2xl" aria-hidden="true"><IconText>{"🏅"}</IconText></span>
                       </div>
                       <div className="min-w-0">
                         <span className="text-[11px] font-bold uppercase tracking-wide text-primary">{certificate.code}</span>
@@ -369,7 +370,7 @@ export default function LearnerHomePage() {
                         <div className="h-full rounded-full bg-primary" style={{ width: `${progressPercent}%` }} />
                       </div>
                       <div className="mt-4 flex items-center justify-end gap-1 text-[13px] font-bold text-primary">
-                        Xem lộ trình <span className="text-[16px]" aria-hidden="true">➡️</span>
+                        Xem lộ trình <span className="text-[16px]" aria-hidden="true"><IconText>{"➡️"}</IconText></span>
                       </div>
                     </div>
                   </Link>
@@ -377,10 +378,10 @@ export default function LearnerHomePage() {
               }) : <p className="col-span-2 rounded-lg border border-outline-variant bg-surface-container p-6 text-sm text-on-surface-variant">Chưa có chứng chỉ đang hoạt động.</p>}
             </div>
           </div> : <div className="rounded-xl border border-dashed border-outline-variant bg-surface-container-low p-6 text-center">
-            <span className="mb-2 block text-4xl" aria-hidden="true">🏆</span>
+            <span className="mb-2 block text-4xl" aria-hidden="true"><IconText>{"🏆"}</IconText></span>
             <h3 className="text-base font-bold text-on-surface">Chọn chứng chỉ mục tiêu</h3>
-            <p className="mt-1 text-xs text-on-surface-variant">Chọn chứng chỉ để học theo lộ trình Domain → Topic → Lesson và luyện đề.</p>
-            <Link href="/learn/certifications" className="mt-4 inline-flex items-center gap-1 rounded-lg border border-primary px-4 py-2 text-sm font-bold text-primary">Xem chứng chỉ<span className="text-base" aria-hidden="true">➡️</span></Link>
+            <p className="mt-1 text-xs text-on-surface-variant"><IconText>{"Chọn chứng chỉ để học theo lộ trình Domain → Topic → Lesson và luyện đề."}</IconText></p>
+            <Link href="/learn/certifications" className="mt-4 inline-flex items-center gap-1 rounded-lg border border-primary px-4 py-2 text-sm font-bold text-primary">Xem chứng chỉ<span className="text-base" aria-hidden="true"><IconText>{"➡️"}</IconText></span></Link>
           </div>}
         </section>
 
@@ -389,7 +390,7 @@ export default function LearnerHomePage() {
           {/* Kết quả kiểm tra gần đây */}
           <div>
             <h3 className="text-[14px] font-semibold text-on-surface mb-2 flex items-center gap-1">
-              <span className="text-[18px]" aria-hidden="true">📋</span>
+              <span className="text-[18px]" aria-hidden="true"><IconText>{"📋"}</IconText></span>
               Kết quả kiểm tra gần đây
             </h3>
             <div className="flex flex-col gap-2">
@@ -416,7 +417,7 @@ export default function LearnerHomePage() {
           {/* Hoạt động gần đây */}
           <div>
             <h3 className="text-[14px] font-semibold text-on-surface mb-2 flex items-center gap-1">
-              <span className="text-[18px]" aria-hidden="true">🕘</span>
+              <span className="text-[18px]" aria-hidden="true"><IconText>{"🕘"}</IconText></span>
               Hoạt động gần đây
             </h3>
             <div className="bg-surface-container border border-outline-variant rounded-lg p-4">
@@ -438,8 +439,7 @@ export default function LearnerHomePage() {
                 <div className="py-4 text-center">
                   <p className="text-[12px] text-on-surface-variant">Chưa có hoạt động học gần đây.</p>
                   <Link href="/learn/certifications" className="mt-2 inline-block text-[12px] font-bold text-primary hover:underline">
-                    Bắt đầu luyện thi chứng chỉ →
-                  </Link>
+                    <IconText>{"\n                    Bắt đầu luyện thi chứng chỉ →\n                  "}</IconText></Link>
                 </div>
               )}
             </div>

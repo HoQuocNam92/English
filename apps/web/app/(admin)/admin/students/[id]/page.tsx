@@ -1,4 +1,5 @@
 'use client';
+import { AppIcon } from '@/shared/ui/AppIcon';
 
 import { ActionButton, ActionGroup } from '@/shared/ui/ActionButton';
 import { LevelBadge } from '@/shared/ui/LevelBadge';
@@ -113,7 +114,7 @@ export default function AdminStudentDetailPage({
           href="/admin/students"
           className="inline-flex items-center gap-1.5 text-sm font-semibold text-primary hover:underline cursor-pointer"
         >
-          <span className="material-symbols-outlined text-[18px]">arrow_back</span>
+          <AppIcon className=" text-[18px]">arrow_back</AppIcon>
           <span>Quay lại danh sách người học</span>
         </Link>
       </div>
@@ -132,7 +133,7 @@ export default function AdminStudentDetailPage({
         </div>
       ) : error ? (
         <div className="p-4 rounded-xl bg-error-container text-on-error-container text-sm flex items-center gap-3">
-          <span className="material-symbols-outlined text-[20px]">error</span>
+          <AppIcon className=" text-[20px]">error</AppIcon>
           <span>{error}</span>
         </div>
       ) : (
@@ -155,7 +156,7 @@ export default function AdminStudentDetailPage({
                     </div>
                   )}
                   <span className="absolute bottom-0 right-0 bg-primary-container text-primary text-[10px] font-bold px-2 py-0.5 rounded-full border-2 border-surface flex items-center gap-0.5">
-                    <span className="material-symbols-outlined text-[12px]">school</span>
+                    <AppIcon className=" text-[12px]">school</AppIcon>
                     PRO
                   </span>
                 </div>
@@ -171,7 +172,7 @@ export default function AdminStudentDetailPage({
                         key={d}
                         className="bg-tertiary-fixed text-on-tertiary-fixed font-label-caps text-xs px-3 py-1 rounded-full flex items-center gap-1"
                       >
-                        <span className="material-symbols-outlined text-[14px]">code</span>
+                        <AppIcon className=" text-[14px]">code</AppIcon>
                         {d}
                       </span>
                     ))}
@@ -210,7 +211,7 @@ export default function AdminStudentDetailPage({
             {/* Target Certificates Card */}
             <div className="bg-surface-container-lowest rounded-xl border border-outline-variant p-lg shadow-xs">
               <div className="flex items-center gap-2 mb-4">
-                <span className="material-symbols-outlined text-primary text-[20px]">target</span>
+                <AppIcon className=" text-primary text-[20px]">target</AppIcon>
                 <h3 className="font-interface-sb text-interface-sb text-on-surface">Mục tiêu chứng chỉ</h3>
               </div>
 
@@ -291,7 +292,7 @@ export default function AdminStudentDetailPage({
               <div className="bg-surface-container-lowest rounded-xl border border-outline-variant p-lg shadow-xs flex flex-col justify-between">
                 <div className="flex justify-between items-start">
                   <div className="w-10 h-10 rounded-lg bg-secondary-fixed flex items-center justify-center text-on-secondary-fixed">
-                    <span className="material-symbols-outlined">library_books</span>
+                    <AppIcon className="">library_books</AppIcon>
                   </div>
                 </div>
                 <div>
@@ -307,7 +308,7 @@ export default function AdminStudentDetailPage({
               <div className="bg-surface-container-lowest rounded-xl border border-outline-variant p-lg shadow-xs flex flex-col justify-between">
                 <div className="flex justify-between items-start">
                   <div className="w-10 h-10 rounded-lg bg-tertiary-fixed flex items-center justify-center text-on-tertiary-fixed">
-                    <span className="material-symbols-outlined">grade</span>
+                    <AppIcon className="">grade</AppIcon>
                   </div>
                 </div>
                 <div>
@@ -355,7 +356,7 @@ export default function AdminStudentDetailPage({
                       >
                         <div className="flex items-center gap-4">
                           <div className="w-10 h-10 rounded-lg bg-surface-variant flex items-center justify-center text-on-surface-variant group-hover:bg-primary-fixed group-hover:text-primary transition-colors shrink-0">
-                            <span className="material-symbols-outlined">quiz</span>
+                            <AppIcon className="">quiz</AppIcon>
                           </div>
                           <div>
                             <h4 className="font-semibold text-sm text-on-surface mb-0.5 group-hover:text-primary transition-colors">
@@ -384,9 +385,9 @@ export default function AdminStudentDetailPage({
                               {isPassed ? 'Đạt' : 'Không đạt'}
                             </span>
                           </div>
-                          <span className="material-symbols-outlined text-outline group-hover:text-primary transition-colors">
+                          <AppIcon className=" text-outline group-hover:text-primary transition-colors">
                             chevron_right
-                          </span>
+                          </AppIcon>
                         </div>
                       </li>
                     );
@@ -400,7 +401,7 @@ export default function AdminStudentDetailPage({
       {editingGoals && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4" role="dialog" aria-modal="true" aria-label="Chỉnh sửa hồ sơ học tập">
           <div className="max-h-[90vh] w-full max-w-2xl overflow-y-auto rounded-2xl bg-white p-6 shadow-2xl">
-            <div className="flex items-start justify-between gap-4"><div><h2 className="text-xl font-bold">Chỉnh sửa hồ sơ học tập</h2><p className="mt-1 text-sm text-on-surface-variant">Cập nhật trình độ, lĩnh vực quan tâm và mục tiêu chứng chỉ.</p></div><button type="button" onClick={() => setEditingGoals(false)} aria-label="Đóng"><span className="material-symbols-outlined">close</span></button></div>
+            <div className="flex items-start justify-between gap-4"><div><h2 className="text-xl font-bold">Chỉnh sửa hồ sơ học tập</h2><p className="mt-1 text-sm text-on-surface-variant">Cập nhật trình độ, lĩnh vực quan tâm và mục tiêu chứng chỉ.</p></div><button type="button" onClick={() => setEditingGoals(false)} aria-label="Đóng"><AppIcon className="">close</AppIcon></button></div>
             <label className="mt-6 block text-sm font-bold">Trình độ tiếng Anh<Dropdown value={goalForm.levelCode} onChange={event => setGoalForm(current => ({ ...current, levelCode: event.target.value }))} className="mt-2 h-11 w-full rounded-xl border border-outline-variant bg-white px-3 font-normal"><option value="">Chọn trình độ</option>{goalOptions.levels.map(item => <option key={item.id} value={item.code}>{item.name}</option>)}</Dropdown></label>
             <fieldset className="mt-5"><legend className="text-sm font-bold">Lĩnh vực CNTT quan tâm</legend><div className="mt-2 grid gap-2 rounded-xl border border-outline-variant p-4 sm:grid-cols-2">{goalOptions.domains.map(item => <label key={item.id} className="flex items-center gap-2 text-sm"><input type="checkbox" checked={goalForm.domainCodes.includes(item.code)} onChange={event => setGoalForm(current => ({ ...current, domainCodes: event.target.checked ? [...current.domainCodes, item.code] : current.domainCodes.filter(code => code !== item.code) }))} className="accent-primary" />{item.name}</label>)}</div></fieldset>
             <fieldset className="mt-5"><legend className="text-sm font-bold">Mục tiêu nghề nghiệp</legend><div className="mt-2 grid gap-2 rounded-xl border border-outline-variant p-4 sm:grid-cols-2">{goalOptions.careerGoals.map(item => <label key={item.id} className="flex items-center gap-2 text-sm"><input type="checkbox" checked={goalForm.careerGoalCodes.includes(item.code)} onChange={event => setGoalForm(current => ({ ...current, careerGoalCodes: event.target.checked ? [...current.careerGoalCodes, item.code] : current.careerGoalCodes.filter(code => code !== item.code) }))} className="accent-primary" />{item.name}</label>)}</div></fieldset>

@@ -1,10 +1,11 @@
 'use client';
+import { AppIcon } from '@/shared/ui/AppIcon';
 
 import * as React from 'react';
 import ReactDOM from 'react-dom';
 
 type ToastKind = 'success' | 'error' | 'info' | 'warning';
-type ToastDetail = { message: string; kind?: ToastKind; title?: string };
+type ToastDetail = { message: string; kind?: ToastKind; title?: string; automatic?: boolean };
 type ConfirmDetail = {
   title?: string;
   message: string;
@@ -37,15 +38,23 @@ const toastStyle: Record<ToastKind, { icon: string; accent: string; bg: string; 
 export function AppFeedbackProvider({ children }: { children: React.ReactNode }) {
   const [mounted, setMounted] = React.useState(false);
   const [toast, setToast] = React.useState<(ToastDetail & { id: number }) | null>(null);
+  const automaticTimer = React.useRef<ReturnType<typeof setTimeout> | null>(null);
   const [confirmation, setConfirmation] = React.useState<ConfirmDetail | null>(null);
 
   React.useEffect(() => { setMounted(true); }, []);
   React.useEffect(() => {
-    const onToast = (event: Event) => setToast({ ...(event as CustomEvent<ToastDetail>).detail, id: Date.now() });
+    const onToast = (event: Event) => {
+      const detail = (event as CustomEvent<ToastDetail>).detail;
+      if (automaticTimer.current) clearTimeout(automaticTimer.current);
+      // Page-specific wording overrides the generic API completion for the same action.
+      if (detail.automatic) automaticTimer.current = setTimeout(() => setToast({ ...detail, id: Date.now() }), 200);
+      else setToast({ ...detail, id: Date.now() });
+    };
     const onConfirm = (event: Event) => setConfirmation((event as CustomEvent<ConfirmDetail>).detail);
     window.addEventListener(TOAST_EVENT, onToast);
     window.addEventListener(CONFIRM_EVENT, onConfirm);
     return () => {
+      if (automaticTimer.current) clearTimeout(automaticTimer.current);
       window.removeEventListener(TOAST_EVENT, onToast);
       window.removeEventListener(CONFIRM_EVENT, onConfirm);
     };
@@ -66,11 +75,11 @@ export function AppFeedbackProvider({ children }: { children: React.ReactNode })
       {toast && (() => {
         const style = toastStyle[toast.kind ?? 'info'];
         return (
-          <div className="fixed right-4 top-4 z-[10000] w-[min(390px,calc(100vw-32px))] animate-in slide-in-from-top-3 fade-in">
+          <div role={toast.kind === 'error' ? 'alert' : 'status'} aria-live={toast.kind === 'error' ? 'assertive' : 'polite'} className="fixed right-4 top-20 z-[10000] w-[min(390px,calc(100vw-32px))] animate-in slide-in-from-top-3 fade-in">
             <div className="flex gap-3 rounded-2xl border border-outline-variant/60 bg-surface-container-lowest p-4 shadow-[0_18px_55px_rgba(15,23,42,0.18)]">
-              <span className={`material-symbols-outlined !flex h-10 w-10 shrink-0 items-center justify-center rounded-xl text-center !leading-none ${style.bg} ${style.accent}`}>{style.icon}</span>
+              <AppIcon className={` !flex h-10 w-10 shrink-0 items-center justify-center rounded-xl text-center !leading-none ${style.bg} ${style.accent}`}>{style.icon}</AppIcon>
               <div className="min-w-0 flex-1"><p className="font-bold text-on-surface">{toast.title ?? style.defaultTitle}</p><p className="mt-0.5 text-sm leading-5 text-on-surface-variant">{toast.message}</p></div>
-              <button type="button" onClick={() => setToast(null)} className="flex h-8 w-8 items-center justify-center rounded-lg text-on-surface-variant hover:bg-surface-container" aria-label="Đóng"><span className="material-symbols-outlined text-[18px]">close</span></button>
+              <button type="button" onClick={() => setToast(null)} className="flex h-8 w-8 items-center justify-center rounded-lg text-on-surface-variant hover:bg-surface-container" aria-label="Đóng"><AppIcon className=" text-[18px]">close</AppIcon></button>
             </div>
           </div>
         );
@@ -79,7 +88,7 @@ export function AppFeedbackProvider({ children }: { children: React.ReactNode })
         <div className="fixed inset-0 z-[10001] flex items-center justify-center bg-slate-950/45 p-4 backdrop-blur-sm" role="dialog" aria-modal="true">
           <div className="w-full max-w-md overflow-hidden rounded-3xl border border-white/60 bg-surface-container-lowest shadow-[0_28px_90px_rgba(15,23,42,0.28)]">
             <div className="p-6 text-center">
-              <span className={`material-symbols-outlined mx-auto !flex h-16 w-16 items-center justify-center rounded-2xl text-center text-[32px] !leading-none ${confirmation.tone === 'danger' ? 'bg-red-100 text-red-600' : confirmation.tone === 'primary' ? 'bg-indigo-100 text-indigo-600' : 'bg-amber-100 text-amber-600'}`}>{confirmation.tone === 'danger' ? 'delete_forever' : confirmation.tone === 'primary' ? 'help' : 'warning'}</span>
+              <AppIcon className={` mx-auto !flex h-16 w-16 items-center justify-center rounded-2xl text-center text-[32px] !leading-none ${confirmation.tone === 'danger' ? 'bg-red-100 text-red-600' : confirmation.tone === 'primary' ? 'bg-indigo-100 text-indigo-600' : 'bg-amber-100 text-amber-600'}`}>{confirmation.tone === 'danger' ? 'delete_forever' : confirmation.tone === 'primary' ? 'help' : 'warning'}</AppIcon>
               <h2 className="mt-4 text-xl font-bold text-on-surface">{confirmation.title ?? 'Xác nhận thao tác'}</h2>
               <p className="mt-2 text-sm leading-6 text-on-surface-variant">{confirmation.message}</p>
             </div>

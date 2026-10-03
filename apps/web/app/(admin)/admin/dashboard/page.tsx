@@ -1,4 +1,5 @@
 'use client';
+import { AppIcon } from '@/shared/ui/AppIcon';
 
 import { Dropdown } from '@/shared/ui/Dropdown';
 import * as React from 'react';
@@ -129,7 +130,7 @@ export default function AdminDashboardPage() {
       <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
       </div>
       <section><h3 className="mb-4 text-xl font-bold">Công việc giảng dạy</h3><div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-        {[['Thêm câu hỏi','/admin/questions/editor','post_add'],['Tạo quiz chứng chỉ','/admin/tests/builder','quiz'],['Xem kết quả thi','/admin/test-results','fact_check'],['Theo dõi tiến độ','/admin/progress','insights']].map(([label,href,icon]) => <Link key={href} href={href} className="flex items-center gap-4 rounded-2xl bg-white p-5 shadow-[0_8px_28px_rgba(15,23,42,0.05)] transition hover:-translate-y-0.5 hover:text-primary"><span className="material-symbols-outlined text-primary">{icon}</span><span className="font-semibold">{label}</span><span className="material-symbols-outlined ml-auto text-outline">chevron_right</span></Link>)}
+        {[['Thêm câu hỏi','/admin/questions/editor','post_add'],['Tạo quiz chứng chỉ','/admin/tests/builder','quiz'],['Xem kết quả thi','/admin/test-results','fact_check'],['Theo dõi tiến độ','/admin/progress','insights']].map(([label,href,icon]) => <Link key={href} href={href} className="flex items-center gap-4 rounded-2xl bg-white p-5 shadow-[0_8px_28px_rgba(15,23,42,0.05)] transition hover:-translate-y-0.5 hover:text-primary"><AppIcon className=" text-primary">{icon}</AppIcon><span className="font-semibold">{label}</span><AppIcon className=" ml-auto text-outline">chevron_right</AppIcon></Link>)}
       </div></section>
     </main>
   );
@@ -145,7 +146,7 @@ export default function AdminDashboardPage() {
 
       {error && (
         <div className="mb-xl p-3 rounded-xl bg-error-container text-on-error-container text-sm flex items-center gap-2">
-          <span className="material-symbols-outlined text-[18px]">error</span>
+          <AppIcon className=" text-[18px]">error</AppIcon>
           <span>{error}</span>
         </div>
       )}
@@ -154,7 +155,7 @@ export default function AdminDashboardPage() {
         <div className="stat-card bg-surface-container-lowest p-md flex flex-col justify-between h-[120px] rounded-lg border border-outline-variant hover:shadow-[0_1px_3px_rgba(15,23,24,0.06)] hover:-translate-y-0.5 transition-all">
           <div className="flex justify-between items-start">
             <span className="font-body-sm text-body-sm text-on-surface-variant">Tổng người học</span>
-            <span className="material-symbols-outlined text-outline text-[20px]">group</span>
+            <AppIcon className=" text-outline text-[20px]">group</AppIcon>
           </div>
           <div>
             <div className="font-headline-h2 text-headline-h2 text-on-surface flex items-baseline gap-sm">
@@ -162,11 +163,11 @@ export default function AdminDashboardPage() {
             </div>
           </div>
         </div>
-        
+
         <div className="stat-card bg-surface-container-lowest p-md flex flex-col justify-between h-[120px] rounded-lg border border-outline-variant hover:shadow-[0_1px_3px_rgba(15,23,24,0.06)] hover:-translate-y-0.5 transition-all">
           <div className="flex justify-between items-start">
             <span className="font-body-sm text-body-sm text-on-surface-variant">Nội dung học</span>
-            <span className="material-symbols-outlined text-outline text-[20px]">library_books</span>
+            <AppIcon className=" text-outline text-[20px]">library_books</AppIcon>
           </div>
           <div>
             <div className="font-headline-h2 text-headline-h2 text-on-surface flex items-baseline gap-sm">
@@ -174,11 +175,11 @@ export default function AdminDashboardPage() {
             </div>
           </div>
         </div>
-        
+
         <div className="stat-card bg-surface-container-lowest p-md flex flex-col justify-between h-[120px] rounded-lg border border-outline-variant hover:shadow-[0_1px_3px_rgba(15,23,24,0.06)] hover:-translate-y-0.5 transition-all">
           <div className="flex justify-between items-start">
             <span className="font-body-sm text-body-sm text-on-surface-variant">Đề thi chứng chỉ</span>
-            <span className="material-symbols-outlined text-outline text-[20px]">assignment</span>
+            <AppIcon className=" text-outline text-[20px]">assignment</AppIcon>
           </div>
           <div>
             <div className="font-headline-h2 text-headline-h2 text-on-surface flex items-baseline gap-sm">
@@ -186,11 +187,11 @@ export default function AdminDashboardPage() {
             </div>
           </div>
         </div>
-        
+
         <div className="stat-card bg-surface-container-lowest p-md flex flex-col justify-between h-[120px] rounded-lg border border-outline-variant hover:shadow-[0_1px_3px_rgba(15,23,24,0.06)] hover:-translate-y-0.5 transition-all">
           <div className="flex justify-between items-start">
             <span className="font-body-sm text-body-sm text-on-surface-variant">Tài khoản hoạt động</span>
-            <span className="material-symbols-outlined text-outline text-[20px]">group</span>
+            <AppIcon className=" text-outline text-[20px]">group</AppIcon>
           </div>
           <div>
             <div className="font-headline-h2 text-headline-h2 text-on-surface flex items-baseline gap-sm">
@@ -221,7 +222,7 @@ export default function AdminDashboardPage() {
             })}
           </div>
         </div>
-        
+
         <div className="stat-card bg-surface-container-lowest p-lg col-span-12 lg:col-span-8 min-h-[360px] flex flex-col rounded-lg border border-outline-variant hover:shadow-[0_1px_3px_rgba(15,23,24,0.06)] hover:-translate-y-0.5 transition-all">
           <div className="flex justify-between items-center mb-xl">
             <h3 className="font-headline-h3 text-headline-h3 text-on-surface">Hoạt động học tập</h3>
@@ -272,28 +273,28 @@ export default function AdminDashboardPage() {
             )}
           </ul>
         </div>
-        
+
         <div className="col-span-12 lg:col-span-6 flex flex-col gap-xl">
           <div className="stat-card bg-surface-container-lowest p-lg rounded-lg border border-outline-variant hover:shadow-[0_1px_3px_rgba(15,23,24,0.06)] hover:-translate-y-0.5 transition-all">
             <h3 className="font-headline-h3 text-headline-h3 text-on-surface mb-md">Thao tác nhanh</h3>
             <div className="grid grid-cols-2 gap-md">
               <Link href="/admin/questions/editor" className="flex flex-col items-center justify-center p-md border border-outline-variant rounded-lg hover:border-primary hover:bg-surface-bright transition-all group">
-                <span className="material-symbols-outlined text-outline group-hover:text-primary mb-xs">post_add</span>
+                <AppIcon className=" text-outline group-hover:text-primary mb-xs">post_add</AppIcon>
                 <span className="font-interface-sb text-body-sm text-on-surface group-hover:text-primary">Thêm câu hỏi</span>
               </Link>
               <Link href="/admin/tests/builder" className="flex flex-col items-center justify-center p-md border border-outline-variant rounded-lg hover:border-primary hover:bg-surface-bright transition-all group">
-                <span className="material-symbols-outlined text-outline group-hover:text-primary mb-xs">quiz</span>
+                <AppIcon className=" text-outline group-hover:text-primary mb-xs">quiz</AppIcon>
                 <span className="font-interface-sb text-body-sm text-on-surface group-hover:text-primary">Tạo quiz chứng chỉ</span>
               </Link>
               <Link href="/admin/students" className="flex flex-col items-center justify-center p-md border border-outline-variant rounded-lg hover:border-primary hover:bg-surface-bright transition-all group col-span-2">
-                <span className="material-symbols-outlined text-outline group-hover:text-primary mb-xs">person_search</span>
+                <AppIcon className=" text-outline group-hover:text-primary mb-xs">person_search</AppIcon>
                 <span className="font-interface-sb text-body-sm text-on-surface group-hover:text-primary">Tìm người học</span>
               </Link>
             </div>
           </div>
         </div>
       </div>
-      
+
       <div className="h-2xl"></div>
     </main>
   );

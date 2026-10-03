@@ -1,4 +1,6 @@
 'use client';
+import { showToast } from '@/shared/ui/AppFeedback';
+import { AppIcon, IconText } from '@/shared/ui/AppIcon';
 import { ActionButton, ActionGroup } from '@/shared/ui/ActionButton';
 
 import { LevelBadge } from '@/shared/ui/LevelBadge';
@@ -123,7 +125,7 @@ export default function AdminQuestionsPage() {
             className="inline-flex shrink-0 items-center gap-2 rounded-xl border border-outline-variant bg-surface-container-lowest px-3.5 py-2.5 text-sm font-semibold text-on-surface shadow-sm transition-colors hover:bg-surface-container"
             title="Tải file mẫu Excel chuẩn để soạn câu hỏi"
           >
-            <span className="material-symbols-outlined text-[19px] text-emerald-600">file_download</span>
+            <AppIcon className=" text-[19px] text-emerald-600">file_download</AppIcon>
             Tải file mẫu
           </button>
           <button
@@ -134,14 +136,14 @@ export default function AdminQuestionsPage() {
             }}
             className="inline-flex shrink-0 items-center gap-2 rounded-xl border border-primary/20 bg-primary/10 px-3.5 py-2.5 text-sm font-semibold text-primary shadow-sm transition-colors hover:bg-primary/15"
           >
-            <span className="material-symbols-outlined text-[19px]">upload_file</span>
+            <AppIcon className=" text-[19px]">upload_file</AppIcon>
             Nhập từ Excel
           </button>
           <Link
             href="/admin/questions/editor"
             className="inline-flex shrink-0 items-center gap-2 rounded-xl bg-primary px-4 py-2.5 text-sm font-semibold !text-white shadow-sm"
           >
-            <span className="material-symbols-outlined text-[19px]">add</span>
+            <AppIcon className=" text-[19px]">add</AppIcon>
             Thêm câu hỏi
           </Link>
         </div>
@@ -153,7 +155,7 @@ export default function AdminQuestionsPage() {
           <span className="font-semibold text-on-surface">Chú giải loại câu hỏi:</span>
           {Object.entries(QUESTION_TYPES).map(([key, item]) => (
             <span key={key} className="flex items-center gap-1.5">
-              <span className={`material-symbols-outlined text-[17px] ${item.color}`}>{item.icon}</span>
+              <AppIcon className={` text-[17px] ${item.color}`}>{item.icon}</AppIcon>
               {item.label}
             </span>
           ))}
@@ -219,7 +221,7 @@ export default function AdminQuestionsPage() {
       {successMessage && (
         <div className="mt-4 p-3.5 rounded-xl bg-emerald-50 border border-emerald-300 text-emerald-800 text-sm flex items-center justify-between gap-2">
           <div className="flex items-center gap-2">
-            <span className="material-symbols-outlined text-[18px] text-emerald-600">check_circle</span>
+            <AppIcon className=" text-[18px] text-emerald-600">check_circle</AppIcon>
             <span className="font-medium">{successMessage}</span>
           </div>
           <button
@@ -227,14 +229,14 @@ export default function AdminQuestionsPage() {
             onClick={() => setSuccessMessage(null)}
             className="text-emerald-700 hover:text-emerald-900"
           >
-            <span className="material-symbols-outlined text-[18px]">close</span>
+            <AppIcon className=" text-[18px]">close</AppIcon>
           </button>
         </div>
       )}
 
       {error && (
         <div className="mt-4 p-3 rounded-xl bg-error-container text-on-error-container text-sm flex items-center gap-2">
-          <span className="material-symbols-outlined text-[18px]">error</span>
+          <AppIcon className=" text-[18px]">error</AppIcon>
           <span>{error}</span>
         </div>
       )}
@@ -245,7 +247,7 @@ export default function AdminQuestionsPage() {
           Array.from({ length: 5 }).map((_, i) => <SkeletonRow key={i} />)
         ) : items.length === 0 ? (
           <div className="py-16 text-center">
-            <span className="material-symbols-outlined text-[48px] text-outline mb-3 block">quiz</span>
+            <AppIcon className=" text-[48px] text-outline mb-3 block">quiz</AppIcon>
             <p className="text-sm text-on-surface-variant">Không tìm thấy câu hỏi nào</p>
           </div>
         ) : (
@@ -263,9 +265,9 @@ export default function AdminQuestionsPage() {
                       <span className="text-xs font-mono text-on-surface-variant mt-0.5 w-7 shrink-0 font-semibold">
                         {(page - 1) * limit + idx + 1}.
                       </span>
-                      <span className={`material-symbols-outlined text-[18px] mt-0.5 ${qType.color} shrink-0`}>
+                      <AppIcon className={` text-[18px] mt-0.5 ${qType.color} shrink-0`}>
                         {qType.icon}
-                      </span>
+                      </AppIcon>
                       <div className="flex-1 min-w-0">
                         <p className="text-sm font-medium text-on-surface line-clamp-2">{q.prompt}</p>
                         <div className="mt-1.5 flex flex-wrap gap-2 items-center">
@@ -283,7 +285,7 @@ export default function AdminQuestionsPage() {
                           )}
                           {(q.examQuestions?.length ?? 0) > 0 ? (
                             <span className="inline-flex items-center gap-1 rounded bg-indigo-50 px-2 py-0.5 text-xs font-medium text-indigo-700">
-                              <span className="material-symbols-outlined text-[14px]">assignment</span>
+                              <AppIcon className=" text-[14px]">assignment</AppIcon>
                               {q.examQuestions!.length} bộ đề
                             </span>
                           ) : (
@@ -293,9 +295,9 @@ export default function AdminQuestionsPage() {
                         </div>
                       </div>
                       <div className="flex shrink-0 self-stretch flex-col items-end justify-between gap-2">
-                        <span className={`material-symbols-outlined text-[20px] text-on-surface-variant transition-transform shrink-0 ${isExpanded ? 'rotate-180' : ''}`}>
+                        <AppIcon className={` text-[20px] text-on-surface-variant transition-transform shrink-0 ${isExpanded ? 'rotate-180' : ''}`}>
                           expand_more
-                        </span>
+                        </AppIcon>
                         {q.status === 'published' ? (
                           <span className="text-xs text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full font-medium whitespace-nowrap">Đã xuất bản</span>
                         ) : (
@@ -359,7 +361,7 @@ export default function AdminQuestionsPage() {
                               <div className="flex-1">
                                 <p className={opt.isCorrect ? 'text-emerald-900 font-semibold' : 'text-on-surface'}>
                                   {opt.text}
-                                  {opt.isCorrect && <span className="ml-2 text-emerald-700 font-bold">✓ (Đáp án đúng)</span>}
+                                  {opt.isCorrect && <span className="ml-2 text-emerald-700 font-bold"><IconText>{"✓ (Đáp án đúng)"}</IconText></span>}
                                 </p>
                                 {opt.explanation && (
                                   <p className="text-xs text-on-surface-variant mt-1 italic">{opt.explanation}</p>
@@ -395,7 +397,7 @@ export default function AdminQuestionsPage() {
         open={importModalOpen}
         onClose={() => setImportModalOpen(false)}
         onSuccess={(count) => {
-          setSuccessMessage(`Đã nhập thành công ${count} câu hỏi vào ngân hàng câu hỏi!`);
+          showToast(`Đã nhập thành công ${count} câu hỏi vào ngân hàng câu hỏi!`, 'success');
           void load();
         }}
         availableDomains={domains}

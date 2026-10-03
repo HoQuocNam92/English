@@ -24,7 +24,7 @@ export default function CertificationsPage() {
 
   if (loading) return <LearnerShell><LoadingSpinner /></LearnerShell>;
 
-  return <LearnerShell><div className="mx-auto max-w-7xl px-4 py-8">
+  return <LearnerShell><div className="w-full">
     <div className="mb-8"><h1 className="text-[30px] font-bold text-on-surface">Luyện thi chứng chỉ</h1><p className="mt-2 text-[14px] text-on-surface-variant">Chọn chứng chỉ để luyện tập và làm Mock Exam.</p></div>
     {error && <p className="rounded-xl border border-error/30 bg-error-container p-4 text-sm text-error">{error}</p>}
     {!error && !certificates.length && <p className="rounded-xl border border-dashed p-8 text-center text-sm text-on-surface-variant">Chưa có chứng chỉ đang hoạt động.</p>}

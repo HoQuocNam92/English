@@ -1,4 +1,5 @@
 'use client';
+import { AppIcon } from '@/shared/ui/AppIcon';
 
 import * as React from 'react';
 import { validateSearch, validateSearchRealtime, sanitizeSearch, findInvalidChar } from '@/shared/validation/validators';
@@ -104,9 +105,9 @@ export function SearchInput({
       <div className="flex gap-2 items-center">
         <div className="relative flex-1">
           {/* Search Icon */}
-          <span className="material-symbols-outlined absolute left-3.5 top-1/2 -translate-y-1/2 text-[18px] text-on-surface-variant pointer-events-none">
+          <AppIcon className=" absolute left-3.5 top-1/2 -translate-y-1/2 text-[18px] text-on-surface-variant pointer-events-none">
             search
-          </span>
+          </AppIcon>
 
           <input
             type="text"
@@ -138,7 +139,7 @@ export function SearchInput({
                 aria-label="Xoá tìm kiếm"
                 className="w-5 h-5 rounded-full flex items-center justify-center text-on-surface-variant hover:bg-surface-container-high transition-colors"
               >
-                <span className="material-symbols-outlined text-[14px]">close</span>
+                <AppIcon className=" text-[14px]">close</AppIcon>
               </button>
             )}
 
@@ -164,7 +165,7 @@ export function SearchInput({
       {/* Thông báo lỗi validation */}
       {error && (
         <div className="flex items-center gap-1.5 px-1 py-0.5 text-xs text-red-600 animate-fadeIn">
-          <span className="material-symbols-outlined text-[14px]">error</span>
+          <AppIcon className=" text-[14px]">error</AppIcon>
           <span>{error}</span>
         </div>
       )}

@@ -1,4 +1,5 @@
 'use client';
+import { AppIcon } from '@/shared/ui/AppIcon';
 
 import type { ComponentProps, ReactNode } from 'react';
 import Link from 'next/link';
@@ -15,7 +16,7 @@ export function FormPageLayout({ children, className }: { children: ReactNode; c
 export function CreatePage({ backHref, children }: { backHref: string; children: ReactNode }) {
   return <FormPageLayout className="max-w-4xl space-y-5">
     <Link href={backHref} className="inline-flex items-center gap-2 rounded-lg py-1 text-sm font-medium text-on-surface-variant hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary">
-      <span aria-hidden="true" className="material-symbols-outlined" style={{ fontSize: 18 }}>arrow_back</span>
+      <AppIcon aria-hidden="true" className="" style={{ fontSize: 18 }}>arrow_back</AppIcon>
       Quay lại
     </Link>
     <section className="overflow-hidden rounded-2xl border border-outline-variant/50 bg-surface-container-lowest shadow-sm">{children}</section>

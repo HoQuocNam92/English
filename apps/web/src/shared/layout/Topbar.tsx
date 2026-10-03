@@ -1,4 +1,5 @@
 'use client';
+import { AppIcon } from '@/shared/ui/AppIcon';
 
 import Link from 'next/link';
 import * as React from 'react';
@@ -20,8 +21,8 @@ export function Topbar({ onToggleMobileMenu }: TopbarProps) {
 
   const submitPassword = async (event: React.FormEvent) => {
     event.preventDefault();
-    if (passwordForm.newPassword.length < 8) {
-      setPasswordMessage('Mật khẩu mới phải có ít nhất 8 ký tự.');
+    if (passwordForm.newPassword.length < 6) {
+      setPasswordMessage('Mật khẩu mới phải có ít nhất 6 ký tự.');
       return;
     }
     if (passwordForm.newPassword !== passwordForm.confirmPassword) {
@@ -35,7 +36,7 @@ export function Topbar({ onToggleMobileMenu }: TopbarProps) {
         currentPassword: passwordForm.currentPassword,
         newPassword: passwordForm.newPassword,
       });
-      setPasswordMessage('Đổi mật khẩu thành công.');
+      setPasswordMessage('');
       setPasswordForm({ currentPassword: '', newPassword: '', confirmPassword: '' });
     } catch (error) {
       setPasswordMessage(error instanceof Error ? error.message : 'Không thể đổi mật khẩu.');
@@ -57,11 +58,11 @@ export function Topbar({ onToggleMobileMenu }: TopbarProps) {
             aria-label="Mở menu"
             className="p-1.5 rounded-lg text-on-surface-variant hover:bg-surface-container-high transition-colors"
           >
-            <span className="material-symbols-outlined text-[24px]">menu</span>
+            <AppIcon className=" text-[24px]">menu</AppIcon>
           </button>
           <Link href="/admin/dashboard" className="flex items-center gap-2">
             <div className="w-7 h-7 rounded bg-primary text-white flex items-center justify-center shadow-xs">
-              <span className="material-symbols-outlined text-[17px] fill-1">terminal</span>
+              <AppIcon className=" text-[17px] ">terminal</AppIcon>
             </div>
             <span className="font-bold text-primary text-sm">TechEnglish Pro</span>
           </Link>
@@ -90,7 +91,7 @@ export function Topbar({ onToggleMobileMenu }: TopbarProps) {
             aria-label="Đổi mật khẩu"
             className="rounded-lg p-2 text-on-surface-variant transition-all hover:bg-surface-container-high hover:text-primary"
           >
-            <span className="material-symbols-outlined text-[18px]">key</span>
+            <AppIcon className=" text-[18px]">key</AppIcon>
           </button>
           <button
             type="button"
@@ -99,7 +100,7 @@ export function Topbar({ onToggleMobileMenu }: TopbarProps) {
             aria-label="Đăng xuất"
             className="p-2 rounded-lg text-on-surface-variant hover:text-red-600 hover:bg-error-container/20 transition-all cursor-pointer shrink-0 ml-1"
           >
-            <span className="material-symbols-outlined text-[18px]">logout</span>
+            <AppIcon className=" text-[18px]">logout</AppIcon>
           </button>
         </div>
       </div>
@@ -109,7 +110,7 @@ export function Topbar({ onToggleMobileMenu }: TopbarProps) {
           <section className="w-full max-w-md rounded-2xl border border-outline-variant bg-white p-5 shadow-2xl" role="dialog" aria-modal="true" aria-labelledby="change-password-title" onMouseDown={(event) => event.stopPropagation()}>
             <div className="flex items-start justify-between gap-4">
               <div><h2 id="change-password-title" className="text-xl font-bold text-on-surface">Đổi mật khẩu</h2><p className="mt-1 text-sm text-on-surface-variant">Cập nhật mật khẩu đăng nhập của tài khoản hiện tại.</p></div>
-              <button type="button" aria-label="Đóng" onClick={() => setPasswordOpen(false)} className="rounded-lg p-2 text-on-surface-variant hover:bg-surface-container-low"><span className="material-symbols-outlined">close</span></button>
+              <button type="button" aria-label="Đóng" onClick={() => setPasswordOpen(false)} className="rounded-lg p-2 text-on-surface-variant hover:bg-surface-container-low"><AppIcon className="">close</AppIcon></button>
             </div>
             <form onSubmit={submitPassword} className="mt-5 space-y-4">
               {[

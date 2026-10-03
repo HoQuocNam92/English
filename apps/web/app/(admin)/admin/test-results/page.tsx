@@ -1,4 +1,6 @@
 'use client';
+import { showToast } from '@/shared/ui/AppFeedback';
+import { AppIcon } from '@/shared/ui/AppIcon';
 import { ActionButton, ActionGroup } from '@/shared/ui/ActionButton';
 
 import { Dropdown } from '@/shared/ui/Dropdown';
@@ -86,6 +88,7 @@ export default function AdminTestResultsPage() {
       const XLSX = await import('xlsx');
       const rows = all.map(item => ({ 'Học viên': item.learner?.userDetail?.displayName ?? item.learner?.email ?? '', Email: item.learner?.email ?? '', 'Chủ đề/Bài thi': item.exam?.title ?? '', 'Lĩnh vực': item.exam?.domain?.name ?? '', 'Trình độ': item.exam?.level?.name ?? '', 'Điểm (%)': item.scorePercent ?? item.score ?? '', 'Kết quả': (item.passed ?? item.isPassed) ? 'Đạt' : 'Chưa đạt', 'Thời gian làm bài': item.timeSpentSeconds ? `${Math.round(item.timeSpentSeconds / 60)} phút` : '', 'Thời gian nộp': item.submittedAt ? new Date(item.submittedAt).toLocaleString('vi-VN') : '' }));
       const book = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(book, XLSX.utils.json_to_sheet(rows), 'Kết quả bài thi'); XLSX.writeFile(book, `ket-qua-bai-thi-${new Date().toISOString().slice(0,10)}.xlsx`);
+      showToast('Đã tạo tệp Excel kết quả bài thi.', 'success');
     } catch (e) { setError(e instanceof ApiClientError ? e.message : 'Không thể xuất Excel'); }
   };
 
@@ -95,13 +98,13 @@ export default function AdminTestResultsPage() {
         <div>
           <h2 className="font-headline-h1 text-headline-h1 text-on-surface mb-xs">Lịch sử làm bài thi</h2>
           <p className="font-body-md text-body-md text-on-surface-variant flex items-center gap-xs">
-            <span className="material-symbols-outlined text-[16px]">history</span>
+            <AppIcon className=" text-[16px]">history</AppIcon>
             Kết quả thi của tất cả người học
           </p>
         </div>
         <div className="flex gap-sm">
           <button onClick={() => void exportExcel()} className="px-4 py-2.5 bg-surface-container-lowest border border-outline-variant rounded-lg font-interface-sb text-interface-sb text-on-surface flex items-center gap-2 hover:bg-surface-container-low transition-colors">
-            <span className="material-symbols-outlined text-[18px]">download</span>
+            <AppIcon className=" text-[18px]">download</AppIcon>
             Xuất Excel
           </button>
         </div>
@@ -109,7 +112,7 @@ export default function AdminTestResultsPage() {
 
       {error && (
         <div className="mb-xl p-3 rounded-xl bg-error-container text-on-error-container text-sm flex items-center gap-2">
-          <span className="material-symbols-outlined text-[18px]">error</span>
+          <AppIcon className=" text-[18px]">error</AppIcon>
           <span>{error}</span>
         </div>
       )}
@@ -119,7 +122,7 @@ export default function AdminTestResultsPage() {
           <div className="flex justify-between items-start mb-sm">
             <p className="font-label-caps text-label-caps text-on-surface-variant uppercase">Điểm trung bình</p>
             <div className="p-sm bg-secondary-fixed rounded-full text-on-secondary-fixed-variant">
-              <span className="material-symbols-outlined text-[20px]">leaderboard</span>
+              <AppIcon className=" text-[20px]">leaderboard</AppIcon>
             </div>
           </div>
           <div className="flex items-end gap-sm">
@@ -127,7 +130,7 @@ export default function AdminTestResultsPage() {
             <span className="font-body-sm text-body-sm text-on-surface-variant pb-1">/ 10</span>
           </div>
           <div className="mt-xs flex items-center gap-xs text-secondary">
-            <span className="material-symbols-outlined text-[14px]">trending_up</span>
+            <AppIcon className=" text-[14px]">trending_up</AppIcon>
             <span className="font-body-sm text-body-sm">Tính từ dữ liệu đang lọc</span>
           </div>
         </div>
@@ -136,7 +139,7 @@ export default function AdminTestResultsPage() {
           <div className="flex justify-between items-start mb-sm">
             <p className="font-label-caps text-label-caps text-on-surface-variant uppercase">Lượt làm bài</p>
             <div className="p-sm bg-tertiary-fixed rounded-full text-on-tertiary-fixed-variant">
-              <span className="material-symbols-outlined text-[20px]">group</span>
+              <AppIcon className=" text-[20px]">group</AppIcon>
             </div>
           </div>
           <div className="flex items-end gap-sm">
@@ -151,7 +154,7 @@ export default function AdminTestResultsPage() {
           <div className="flex justify-between items-start mb-sm">
             <p className="font-label-caps text-label-caps text-on-surface-variant uppercase">Tỷ lệ đạt</p>
             <div className="p-sm bg-primary-fixed rounded-full text-on-primary-fixed-variant">
-              <span className="material-symbols-outlined text-[20px]">check_circle</span>
+              <AppIcon className=" text-[20px]">check_circle</AppIcon>
             </div>
           </div>
           <div className="flex items-end gap-sm">

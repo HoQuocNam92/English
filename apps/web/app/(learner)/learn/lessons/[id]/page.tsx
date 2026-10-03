@@ -1,4 +1,5 @@
 'use client';
+import { AppIcon } from '@/shared/ui/AppIcon';
 
 import { use, useEffect, useState } from 'react';
 import Link from 'next/link';
@@ -39,9 +40,9 @@ export default function LearnerLessonDetail({ params }: { params: Promise<{ id: 
 
   const track = lessonTrackByType(lesson.type);
   const backUrl = track ? `/learn/lessons?type=${track.type}` : lesson.type === 'certification_review' ? '/learn/certifications' : lesson.type === 'vocabulary' ? '/learn/flashcards' : '/learn/lessons';
-  return <LearnerShell><article className="mx-auto max-w-6xl pb-16"><Link href={backUrl} className="inline-flex items-center gap-1 text-sm font-bold text-primary"><span className="material-symbols-outlined text-[18px]">arrow_back</span>Quay lại {track?.label ?? 'học tập'}</Link>
+  return <LearnerShell><article className="mx-auto max-w-6xl pb-16"><Link href={backUrl} className="inline-flex items-center gap-1 text-sm font-bold text-primary"><AppIcon className=" text-[18px]">arrow_back</AppIcon>Quay lại {track?.label ?? 'học tập'}</Link>
     {error && <p className="mt-5 rounded-xl bg-red-50 p-3 text-sm font-semibold text-red-700">{error}</p>}
     <div className="mt-5"><LessonExperience lesson={lesson} practiceNote={practiceNote} onPracticeNoteChange={setPracticeNote} /></div>
-    <div className="sticky bottom-4 mt-7 flex justify-end"><button onClick={() => void finish()} disabled={completed || saving} className={`inline-flex items-center gap-2 rounded-xl px-6 py-3 text-sm font-black text-white shadow-lg disabled:opacity-80 ${completed ? 'bg-emerald-600' : 'bg-primary'}`}><span className="material-symbols-outlined">check_circle</span>{saving ? 'Đang lưu...' : completed ? 'Đã hoàn thành' : 'Đánh dấu hoàn thành'}</button></div>
+    <div className="sticky bottom-4 mt-7 flex justify-end"><button onClick={() => void finish()} disabled={completed || saving} className={`inline-flex items-center gap-2 rounded-xl px-6 py-3 text-sm font-black text-white shadow-lg disabled:opacity-80 ${completed ? 'bg-emerald-600' : 'bg-primary'}`}><AppIcon className="">check_circle</AppIcon>{saving ? 'Đang lưu...' : completed ? 'Đã hoàn thành' : 'Đánh dấu hoàn thành'}</button></div>
   </article></LearnerShell>;
 }

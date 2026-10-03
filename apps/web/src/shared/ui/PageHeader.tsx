@@ -1,3 +1,4 @@
+import { AppIcon } from '@/shared/ui/AppIcon';
 import * as React from 'react';
 import { cn } from '@/shared/lib/cn';
 
@@ -28,7 +29,7 @@ export function PageHeader({ eyebrow, title, description, action, icon, iconClas
   return (
     <header className={cn('flex flex-wrap items-start justify-between gap-4', className)} {...props}>
       <div className="flex max-w-3xl items-start gap-4">
-        <span className={cn('material-symbols-outlined !flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br text-center text-[25px] !leading-none !text-white shadow-sm', iconClassName ?? resolvedColor)}>{icon ?? resolvedIcon}</span>
+        <AppIcon className={cn(' !flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br text-center text-[25px] !leading-none !text-white shadow-sm', iconClassName ?? resolvedColor)}>{icon ?? resolvedIcon}</AppIcon>
         <div className="grid gap-1">
           {eyebrow ? <span className="text-sm font-semibold text-primary">{eyebrow}</span> : null}
           <h1 className="m-0 text-3xl font-bold leading-[38px] text-foreground">{title}</h1>

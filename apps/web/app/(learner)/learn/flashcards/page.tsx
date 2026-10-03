@@ -1,5 +1,9 @@
 'use client';
+import { VocabularyRecommendations } from '@/shared/ui/VocabularyRecommendations';
+import { Pagination } from '@/shared/ui/Pagination';
+import { AppIcon } from '@/shared/ui/AppIcon';
 
+import { levelLabel } from '@/shared/lib/level-label';
 import { Dropdown } from '@/shared/ui/Dropdown';
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
@@ -29,6 +33,11 @@ export default function FlashcardsDashboardPage() {
   const [userProfile, setUserProfile] = useState<any>(null);
   const [historyPeriod, setHistoryPeriod] = useState<'day' | 'month' | 'year' | 'all'>('month');
   const [historyRating, setHistoryRating] = useState('all');
+  const [historyPage, setHistoryPage] = useState(1);
+  const [historyLimit, setHistoryLimit] = useState(10);
+  const [historyMeta, setHistoryMeta] = useState({ page: 1, limit: 10, total: 0, totalPages: 1 });
+  const [historyLoading, setHistoryLoading] = useState(true);
+  const [historyError, setHistoryError] = useState('');
   const [historyWords, setHistoryWords] = useState<any[]>([]);
 
   useEffect(() => {
@@ -97,17 +106,22 @@ export default function FlashcardsDashboardPage() {
   }, []);
 
   useEffect(() => {
-    apiClient.get<any[]>(`/vocab-study/history?period=${historyPeriod}&rating=${historyRating}`)
-      .then(data => setHistoryWords(Array.isArray(data) ? data : []))
-      .catch(() => setHistoryWords([]));
-  }, [historyPeriod, historyRating]);
+    let active = true;
+    setHistoryLoading(true);
+    setHistoryError('');
+    apiClient.get<{ data: any[]; meta: typeof historyMeta }>(`/vocab-study/history?period=${historyPeriod}&rating=${historyRating}&page=${historyPage}&limit=${historyLimit}`)
+      .then(result => { if (active) { setHistoryWords(result.data); setHistoryMeta(result.meta); } })
+      .catch(() => { if (active) setHistoryError('Không thể tải lịch sử học. Vui lòng thử lại.'); })
+      .finally(() => { if (active) setHistoryLoading(false); });
+    return () => { active = false; };
+  }, [historyPeriod, historyRating, historyPage, historyLimit]);
 
   const domains = Array.from(
     new Map(lessons.filter(l => l.domain).map(l => [l.domain.code, l.domain])).values()
   );
-  const levels = Array.from(
-    new Map(lessons.filter(l => l.level).map(l => [l.level.code, l.level])).values()
-  );
+  const levels = ['beginner', 'intermediate', 'advanced', 'professional'].map(code => ({
+    code, name: levelLabel(code),
+  }));
 
   const filteredExplore = lessons.filter(lesson => {
     const keyword = search.trim().toLowerCase();
@@ -174,7 +188,7 @@ export default function FlashcardsDashboardPage() {
         {/* Header Title */}
         <div className="space-y-4">
           <div className="flex items-center gap-2">
-            <span className="material-symbols-outlined text-primary text-3xl">style</span>
+            <AppIcon className=" text-primary text-3xl">style</AppIcon>
             <h1 className="text-2xl lg:text-3xl font-black text-slate-900 tracking-tight">
               Flashcards
             </h1>
@@ -217,7 +231,7 @@ export default function FlashcardsDashboardPage() {
 
         {/* Notice Banner */}
         <div className="flex items-start gap-3 p-4 rounded-2xl bg-primary/5 border border-primary/20 text-on-surface text-xs leading-relaxed">
-          <span className="material-symbols-outlined text-primary text-base mt-0.5">info</span>
+          <AppIcon className=" text-primary text-base mt-0.5">info</AppIcon>
           <div>
             <span className="font-bold text-primary">Chú ý:</span> Bạn có thể luyện tập flashcard hàng ngày theo thuật toán lặp lại ngắt quãng (SRS) để ghi nhớ từ vựng CNTT lâu dài.
           </div>
@@ -226,6 +240,8 @@ export default function FlashcardsDashboardPage() {
         {/* ═════════════════════════════════════════════════════════════════════ */}
         {/* TAB 1: ĐANG HỌC */}
         {/* ═════════════════════════════════════════════════════════════════════ */}
+        <VocabularyRecommendations />
+
         {activeTab === 'studying' && (
           <div className="space-y-6">
             {/* SRS Review Alert Banner */}
@@ -233,7 +249,7 @@ export default function FlashcardsDashboardPage() {
               <div className="flex flex-col sm:flex-row items-center justify-between gap-4 p-5 rounded-3xl bg-gradient-to-r from-primary/[0.08] via-primary/[0.04] to-surface-white border border-primary/25 shadow-xs animate-in fade-in slide-in-from-top-2">
                 <div className="flex items-center gap-3.5">
                   <div className="w-12 h-12 rounded-2xl bg-primary text-white flex items-center justify-center shrink-0 shadow-md shadow-primary/25">
-                    <span className="material-symbols-outlined text-2xl">alarm</span>
+                    <AppIcon className=" text-2xl">alarm</AppIcon>
                   </div>
                   <div className="space-y-0.5">
                     <h3 className="text-base font-black text-on-surface flex items-center gap-2">
@@ -252,9 +268,9 @@ export default function FlashcardsDashboardPage() {
                   href="/learn/flashcards/review/practice"
                   className="w-full sm:w-auto px-6 py-3 rounded-2xl bg-primary hover:bg-primary/90 text-white text-xs font-black transition-all shadow-md shadow-primary/20 flex items-center justify-center gap-2 shrink-0 group hover:scale-[1.02]"
                 >
-                  <span className="material-symbols-outlined text-lg group-hover:scale-110 transition-transform">
+                  <AppIcon className=" text-lg group-hover:scale-110 transition-transform">
                     play_circle
-                  </span>
+                  </AppIcon>
                   <span>Ôn tập ngay ({dashboardData.stats.needsReview} từ)</span>
                 </Link>
               </div>
@@ -296,9 +312,9 @@ export default function FlashcardsDashboardPage() {
                         <span className="text-3xl lg:text-4xl font-black text-primary group-hover:text-primary/90">
                           {dashboardData.stats.needsReview}
                         </span>
-                        <span className="material-symbols-outlined text-primary text-xl group-hover:translate-x-0.5 transition-transform">
+                        <AppIcon className=" text-primary text-xl group-hover:translate-x-0.5 transition-transform">
                           arrow_forward
-                        </span>
+                        </AppIcon>
                       </div>
                       <div className="text-xs font-bold text-primary mt-1 flex items-center justify-center gap-1.5 flex-wrap">
                         <span>Cần ôn tập</span>
@@ -339,15 +355,16 @@ export default function FlashcardsDashboardPage() {
               <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                 <div><h2 className="text-base font-bold text-slate-800">Từ đã học / đã biết</h2><p className="text-xs text-slate-500">Mặc định các từ này không xuất hiện trong phiên học từ mới.</p></div>
                 <div className="flex flex-wrap gap-2">
-                  <Dropdown value={historyPeriod} onChange={event => setHistoryPeriod(event.target.value as any)} className="rounded-lg border border-slate-200 px-3 py-2 text-xs font-bold">
+                  <Dropdown value={historyPeriod} onChange={event => { setHistoryPeriod(event.target.value as any); setHistoryPage(1); }} className="rounded-lg border border-slate-200 px-3 py-2 text-xs font-bold">
                     <option value="day">Hôm nay</option><option value="month">Tháng này</option><option value="year">Năm nay</option><option value="all">Tất cả</option>
                   </Dropdown>
-                  <Dropdown value={historyRating} onChange={event => setHistoryRating(event.target.value)} className="rounded-lg border border-slate-200 px-3 py-2 text-xs font-bold">
+                  <Dropdown value={historyRating} onChange={event => { setHistoryRating(event.target.value); setHistoryPage(1); }} className="rounded-lg border border-slate-200 px-3 py-2 text-xs font-bold">
                     <option value="all">Mọi độ khó</option><option value="easy">Dễ</option><option value="medium">Trung bình</option><option value="hard">Khó</option><option value="mastered">Đã biết</option>
                   </Dropdown>
                 </div>
               </div>
-              {historyWords.length ? <div className="divide-y divide-slate-100">{historyWords.slice(0, 30).map(item => <div key={item.id} className="flex items-center justify-between gap-4 py-3"><div className="min-w-0"><p className="truncate text-sm font-bold text-slate-900">{item.vocabulary?.term}</p><p className="truncate text-xs text-slate-500">{item.vocabulary?.definitionVi}</p></div><div className="shrink-0 text-right"><span className="rounded-full bg-slate-100 px-2 py-1 text-[10px] font-bold uppercase text-slate-600">{item.lastRating === 'easy' ? 'Dễ' : item.lastRating === 'medium' ? 'Trung bình' : item.lastRating === 'hard' ? 'Khó' : item.lastRating === 'mastered' ? 'Đã biết' : 'Đã học'}</span><p className="mt-1 text-[10px] text-slate-400">{item.lastReviewAt ? new Date(item.lastReviewAt).toLocaleDateString('vi-VN') : ''}</p></div></div>)}</div> : <p className="rounded-xl bg-slate-50 p-5 text-center text-xs text-slate-500">Không có từ phù hợp với bộ lọc.</p>}
+              {historyLoading ? <LoadingSpinner /> : historyError ? <p role="alert" className="p-5 text-sm text-rose-600">{historyError}</p> : historyWords.length ? <div className="divide-y divide-slate-100">{historyWords.map(item => <div key={item.id} className="flex items-center justify-between gap-4 py-3"><div className="min-w-0"><p className="truncate text-sm font-bold text-slate-900">{item.vocabulary?.term}</p><p className="truncate text-xs text-slate-500">{item.vocabulary?.definitionVi}</p></div><div className="shrink-0 text-right"><span className={`rounded-full px-2 py-1 text-[10px] font-bold uppercase ${item.lastRating === 'easy' ? 'bg-green-100 text-green-800' : item.lastRating === 'medium' ? 'bg-amber-100 text-amber-800' : item.lastRating === 'hard' ? 'bg-rose-100 text-rose-800' : item.lastRating === 'mastered' ? 'bg-emerald-100 text-emerald-800' : 'bg-blue-100 text-blue-800'}`}>{item.lastRating === 'easy' ? 'Dễ' : item.lastRating === 'medium' ? 'Trung bình' : item.lastRating === 'hard' ? 'Khó' : item.lastRating === 'mastered' ? 'Đã biết' : 'Đã học'}</span><p className="mt-1 text-[10px] text-slate-400">{item.lastReviewAt ? new Date(item.lastReviewAt).toLocaleDateString('vi-VN') : ''}</p></div></div>)}</div> : <p className="rounded-xl bg-slate-50 p-5 text-center text-xs text-slate-500">Không có từ phù hợp với bộ lọc.</p>}
+              {!historyLoading && !historyError && <Pagination {...historyMeta} onPageChange={setHistoryPage} onLimitChange={limit => { setHistoryLimit(limit); setHistoryPage(1); }} className="mt-4 px-0" />}
             </div>
 
             {/* List of Studying Lessons */}
@@ -368,7 +385,7 @@ export default function FlashcardsDashboardPage() {
 
               {dashboardData.studyingLessons.length === 0 ? (
                 <div className="bg-white border border-slate-200 rounded-3xl p-10 text-center space-y-4">
-                  <span className="material-symbols-outlined text-5xl text-slate-300">menu_book</span>
+                  <AppIcon className=" text-5xl text-slate-300">menu_book</AppIcon>
                   <p className="text-sm font-semibold text-slate-600">
                     Bạn chưa chọn bộ từ nào để học.
                   </p>
@@ -376,7 +393,7 @@ export default function FlashcardsDashboardPage() {
                     onClick={() => setActiveTab('explore')}
                     className="px-6 py-2.5 rounded-xl bg-primary text-white text-xs font-bold shadow-xs hover:bg-primary/90 transition-colors inline-flex items-center gap-2"
                   >
-                    <span className="material-symbols-outlined text-sm">explore</span>
+                    <AppIcon className=" text-sm">explore</AppIcon>
                     Khám phá kho từ vựng
                   </button>
                 </div>
@@ -396,7 +413,7 @@ export default function FlashcardsDashboardPage() {
 
                         <div className="flex items-center gap-3 text-xs text-slate-500">
                           <span className="flex items-center gap-1">
-                            <span className="material-symbols-outlined text-sm text-slate-400">style</span>
+                            <AppIcon className=" text-sm text-slate-400">style</AppIcon>
                             {item.totalWords} từ
                           </span>
                           <span>·</span>
@@ -430,7 +447,7 @@ export default function FlashcardsDashboardPage() {
                             className="flex-1 py-2 px-3 rounded-xl bg-primary hover:bg-primary/90 text-white font-bold text-xs text-center transition-all shadow-xs flex items-center justify-center gap-1"
                             title={`Chỉ ôn ${item.needsReviewCount} từ đến hạn của bộ này`}
                           >
-                            <span className="material-symbols-outlined text-sm">alarm</span>
+                            <AppIcon className=" text-sm">alarm</AppIcon>
                             <span>Ôn ({item.needsReviewCount})</span>
                           </Link>
                         )}
@@ -460,9 +477,9 @@ export default function FlashcardsDashboardPage() {
                   onClick={() => showToast('Tính năng tạo list từ cá nhân đang được phát triển!', 'info', 'Sắp ra mắt')}
                   className="h-44 border-2 border-dashed border-slate-300 rounded-2xl flex flex-col items-center justify-center gap-2 text-slate-500 hover:border-primary hover:text-primary hover:bg-primary/5 transition-all p-6 text-center group"
                 >
-                  <span className="material-symbols-outlined text-3xl group-hover:scale-110 transition-transform">
+                  <AppIcon className=" text-3xl group-hover:scale-110 transition-transform">
                     add
-                  </span>
+                  </AppIcon>
                   <span className="text-sm font-bold">+ Tạo list từ</span>
                 </button>
               </div>
@@ -478,9 +495,9 @@ export default function FlashcardsDashboardPage() {
             {/* Filter bar */}
             <div className="grid w-full gap-3 rounded-2xl border border-slate-200 bg-white p-4 md:grid-cols-[minmax(240px,1fr)_200px_200px_auto]">
               <div className="relative">
-                <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-lg">
+                <AppIcon className=" absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-lg">
                   search
-                </span>
+                </AppIcon>
                 <input
                   type="search"
                   value={search}
@@ -529,9 +546,9 @@ export default function FlashcardsDashboardPage() {
             {/* Grid lessons */}
             {!filteredExplore.length ? (
               <div className="text-center py-16 text-slate-500 bg-white border border-slate-200 rounded-3xl">
-                <span className="material-symbols-outlined text-5xl mb-2 text-slate-300 block">
+                <AppIcon className=" text-5xl mb-2 text-slate-300 block">
                   filter_list_off
-                </span>
+                </AppIcon>
                 <p className="text-sm font-semibold">Không tìm thấy bộ từ vựng phù hợp với bộ lọc.</p>
               </div>
             ) : (
@@ -552,7 +569,7 @@ export default function FlashcardsDashboardPage() {
                   >
                     <div className="space-y-3">
                       <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${iconStyles[lessonIndex % iconStyles.length]}`}>
-                        <span className="material-symbols-outlined text-xl">style</span>
+                        <AppIcon className=" text-xl">style</AppIcon>
                       </div>
                       <div>
                         <h3 className="text-sm font-bold text-slate-900 group-hover:text-primary transition-colors line-clamp-2">
@@ -574,9 +591,9 @@ export default function FlashcardsDashboardPage() {
 
                     <div className="flex items-center justify-between text-primary text-xs font-bold pt-4 mt-2 border-t border-slate-100">
                       <span>Bắt đầu học</span>
-                      <span className="material-symbols-outlined text-base group-hover:translate-x-1 transition-transform">
+                      <AppIcon className=" text-base group-hover:translate-x-1 transition-transform">
                         arrow_forward
-                      </span>
+                      </AppIcon>
                     </div>
                   </Link>
                   );
@@ -591,7 +608,7 @@ export default function FlashcardsDashboardPage() {
         {/* ═════════════════════════════════════════════════════════════════════ */}
         {activeTab === 'my_lists' && (
           <div className="bg-white border border-slate-200 rounded-3xl p-12 text-center space-y-4">
-            <span className="material-symbols-outlined text-5xl text-slate-300">bookmark</span>
+            <AppIcon className=" text-5xl text-slate-300">bookmark</AppIcon>
             <h2 className="text-lg font-bold text-slate-800">Chưa có list từ nào</h2>
             <p className="text-xs text-slate-500 max-w-[480px] w-full mx-auto leading-relaxed">
               Bạn có thể tự tạo bộ flashcard từ vựng riêng của mình hoặc lưu lại những từ vựng cần lưu ý khi đọc bài học.
@@ -600,7 +617,7 @@ export default function FlashcardsDashboardPage() {
               onClick={() => showToast('Tính năng tạo danh sách cá nhân đang được phát triển!', 'info', 'Sắp ra mắt')}
               className="px-6 py-2.5 rounded-xl bg-primary text-white text-xs font-bold shadow-xs hover:bg-primary/90 transition-colors inline-flex items-center gap-2"
             >
-              <span className="material-symbols-outlined text-sm">add</span>
+              <AppIcon className=" text-sm">add</AppIcon>
               Tạo list từ mới
             </button>
           </div>

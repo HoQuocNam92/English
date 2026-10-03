@@ -1,4 +1,5 @@
 'use client';
+import { AppIcon } from '@/shared/ui/AppIcon';
 import { useRouter } from 'next/navigation';
 import { completeCreation, CreatePage } from '@/shared/ui/CreatePage';
 import { ActionButton, ActionGroup } from '@/shared/ui/ActionButton';
@@ -47,7 +48,7 @@ export default function CareerGoals({ createOnly = false }: { createOnly?: boole
   if (createOnly) return <CreatePage backHref="/admin/career-goals">{goalForm}</CreatePage>;
 
   return <main className="flex-1 p-margin">
-    <PageHeader title="Mục tiêu nghề nghiệp" description="Quản lý các định hướng Cloud, Security, Data, DevOps và những hướng nghề nghiệp dùng để phân nhóm học viên." icon="flag" iconClassName="from-amber-500 to-orange-600" action={<button type="button" onClick={() => router.push('/admin/career-goals/new')} className="inline-flex h-10 items-center gap-2 rounded-xl bg-primary px-4 text-sm font-semibold text-white"><span aria-hidden="true" className="material-symbols-outlined" style={{ fontSize: 18 }}>add</span>Thêm mục tiêu</button>} />
+    <PageHeader title="Mục tiêu nghề nghiệp" description="Quản lý các định hướng Cloud, Security, Data, DevOps và những hướng nghề nghiệp dùng để phân nhóm học viên." icon="flag" iconClassName="from-amber-500 to-orange-600" action={<button type="button" onClick={() => router.push('/admin/career-goals/new')} className="inline-flex h-10 items-center gap-2 rounded-xl bg-primary px-4 text-sm font-semibold text-white"><AppIcon aria-hidden="true" className="" style={{ fontSize: 18 }}>add</AppIcon>Thêm mục tiêu</button>} />
     {error && <div className="mt-5 rounded-xl bg-error-container p-3 text-sm text-on-error-container">{error}</div>}
     {form.id && <section className="mt-6 rounded-2xl border border-outline-variant bg-white">{goalForm}</section>}
     <div className="mt-5 overflow-hidden rounded-2xl border border-outline-variant bg-white">

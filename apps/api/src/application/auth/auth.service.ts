@@ -3,7 +3,7 @@ import { JwtService } from '@nestjs/jwt'
 import { ConfigService } from '@nestjs/config'
 import { PrismaService } from '../../infrastructure/database/prisma.service'
 import { EmailService } from '../../infrastructure/email/email.service'
-import { LoginDto, RegisterDto, AuthChangePasswordDto, ForgotPasswordDto, ResetPasswordDto } from '../../presentation/http-dto/auth.dto'
+import { LoginDto, RegisterDto, AuthChangePasswordDto, ForgotPasswordDto, ResetPasswordDto, ValidatePasswordResetDto } from '../../presentation/http-dto/auth.dto'
 import * as bcrypt from 'bcrypt'
 import * as crypto from 'crypto'
 
@@ -244,58 +244,84 @@ export class AuthService {
     })
   }
 
-  async forgotPassword(dto: ForgotPasswordDto) {
-    const user = await this.prisma.user.findUnique({ where: { email: dto.email } })
-    if (!user || user.status !== 'active') {
-      return { message: 'Nếu email tồn tại trên hệ thống, bạn sẽ nhận được mã OTP khôi phục mật khẩu.' }
+  private async getPasswordResetUser(email: string) {
+    const user = await this.prisma.user.findUnique({ where: { email } })
+    if (!user) throw new BadRequestException('Email chưa được đăng ký trên hệ thống')
+    if (user.deletedAt || user.status !== 'active') {
+      throw new BadRequestException('Tài khoản không hoạt động. Vui lòng liên hệ quản trị viên')
     }
+    // Google-created accounts have no local password hash.
+    if (!user.passwordHash) {
+      throw new BadRequestException('Tài khoản này sử dụng Google. Vui lòng đăng nhập bằng Google')
+    }
+    return user
+  }
 
-    // Generate 6-digit OTP
-    const otp = Math.floor(100000 + Math.random() * 900000).toString()
-    const otpHash = crypto.createHash('sha256').update(otp).digest('hex')
-    const expiresAt = new Date(Date.now() + 15 * 60 * 1000) // 15 mins
-
-    await this.prisma.passwordResetToken.create({
-      data: {
-        email: dto.email,
-        otpHash,
-        expiresAt,
-      }
+  async forgotPassword(dto: ForgotPasswordDto) {
+    const email = dto.email.trim().toLowerCase()
+    const user = await this.getPasswordResetUser(email)
+    const tokenValue = crypto.randomBytes(32).toString('hex')
+    const otpHash = crypto.createHash('sha256').update(tokenValue).digest('hex')
+    const expiresAt = new Date(Date.now() + 15 * 60 * 1000)
+    const webUrl = new URL(this.config.getOrThrow<string>('WEB_URL'))
+    if (!['http:', 'https:'].includes(webUrl.protocol)) throw new ServiceUnavailableException('Địa chỉ trang đặt lại mật khẩu chưa được cấu hình')
+    const resetUrl = new URL('/reset-password', webUrl)
+    resetUrl.searchParams.set('token', tokenValue)
+    const token = await this.prisma.passwordResetToken.create({
+      data: { userId: user.id, email: user.email, otpHash, expiresAt }
     })
 
-    await this.emailService.sendPasswordResetOtp(dto.email, otp)
+    try {
+      const sent = await this.emailService.sendPasswordResetLink(user.email, resetUrl.toString())
+      if (!sent) throw new Error('Email delivery failed')
+    } catch {
+      await this.prisma.passwordResetToken.update({ where: { id: token.id }, data: { usedAt: new Date() } })
+      throw new ServiceUnavailableException('Không thể gửi liên kết. Vui lòng thử lại sau')
+    }
+    return { resetLinkSent: true, message: 'Liên kết đặt lại mật khẩu đã được gửi đến email của bạn.' }
+  }
 
-    return { message: 'Nếu email tồn tại trên hệ thống, bạn sẽ nhận được mã OTP khôi phục mật khẩu.' }
+  private async getResetLinkUser(tokenValue: string) {
+    if (!/^[a-f0-9]{64}$/.test(tokenValue)) throw new BadRequestException('Liên kết đặt lại mật khẩu không hợp lệ')
+    const otpHash = crypto.createHash('sha256').update(tokenValue).digest('hex')
+    const token = await this.prisma.passwordResetToken.findFirst({
+      where: { otpHash, userId: { not: null }, usedAt: null, expiresAt: { gt: new Date() } }
+    })
+    if (!token) throw new BadRequestException('Liên kết không hợp lệ, đã hết hạn hoặc đã được sử dụng')
+    const user = await this.getPasswordResetUser(token.email)
+    if (token.userId !== user.id) throw new BadRequestException('Liên kết đặt lại mật khẩu không hợp lệ')
+    return { user, otpHash }
+  }
+
+  async validatePasswordReset(dto: ValidatePasswordResetDto) {
+    await this.getResetLinkUser(dto.token)
+    return { valid: true }
   }
 
   async resetPassword(dto: ResetPasswordDto) {
-    const otpHash = crypto.createHash('sha256').update(dto.otp).digest('hex')
-
-    const token = await this.prisma.passwordResetToken.findFirst({
-      where: {
-        email: dto.email,
-        otpHash,
-        usedAt: null,
-        expiresAt: { gt: new Date() }
-      },
-      orderBy: { createdAt: 'desc' }
-    })
-
-    if (!token) {
-      throw new BadRequestException('Mã OTP không hợp lệ hoặc đã hết hạn')
-    }
-
-    const user = await this.prisma.user.findUnique({ where: { email: dto.email } })
-    if (!user) throw new NotFoundException('Không tìm thấy tài khoản')
-
+    const { user, otpHash } = await this.getResetLinkUser(dto.token)
     const passwordHash = await bcrypt.hash(dto.newPassword, 12)
-    
-    await this.prisma.$transaction([
-      this.prisma.user.update({ where: { id: user.id }, data: { passwordHash } }),
-      this.prisma.passwordResetToken.update({ where: { id: token.id }, data: { usedAt: new Date() } }),
-      this.prisma.refreshToken.updateMany({ where: { userId: user.id, revokedAt: null }, data: { revokedAt: new Date() } })
-    ])
 
+    await this.prisma.$transaction(async (tx) => {
+      const token = await tx.passwordResetToken.findFirst({
+        where: { userId: user.id, email: user.email, otpHash, usedAt: null, expiresAt: { gt: new Date() } },
+        orderBy: { createdAt: 'desc' }
+      })
+      if (!token) throw new BadRequestException('Liên kết không hợp lệ, đã hết hạn hoặc đã được sử dụng')
+      // Consume the reset link atomically: concurrent requests cannot reuse it.
+      const claimed = await tx.passwordResetToken.updateMany({
+        where: { id: token.id, usedAt: null, expiresAt: { gt: new Date() } },
+        data: { usedAt: new Date() }
+      })
+      if (claimed.count !== 1) throw new BadRequestException('Liên kết không hợp lệ, đã hết hạn hoặc đã được sử dụng')
+      const updated = await tx.user.updateMany({
+        where: { id: user.id, email: user.email, status: 'active', deletedAt: null, passwordHash: user.passwordHash },
+        data: { passwordHash }
+      })
+      if (updated.count !== 1) throw new BadRequestException('Tài khoản đã thay đổi. Vui lòng yêu cầu liên kết mới')
+      await tx.passwordResetToken.updateMany({ where: { userId: user.id, usedAt: null }, data: { usedAt: new Date() } })
+      await tx.refreshToken.updateMany({ where: { userId: user.id, revokedAt: null }, data: { revokedAt: new Date() } })
+    })
     return { message: 'Đặt lại mật khẩu thành công. Vui lòng đăng nhập bằng mật khẩu mới.' }
   }
 }

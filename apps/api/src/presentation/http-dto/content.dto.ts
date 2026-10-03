@@ -686,15 +686,15 @@ export class CompleteOnboardingDto {
   weeklyStudyTargetMinutes?: number
 
   @ApiPropertyOptional({ example: 20 })
-  @IsOptional() @IsInt() @Min(1) @Max(200)
+  @IsOptional() @IsInt({ message: 'Số từ vựng mỗi ngày phải là số nguyên, không nhập số thập phân.' }) @Min(1, { message: 'Số từ vựng mỗi ngày phải từ 1 trở lên.' }) @Max(200, { message: 'Số từ vựng mỗi ngày không được vượt quá 200.' })
   dailyVocabularyTarget?: number
 
   @ApiPropertyOptional({ example: 2 })
-  @IsOptional() @IsInt() @Min(1) @Max(50)
+  @IsOptional() @IsInt({ message: 'Số bài Quiz mỗi tuần phải là số nguyên, không nhập số thập phân.' }) @Min(1, { message: 'Số bài Quiz mỗi tuần phải từ 1 trở lên.' }) @Max(50, { message: 'Số bài Quiz mỗi tuần không được vượt quá 50.' })
   weeklyExamTarget?: number
 
   @ApiPropertyOptional({ example: 30 })
-  @IsOptional() @IsInt() @Min(5) @Max(1440)
+  @IsOptional() @IsInt({ message: 'Số phút học mỗi ngày phải là số nguyên, không nhập số thập phân.' }) @Min(5, { message: 'Số phút học mỗi ngày phải từ 5 trở lên.' }) @Max(1440, { message: 'Số phút học mỗi ngày không được vượt quá 1440.' })
   dailyStudyTargetMinutes?: number
 
   @ApiPropertyOptional({ example: '20:00' })
@@ -744,15 +744,15 @@ export class UpdateLearnerGoalsDto {
   weeklyStudyTargetMinutes?: number
 
   @ApiPropertyOptional({ example: 10, description: 'Số từ vựng mỗi ngày' })
-  @IsOptional() @IsInt() @Min(1) @Max(200)
+  @IsOptional() @IsInt({ message: 'Số từ vựng mỗi ngày phải là số nguyên, không nhập số thập phân.' }) @Min(1, { message: 'Số từ vựng mỗi ngày phải từ 1 trở lên.' }) @Max(200, { message: 'Số từ vựng mỗi ngày không được vượt quá 200.' })
   dailyVocabularyTarget?: number
 
   @ApiPropertyOptional({ example: 2, description: 'Số bài thi mỗi tuần' })
-  @IsOptional() @IsInt() @Min(1) @Max(50)
+  @IsOptional() @IsInt({ message: 'Số bài Quiz mỗi tuần phải là số nguyên, không nhập số thập phân.' }) @Min(1, { message: 'Số bài Quiz mỗi tuần phải từ 1 trở lên.' }) @Max(50, { message: 'Số bài Quiz mỗi tuần không được vượt quá 50.' })
   weeklyExamTarget?: number
 
   @ApiPropertyOptional({ example: 30, description: 'Số phút học mỗi ngày' })
-  @IsOptional() @IsInt() @Min(5) @Max(1440)
+  @IsOptional() @IsInt({ message: 'Số phút học mỗi ngày phải là số nguyên, không nhập số thập phân.' }) @Min(5, { message: 'Số phút học mỗi ngày phải từ 5 trở lên.' }) @Max(1440, { message: 'Số phút học mỗi ngày không được vượt quá 1440.' })
   dailyStudyTargetMinutes?: number
 
   @ApiPropertyOptional({ example: '20:00' })

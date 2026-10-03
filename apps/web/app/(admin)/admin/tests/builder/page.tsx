@@ -1,4 +1,5 @@
 'use client';
+import { AppIcon } from '@/shared/ui/AppIcon';
 import { FormPageLayout } from '@/shared/ui/CreatePage';
 
 import { LevelBadge } from '@/shared/ui/LevelBadge';
@@ -216,7 +217,7 @@ export default function TestBuilderPage() {
       <FormPageLayout>
         <PageHeader title={isEdit ? 'Chỉnh sửa bài thi' : 'Tạo bài thi mới'} description="Xây dựng cấu trúc bài thi" />
         <div className="mt-6 flex items-center justify-center h-64">
-          <span className="animate-spin material-symbols-outlined text-primary">progress_activity</span>
+          <AppIcon className="animate-spin  text-primary">progress_activity</AppIcon>
         </div>
       </FormPageLayout>
     );
@@ -232,7 +233,7 @@ export default function TestBuilderPage() {
       <form onSubmit={handleSubmit} className="mt-6 space-y-6">
         {globalError && (
           <div className="p-3 rounded-xl bg-error-container text-on-error-container text-sm flex gap-2 items-center">
-            <span className="material-symbols-outlined text-[18px]">error</span>
+            <AppIcon className=" text-[18px]">error</AppIcon>
             {globalError}
           </div>
         )}
@@ -241,7 +242,7 @@ export default function TestBuilderPage() {
           {/* Left: Exam info */}
           <div className="rounded-2xl border border-slate-200/80 bg-white p-6 lg:p-7 shadow-sm space-y-5">
             <div className="flex items-center gap-2.5 pb-4 border-b border-slate-100">
-              <span className="material-symbols-outlined text-primary text-[22px]">description</span>
+              <AppIcon className=" text-primary text-[22px]">description</AppIcon>
               <h3 className="text-base font-bold text-slate-900">Thông tin bài thi</h3>
             </div>
 
@@ -400,7 +401,7 @@ export default function TestBuilderPage() {
                     onChange={() => setStatus('draft')}
                     className="sr-only"
                   />
-                  <span className="material-symbols-outlined text-[20px] text-amber-600 mb-1">edit_note</span>
+                  <AppIcon className=" text-[20px] text-amber-600 mb-1">edit_note</AppIcon>
                   <span className="text-xs font-bold">Bản nháp</span>
                   <span className="text-[10px] text-slate-500 mt-0.5">Chưa mở thi</span>
                 </label>
@@ -420,7 +421,7 @@ export default function TestBuilderPage() {
                     onChange={() => setStatus('published')}
                     className="sr-only"
                   />
-                  <span className="material-symbols-outlined text-[20px] text-emerald-600 mb-1">check_circle</span>
+                  <AppIcon className=" text-[20px] text-emerald-600 mb-1">check_circle</AppIcon>
                   <span className="text-xs font-bold">Đang mở thi</span>
                   <span className="text-[10px] text-slate-500 mt-0.5">Học viên vào thi</span>
                 </label>
@@ -440,7 +441,7 @@ export default function TestBuilderPage() {
                     onChange={() => setStatus('archived')}
                     className="sr-only"
                   />
-                  <span className="material-symbols-outlined text-[20px] text-slate-500 mb-1">archive</span>
+                  <AppIcon className=" text-[20px] text-slate-500 mb-1">archive</AppIcon>
                   <span className="text-xs font-bold">Đã đóng</span>
                   <span className="text-[10px] text-slate-500 mt-0.5">Lưu trữ</span>
                 </label>
@@ -452,7 +453,7 @@ export default function TestBuilderPage() {
           <div className="rounded-2xl border border-slate-200/80 bg-white p-6 lg:p-7 shadow-sm flex flex-col space-y-4">
             <div className="flex items-center justify-between pb-4 border-b border-slate-100">
               <div className="flex items-center gap-2.5">
-                <span className="material-symbols-outlined text-primary text-[22px]">quiz</span>
+                <AppIcon className=" text-primary text-[22px]">quiz</AppIcon>
                 <h3 className="text-base font-bold text-slate-900">Chọn câu hỏi</h3>
               </div>
               <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-bold bg-primary/10 text-primary">
@@ -462,9 +463,9 @@ export default function TestBuilderPage() {
 
             {/* Search Input */}
             <div className="relative">
-              <span className="material-symbols-outlined absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-[18px]">
+              <AppIcon className=" absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-[18px]">
                 search
-              </span>
+              </AppIcon>
               <input
                 type="text"
                 value={qSearch}
@@ -478,7 +479,7 @@ export default function TestBuilderPage() {
                   onClick={() => setQSearch('')}
                   className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 p-0.5 rounded-full"
                 >
-                  <span className="material-symbols-outlined text-[16px] block">close</span>
+                  <AppIcon className=" text-[16px] block">close</AppIcon>
                 </button>
               )}
             </div>
@@ -566,7 +567,7 @@ export default function TestBuilderPage() {
               {filteredQuestions.length === 0 ? (
                 <div className="h-full flex flex-col items-center justify-center p-8 text-center">
                   <div className="w-12 h-12 rounded-full bg-slate-100 flex items-center justify-center text-slate-400 mb-3">
-                    <span className="material-symbols-outlined text-[24px]">search_off</span>
+                    <AppIcon className=" text-[24px]">search_off</AppIcon>
                   </div>
                   <p className="text-sm font-semibold text-slate-700">Không tìm thấy câu hỏi phù hợp</p>
                   <p className="text-xs text-slate-400 mt-1 max-w-xs">
@@ -630,9 +631,9 @@ export default function TestBuilderPage() {
             className="flex items-center gap-2 px-6 py-2.5 rounded-xl bg-primary text-white text-sm font-bold shadow-sm hover:opacity-90 disabled:opacity-50 transition-all cursor-pointer"
           >
             {saving ? (
-              <span className="animate-spin material-symbols-outlined text-[18px]">progress_activity</span>
+              <AppIcon className="animate-spin  text-[18px]">progress_activity</AppIcon>
             ) : (
-              <span className="material-symbols-outlined text-[18px]">save</span>
+              <AppIcon className=" text-[18px]">save</AppIcon>
             )}
             {isEdit ? 'Lưu thay đổi' : 'Tạo bài thi'}
           </button>
@@ -648,9 +649,9 @@ export default function TestBuilderPage() {
               className="flex items-center gap-2 px-6 py-2.5 rounded-xl bg-emerald-600 text-white text-sm font-bold shadow-sm hover:bg-emerald-700 disabled:opacity-50 transition-all cursor-pointer"
             >
               {saving ? (
-                <span className="animate-spin material-symbols-outlined text-[18px]">progress_activity</span>
+                <AppIcon className="animate-spin  text-[18px]">progress_activity</AppIcon>
               ) : (
-                <span className="material-symbols-outlined text-[18px]">publish</span>
+                <AppIcon className=" text-[18px]">publish</AppIcon>
               )}
               {isEdit ? 'Lưu & Xuất bản ngay' : 'Tạo & Xuất bản ngay'}
             </button>

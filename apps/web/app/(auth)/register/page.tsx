@@ -1,6 +1,9 @@
 'use client';
+import { AppIcon } from '@/shared/ui/AppIcon';
 
 import Link from 'next/link';
+import { Eye, EyeOff } from 'lucide-react';
+import { BrandLogo } from '@/shared/layout/BrandLogo';
 import { useRouter } from 'next/navigation';
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/features/auth/presentation';
@@ -91,10 +94,7 @@ export default function RegisterPage() {
       <section className="hidden lg:flex w-[45%] flex-col relative bg-surface-container-low border-r border-outline-variant/30 overflow-hidden">
         <div className="relative z-10 flex flex-col h-full p-8 xl:p-12 justify-between">
           <div>
-            <div className="flex items-center gap-2">
-              <span className="material-symbols-outlined text-primary text-[32px] fill-1">terminal</span>
-              <h1 className="text-2xl font-bold tracking-tight text-primary">TechEnglish Pro</h1>
-            </div>
+            <BrandLogo />
           </div>
 
           <div className="my-auto max-w-[90%]">
@@ -106,9 +106,6 @@ export default function RegisterPage() {
             </p>
           </div>
 
-          <div className="flex items-center gap-3 text-xs text-outline">
-            <span>© 2026 TechEnglish Pro. Khóa luận tốt nghiệp KLCN028.</span>
-          </div>
         </div>
 
         {/* Illustration Area */}
@@ -126,6 +123,7 @@ export default function RegisterPage() {
       {/* Right Section (55% Form) */}
       <section className="w-full lg:w-[55%] flex items-center justify-center bg-surface-container-lowest p-6 md:p-12 lg:p-16 relative">
         <div className="w-full max-w-[420px] flex flex-col py-8">
+          <BrandLogo className="mb-8 lg:hidden" />
           <div className="mb-6 text-left">
             <h2 className="text-2xl lg:text-3xl font-bold text-on-surface mb-2 tracking-tight">Đăng ký</h2>
             <p className="text-sm text-on-surface-variant">Bắt đầu học miễn phí trong 30 giây</p>
@@ -138,9 +136,9 @@ export default function RegisterPage() {
                 Họ và tên
               </label>
               <div className="relative">
-                <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-outline material-symbols-outlined text-[20px]">
+                <AppIcon className="absolute left-3.5 top-1/2 -translate-y-1/2 text-outline  text-[20px]">
                   person
-                </span>
+                </AppIcon>
                 <input
                   className="w-full h-11 pl-11 pr-4 rounded-lg border border-outline-variant bg-surface-container-lowest text-sm text-on-surface focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition-all placeholder:text-outline/70"
                   id="displayName"
@@ -160,9 +158,9 @@ export default function RegisterPage() {
                 Email
               </label>
               <div className="relative">
-                <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-outline material-symbols-outlined text-[20px]">
+                <AppIcon className="absolute left-3.5 top-1/2 -translate-y-1/2 text-outline  text-[20px]">
                   mail
-                </span>
+                </AppIcon>
                 <input
                   className="w-full h-11 pl-11 pr-4 rounded-lg border border-outline-variant bg-surface-container-lowest text-sm text-on-surface focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition-all placeholder:text-outline/70"
                   id="email"
@@ -182,9 +180,9 @@ export default function RegisterPage() {
                 Mật khẩu
               </label>
               <div className="relative">
-                <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-outline material-symbols-outlined text-[20px]">
+                <AppIcon className="absolute left-3.5 top-1/2 -translate-y-1/2 text-outline  text-[20px]">
                   lock
-                </span>
+                </AppIcon>
                 <input
                   className="w-full h-11 pl-11 pr-11 rounded-lg border border-outline-variant bg-surface-container-lowest text-sm text-on-surface focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition-all placeholder:text-outline/70"
                   id="password"
@@ -197,18 +195,16 @@ export default function RegisterPage() {
                   required
                 />
                 <button
-                  className="absolute right-3.5 top-1/2 -translate-y-1/2 text-outline hover:text-on-surface transition-colors cursor-pointer flex items-center justify-center"
+                  className="absolute right-1 top-0 !h-full w-10 !p-0 flex items-center justify-center text-outline hover:text-on-surface transition-colors cursor-pointer"
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  tabIndex={-1}
+                  aria-label={showPassword ? 'Ẩn mật khẩu' : 'Hiện mật khẩu'}
                 >
-                  <span className="material-symbols-outlined text-[20px]">
-                    {showPassword ? 'visibility_off' : 'visibility'}
-                  </span>
+                  {showPassword ? <EyeOff size={20} aria-hidden="true" /> : <Eye size={20} aria-hidden="true" />}
                 </button>
               </div>
               <p className="text-[11px] text-on-surface-variant mt-0.5 flex items-center gap-1">
-                <span className="material-symbols-outlined text-[13px] text-outline">info</span>
+                <AppIcon className=" text-[13px] text-outline">info</AppIcon>
                 Mật khẩu tối thiểu 6 ký tự (nên chứa chữ hoa, chữ số và ký tự đặc biệt).
               </p>
             </div>
@@ -219,9 +215,9 @@ export default function RegisterPage() {
                 Xác nhận mật khẩu
               </label>
               <div className="relative">
-                <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-outline material-symbols-outlined text-[20px]">
+                <AppIcon className="absolute left-3.5 top-1/2 -translate-y-1/2 text-outline  text-[20px]">
                   lock_reset
-                </span>
+                </AppIcon>
                 <input
                   className="w-full h-11 pl-11 pr-11 rounded-lg border border-outline-variant bg-surface-container-lowest text-sm text-on-surface focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition-all placeholder:text-outline/70"
                   id="confirmPassword"
@@ -234,14 +230,12 @@ export default function RegisterPage() {
                   required
                 />
                 <button
-                  className="absolute right-3.5 top-1/2 -translate-y-1/2 text-outline hover:text-on-surface transition-colors cursor-pointer flex items-center justify-center"
+                  className="absolute right-1 top-0 !h-full w-10 !p-0 flex items-center justify-center text-outline hover:text-on-surface transition-colors cursor-pointer"
                   type="button"
                   onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                  tabIndex={-1}
+                  aria-label={showConfirmPassword ? 'Ẩn mật khẩu' : 'Hiện mật khẩu'}
                 >
-                  <span className="material-symbols-outlined text-[20px]">
-                    {showConfirmPassword ? 'visibility_off' : 'visibility'}
-                  </span>
+                  {showConfirmPassword ? <EyeOff size={20} aria-hidden="true" /> : <Eye size={20} aria-hidden="true" />}
                 </button>
               </div>
             </div>
@@ -263,7 +257,7 @@ export default function RegisterPage() {
 
             {error ? (
               <div className="p-3 rounded-lg bg-error-container text-on-error-container text-xs flex items-center gap-2">
-                <span className="material-symbols-outlined text-[16px]">error</span>
+                <AppIcon className=" text-[16px]">error</AppIcon>
                 <span>{error}</span>
               </div>
             ) : null}
@@ -275,9 +269,9 @@ export default function RegisterPage() {
               disabled={submitting}
             >
               <span className="!text-white">{submitting ? 'Đang xử lý...' : 'Đăng ký'}</span>
-              <span className="material-symbols-outlined text-[18px] !text-white group-hover:translate-x-1 transition-transform">
+              <AppIcon className=" text-[18px] !text-white group-hover:translate-x-1 transition-transform">
                 arrow_forward
-              </span>
+              </AppIcon>
             </button>
 
             {/* Back to Login */}

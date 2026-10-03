@@ -1,4 +1,6 @@
 'use client';
+import { showToast } from '@/shared/ui/AppFeedback';
+import { AppIcon } from '@/shared/ui/AppIcon';
 
 import { Dropdown } from '@/shared/ui/Dropdown';
 import * as React from 'react';
@@ -154,6 +156,7 @@ export default function AdminReportsPage() {
     XLSX.utils.book_append_sheet(book, XLSX.utils.json_to_sheet(analytics.certificatesDistribution.map(item => ({ 'Chứng chỉ': item.name, 'Mã': item.code, 'Người đặt mục tiêu': item.goalLearners, 'Người đã thi': item.learnersAttempted, 'Lượt thi': item.attempts, 'Điểm trung bình': item.averageScore, 'Tỷ lệ đạt (%)': item.passRate }))), 'Theo chứng chỉ');
     XLSX.utils.book_append_sheet(book, XLSX.utils.json_to_sheet(analytics.weeklyActivity.map(item => ({ 'Ngày': item.day, 'Lượt hoạt động': item.activityCount, 'Người học hoạt động': item.activeUsers }))), 'Tiến độ hoạt động');
     XLSX.writeFile(book, `bao-cao-thong-ke-${appliedFilters.dateFrom}-${appliedFilters.dateTo}.xlsx`);
+      showToast('Đã tạo tệp Excel báo cáo thống kê.', 'success');
   };
 
   return (
@@ -177,7 +180,7 @@ export default function AdminReportsPage() {
 
         {error && (
           <div className="p-3 rounded-xl bg-error-container text-on-error-container text-sm flex items-center gap-2">
-            <span className="material-symbols-outlined text-[18px]">error</span>
+            <AppIcon className=" text-[18px]">error</AppIcon>
             <span>{error}</span>
           </div>
         )}
@@ -186,12 +189,12 @@ export default function AdminReportsPage() {
           <div className="bg-surface-container-lowest p-lg rounded-xl border border-outline-variant hover:shadow-[0_1px_3px_rgba(15,23,24,0.06)] transition-all flex flex-col justify-between">
             <div className="flex items-center justify-between mb-md">
               <span className="font-interface-sb text-interface-sb text-on-surface-variant">Tổng số người học</span>
-              <span className="material-symbols-outlined text-primary" data-icon="group">group</span>
+              <AppIcon className=" text-primary" data-icon="group">group</AppIcon>
             </div>
             <div>
               <div className="font-headline-h1 text-headline-h1 text-on-surface">{loading ? '...' : analytics?.overview.totalUsers.toLocaleString()}</div>
               <div className="flex items-center gap-xs mt-xs text-[#16a34a] font-body-sm text-body-sm">
-                <span className="material-symbols-outlined text-[14px]" data-icon="trending_up">trending_up</span>
+                <AppIcon className=" text-[14px]" data-icon="trending_up">trending_up</AppIcon>
                 <span>Dữ liệu tài khoản hiện tại</span>
               </div>
             </div>
@@ -200,12 +203,12 @@ export default function AdminReportsPage() {
           <div className="bg-surface-container-lowest p-lg rounded-xl border border-outline-variant hover:shadow-[0_1px_3px_rgba(15,23,24,0.06)] transition-all flex flex-col justify-between">
             <div className="flex items-center justify-between mb-md">
               <span className="font-interface-sb text-interface-sb text-on-surface-variant">Người học hoạt động</span>
-              <span className="material-symbols-outlined text-secondary" data-icon="local_fire_department">local_fire_department</span>
+              <AppIcon className=" text-secondary" data-icon="local_fire_department">local_fire_department</AppIcon>
             </div>
             <div>
               <div className="font-headline-h1 text-headline-h1 text-on-surface">{loading ? '...' : analytics?.overview.activeUsers.toLocaleString()}</div>
               <div className="flex items-center gap-xs mt-xs text-[#16a34a] font-body-sm text-body-sm">
-                <span className="material-symbols-outlined text-[14px]" data-icon="trending_up">trending_up</span>
+                <AppIcon className=" text-[14px]" data-icon="trending_up">trending_up</AppIcon>
                 <span>Dữ liệu hoạt động hiện tại</span>
               </div>
             </div>
@@ -214,7 +217,7 @@ export default function AdminReportsPage() {
           <div className="bg-surface-container-lowest p-lg rounded-xl border border-outline-variant hover:shadow-[0_1px_3px_rgba(15,23,24,0.06)] transition-all flex flex-col justify-between">
             <div className="flex items-center justify-between mb-md">
               <span className="font-interface-sb text-interface-sb text-on-surface-variant">Tỷ lệ đạt bài thi</span>
-              <span className="material-symbols-outlined text-tertiary" data-icon="task_alt">task_alt</span>
+              <AppIcon className=" text-tertiary" data-icon="task_alt">task_alt</AppIcon>
             </div>
             <div>
               <div className="font-headline-h1 text-headline-h1 text-on-surface">{loading ? '...' : Math.round(completionRate)}%</div>
@@ -227,7 +230,7 @@ export default function AdminReportsPage() {
           <div className="bg-surface-container-lowest p-lg rounded-xl border border-outline-variant hover:shadow-[0_1px_3px_rgba(15,23,24,0.06)] transition-all flex flex-col justify-between">
             <div className="flex items-center justify-between mb-md">
               <span className="font-interface-sb text-interface-sb text-on-surface-variant">Điểm TB hệ thống</span>
-              <span className="material-symbols-outlined text-primary-container" data-icon="school">school</span>
+              <AppIcon className=" text-primary-container" data-icon="school">school</AppIcon>
             </div>
             <div>
               <div className="font-headline-h1 text-headline-h1 text-on-surface">{loading ? '...' : ((analytics?.overview.averageScore ?? 0) / 10).toFixed(1)}<span className="text-headline-h3 text-on-surface-variant">/10</span></div>
@@ -241,7 +244,7 @@ export default function AdminReportsPage() {
             <div className="flex items-center justify-between mb-lg">
               <h3 className="font-headline-h3 text-headline-h3 text-on-surface">Hoạt động học tập (tối đa 31 ngày cuối kỳ)</h3>
               <button className="text-on-surface-variant hover:text-primary p-xs rounded hover:bg-surface-container-low transition-colors">
-                <span className="material-symbols-outlined" data-icon="more_vert">more_vert</span>
+                <AppIcon className="" data-icon="more_vert">more_vert</AppIcon>
               </button>
             </div>
             <ActivityChart data={analytics?.weeklyActivity ?? []} />
@@ -251,7 +254,7 @@ export default function AdminReportsPage() {
             <div className="flex items-center justify-between mb-lg">
               <h3 className="font-headline-h3 text-headline-h3 text-on-surface">Phân bố theo lĩnh vực</h3>
               <button className="text-on-surface-variant hover:text-primary p-xs rounded hover:bg-surface-container-low transition-colors">
-                <span className="material-symbols-outlined" data-icon="more_vert">more_vert</span>
+                <AppIcon className="" data-icon="more_vert">more_vert</AppIcon>
               </button>
             </div>
             <div className="mt-md flex flex-col gap-sm">
@@ -271,7 +274,7 @@ export default function AdminReportsPage() {
             <div className="flex items-center justify-between mb-lg">
               <h3 className="font-headline-h3 text-headline-h3 text-on-surface">Điểm trung bình theo chứng chỉ</h3>
               <button className="text-on-surface-variant hover:text-primary p-xs rounded hover:bg-surface-container-low transition-colors">
-                <span className="material-symbols-outlined" data-icon="more_vert">more_vert</span>
+                <AppIcon className="" data-icon="more_vert">more_vert</AppIcon>
               </button>
             </div>
             <div className="relative h-[300px] w-full min-w-0 overflow-x-auto overflow-y-hidden pb-2">

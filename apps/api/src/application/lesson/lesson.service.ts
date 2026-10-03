@@ -14,6 +14,11 @@ export class LessonsService {
       { title: { contains: String(params.search), mode: 'insensitive' } },
       { summary: { contains: String(params.search), mode: 'insensitive' } },
       { keyConcepts: { has: String(params.search) } },
+      { domain: { name: { contains: String(params.search), mode: 'insensitive' } } },
+      { domain: { code: { contains: String(params.search), mode: 'insensitive' } } },
+      { certificates: { some: { certificate: { name: { contains: String(params.search), mode: 'insensitive' } } } } },
+      { certificates: { some: { certificate: { code: { contains: String(params.search), mode: 'insensitive' } } } } },
+      { vocabularies: { some: { vocabulary: { term: { contains: String(params.search), mode: 'insensitive' } } } } },
     ]
     if (params.domainCode) where.domain = { code: String(params.domainCode) }
     if (params.levelCode) where.level = { code: String(params.levelCode) }
@@ -30,6 +35,7 @@ export class LessonsService {
           domain: true,
           level: true,
           certificates: { include: { certificate: true } },
+          vocabularies: { include: { vocabulary: { select: { id: true, term: true } } } },
           createdBy: { include: { userDetail: true } },
           _count: { select: { sections: true, vocabularies: true } },
         },

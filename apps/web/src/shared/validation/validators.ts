@@ -133,12 +133,8 @@ export function validateDisplayName(value: string): ValidationResult {
  */
 export function validatePassword(value: string): ValidationResult {
   if (!value) return { valid: false, error: 'Mật khẩu không được để trống.' };
-  if (value.includes(' ')) return { valid: false, error: 'Mật khẩu không được chứa khoảng trắng.' };
-  if (value.length < 8) return { valid: false, error: 'Mật khẩu phải có ít nhất 8 ký tự.' };
-  if (value.length > 128) return { valid: false, error: 'Mật khẩu tối đa 128 ký tự.' };
-  if (!/[A-Z]/.test(value)) return { valid: false, error: 'Mật khẩu phải chứa ít nhất 1 chữ in hoa (A-Z).' };
-  if (!/[a-z]/.test(value)) return { valid: false, error: 'Mật khẩu phải chứa ít nhất 1 chữ thường (a-z).' };
-  if (!/[0-9]/.test(value)) return { valid: false, error: 'Mật khẩu phải chứa ít nhất 1 chữ số (0-9).' };
+  if (value.length < 6) return { valid: false, error: 'Mật khẩu phải có ít nhất 6 ký tự.' };
+  if (value.length > 72) return { valid: false, error: 'Mật khẩu tối đa 72 ký tự.' };
   return { valid: true };
 }
 

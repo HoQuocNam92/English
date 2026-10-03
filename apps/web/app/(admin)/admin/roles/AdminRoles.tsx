@@ -1,4 +1,5 @@
 'use client';
+import { AppIcon } from '@/shared/ui/AppIcon';
 import { useRouter } from 'next/navigation';
 import { completeCreation, CreatePage, FormSurface } from '@/shared/ui/CreatePage';
 import { ActionButton, ActionGroup } from '@/shared/ui/ActionButton';
@@ -35,7 +36,7 @@ function RoleCard({
         <div className="flex items-start justify-between gap-2">
           <div className="flex items-center gap-3">
             <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${color}`}>
-              <span className="material-symbols-outlined text-[20px]">shield_person</span>
+              <AppIcon className=" text-[20px]">shield_person</AppIcon>
             </div>
             <div>
               <h3 className="text-base font-bold text-on-surface">{roleLabel(role.code, role.name)}</h3>
@@ -56,11 +57,11 @@ function RoleCard({
         {/* Stats */}
         <div className="flex items-center gap-4 text-sm font-semibold text-on-surface-variant mt-auto pt-2">
           <span className="flex items-center gap-1.5">
-            <span className="material-symbols-outlined text-[16px]">lock</span>
+            <AppIcon className=" text-[16px]">lock</AppIcon>
             {role.permissions?.length ?? 0} quyền
           </span>
           <span className="flex items-center gap-1.5">
-            <span className="material-symbols-outlined text-[16px]">people</span>
+            <AppIcon className=" text-[16px]">people</AppIcon>
             {role.userCount ?? 0} người dùng
           </span>
         </div>
@@ -198,7 +199,7 @@ export default function AdminRoles({ createKind }: { createKind?: 'role' | 'perm
 
   const permissionFormView = (<FormSurface page={Boolean(createKind)} open={permissionModal} onClose={closePermission} maxWidth="max-w-lg">
         <form onSubmit={savePermission}>
-          <div className="flex items-center justify-between border-b border-outline-variant/20 px-6 py-5"><div><h2 className="text-xl font-bold">{editingPermission ? 'Sửa việc được phép làm' : 'Thêm việc được phép làm'}</h2><p className="mt-1 text-xs text-on-surface-variant">Chọn đối tượng và hành động bằng ngôn ngữ dễ hiểu.</p></div><button type="button" onClick={closePermission}><span className="material-symbols-outlined">close</span></button></div>
+          <div className="flex items-center justify-between border-b border-outline-variant/20 px-6 py-5"><div><h2 className="text-xl font-bold">{editingPermission ? 'Sửa việc được phép làm' : 'Thêm việc được phép làm'}</h2><p className="mt-1 text-xs text-on-surface-variant">Chọn đối tượng và hành động bằng ngôn ngữ dễ hiểu.</p></div><button type="button" onClick={closePermission}><AppIcon className="">close</AppIcon></button></div>
           <div className="grid gap-4 p-6 sm:grid-cols-2">
             <label className="text-sm font-semibold">Áp dụng cho<Dropdown required value={permissionForm.resource} onChange={e => setPermissionForm({...permissionForm, resource:e.target.value})} className="mt-2 h-11 w-full rounded-xl border border-outline-variant/50 bg-white px-3"><option value="">Chọn đối tượng</option>{PERMISSION_RESOURCES.map(([value, label]) => <option key={value} value={value}>{label}</option>)}</Dropdown></label>
             <label className="text-sm font-semibold">Được làm gì?<Dropdown value={permissionForm.action} onChange={e => setPermissionForm({...permissionForm, action:e.target.value})} className="mt-2 h-11 w-full rounded-xl border border-outline-variant/50 bg-white px-3">{PERMISSION_ACTIONS.map(([value, label]) => <option key={value} value={value}>{label}</option>)}</Dropdown></label>
@@ -212,7 +213,7 @@ export default function AdminRoles({ createKind }: { createKind?: 'role' | 'perm
       </FormSurface>);
   const roleFormView = (<FormSurface page={Boolean(createKind)} open={roleModal} onClose={closeRole} maxWidth="max-w-lg">
         <form onSubmit={saveRole}>
-          <div className="flex items-center justify-between border-b border-outline-variant/20 px-6 py-5"><div><h2 className="text-xl font-bold">Thêm nhóm quyền</h2><p className="mt-1 text-xs text-on-surface-variant">Tạo role nghiệp vụ, sau đó chọn người dùng và các quyền được làm.</p></div><button type="button" onClick={closeRole}><span className="material-symbols-outlined">close</span></button></div>
+          <div className="flex items-center justify-between border-b border-outline-variant/20 px-6 py-5"><div><h2 className="text-xl font-bold">Thêm nhóm quyền</h2><p className="mt-1 text-xs text-on-surface-variant">Tạo role nghiệp vụ, sau đó chọn người dùng và các quyền được làm.</p></div><button type="button" onClick={closeRole}><AppIcon className="">close</AppIcon></button></div>
           <div className="grid gap-4 p-6">
             <label className="text-sm font-semibold">Tên nhóm quyền<input required minLength={2} maxLength={100} value={roleForm.name} onChange={e => { const name = e.target.value; setRoleForm(current => ({ ...current, name, code: roleCodeFromName(name) })); }} className="mt-2 h-11 w-full rounded-xl border border-outline-variant/50 px-3" placeholder="Ví dụ: Người duyệt nội dung" /></label>
             <label className="text-sm font-semibold">Mã role<input required pattern="[a-z0-9_]+" minLength={2} maxLength={50} value={roleForm.code} onChange={e => setRoleForm({...roleForm, code: roleCodeFromName(e.target.value)})} className="mt-2 h-11 w-full rounded-xl border border-outline-variant/50 px-3 font-mono" placeholder="content_reviewer" /><span className="mt-1 block text-xs font-normal text-on-surface-variant">Chỉ dùng chữ thường, số và dấu gạch dưới; mã không đổi sau khi tạo.</span></label>
@@ -250,7 +251,7 @@ export default function AdminRoles({ createKind }: { createKind?: 'role' | 'perm
         ].map((s) => (
           <div key={s.label} className="h-[120px] bg-white border border-outline-variant rounded-xl shadow-sm p-6 flex flex-col justify-between">
             <div className="flex items-center justify-between">
-              <span className={`material-symbols-outlined text-[28px] ${s.color}`}>{s.icon}</span>
+              <AppIcon className={` text-[28px] ${s.color}`}>{s.icon}</AppIcon>
             </div>
             <div>
               <p className="text-sm font-semibold text-on-surface-variant mb-1">{s.label}</p>
@@ -266,7 +267,7 @@ export default function AdminRoles({ createKind }: { createKind?: 'role' | 'perm
 
       {/* Roles grid */}
       {activeTab === 'roles' && <div className="mb-8">
-        <div className="mb-4 flex flex-wrap items-center justify-between gap-3"><div><h2 className="text-lg font-bold text-on-surface">Chọn một nhóm để phân quyền</h2><p className="mt-1 text-sm text-on-surface-variant">Một người có thể có role chính và nhiều role nghiệp vụ bổ sung.</p></div><button type="button" onClick={openCreateRole} className="inline-flex h-10 items-center gap-2 rounded-xl bg-primary px-4 text-sm font-semibold !text-white"><span className="material-symbols-outlined text-[18px]">add</span>Thêm nhóm quyền</button></div>
+        <div className="mb-4 flex flex-wrap items-center justify-between gap-3"><div><h2 className="text-lg font-bold text-on-surface">Chọn một nhóm để phân quyền</h2><p className="mt-1 text-sm text-on-surface-variant">Một người có thể có role chính và nhiều role nghiệp vụ bổ sung.</p></div><button type="button" onClick={openCreateRole} className="inline-flex h-10 items-center gap-2 rounded-xl bg-primary px-4 text-sm font-semibold !text-white"><AppIcon className=" text-[18px]">add</AppIcon>Thêm nhóm quyền</button></div>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {loading ? (
             [1, 2, 3].map((i) => <SkeletonCard key={i} />)
@@ -285,7 +286,7 @@ export default function AdminRoles({ createKind }: { createKind?: 'role' | 'perm
 
       {/* Permissions table */}
       {activeTab === 'permissions' && <div>
-        <div className="mb-4 flex items-center justify-between gap-4"><div><h2 className="text-lg font-bold text-on-surface">Danh sách công việc có thể cấp {!loading && <span className="ml-2 text-sm text-on-surface-variant font-normal">({permissions.length})</span>}</h2><p className="mt-1 text-sm text-on-surface-variant">Ví dụ: “Thêm bài học”, “Xóa bài học”, “Xem báo cáo”.</p></div><button type="button" onClick={openCreatePermission} className="inline-flex h-10 cursor-pointer items-center gap-2 rounded-xl bg-primary px-4 text-sm font-semibold !text-white"><span className="material-symbols-outlined text-[18px]">add</span>Thêm việc mới</button></div>
+        <div className="mb-4 flex items-center justify-between gap-4"><div><h2 className="text-lg font-bold text-on-surface">Danh sách công việc có thể cấp {!loading && <span className="ml-2 text-sm text-on-surface-variant font-normal">({permissions.length})</span>}</h2><p className="mt-1 text-sm text-on-surface-variant">Ví dụ: “Thêm bài học”, “Xóa bài học”, “Xem báo cáo”.</p></div><button type="button" onClick={openCreatePermission} className="inline-flex h-10 cursor-pointer items-center gap-2 rounded-xl bg-primary px-4 text-sm font-semibold !text-white"><AppIcon className=" text-[18px]">add</AppIcon>Thêm việc mới</button></div>
         {loading ? (
           <div className="bg-white border border-outline-variant rounded-xl shadow-sm p-6">
             <div className="p-6 space-y-4">

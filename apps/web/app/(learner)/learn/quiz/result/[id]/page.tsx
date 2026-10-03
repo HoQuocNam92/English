@@ -1,4 +1,5 @@
 'use client';
+import { IconText, AppIcon } from '@/shared/ui/AppIcon';
 
 import * as React from 'react';
 import { useState, useEffect } from 'react';
@@ -10,7 +11,7 @@ import { LoadingSpinner, Pagination } from '@/shared/ui';
 export default function LearnerQuizResultPage({ params }: { params: Promise<{ id: string }> }) {
   const unwrappedParams = React.use(params);
   const attemptId = unwrappedParams.id;
-  
+
   const [attempt, setAttempt] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -67,7 +68,7 @@ export default function LearnerQuizResultPage({ params }: { params: Promise<{ id
             <div className="space-y-1">
               <div className="flex items-center justify-center md:justify-start gap-2">
                 <span className={`px-2.5 py-0.5 rounded text-[10px] font-extrabold ${isPassed ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
-                  {isPassed ? '🎉 Đã đạt' : 'Chưa đạt'}
+                  <IconText>{isPassed ? '🎉 Đã đạt' : 'Chưa đạt'}</IconText>
                 </span>
               </div>
               <h2 className="text-xl font-bold text-on-surface">{examTitle}</h2>
@@ -108,7 +109,7 @@ export default function LearnerQuizResultPage({ params }: { params: Promise<{ id
               const selectedOptions = q.options?.filter((o: any) => selectedIds.includes(o.id || o.key)) ?? [];
               const correctOptions = q.options?.filter((o: any) => o.isCorrect) ?? [];
               const isCorrect = Boolean(q.isUserCorrect);
-              
+
               return (
                 <div
                   key={q.id || questionNumber}
@@ -120,9 +121,9 @@ export default function LearnerQuizResultPage({ params }: { params: Promise<{ id
                         isCorrect ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
                       }`}
                     >
-                      <span className="material-symbols-outlined text-[14px]">
+                      <AppIcon className=" text-[14px]">
                         {isCorrect ? 'check' : 'close'}
-                      </span>
+                      </AppIcon>
                       {isCorrect ? 'Chính xác' : 'Chưa đúng'}
                     </span>
                     <span className="text-xs text-outline font-semibold">Câu #{questionNumber}</span>
@@ -147,7 +148,7 @@ export default function LearnerQuizResultPage({ params }: { params: Promise<{ id
 
                   {q.explanation && (
                     <div className="p-3.5 rounded-lg bg-purple-50/80 border border-purple-200 text-xs space-y-1 mt-2">
-                      <span className="font-bold text-ai-accent">💡 Giải thích kiến thức:</span>
+                      <span className="font-bold text-ai-accent"><IconText>{"💡 Giải thích kiến thức:"}</IconText></span>
                       <p className="text-on-surface leading-relaxed m-0">{q.explanation}</p>
                     </div>
                   )}

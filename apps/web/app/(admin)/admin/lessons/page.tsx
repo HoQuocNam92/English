@@ -1,4 +1,5 @@
 'use client';
+import { AppIcon } from '@/shared/ui/AppIcon';
 import { confirmDialog } from '@/shared/ui/AppFeedback';
 import { ActionButton, ActionGroup } from '@/shared/ui/ActionButton';
 
@@ -53,7 +54,7 @@ export default function LessonsPage() {
   const remove = async (item: Lesson) => { if (!await confirmDialog(`Bạn có muốn xóa bài học “${item.title}” hay không?`, { title: 'Xóa bài học', confirmLabel: 'Xóa', tone: 'danger' })) return; try { await apiClient.delete(`/lessons/${item.id}`); await load(); } catch (e) { setError(e instanceof ApiClientError ? e.message : 'Không thể xóa bài học'); } };
 
   return <div>
-    <div className="flex items-start justify-between gap-4"><PageHeader icon={category?.icon} iconClassName={category?.iconClassName} title={pageTitle} description={category?.description ?? 'Quản lý các loại nội dung học tập'} /><Link href={`/admin/lessons/editor${type ? `?type=${type}` : ''}`} className="inline-flex items-center gap-2 rounded-xl bg-primary px-4 py-2.5 text-sm font-semibold !text-white"><span className="material-symbols-outlined text-[19px]">add</span>Thêm {itemName}</Link></div>
+    <div className="flex items-start justify-between gap-4"><PageHeader icon={category?.icon} iconClassName={category?.iconClassName} title={pageTitle} description={category?.description ?? 'Quản lý các loại nội dung học tập'} /><Link href={`/admin/lessons/editor${type ? `?type=${type}` : ''}`} className="inline-flex items-center gap-2 rounded-xl bg-primary px-4 py-2.5 text-sm font-semibold !text-white"><AppIcon className=" text-[19px]">add</AppIcon>Thêm {itemName}</Link></div>
     <div className="mt-6 grid gap-3 md:grid-cols-[minmax(280px,1fr)_220px_190px]">
       <SearchInput value={searchInput} onChange={setSearchInput} onSearch={value => { setSearch(value); setPage(1); }} placeholder="Tìm theo tiêu đề, tóm tắt..." />
       <Dropdown value={type} onChange={e => { setType(e.target.value); setPage(1); }} className="rounded-xl border border-outline-variant bg-surface-container-lowest px-3 text-sm"><option value="">Tất cả loại bài học</option>{Object.entries(TYPES).map(([value, label]) => <option key={value} value={value}>{label}</option>)}</Dropdown>

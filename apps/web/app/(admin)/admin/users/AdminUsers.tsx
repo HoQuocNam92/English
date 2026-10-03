@@ -1,4 +1,6 @@
 'use client';
+import { showToast } from '@/shared/ui/AppFeedback';
+import { AppIcon } from '@/shared/ui/AppIcon';
 import { useRouter } from 'next/navigation';
 import { completeCreation, CreatePage, FormSurface } from '@/shared/ui/CreatePage';
 import { ActionButton, ActionGroup } from '@/shared/ui/ActionButton';
@@ -68,8 +70,8 @@ function validateCreateForm(form: CreateUserForm): CreateUserErrors {
   }
   if (!form.password) {
     errors.password = 'Mật khẩu không được để trống';
-  } else if (form.password.length < 8) {
-    errors.password = 'Mật khẩu tối thiểu 8 ký tự';
+  } else if (form.password.length < 6) {
+    errors.password = 'Mật khẩu tối thiểu 6 ký tự';
   }
   if (!form.role) {
     errors.role = 'Vui lòng chọn vai trò';
@@ -149,7 +151,7 @@ function CreateUserModal({ onClose, onCreated, page = false }: CreateUserModalPr
             className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-outline-variant/20 transition-colors text-on-surface-variant"
             aria-label="Đóng"
           >
-            <span className="material-symbols-outlined text-[20px]">close</span>
+            <AppIcon className=" text-[20px]">close</AppIcon>
           </button>
         </div>
 
@@ -193,7 +195,7 @@ function CreateUserModal({ onClose, onCreated, page = false }: CreateUserModalPr
             <input
               type="password"
               autoComplete="new-password"
-              placeholder="Tối thiểu 8 ký tự"
+              placeholder="Tối thiểu 6 ký tự"
               className={inputCls(!!errors.password)}
               {...field('password')}
             />
@@ -324,7 +326,7 @@ export default function AdminUsers({ createOnly = false }: { createOnly?: boolea
       await apiClient.delete(`/users/${user.id}`);
       setUsers((prev) => prev.filter((item) => item.id !== user.id));
       setTotal((value) => Math.max(0, value - 1));
-      setSuccessMessage('Đã xóa tài khoản.');
+      showToast('Đã xóa tài khoản.', 'success');
     } catch (e) {
       setActionError(e instanceof ApiClientError ? e.message : 'Không thể xóa tài khoản');
     } finally {
@@ -341,25 +343,25 @@ export default function AdminUsers({ createOnly = false }: { createOnly?: boolea
           onClick={() => router.push('/admin/users/new')}
           className="flex h-11 items-center justify-center gap-2 text-on-primary px-5 rounded-xl text-sm font-semibold hover:bg-primary-container transition-all shadow-[0_8px_18px_rgba(53,37,205,0.18)] hover:-translate-y-0.5 whitespace-nowrap bg-primary"
         >
-          <span className="material-symbols-outlined">add</span>
+          <AppIcon className="">add</AppIcon>
           Thêm người dùng
         </button>} />
 
       {successMessage && (
         <div className="p-3 rounded-xl bg-green-100 text-green-800 text-sm flex items-center gap-2">
-          <span className="material-symbols-outlined text-[18px]">check_circle</span>
+          <AppIcon className=" text-[18px]">check_circle</AppIcon>
           {successMessage}
         </div>
       )}
       {error && (
         <div className="p-3 rounded-xl bg-error-container text-on-error-container text-sm flex items-center gap-2">
-          <span className="material-symbols-outlined text-[18px]">error</span>
+          <AppIcon className=" text-[18px]">error</AppIcon>
           {error}
         </div>
       )}
       {actionError && (
         <div className="p-3 rounded-xl bg-error-container text-on-error-container text-sm flex items-center gap-2">
-          <span className="material-symbols-outlined text-[18px]">error</span>
+          <AppIcon className=" text-[18px]">error</AppIcon>
           {actionError}
         </div>
       )}
@@ -427,7 +429,7 @@ export default function AdminUsers({ createOnly = false }: { createOnly?: boolea
               ) : users.length === 0 ? (
                 <tr>
                   <td colSpan={6} className="py-16 text-center">
-                    <span className="material-symbols-outlined text-[48px] text-outline mb-3 block">manage_accounts</span>
+                    <AppIcon className=" text-[48px] text-outline mb-3 block">manage_accounts</AppIcon>
                     <p className="text-sm text-on-surface-variant">Không tìm thấy người dùng nào</p>
                   </td>
                 </tr>

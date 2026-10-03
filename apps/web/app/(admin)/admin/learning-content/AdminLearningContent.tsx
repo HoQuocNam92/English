@@ -1,4 +1,5 @@
 'use client';
+import { AppIcon } from '@/shared/ui/AppIcon';
 import { useRouter } from 'next/navigation';
 import { completeCreation, CreatePage } from '@/shared/ui/CreatePage';
 import { ActionButton, ActionGroup } from '@/shared/ui/ActionButton';
@@ -238,7 +239,7 @@ function VocabularyModal({ mode, initial, domains, levels, onClose, onSuccess, p
             aria-label="Đóng"
             className="rounded-lg p-1 text-on-surface-variant hover:bg-surface-container-high transition-colors"
           >
-            <span className="material-symbols-outlined text-[20px]">close</span>
+            <AppIcon className=" text-[20px]">close</AppIcon>
           </button>
         </div>
 
@@ -246,7 +247,7 @@ function VocabularyModal({ mode, initial, domains, levels, onClose, onSuccess, p
         <form onSubmit={handleSubmit} noValidate className="px-6 py-5 space-y-4">
           {submitError && (
             <div className="flex items-center gap-2 rounded-xl bg-error-container text-on-error-container text-sm p-3">
-              <span className="material-symbols-outlined text-[18px]">error</span>
+              <AppIcon className=" text-[18px]">error</AppIcon>
               <span>{submitError}</span>
             </div>
           )}
@@ -401,7 +402,7 @@ function DeleteDialog({ item, onClose, onSuccess }: DeleteDialogProps) {
         style={{ width: '100%', maxWidth: '440px' }}
       >
         <div className="flex items-center gap-3">
-          <span className="material-symbols-outlined text-error text-[28px]">delete_forever</span>
+          <AppIcon className=" text-error text-[28px]">delete_forever</AppIcon>
           <h2 className="text-base font-bold text-on-surface">Xóa từ vựng</h2>
         </div>
         <p className="text-sm text-on-surface-variant">
@@ -411,7 +412,7 @@ function DeleteDialog({ item, onClose, onSuccess }: DeleteDialogProps) {
         </p>
         {delError && (
           <div className="flex items-center gap-2 rounded-xl bg-error-container text-on-error-container text-sm p-3">
-            <span className="material-symbols-outlined text-[16px]">error</span>
+            <AppIcon className=" text-[16px]">error</AppIcon>
             <span>{delError}</span>
           </div>
         )}
@@ -550,7 +551,7 @@ export default function AdminLearningContent({ createOnly = false }: { createOnl
           onClick={openCreate}
           className="shrink-0 mt-1 flex items-center gap-2 px-4 py-2 rounded-xl bg-primary text-white text-sm font-medium hover:opacity-90 transition-opacity"
         >
-          <span className="material-symbols-outlined text-[18px]">add</span>
+          <AppIcon className=" text-[18px]">add</AppIcon>
           Thêm từ vựng
         </button>
       </div>
@@ -605,7 +606,7 @@ export default function AdminLearningContent({ createOnly = false }: { createOnl
 
       {error && (
         <div className="mt-4 p-3 rounded-xl bg-error-container text-on-error-container text-sm flex items-center gap-2">
-          <span className="material-symbols-outlined text-[18px]">error</span>
+          <AppIcon className=" text-[18px]">error</AppIcon>
           <span>{error}</span>
         </div>
       )}
@@ -616,7 +617,7 @@ export default function AdminLearningContent({ createOnly = false }: { createOnl
           Array.from({ length: 6 }).map((_, i) => <SkeletonCard key={i} />)
         ) : items.length === 0 ? (
           <div className="col-span-full py-16 text-center bg-surface-container-low rounded-2xl border border-outline-variant/30">
-            <span className="material-symbols-outlined text-[48px] text-outline mb-3 block">translate</span>
+            <AppIcon className=" text-[48px] text-outline mb-3 block">translate</AppIcon>
             <p className="text-sm text-on-surface-variant">Không tìm thấy từ vựng nào</p>
           </div>
         ) : (

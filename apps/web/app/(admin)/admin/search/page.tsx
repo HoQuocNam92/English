@@ -1,4 +1,5 @@
 'use client';
+import { AppIcon } from '@/shared/ui/AppIcon';
 
 import * as React from 'react';
 import Link from 'next/link';
@@ -52,9 +53,9 @@ export default function AdminGlobalSearchPage() {
           <h1 className="font-headline-h1 text-headline-h1 text-on-surface">Kết quả tìm kiếm</h1>
           <p className="mt-2 text-sm text-on-surface-variant">{loading ? 'Đang tìm trong hệ thống…' : `${total} kết quả cho “${query}”`}</p>
         </div>
-        {!loading && total === 0 && <div className="rounded-2xl border border-outline-variant bg-surface-container-lowest p-10 text-center text-on-surface-variant"><span className="material-symbols-outlined mb-2 text-4xl">search_off</span><p>Không tìm thấy dữ liệu phù hợp.</p></div>}
+        {!loading && total === 0 && <div className="rounded-2xl border border-outline-variant bg-surface-container-lowest p-10 text-center text-on-surface-variant"><AppIcon className=" mb-2 text-4xl">search_off</AppIcon><p>Không tìm thấy dữ liệu phù hợp.</p></div>}
         <div className="grid gap-5 lg:grid-cols-2">
-          {groups.map(group => <section key={group.title} className="overflow-hidden rounded-2xl border border-outline-variant bg-surface-container-lowest"><h2 className="border-b border-outline-variant px-5 py-4 text-base font-bold">{group.title} <span className="ml-1 text-sm font-normal text-on-surface-variant">({group.items.length})</span></h2><div className="divide-y divide-outline-variant/60">{group.items.map(item => <Link key={`${group.title}-${item.id}`} href={item.href} className="flex items-center gap-3 px-5 py-3.5 hover:bg-surface-container-low"><span className="material-symbols-outlined text-primary">{item.icon}</span><span className="min-w-0"><span className="block truncate text-sm font-semibold text-on-surface">{item.title}</span>{item.subtitle && <span className="block truncate text-xs text-on-surface-variant">{item.subtitle}</span>}</span><span className="material-symbols-outlined ml-auto text-lg text-outline">chevron_right</span></Link>)}</div></section>)}
+          {groups.map(group => <section key={group.title} className="overflow-hidden rounded-2xl border border-outline-variant bg-surface-container-lowest"><h2 className="border-b border-outline-variant px-5 py-4 text-base font-bold">{group.title} <span className="ml-1 text-sm font-normal text-on-surface-variant">({group.items.length})</span></h2><div className="divide-y divide-outline-variant/60">{group.items.map(item => <Link key={`${group.title}-${item.id}`} href={item.href} className="flex items-center gap-3 px-5 py-3.5 hover:bg-surface-container-low"><AppIcon className=" text-primary">{item.icon}</AppIcon><span className="min-w-0"><span className="block truncate text-sm font-semibold text-on-surface">{item.title}</span>{item.subtitle && <span className="block truncate text-xs text-on-surface-variant">{item.subtitle}</span>}</span><AppIcon className=" ml-auto text-lg text-outline">chevron_right</AppIcon></Link>)}</div></section>)}
         </div>
       </div>
     </main>

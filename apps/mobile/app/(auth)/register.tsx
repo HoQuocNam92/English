@@ -129,7 +129,7 @@ export default function MobileRegisterScreen() {
               <MaterialIcons name="lock-outline" size={20} color={colors.outline} style={styles.inputIcon} />
               <TextInput
                 style={styles.input}
-                placeholder="Tối thiểu 8 ký tự"
+                placeholder="Tối thiểu 6 ký tự"
                 value={password}
                 onChangeText={setPassword}
                 secureTextEntry={!showPassword}

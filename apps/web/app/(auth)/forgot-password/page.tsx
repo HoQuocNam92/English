@@ -1,7 +1,10 @@
 'use client';
+import { showToast } from '@/shared/ui/AppFeedback';
+import { AppIcon } from '@/shared/ui/AppIcon';
 
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
+import { PublicHeader } from '@/shared/layout/PublicHeader';
+import { Footer } from '@/shared/layout/Footer';
 import { useState } from 'react';
 import { API_BASE_URL } from '@/shared/config/env';
 import { toVietnameseErrorMessage } from '@/shared/lib/error-message';
@@ -9,7 +12,6 @@ import { toVietnameseErrorMessage } from '@/shared/lib/error-message';
 const API_URL = API_BASE_URL;
 
 export default function ForgotPasswordPage() {
-  const router = useRouter();
   const [email, setEmail] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [sent, setSent] = useState(false);
@@ -23,13 +25,15 @@ export default function ForgotPasswordPage() {
       const res = await fetch(`${API_URL}/auth/forgot-password`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email }),
+        body: JSON.stringify({ email: email.trim().toLowerCase() }),
       });
       const data = await res.json();
       if (!res.ok) {
         setError(toVietnameseErrorMessage(data?.message, res.status));
+      } else if (data?.resetLinkSent === true) {
+        setSent(true); showToast('Liên kết đặt lại mật khẩu đã được gửi. Vui lòng kiểm tra hộp thư.', 'success');
       } else {
-        setSent(true);
+        setError('Máy chủ chưa xác nhận gửi liên kết. Vui lòng thử lại sau khi backend được cập nhật.');
       }
     } catch {
       setError('Không thể kết nối đến máy chủ. Vui lòng thử lại.');
@@ -39,35 +43,25 @@ export default function ForgotPasswordPage() {
   };
 
   return (
-    <main className="flex min-h-screen w-full bg-background text-on-surface antialiased items-center justify-center p-4">
+    <div className="flex min-h-screen flex-col bg-white text-on-surface">
+      <PublicHeader />
+      <main className="flex flex-1 items-center justify-center px-4 py-16">
       <div className="w-full max-w-[420px]">
-        {/* Logo */}
-        <div className="flex items-center gap-2 mb-8">
-          <span className="material-symbols-outlined text-primary text-[28px] fill-1">terminal</span>
-          <span className="text-xl font-bold text-primary">TechEnglish Pro</span>
-        </div>
-
-        <div className="bg-surface-container-low border border-outline-variant/40 rounded-2xl p-8">
+        <div className="bg-white border border-outline-variant/40 rounded-2xl p-8">
           {sent ? (
             /* Success state */
             <div className="text-center">
               <div className="w-16 h-16 bg-green-100 dark:bg-green-900/30 rounded-full flex items-center justify-center mx-auto mb-4">
-                <span className="material-symbols-outlined text-[32px] text-green-600">mark_email_read</span>
+                <AppIcon className=" text-[32px] text-green-600">mark_email_read</AppIcon>
               </div>
               <h2 className="text-xl font-bold text-on-surface mb-2">Kiểm tra hộp thư!</h2>
               <p className="text-sm text-on-surface-variant mb-2">
-                Nếu email <strong className="text-on-surface">{email}</strong> tồn tại trên hệ thống, bạn sẽ nhận được mã OTP trong vài phút.
+                Liên kết đã được gửi đến <strong className="text-on-surface">{email}</strong>.
               </p>
               <p className="text-xs text-on-surface-variant mb-6">
-                Mã OTP có hiệu lực trong <strong>15 phút</strong>. Kiểm tra cả hộp thư Spam nếu không thấy.
+                Liên kết có hiệu lực trong <strong>15 phút</strong>. Kiểm tra cả hộp thư Spam nếu không thấy.
               </p>
-              <Link
-                href={`/reset-password?email=${encodeURIComponent(email)}`}
-                className="block w-full h-11 bg-primary text-white rounded-xl font-bold text-sm flex items-center justify-center gap-2 hover:opacity-90 transition-opacity"
-              >
-                <span className="material-symbols-outlined text-[18px]">vpn_key</span>
-                Nhập mã OTP &amp; đặt lại mật khẩu
-              </Link>
+
               <button
                 type="button"
                 onClick={() => { setSent(false); setEmail(''); }}
@@ -82,7 +76,7 @@ export default function ForgotPasswordPage() {
               <div className="mb-6">
                 <h2 className="text-xl font-bold text-on-surface mb-1">Quên mật khẩu?</h2>
                 <p className="text-sm text-on-surface-variant">
-                  Nhập email đăng ký của bạn. Chúng tôi sẽ gửi mã OTP 6 số để đặt lại mật khẩu.
+                  Nhập email đăng ký của bạn. Chúng tôi sẽ gửi liên kết để bạn đặt lại mật khẩu.
                 </p>
               </div>
 
@@ -92,9 +86,9 @@ export default function ForgotPasswordPage() {
                     Email
                   </label>
                   <div className="relative">
-                    <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-outline material-symbols-outlined text-[20px]">
+                    <AppIcon className="absolute left-3.5 top-1/2 -translate-y-1/2 text-outline  text-[20px]">
                       mail
-                    </span>
+                    </AppIcon>
                     <input
                       id="email"
                       type="email"
@@ -109,7 +103,7 @@ export default function ForgotPasswordPage() {
 
                 {error && (
                   <div className="p-3 rounded-lg bg-error-container text-on-error-container text-xs flex items-center gap-2">
-                    <span className="material-symbols-outlined text-[16px]">error</span>
+                    <AppIcon className=" text-[16px]">error</AppIcon>
                     <span>{error}</span>
                   </div>
                 )}
@@ -120,11 +114,11 @@ export default function ForgotPasswordPage() {
                   className="w-full h-12 bg-primary text-white rounded-xl font-bold text-sm flex items-center justify-center gap-2 hover:opacity-90 active:scale-[0.99] transition-all disabled:opacity-50 cursor-pointer"
                 >
                   {submitting ? (
-                    <span className="animate-spin material-symbols-outlined text-[18px]">progress_activity</span>
+                    <AppIcon className="animate-spin  text-[18px]">progress_activity</AppIcon>
                   ) : (
-                    <span className="material-symbols-outlined text-[18px]">send</span>
+                    <AppIcon className=" text-[18px]">send</AppIcon>
                   )}
-                  {submitting ? 'Đang gửi...' : 'Gửi mã OTP'}
+                  {submitting ? 'Đang gửi...' : 'Gửi liên kết'}
                 </button>
               </form>
             </>
@@ -138,6 +132,8 @@ export default function ForgotPasswordPage() {
           </Link>
         </p>
       </div>
-    </main>
+      </main>
+      <Footer />
+    </div>
   );
 }

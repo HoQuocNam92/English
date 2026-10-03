@@ -1,4 +1,6 @@
 'use client';
+import { showToast } from '@/shared/ui/AppFeedback';
+import { AppIcon, IconText } from '@/shared/ui/AppIcon';
 
 import * as React from 'react';
 import { useState, useEffect, useCallback, useRef } from 'react';
@@ -44,7 +46,7 @@ export default function VocabularyQuizPage({ params }: { params: Promise<{ id: s
         return;
       }
       const ids = words.slice(0, 20).map((w: any) => w.id);
-      const quizRes: any = await apiClient.get(`/vocab-study/quiz?ids=${ids.join(',')}`);
+      const quizRes: any = await apiClient.post('/vocab-study/quiz', { vocabIds: ids });
       setQuestions(quizRes?.questions ?? []);
       setQuizIdx(0);
       setUserAnswer('');
@@ -85,7 +87,7 @@ export default function VocabularyQuizPage({ params }: { params: Promise<{ id: s
       setSelectedOption(null);
       setShowResult(false);
     } else {
-      setPhase('summary');
+      setPhase('summary'); showToast('Bạn đã hoàn thành bài kiểm tra từ vựng.', 'success', 'Hoàn thành');
     }
   };
 
@@ -115,7 +117,7 @@ export default function VocabularyQuizPage({ params }: { params: Promise<{ id: s
         <div className="space-y-8 w-full max-w-3xl mx-auto py-8">
           <div className="text-center space-y-3">
             <div className={`mx-auto w-32 h-32 rounded-full border-4 flex flex-col items-center justify-center ${pct >= 80 ? 'border-green-400' : pct >= 50 ? 'border-amber-400' : 'border-red-400'}`}>
-              <span className="text-3xl">{pct >= 80 ? '🎉' : pct >= 50 ? '💪' : '📚'}</span>
+              <span className="text-3xl"><IconText>{pct >= 80 ? '🎉' : pct >= 50 ? '💪' : '📚'}</IconText></span>
               <span className="text-2xl font-black text-slate-900">{correctCount}/{total}</span>
               <span className="text-xs text-slate-500">câu đúng</span>
             </div>
@@ -130,9 +132,9 @@ export default function VocabularyQuizPage({ params }: { params: Promise<{ id: s
           <div className="bg-white border border-slate-200 rounded-2xl overflow-hidden divide-y divide-slate-100">
             {quizResults.map((r, i) => (
               <div key={i} className="flex items-center gap-3 px-5 py-3">
-                <span className={`material-symbols-outlined ${r.correct ? 'text-green-500' : 'text-red-500'}`}>
+                <AppIcon className={` ${r.correct ? 'text-green-500' : 'text-red-500'}`}>
                   {r.correct ? 'check_circle' : 'cancel'}
-                </span>
+                </AppIcon>
                 <span className="flex-1 font-semibold text-slate-800">{r.term}</span>
                 <span className={`text-xs font-bold ${r.correct ? 'text-green-600' : 'text-red-500'}`}>
                   {r.correct ? 'Đúng' : 'Sai'}
@@ -143,7 +145,7 @@ export default function VocabularyQuizPage({ params }: { params: Promise<{ id: s
 
           <div className="flex gap-4">
             <button onClick={loadQuiz} className="flex-1 py-3.5 rounded-xl text-sm font-black bg-primary hover:bg-indigo-700 !text-white transition-colors shadow-sm flex items-center justify-center gap-2">
-              <span className="material-symbols-outlined text-base !text-white">replay</span>
+              <AppIcon className=" text-base !text-white">replay</AppIcon>
               <span className="!text-white">Làm lại</span>
             </button>
             <Link href={`/learn/flashcards/${lessonId}`} className="flex-1 py-3.5 rounded-xl text-sm font-bold border border-slate-200 text-slate-700 hover:bg-slate-50 transition-colors text-center">
@@ -167,7 +169,7 @@ export default function VocabularyQuizPage({ params }: { params: Promise<{ id: s
         <div className="flex justify-between items-center">
           <div>
             <Link href={`/learn/flashcards/${lessonId}`} className="text-xs font-bold text-slate-500 hover:text-primary flex items-center gap-1 mb-1">
-              <span className="material-symbols-outlined text-sm">arrow_back</span>
+              <AppIcon className=" text-sm">arrow_back</AppIcon>
               Về bài học
             </Link>
             <h1 className="text-2xl font-black text-slate-900">Kiểm tra từ vựng</h1>
@@ -186,7 +188,7 @@ export default function VocabularyQuizPage({ params }: { params: Promise<{ id: s
             {currentQ.type === 'fill_blank' ? 'Điền từ vào chỗ trống' : 'Chọn từ đúng cho nghĩa'}
           </p>
           <p className="text-xl font-black text-slate-900 leading-relaxed">{currentQ.prompt}</p>
-          {currentQ.hint && <p className="text-sm text-slate-500 italic">💡 {currentQ.hint}</p>}
+          {currentQ.hint && <p className="text-sm text-slate-500 italic"><IconText>{"💡 "}</IconText>{currentQ.hint}</p>}
 
           {currentQ.type === 'fill_blank' && (
             <input
@@ -228,8 +230,8 @@ export default function VocabularyQuizPage({ params }: { params: Promise<{ id: s
                       {String.fromCharCode(65 + i)}
                     </span>
                     <span className="text-base font-semibold text-slate-800 flex-1">{opt}</span>
-                    {showResult && isAnswer && <span className="material-symbols-outlined text-green-600">check_circle</span>}
-                    {showResult && isSelected && !isAnswer && <span className="material-symbols-outlined text-red-500">cancel</span>}
+                    {showResult && isAnswer && <AppIcon className=" text-green-600">check_circle</AppIcon>}
+                    {showResult && isSelected && !isAnswer && <AppIcon className=" text-red-500">cancel</AppIcon>}
                   </button>
                 );
               })}
@@ -238,12 +240,12 @@ export default function VocabularyQuizPage({ params }: { params: Promise<{ id: s
 
           {showResult && (
             <div className={`flex items-center gap-3 px-5 py-4 rounded-xl ${isCorrectAnswer ? 'bg-green-50 border border-green-200' : 'bg-red-50 border border-red-200'}`}>
-              <span className={`material-symbols-outlined text-2xl ${isCorrectAnswer ? 'text-green-600' : 'text-red-500'}`}>
+              <AppIcon className={` text-2xl ${isCorrectAnswer ? 'text-green-600' : 'text-red-500'}`}>
                 {isCorrectAnswer ? 'check_circle' : 'highlight_off'}
-              </span>
+              </AppIcon>
               <div>
                 <p className={`font-black ${isCorrectAnswer ? 'text-green-700' : 'text-red-700'}`}>
-                  {isCorrectAnswer ? 'Chính xác! 🎉' : 'Chưa đúng'}
+                  <IconText>{isCorrectAnswer ? 'Chính xác! 🎉' : 'Chưa đúng'}</IconText>
                 </p>
                 {!isCorrectAnswer && <p className="text-red-600 text-sm mt-1">Đáp án đúng: <span className="font-black">{currentQ.answer}</span></p>}
               </div>
@@ -264,7 +266,7 @@ export default function VocabularyQuizPage({ params }: { params: Promise<{ id: s
             onClick={nextQuestion}
             className="w-full py-4 rounded-xl text-sm font-black bg-primary hover:bg-indigo-700 !text-white transition-colors shadow-sm"
           >
-            {quizIdx + 1 < questions.length ? 'Câu tiếp theo →' : 'Xem kết quả'}
+            <IconText>{quizIdx + 1 < questions.length ? 'Câu tiếp theo →' : 'Xem kết quả'}</IconText>
           </button>
         )}
       </div>

@@ -1,4 +1,5 @@
 'use client';
+import { AppIcon } from '@/shared/ui/AppIcon';
 import { useRouter } from 'next/navigation';
 import { completeCreation, CreatePage, FormSurface } from '@/shared/ui/CreatePage';
 import { ActionButton, ActionGroup } from '@/shared/ui/ActionButton';
@@ -126,7 +127,7 @@ export default function AdminCertifications({ createOnly = false }: { createOnly
 
         {error && (
           <div className="p-3 rounded-xl bg-error-container text-on-error-container text-sm flex items-center gap-2">
-            <span className="material-symbols-outlined text-[18px]">error</span>
+            <AppIcon className=" text-[18px]">error</AppIcon>
             <span>{error}</span>
           </div>
         )}
@@ -137,7 +138,7 @@ export default function AdminCertifications({ createOnly = false }: { createOnly
             onClick={openCreate}
             className="bg-primary text-on-primary font-interface-sb py-sm px-md rounded-lg hover:bg-primary-container transition-colors flex items-center gap-xs"
           >
-            <span className="material-symbols-outlined text-[18px]">add</span>
+            <AppIcon className=" text-[18px]">add</AppIcon>
             Thêm chứng chỉ mới
           </button>
         </div>
@@ -239,7 +240,7 @@ function CertificateModal({ open, initial, onClose, onSaved, page = false }: { p
   };
   const cls = 'mt-2 h-11 w-full rounded-xl border border-outline-variant/70 bg-white px-3.5 text-sm outline-none focus:border-primary focus:ring-4 focus:ring-primary/10';
   return <FormSurface page={page} open={open} onClose={onClose} maxWidth="max-w-2xl"><form onSubmit={save}>
-    <div className="flex items-start justify-between border-b border-outline-variant/50 px-6 py-5"><div><h2 className="text-xl font-bold">{initial ? 'Chỉnh sửa chứng chỉ' : 'Thêm chứng chỉ mới'}</h2><p className="mt-1 text-xs text-on-surface-variant">Thông tin chứng chỉ công nghệ và đơn vị cấp.</p></div><button type="button" onClick={onClose} className="rounded-lg p-2 hover:bg-surface-container-low"><span className="material-symbols-outlined">close</span></button></div>
+    <div className="flex items-start justify-between border-b border-outline-variant/50 px-6 py-5"><div><h2 className="text-xl font-bold">{initial ? 'Chỉnh sửa chứng chỉ' : 'Thêm chứng chỉ mới'}</h2><p className="mt-1 text-xs text-on-surface-variant">Thông tin chứng chỉ công nghệ và đơn vị cấp.</p></div><button type="button" onClick={onClose} className="rounded-lg p-2 hover:bg-surface-container-low"><AppIcon className="">close</AppIcon></button></div>
     <div className="grid grid-cols-1 gap-5 p-6 sm:grid-cols-2">
       <label className="text-sm font-semibold">Mã chứng chỉ *<input className={`${cls} uppercase`} value={form.code} onChange={e => setForm({...form, code:e.target.value})} placeholder="AWS-CLF-C02" /></label>
       <label className="text-sm font-semibold">Đơn vị cấp *<input className={cls} value={form.provider} onChange={e => setForm({...form, provider:e.target.value})} placeholder="Amazon Web Services" /></label>

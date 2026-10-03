@@ -8,7 +8,7 @@ export class EmailService {
 
   constructor(private configService: ConfigService) {}
 
-  async sendPasswordResetOtp(toEmail: string, otp: string): Promise<boolean> {
+  async sendPasswordResetLink(toEmail: string, resetUrl: string): Promise<boolean> {
     const smtpHost = this.configService.getOrThrow<string>('SMTP_HOST')
     const smtpPort = Number(this.configService.getOrThrow<string>('SMTP_PORT'))
     if (!Number.isInteger(smtpPort) || smtpPort < 1 || smtpPort > 65535) {
@@ -19,14 +19,9 @@ export class EmailService {
     const smtpPass = this.configService.get<string>('SMTP_PASS') || process.env.SMTP_PASS
     const smtpFrom = this.configService.getOrThrow<string>('SMTP_FROM')
 
-    // DEV FALLBACK LOGGING
-    this.logger.log(`=======================================================`)
-    this.logger.log(`🔑 [PASSWORD RESET OTP] Target: ${toEmail} | OTP: ${otp}`)
-    this.logger.log(`=======================================================`)
-
     if (!smtpUser || !smtpPass || smtpUser === 'user@example.com') {
-      this.logger.warn(`SMTP credentials not configured. Using DEV LOG fallback only. Check console for OTP.`)
-      return true
+      this.logger.warn('SMTP credentials not configured; password reset email was not sent.')
+      return false
     }
 
     try {
@@ -40,27 +35,21 @@ export class EmailService {
         },
       })
 
-      const htmlContent = `
-        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e2e8f0; border-radius: 12px;">
-          <h2 style="color: #4f46e5; text-align: center;">TechEnglish Pro</h2>
-          <hr style="border: none; border-top: 1px solid #e2e8f0; margin: 20px 0;" />
-          <p>Xin chào,</p>
-          <p>Bạn đã yêu cầu đặt lại mật khẩu cho tài khoản <strong>${toEmail}</strong> trên nền tảng TechEnglish Pro.</p>
-          <p>Mã xác thực (OTP) của bạn là:</p>
-          <div style="background-color: #f3f4f6; padding: 15px; text-align: center; border-radius: 8px; font-size: 28px; font-weight: bold; letter-spacing: 6px; color: #1e1b4b; margin: 20px 0;">
-            ${otp}
-          </div>
-          <p style="color: #64748b; font-size: 13px;">Mã OTP này có hiệu lực trong vòng <strong>15 phút</strong>. Vui lòng không chia sẻ mã này cho bất kỳ ai.</p>
-          <hr style="border: none; border-top: 1px solid #e2e8f0; margin: 20px 0;" />
-          <p style="font-size: 12px; color: #94a3b8; text-align: center;">Nếu bạn không yêu cầu đặt lại mật khẩu, vui lòng bỏ qua email này.</p>
-        </div>
-      `
+      const safeUrl = resetUrl.replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;')
+      const htmlContent = `<div style="font-family:Arial,sans-serif;max-width:600px;margin:auto;padding:24px">
+        <h2 style="color:#3525cd">TechEnglish Pro</h2>
+        <p>Bạn đã yêu cầu đặt lại mật khẩu. Nhấn nút bên dưới để tạo mật khẩu mới.</p>
+        <p><a href="${safeUrl}" style="display:inline-block;padding:14px 24px;background:#3525cd;color:white;border-radius:12px;text-decoration:none">Đặt lại mật khẩu</a></p>
+        <p>Liên kết có hiệu lực trong 15 phút và chỉ dùng được một lần để đổi mật khẩu. Không chia sẻ liên kết này.</p>
+        <p>Nếu bạn không yêu cầu, hãy bỏ qua email này.</p>
+      </div>`
 
       await transporter.sendMail({
         from: smtpFrom,
         to: toEmail,
-        subject: '[TechEnglish Pro] Mã OTP Khôi Phục Mật Khẩu',
+        subject: '[TechEnglish Pro] Liên kết đặt lại mật khẩu',
         html: htmlContent,
+        text: `Đặt lại mật khẩu: ${resetUrl}\nLiên kết có hiệu lực 15 phút và chỉ dùng một lần.`,
       })
 
       this.logger.log(`✅ Email khôi phục mật khẩu đã được gửi thành công đến ${toEmail}`)

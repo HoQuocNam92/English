@@ -1,4 +1,6 @@
 'use client';
+import { showToast } from '@/shared/ui/AppFeedback';
+import { AppIcon, IconText } from '@/shared/ui/AppIcon';
 
 import { Dropdown } from '@/shared/ui/Dropdown';
 import * as React from 'react';
@@ -407,7 +409,7 @@ export function ImportQuestionsModal({
       });
 
       const count = res?.count ?? questionsToImport.length;
-      setSubmitSuccess(`Đã nhập thành công ${count} câu hỏi vào ngân hàng câu hỏi!`);
+      showToast(`Đã nhập thành công ${count} câu hỏi vào ngân hàng câu hỏi!`, 'success');
 
       setTimeout(() => {
         onSuccess(count);
@@ -436,7 +438,7 @@ export function ImportQuestionsModal({
         <div className="flex items-center justify-between border-b border-outline-variant/40 px-6 py-4">
           <div className="flex items-center gap-3">
             <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10 text-primary">
-              <span className="material-symbols-outlined text-[24px]">upload_file</span>
+              <AppIcon className=" text-[24px]">upload_file</AppIcon>
             </div>
             <div>
               <h2 className="text-lg font-bold text-on-surface">
@@ -455,7 +457,7 @@ export function ImportQuestionsModal({
               className="inline-flex items-center gap-1.5 rounded-xl border border-primary/20 bg-primary/5 px-3 py-1.5 text-xs font-semibold text-primary transition-colors hover:bg-primary/10"
               title="Tải mẫu Excel chuẩn có kèm dữ liệu mẫu"
             >
-              <span className="material-symbols-outlined text-[16px]">download</span>
+              <AppIcon className=" text-[16px]">download</AppIcon>
               Tải file mẫu Excel
             </button>
             <button
@@ -464,7 +466,7 @@ export function ImportQuestionsModal({
               disabled={submitting}
               className="rounded-lg p-1.5 text-on-surface-variant transition-colors hover:bg-surface-container disabled:opacity-50"
             >
-              <span className="material-symbols-outlined text-[20px]">close</span>
+              <AppIcon className=" text-[20px]">close</AppIcon>
             </button>
           </div>
         </div>
@@ -493,7 +495,7 @@ export function ImportQuestionsModal({
                 }}
               />
               <div className="flex h-14 w-14 items-center justify-center rounded-full bg-primary/10 text-primary mb-3">
-                <span className="material-symbols-outlined text-[32px]">table_view</span>
+                <AppIcon className=" text-[32px]">table_view</AppIcon>
               </div>
               <p className="text-sm font-semibold text-on-surface text-center">
                 Kéo thả các file Excel (.xlsx, .xls) vào đây, hoặc nhấn để chọn file
@@ -509,7 +511,7 @@ export function ImportQuestionsModal({
                 }}
                 className="mt-4 inline-flex items-center gap-1.5 text-xs font-semibold text-primary hover:underline"
               >
-                <span className="material-symbols-outlined text-[16px]">download</span>
+                <AppIcon className=" text-[16px]">download</AppIcon>
                 Chưa có mẫu? Nhấn vào đây để tải file mẫu chuẩn
               </button>
             </div>
@@ -534,7 +536,7 @@ export function ImportQuestionsModal({
                     disabled={submitting}
                     className="inline-flex items-center gap-1.5 rounded-lg border border-primary/30 bg-primary/10 px-2.5 py-1 text-xs font-semibold text-primary hover:bg-primary/20 transition-colors disabled:opacity-50"
                   >
-                    <span className="material-symbols-outlined text-[16px]">add</span>
+                    <AppIcon className=" text-[16px]">add</AppIcon>
                     Thêm file khác
                   </button>
                   {files.length > 1 && (
@@ -544,7 +546,7 @@ export function ImportQuestionsModal({
                       disabled={submitting}
                       className="inline-flex items-center gap-1 rounded-lg px-2.5 py-1 text-xs font-medium text-error hover:bg-error/10 transition-colors disabled:opacity-50"
                     >
-                      <span className="material-symbols-outlined text-[16px]">delete_sweep</span>
+                      <AppIcon className=" text-[16px]">delete_sweep</AppIcon>
                       Xóa tất cả
                     </button>
                   )}
@@ -573,7 +575,7 @@ export function ImportQuestionsModal({
                   >
                     <div className="flex items-center gap-2.5 min-w-0">
                       <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-emerald-50 text-emerald-600">
-                        <span className="material-symbols-outlined text-[20px]">description</span>
+                        <AppIcon className=" text-[20px]">description</AppIcon>
                       </div>
                       <div className="min-w-0">
                         <p
@@ -586,9 +588,9 @@ export function ImportQuestionsModal({
                           <span>{(item.file.size / 1024).toFixed(1)} KB</span>
                           {item.status === 'parsing' && (
                             <span className="flex items-center gap-1 text-primary">
-                              <span className="material-symbols-outlined animate-spin text-[12px]">
+                              <AppIcon className=" animate-spin text-[12px]">
                                 progress_activity
-                              </span>
+                              </AppIcon>
                               Đang đọc...
                             </span>
                           )}
@@ -603,11 +605,11 @@ export function ImportQuestionsModal({
                           {item.status === 'ready' && item.parseResult && (
                             <div className="flex items-center gap-1">
                               <span className="text-emerald-700 font-medium">
-                                ✓ {item.parseResult.validCount}
+                                <IconText>{"\n                                ✓ "}</IconText>{item.parseResult.validCount}
                               </span>
                               {item.parseResult.invalidCount > 0 && (
                                 <span className="text-red-600 font-medium">
-                                  ⚠️ {item.parseResult.invalidCount}
+                                  <IconText>{"\n                                  ⚠️ "}</IconText>{item.parseResult.invalidCount}
                                 </span>
                               )}
                             </div>
@@ -623,7 +625,7 @@ export function ImportQuestionsModal({
                       className="rounded-lg p-1 text-slate-400 hover:bg-slate-100 hover:text-red-600 transition-colors disabled:opacity-50"
                       title={`Gỡ file ${item.file.name}`}
                     >
-                      <span className="material-symbols-outlined text-[16px]">close</span>
+                      <AppIcon className=" text-[16px]">close</AppIcon>
                     </button>
                   </div>
                 ))}
@@ -634,9 +636,9 @@ export function ImportQuestionsModal({
           {/* Parsing spinner indicator if any file is parsing */}
           {isAnyParsing && (
             <div className="flex items-center justify-center gap-2 py-4 text-sm text-on-surface-variant">
-              <span className="material-symbols-outlined animate-spin text-[20px] text-primary">
+              <AppIcon className=" animate-spin text-[20px] text-primary">
                 progress_activity
-              </span>
+              </AppIcon>
               Đang phân tích và kiểm tra tính hợp lệ của câu hỏi...
             </div>
           )}
@@ -644,18 +646,18 @@ export function ImportQuestionsModal({
           {/* Errors / Success Alerts */}
           {submitError && (
             <div className="flex items-start gap-2.5 rounded-xl bg-error-container p-3.5 text-sm text-on-error-container">
-              <span className="material-symbols-outlined text-[18px] shrink-0 mt-0.5">
+              <AppIcon className=" text-[18px] shrink-0 mt-0.5">
                 error
-              </span>
+              </AppIcon>
               <span className="flex-1">{submitError}</span>
             </div>
           )}
 
           {submitSuccess && (
             <div className="flex items-center gap-2.5 rounded-xl bg-emerald-50 border border-emerald-300 p-3.5 text-sm text-emerald-800">
-              <span className="material-symbols-outlined text-[18px] text-emerald-600 shrink-0">
+              <AppIcon className=" text-[18px] text-emerald-600 shrink-0">
                 check_circle
-              </span>
+              </AppIcon>
               <span className="flex-1 font-medium">{submitSuccess}</span>
             </div>
           )}
@@ -688,7 +690,7 @@ export function ImportQuestionsModal({
                           : 'bg-emerald-50 text-emerald-700 hover:bg-emerald-100'
                       }`}
                     >
-                      <span className="material-symbols-outlined text-[14px]">check</span>
+                      <AppIcon className=" text-[14px]">check</AppIcon>
                       Hợp lệ ({totalValidCount})
                     </button>
                     {totalInvalidCount > 0 && (
@@ -701,7 +703,7 @@ export function ImportQuestionsModal({
                             : 'bg-red-50 text-red-700 hover:bg-red-100'
                         }`}
                       >
-                        <span className="material-symbols-outlined text-[14px]">warning</span>
+                        <AppIcon className=" text-[14px]">warning</AppIcon>
                         Có lỗi ({totalInvalidCount})
                       </button>
                     )}
@@ -744,9 +746,9 @@ export function ImportQuestionsModal({
                 <div className="flex flex-wrap items-center gap-2 pt-1">
                   {/* Keyword Search */}
                   <div className="relative min-w-[220px] flex-1">
-                    <span className="material-symbols-outlined absolute left-2.5 top-1/2 -translate-y-1/2 text-[18px] text-slate-400">
+                    <AppIcon className=" absolute left-2.5 top-1/2 -translate-y-1/2 text-[18px] text-slate-400">
                       search
-                    </span>
+                    </AppIcon>
                     <input
                       type="text"
                       value={searchQuery}
@@ -761,7 +763,7 @@ export function ImportQuestionsModal({
                         className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
                         title="Xóa tìm kiếm"
                       >
-                        <span className="material-symbols-outlined text-[16px]">close</span>
+                        <AppIcon className=" text-[16px]">close</AppIcon>
                       </button>
                     )}
                   </div>
@@ -833,9 +835,9 @@ export function ImportQuestionsModal({
                       className="inline-flex items-center gap-1 rounded-xl border border-slate-200 bg-slate-100 px-2.5 py-1.5 text-xs font-semibold text-slate-600 hover:bg-slate-200 transition-colors"
                       title="Đặt lại toàn bộ bộ lọc"
                     >
-                      <span className="material-symbols-outlined text-[14px]">
+                      <AppIcon className=" text-[14px]">
                         filter_alt_off
-                      </span>
+                      </AppIcon>
                       Đặt lại
                     </button>
                   )}
@@ -891,9 +893,9 @@ export function ImportQuestionsModal({
                             className="py-10 text-center text-on-surface-variant"
                           >
                             <div className="flex flex-col items-center justify-center gap-1.5">
-                              <span className="material-symbols-outlined text-[28px] text-slate-400">
+                              <AppIcon className=" text-[28px] text-slate-400">
                                 search_off
-                              </span>
+                              </AppIcon>
                               <p className="text-xs font-medium text-slate-600">
                                 Không tìm thấy câu hỏi nào phù hợp với bộ lọc
                               </p>
@@ -978,16 +980,16 @@ export function ImportQuestionsModal({
                               <td className="px-3 py-2.5">
                                 {isRowValid ? (
                                   <span className="inline-flex items-center gap-1 rounded-full bg-emerald-50 px-2 py-0.5 font-semibold text-emerald-700">
-                                    <span className="material-symbols-outlined text-[12px]">
+                                    <AppIcon className=" text-[12px]">
                                       check
-                                    </span>
+                                    </AppIcon>
                                     Hợp lệ
                                   </span>
                                 ) : (
                                   <span className="inline-flex items-center gap-1 rounded-full bg-red-100 px-2 py-0.5 font-semibold text-red-700">
-                                    <span className="material-symbols-outlined text-[12px]">
+                                    <AppIcon className=" text-[12px]">
                                       close
-                                    </span>
+                                    </AppIcon>
                                     Lỗi
                                   </span>
                                 )}
@@ -1057,7 +1059,7 @@ export function ImportQuestionsModal({
                                           {opt.key}.
                                         </span>{' '}
                                         {opt.text}
-                                        {opt.isCorrect && ' ✓'}
+                                        <IconText>{opt.isCorrect && ' ✓'}</IconText>
                                       </div>
                                     ))}
                                   </div>
@@ -1132,16 +1134,16 @@ export function ImportQuestionsModal({
             >
               {submitting ? (
                 <>
-                  <span className="material-symbols-outlined animate-spin text-[18px]">
+                  <AppIcon className=" animate-spin text-[18px]">
                     progress_activity
-                  </span>
+                  </AppIcon>
                   Đang lưu câu hỏi...
                 </>
               ) : (
                 <>
-                  <span className="material-symbols-outlined text-[18px]">
+                  <AppIcon className=" text-[18px]">
                     cloud_upload
-                  </span>
+                  </AppIcon>
                   Xác nhận nhập ({selectedCount} câu)
                 </>
               )}

@@ -1,9 +1,10 @@
 'use client';
+import { AppIcon } from '@/shared/ui/AppIcon';
 
-import Link from 'next/link';
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/features/auth/presentation';
+import { PublicHeader } from '@/shared/layout/PublicHeader';
 import { Footer } from '@/shared/layout/Footer';
 
 export default function LandingPage() {
@@ -22,17 +23,9 @@ export default function LandingPage() {
     }
   }, [session, loading, router]);
 
-  const heroBanners: any[] = [];
-  const activeBanner = 0;
-  const setActiveBanner = (_index: number) => undefined;
-  const freeFeatures: any[] = [];
-  const differences: any[] = [];
-  const banner: any = null;
-  const footerBanner: any = null;
-
   if (loading) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-background">
+      <div className="flex min-h-screen items-center justify-center bg-white">
         <div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin" />
       </div>
     );
@@ -41,188 +34,17 @@ export default function LandingPage() {
   if (session) return null;
 
   return (
-    <main className="min-h-screen bg-background text-on-surface antialiased flex flex-col overflow-x-clip">
+    <main className="min-h-screen bg-white text-on-surface antialiased flex flex-col overflow-x-clip">
 
       {/* ─── Navbar ───────────────────────────────────────────────── */}
-      <header className="sticky top-0 z-50 border-b border-outline-variant/30 bg-surface-container-lowest/90 backdrop-blur-md">
-        <div className="mx-auto px-4 sm:px-6 h-16 flex items-center justify-between" style={{ maxWidth: '1152px' }}>
-          <Link href="/landing" className="flex items-center gap-2.5">
-            <div className="w-9 h-9 rounded-xl bg-primary flex items-center justify-center shadow-sm">
-              <span className="material-symbols-outlined text-[22px] !text-white fill-1">terminal</span>
-            </div>
-            <div>
-              <span className="font-black text-primary text-base leading-tight tracking-tight block">TechEnglish Pro</span>
-              <span className="text-[10px] text-on-surface-variant font-semibold uppercase tracking-wider leading-none">IT English Platform</span>
-            </div>
-          </Link>
-
-          <nav className="hidden md:flex items-center gap-6 text-sm font-semibold text-on-surface-variant">
-            <a href="#about" className="hover:text-primary transition-colors">Về chúng tôi</a>
-          </nav>
-
-          <div className="flex items-center gap-3">
-            <Link
-              href="/login"
-              className="px-4 py-2 text-sm font-bold text-on-surface-variant hover:text-primary transition-colors"
-            >
-              Đăng nhập
-            </Link>
-
-            <Link
-              href="/learn"
-              className="px-5 py-2.5 bg-primary !text-white text-sm font-bold rounded-xl hover:opacity-90 transition-colors shadow-sm"
-            >
-              Bắt đầu miễn phí
-            </Link>
-          </div>
-        </div>
-      </header>
-
-      {banner && <section className="w-full border-b border-outline-variant/30 px-4 py-4 sm:px-6 sm:py-6" style={{ backgroundColor: banner.displayMode === 'image_only' ? 'transparent' : banner.backgroundColor }}>
-        <div className={`relative mx-auto w-full max-w-[1180px] overflow-hidden bg-cover bg-center ${banner.displayMode === 'image_only' ? 'rounded-2xl' : 'min-h-[430px]'}`} style={{ backgroundImage: banner.displayMode !== 'image_only' && banner.imageUrl ? `url(${banner.imageUrl})` : undefined }}>
-          {banner.displayMode === 'image_only' && banner.imageUrl && (banner.ctaUrl ? <Link href={banner.ctaUrl} aria-label={banner.title} className="block w-full"><img src={banner.imageUrl} alt={banner.title} className="block h-auto max-h-[560px] w-full object-contain" /></Link> : <img src={banner.imageUrl} alt={banner.title} className="block h-auto max-h-[560px] w-full object-contain" />)}
-          {banner.displayMode !== 'image_only' && banner.imageUrl && <div className="absolute inset-0 bg-gradient-to-r from-white/35 via-transparent to-black/5" />}
-          {banner.displayMode !== 'image_only' && <div className="absolute min-w-[240px] max-w-[92%] p-4" style={{ left: `${banner.textX ?? 8}%`, top: `${banner.textY ?? 18}%`, width: `${banner.textWidth ?? 46}%`, textAlign: banner.textAlign ?? 'left', color: banner.titleColor ?? '#0F172A' }}><p className="mb-3 text-sm font-black tracking-widest" style={{ color: banner.accentColor }}>{banner.eyebrow}</p><h1 className="w-full font-black leading-tight" style={{ color: banner.titleColor ?? '#0F172A', fontSize: `clamp(2rem, ${(banner.titleSize ?? 56) / 16}vw, ${banner.titleSize ?? 56}px)` }}>{banner.title}</h1><p className="mt-5 w-full text-base leading-7" style={{ color: banner.titleColor ?? '#0F172A' }}>{banner.description}</p>
-            {!!banner.bulletPoints?.length && <ul className="mt-6 space-y-3">{banner.bulletPoints.map((point: string) => <li key={point} className="flex items-center gap-3 font-semibold"><span className="material-symbols-outlined text-[20px]" style={{ color: banner.accentColor }}>check_circle</span>{point}</li>)}</ul>}
-            {banner.ctaLabel && banner.ctaUrl && <Link href={banner.ctaUrl} className="mt-8 inline-flex items-center gap-2 rounded-xl px-6 py-3 font-bold text-white shadow-lg" style={{ backgroundColor: banner.accentColor }}>{banner.ctaLabel}<span className="material-symbols-outlined">arrow_forward</span></Link>}
-          </div>}
-          {heroBanners.length > 1 && <div className="absolute bottom-5 left-1/2 flex -translate-x-1/2 gap-2">{heroBanners.map((item, index) => <button key={item.id} aria-label={`Banner ${index + 1}`} onClick={() => setActiveBanner(index)} className={`h-2 rounded-full transition-all ${index === activeBanner ? 'w-7' : 'w-2 bg-slate-300'}`} style={index === activeBanner ? { backgroundColor: banner.accentColor } : undefined} />)}</div>}
-        </div>
-      </section>}
-
-      {!!freeFeatures.length && <section className="bg-white py-20"><div className="mx-auto px-6" style={{ maxWidth: '1152px' }}><div className="mb-12 text-center"><h2 className="text-3xl font-black">Học cùng TechEnglish miễn phí</h2><p className="mt-3 text-on-surface-variant">Nội dung tiếng Anh chuyên ngành IT dành cho hành trình học của bạn.</p></div><div className="grid grid-cols-1 gap-6 md:grid-cols-3">{freeFeatures.map((item) => <article key={item.id} className="flex min-h-80 flex-col overflow-hidden rounded-3xl border border-outline-variant/40 shadow-sm"><div className="flex h-36 items-center justify-center" style={{ backgroundColor: item.backgroundColor }}><span className="material-symbols-outlined text-[72px]" style={{ color: item.accentColor }}>auto_stories</span></div><div className="flex flex-1 flex-col p-6"><p className="text-xs font-black" style={{ color: item.accentColor }}>{item.eyebrow}</p><h3 className="mt-2 text-xl font-bold">{item.title}</h3><p className="mt-3 flex-1 text-sm leading-6 text-on-surface-variant">{item.description}</p>{item.ctaLabel && item.ctaUrl && <Link href={item.ctaUrl} className="mt-5 flex items-center justify-between rounded-xl border px-4 py-3 text-sm font-bold" style={{ color: item.accentColor, borderColor: item.accentColor }}>{item.ctaLabel}<span className="material-symbols-outlined text-[18px]">arrow_forward</span></Link>}</div></article>)}</div></div></section>}
-
-      {!!differences.length && <section className="bg-white py-20">
-        <div className="mx-auto w-full px-5" style={{ maxWidth: '980px' }}>
-          <div className="mb-12 text-center">
-            <span className="inline-flex rounded-full border border-indigo-200 bg-white px-3 py-1 text-[10px] font-black tracking-[0.14em] text-primary">TẠI SAO CHỌN TECHENGLISH</span>
-            <h2 className="mt-4 text-3xl font-black">Điểm <span className="text-primary">khác biệt</span> tại TechEnglish</h2>
-            <p className="mx-auto mt-3 w-full text-sm leading-6 text-on-surface-variant" style={{ maxWidth: '34rem' }}>Ba trụ cột giúp bạn sử dụng tiếng Anh hiệu quả hơn trong học tập và công việc công nghệ.</p>
-          </div>
-          <div className="relative space-y-5 pb-16">{differences.map((item, index) => <article key={item.id} className="landing-difference-card grid min-h-[390px] w-full grid-cols-1 items-center gap-8 rounded-[28px] border border-black/5 p-7 md:grid-cols-2 md:p-10" style={{ backgroundColor: item.backgroundColor }}>
-            <div className={index % 2 ? 'md:order-2' : ''}><span className="inline-flex rounded-full bg-white/80 px-3 py-1 text-[10px] font-black tracking-wider" style={{ color: item.accentColor }}>{item.eyebrow}</span><h3 className="mt-4 text-2xl font-black leading-tight" style={{ color: item.accentColor }}>{item.title}</h3><p className="mt-4 text-sm leading-6 text-slate-700">{item.description}</p><ul className="mt-4 space-y-2">{item.bulletPoints?.map((point: string) => <li key={point} className="flex gap-2 text-xs font-semibold text-slate-700"><span className="material-symbols-outlined text-[16px]" style={{ color: item.accentColor }}>check_circle</span>{point}</li>)}</ul>{item.ctaLabel && item.ctaUrl && <Link href={item.ctaUrl} className="mt-5 inline-flex items-center gap-1 text-sm font-black" style={{ color: item.accentColor }}>{item.ctaLabel}<span className="material-symbols-outlined text-[17px]">arrow_forward</span></Link>}</div>
-            <div className={`flex min-h-[220px] items-center justify-center ${index % 2 ? 'md:order-1' : ''}`}>{item.imageUrl ? <img src={item.imageUrl} alt={item.title} className="h-[230px] w-full rounded-2xl object-cover shadow-xl" /> : <div className="relative flex h-[210px] w-full max-w-sm items-center justify-center rounded-2xl border border-white bg-white/90 shadow-xl"><span className="material-symbols-outlined text-[76px]" style={{ color: item.accentColor }}>{index === 0 ? 'psychology' : index === 1 ? 'code' : 'monitoring'}</span><div className="absolute bottom-4 left-4 right-4 flex gap-2">{item.bulletPoints?.slice(0, 3).map((point: string) => <span key={point} className="h-2 flex-1 rounded-full" style={{ backgroundColor: item.accentColor, opacity: .25 }} />)}</div></div>}</div>
-          </article>)}</div>
-        </div>
-      </section>}
-
-      {/* ─── Hero ─────────────────────────────────────────────────── */}
-      <section className="hidden mx-auto px-4 sm:px-6 pt-20 pb-24 flex-col lg:flex-row items-center gap-12 lg:gap-16" style={{ maxWidth: '1152px' }}>
-        <div className="flex-1 min-w-0 space-y-6 text-center lg:text-left">
-          {/* Badge */}
-          <div className="inline-flex items-center gap-2 px-3 py-1.5 bg-indigo-50 border border-indigo-200 rounded-full text-xs font-bold text-primary">
-            <span className="material-symbols-outlined text-[14px]">stars</span>
-            Nền tảng học tiếng Anh CNTT #1 Việt Nam
-          </div>
-
-          <h1 className="text-4xl sm:text-5xl lg:text-6xl font-black text-on-surface leading-tight tracking-tight">
-            Tiếng Anh chuyên ngành{' '}
-            <span className="text-primary">IT</span>{' '}
-            cho lập trình viên
-          </h1>
-
-          <p className="text-lg text-on-surface-variant w-full leading-relaxed [overflow-wrap:anywhere]">
-            Từ vựng, thuật ngữ kỹ thuật và luyện thi chứng chỉ công nghệ —
-            tất cả trong một nền tảng được thiết kế riêng cho Developer &amp; Engineer.
-          </p>
-
-          <div className="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-3 pt-2">
-            <Link
-              href="/learn"
-              className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-8 py-4 bg-primary !text-white font-bold text-base rounded-2xl hover:opacity-90 transition-all shadow-lg shadow-primary/20"
-            >
-              <span className="material-symbols-outlined text-[22px] fill-1 !text-white">school</span>
-              <span className="!text-white">Học ngay — Miễn phí</span>
-            </Link>
-
-            <Link
-              href="/login"
-              className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-8 py-4 border-2 border-outline-variant text-on-surface font-bold text-base rounded-2xl hover:border-primary hover:text-primary transition-all"
-            >
-              <span className="material-symbols-outlined text-[22px]">login</span>
-              <span>Đăng nhập</span>
-            </Link>
-          </div>
-
-          {/* Social proof */}
-          <div className="flex items-center justify-center lg:justify-start gap-6 pt-2 text-xs text-outline font-semibold flex-wrap">
-            <div className="flex items-center gap-1.5">
-              <span className="material-symbols-outlined text-[16px] fill-1" style={{ color: '#f59e0b' }}>star</span>
-              <span>4.9 / 5 đánh giá</span>
-            </div>
-            <div className="flex items-center gap-1.5">
-              <span className="material-symbols-outlined text-[16px] text-secondary">group</span>
-              <span>2,000+ học viên</span>
-            </div>
-            <div className="flex items-center gap-1.5">
-              <span className="material-symbols-outlined text-[16px] text-primary">verified</span>
-              <span>KLCN028 Certified</span>
-            </div>
-          </div>
-        </div>
-
-        {/* Hero Visual Card */}
-        <div className="relative hidden lg:flex items-center justify-center shrink-0 w-[420px]">
-          <div className="relative w-full">
-            {/* Main card */}
-            <div className="bg-surface-container-lowest rounded-3xl border border-outline-variant/40 shadow-2xl p-6 space-y-4">
-              <div className="flex items-center gap-3 pb-3 border-b border-outline-variant/30">
-                <div className="w-10 h-10 rounded-xl bg-indigo-100 text-primary flex items-center justify-center">
-                  <span className="material-symbols-outlined text-[22px]">code</span>
-                </div>
-                <div>
-                  <p className="text-sm font-bold text-on-surface">API Documentation</p>
-                  <p className="text-xs text-on-surface-variant">Backend Engineering · 15 phút</p>
-                </div>
-                <span className="ml-auto px-2 py-0.5 bg-indigo-100 text-primary text-[10px] font-bold rounded-full border border-indigo-200">
-                  PUBLISHED
-                </span>
-              </div>
-              <div className="space-y-2">
-                <div className="h-3 bg-surface-container-high rounded-full w-full" />
-                <div className="h-3 bg-surface-container-high rounded-full w-4/5" />
-                <div className="h-3 bg-indigo-200 rounded-full w-3/5" />
-              </div>
-              {/* Vocab chips */}
-              <div className="flex flex-wrap gap-2 pt-1">
-                {['endpoint', 'payload', 'middleware', 'authentication', 'REST', 'webhook'].map((w) => (
-                  <span key={w} className="px-2.5 py-1 bg-indigo-50 text-primary text-[11px] font-bold rounded-lg border border-indigo-200">
-                    {w}
-                  </span>
-                ))}
-              </div>
-              {/* Progress */}
-              <div className="pt-2 space-y-1.5">
-                <div className="flex justify-between text-xs font-bold text-on-surface-variant">
-                  <span>Tiến độ bài học</span>
-                  <span className="text-primary">72%</span>
-                </div>
-                <div className="w-full h-2 bg-surface-container-high rounded-full overflow-hidden">
-                  <div className="h-full w-[72%] bg-primary rounded-full" />
-                </div>
-              </div>
-            </div>
-
-            {/* Floating badge — Completion */}
-            <div className="absolute -bottom-4 -left-4 bg-surface-container-lowest border border-outline-variant/40 shadow-xl rounded-2xl px-4 py-3 flex items-center gap-3">
-              <div className="w-8 h-8 rounded-full bg-indigo-100 flex items-center justify-center">
-                <span className="material-symbols-outlined text-[18px] text-primary fill-1">check_circle</span>
-              </div>
-              <div>
-                <p className="text-xs font-black text-on-surface">Hoàn thành bài!</p>
-                <p className="text-[10px] text-on-surface-variant">+50 EXP kiếm được</p>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
+      <PublicHeader />
 
       {/* ─── About ───────────────────────────────────────────────── */}
-      <section id="about" className="bg-surface-container-low py-20 scroll-mt-16">
+      <section id="about" className="bg-white py-20 scroll-mt-16">
         <div className="mx-auto grid items-center gap-10 px-4 sm:px-6 md:grid-cols-2" style={{ maxWidth: '1152px' }}>
           <div>
             <p className="text-xs font-black uppercase tracking-[0.16em] text-primary">Về chúng tôi</p>
-            <h2 className="mt-3 text-3xl font-black tracking-tight text-on-surface">Tiếng Anh thực tế dành riêng cho người làm công nghệ</h2>
+            <h1 className="mt-3 text-3xl font-black tracking-tight text-on-surface">Tiếng Anh thực tế dành riêng cho người làm công nghệ</h1>
             <p className="mt-5 text-sm leading-7 text-on-surface-variant">
               TechEnglish Pro giúp sinh viên và kỹ sư công nghệ học tiếng Anh ngay trong ngữ cảnh họ sử dụng mỗi ngày: tài liệu kỹ thuật, thuật ngữ chuyên ngành, tình huống công việc và chứng chỉ quốc tế.
             </p>
@@ -230,15 +52,15 @@ export default function LandingPage() {
               Nội dung được tổ chức theo trình độ và lĩnh vực IT, kết hợp theo dõi tiến độ để mỗi người có một hành trình học rõ ràng, thực tế và phù hợp với mục tiêu nghề nghiệp.
             </p>
           </div>
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 min-[360px]:grid-cols-2 gap-4">
             {[
               { icon: 'terminal', title: 'Đúng chuyên ngành', desc: 'Học qua ngữ cảnh phần mềm và CNTT.' },
               { icon: 'route', title: 'Có lộ trình', desc: 'Nội dung nối tiếp theo mục tiêu cá nhân.' },
               { icon: 'auto_stories', title: 'Học từ thực tế', desc: 'Tài liệu, từ vựng và tình huống công việc.' },
               { icon: 'monitoring', title: 'Theo dõi rõ ràng', desc: 'Biết mình đang ở đâu và cần học gì tiếp.' },
             ].map(item => (
-              <article key={item.title} className="rounded-2xl border border-outline-variant/40 bg-surface-container-lowest p-5 shadow-sm">
-                <span className="material-symbols-outlined text-[28px] text-primary">{item.icon}</span>
+              <article key={item.title} className="rounded-2xl border border-outline-variant/40 bg-white p-5 shadow-sm">
+                <AppIcon className=" text-[28px] text-primary">{item.icon}</AppIcon>
                 <h3 className="mt-3 text-sm font-bold text-on-surface">{item.title}</h3>
                 <p className="mt-2 text-xs leading-5 text-on-surface-variant">{item.desc}</p>
               </article>
@@ -247,7 +69,40 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {footerBanner && <section className={`relative overflow-hidden bg-cover bg-center ${footerBanner.displayMode === 'image_only' ? '' : 'min-h-[320px]'}`} style={{ backgroundColor: footerBanner.displayMode === 'image_only' ? 'transparent' : footerBanner.backgroundColor, backgroundImage: footerBanner.displayMode !== 'image_only' && footerBanner.imageUrl ? `url(${footerBanner.imageUrl})` : undefined }}>{footerBanner.displayMode === 'image_only' && footerBanner.imageUrl && (footerBanner.ctaUrl ? <Link href={footerBanner.ctaUrl} aria-label={footerBanner.title} className="block w-full"><img src={footerBanner.imageUrl} alt={footerBanner.title} className="block h-auto w-full" /></Link> : <img src={footerBanner.imageUrl} alt={footerBanner.title} className="block h-auto w-full" />)}{footerBanner.displayMode !== 'image_only' && <div className="absolute min-w-[240px] max-w-[92%] p-4" style={{ left: `${footerBanner.textX ?? 8}%`, top: `${footerBanner.textY ?? 18}%`, width: `${footerBanner.textWidth ?? 46}%`, textAlign: footerBanner.textAlign ?? 'left' }}><p className="text-xs font-black tracking-widest" style={{ color: footerBanner.accentColor }}>{footerBanner.eyebrow}</p><h2 className="mt-3 font-black leading-tight" style={{ color: footerBanner.titleColor ?? '#FFFFFF', fontSize: `clamp(1.75rem, ${(footerBanner.titleSize ?? 48) / 18}vw, ${footerBanner.titleSize ?? 48}px)` }}>{footerBanner.title}</h2>{footerBanner.description && <p className="mt-4 leading-7" style={{ color: footerBanner.titleColor ?? '#FFFFFF' }}>{footerBanner.description}</p>}{footerBanner.ctaLabel && footerBanner.ctaUrl && <Link href={footerBanner.ctaUrl} className="mt-6 inline-flex rounded-xl px-6 py-3 font-bold text-white shadow-lg" style={{ backgroundColor: footerBanner.accentColor }}>{footerBanner.ctaLabel}</Link>}</div>}</section>}
+      <section className="bg-white py-16 sm:py-20" aria-labelledby="practice-title">
+        <div className="mx-auto max-w-6xl px-4 sm:px-6">
+          <div className="grid items-center gap-10 md:grid-cols-2">
+            <div>
+              <p className="text-xs font-black uppercase tracking-widest text-primary">Học trong ngữ cảnh</p>
+              <h2 id="practice-title" className="mt-3 text-2xl sm:text-3xl font-black tracking-tight">Từ một thuật ngữ đến một câu bạn có thể dùng</h2>
+              <p className="mt-4 text-sm leading-7 text-on-surface-variant">Hiểu từ vựng qua ví dụ kỹ thuật, ôn lại bằng flashcards và luyện tập trong bài học. Kết nối kiến thức tiếng Anh với những tình huống quen thuộc khi làm phần mềm.</p>
+            </div>
+            <article className="rounded-3xl border border-outline-variant/50 bg-white p-6 sm:p-8">
+              <p className="text-xs font-bold uppercase tracking-wider text-primary">Ví dụ từ vựng · Backend</p>
+              <h3 className="mt-4 text-3xl font-black">Endpoint</h3>
+              <p className="mt-2 text-sm text-on-surface-variant">Điểm cuối để truy cập một chức năng của API.</p>
+              <blockquote className="mt-5 border-l-2 border-primary pl-4 text-sm leading-7">“This endpoint returns a list of active users.”</blockquote>
+              <p className="mt-3 text-xs leading-6 text-on-surface-variant">Điểm cuối này trả về danh sách người dùng đang hoạt động.</p>
+            </article>
+          </div>
+          <div className="mt-16 border-t border-outline-variant/40 pt-12">
+            <h2 className="text-2xl font-black">Một hành trình học rõ ràng</h2>
+            <div className="mt-7 grid gap-6 md:grid-cols-3">
+              {[
+                { title: 'Xác định điểm xuất phát', description: 'Đánh giá trình độ và chọn mục tiêu học phù hợp với nhu cầu của bạn.' },
+                { title: 'Học và luyện tập', description: 'Khám phá bài học chuyên ngành, ôn từ vựng và củng cố kiến thức qua bài tập.' },
+                { title: 'Theo dõi tiến bộ', description: 'Xem kết quả học tập để nhận biết phần đã nắm vững và nội dung cần ôn lại.' },
+              ].map((step, index) => (
+                <article key={step.title} className="rounded-2xl border border-outline-variant/40 p-6">
+                  <p className="text-sm font-black text-primary">0{index + 1}</p>
+                  <h3 className="mt-4 font-bold">{step.title}</h3>
+                  <p className="mt-2 text-sm leading-6 text-on-surface-variant">{step.description}</p>
+                </article>
+              ))}
+            </div>
+          </div>
+        </div>
+      </section>
 
       {/* ─── Shared Footer ────────────────────────────────────────── */}
       <Footer />

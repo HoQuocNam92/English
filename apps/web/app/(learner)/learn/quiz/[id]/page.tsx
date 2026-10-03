@@ -1,4 +1,5 @@
 'use client';
+import { AppIcon, IconText } from '@/shared/ui/AppIcon';
 
 import * as React from 'react';
 import { useState, useEffect, useMemo } from 'react';
@@ -13,13 +14,13 @@ export default function LearnerQuizTakingPage({ params }: { params: Promise<{ id
   const examId = unwrappedParams.id;
   const router = useRouter();
   const startRequested = React.useRef(false);
-  
+
   const [exam, setExam] = useState<any>(null);
   const [attemptId, setAttemptId] = useState<string>('');
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState('');
-  
+
   const [currentIdx, setCurrentIdx] = useState(0);
   const [answers, setAnswers] = useState<Record<string, string[]>>({});
   const [timeLeft, setTimeLeft] = useState<number>(0);
@@ -30,7 +31,7 @@ export default function LearnerQuizTakingPage({ params }: { params: Promise<{ id
       try {
         const attemptRes: any = await apiClient.post(`/exams/${examId}/attempts`, {});
         const examRes: any = await apiClient.get(`/exams/${examId}`);
-        
+
         setAttemptId(attemptRes?.id || attemptRes?.data?.id || attemptRes);
         const examData = examRes?.data || examRes;
         setExam(examData);
@@ -50,7 +51,7 @@ export default function LearnerQuizTakingPage({ params }: { params: Promise<{ id
   const executeSubmit = async () => {
     if (!attemptId || submitting) return;
     setSubmitting(true);
-    
+
     const formattedAnswers = Object.entries(answers)
       .filter(([_, optIds]) => optIds && optIds.length > 0)
       .map(([qId, optIds]) => ({
@@ -155,7 +156,7 @@ interface UnansweredQuestion {
 
           <div className="flex items-center gap-4">
             <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-primary/10 border border-primary/20">
-              <span className="material-symbols-outlined text-[20px] text-primary">timer</span>
+              <AppIcon className=" text-[20px] text-primary">timer</AppIcon>
               <span className="font-mono text-sm font-extrabold text-primary">{formatTime(timeLeft)}</span>
             </div>
 
@@ -178,7 +179,7 @@ interface UnansweredQuestion {
                 <span className="text-xs font-bold text-primary">Câu hỏi #{currentIdx + 1} / {total}</span>
                 {isMultiple ? (
                   <span className="text-[11px] font-semibold text-purple-700 bg-purple-50 px-2.5 py-0.5 rounded-md border border-purple-200/60 flex items-center gap-1">
-                    <span className="material-symbols-outlined text-[14px]">check_box</span>
+                    <AppIcon className=" text-[14px]">check_box</AppIcon>
                     Chọn nhiều đáp án
                   </span>
                 ) : (
@@ -225,7 +226,7 @@ interface UnansweredQuestion {
                             isSelected ? 'bg-primary border-primary text-white' : 'border-outline-variant bg-surface-container/40'
                           }`}
                         >
-                          {isSelected && <span className="material-symbols-outlined text-[16px]">check</span>}
+                          {isSelected && <AppIcon className=" text-[16px]">check</AppIcon>}
                         </div>
                       ) : (
                         <div
@@ -248,7 +249,7 @@ interface UnansweredQuestion {
                   onClick={() => setCurrentIdx(currentIdx - 1)}
                   className="px-4 py-2 border border-outline-variant rounded-xl text-xs font-semibold text-on-surface hover:bg-surface-container disabled:opacity-40 transition-colors flex items-center gap-1 cursor-pointer disabled:cursor-not-allowed"
                 >
-                  <span className="material-symbols-outlined text-[16px]">arrow_back</span>
+                  <AppIcon className=" text-[16px]">arrow_back</AppIcon>
                   <span>Câu trước</span>
                 </button>
 
@@ -258,7 +259,7 @@ interface UnansweredQuestion {
                     className="px-5 py-2 bg-primary hover:bg-indigo-700 !text-white font-bold text-xs rounded-xl transition-all flex items-center gap-1 shadow-2xs cursor-pointer"
                   >
                     <span className="!text-white">Câu tiếp theo</span>
-                    <span className="material-symbols-outlined text-[16px] !text-white">arrow_forward</span>
+                    <AppIcon className=" text-[16px] !text-white">arrow_forward</AppIcon>
                   </button>
                 ) : (
                   <button
@@ -267,7 +268,7 @@ interface UnansweredQuestion {
                     className="px-6 py-2 bg-green-600 hover:bg-green-700 !text-white font-bold text-xs rounded-xl transition-all flex items-center gap-1 shadow-sm disabled:opacity-50 cursor-pointer"
                   >
                     <span className="!text-white">Hoàn thành & Nộp bài</span>
-                    <span className="material-symbols-outlined text-[16px] !text-white">check</span>
+                    <AppIcon className=" text-[16px] !text-white">check</AppIcon>
                   </button>
                 )}
               </div>
@@ -332,7 +333,7 @@ interface UnansweredQuestion {
               <>
                 <div className="flex items-start gap-3.5">
                   <div className="w-11 h-11 rounded-2xl bg-amber-100 border border-amber-200 text-amber-700 flex items-center justify-center shrink-0">
-                    <span className="material-symbols-outlined text-[26px]">warning</span>
+                    <AppIcon className=" text-[26px]">warning</AppIcon>
                   </div>
                   <div>
                     <h3 className="text-base font-bold text-on-surface">Chưa hoàn thành bài thi</h3>
@@ -360,17 +361,16 @@ interface UnansweredQuestion {
                         className="px-2.5 py-1 bg-white hover:bg-amber-100 border border-amber-300 text-amber-900 rounded-lg text-xs font-bold transition-all shadow-2xs flex items-center gap-1 cursor-pointer"
                       >
                         <span>Câu #{item.index}</span>
-                        <span className="material-symbols-outlined text-[13px]">arrow_forward</span>
+                        <AppIcon className=" text-[13px]">arrow_forward</AppIcon>
                       </button>
                     ))}
                   </div>
                   <p className="text-[11px] text-amber-800 leading-snug">
-                    💡 Bạn có thể bấm vào số câu ở trên để xem lại và hoàn thành câu hỏi.
-                  </p>
+                    <IconText>{"\n                    💡 Bạn có thể bấm vào số câu ở trên để xem lại và hoàn thành câu hỏi.\n                  "}</IconText></p>
                 </div>
 
                 <div className="p-3 rounded-xl bg-surface-container-low border border-outline-variant/50 text-xs text-on-surface-variant">
-                  ⚠️ <strong>Lưu ý:</strong> Nếu nộp bài ngay bây giờ, các câu chưa trả lời sẽ bị tính <strong>0 điểm</strong>.
+                  <IconText>{"\n                  ⚠️ "}</IconText><strong>Lưu ý:</strong> Nếu nộp bài ngay bây giờ, các câu chưa trả lời sẽ bị tính <strong>0 điểm</strong>.
                 </div>
 
                 {/* Modal Action Buttons */}
@@ -381,7 +381,7 @@ interface UnansweredQuestion {
                     disabled={submitting}
                     className="flex-1 py-2.5 px-4 rounded-xl bg-primary hover:bg-indigo-700 text-white font-bold text-xs flex items-center justify-center gap-1.5 transition-colors shadow-xs cursor-pointer"
                   >
-                    <span className="material-symbols-outlined text-[16px]">edit_note</span>
+                    <AppIcon className=" text-[16px]">edit_note</AppIcon>
                     Tiếp tục làm bài
                   </button>
                   <button
@@ -392,7 +392,7 @@ interface UnansweredQuestion {
                   >
                     {submitting ? (
                       <>
-                        <span className="material-symbols-outlined text-[16px] animate-spin">progress_activity</span>
+                        <AppIcon className=" text-[16px] animate-spin">progress_activity</AppIcon>
                         <span>Đang nộp...</span>
                       </>
                     ) : (
@@ -406,7 +406,7 @@ interface UnansweredQuestion {
               <>
                 <div className="flex items-start gap-3.5">
                   <div className="w-11 h-11 rounded-2xl bg-green-100 border border-green-200 text-green-700 flex items-center justify-center shrink-0">
-                    <span className="material-symbols-outlined text-[26px]">task_alt</span>
+                    <AppIcon className=" text-[26px]">task_alt</AppIcon>
                   </div>
                   <div>
                     <h3 className="text-base font-bold text-on-surface">Xác nhận nộp bài thi</h3>
@@ -438,12 +438,12 @@ interface UnansweredQuestion {
                   >
                     {submitting ? (
                       <>
-                        <span className="material-symbols-outlined text-[16px] animate-spin">progress_activity</span>
+                        <AppIcon className=" text-[16px] animate-spin">progress_activity</AppIcon>
                         <span>Đang nộp...</span>
                       </>
                     ) : (
                       <>
-                        <span className="material-symbols-outlined text-[16px]">check</span>
+                        <AppIcon className=" text-[16px]">check</AppIcon>
                         <span>Nộp bài ngay</span>
                       </>
                     )}

@@ -1,6 +1,10 @@
 'use client';
+import { AppIcon } from '@/shared/ui/AppIcon';
 
 import Link from 'next/link';
+import { Eye, EyeOff } from 'lucide-react';
+import { PublicHeader } from '@/shared/layout/PublicHeader';
+import { Footer } from '@/shared/layout/Footer';
 import { useRouter } from 'next/navigation';
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/features/auth/presentation';
@@ -48,19 +52,15 @@ export default function LoginPage() {
   if (session) return null;
 
   return (
-    <main className="flex min-h-screen w-full bg-background text-on-surface antialiased overflow-hidden">
+    <div className="flex min-h-screen flex-col bg-white text-on-surface">
+      <PublicHeader />
+      <main className="flex flex-1 w-full bg-background antialiased overflow-hidden">
       {/* Left Section (45% Visual/Brand) */}
       <section className="hidden lg:flex w-[45%] flex-col relative bg-surface-container-low border-r border-outline-variant/30 overflow-hidden">
         {/* Content Overlay */}
         <div className="relative z-10 flex flex-col h-full p-8 xl:p-12">
-          <div>
-            <Link href="/landing" className="inline-flex items-center gap-2">
-              <span className="material-symbols-outlined text-primary text-[32px] fill-1">terminal</span>
-              <h1 className="text-2xl font-bold tracking-tight text-primary">TechEnglish Pro</h1>
-            </Link>
-          </div>
 
-          <div className="mt-20 max-w-[90%] xl:mt-24">
+          <div className="mt-8 max-w-[90%] xl:mt-12">
             <h2 className="text-3xl xl:text-4xl font-extrabold text-on-surface mb-4 leading-tight">
               Nền tảng học tiếng Anh chuyên ngành CNTT
             </h2>
@@ -69,9 +69,6 @@ export default function LoginPage() {
             </p>
           </div>
 
-          <div className="mt-auto flex items-center gap-3 text-xs text-outline">
-            <span>© 2026 TechEnglish Pro. Khóa luận tốt nghiệp KLCN028.</span>
-          </div>
         </div>
 
         {/* Illustration Area with Decorative Gradient */}
@@ -92,16 +89,6 @@ export default function LoginPage() {
 
       {/* Right Section (55% Login Form) */}
       <section className="w-full lg:w-[55%] flex items-center justify-center bg-surface-container-lowest p-6 md:p-12 lg:p-16 relative">
-        <Link href="/landing" className="absolute right-6 top-6 flex items-center gap-1.5 rounded-lg border border-outline-variant bg-white px-3 py-2 text-xs font-bold text-on-surface-variant transition-colors hover:border-primary hover:text-primary lg:right-10 lg:top-8">
-          <span className="material-symbols-outlined text-[17px]">arrow_back</span>
-          Về trang giới thiệu
-        </Link>
-        {/* Mobile Logo */}
-        <div className="absolute top-6 left-6 lg:hidden flex items-center gap-2">
-          <span className="material-symbols-outlined text-primary text-[28px] fill-1">terminal</span>
-          <span className="text-xl font-bold text-primary">TechEnglish Pro</span>
-        </div>
-
         {/* Form Container */}
         <div className="w-full max-w-[420px] flex flex-col py-8">
           <div className="mb-8 text-left">
@@ -116,9 +103,9 @@ export default function LoginPage() {
                 Email
               </label>
               <div className="relative">
-                <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-outline material-symbols-outlined text-[20px]">
+                <AppIcon className="absolute left-3.5 top-1/2 -translate-y-1/2 text-outline  text-[20px]">
                   mail
-                </span>
+                </AppIcon>
                 <input
                   className="w-full h-12 pl-11 pr-4 rounded-lg border border-outline-variant bg-surface-container-lowest text-sm text-on-surface focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition-all placeholder:text-outline/70"
                   id="email"
@@ -139,9 +126,9 @@ export default function LoginPage() {
                 Mật khẩu
               </label>
               <div className="relative">
-                <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-outline material-symbols-outlined text-[20px]">
+                <AppIcon className="absolute left-3.5 top-1/2 -translate-y-1/2 text-outline  text-[20px]">
                   lock
-                </span>
+                </AppIcon>
                 <input
                   className="w-full h-12 pl-11 pr-11 rounded-lg border border-outline-variant bg-surface-container-lowest text-sm text-on-surface focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition-all placeholder:text-outline/70"
                   id="password"
@@ -154,14 +141,12 @@ export default function LoginPage() {
                   required
                 />
                 <button
-                  className="absolute right-3.5 top-1/2 -translate-y-1/2 text-outline hover:text-on-surface transition-colors cursor-pointer flex items-center justify-center"
+                  className="absolute right-1 top-0 !h-full w-10 !p-0 flex items-center justify-center text-outline hover:text-on-surface transition-colors cursor-pointer"
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  tabIndex={-1}
+                  aria-label={showPassword ? 'Ẩn mật khẩu' : 'Hiện mật khẩu'}
                 >
-                  <span className="material-symbols-outlined text-[20px]">
-                    {showPassword ? 'visibility_off' : 'visibility'}
-                  </span>
+                  {showPassword ? <EyeOff size={20} aria-hidden="true" /> : <Eye size={20} aria-hidden="true" />}
                 </button>
               </div>
             </div>
@@ -186,7 +171,7 @@ export default function LoginPage() {
 
             {error ? (
               <div role="alert" aria-live="polite" className="rounded-xl border border-red-200 bg-red-50 p-3.5 text-red-800 flex items-start gap-3 shadow-sm">
-                <span className="material-symbols-outlined flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-red-100 text-[19px] text-red-600">error</span>
+                <AppIcon className=" flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-red-100 text-[19px] text-red-600">error</AppIcon>
                 <div>
                   <p className="text-sm font-bold">Đăng nhập không thành công</p>
                   <p className="mt-0.5 text-xs leading-5">{error}</p>
@@ -201,9 +186,9 @@ export default function LoginPage() {
               disabled={submitting || loading}
             >
               <span className="!text-white">{submitting ? 'Đang xác thực...' : 'Đăng nhập'}</span>
-              <span className="material-symbols-outlined text-[18px] !text-white group-hover:translate-x-1 transition-transform">
+              <AppIcon className=" text-[18px] !text-white group-hover:translate-x-1 transition-transform">
                 arrow_forward
-              </span>
+              </AppIcon>
             </button>
 
             {/* Register Link */}
@@ -240,11 +225,13 @@ export default function LoginPage() {
 
           {/* Security Note */}
           <div className="mt-8 pt-4 border-t border-outline-variant/30 flex items-center justify-center gap-1.5 text-outline">
-            <span className="material-symbols-outlined text-[16px]">shield</span>
+            <AppIcon className=" text-[16px]">shield</AppIcon>
             <span className="text-xs">Cổng quản trị bảo mật nội bộ</span>
           </div>
         </div>
       </section>
-    </main>
+      </main>
+      <Footer />
+    </div>
   );
 }

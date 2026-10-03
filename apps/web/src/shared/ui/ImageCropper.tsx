@@ -1,4 +1,5 @@
 'use client';
+import { AppIcon, IconText } from '@/shared/ui/AppIcon';
 
 import * as React from 'react';
 
@@ -74,7 +75,7 @@ export function ImageCropper({ file, onCancel, onComplete }: ImageCropperProps) 
       <div className="w-full max-w-3xl overflow-hidden rounded-3xl bg-white shadow-2xl">
         <div className="flex items-center justify-between border-b border-slate-200 px-6 py-4">
           <div><h2 className="text-lg font-bold text-slate-900">Cắt ảnh minh họa</h2><p className="text-sm text-slate-500">Kéo ảnh để chọn vùng hiển thị theo tỷ lệ 16:9.</p></div>
-          <button type="button" onClick={onCancel} className="flex h-9 w-9 items-center justify-center rounded-xl text-slate-500 hover:bg-slate-100"><span className="material-symbols-outlined">close</span></button>
+          <button type="button" onClick={onCancel} className="flex h-9 w-9 items-center justify-center rounded-xl text-slate-500 hover:bg-slate-100"><AppIcon className="">close</AppIcon></button>
         </div>
         <div className="bg-slate-900 p-4 sm:p-6">
           <canvas
@@ -89,9 +90,9 @@ export function ImageCropper({ file, onCancel, onComplete }: ImageCropperProps) 
           />
         </div>
         <div className="space-y-4 p-5">
-          <label className="flex items-center gap-3"><span className="material-symbols-outlined text-violet-600">zoom_in</span><span className="text-sm font-semibold text-slate-700">Phóng ảnh</span><input type="range" min="1" max="3" step="0.05" value={zoom} onChange={(event) => setZoom(Number(event.target.value))} className="flex-1 accent-primary" /><span className="w-12 text-right text-sm font-bold text-primary">{Math.round(zoom * 100)}%</span></label>
-          <p className="text-xs text-slate-500">Ảnh đầu ra được tự động nén thành WEBP 1280×720 trước khi tải lên Cloudinary.</p>
-          <div className="flex justify-end gap-3"><button type="button" onClick={onCancel} className="h-11 rounded-xl border border-slate-300 px-5 font-semibold text-slate-700">Hủy</button><button type="button" disabled={!ready || processing} onClick={complete} className="inline-flex h-11 items-center gap-2 rounded-xl bg-primary px-5 font-semibold text-white disabled:opacity-50"><span className="material-symbols-outlined text-[19px]">crop</span>{processing ? 'Đang xử lý...' : 'Cắt và sử dụng'}</button></div>
+          <label className="flex items-center gap-3"><AppIcon className=" text-violet-600">zoom_in</AppIcon><span className="text-sm font-semibold text-slate-700">Phóng ảnh</span><input type="range" min="1" max="3" step="0.05" value={zoom} onChange={(event) => setZoom(Number(event.target.value))} className="flex-1 accent-primary" /><span className="w-12 text-right text-sm font-bold text-primary">{Math.round(zoom * 100)}%</span></label>
+          <p className="text-xs text-slate-500"><IconText>{"Ảnh đầu ra được tự động nén thành WEBP 1280×720 trước khi tải lên Cloudinary."}</IconText></p>
+          <div className="flex justify-end gap-3"><button type="button" onClick={onCancel} className="h-11 rounded-xl border border-slate-300 px-5 font-semibold text-slate-700">Hủy</button><button type="button" disabled={!ready || processing} onClick={complete} className="inline-flex h-11 items-center gap-2 rounded-xl bg-primary px-5 font-semibold text-white disabled:opacity-50"><AppIcon className=" text-[19px]">crop</AppIcon>{processing ? 'Đang xử lý...' : 'Cắt và sử dụng'}</button></div>
         </div>
       </div>
     </div>

@@ -1,4 +1,5 @@
 'use client';
+import { AppIcon } from '@/shared/ui/AppIcon';
 
 import * as React from 'react';
 import { apiClient } from '@/shared/api/api-client';
@@ -27,7 +28,7 @@ export default function RoleDetailPage() {
 
   useEffect(() => {
     if (!id) return;
-    
+
     const fetchData = async () => {
       try {
         setLoading(true);
@@ -41,14 +42,14 @@ export default function RoleDetailPage() {
         setUsers(usersRes.data?.data ?? usersRes.data ?? []);
         setAllPermissions(permissionsRes.data ?? permissionsRes ?? []);
         setAllUsers(allUsersRes.data ?? []);
-        
+
       } catch (err: any) {
         setError(err.message || 'Lỗi khi tải dữ liệu quyền');
       } finally {
         setLoading(false);
       }
     };
-    
+
     fetchData();
   }, [id]);
 
@@ -101,7 +102,7 @@ export default function RoleDetailPage() {
       <div className="p-6">
         <div className="flex items-center gap-4 mb-8">
           <a href="/admin/roles" className="w-10 h-10 flex items-center justify-center rounded-lg border border-outline-variant hover:bg-surface-container-low transition-colors">
-            <span className="material-symbols-outlined text-[20px] text-on-surface-variant">arrow_back</span>
+            <AppIcon className=" text-[20px] text-on-surface-variant">arrow_back</AppIcon>
           </a>
           <div>
             <h1 className="text-2xl font-bold text-on-surface">Đang tải...</h1>
@@ -109,7 +110,7 @@ export default function RoleDetailPage() {
           </div>
         </div>
         <div className="flex justify-center py-12">
-          <span className="material-symbols-outlined animate-spin text-4xl text-primary">progress_activity</span>
+          <AppIcon className=" animate-spin text-4xl text-primary">progress_activity</AppIcon>
         </div>
       </div>
     );
@@ -120,7 +121,7 @@ export default function RoleDetailPage() {
       <div className="p-6">
         <div className="flex items-center gap-4 mb-8">
           <a href="/admin/roles" className="w-10 h-10 flex items-center justify-center rounded-lg border border-outline-variant hover:bg-surface-container-low transition-colors">
-            <span className="material-symbols-outlined text-[20px] text-on-surface-variant">arrow_back</span>
+            <AppIcon className=" text-[20px] text-on-surface-variant">arrow_back</AppIcon>
           </a>
           <div>
             <h1 className="text-2xl font-bold text-on-surface">Lỗi tải dữ liệu</h1>
@@ -137,7 +138,7 @@ export default function RoleDetailPage() {
     <div className="p-6">
       <div className="flex items-center gap-4 mb-8">
         <a href="/admin/roles" className="w-10 h-10 flex items-center justify-center rounded-lg border border-outline-variant hover:bg-surface-container-low transition-colors">
-          <span className="material-symbols-outlined text-[20px] text-on-surface-variant">arrow_back</span>
+          <AppIcon className=" text-[20px] text-on-surface-variant">arrow_back</AppIcon>
         </a>
         <div className="flex-1">
           <div className="flex items-center gap-3">
@@ -153,21 +154,21 @@ export default function RoleDetailPage() {
           )}
         </div>
       </div>
-      
+
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Permissions Card */}
         <div className="bg-white border border-outline-variant rounded-xl shadow-sm p-6">
           <div className="flex items-center justify-between mb-6 pb-4 border-b border-outline-variant">
             <h2 className="text-lg font-bold text-on-surface flex items-center gap-2">
-              <span className="material-symbols-outlined text-primary">lock</span>
+              <AppIcon className=" text-primary">lock</AppIcon>
               Nhóm này được làm gì? ({role.permissions?.length || 0})
             </h2>
             <button disabled={busy === 'permissions'} onClick={() => editingPermissions ? void savePermissions() : beginPermissionEdit()} className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-semibold text-primary border border-outline-variant hover:bg-surface-container-low transition-colors disabled:opacity-50">
-              <span className="material-symbols-outlined text-[18px]">edit</span>
+              <AppIcon className=" text-[18px]">edit</AppIcon>
               {busy === 'permissions' ? 'Đang lưu…' : editingPermissions ? 'Hoàn tất' : 'Chọn quyền'}
             </button>
           </div>
-          
+
           <div className="max-h-[520px] overflow-y-auto pr-1">
             <PermissionTree
               permissions={editingPermissions ? allPermissions : role.permissions.map((item: any) => item.permission ?? item)}
@@ -178,16 +179,16 @@ export default function RoleDetailPage() {
             />
           </div>
         </div>
-        
+
         {/* Users Card */}
         <div className="bg-white border border-outline-variant rounded-xl shadow-sm p-6">
           <div className="flex items-center justify-between mb-6 pb-4 border-b border-outline-variant">
             <h2 className="text-lg font-bold text-on-surface flex items-center gap-2">
-              <span className="material-symbols-outlined text-primary">group</span>
+              <AppIcon className=" text-primary">group</AppIcon>
               Những người thuộc nhóm này ({users.length})
             </h2>
             <button onClick={() => setAssigningUser((value) => !value)} className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-semibold text-white bg-primary hover:bg-primary/90 transition-colors">
-              <span className="material-symbols-outlined text-[18px]">person_add</span>
+              <AppIcon className=" text-[18px]">person_add</AppIcon>
               {assigningUser ? 'Đóng' : 'Thêm người'}
             </button>
           </div>
@@ -195,10 +196,10 @@ export default function RoleDetailPage() {
             <p className="px-1 pb-1 text-xs text-on-surface-variant">Chọn người cần đưa vào nhóm “{roleLabel(role.code, role.name)}”. Người đó sẽ có tất cả quyền ở cột bên trái.</p>
             {allUsers.filter((candidate) => !users.some((assigned) => (assigned.id ?? assigned.userId) === candidate.id)).map((candidate) => <div key={candidate.id} className="flex items-center justify-between gap-3 rounded-lg bg-white p-3"><div className="min-w-0"><p className="truncate text-sm font-semibold">{candidate.displayName ?? candidate.email}</p><p className="truncate text-xs text-on-surface-variant">{candidate.email}</p></div><button disabled={busy === candidate.id} onClick={() => void assignUser(candidate.id)} className="shrink-0 rounded-lg bg-primary px-3 py-1.5 text-xs font-semibold !text-white disabled:opacity-50">Gán</button></div>)}
           </div>}
-          
+
           {users.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-12 text-on-surface-variant">
-              <span className="material-symbols-outlined text-4xl mb-2 opacity-50">person_off</span>
+              <AppIcon className=" text-4xl mb-2 opacity-50">person_off</AppIcon>
               <p className="text-sm font-semibold">Chưa có ai thuộc nhóm này.</p>
             </div>
           ) : (

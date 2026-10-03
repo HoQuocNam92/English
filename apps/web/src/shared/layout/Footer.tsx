@@ -1,121 +1,32 @@
-'use client';
-
+import { IconText } from '@/shared/ui/AppIcon';
 import Link from 'next/link';
 
-export function Footer() {
+export function Footer({ learner = false }: { learner?: boolean }) {
   return (
-    <footer className="w-full bg-surface-container-lowest border-t border-outline-variant mt-auto transition-colors">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-8 mb-8">
-          {/* Col 1: Brand Info */}
-          <div className="space-y-3 md:col-span-1">
-            <Link href="/learn" className="flex items-center gap-2.5">
-              <div className="w-8 h-8 rounded-xl bg-primary text-white flex items-center justify-center shadow-xs">
-                <span className="material-symbols-outlined text-[20px] !text-white">school</span>
-              </div>
-              <span className="font-black text-primary text-base tracking-tight">
-                TechEnglish Pro
-              </span>
-            </Link>
-            <p className="text-xs text-on-surface-variant leading-relaxed">
-              Nền tảng học tiếng Anh chuyên ngành CNTT và luyện thi chứng chỉ quốc tế hàng đầu dành cho kỹ sư phần mềm.
-            </p>
-          </div>
-
-          {/* Col 2: Learning Tracks */}
-          <div className="space-y-3">
-            <h4 className="text-xs font-bold text-on-surface uppercase tracking-wider">
-              Chương trình đào tạo
-            </h4>
-            <ul className="space-y-2 text-xs text-on-surface-variant font-medium">
-              <li>
-                <Link href="/learn/certifications" className="hover:text-primary transition-colors">
-                  Lộ trình Cloud Computing (AWS/GCP)
-                </Link>
-              </li>
-              <li>
-                <Link href="/learn/certifications" className="hover:text-primary transition-colors">
-                  DevOps & CI/CD Pipelines
-                </Link>
-              </li>
-              <li>
-                <Link href="/learn/certifications" className="hover:text-primary transition-colors">
-                  Cybersecurity & Security+
-                </Link>
-              </li>
-              <li>
-                <Link href="/learn/certifications" className="hover:text-primary transition-colors">
-                  Software Engineering & System Design
-                </Link>
-              </li>
-            </ul>
-          </div>
-
-          {/* Col 3: Practice & Tools */}
-          <div className="space-y-3">
-            <h4 className="text-xs font-bold text-on-surface uppercase tracking-wider">
-              Luyện tập & Thi thử
-            </h4>
-            <ul className="space-y-2 text-xs text-on-surface-variant font-medium">
-              <li>
-                <Link href="/learn/flashcards" className="hover:text-primary transition-colors">
-                  Thẻ từ vựng Flashcards SRS
-                </Link>
-              </li>
-              <li>
-                <Link href="/learn/lessons" className="hover:text-primary transition-colors">
-                  Bài học và luyện tập
-                </Link>
-              </li>
-              <li>
-                <Link href="/learn/progress" className="hover:text-primary transition-colors">
-                  Đánh giá năng lực chuẩn CEFR
-                </Link>
-              </li>
-            </ul>
-          </div>
-
-          {/* Col 4: Support & Portals */}
-          <div className="space-y-3">
-            <h4 className="text-xs font-bold text-on-surface uppercase tracking-wider">
-              Hệ thống
-            </h4>
-            <ul className="space-y-2 text-xs text-on-surface-variant font-medium">
-              <li>
-                <Link href="/learn" className="hover:text-primary transition-colors">
-                  Cổng học viên (Learner Portal)
-                </Link>
-              </li>
-              <li>
-                <Link href="/login" className="hover:text-primary transition-colors">
-                  Cổng quản trị (Admin & Teacher)
-                </Link>
-              </li>
-              <li>
-                <a href="#" className="hover:text-primary transition-colors">
-                  Điều khoản sử dụng
-                </a>
-              </li>
-              <li>
-                <a href="#" className="hover:text-primary transition-colors">
-                  Chính sách bảo mật
-                </a>
-              </li>
-            </ul>
-          </div>
-        </div>
-
-        {/* Bottom copyright & attribution */}
-        <div className="pt-6 border-t border-outline-variant flex flex-col sm:flex-row justify-between items-center gap-4 text-xs text-on-surface-variant font-medium">
+    <footer className="w-full bg-surface-container-lowest border-t border-outline-variant mt-auto">
+      <div className={learner ? "max-w-[1280px] mx-auto px-[var(--page-gutter)] py-6" : "max-w-6xl mx-auto px-4 sm:px-6 py-6"}>
+        <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
           <div>
-            © 2026 <strong>TechEnglish Pro</strong> All rights reserved.
+            <p className="font-black text-primary text-base">TechEnglish Pro</p>
+            <p className="mt-3 text-xs text-on-surface-variant leading-6">Nền tảng học tiếng Anh chuyên ngành CNTT dành cho sinh viên và người làm công nghệ.</p>
           </div>
-          <div className="flex items-center gap-4">
-            <span>Phiên bản 1.0.0</span>
-            <span>·</span>
-            <span>Hỗ trợ kỹ thuật 24/7</span>
+          <div>
+            <h2 className="text-xs font-bold uppercase tracking-wider">Nội dung học tập</h2>
+            <div className="mt-3 space-y-2 text-xs text-on-surface-variant leading-5">
+              <p>Tiếng Anh chuyên ngành công nghệ</p>
+              <p>Bài học, từ vựng và luyện tập</p>
+              <p>Lộ trình học và theo dõi tiến độ</p>
+            </div>
+          </div>
+          <div>
+            <h2 className="text-xs font-bold uppercase tracking-wider">Thông tin &amp; chính sách</h2>
+            <div className="mt-3 flex flex-col items-start gap-3 text-xs text-on-surface-variant">
+              <Link href="/terms" className="hover:text-primary hover:underline">Điều khoản sử dụng</Link>
+              <Link href="/privacy" className="hover:text-primary hover:underline">Chính sách bảo mật</Link>
+            </div>
           </div>
         </div>
+        <p className="mt-5 pt-4 border-t border-outline-variant text-xs text-on-surface-variant"><IconText>{"© 2026 TechEnglish Pro. Bảo lưu mọi quyền."}</IconText></p>
       </div>
     </footer>
   );

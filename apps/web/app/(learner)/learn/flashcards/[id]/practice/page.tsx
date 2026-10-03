@@ -1,4 +1,5 @@
 'use client';
+import { AppIcon, IconText } from '@/shared/ui/AppIcon';
 
 import * as React from 'react';
 import { useState, useEffect, useCallback } from 'react';
@@ -18,6 +19,7 @@ export default function FlashcardPracticePage({ params }: { params: Promise<{ id
   const searchParams = useSearchParams();
   const onlyNeedsReview = searchParams?.get('onlyNeedsReview') === 'true';
   const domainCode = searchParams?.get('domainCode') ?? '';
+  const sourceLessonId = searchParams?.get('sourceLessonId') ?? '';
   const levelCode = searchParams?.get('levelCode') ?? '';
 
   const [lesson, setLesson] = useState<any>(null);
@@ -58,6 +60,7 @@ export default function FlashcardPracticePage({ params }: { params: Promise<{ id
     try {
       if (lessonId === 'all') {
         const sessionParams = new URLSearchParams();
+        if (sourceLessonId) sessionParams.set('sourceLessonId', sourceLessonId);
         if (domainCode) sessionParams.set('domainCode', domainCode);
         if (levelCode) sessionParams.set('levelCode', levelCode);
         if (continueLearning) sessionParams.set('continue', 'true');
@@ -71,7 +74,7 @@ export default function FlashcardPracticePage({ params }: { params: Promise<{ id
         }
         const allWords = res?.words ?? [];
         const filtered = filterOnlyNew ? allWords.filter((w: any) => w.studyStatus !== 'mastered') : allWords;
-        setLesson({ id: 'all', title: domainCode ? `Từ vựng ${domainCode}${levelCode ? ` · ${levelCode}` : ''}` : 'Toàn bộ từ vựng IT Chuyên ngành' });
+        setLesson({ id: 'all', title: sourceLessonId ? 'Từ vựng theo bài học trong lộ trình' : domainCode ? `Từ vựng ${domainCode}${levelCode ? ` · ${levelCode}` : ''}` : 'Toàn bộ từ vựng IT Chuyên ngành' });
         setWords(filtered);
         setSessionStats(res?.meta ?? null);
         setCurrentIdx(0);
@@ -122,7 +125,7 @@ export default function FlashcardPracticePage({ params }: { params: Promise<{ id
     } finally {
       setLoading(false);
     }
-  }, [lessonId, onlyNeedsReview, domainCode, levelCode]);
+  }, [lessonId, onlyNeedsReview, domainCode, levelCode, sourceLessonId]);
 
   useEffect(() => {
     if (lessonId) {
@@ -166,10 +169,10 @@ export default function FlashcardPracticePage({ params }: { params: Promise<{ id
 
   const startQuiz = async (results: { word: any; rating: Rating }[]) => {
     const included = results.filter(item => item.rating !== 'mastered');
-    if (included.length === 0) { setIsFinished(true); return; }
+    if (included.length === 0) { setIsFinished(true); showToast('Bạn đã hoàn thành phiên luyện từ vựng.', 'success', 'Hoàn thành'); return; }
     const repetitions = Object.fromEntries(included.map(item => [item.word.id, item.rating === 'easy' ? 2 : item.rating === 'medium' ? 3 : 4]));
     try {
-      const response: any = await apiClient.post('/vocab-study/quiz', { ids: included.map(item => item.word.id), repetitions });
+      const response: any = await apiClient.post('/vocab-study/quiz', { vocabIds: included.map(item => item.word.id), repetitions });
       setQuizQuestions(response?.questions ?? []);
       setQuizIndex(0); setQuizAnswer(''); setQuizCorrect(0); setQuizFeedback(null); setQuizMarkedMastered(false); setQuizMode(true);
     } catch {
@@ -221,7 +224,7 @@ export default function FlashcardPracticePage({ params }: { params: Promise<{ id
   };
 
   const nextQuizQuestion = () => {
-    if (quizIndex + 1 >= quizQuestions.length) { setQuizMode(false); setIsFinished(true); return; }
+    if (quizIndex + 1 >= quizQuestions.length) { setQuizMode(false); setIsFinished(true); showToast('Bạn đã hoàn thành phiên luyện từ vựng.', 'success', 'Hoàn thành'); return; }
     setQuizIndex(value => value + 1); setQuizAnswer(''); setQuizFeedback(null); setQuizMarkedMastered(false);
   };
 
@@ -234,16 +237,10 @@ export default function FlashcardPracticePage({ params }: { params: Promise<{ id
     apiClient.post('/vocab-study/rate', { vocabularyId: question.vocabularyId, rating: 'mastered' }).catch(() => undefined);
   };
 
-  useEffect(() => {
-    if (!quizMode || quizFeedback === null) return;
-    const timer = window.setTimeout(nextQuizQuestion, 1500);
-    return () => window.clearTimeout(timer);
-  }, [quizMode, quizFeedback, quizIndex, quizQuestions.length]);
-
   // Keyboard navigation
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (isFinished || loading || !currentWord) return;
+      if (quizMode || isFinished || loading || !currentWord) return;
       if (e.code === 'Space') {
         e.preventDefault();
         setIsFlipped(prev => !prev);
@@ -260,7 +257,7 @@ export default function FlashcardPracticePage({ params }: { params: Promise<{ id
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [currentWord, isFinished, loading]);
+  }, [currentWord, isFinished, loading, quizMode]);
 
   // Stop studying list
   const handleStopStudying = async () => {
@@ -288,7 +285,7 @@ export default function FlashcardPracticePage({ params }: { params: Promise<{ id
     return (
       <LearnerShell>
         <div className="p-12 text-center text-slate-500 space-y-4 max-w-lg mx-auto">
-          <span className="material-symbols-outlined text-5xl text-slate-300">task_alt</span>
+          <AppIcon className=" text-5xl text-slate-300">task_alt</AppIcon>
           <h2 className="text-xl font-bold text-slate-800">
             {error || (lessonId === 'review' ? 'Hiện tại không có từ nào cần ôn tập!' : 'Không còn từ mới trong bộ này!')}
           </h2>
@@ -327,6 +324,7 @@ export default function FlashcardPracticePage({ params }: { params: Promise<{ id
         {question.type === 'multiple_choice' ? <div className="grid gap-3">{question.options?.map(option => <button key={option} type="button" disabled={quizFeedback !== null} onClick={() => void submitQuizAnswer(option)} className={`rounded-xl border p-3 text-left text-sm font-semibold ${quizAnswer === option ? 'border-primary bg-primary/5 text-primary' : 'border-slate-200'}`}>{option}</button>)}</div> : <input autoFocus value={quizAnswer} disabled={quizFeedback !== null} onChange={event => setQuizAnswer(event.target.value)} onKeyDown={event => event.key === 'Enter' && void submitQuizAnswer()} placeholder="Điền từ còn thiếu..." className="w-full rounded-xl border border-slate-300 px-4 py-3 text-base outline-none focus:border-primary" />}
         {quizFeedback !== null && <div className={`mt-4 rounded-xl p-3 text-sm font-bold ${quizFeedback ? 'bg-emerald-50 text-emerald-700' : 'bg-rose-50 text-rose-700'}`}>{quizMarkedMastered ? 'Đã đánh dấu là đã biết.' : quizFeedback ? 'Chính xác!' : `Chưa đúng. Đáp án: ${question.answer}`}</div>}
       </div>
+      {quizFeedback !== null && <button type="button" onClick={nextQuizQuestion} className="w-full rounded-xl bg-primary py-3 text-sm font-bold text-white">{quizIndex + 1 >= quizQuestions.length ? 'Hoàn thành' : 'Tiếp theo'}</button>}
       {quizFeedback === null && <div className={`grid gap-3 ${question.type === 'fill_blank' ? 'sm:grid-cols-2' : 'grid-cols-1'}`}>{question.type === 'fill_blank' && <button type="button" onClick={() => void submitQuizAnswer()} disabled={!quizAnswer.trim()} className="w-full rounded-xl bg-primary py-3 text-sm font-bold text-white disabled:opacity-50">Kiểm tra đáp án</button>}<button type="button" onClick={markQuizWordMastered} className="w-full rounded-xl border border-primary py-3 text-sm font-bold text-primary">Đã biết</button></div>}
     </div></LearnerShell>;
   }
@@ -342,8 +340,7 @@ export default function FlashcardPracticePage({ params }: { params: Promise<{ id
         <div className="w-full max-w-[640px] mx-auto px-4 py-10 space-y-8">
           <div className="text-center space-y-3">
             <div className="w-20 h-20 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center mx-auto text-4xl shadow-xs">
-              🎉
-            </div>
+              <IconText>{"\n              🎉\n            "}</IconText></div>
             <h1 className="text-2xl font-black text-slate-900">
               Hoàn thành phiên luyện tập!
             </h1>
@@ -375,7 +372,7 @@ export default function FlashcardPracticePage({ params }: { params: Promise<{ id
               }}
               className="flex-1 py-3.5 rounded-xl bg-primary text-white text-xs font-bold hover:bg-indigo-700 transition-colors shadow-xs flex items-center justify-center gap-2"
             >
-              <span className="material-symbols-outlined text-base">replay</span>
+              <AppIcon className=" text-base">replay</AppIcon>
               Học thêm từ mới
             </button>
             <Link
@@ -413,7 +410,7 @@ export default function FlashcardPracticePage({ params }: { params: Promise<{ id
               onClick={() => setShowSettingsModal(true)}
               className="hover:text-primary transition-colors flex items-center gap-1"
             >
-              <span className="material-symbols-outlined text-sm">settings</span>
+              <AppIcon className=" text-sm">settings</AppIcon>
               Cài đặt
             </button>
             <span>·</span>
@@ -446,13 +443,13 @@ export default function FlashcardPracticePage({ params }: { params: Promise<{ id
               onClick={() => setConfirmStopModal(true)}
               className="text-xs font-bold text-red-600 hover:text-red-700 hover:underline flex items-center gap-1 transition-colors"
             >
-              <span className="material-symbols-outlined text-sm">archive</span>
+              <AppIcon className=" text-sm">archive</AppIcon>
               <span>Dừng học list từ này</span>
             </button>
           )}
         </div>
 
-        {sessionStats?.studiedToday >= 20 && <div className="ml-auto w-fit rounded-full border border-amber-200 bg-amber-50 px-3 py-1.5 text-[11px] font-bold text-amber-800">✓ Đã đủ mục tiêu hôm nay · đang học thêm</div>}
+        {sessionStats?.studiedToday >= 20 && <div className="ml-auto w-fit rounded-full border border-amber-200 bg-amber-50 px-3 py-1.5 text-[11px] font-bold text-amber-800"><IconText>{"✓ Đã đủ mục tiêu hôm nay · đang học thêm"}</IconText></div>}
 
         {/* Card Progress Indicator */}
         <div className="flex justify-between items-center text-xs font-bold text-slate-500 pt-1">
@@ -510,7 +507,7 @@ export default function FlashcardPracticePage({ params }: { params: Promise<{ id
                     aria-label={`Phát âm từ ${currentWord.term}`}
                     className="w-10 h-10 rounded-full bg-slate-100 text-slate-600 hover:bg-primary hover:text-white flex items-center justify-center transition-colors shadow-2xs"
                   >
-                    <span className="material-symbols-outlined text-xl">volume_up</span>
+                    <AppIcon className=" text-xl">volume_up</AppIcon>
                   </button>
                 </div>
 
@@ -522,9 +519,9 @@ export default function FlashcardPracticePage({ params }: { params: Promise<{ id
               {/* Bottom Flip Hint & Icon */}
               <div className="flex items-center justify-between text-slate-400 text-xs font-bold pt-2">
                 <span className="text-[11px] text-slate-400">Chạm thẻ để xem nghĩa</span>
-                <span className="material-symbols-outlined text-slate-400 text-xl hover:text-primary transition-colors">
+                <AppIcon className=" text-slate-400 text-xl hover:text-primary transition-colors">
                   sync
-                </span>
+                </AppIcon>
               </div>
             </div>
 
@@ -542,7 +539,7 @@ export default function FlashcardPracticePage({ params }: { params: Promise<{ id
                     onClick={pronounce}
                     className="w-7 h-7 rounded-full bg-slate-100 text-slate-600 hover:bg-primary hover:text-white flex items-center justify-center"
                   >
-                    <span className="material-symbols-outlined text-base">volume_up</span>
+                    <AppIcon className=" text-base">volume_up</AppIcon>
                   </button>
                 </div>
                 <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">
@@ -582,7 +579,7 @@ export default function FlashcardPracticePage({ params }: { params: Promise<{ id
               {/* Bottom Flip Icon */}
               <div className="flex items-center justify-between text-slate-400 text-xs font-bold pt-2 border-t border-slate-100">
                 <span className="text-[11px] text-slate-400">Chạm thẻ để lật lại</span>
-                <span className="material-symbols-outlined text-slate-400 text-xl">sync</span>
+                <AppIcon className=" text-slate-400 text-xl">sync</AppIcon>
               </div>
             </div>
           </div>
@@ -599,9 +596,9 @@ export default function FlashcardPracticePage({ params }: { params: Promise<{ id
               onClick={() => handleRate('easy')}
               className="flex flex-col items-center justify-center p-2.5 rounded-xl hover:bg-emerald-50 text-emerald-600 transition-colors group"
             >
-              <span className="material-symbols-outlined text-2xl group-hover:scale-110 transition-transform">
+              <AppIcon className=" text-2xl group-hover:scale-110 transition-transform">
                 sentiment_satisfied
-              </span>
+              </AppIcon>
               <span className="text-xs font-bold mt-1">Dễ</span>
             </button>
 
@@ -611,9 +608,9 @@ export default function FlashcardPracticePage({ params }: { params: Promise<{ id
               onClick={() => handleRate('medium')}
               className="flex flex-col items-center justify-center p-2.5 rounded-xl hover:bg-amber-50 text-amber-600 transition-colors group"
             >
-              <span className="material-symbols-outlined text-2xl group-hover:scale-110 transition-transform">
+              <AppIcon className=" text-2xl group-hover:scale-110 transition-transform">
                 sentiment_neutral
-              </span>
+              </AppIcon>
               <span className="text-xs font-bold mt-1">Trung bình</span>
             </button>
 
@@ -623,9 +620,9 @@ export default function FlashcardPracticePage({ params }: { params: Promise<{ id
               onClick={() => handleRate('hard')}
               className="flex flex-col items-center justify-center p-2.5 rounded-xl hover:bg-red-50 text-red-600 transition-colors group"
             >
-              <span className="material-symbols-outlined text-2xl group-hover:scale-110 transition-transform">
+              <AppIcon className=" text-2xl group-hover:scale-110 transition-transform">
                 sentiment_dissatisfied
-              </span>
+              </AppIcon>
               <span className="text-xs font-bold mt-1">Khó</span>
             </button>
 
@@ -635,9 +632,9 @@ export default function FlashcardPracticePage({ params }: { params: Promise<{ id
               onClick={() => handleRate('mastered')}
               className="flex flex-col items-center justify-center p-2.5 rounded-xl hover:bg-slate-100 text-slate-600 transition-colors group text-center"
             >
-              <span className="material-symbols-outlined text-2xl text-slate-400 group-hover:scale-110 group-hover:text-primary transition-transform">
+              <AppIcon className=" text-2xl text-slate-400 group-hover:scale-110 group-hover:text-primary transition-transform">
                 fast_forward
-              </span>
+              </AppIcon>
               <span className="text-[11px] font-bold leading-tight mt-1 text-slate-600 line-clamp-2">
                 Đã biết, loại khỏi danh sách ôn tập
               </span>
@@ -707,7 +704,7 @@ export default function FlashcardPracticePage({ params }: { params: Promise<{ id
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 p-4">
             <div className="bg-white rounded-3xl max-w-[480px] w-full p-6 space-y-5 shadow-xl">
               <div className="w-12 h-12 rounded-2xl bg-red-100 text-red-600 flex items-center justify-center mx-auto">
-                <span className="material-symbols-outlined text-2xl">archive</span>
+                <AppIcon className=" text-2xl">archive</AppIcon>
               </div>
               <div className="text-center space-y-2">
                 <h3 className="text-lg font-bold text-slate-900">

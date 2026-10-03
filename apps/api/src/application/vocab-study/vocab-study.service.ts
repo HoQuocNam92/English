@@ -1,17 +1,47 @@
-import { Injectable } from '@nestjs/common'
+import { BadRequestException, Injectable } from '@nestjs/common'
 import { PrismaService } from '../../infrastructure/database/prisma.service'
 
 @Injectable()
 export class VocabStudyService {
   constructor(private prisma: PrismaService) {}
 
+  async getRecommendations(learnerId: string) {
+    const profile = await this.prisma.learnerProfile.findUnique({
+      where: { userId: learnerId },
+      include: { level: true, domains: { include: { domain: true } }, certGoals: { include: { certificate: { include: { domains: { include: { domain: true } } } } } } },
+    })
+    const selectedDomains = profile?.domains.map(link => link.domain) ?? []
+    const certificateDomains = profile?.certGoals.flatMap(link => link.certificate.domains.map(item => item.domain)) ?? []
+    const goalDomains = profile?.learningGoal === 'certification' ? certificateDomains : profile?.learningGoal === 'vocabulary' ? selectedDomains : [...selectedDomains, ...certificateDomains]
+    const domains = [...new Map(goalDomains.map(domain => [domain.code, domain])).values()]
+    if (!profile?.level || !domains.length) return { groups: [], level: profile?.level ?? null }
+    const groups = await Promise.all(domains.map(async domain => {
+      const where = { status: 'published' as const, levelId: profile.level!.id, OR: [{ domainId: domain.id }, { domains: { some: { domainId: domain.id } } }] }
+      const [total, remaining, samples] = await Promise.all([
+        this.prisma.vocabulary.count({ where }),
+        this.prisma.vocabulary.count({ where: { ...where, vocabProgress: { none: { learnerId } } } }),
+        this.prisma.vocabulary.findMany({ where: { ...where, vocabProgress: { none: { learnerId } } }, select: { id: true, term: true }, orderBy: { term: 'asc' }, take: 6 }),
+      ])
+      return { domain, level: profile.level, total, remaining, samples }
+    }))
+    return { groups: groups.filter(group => group.total > 0), level: profile.level }
+  }
+
   // Get study session: all words matching filters
   // Priority: 1) 'learning' words with nextReviewAt <= now, 2) 'new' words
   // Accepts optional filters: domainCode, levelCode
-  async getStudySession(learnerId: string, filters?: { domainCode?: string; levelCode?: string; continueLearning?: boolean }) {
+  async getStudySession(learnerId: string, filters?: { domainCode?: string; levelCode?: string; sourceLessonId?: string; continueLearning?: boolean }) {
     // Build vocab filter
     const vocabWhere: any = { status: 'published' }
     if (filters?.domainCode) vocabWhere.OR = [{ domain: { code: filters.domainCode } }, { domains: { some: { domain: { code: filters.domainCode } } } }]
+    if (filters?.sourceLessonId) {
+      const lesson = await this.prisma.lesson.findUnique({
+        where: { id: filters.sourceLessonId },
+        select: { status: true, vocabularies: { select: { vocabularyId: true } } },
+      })
+      if (!lesson || lesson.status !== 'published') throw new BadRequestException('Bài học không khả dụng.')
+      vocabWhere.id = { in: lesson.vocabularies.map(link => link.vocabularyId) }
+    }
     if (filters?.levelCode) {
       vocabWhere.level = { code: filters.levelCode }
     }
@@ -62,6 +92,9 @@ export class VocabStudyService {
 
   // Generate quiz from given vocabulary IDs
   async generateQuiz(learnerId: string, vocabIds: string[], repetitions: Record<string, number> = {}) {
+    if (!Array.isArray(vocabIds) || !vocabIds.length || vocabIds.some(id => typeof id !== 'string' || !id.trim())) {
+      throw new BadRequestException('Vui lòng chọn từ vựng để tạo bài kiểm tra.')
+    }
     const vocabs = await this.prisma.vocabulary.findMany({
       where: { id: { in: vocabIds } },
       include: { examples: { orderBy: { order: 'asc' }, take: 3 } },
@@ -367,21 +400,30 @@ export class VocabStudyService {
     }
   }
 
-  async getHistory(learnerId: string, period?: 'day' | 'month' | 'year' | 'all', rating?: string) {
+  async getHistory(learnerId: string, period?: 'day' | 'month' | 'year' | 'all', rating?: string, page = 1, limit = 10) {
+    page = Number.isFinite(page) ? Math.max(1, Math.floor(page)) : 1
+    limit = Number.isFinite(limit) ? Math.min(40, Math.max(1, Math.floor(limit))) : 10
     const now = new Date()
     let from: Date | undefined
     if (period === 'day') { from = new Date(now); from.setHours(0, 0, 0, 0) }
     if (period === 'month') from = new Date(now.getFullYear(), now.getMonth(), 1)
     if (period === 'year') from = new Date(now.getFullYear(), 0, 1)
-    return this.prisma.vocabularyProgress.findMany({
-      where: {
-        learnerId,
-        ...(from && { lastReviewAt: { gte: from } }),
-        ...(rating && rating !== 'all' && { lastRating: rating }),
-      },
+    const where = {
+      learnerId,
+      lastReviewAt: { not: null, ...(from ? { gte: from } : {}) },
+      OR: [{ lastRating: { not: null } }, { correctCount: { gt: 0 } }, { wrongCount: { gt: 0 } }],
+      ...(rating && rating !== 'all' && { lastRating: rating }),
+    }
+    const total = await this.prisma.vocabularyProgress.count({ where })
+    const totalPages = Math.max(1, Math.ceil(total / limit))
+    page = Math.min(page, totalPages)
+    const data = await this.prisma.vocabularyProgress.findMany({
+      where,
       include: { vocabulary: { include: { domain: true, level: true } } },
-      orderBy: { lastReviewAt: 'desc' },
-      take: 200,
+      orderBy: [{ lastReviewAt: 'desc' }, { id: 'asc' }],
+      skip: (page - 1) * limit,
+      take: limit,
     })
+    return { data, meta: { page, limit, total, totalPages } }
   }
 }

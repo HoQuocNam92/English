@@ -1,4 +1,5 @@
 'use client';
+import { AppIcon } from '@/shared/ui/AppIcon';
 
 import { useState } from 'react';
 import Link from 'next/link';
@@ -46,9 +47,9 @@ export default function LearningCatalogPage() {
           <div className="bg-surface-container-lowest rounded-lg border border-outline-variant p-4 flex flex-col md:flex-row gap-4 items-center shadow-sm hover:shadow-md transition-shadow duration-300">
             {/* Search Input */}
             <div className="relative w-full md:flex-grow">
-              <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-outline">
+              <AppIcon className=" absolute left-3 top-1/2 -translate-y-1/2 text-outline">
                 search
-              </span>
+              </AppIcon>
               <input
                 type="text"
                 value={searchQuery}
@@ -76,7 +77,7 @@ export default function LearningCatalogPage() {
                 <div
                   className={`w-12 h-12 bg-surface-container flex items-center justify-center rounded-lg mb-4 ${module.textClass} ${module.groupHoverBgClass} ${module.groupHoverTextClass} transition-colors duration-300`}
                 >
-                  <span className="material-symbols-outlined">{module.icon}</span>
+                  <AppIcon className="">{module.icon}</AppIcon>
                 </div>
                 <h3 className="text-[20px] font-semibold text-on-surface mb-1">
                   {module.title}
@@ -86,9 +87,9 @@ export default function LearningCatalogPage() {
                 </p>
                 <div className={`flex items-center ${module.textClass} text-[14px] font-semibold`}>
                   <span>Khám phá chuyên đề</span>
-                  <span className="material-symbols-outlined ml-1 group-hover:translate-x-1 transition-transform duration-300 text-[18px]">
+                  <AppIcon className=" ml-1 group-hover:translate-x-1 transition-transform duration-300 text-[18px]">
                     arrow_forward
-                  </span>
+                  </AppIcon>
                 </div>
               </Link>
             ))}

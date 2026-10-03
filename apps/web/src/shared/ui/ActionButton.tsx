@@ -1,4 +1,5 @@
 'use client';
+import { AppIcon } from '@/shared/ui/AppIcon';
 
 import * as React from 'react';
 import Link from 'next/link';
@@ -69,7 +70,7 @@ export function ActionGroup({ className, children, ...props }: React.HTMLAttribu
       <button ref={triggerRef} type="button" title="Thao tác" aria-label="Thao tác" aria-haspopup="menu" aria-expanded={open} aria-controls={open ? menuId : undefined}
         className="inline-flex size-8 shrink-0 items-center justify-center rounded-lg text-on-surface-variant transition-colors hover:bg-surface-container focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
         onClick={() => setOpen(value => !value)} onKeyDown={event => { if (event.key === 'ArrowDown') { event.preventDefault(); setOpen(true); } }}>
-        <span aria-hidden="true" className="material-symbols-outlined" style={{ fontSize: 18 }}>more_horiz</span>
+        <AppIcon aria-hidden="true" className="" style={{ fontSize: 18 }}>more_horiz</AppIcon>
       </button>
       {open && createPortal(<div ref={menuRef} id={menuId} role="menu" tabIndex={-1} aria-label="Thao tác" style={position}
         className="fixed z-[100] w-48 max-h-[calc(100dvh-16px)] overflow-y-auto rounded-xl border border-outline-variant/50 bg-surface-container-lowest p-1 shadow-lg"
@@ -109,7 +110,7 @@ export function ActionButton({ action, href, loading = false, label, showLabel =
     config.tone,
     className,
   );
-  const content = <><span aria-hidden="true" className={cn('material-symbols-outlined', loading && 'animate-spin')} style={{ fontSize: 16 }}>{loading ? 'progress_activity' : config.icon}</span><span className={showLabel ? undefined : 'sr-only'}>{loading ? 'Đang xử lý...' : text}</span></>;
+  const content = <><AppIcon aria-hidden="true" className={cn('', loading && 'animate-spin')} style={{ fontSize: 16 }}>{loading ? 'progress_activity' : config.icon}</AppIcon><span className={showLabel ? undefined : 'sr-only'}>{loading ? 'Đang xử lý...' : text}</span></>;
 
   if (href && !blocked) {
     return <Link href={href} onClick={props.onClick as React.MouseEventHandler<HTMLAnchorElement> | undefined} role={props.role} tabIndex={props.tabIndex} className={classes} title={title ?? text} aria-label={props['aria-label'] ?? title ?? text}>{content}</Link>;

@@ -151,6 +151,7 @@ model User {
   updatedAt    DateTime   @updatedAt @map("updated_at") @db.Timestamptz(6)
 
   // Auth relations
+  passwordResetTokens PasswordResetToken[]
   refreshTokens RefreshToken[]
   userDetail    UserDetail?
   userRoles     UserRole[]
@@ -286,9 +287,11 @@ model RefreshToken {
   @@map("refresh_tokens")
 }
 
-/// Token / OTP khôi phục mật khẩu.
+/// Single-use password reset links. otp_hash retains its legacy name and stores a SHA-256 token hash.
 model PasswordResetToken {
   id        String    @id @default(uuid()) @db.Uuid
+  userId    String?   @map("user_id") @db.Uuid
+  user      User?     @relation(fields: [userId], references: [id], onDelete: Restrict)
   email     String    @db.VarChar(254)
   otpHash   String    @map("otp_hash") @db.VarChar(255)
   expiresAt DateTime  @map("expires_at") @db.Timestamptz(6)
@@ -296,6 +299,7 @@ model PasswordResetToken {
   createdAt DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
 
   @@index([email])
+  @@index([userId])
   @@map("password_reset_tokens")
 }
 

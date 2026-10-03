@@ -1,4 +1,5 @@
 'use client';
+import { AppIcon } from '@/shared/ui/AppIcon';
 
 import { LevelBadge } from '@/shared/ui/LevelBadge';
 import * as React from 'react';
@@ -85,7 +86,7 @@ export default function AdminTestResultDetailPage({
           href="/admin/test-results"
           className="inline-flex items-center gap-1.5 text-sm font-semibold text-primary hover:underline"
         >
-          <span className="material-symbols-outlined text-[18px]">arrow_back</span>
+          <AppIcon className=" text-[18px]">arrow_back</AppIcon>
           <span>Quay lại danh sách bài thi</span>
         </Link>
       </div>
@@ -116,7 +117,7 @@ export default function AdminTestResultDetailPage({
         </div>
       ) : error ? (
         <div className="p-4 rounded-xl bg-error-container text-on-error-container text-sm flex items-center gap-3">
-          <span className="material-symbols-outlined text-[20px]">error</span>
+          <AppIcon className=" text-[20px]">error</AppIcon>
           <span>{error}</span>
         </div>
       ) : (
@@ -207,9 +208,9 @@ export default function AdminTestResultDetailPage({
                           isCorrect ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
                         }`}
                       >
-                        <span className="material-symbols-outlined text-[14px]">
+                        <AppIcon className=" text-[14px]">
                           {isCorrect ? 'check_circle' : 'cancel'}
-                        </span>
+                        </AppIcon>
                         {isCorrect ? 'Đúng' : 'Sai'}
                       </span>
                     </div>
@@ -259,7 +260,7 @@ export default function AdminTestResultDetailPage({
                               )}
                               {isOptCorrect && (
                                 <span className="px-2 py-0.5 rounded bg-green-100 text-green-800 font-medium flex items-center gap-1">
-                                  <span className="material-symbols-outlined text-[14px]">check</span>
+                                  <AppIcon className=" text-[14px]">check</AppIcon>
                                   Đáp án đúng
                                 </span>
                               )}
@@ -272,9 +273,9 @@ export default function AdminTestResultDetailPage({
                     {/* Explanation */}
                     {q.explanation && (
                       <div className="mt-3 ml-8 p-3 rounded-lg bg-surface-container text-xs text-on-surface-variant flex items-start gap-2 border border-outline-variant/40">
-                        <span className="material-symbols-outlined text-[16px] text-primary shrink-0 mt-0.5">
+                        <AppIcon className=" text-[16px] text-primary shrink-0 mt-0.5">
                           info
-                        </span>
+                        </AppIcon>
                         <div>
                           <strong className="text-on-surface font-medium">Giải thích: </strong>
                           {q.explanation}

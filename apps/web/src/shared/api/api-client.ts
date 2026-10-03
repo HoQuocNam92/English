@@ -1,3 +1,4 @@
+import { mutationSuccessMessage } from './mutation-feedback';
 import { localizeLevelFields } from '@/shared/lib/level-label';
 /**
  * Shared API client — tự động đính kèm JWT từ localStorage session.
@@ -125,9 +126,14 @@ async function request<T>(path: string, options: RequestInit = {}, canRetry = tr
     );
   }
 
-  // 204 No Content
-  if (res.status === 204) return undefined as T;
-  return localizeLevelFields(await res.json() as T, /^\/levels(?:[/?]|$)/.test(path));
+  const data = res.status === 204 ? undefined : localizeLevelFields(await res.json() as T, /^\/levels(?:[/?]|$)/.test(path));
+  let body: unknown;
+  try { body = typeof options.body === 'string' ? JSON.parse(options.body) : undefined; } catch { body = undefined; }
+  const message = mutationSuccessMessage(path, options.method ?? 'GET', body);
+  if (message && typeof window !== 'undefined') {
+    window.dispatchEvent(new CustomEvent('techenglish:toast', { detail: { message, kind: 'success', title: message.startsWith('Đã lưu') ? 'Lưu thành công' : 'Thành công', automatic: true } }));
+  }
+  return data as T;
 }
 
 // ============================================================

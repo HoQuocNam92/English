@@ -1,4 +1,6 @@
 'use client';
+import { showToast } from '@/shared/ui/AppFeedback';
+import { AppIcon } from '@/shared/ui/AppIcon';
 import { useRouter } from 'next/navigation';
 import { completeCreation, CreatePage, FormSurface } from '@/shared/ui/CreatePage';
 import { ActionButton, ActionGroup } from '@/shared/ui/ActionButton';
@@ -115,7 +117,7 @@ export default function AdminLevels({ createOnly = false }: { createOnly?: boole
           description: description.trim(),
           isActive,
         });
-        setSuccessMsg(`Cập nhật cấp độ "${trimmedName}" thành công!`);
+        showToast(`Cập nhật cấp độ "${trimmedName}" thành công!`, 'success');
       } else {
         await apiClient.post('/levels', {
           code: trimmedCode,
@@ -124,7 +126,7 @@ export default function AdminLevels({ createOnly = false }: { createOnly?: boole
           description: description.trim(),
           isActive,
         });
-        setSuccessMsg(`Tạo cấp độ mới "${trimmedName}" thành công!`);
+        showToast(`Tạo cấp độ mới "${trimmedName}" thành công!`, 'success');
       }
       if (createOnly) { completeCreation(router, '/admin/levels', 'Đã thêm cấp độ học tập.'); return; }
       closeForm();
@@ -147,7 +149,7 @@ export default function AdminLevels({ createOnly = false }: { createOnly?: boole
     setDeleting(true);
     try {
       await apiClient.delete(`/levels/${deletingLevel.id}`);
-      setSuccessMsg(`Đã xóa cấp độ "${deletingLevel.name}" thành công!`);
+      showToast(`Đã xóa cấp độ "${deletingLevel.name}" thành công!`, 'success');
       setDeleteModalOpen(false);
       setDeletingLevel(null);
       await load();
@@ -164,7 +166,7 @@ export default function AdminLevels({ createOnly = false }: { createOnly?: boole
     setDeleting(true);
     try {
       await apiClient.patch(`/levels/${deletingLevel.id}`, { isActive: false });
-      setSuccessMsg(`Đã chuyển cấp độ "${deletingLevel.name}" sang trạng thái Ngừng hoạt động an toàn.`);
+      showToast(`Đã chuyển cấp độ "${deletingLevel.name}" sang trạng thái Ngừng hoạt động an toàn.`, 'success');
       setDeleteModalOpen(false);
       setDeletingLevel(null);
       await load();
@@ -191,9 +193,9 @@ export default function AdminLevels({ createOnly = false }: { createOnly?: boole
           <form onSubmit={handleSaveLevel} className="p-6">
             <div className="flex items-center justify-between pb-4 border-b border-outline-variant/40">
               <div className="flex items-center gap-2">
-                <span className="material-symbols-outlined text-primary text-[24px]">
+                <AppIcon className=" text-primary text-[24px]">
                   {isEditMode ? 'edit_square' : 'add_circle'}
-                </span>
+                </AppIcon>
                 <h3 className="text-lg font-bold text-on-surface">
                   {isEditMode ? 'Chỉnh sửa cấp độ học tập' : 'Thêm cấp độ học tập mới'}
                 </h3>
@@ -204,13 +206,13 @@ export default function AdminLevels({ createOnly = false }: { createOnly?: boole
                 disabled={saving}
                 className="text-on-surface-variant hover:text-on-surface"
               >
-                <span className="material-symbols-outlined">close</span>
+                <AppIcon className="">close</AppIcon>
               </button>
             </div>
 
             {formError && (
               <div className="mt-4 p-3 rounded-xl bg-error-container text-on-error-container text-xs flex items-center gap-2">
-                <span className="material-symbols-outlined text-[18px]">error</span>
+                <AppIcon className=" text-[18px]">error</AppIcon>
                 <span>{formError}</span>
               </div>
             )}
@@ -326,7 +328,7 @@ export default function AdminLevels({ createOnly = false }: { createOnly?: boole
           onClick={handleOpenCreate}
           className="inline-flex shrink-0 items-center gap-2 rounded-xl bg-primary px-4 py-2.5 text-sm font-semibold !text-white shadow-sm hover:opacity-95 transition-all self-start sm:self-center"
         >
-          <span className="material-symbols-outlined text-[20px]">add</span>
+          <AppIcon className=" text-[20px]">add</AppIcon>
           Thêm cấp độ mới
         </button>
       </div>
@@ -334,11 +336,11 @@ export default function AdminLevels({ createOnly = false }: { createOnly?: boole
       {successMsg && (
         <div className="p-4 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-800 text-sm flex items-center justify-between gap-2 shadow-2xs">
           <div className="flex items-center gap-2">
-            <span className="material-symbols-outlined text-emerald-600 text-[20px]">check_circle</span>
+            <AppIcon className=" text-emerald-600 text-[20px]">check_circle</AppIcon>
             <span className="font-medium">{successMsg}</span>
           </div>
           <button type="button" onClick={() => setSuccessMsg(null)} className="text-emerald-600 hover:text-emerald-900">
-            <span className="material-symbols-outlined text-[18px]">close</span>
+            <AppIcon className=" text-[18px]">close</AppIcon>
           </button>
         </div>
       )}
@@ -346,11 +348,11 @@ export default function AdminLevels({ createOnly = false }: { createOnly?: boole
       {error && (
         <div className="p-4 rounded-xl bg-error-container text-on-error-container text-sm flex items-center justify-between gap-2 shadow-2xs">
           <div className="flex items-center gap-2">
-            <span className="material-symbols-outlined text-[20px]">error</span>
+            <AppIcon className=" text-[20px]">error</AppIcon>
             <span>{error}</span>
           </div>
           <button type="button" onClick={() => setError(null)} className="text-on-error-container hover:opacity-75">
-            <span className="material-symbols-outlined text-[18px]">close</span>
+            <AppIcon className=" text-[18px]">close</AppIcon>
           </button>
         </div>
       )}
@@ -365,7 +367,7 @@ export default function AdminLevels({ createOnly = false }: { createOnly?: boole
           <div key={stat.label} className="rounded-2xl bg-surface-container-lowest p-5 border border-outline-variant/40 shadow-[0_8px_28px_rgba(15,23,42,0.03)]">
             <div className="flex items-center justify-between mb-3">
               <p className="text-xs font-medium text-on-surface-variant">{stat.label}</p>
-              <span className={`material-symbols-outlined text-[22px] ${stat.color}`}>{stat.icon}</span>
+              <AppIcon className={` text-[22px] ${stat.color}`}>{stat.icon}</AppIcon>
             </div>
             <p className="text-2xl font-bold text-on-surface">{stat.value}</p>
           </div>
@@ -388,14 +390,14 @@ export default function AdminLevels({ createOnly = false }: { createOnly?: boole
           </div>
         ) : levels.length === 0 ? (
           <div className="rounded-2xl bg-surface-container-lowest p-12 text-center border border-outline-variant/30 shadow-[0_8px_28px_rgba(15,23,42,0.03)]">
-            <span className="material-symbols-outlined text-[48px] text-outline mb-3 block">stairs</span>
+            <AppIcon className=" text-[48px] text-outline mb-3 block">stairs</AppIcon>
             <p className="text-sm text-on-surface-variant mb-4">Chưa có cấp độ học tập nào trong hệ thống</p>
             <button
               type="button"
               onClick={handleOpenCreate}
               className="inline-flex items-center gap-2 rounded-xl bg-primary px-4 py-2 text-sm font-semibold !text-white"
             >
-              <span className="material-symbols-outlined text-[18px]">add</span>
+              <AppIcon className=" text-[18px]">add</AppIcon>
               Tạo cấp độ đầu tiên
             </button>
           </div>
@@ -414,7 +416,7 @@ export default function AdminLevels({ createOnly = false }: { createOnly?: boole
                     <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between mb-3">
                       <div className="flex items-center gap-3">
                         <div className={`w-10 h-10 rounded-xl flex items-center justify-center border ${meta.bg}`}>
-                          <span className="material-symbols-outlined text-[20px]">{meta.icon}</span>
+                          <AppIcon className=" text-[20px]">{meta.icon}</AppIcon>
                         </div>
                         <div>
                           <div className="flex items-center gap-2">
@@ -480,7 +482,7 @@ export default function AdminLevels({ createOnly = false }: { createOnly?: boole
         <Modal open onClose={() => { if (!deleting) setDeleteModalOpen(false); }} maxWidth="max-w-md">
           <div className="p-6">
             <div className="flex items-center gap-3 text-error mb-3">
-              <span className="material-symbols-outlined text-[28px]">warning</span>
+              <AppIcon className=" text-[28px]">warning</AppIcon>
               <h3 className="text-lg font-bold text-on-surface">Xóa cấp độ học tập</h3>
             </div>
 

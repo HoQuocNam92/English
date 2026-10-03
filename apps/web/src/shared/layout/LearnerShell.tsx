@@ -1,4 +1,5 @@
 'use client';
+import { AppIcon } from '@/shared/ui/AppIcon';
 
 import React from 'react';
 import Link from 'next/link';
@@ -30,13 +31,13 @@ export function LearnerShell({ children }: LearnerShellProps) {
     <div className="learner-canvas min-h-screen bg-background text-on-surface flex flex-col antialiased">
       {/* ── TopNav ─────────────────────────────────────────────────── */}
       <nav className="bg-surface-container-lowest sticky top-0 w-full z-50 h-16 border-b border-outline-variant shadow-sm">
-        <div className="flex items-center justify-between max-w-[1280px] mx-auto px-8 w-full h-full">
+        <div className="flex items-center justify-between max-w-[1280px] mx-auto px-[var(--page-gutter)] w-full h-full">
 
           {/* Left: Brand + Nav */}
           <div className="flex items-center gap-6">
             <Link href="/learn" className="flex items-center gap-2.5 whitespace-nowrap">
               <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-primary shadow-sm">
-                <span className="material-symbols-outlined text-[22px] !text-white fill-1">terminal</span>
+                <AppIcon className=" text-[22px] !text-white ">terminal</AppIcon>
               </div>
               <div>
                 <span className="block text-base font-black leading-tight tracking-tight text-primary">TechEnglish Pro</span>
@@ -59,7 +60,7 @@ export function LearnerShell({ children }: LearnerShellProps) {
                         : 'text-on-surface-variant border-transparent hover:text-primary'
                     }`}
                   >
-                    <span className={`material-symbols-outlined !flex h-6 w-6 shrink-0 items-center justify-center text-center text-[19px] !leading-none transition-transform group-hover:scale-110 ${item.color} ${isActive ? 'fill-1' : ''}`}>{item.icon}</span>
+                    <AppIcon className={` !flex h-6 w-6 shrink-0 items-center justify-center text-center text-[19px] !leading-none transition-transform group-hover:scale-110 ${item.color} ${isActive ? '' : ''}`}>{item.icon}</AppIcon>
                     {item.label}
                   </Link>
                 );
@@ -75,7 +76,7 @@ export function LearnerShell({ children }: LearnerShellProps) {
                 href="/admin/dashboard"
                 className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-surface-container-low border border-outline-variant text-[12px] font-bold text-on-surface-variant hover:text-primary transition-colors"
               >
-                <span className="material-symbols-outlined icon-certificate" style={{ fontSize: '16px' }}>admin_panel_settings</span>
+                <AppIcon className=" icon-certificate" style={{ fontSize: '16px' }}>admin_panel_settings</AppIcon>
                 {t.nav.admin}
               </Link>
             )}
@@ -96,7 +97,7 @@ export function LearnerShell({ children }: LearnerShellProps) {
       </main>
 
       {/* ── Shared Footer ──────────────────────────────────────────── */}
-      <Footer />
+      <Footer learner />
     </div>
   );
 }

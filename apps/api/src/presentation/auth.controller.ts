@@ -3,7 +3,7 @@ import { AuthGuard } from '@nestjs/passport'
 import { ConfigService } from '@nestjs/config'
 import type { Response } from 'express'
 import { ApiTags, ApiBearerAuth, ApiOperation } from '@nestjs/swagger'
-import { LoginDto, RegisterDto, RefreshTokenDto, AuthChangePasswordDto, GoogleMobileDto, ForgotPasswordDto, ResetPasswordDto } from './http-dto/auth.dto'
+import { LoginDto, RegisterDto, RefreshTokenDto, AuthChangePasswordDto, GoogleMobileDto, ForgotPasswordDto, ResetPasswordDto, ValidatePasswordResetDto } from './http-dto/auth.dto'
 import { AuthService } from '../application/auth/auth.service'
 import { JwtAuthGuard } from '../infrastructure/auth/jwt-auth.guard'
 import { CurrentUser, JwtPayload } from './decorators/current-user.decorator'
@@ -68,14 +68,20 @@ export class AuthController {
 
   @Post('forgot-password')
   @HttpCode(HttpStatus.OK)
-  @ApiOperation({ summary: 'Yêu cầu gửi OTP quên mật khẩu qua Email' })
+  @ApiOperation({ summary: 'Gửi liên kết đặt lại mật khẩu qua email' })
   forgotPassword(@Body() dto: ForgotPasswordDto) {
     return this.authService.forgotPassword(dto)
   }
 
+  @Post('validate-password-reset')
+  @HttpCode(HttpStatus.OK)
+  validatePasswordReset(@Body() dto: ValidatePasswordResetDto) {
+    return this.authService.validatePasswordReset(dto)
+  }
+
   @Post('reset-password')
   @HttpCode(HttpStatus.OK)
-  @ApiOperation({ summary: 'Đặt lại mật khẩu bằng mã OTP' })
+  @ApiOperation({ summary: 'Đặt lại mật khẩu bằng token dùng một lần' })
   resetPassword(@Body() dto: ResetPasswordDto) {
     return this.authService.resetPassword(dto)
   }
