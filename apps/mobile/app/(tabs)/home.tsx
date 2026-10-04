@@ -1,9 +1,12 @@
+import { LearningAgenda } from '../../src/features/learning/LearningAgenda';
+import { mobileRoute } from '../../src/shared/navigation';
+import { Text, TouchableOpacity } from '../../src/shared/ui/primitives';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useState, useCallback } from 'react';
 import { useRouter, useFocusEffect } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
-import { StyleSheet, Text, View, TouchableOpacity, ScrollView, ActivityIndicator } from 'react-native';
-import { MaterialIcons } from '@expo/vector-icons';
+import { StyleSheet, View, ScrollView, ActivityIndicator } from 'react-native';
+import { MaterialIcons } from '../../src/shared/ui/AppIcon';
 import { colors, spacing } from '@techenglish/design-tokens';
 import { api } from '../../src/shared/api/api-client';
 
@@ -86,15 +89,7 @@ export default function MobileHomeScreen() {
   const smartPath = journey?.targets?.learningPathMode !== 'self';
 
   const openRecommendation = (item: any) => {
-    const [path, query] = String(item?.actionUrl || '/learn').replace(/^\/learn(?=\/|\?|$)/, '').split('?');
-    const routes: Record<string, string> = {
-      '': '/(tabs)/home', '/flashcards': '/flashcards/dashboard',
-      '/practice': '/(tabs)/learning', '/lessons': '/(tabs)/learning',
-      '/certifications': '/certifications', '/progress': '/(tabs)/progress',
-      '/profile': '/profile/edit',
-    };
-    const mobilePath = routes[path] ?? (path.startsWith('/quiz/result/') ? path.replace('/quiz/result/', '/test-result/') : path);
-    router.push(`${mobilePath}${query ? `?${query}` : ''}` as any);
+    router.push(mobileRoute(String(item?.actionUrl || '/learn')) as any);
   };
 
   return (
@@ -135,6 +130,7 @@ export default function MobileHomeScreen() {
           </View>)}
         </View>
 
+        <LearningAgenda />
         {!journeyConfigured ? (
           <View style={styles.setupCard}>
             <View style={styles.setupIcon}><MaterialIcons name="route" size={26} color={colors.primary} /></View>
@@ -250,7 +246,7 @@ export default function MobileHomeScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f8fafc'
+    backgroundColor: '#f7f9fb'
   },
   headerContainer: {
     flexDirection: 'row',

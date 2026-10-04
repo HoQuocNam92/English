@@ -1,7 +1,8 @@
+import { Text, TextInput, TouchableOpacity } from '../../src/shared/ui/primitives';
 import { useCallback, useMemo, useState } from 'react';
-import { ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { ScrollView, StyleSheet, View } from 'react-native';
 import { useFocusEffect, useRouter } from 'expo-router';
-import { MaterialIcons } from '@expo/vector-icons';
+import { MaterialIcons } from '../../src/shared/ui/AppIcon';
 import { api } from '../../src/shared/api/api-client';
 import { useTheme } from '../../src/shared/store/theme-context';
 import { EmptyState, FeatureScreen } from '../../src/shared/ui/FeatureScreen';

@@ -1,8 +1,9 @@
+import { Text, TouchableOpacity } from '../../src/shared/ui/primitives';
 import { useEffect, useState } from 'react';
 import { useRouter } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
-import { ActivityIndicator, StyleSheet, Text, TouchableOpacity, View, ScrollView } from 'react-native';
-import { MaterialIcons } from '@expo/vector-icons';
+import { ActivityIndicator, StyleSheet, View, ScrollView } from 'react-native';
+import { MaterialIcons } from '../../src/shared/ui/AppIcon';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { colors, spacing } from '@techenglish/design-tokens';
 import { api } from '../../src/shared/api/api-client';
@@ -56,7 +57,7 @@ export default function OnboardingCertificateScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#f8fafc' }, header: { paddingTop: 52, paddingHorizontal: spacing.lg, paddingBottom: spacing.md, backgroundColor: '#fff', flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }, step: { fontSize: 13, fontWeight: '700', color: '#777587' },
+  container: { flex: 1, backgroundColor: '#f7f9fb' }, header: { paddingTop: 52, paddingHorizontal: spacing.lg, paddingBottom: spacing.md, backgroundColor: '#fff', flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }, step: { fontSize: 13, fontWeight: '700', color: '#777587' },
   progress: { height: 4, backgroundColor: '#e6e8ea' }, progressFill: { height: 4, backgroundColor: colors.primary }, content: { padding: spacing.lg, paddingBottom: 120 },
   title: { fontSize: 25, fontWeight: '800', color: '#191c1e', marginTop: 12 }, subtitle: { color: '#464555', marginTop: 8, marginBottom: 24, lineHeight: 20 },
   card: { borderWidth: 1, borderColor: '#c7c4d8', borderRadius: 13, padding: spacing.md, marginBottom: spacing.sm, backgroundColor: '#fff', flexDirection: 'row', alignItems: 'flex-start', gap: spacing.sm }, cardActive: { borderColor: colors.primary, borderWidth: 2 },

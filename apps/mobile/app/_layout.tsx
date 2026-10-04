@@ -1,3 +1,5 @@
+import { TranslationProvider } from '../src/shared/ui/TranslationProvider';
+import { useFonts } from 'expo-font';
 import { Stack } from 'expo-router';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { AuthProvider } from '../src/shared/store/auth-context';
@@ -17,19 +19,21 @@ if (!isExpoGo) {
 }
 
 export default function RootLayout() {
+  const [fontsLoaded, fontError] = useFonts({ Inter: require('../assets/fonts/Inter.ttf') });
+  if (!fontsLoaded && !fontError) return null;
   return (
     <SafeAreaProvider>
       <ThemeProvider>
         <I18nProvider>
           <AuthProvider>
-            <Stack
+            <TranslationProvider><Stack
               screenOptions={{
                 headerShown: false,
                 contentStyle: {
                   backgroundColor: '#f7f9fb'
                 }
               }}
-            />
+            /></TranslationProvider>
           </AuthProvider>
         </I18nProvider>
       </ThemeProvider>

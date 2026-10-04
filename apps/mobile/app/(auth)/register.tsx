@@ -1,8 +1,9 @@
+import { Text, TextInput, TouchableOpacity } from '../../src/shared/ui/primitives';
 import { useState } from 'react';
 import { useRouter } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
-import { StyleSheet, Text, View, TextInput, TouchableOpacity, ScrollView, ActivityIndicator } from 'react-native';
-import { MaterialIcons } from '@expo/vector-icons';
+import { StyleSheet, View, ScrollView, ActivityIndicator } from 'react-native';
+import { MaterialIcons } from '../../src/shared/ui/AppIcon';
 import { colors, spacing } from '@techenglish/design-tokens';
 import { api, ApiError } from '../../src/shared/api/api-client';
 import { validateEmail, validatePassword, validateDisplayName } from '../../src/shared/utils/validators';
@@ -187,7 +188,7 @@ export default function MobileRegisterScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f8fafc'
+    backgroundColor: '#f7f9fb'
   },
   headerBar: {
     height: 64,
@@ -235,7 +236,7 @@ const styles = StyleSheet.create({
     textAlign: 'center'
   },
   card: {
-    backgroundColor: '#f8fafc',
+    backgroundColor: '#f7f9fb',
     gap: spacing.md
   },
   inputGroup: {

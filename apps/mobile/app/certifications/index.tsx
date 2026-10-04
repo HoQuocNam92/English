@@ -1,16 +1,10 @@
+import { Text, TouchableOpacity, ListTools, Badge } from '../../src/shared/ui/primitives';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useState, useEffect } from 'react';
 import { useRouter } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
-import {
-  StyleSheet,
-  Text,
-  View,
-  TouchableOpacity,
-  ScrollView,
-  ActivityIndicator,
-} from 'react-native';
-import { MaterialIcons } from '@expo/vector-icons';
+import { StyleSheet, View, ScrollView, ActivityIndicator } from 'react-native';
+import { MaterialIcons } from '../../src/shared/ui/AppIcon';
 import { colors, spacing } from '@techenglish/design-tokens';
 import { api } from '../../src/shared/api/api-client';
 import { useTheme } from '../../src/shared/store/theme-context';
@@ -31,6 +25,8 @@ export default function MobileCertificationsScreen({ embedded = false }: { embed
   const insets = useSafeAreaInsets();
   const { colors: themeColors } = useTheme();
 
+  const [search, setSearch] = useState('');
+  const [filter, setFilter] = useState('');
   const [certificates, setCertificates] = useState<CertificateItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -85,19 +81,20 @@ export default function MobileCertificationsScreen({ embedded = false }: { embed
         {!embedded && <TouchableOpacity onPress={() => router.back()} style={styles.backButton} hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}>
           <MaterialIcons name="arrow-back" size={24} color={themeColors.onSurface} />
         </TouchableOpacity>}
-        <Text style={[styles.headerTitle, { color: themeColors.onSurface }]}>Tiến độ chứng chỉ</Text>
+        <Text style={[styles.headerTitle, { color: themeColors.onSurface }]}>Luyện thi chứng chỉ</Text>
         <View style={{ width: 40 }} />
       </View>
 
       <ScrollView contentContainerStyle={styles.contentContainer} showsVerticalScrollIndicator={false}>
         {/* Intro */}
         <View style={styles.introBox}>
-          <Text style={[styles.screenTitle, { color: themeColors.onSurface }]}>Lộ trình chứng chỉ</Text>
+          <Text style={[styles.screenTitle, { color: themeColors.onSurface }]}>Luyện thi chứng chỉ</Text>
           <Text style={[styles.screenSubtitle, { color: themeColors.onSurfaceVariant }]}>
             Theo dõi quá trình học tập và mức độ sẵn sàng cho các kỳ thi chứng chỉ CNTT quốc tế.
           </Text>
         </View>
 
+        <ListTools search={search} onSearch={setSearch} placeholder="Tìm tên, mã hoặc nhà cung cấp chứng chỉ" filters={[{ value: '', label: 'Tất cả tiến độ' }, { value: 'started', label: 'Đã bắt đầu học' }, { value: 'new', label: 'Chưa bắt đầu' }]} value={filter} onFilter={setFilter} />
         {loading ? (
           <View style={styles.centerContainer}>
             <ActivityIndicator size="large" color={colors.primary} />
@@ -118,9 +115,9 @@ export default function MobileCertificationsScreen({ embedded = false }: { embed
           </View>
         ) : (
           <View style={styles.listContainer}>
-            {certificates.map((cert) => {
+            {certificates.filter(cert => `${cert.name} ${cert.code} ${cert.provider}`.toLocaleLowerCase('vi').includes(search.trim().toLocaleLowerCase('vi')) && (!filter || ((cert.readinessPercent ?? 0) > 0) === (filter === 'started'))).map((cert) => {
               const readiness = cert.readinessPercent ?? 0;
-              const readinessColor = readiness >= 70 ? '#10b981' : readiness >= 40 ? '#f59e0b' : '#3525cd';
+              const readinessColor = colors.primary;
 
               return (
                 <View
@@ -156,29 +153,21 @@ export default function MobileCertificationsScreen({ embedded = false }: { embed
                   </Text>
 
                   <View style={styles.skillsContainer}>
-                    {(cert.domains ?? []).map((item) => <View key={item.domain.id} style={[styles.codeBadge, { backgroundColor: themeColors.surfaceContainerLow }]}><Text style={{ color: colors.primary, fontSize: 12, fontWeight: '700' }}>{item.domain.name}</Text></View>)}
+                    {(cert.domains ?? []).map((item) => <Badge key={item.domain.id}>{item.domain.name}</Badge>)}
                     {!(cert.domains ?? []).length && <Text style={[styles.certDesc, { color: themeColors.onSurfaceVariant }]}>Chưa cấu hình Domain.</Text>}
                   </View>
 
                   {/* Actions */}
                   <View style={[styles.actionRow, { borderTopColor: themeColors.border }]}>
                     <TouchableOpacity
-                      style={[styles.outlineBtn, { borderColor: colors.primary }]}
-                      onPress={() => handleOpenCertification(cert)}
-                      activeOpacity={0.8}
-                    >
-                      <MaterialIcons name="auto-stories" size={18} color={colors.primary} />
-                      <Text style={[styles.outlineBtnText, { color: colors.primary }]}>Xem lộ trình</Text>
-                    </TouchableOpacity>
-
-                    <TouchableOpacity
                       style={[styles.primaryBtn, { backgroundColor: colors.primary }]}
                       onPress={() => handleOpenCertification(cert)}
                       activeOpacity={0.8}
                     >
-                      <MaterialIcons name="assignment" size={18} color="#ffffff" />
-                      <Text style={styles.primaryBtnText}>Thi thử</Text>
+                      <MaterialIcons name="auto-stories" size={18} color={colors.onPrimary} />
+                      <Text style={styles.primaryBtnText}>Xem lộ trình</Text>
                     </TouchableOpacity>
+
                   </View>
                 </View>
               );
@@ -261,6 +250,7 @@ const styles = StyleSheet.create({
     gap: spacing.md,
   },
   certCard: {
+    minHeight: 300,
     borderRadius: 16,
     borderWidth: 1,
     padding: spacing.md,
@@ -355,6 +345,7 @@ const styles = StyleSheet.create({
     fontSize: 12,
   },
   actionRow: {
+    marginTop: 'auto',
     flexDirection: 'row',
     justifyContent: 'flex-end',
     alignItems: 'center',

@@ -1,7 +1,8 @@
+import { Text, TouchableOpacity } from '../src/shared/ui/primitives';
 import { useRouter } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
-import { StyleSheet, Text, View, TouchableOpacity } from 'react-native';
-import { MaterialIcons } from '@expo/vector-icons';
+import { StyleSheet, View } from 'react-native';
+import { MaterialIcons } from '../src/shared/ui/AppIcon';
 import { colors, spacing } from '@techenglish/design-tokens';
 
 export default function EntryScreen() {

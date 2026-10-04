@@ -1,8 +1,9 @@
+import { Text, TouchableOpacity } from '../../src/shared/ui/primitives';
 import { useState } from 'react';
 import { useRouter } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
-import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-import { MaterialIcons } from '@expo/vector-icons';
+import { StyleSheet, View } from 'react-native';
+import { MaterialIcons } from '../../src/shared/ui/AppIcon';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { colors, spacing } from '@techenglish/design-tokens';
 
@@ -50,7 +51,7 @@ export default function OnboardingGoalScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#f8fafc' },
+  container: { flex: 1, backgroundColor: '#f7f9fb' },
   header: { paddingTop: 52, paddingHorizontal: spacing.lg, paddingBottom: spacing.md, backgroundColor: '#fff', flexDirection: 'row', justifyContent: 'space-between' },
   brand: { fontSize: 15, fontWeight: '800', color: colors.primary }, step: { fontSize: 13, fontWeight: '700', color: '#777587' },
   progress: { height: 4, backgroundColor: '#e6e8ea' }, progressFill: { height: 4, backgroundColor: colors.primary },

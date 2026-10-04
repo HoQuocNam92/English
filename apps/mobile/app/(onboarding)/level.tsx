@@ -1,8 +1,9 @@
+import { Text, TouchableOpacity } from '../../src/shared/ui/primitives';
 import { useState } from 'react';
 import { useRouter } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
-import { StyleSheet, Text, View, TouchableOpacity, ScrollView } from 'react-native';
-import { MaterialIcons } from '@expo/vector-icons';
+import { StyleSheet, View, ScrollView } from 'react-native';
+import { MaterialIcons } from '../../src/shared/ui/AppIcon';
 import { colors, spacing } from '@techenglish/design-tokens';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 

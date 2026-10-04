@@ -1,6 +1,7 @@
+import { Text, TouchableOpacity } from '../../src/shared/ui/primitives';
 import { useEffect, useState } from 'react';
-import { ActivityIndicator, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-import { MaterialIcons } from '@expo/vector-icons';
+import { ActivityIndicator, StyleSheet, View } from 'react-native';
+import { MaterialIcons } from '../../src/shared/ui/AppIcon';
 import { api } from '../../src/shared/api/api-client';
 import { useTheme } from '../../src/shared/store/theme-context';
 import { FeatureScreen, EmptyState } from '../../src/shared/ui/FeatureScreen';

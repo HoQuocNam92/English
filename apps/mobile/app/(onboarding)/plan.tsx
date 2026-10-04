@@ -1,8 +1,9 @@
+import { Text, TextInput, TouchableOpacity } from '../../src/shared/ui/primitives';
 import { useState } from 'react';
 import { useRouter } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
-import { Alert, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View, ActivityIndicator } from 'react-native';
-import { MaterialIcons } from '@expo/vector-icons';
+import { Alert, ScrollView, StyleSheet, View, ActivityIndicator } from 'react-native';
+import { MaterialIcons } from '../../src/shared/ui/AppIcon';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { colors, spacing } from '@techenglish/design-tokens';
 import { api } from '../../src/shared/api/api-client';
@@ -91,7 +92,7 @@ function NumberInput({ label, value, onChangeText }: { label: string; value: str
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#f8fafc' }, header: { paddingTop: 52, paddingHorizontal: spacing.lg, paddingBottom: spacing.md, backgroundColor: '#fff', flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }, step: { fontSize: 13, fontWeight: '700', color: '#777587' },
+  container: { flex: 1, backgroundColor: '#f7f9fb' }, header: { paddingTop: 52, paddingHorizontal: spacing.lg, paddingBottom: spacing.md, backgroundColor: '#fff', flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }, step: { fontSize: 13, fontWeight: '700', color: '#777587' },
   progress: { height: 4, backgroundColor: '#e6e8ea' }, progressFill: { width: '100%', height: 4, backgroundColor: colors.primary }, content: { padding: spacing.lg, paddingBottom: 130 }, title: { fontSize: 25, fontWeight: '800', color: '#191c1e', marginTop: 12 }, subtitle: { color: '#464555', marginTop: 8, marginBottom: 24, lineHeight: 20 },
   card: { padding: spacing.md, borderWidth: 1, borderColor: '#c7c4d8', borderRadius: 14, backgroundColor: '#fff', gap: spacing.md }, field: { gap: 6 }, label: { fontSize: 12, fontWeight: '700', color: '#464555' }, input: { height: 46, borderWidth: 1, borderColor: '#c7c4d8', borderRadius: 10, paddingHorizontal: spacing.md, backgroundColor: '#fff', color: '#191c1e', fontSize: 15 },
   option: { marginTop: spacing.md, padding: spacing.md, borderWidth: 1, borderColor: '#c7c4d8', borderRadius: 12, backgroundColor: '#fff', flexDirection: 'row', alignItems: 'flex-start', gap: spacing.sm }, optionCopy: { flex: 1 }, optionTitle: { fontSize: 14, fontWeight: '800', color: '#191c1e' }, optionText: { marginTop: 3, fontSize: 12, lineHeight: 17, color: '#464555' }, timeWrap: { marginTop: spacing.md, gap: 6 },

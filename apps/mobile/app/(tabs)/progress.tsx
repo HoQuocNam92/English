@@ -1,8 +1,10 @@
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { Text, TouchableOpacity } from '../../src/shared/ui/primitives';
 import { useCallback, useState } from 'react';
 import { useFocusEffect, useRouter } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
-import { ActivityIndicator, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-import { MaterialIcons } from '@expo/vector-icons';
+import { ActivityIndicator, ScrollView, StyleSheet, View } from 'react-native';
+import { MaterialIcons } from '../../src/shared/ui/AppIcon';
 import { api } from '../../src/shared/api/api-client';
 import { progressViewModel, type ProgressPayload } from '../../../../packages/shared-kernel/src/progress';
 
@@ -12,6 +14,7 @@ const accent: Record<string, { background: string; foreground: string }> = {
 };
 
 export default function MobileProgressScreen() {
+ const insets = useSafeAreaInsets();
   const router = useRouter();
   const [data, setData] = useState<ProgressPayload | null>(null);
   const [loading, setLoading] = useState(true);
@@ -25,7 +28,7 @@ export default function MobileProgressScreen() {
   useFocusEffect(useCallback(() => { void load(); }, [load]));
   const view = progressViewModel(data);
 
-  return <View style={s.root}><StatusBar style="dark" /><View style={s.topbar}><Text style={s.brand}>IT English Pro</Text></View>
+  return <View style={s.root}><StatusBar style="dark" /><View style={[s.topbar, { paddingTop: insets.top + 12 }]}><Text style={s.brand}>TechEnglish Pro</Text></View>
     {loading ? <View style={s.center}><ActivityIndicator size="large" color="#3525cd" /></View> : error ? <View style={s.center}><Text style={s.error}>{error}</Text><TouchableOpacity onPress={() => void load()} style={s.retry}><Text style={s.retryText}>Thử lại</Text></TouchableOpacity></View> : <ScrollView contentContainerStyle={s.content}>
       <View><Text style={s.eyebrow}>HÀNH TRÌNH CỦA BẠN</Text><Text style={s.heading}>Milestone học tập</Text><Text style={s.subheading}>Học đều mỗi ngày, mở khóa thành tích và chinh phục lộ trình của bạn.</Text></View>
       <View style={s.pillRow}><View style={s.pill}><Text style={s.pillIcon}>⚡</Text><View><Text style={s.pillValue}>{view.totalXp} XP</Text><Text style={s.pillLabel}>Điểm thành tích</Text></View></View><View style={s.pill}><Text style={s.pillIcon}>🔥</Text><View><Text style={s.pillValue}>{view.studyStreak} ngày</Text><Text style={s.pillLabel}>Chuỗi hiện tại</Text></View></View></View>

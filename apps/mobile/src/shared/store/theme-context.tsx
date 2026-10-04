@@ -1,3 +1,4 @@
+import { colors as palette, iconColors } from '@techenglish/design-tokens';
 import React, { createContext, useContext, ReactNode } from 'react';
 
 type Theme = 'light' | 'dark';
@@ -29,29 +30,29 @@ interface ThemeColors {
 }
 
 export const lightColors: ThemeColors = {
-  background: '#f7f9fb',
-  surface: '#f7f9fb',
-  surfaceVariant: '#e2e1ec',
-  surfaceContainer: '#eceef0',
-  surfaceContainerLow: '#f2f4f6',
-  surfaceContainerLowest: '#ffffff',
-  surfaceContainerHigh: '#e6e8ea',
-  onSurface: '#191c1e',
-  onSurfaceVariant: '#464555',
-  primary: '#3525cd',
-  onPrimary: '#ffffff',
-  primaryContainer: '#e0e0ff',
-  onPrimaryContainer: '#02006d',
-  secondary: '#5d5d72',
-  onSecondary: '#ffffff',
-  outline: '#6b687b',
-  outlineVariant: '#c7c4d8',
-  error: '#ba1a1a',
-  success: '#10b981',
-  card: '#ffffff',
-  border: '#e2e8f0',
-  text: '#191c1e',
-  textSecondary: '#464555',
+  background: palette.background,
+  surface: palette.surfaceWhite,
+  surfaceVariant: palette.primaryLight,
+  surfaceContainer: palette.surfaceContainer,
+  surfaceContainerLow: palette.surfaceContainerLow,
+  surfaceContainerLowest: palette.surfaceWhite,
+  surfaceContainerHigh: palette.surfaceContainerHigh,
+  onSurface: palette.text,
+  onSurfaceVariant: palette.mutedText,
+  primary: palette.primary,
+  onPrimary: palette.onPrimary,
+  primaryContainer: palette.primaryFixed,
+  onPrimaryContainer: palette.onPrimaryFixedVariant,
+  secondary: palette.secondary,
+  onSecondary: palette.onSecondary,
+  outline: palette.outline,
+  outlineVariant: palette.outlineVariant,
+  error: palette.error,
+  success: iconColors.success,
+  card: palette.surfaceWhite,
+  border: palette.outlineVariant,
+  text: palette.text,
+  textSecondary: palette.mutedText,
 };
 
 export const darkColors: ThemeColors = {

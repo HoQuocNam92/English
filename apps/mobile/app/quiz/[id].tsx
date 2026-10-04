@@ -1,8 +1,10 @@
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { Text, TextInput, TouchableOpacity } from '../../src/shared/ui/primitives';
 import { useEffect, useState, useRef } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView, ActivityIndicator, Alert, Modal } from 'react-native';
+import { View, StyleSheet, ScrollView, ActivityIndicator, Alert, Modal } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
-import { MaterialIcons } from '@expo/vector-icons';
+import { MaterialIcons } from '../../src/shared/ui/AppIcon';
 import { colors, spacing } from '@techenglish/design-tokens';
 import { api } from '../../src/shared/api/api-client';
 import { safeText } from '../../src/shared/utils/safeText';
@@ -28,7 +30,8 @@ interface Attempt {
 const ALPHABET = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H'];
 
 export default function MobileQuizScreen() {
-  const { id } = useLocalSearchParams();
+ const insets = useSafeAreaInsets();
+  const { id, certificateId, topicId } = useLocalSearchParams<{ id: string; certificateId?: string; topicId?: string }>();
   const router = useRouter();
   
   const [loading, setLoading] = useState(true);
@@ -37,6 +40,7 @@ export default function MobileQuizScreen() {
   const [attemptId, setAttemptId] = useState<string | null>(null);
   const [questions, setQuestions] = useState<Question[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
+  const [textAnswers, setTextAnswers] = useState<Record<string, string>>({});
   const [answers, setAnswers] = useState<Record<string, string[]>>({});
   
   const [timeLeft, setTimeLeft] = useState<number | null>(null);
@@ -47,7 +51,7 @@ export default function MobileQuizScreen() {
 
   const unansweredQuestions = questions.reduce<number[]>((acc, q, index) => {
     const qAns = answers[q.id] || [];
-    if (qAns.length === 0) acc.push(index + 1);
+    if (qAns.length === 0 && !textAnswers[q.id]?.trim()) acc.push(index + 1);
     return acc;
   }, []);
 
@@ -60,7 +64,7 @@ export default function MobileQuizScreen() {
         const qList = data.questionsSnapshot || data.questions || [];
         setQuestions(qList);
         const durationMins = data.examSnapshot?.durationMinutes || data.exam?.durationMinutes || 15;
-        setTimeLeft(durationMins * 60);
+        setTimeLeft(data.expiresAt ? Math.max(0, Math.ceil((new Date(data.expiresAt).getTime() - Date.now()) / 1000)) : durationMins * 60);
       } catch (error: any) {
         console.error('Start exam failed:', error);
         Alert.alert('Lỗi', error.message || 'Không thể bắt đầu bài kiểm tra.');
@@ -114,14 +118,11 @@ export default function MobileQuizScreen() {
     submitInFlight.current = true;
     setSubmitting(true);
     
-    const formattedAnswers = Object.entries(answers).map(([questionId, selectedOptionIds]) => ({
-      questionId,
-      selectedOptionIds
-    }));
+    const formattedAnswers = questions.filter(question => answers[question.id]?.length || textAnswers[question.id]?.trim()).map(question => ({ questionId: question.id, selectedOptionIds: answers[question.id] ?? [], ...(question.type === 'short_answer' ? { textAnswer: textAnswers[question.id].trim() } : {}) }));
 
     try {
       await api.post(`/exams/attempts/${attemptId}/submit`, { answers: formattedAnswers });
-      router.replace(`/test-result/${attemptId}` as any);
+      router.replace(`/test-result/${attemptId}${certificateId && topicId ? `?certificateId=${certificateId}&topicId=${topicId}` : ''}` as any);
     } catch (error) {
       submitInFlight.current = false;
       Alert.alert('Không thể nộp bài', error instanceof Error ? error.message : 'Vui lòng thử lại.');
@@ -143,7 +144,7 @@ export default function MobileQuizScreen() {
   }
 
   const currentQuestion = questions[currentIndex];
-  const isMultipleChoice = currentQuestion?.type === 'MULTIPLE_CHOICE_MULTIPLE_ANSWERS';
+  const isMultipleChoice = currentQuestion?.type === 'multiple_choice';
   const total = questions.length || 1;
 
   const formatTime = (seconds: number) => {
@@ -153,7 +154,7 @@ export default function MobileQuizScreen() {
   };
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { paddingTop: insets.top }]}>
       <StatusBar style="dark" />
       
       {/* Header */}
@@ -184,9 +185,11 @@ export default function MobileQuizScreen() {
               {safeText((currentQuestion as any).prompt || currentQuestion.text)}
             </Text>
             <Text style={styles.questionSubtitle}>
-              {isMultipleChoice ? 'Chọn các đáp án đúng bên dưới.' : 'Chọn một đáp án đúng bên dưới.'}
+              {currentQuestion.type === 'short_answer' ? 'Nhập câu trả lời ngắn.' : isMultipleChoice ? 'Chọn các đáp án đúng bên dưới.' : 'Chọn một đáp án đúng bên dưới.'}
             </Text>
 
+            {(currentQuestion as any).context && <Text style={{ marginBottom: 16, lineHeight: 22 }}>{safeText((currentQuestion as any).context)}</Text>}
+            {currentQuestion.type === 'short_answer' && <TextInput multiline value={textAnswers[currentQuestion.id] ?? ''} onChangeText={value => setTextAnswers(previous => ({ ...previous, [currentQuestion.id]: value }))} placeholder="Nhập câu trả lời..." style={{ minHeight: 100, padding: 12, borderWidth: 1, borderColor: colors.outlineVariant, borderRadius: 10, textAlignVertical: 'top' }} />}
             {/* Options */}
             <View style={styles.optionsList}>
               {currentQuestion.options?.map((option: any, optIdx: number) => {
@@ -223,7 +226,7 @@ export default function MobileQuizScreen() {
       </ScrollView>
 
       {/* Footer Navigation */}
-      <View style={styles.bottomFixedArea}>
+      <View style={[styles.bottomFixedArea, { paddingBottom: insets.bottom + 16 }]}>
         {currentIndex > 0 && (
           <TouchableOpacity 
             style={styles.btnSecondary} 
@@ -297,10 +300,7 @@ export default function MobileQuizScreen() {
                 style={styles.modalSubmitBtn}
                 onPress={() => {
                   setShowSubmitModal(false);
-                  if (!autoSubmitAttempted.current) {
-        autoSubmitAttempted.current = true;
-        void submitExam();
-      }
+                  void submitExam();
                 }}
                 disabled={submitting}
               >

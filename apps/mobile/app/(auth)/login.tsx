@@ -1,8 +1,9 @@
+import { Text, TextInput, TouchableOpacity } from '../../src/shared/ui/primitives';
 import { useState, useEffect } from 'react';
 import { useRouter } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
-import { StyleSheet, Text, View, TextInput, TouchableOpacity, ScrollView, ActivityIndicator, Alert, Platform } from 'react-native';
-import { MaterialIcons } from '@expo/vector-icons';
+import { StyleSheet, View, ScrollView, ActivityIndicator, Alert, Platform } from 'react-native';
+import { MaterialIcons } from '../../src/shared/ui/AppIcon';
 import Svg, { Path } from 'react-native-svg';
 import { colors, spacing } from '@techenglish/design-tokens';
 import { useAuth } from '../../src/shared/store/auth-context';
@@ -142,6 +143,7 @@ export default function MobileLoginScreen() {
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.contentContainer} keyboardShouldPersistTaps="handled">
       <StatusBar style="dark" />
+      <TouchableOpacity onPress={() => router.canGoBack() ? router.back() : router.replace('/' as any)} style={{ flexDirection: 'row', alignItems: 'center', gap: 8, alignSelf: 'flex-start', marginBottom: 16 }}><MaterialIcons name="arrow-back" size={20} color={colors.primary} /><Text style={{ color: colors.primary }}>Quay lại</Text></TouchableOpacity>
       <View style={styles.header}>
         <View style={styles.iconCircle}>
           <MaterialIcons name="school" size={32} color={colors.primary} />
@@ -239,7 +241,7 @@ export default function MobileLoginScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f8fafc'
+    backgroundColor: '#f7f9fb'
   },
   contentContainer: {
     padding: spacing.lg,

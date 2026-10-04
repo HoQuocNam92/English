@@ -1,12 +1,14 @@
+import { PlacementPlan } from '../src/features/learning/PlacementPlan';
+import { Text, TouchableOpacity } from '../src/shared/ui/primitives';
 import { useEffect, useRef, useState } from 'react';
-import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { api } from '../src/shared/api/api-client';
 import { useTheme } from '../src/shared/store/theme-context';
 import { EmptyState, FeatureScreen } from '../src/shared/ui/FeatureScreen';
 
 type Question = { id: string; prompt: string; context?: string; options: { id: string; key: string; text: string }[] };
-type Result = { correct: number; total: number; percent: number; levelName: string };
+type Result = { correct: number; total: number; percent: number; levelName: string; plan?: any; domainScores?: any[]; review?: any[] };
 
 export default function PlacementTestScreen() {
   const router = useRouter();
@@ -48,8 +50,7 @@ export default function PlacementTestScreen() {
   const button = (label: string, action: () => void, disabled = false) => <TouchableOpacity accessibilityRole="button" disabled={disabled} onPress={action} style={[s.button, { backgroundColor: colors.primary, opacity: disabled ? 0.45 : 1 }]}><Text style={s.buttonText}>{label}</Text></TouchableOpacity>;
   return <FeatureScreen title="Kiểm tra trình độ" subtitle="Khoảng 5 phút · Điều chỉnh lộ trình học" loading={loading} error={error} onRetry={load}>
     {result ? <View style={s.section}>
-      <Text style={[s.title, { color: colors.primary }]}>Trình độ đề xuất: {result.levelName}</Text>
-      <Text style={[s.copy, { color: colors.onSurface }]}>Bạn trả lời đúng {result.correct}/{result.total} câu ({result.percent}%). Kết quả đã được lưu để điều chỉnh lộ trình học.</Text>
+      <PlacementPlan result={result} />
       {button('Bắt đầu học', finish)}
     </View> : !question ? <><EmptyState icon="school" title="Chưa có câu hỏi xếp trình độ" detail="Bạn vẫn có thể bắt đầu học theo trình độ đã chọn." />{button('Bắt đầu học', finish)}</> : <View style={s.section}>
       <Text style={[s.copy, { color: colors.primary }]}>Câu {index + 1}/{questions.length} · Đã trả lời {Object.keys(answers).length}/{questions.length}</Text>

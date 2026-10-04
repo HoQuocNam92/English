@@ -1,17 +1,7 @@
+import { Text, TextInput, TouchableOpacity } from '../../src/shared/ui/primitives';
 import { useCallback, useEffect, useRef, useState } from 'react';
-import {
-  Animated,
-  Alert,
-  Dimensions,
-  KeyboardAvoidingView,
-  Platform,
-  StyleSheet,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  View,
-} from 'react-native';
-import { MaterialIcons } from '@expo/vector-icons';
+import { Animated, Alert, Dimensions, KeyboardAvoidingView, Platform, StyleSheet, View } from 'react-native';
+import { MaterialIcons } from '../../src/shared/ui/AppIcon';
 import * as Speech from 'expo-speech';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { api } from '../../src/shared/api/api-client';
@@ -44,6 +34,8 @@ interface QuizQuestion {
   hint?: string;
   options?: string[];
   answer: string;
+  explanation?: string;
+  optionExplanations?: Record<string, string>;
 }
 
 type Phase = 'learn' | 'quiz' | 'summary';
@@ -72,6 +64,8 @@ export default function FlashcardsScreen() {
 
   // Learn phase
   const [flipped, setFlipped] = useState(false);
+  const [onlyNew, setOnlyNew] = useState(true);
+  const [responses, setResponses] = useState<Record<number, { answer: string; mastered?: boolean }>>({});
 
   // Quiz phase
   const [questions, setQuestions] = useState<QuizQuestion[]>([]);
@@ -119,6 +113,7 @@ export default function FlashcardsScreen() {
       if (params.domainCode) qs.set('domainCode', params.domainCode);
       if (params.levelCode) qs.set('levelCode', params.levelCode);
       if (continueLearning) qs.set('continue', 'true');
+      qs.set('onlyNew', String(onlyNew));
       const query = qs.toString() ? `?${qs.toString()}` : '';
       let res: any = await api.get(isReview ? '/vocab-study/review-session' : `/vocab-study/session${query}`);
       const initialMeta = res.meta ?? null;
@@ -134,6 +129,7 @@ export default function FlashcardsScreen() {
       setBatchStart(0);
       setBatchIdx(0);
       setFlipped(false);
+      flipAnim.setValue(0);
       setMasteredSet(new Set());
       setPendingWrongIds([]);
       setAllTimeResults([]);
@@ -145,7 +141,7 @@ export default function FlashcardsScreen() {
     } finally {
       setLoading(false);
     }
-  }, [params.lessonId, params.domainCode, params.levelCode, isReview]);
+  }, [params.lessonId, params.domainCode, params.levelCode, isReview, onlyNew]);
 
   useEffect(() => { loadSession(); }, [loadSession]);
 
@@ -193,12 +189,12 @@ export default function FlashcardsScreen() {
 
   const startQuiz = async (vocabIds: string[], ratingMap?: Record<string, 'easy' | 'medium' | 'hard' | 'mastered'>) => {
     try {
-      const repetitions = ratingMap ? Object.fromEntries(Object.entries(ratingMap).filter(([, rating]) => rating !== 'mastered').map(([id, rating]) => [id, rating === 'easy' ? 2 : rating === 'medium' ? 3 : 4])) : undefined;
       const ids = ratingMap ? vocabIds.filter(id => ratingMap[id] !== 'mastered') : vocabIds;
       if (ids.length === 0) { setPhase('summary'); return; }
-      const res: any = await api.post('/vocab-study/quiz', { vocabIds: ids, repetitions });
+      const res: any = await api.post('/vocab-study/quiz', { vocabIds: ids });
       setQuestions(res.questions ?? []);
       setQuizIndex(0);
+      setResponses({});
       setUserAnswer('');
       setSelectedOption(null);
       setShowResult(false);
@@ -224,6 +220,9 @@ export default function FlashcardsScreen() {
       const result = { vocabId: q.vocabularyId, term: words.find(word => word.id === q.vocabularyId)?.term ?? q.answer, correct: isCorrect };
       setQuizResults(prev => [...prev, result]);
       setAllTimeResults(prev => [...prev, result]);
+      setResponses(previous => ({ ...previous, [quizIndex]: { answer } }));
+      if (!isCorrect) setQuestions(previous => [...previous, q]);
+      else setQuestions(previous => previous.filter((question, index) => index <= quizIndex || question.vocabularyId !== q.vocabularyId));
       setShowResult(true);
     } catch (cause) {
       Alert.alert('Chưa lưu được đáp án', cause instanceof Error ? cause.message : 'Vui lòng thử lại.');
@@ -236,6 +235,7 @@ export default function FlashcardsScreen() {
     try {
       await api.post('/vocab-study/rate', { vocabularyId: currentQuestion.vocabularyId, rating: 'mastered' });
       setQuizMarkedMastered(true);
+      setResponses(previous => ({ ...previous, [quizIndex]: { answer: currentQuestion.answer, mastered: true } }));
       setMasteredSet(previous => new Set(previous).add(currentQuestion.vocabularyId));
       const result = { vocabId: currentQuestion.vocabularyId, term: words.find(word => word.id === currentQuestion.vocabularyId)?.term ?? currentQuestion.answer, correct: true, selfReported: true };
       setQuizResults(previous => [...previous, result]);
@@ -250,8 +250,9 @@ export default function FlashcardsScreen() {
   // ── Handle quiz completion ──────────────────────────────────────────────────
 
   const handleQuizComplete = () => {
-    const correctIds = quizResults.filter(r => r.correct).map(r => r.vocabId);
-    const wrongIds = quizResults.filter(r => !r.correct).map(r => r.vocabId);
+    const latest = new Map(quizResults.map(result => [result.vocabId, result]));
+    const correctIds = [...latest.values()].filter(r => r.correct).map(r => r.vocabId);
+    const wrongIds = [...latest.values()].filter(r => !r.correct).map(r => r.vocabId);
 
     setMasteredSet(prev => {
       const next = new Set(prev);
@@ -296,21 +297,20 @@ export default function FlashcardsScreen() {
 
   const nextQuizQuestion = () => {
     if (quizIndex + 1 < questions.length) {
-      setQuizIndex(quizIndex + 1);
-      setUserAnswer('');
-      setSelectedOption(null);
-      setShowResult(false);
-      setQuizMarkedMastered(false);
+      navigateQuiz(quizIndex + 1);
     } else {
       handleQuizComplete();
     }
   };
 
-  useEffect(() => {
-    if (phase !== 'quiz' || !showResult) return;
-    const timer = setTimeout(() => nextQuizQuestion(), 1500);
-    return () => clearTimeout(timer);
-  }, [phase, showResult, quizIndex, questions.length]);
+  const navigateQuiz = (index: number) => {
+    const response = responses[index];
+    setQuizIndex(index);
+    setUserAnswer(response?.answer ?? '');
+    setSelectedOption(response?.answer ?? null);
+    setShowResult(Boolean(response));
+    setQuizMarkedMastered(Boolean(response?.mastered));
+  };
 
   // ── Learn phase navigation ─────────────────────────────────────────────────
 
@@ -373,6 +373,7 @@ export default function FlashcardsScreen() {
       <View style={styles.phaseContainer}>
         <View style={styles.sessionToolbar}><Text style={[styles.dailyText, { color: colors.onSurfaceVariant }]}>{isReview ? `${totalWords} từ đến hạn ôn` : `Hôm nay: ${sessionMeta?.studiedToday ?? 0}/${sessionMeta?.maxDailyNewWords ?? '—'} từ mới`}</Text><TouchableOpacity onPress={() => router.push('/flashcards/history' as any)}><Text style={[styles.historyLink, { color: colors.primary }]}>Từ đã học</Text></TouchableOpacity></View>
         {dailyLimitNotice && <View style={styles.dailyNotice}><MaterialIcons name="check-circle" size={14} color="#a16207" /><Text style={styles.dailyNoticeText}>Đã đủ mục tiêu hôm nay · đang học thêm</Text></View>}
+
         <View style={styles.speakerRow}><TouchableOpacity onPress={() => void speak(currentWord.term)} style={[styles.speakerBtn, { backgroundColor: colors.surface }]} accessibilityRole="button" accessibilityLabel={`Phát âm ${currentWord.term}`}><MaterialIcons name="volume-up" size={28} color={colors.primary} /></TouchableOpacity></View>
 
         {/* Flip card */}
@@ -395,10 +396,10 @@ export default function FlashcardsScreen() {
             {/* Back */}
             <Animated.View style={[styles.flipCard, styles.flipCardBack, { backgroundColor: colors.surface, borderColor: colors.outlineVariant, transform: [{ perspective: 1000 }, { rotateY: backInterpolate }] }]}>
             <Text style={[styles.defVi, { color: colors.onSurface }]} numberOfLines={5} adjustsFontSizeToFit minimumFontScale={0.4}>{currentWord.definitionVi}</Text>
-            <Text style={[styles.defEn, { color: colors.onSurfaceVariant }]} numberOfLines={5} adjustsFontSizeToFit minimumFontScale={0.7}>{currentWord.definitionEn}</Text>
+            <Text selectable style={[styles.defEn, { color: colors.onSurfaceVariant }]} numberOfLines={5} adjustsFontSizeToFit minimumFontScale={0.7}>{currentWord.definitionEn}</Text>
             {currentWord.examples?.[0] ? (
-              <View style={[styles.exampleBox, { backgroundColor: colors.surfaceVariant }]}>
-                <Text style={[styles.exampleText, { color: colors.primary }]} numberOfLines={3}>"{currentWord.examples[0].sentenceEn}"</Text>
+              <View style={[styles.exampleBox, { backgroundColor: colors.surfaceVariant }]}><Text style={{ fontSize: 12, fontWeight: '700', color: colors.primary }}>Ví dụ</Text>
+                <Text selectable style={[styles.exampleText, { color: colors.primary }]} numberOfLines={3}><HighlightedExample sentence={currentWord.examples[0].sentenceEn} term={currentWord.term} /></Text>
                 {currentWord.examples[0].translationVi ? (
                   <Text style={[styles.exampleTranslation, { color: colors.onSurfaceVariant }]} numberOfLines={2}>{currentWord.examples[0].translationVi}</Text>
                 ) : null}
@@ -446,7 +447,7 @@ export default function FlashcardsScreen() {
         {/* Question card */}
         <View style={[styles.quizCard, { backgroundColor: colors.surface, borderColor: colors.outlineVariant }]}>
           <Text style={[styles.quizLabel, { color: colors.onSurfaceVariant }]}>
-            {currentQuestion.type === 'fill_blank' ? 'Điền từ vào chỗ trống:' : 'Chọn từ đúng cho nghĩa:'}
+            {currentQuestion.type === 'fill_blank' ? 'Điền từ vào chỗ trống:' : 'Chọn đáp án đúng:'}
           </Text>
           <Text style={[styles.quizPrompt, { color: colors.onSurface }]}>{currentQuestion.prompt}</Text>
           {currentQuestion.hint ? (
@@ -515,7 +516,7 @@ export default function FlashcardsScreen() {
               <MaterialIcons name={quizMarkedMastered || isCorrectAnswer ? 'check-circle' : 'highlight-off'} size={24} color={quizMarkedMastered || isCorrectAnswer ? '#15803d' : '#b91c1c'} />
               <View style={{ flex: 1 }}>
                 <Text style={{ fontWeight: '800', color: quizMarkedMastered || isCorrectAnswer ? '#2E7D32' : '#C62828' }}>
-                  {quizMarkedMastered ? 'Đã đánh dấu là đã biết' : isCorrectAnswer ? 'Chính xác! 🎉' : 'Chưa đúng'}
+                  {quizMarkedMastered ? 'Đã đánh dấu là đã biết' : isCorrectAnswer ? 'Chính xác!' : 'Chưa đúng'}
                 </Text>
                 {!quizMarkedMastered && !isCorrectAnswer ? (
                   <Text style={{ color: '#C62828', marginTop: 4 }}>Đáp án đúng: <Text style={{ fontWeight: '800' }}>{currentQuestion.answer}</Text></Text>
@@ -525,6 +526,19 @@ export default function FlashcardsScreen() {
           ) : null}
         </View>
 
+        {showResult && !quizMarkedMastered && <View style={{ gap: 10 }}>
+          <Text style={{ fontWeight: '700' }}>Giải thích đáp án</Text>
+          {currentQuestion.explanation && <Text>{currentQuestion.explanation}</Text>}
+          {(currentQuestion.options ?? [currentQuestion.answer]).map(option => {
+            const correct = option === currentQuestion.answer;
+            const word = words.find(word => word.definitionVi === option || word.term === option);
+            return <Text key={option} style={{ color: correct ? colors.success : colors.onSurfaceVariant }}><Text style={{ fontWeight: '700' }}>{correct ? 'Đúng' : 'Sai'}: {option}. </Text>{currentQuestion.optionExplanations?.[option] ?? (correct ? `Đây là đáp án phù hợp với nghĩa của “${words.find(word => word.id === currentQuestion.vocabularyId)?.term ?? currentQuestion.answer}”.` : word ? `Đây là nghĩa của “${word.term}”, không phải từ đang hỏi.` : 'Đáp án này không khớp với nghĩa của từ đang hỏi.')}</Text>;
+          })}
+        </View>}
+        <View style={{ flexDirection: 'row', justifyContent: 'space-between', gap: 12 }}>
+          <TouchableOpacity disabled={quizIndex === 0 || saving} onPress={() => navigateQuiz(quizIndex - 1)} style={[styles.secondaryBtn, { borderColor: colors.primary, opacity: quizIndex === 0 ? 0.5 : 1 }]}><Text style={{ color: colors.primary }}>Trước đó</Text></TouchableOpacity>
+          <TouchableOpacity disabled={!showResult || saving} onPress={nextQuizQuestion} style={[styles.primaryBtn, { backgroundColor: colors.primary, opacity: !showResult ? 0.5 : 1 }]}><Text style={styles.primaryBtnText}>Tiếp tục</Text></TouchableOpacity>
+        </View>
         {/* Action button */}
         {!showResult && <View style={styles.quizActions}>
           {currentQuestion.type === 'fill_blank' && <TouchableOpacity disabled={saving || !userAnswer.trim()} onPress={() => void submitQuizAnswer()} style={[styles.primaryBtn, { flex: 1, backgroundColor: colors.primary, opacity: !userAnswer.trim() ? 0.5 : 1 }]}><Text style={styles.primaryBtnText}>Kiểm tra</Text></TouchableOpacity>}
@@ -608,6 +622,7 @@ export default function FlashcardsScreen() {
 
   return (
     <FeatureScreen title={phaseTitle} subtitle={phaseSubtitle} loading={loading} error={error} onRetry={loadSession}>
+      {phase === 'learn' && !isReview && <TouchableOpacity onPress={() => setOnlyNew(value => !value)} accessibilityRole="checkbox" accessibilityState={{ checked: onlyNew }} style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}><MaterialIcons name={onlyNew ? 'check-box' : 'check-box-outline-blank'} size={22} color={colors.primary} /><Text>Chỉ ôn từ mới</Text></TouchableOpacity>}
       {phase === 'learn' && renderLearnPhase()}
       {phase === 'quiz' && renderQuizPhase()}
       {phase === 'summary' && renderSummaryPhase()}
@@ -706,3 +721,9 @@ const styles = StyleSheet.create({
   resultStatus: { fontSize: 12, fontWeight: '700' },
   summaryActions: { gap: 10, marginTop: 8 },
 });
+
+function HighlightedExample({ sentence, term }: { sentence: string; term: string }) {
+  if (!term.trim()) return <Text>{sentence}</Text>;
+  const escaped = term.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  return <Text>{sentence.split(new RegExp(`(${escaped})`, 'gi')).map((part, index) => <Text key={index} style={part.toLowerCase() === term.toLowerCase() ? { fontWeight: '800' } : undefined}>{part}</Text>)}</Text>;
+}

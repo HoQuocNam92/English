@@ -1,9 +1,10 @@
+import { Text, TouchableOpacity } from '../../src/shared/ui/primitives';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useCallback, useState } from 'react';
 import { useFocusEffect, useRouter } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
-import { StyleSheet, Text, View, TouchableOpacity, ScrollView, Alert, ActivityIndicator, Image } from 'react-native';
-import { MaterialIcons } from '@expo/vector-icons';
+import { StyleSheet, View, ScrollView, Alert, ActivityIndicator, Image } from 'react-native';
+import { MaterialIcons } from '../../src/shared/ui/AppIcon';
 import { spacing } from '@techenglish/design-tokens';
 import { useTheme } from '../../src/shared/store/theme-context';
 import { api } from '../../src/shared/api/api-client';
@@ -184,7 +185,7 @@ export default function MobileProfileScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f8fafc'
+    backgroundColor: '#f7f9fb'
   },
   header: {
     height: 64,

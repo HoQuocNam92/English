@@ -1,15 +1,10 @@
-import { useEffect, useMemo, useState } from 'react';
-import { useLocalSearchParams, useRouter } from 'expo-router';
+import { Tabs } from '../../src/shared/ui/primitives';
+import { Text, TouchableOpacity } from '../../src/shared/ui/primitives';
+import { useCallback, useMemo, useState } from 'react';
+import { useLocalSearchParams, useRouter, useFocusEffect } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
-import { MaterialIcons } from '@expo/vector-icons';
-import {
-  ScrollView,
-  StyleSheet,
-  Text,
-  TouchableOpacity,
-  View,
-  ActivityIndicator,
-} from 'react-native';
+import { MaterialIcons } from '../../src/shared/ui/AppIcon';
+import { ScrollView, StyleSheet, View, ActivityIndicator } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTheme } from '../../src/shared/store/theme-context';
 import { api } from '../../src/shared/api/api-client';
@@ -18,6 +13,9 @@ type Tab = 'learn' | 'exam';
 type TopicStatus = 'done' | 'current' | 'todo';
 
 interface Topic {
+  id: string;
+  completed: number;
+  total: number;
   name: string;
   status: TopicStatus;
   practiceExamId?: string;
@@ -46,30 +44,33 @@ export default function CertificationDetailScreen() {
   const [tab, setTab] = useState<Tab>('learn');
   const [expandedDomains, setExpandedDomains] = useState<number[]>([]);
   const [certificateData, setCertificateData] = useState<any>(null);
+  const [studyProgress, setStudyProgress] = useState<any>(null);
   const [progressData, setProgressData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
-  useEffect(() => {
-    Promise.all([api.get<any>(`/certificates/${params.id}`), api.get<any>('/progress/me')])
-      .then(([certificateResult, progressResult]) => {
+  useFocusEffect(useCallback(() => {
+    Promise.all([api.get<any>(`/certificates/${params.id}`), api.get<any>('/progress/me'), api.get<any>(`/certification-study/certificates/${params.id}/progress`)])
+      .then(([certificateResult, progressResult, studyResult]) => {
         const cert = (certificateResult as any)?.data ?? certificateResult;
         setCertificateData(cert);
         setProgressData(progressResult);
+        setStudyProgress(studyResult);
         setExpandedDomains((cert?.domains ?? []).slice(0, 2).map((_: any, index: number) => index + 1));
       })
       .catch((cause) => setError(cause?.message || 'Không thể tải dữ liệu chứng chỉ'))
       .finally(() => setLoading(false));
-  }, [params.id]);
+  }, [params.id]));
 
   const domains: Domain[] = useMemo(() => (certificateData?.domains ?? []).map((item: any, index: number) => {
     const domain = item.domain;
     const topics = (item.certificationTopics ?? []).map((topic: any) => {
       const practiceExam = (certificateData?.exams ?? []).find((exam: any) => exam.kind === 'practice' && (exam.topics ?? []).includes(topic.code));
-      return { name: topic.name, status: 'todo' as const, practiceExamId: practiceExam?.id, questionCount: Number(topic._count?.questions ?? 0) };
+      const study = studyProgress?.topics?.find((item: any) => item.topicId === topic.id);
+      return { id: topic.id, name: topic.name, status: study?.total > 0 && study.completed === study.total ? 'done' as const : study?.started ? 'current' as const : 'todo' as const, completed: study?.completed ?? 0, total: study?.total ?? 0, practiceExamId: practiceExam?.id, questionCount: Number(topic._count?.questions ?? 0) };
     });
-    return { id: domain.id, number: index + 1, name: domain.name, weightPercent: Number(item.weightPercent ?? 0), progress: 0, topics };
-  }), [certificateData]);
+    return { id: domain.id, number: index + 1, name: domain.name, weightPercent: Number(item.weightPercent ?? 0), progress: topics.reduce((sum: number, topic: Topic) => sum + topic.total, 0) ? Math.round(topics.reduce((sum: number, topic: Topic) => sum + topic.completed, 0) / topics.reduce((sum: number, topic: Topic) => sum + topic.total, 0) * 100) : 0, topics };
+  }), [certificateData, studyProgress]);
 
   const certificate = useMemo(() => ({
     name: certificateData?.name || params.name || 'Chứng chỉ',
@@ -89,8 +90,7 @@ export default function CertificationDetailScreen() {
   };
 
   const openQuiz = (topic: Topic) => {
-    if (!topic.practiceExamId) return;
-    router.push(`/quiz/${topic.practiceExamId}` as any);
+    router.push(`/certifications/topics/${topic.id}?certificateId=${params.id}` as any);
   };
 
   if (loading) return <View style={[styles.screen, { backgroundColor: colors.background, alignItems: 'center', justifyContent: 'center' }]}><ActivityIndicator size="large" color={colors.primary} /></View>;
@@ -104,9 +104,7 @@ export default function CertificationDetailScreen() {
           <MaterialIcons name="arrow-back" size={24} color={colors.onSurface} />
         </TouchableOpacity>
         <Text style={[styles.topBarTitle, { color: colors.onSurface }]} numberOfLines={1}>Chi tiết chứng chỉ</Text>
-        <TouchableOpacity style={styles.iconButton} accessibilityLabel="Lưu chứng chỉ">
-          <MaterialIcons name="bookmark-border" size={24} color={colors.onSurfaceVariant} />
-        </TouchableOpacity>
+
       </View>
 
       <ScrollView stickyHeaderIndices={[1]} showsVerticalScrollIndicator={false} contentContainerStyle={styles.scrollContent}>
@@ -132,18 +130,7 @@ export default function CertificationDetailScreen() {
           <Text style={[styles.progressCaption, { color: colors.onSurfaceVariant }]}>{certProgress?.examAttempts ?? 0} lượt thi đã hoàn thành</Text>
         </View>
 
-        <View style={[styles.tabs, { backgroundColor: colors.surfaceContainerLowest, borderBottomColor: colors.border }]}>
-          {TABS.map((item) => {
-            const active = tab === item.id;
-            return (
-              <TouchableOpacity key={item.id} style={styles.tab} onPress={() => setTab(item.id)} accessibilityRole="tab" accessibilityState={{ selected: active }}>
-                <MaterialIcons name={item.icon} size={19} color={active ? colors.primary : colors.onSurfaceVariant} />
-                <Text style={[styles.tabText, { color: active ? colors.primary : colors.onSurfaceVariant }]}>{item.label}</Text>
-                {active && <View style={[styles.activeLine, { backgroundColor: colors.primary }]} />}
-              </TouchableOpacity>
-            );
-          })}
-        </View>
+        <View style={{ padding: 16, backgroundColor: colors.surface }}><Tabs items={TABS.map(item => ({ value: item.id, label: item.label }))} value={tab} onChange={value => setTab(value as Tab)} /></View>
 
         <View style={styles.content}>
           {tab === 'learn' && (
@@ -168,7 +155,7 @@ function LearnContent({ colors, expandedDomains, onToggle, onOpenQuiz, domains, 
     <View>
       <Text style={[styles.eyebrow, { color: colors.primary }]}>YOUR LEARNING PATH</Text>
       <Text style={[styles.sectionTitle, { color: colors.onSurface }]}>Lộ trình theo nội dung kỳ thi</Text>
-      <Text style={[styles.sectionDescription, { color: colors.onSurfaceVariant }]}>Chọn một Topic để làm bài luyện nhanh.</Text>
+      <Text style={[styles.sectionDescription, { color: colors.onSurfaceVariant }]}>Học kiến thức từng chủ đề, sau đó làm Quiz để củng cố.</Text>
 
       <View style={styles.domainList}>
         {domains.map((domain: Domain) => {
@@ -199,11 +186,11 @@ function LearnContent({ colors, expandedDomains, onToggle, onOpenQuiz, domains, 
                       </View>
                       <View style={[styles.topicTextWrap]}>
                         <Text style={[styles.topicName, { color: colors.onSurface }]}>{topic.name}</Text>
-                        <Text style={[styles.topicMeta, { color: colors.onSurfaceVariant }]}>Từ vựng · {topic.questionCount} câu Quiz</Text>
+                        <Text style={[styles.topicMeta, { color: colors.onSurfaceVariant }]}>{topic.completed}/{topic.total} bài học hoàn thành</Text>
                       </View>
-                      <TouchableOpacity disabled={!topic.practiceExamId} onPress={() => onOpenQuiz(topic)} style={[styles.topicQuizButton, { backgroundColor: topic.practiceExamId ? colors.primary : colors.surfaceContainerLow }]}>
-                        <MaterialIcons name="play-arrow" size={16} color={topic.practiceExamId ? '#fff' : colors.onSurfaceVariant} />
-                        <Text style={[styles.topicQuizText, { color: topic.practiceExamId ? '#fff' : colors.onSurfaceVariant }]}>Quiz</Text>
+                      <TouchableOpacity onPress={() => onOpenQuiz(topic)} style={[styles.topicQuizButton, { backgroundColor: colors.primary }]}>
+                        <MaterialIcons name="play-arrow" size={16} color={'#fff'} />
+                        <Text style={[styles.topicQuizText, { color: '#fff' }]}>Học</Text>
                       </TouchableOpacity>
                     </View>
                   ))}

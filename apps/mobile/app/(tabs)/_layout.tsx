@@ -1,6 +1,6 @@
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Tabs } from 'expo-router';
-import { MaterialIcons } from '@expo/vector-icons';
+import { MaterialIcons } from '../../src/shared/ui/AppIcon';
 import { useTheme } from '../../src/shared/store/theme-context';
 import { useI18n } from '../../src/shared/store/i18n-context';
 import { iconColors } from '@techenglish/design-tokens';
@@ -40,11 +40,11 @@ export default function TabsLayout() {
         name="learning"
         options={{
           title: 'Bài học',
-          tabBarIcon: ({ size, color }) => <MaterialIcons name="menu-book" size={size} color={color} />,
+          tabBarIcon: ({ size, color }) => <MaterialIcons name="menu-book" size={size} color={iconColors.learning} />,
         }}
       />
       <Tabs.Screen name="practice" options={{ href: null }} />
-      <Tabs.Screen name="certificates" options={{ href: null }} />
+      <Tabs.Screen name="certificates" options={{ title: "Chứng chỉ", tabBarIcon: ({ size }) => <MaterialIcons name="workspace-premium" size={size} color={iconColors.certificate} /> }} />
       <Tabs.Screen
         name="progress"
         options={{

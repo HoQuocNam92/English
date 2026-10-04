@@ -1,8 +1,10 @@
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { Text, TouchableOpacity } from '../../src/shared/ui/primitives';
 import { useEffect, useRef, useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView, ActivityIndicator } from 'react-native';
+import { View, StyleSheet, ScrollView, ActivityIndicator } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
-import { MaterialIcons } from '@expo/vector-icons';
+import { MaterialIcons } from '../../src/shared/ui/AppIcon';
 import { colors, spacing } from '@techenglish/design-tokens';
 import { api } from '../../src/shared/api/api-client';
 import { safeText } from '../../src/shared/utils/safeText';
@@ -22,7 +24,8 @@ interface AttemptResult {
 }
 
 export default function MobileTestResultScreen() {
-  const { id } = useLocalSearchParams();
+ const insets = useSafeAreaInsets();
+  const { id, certificateId, topicId } = useLocalSearchParams<{ id: string; certificateId?: string; topicId?: string }>();
   const router = useRouter();
   
   const [loading, setLoading] = useState(true);
@@ -63,7 +66,7 @@ export default function MobileTestResultScreen() {
     return (
       <View style={[styles.container, { justifyContent: 'center', alignItems: 'center' }]}>
         <Text style={{ color: '#191c1e' }}>Không tìm thấy kết quả</Text>
-        <TouchableOpacity style={styles.backHomeBtn} onPress={() => router.replace('/(tabs)/practice')}>
+        <TouchableOpacity style={styles.backHomeBtn} onPress={() => router.replace(certificateId && topicId ? `/certifications/topics/${topicId}?certificateId=${certificateId}` as any : '/(tabs)/learning')}>
           <Text style={styles.backHomeText}>Về trang chủ</Text>
         </TouchableOpacity>
       </View>
@@ -94,15 +97,15 @@ export default function MobileTestResultScreen() {
   };
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { paddingTop: insets.top }]}>
       <StatusBar style="dark" />
       
       {/* Header */}
       <View style={styles.header}>
-        <TouchableOpacity style={styles.headerIconBtn} onPress={() => router.replace('/(tabs)/practice')}>
+        <TouchableOpacity style={styles.headerIconBtn} onPress={() => router.replace(certificateId && topicId ? `/certifications/topics/${topicId}?certificateId=${certificateId}` as any : '/(tabs)/learning')}>
           <MaterialIcons name="close" size={24} color="#464555" />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>IT English Pro</Text>
+        <Text style={styles.headerTitle}>TechEnglish Pro</Text>
         <View style={{ width: 40 }} />
       </View>
 
@@ -217,13 +220,13 @@ export default function MobileTestResultScreen() {
                     <View style={styles.reviewAnswerRow}>
                       <Text style={styles.reviewAnswerLabel}>Bạn đã chọn:</Text>
                       <Text style={[styles.reviewAnswerValue, { color: isCorrect ? '#16a34a' : '#ba1a1a' }]}>
-                        {selectedOpts.length ? selectedOpts.map((o: any) => o.text).join(', ') : 'Không chọn'}
+                        {q.type === 'short_answer' ? q.userTextAnswer ?? (isCorrect ? 'Câu trả lời đúng' : 'Câu trả lời chưa đúng') : selectedOpts.length ? selectedOpts.map((o: any) => o.text).join(', ') : 'Không chọn'}
                       </Text>
                     </View>
                     <View style={styles.reviewAnswerRow}>
                       <Text style={styles.reviewAnswerLabel}>Đáp án đúng:</Text>
                       <Text style={[styles.reviewAnswerValue, { color: '#16a34a' }]}>
-                        {correctOpts.length ? correctOpts.map((o: any) => o.text).join(', ') : '—'}
+                        {q.type === 'short_answer' ? (q.acceptedAnswers ?? []).join(' / ') || 'Xem phần giải thích' : correctOpts.length ? correctOpts.map((o: any) => o.text).join(', ') : '—'}
                       </Text>
                     </View>
                   </View>
@@ -263,10 +266,10 @@ export default function MobileTestResultScreen() {
       </ScrollView>
 
       {/* Bottom Actions Fixed */}
-      <View style={styles.bottomFixedArea}>
+      <View style={[styles.bottomFixedArea, { paddingBottom: insets.bottom + 16 }]}>
         <TouchableOpacity 
           style={styles.btnPrimary} 
-          onPress={() => router.replace('/(tabs)/practice')}
+          onPress={() => router.replace(certificateId && topicId ? `/certifications/topics/${topicId}?certificateId=${certificateId}` as any : '/(tabs)/learning')}
         >
           <Text style={styles.btnPrimaryText}>Quay lại luyện tập</Text>
         </TouchableOpacity>
@@ -574,7 +577,7 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     borderTopWidth: 1,
     borderTopColor: '#e6e8ea',
-    backgroundColor: '#f8fafc',
+    backgroundColor: '#f7f9fb',
   },
   reviewPageButton: {
     minWidth: 82,

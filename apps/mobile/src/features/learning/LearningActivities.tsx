@@ -1,7 +1,8 @@
+import { Text, TouchableOpacity } from '../../shared/ui/primitives';
 import { useCallback, useState } from 'react';
 import { useFocusEffect, useRouter } from 'expo-router';
-import { ActivityIndicator, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-import { MaterialIcons } from '@expo/vector-icons';
+import { ActivityIndicator, StyleSheet, View } from 'react-native';
+import { MaterialIcons } from '../../shared/ui/AppIcon';
 import { api } from '../../shared/api/api-client';
 import { useTheme } from '../../shared/store/theme-context';
 
