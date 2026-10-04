@@ -204,7 +204,7 @@ export class TaxonomyService {
             domain: true,
             certificationTopics: {
               orderBy: { order: 'asc' },
-              include: { _count: { select: { vocabularies: true, questions: true } } },
+              include: { _count: { select: { vocabularies: true, questions: true, lessons: true } } },
             },
           },
           orderBy: { order: 'asc' },
@@ -512,7 +512,7 @@ export class TaxonomyService {
       date.setDate(today.getDate() - i);
       const startOfDay = new Date(date.setHours(0,0,0,0));
       const endOfDay = new Date(date.setHours(23,59,59,999));
-      
+
       const activity = await this.prisma.learningProgress.findMany({
         where: {
           updatedAt: { gte: startOfDay, lte: endOfDay },
@@ -521,7 +521,7 @@ export class TaxonomyService {
         select: { learnerId: true },
       });
       const activeUsers = new Set(activity.map(item => item.learnerId)).size;
-      
+
       weeklyActivity.push({
         day: rangeDays > 7 ? `${String(startOfDay.getDate()).padStart(2, '0')}/${String(startOfDay.getMonth() + 1).padStart(2, '0')}` : days[new Date(startOfDay).getDay()],
         activityCount: activity.length,
@@ -696,7 +696,8 @@ export class TaxonomyService {
               include: {
                 vocabularies: { include: { vocabulary: true } },
                 questions: { include: { question: true } },
-                _count: { select: { vocabularies: true, questions: true } },
+                lessons: { include: { lesson: { select: { id: true, title: true, status: true, estimatedMinutes: true } } } },
+                _count: { select: { vocabularies: true, questions: true, lessons: true } },
               },
             },
           },
@@ -777,10 +778,19 @@ export class TaxonomyService {
     return this.getCertificate(certificateId)
   }
 
-  async updateCertificationTopicLinks(topicId: string, dto: { vocabularies?: string[]; questions?: string[] }) {
+  async updateCertificationTopicLinks(topicId: string, dto: { vocabularies?: string[]; questions?: string[]; lessons?: string[] }) {
     const topic = await this.prisma.certificationTopic.findUnique({ where: { id: topicId }, select: { id: true, certificateId: true } })
     if (!topic) throw new NotFoundException('Topic không tồn tại')
+    if (dto.lessons !== undefined) {
+      if (!Array.isArray(dto.lessons) || dto.lessons.length > 100 || dto.lessons.some(id => typeof id !== 'string')) throw new BadRequestException('Danh sách bài học không hợp lệ.')
+      const valid = await this.prisma.lesson.count({ where: { id: { in: [...new Set(dto.lessons)] }, type: 'certification_review', certificates: { some: { certificateId: topic.certificateId } } } })
+      if (valid !== new Set(dto.lessons).size) throw new BadRequestException('Bài học phải là nội dung ôn tập của chứng chỉ này.')
+    }
     await this.prisma.$transaction(async (tx) => {
+      if (dto.lessons !== undefined) {
+        await tx.certificationTopicLesson.deleteMany({ where: { topicId } })
+        if (dto.lessons.length) await tx.certificationTopicLesson.createMany({ data: [...new Set(dto.lessons)].map(lessonId => ({ topicId, lessonId })) })
+      }
       if (dto.vocabularies !== undefined) {
         await tx.certificationTopicVocabulary.deleteMany({ where: { topicId } })
         if (dto.vocabularies.length) await tx.certificationTopicVocabulary.createMany({ data: [...new Set(dto.vocabularies)].map(vocabularyId => ({ topicId, vocabularyId })) })

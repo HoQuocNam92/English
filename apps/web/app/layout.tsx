@@ -1,3 +1,4 @@
+import { SelectionTranslator } from '@/shared/ui/SelectionTranslator';
 import type { Metadata } from 'next';
 import './globals.css';
 import { I18nProvider } from '@/shared/i18n';
@@ -18,7 +19,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
       </head>
       <body className="bg-background text-on-surface antialiased">
         <I18nProvider>
-          <AppFeedbackProvider>{children}</AppFeedbackProvider>
+          <AppFeedbackProvider>{children}<SelectionTranslator /></AppFeedbackProvider>
         </I18nProvider>
       </body>
     </html>

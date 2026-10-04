@@ -110,6 +110,21 @@ export default function AdminTestResultsPage() {
         </div>
       </div>
 
+      <div className="mb-xl flex flex-col gap-3 rounded-xl border border-outline-variant bg-surface-container-lowest p-md sm:flex-row sm:items-center sm:justify-between">
+        <SearchInput value={searchInput} onChange={setSearchInput} onSearch={value => { setPage(1); setSearch(value); }} placeholder="Tìm kiếm theo email, tên bài thi…" />
+        <div className="flex flex-wrap gap-3 sm:ml-auto">
+          <Dropdown
+              value={status}
+              onChange={(e) => { setStatus(e.target.value); setPage(1); }}
+              className="py-sm px-3 rounded-lg border border-outline-variant text-sm bg-surface"
+            >
+              <option value="">Tất cả</option>
+              <option value="passed">Đạt</option>
+              <option value="failed">Không đạt</option>
+            </Dropdown>
+        </div>
+      </div>
+
       {error && (
         <div className="mb-xl p-3 rounded-xl bg-error-container text-on-error-container text-sm flex items-center gap-2">
           <AppIcon className=" text-[18px]">error</AppIcon>
@@ -167,25 +182,10 @@ export default function AdminTestResultsPage() {
       </div>
 
       <div className="bg-surface-container-lowest rounded-xl border border-outline-variant overflow-hidden">
-        <div className="p-md border-b border-outline-variant flex flex-col sm:flex-row justify-between items-center gap-md bg-surface-bright">
-          <h3 className="font-headline-h3 text-headline-h3 text-on-surface">Kết quả chi tiết</h3>
-          <div className="flex w-full flex-col gap-3 sm:w-auto sm:flex-row sm:items-start">
-            <SearchInput value={searchInput} onChange={setSearchInput} onSearch={value => { setPage(1); setSearch(value); }} placeholder="Tìm kiếm theo email, tên bài thi…" />
-            <Dropdown
-              value={status}
-              onChange={(e) => { setStatus(e.target.value); setPage(1); }}
-              className="py-sm px-3 rounded-lg border border-outline-variant text-sm bg-surface"
-            >
-              <option value="">Tất cả</option>
-              <option value="passed">Đạt</option>
-              <option value="failed">Không đạt</option>
-            </Dropdown>
-          </div>
-        </div>
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse">
-            <thead>
-              <tr className="border-b border-outline-variant bg-surface-container-lowest font-label-caps text-label-caps text-on-surface-variant uppercase">
+            <thead className="bg-white">
+              <tr className="border-b border-outline-variant bg-white font-label-caps text-label-caps text-on-surface-variant uppercase">
                 <th className="p-md font-semibold min-w-[200px]">Học viên</th>
                 <th className="p-md font-semibold min-w-[200px]">Thi theo chủ đề</th>
                 <th className="p-md font-semibold">Điểm</th>

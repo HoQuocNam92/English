@@ -1,0 +1,7 @@
+"use client";
+import { SearchInput } from './SearchInput';
+import { Dropdown } from './Dropdown';
+export function ListTools({ search, onSearch, filter, onFilter, options, placeholder = 'Tìm theo tên hoặc mã...' }: { search: string; onSearch: (value: string) => void; filter: string; onFilter: (value: string) => void; options: { value: string; label: string }[]; placeholder?: string }) {
+ return <div className="my-5 flex flex-col gap-3 rounded-xl border border-outline-variant bg-white p-4 sm:flex-row sm:items-center sm:justify-between"><SearchInput value={search} onChange={onSearch} onSearch={onSearch} placeholder={placeholder} /><div className="flex flex-wrap gap-3 sm:ml-auto"><Dropdown aria-label="Lọc danh sách" value={filter} onChange={event => onFilter(event.target.value)} className="h-11 rounded-xl border border-outline-variant bg-white px-3 text-sm">{options.map(option => <option key={option.value} value={option.value}>{option.label}</option>)}</Dropdown><button type="button" onClick={() => { onSearch(''); onFilter(''); }} className="ui-button ui-button-outline">Xóa lọc</button></div></div>;
+}
+export function matchesSearch(search: string, ...values: (string | undefined | null)[]) { const normalize = (value: string) => value.normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/đ/g, 'd').toLowerCase(); return normalize(values.filter(Boolean).join(' ')).includes(normalize(search.trim())); }

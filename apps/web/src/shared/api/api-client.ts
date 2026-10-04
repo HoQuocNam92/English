@@ -24,9 +24,9 @@ function getAccessToken(): string | null {
   }
 }
 
-async function fetchWithTimeout(url: string, options: RequestInit): Promise<Response> {
+async function fetchWithTimeout(url: string, options: RequestInit, timeoutMs = 15000): Promise<Response> {
   const controller = new AbortController();
-  const timeout = setTimeout(() => controller.abort(), 15000);
+  const timeout = setTimeout(() => controller.abort(), timeoutMs);
   try {
     const response = await fetch(url, { ...options, signal: controller.signal });
     // Read the body within the same timeout, even if only headers arrived.
@@ -105,7 +105,7 @@ async function request<T>(path: string, options: RequestInit = {}, canRetry = tr
 
   let res: Response;
   try {
-    res = await fetchWithTimeout(`${API_BASE}${path}`, { ...options, headers });
+    res = await fetchWithTimeout(`${API_BASE}${path}`, { ...options, headers }, (path === "/translation/selection" || path === "/placement-test/submit" || path === "/placement-test/plan" || path === "/progress/me/agenda" || path === "/recommendations/me") ? 60000 : 15000);
   } catch (error) {
     throw new ApiClientError(toVietnameseErrorMessage(error instanceof Error ? error.message : error), 0);
   }
@@ -132,6 +132,9 @@ async function request<T>(path: string, options: RequestInit = {}, canRetry = tr
   const message = mutationSuccessMessage(path, options.method ?? 'GET', body);
   if (message && typeof window !== 'undefined') {
     window.dispatchEvent(new CustomEvent('techenglish:toast', { detail: { message, kind: 'success', title: message.startsWith('Đã lưu') ? 'Lưu thành công' : 'Thành công', automatic: true } }));
+  }
+  if (typeof window !== 'undefined' && options.method && options.method !== 'GET' && (path === '/progress/me' || path.startsWith('/vocab-study/') || path.startsWith('/placement-test/') || /^\/exams\/attempts\/[^/]+\/submit$/.test(path))) {
+    window.dispatchEvent(new CustomEvent('techenglish:learning-updated'));
   }
   return data as T;
 }

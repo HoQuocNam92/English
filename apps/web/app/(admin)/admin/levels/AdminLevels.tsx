@@ -1,4 +1,5 @@
 'use client';
+import { ListTools, matchesSearch } from '@/shared/ui/ListTools';
 import { showToast } from '@/shared/ui/AppFeedback';
 import { AppIcon } from '@/shared/ui/AppIcon';
 import { useRouter } from 'next/navigation';
@@ -30,6 +31,7 @@ interface LevelItem {
 export default function AdminLevels({ createOnly = false }: { createOnly?: boolean }) {
   const router = useRouter();
   const closeForm = () => createOnly ? router.push('/admin/levels') : setFormModalOpen(false);
+  const [search,setSearch]=React.useState(''),[filter,setFilter]=React.useState('');
   const [levels, setLevels] = React.useState<LevelItem[]>([]);
   const [loading, setLoading] = React.useState(true);
   const [error, setError] = React.useState<string | null>(null);
@@ -376,6 +378,7 @@ export default function AdminLevels({ createOnly = false }: { createOnly?: boole
 
       {/* Level Cards Grid */}
       <div className="mt-8">
+        <ListTools search={search} onSearch={setSearch} filter={filter} onFilter={setFilter} options={[{value:'',label:'Tất cả trạng thái'},{value:'active',label:'Đang hoạt động'},{value:'inactive',label:'Ngừng hoạt động'}]} />
         <h2 className="text-sm font-semibold text-on-surface mb-4">Danh sách cấp độ ({levels.length})</h2>
 
         {loading ? (
@@ -403,7 +406,7 @@ export default function AdminLevels({ createOnly = false }: { createOnly?: boole
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-            {levels.map((lvl) => {
+            {levels.filter(lvl => matchesSearch(search,lvl.name,lvl.code,lvl.description) && (!filter || lvl.isActive === (filter === 'active'))).map((lvl) => {
               const meta = getLevelTheme(lvl);
 
               return (

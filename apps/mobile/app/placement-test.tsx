@@ -12,6 +12,7 @@ export default function PlacementTestScreen() {
   const router = useRouter();
   const { next } = useLocalSearchParams<{ next?: string }>();
   const { colors } = useTheme();
+  const [assessmentId, setAssessmentId] = useState('');
   const [questions, setQuestions] = useState<Question[]>([]);
   const [answers, setAnswers] = useState<Record<string, string>>({});
   const [index, setIndex] = useState(0);
@@ -26,8 +27,8 @@ export default function PlacementTestScreen() {
   const load = async () => {
     setLoading(true); setError('');
     try {
-      const response = await api.get<{ data: Question[] }>('/placement-test');
-      setQuestions(response.data.slice(0, 15)); setAnswers({}); setIndex(0);
+      const response = await api.get<{ assessmentId: string; data: Question[] }>('/placement-test');
+      setAssessmentId(response.assessmentId); setQuestions(response.data); setAnswers({}); setIndex(0);
     } catch (cause) { setError(cause instanceof Error ? cause.message : 'Không thể tải bài kiểm tra.'); }
     finally { setLoading(false); }
   };
@@ -37,6 +38,7 @@ export default function PlacementTestScreen() {
     busy.current = true; setSubmitting(true); setSubmitError('');
     try {
       setResult(await api.post<Result>('/placement-test/submit', {
+        assessmentId,
         answers: questions.map(q => ({ questionId: q.id, optionId: answers[q.id] })),
       }));
     } catch (cause) { setSubmitError(cause instanceof Error ? cause.message : 'Không thể chấm bài. Vui lòng thử lại.'); }

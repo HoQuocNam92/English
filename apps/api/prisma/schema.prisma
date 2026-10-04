@@ -157,6 +157,7 @@ model User {
   userRoles     UserRole[]
 
   // Content & learning
+  placementAssessments PlacementAssessment[]
   learnerProfile    LearnerProfile?
   createdExams      Exam[]               @relation("ExamCreatedBy")
   createdLessons    Lesson[]             @relation("LessonCreatedBy")
@@ -420,6 +421,7 @@ model CertificationTopic {
   certificateDomain CertificateDomain              @relation(fields: [certificateId, domainId], references: [certificateId, domainId], onDelete: Cascade)
   vocabularies      CertificationTopicVocabulary[]
   questions         CertificationTopicQuestion[]
+  lessons           CertificationTopicLesson[]
 
   @@unique([certificateId, code])
   @@unique([certificateId, domainId, order])
@@ -650,6 +652,7 @@ model Lesson {
   sections     LessonSection[]
   vocabularies LessonVocabulary[]
   certificates LessonCertificate[]
+  certificationTopics CertificationTopicLesson[]
 
   @@index([domainId])
   @@index([levelId])
@@ -682,6 +685,18 @@ model LessonVocabulary {
 
   @@id([lessonId, vocabularyId])
   @@map("lesson_vocabularies")
+}
+
+model CertificationTopicLesson {
+  topicId  String @map("topic_id") @db.Uuid
+  lessonId String @map("lesson_id") @db.Uuid
+
+  topic  CertificationTopic @relation(fields: [topicId], references: [id], onDelete: Cascade)
+  lesson Lesson @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+
+  @@id([topicId, lessonId])
+  @@index([lessonId])
+  @@map("certification_topic_lessons")
 }
 
 model LessonCertificate {
@@ -942,4 +957,19 @@ model VocabularyProgress {
   @@index([learnerId, status])
   @@index([learnerId, nextReviewAt])
   @@map("vocabulary_progress")
+}
+
+/// Private placement sessions, answer snapshots and saved personalized plans.
+model PlacementAssessment {
+  id          String    @id @default(uuid()) @db.Uuid
+  learnerId   String    @map("learner_id") @db.Uuid
+  questions   Json
+  answers     Json?
+  result      Json?
+  createdAt   DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
+  expiresAt   DateTime  @map("expires_at") @db.Timestamptz(6)
+  submittedAt DateTime? @map("submitted_at") @db.Timestamptz(6)
+  learner User @relation(fields: [learnerId], references: [id], onDelete: Cascade)
+  @@index([learnerId, createdAt])
+  @@map("placement_assessments")
 }

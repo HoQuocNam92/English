@@ -94,13 +94,14 @@ export default function AdminStudentsPage() {
         </div>
       )}
 
-      <div className="bg-surface-container-lowest rounded-xl border border-outline-variant p-md mb-xl flex flex-wrap gap-md items-center shadow-[0_1px_3px_rgba(15,23,24,0.06)]">
+      <div className="bg-surface-container-lowest rounded-xl border border-outline-variant p-md mb-xl flex flex-col gap-md sm:flex-row sm:justify-between sm:items-center shadow-[0_1px_3px_rgba(15,23,24,0.06)]">
         <SearchInput
           value={searchInput}
           onChange={setSearchInput}
           onSearch={(value) => { setPage(1); setSearch(value); }}
           placeholder="Tìm theo tên, email..."
         />
+        <div className="flex flex-wrap gap-3 sm:ml-auto">
         <Dropdown
           value={status}
           onChange={(e) => { setStatus(e.target.value); setPage(1); }}
@@ -119,13 +120,14 @@ export default function AdminStudentsPage() {
           <option value="">Tất cả mục tiêu chứng chỉ</option>
           {certificates.map(item => <option key={item.id} value={item.id}>{item.code} - {item.name}</option>)}
         </Dropdown>
+        </div>
       </div>
 
       <div className="bg-surface-container-lowest rounded-xl border border-outline-variant overflow-hidden shadow-[0_1px_3px_rgba(15,23,24,0.06)]">
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse">
-            <thead>
-              <tr className="bg-surface-container-low border-b border-outline-variant text-on-surface-variant font-label-caps text-label-caps uppercase">
+            <thead className="bg-white">
+              <tr className="bg-white border-b border-outline-variant text-on-surface-variant font-label-caps text-label-caps uppercase">
                 <th className="p-md font-bold">Học viên</th>
                 <th className="p-md font-bold">Trạng thái / Cấp độ</th>
                 <th className="p-md font-bold">Lĩnh vực CNTT</th>

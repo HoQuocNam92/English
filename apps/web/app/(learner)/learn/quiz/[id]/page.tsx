@@ -4,7 +4,7 @@ import { AppIcon, IconText } from '@/shared/ui/AppIcon';
 import * as React from 'react';
 import { useState, useEffect, useMemo } from 'react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { LearnerShell } from '@/shared/layout';
 import { apiClient } from '@/shared/api/api-client';
 import { LoadingSpinner, showToast } from '@/shared/ui';
@@ -13,6 +13,9 @@ export default function LearnerQuizTakingPage({ params }: { params: Promise<{ id
   const unwrappedParams = React.use(params);
   const examId = unwrappedParams.id;
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const certificateId = searchParams.get('certificateId');
+  const topicId = searchParams.get('topicId');
   const startRequested = React.useRef(false);
 
   const [exam, setExam] = useState<any>(null);
@@ -61,7 +64,7 @@ export default function LearnerQuizTakingPage({ params }: { params: Promise<{ id
 
     try {
       await apiClient.post(`/exams/attempts/${attemptId}/submit`, { answers: formattedAnswers });
-      router.push(`/learn/quiz/result/${attemptId}`);
+      router.push(`/learn/quiz/result/${attemptId}${certificateId && topicId ? `?certificateId=${certificateId}&topicId=${topicId}` : ''}`);
     } catch (err: any) {
       showToast(err?.message || 'Không thể nộp bài thi. Vui lòng thử lại.', 'error');
       setSubmitting(false);

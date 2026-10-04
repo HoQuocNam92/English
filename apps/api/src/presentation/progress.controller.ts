@@ -1,3 +1,4 @@
+import { LearningAgendaService } from '../application/progress/learning-agenda.service'
 import { Controller, Get, Post, Body, Param, UseGuards } from '@nestjs/common'
 import { ApiTags, ApiBearerAuth, ApiOperation } from '@nestjs/swagger'
 import { ProgressService } from '../application/progress/progress.service'
@@ -12,7 +13,10 @@ import { TrackProgressDto } from './http-dto/content.dto'
 @UseGuards(JwtAuthGuard, PermissionsGuard)
 @Controller('progress')
 export class ProgressController {
-  constructor(private svc: ProgressService) {}
+  constructor(private svc: ProgressService, private readonly agenda: LearningAgendaService) {}
+
+  @Get('me/agenda')
+  getAgenda(@CurrentUser() u: JwtPayload) { return this.agenda.getAgenda(u.sub) }
 
   @Get('me')
   @ApiOperation({ summary: 'Get my learning progress summary' })

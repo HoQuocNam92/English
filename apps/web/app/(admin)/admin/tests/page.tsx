@@ -17,7 +17,6 @@ const STATUSES = [
   { value: '', label: 'Tất cả trạng thái' },
   { value: 'published', label: 'Đã xuất bản' },
   { value: 'draft', label: 'Bản nháp' },
-  { value: 'archived', label: 'Đã lưu trữ' },
 ];
 
 function SkeletonCard() {
@@ -102,8 +101,8 @@ export default function AdminTestsPage() {
       </div>
 
       {/* Filters */}
-      <div className="mt-6 grid grid-cols-1 items-start gap-3 sm:grid-cols-2 xl:grid-cols-4 rounded-2xl border border-outline-variant/50 bg-white p-4">
-        <div className="grid gap-1 sm:col-span-2">
+      <div className="mt-6 flex flex-col items-start gap-4 lg:flex-row rounded-2xl border border-outline-variant/50 bg-white p-4">
+        <div className="grid w-full gap-1 lg:w-80 lg:shrink-0">
           <span className="text-xs font-semibold">Tìm kiếm</span>
         <SearchInput
           className="sm:!w-full"
@@ -117,6 +116,7 @@ export default function AdminTestsPage() {
           maxLength={100}
         />
         </div>
+        <div className="grid w-full min-w-0 gap-3 sm:grid-cols-2 xl:grid-cols-3 lg:ml-auto lg:max-w-3xl">
         <label className="grid gap-1 text-xs font-semibold">Trạng thái
         <Dropdown
           value={status}
@@ -129,6 +129,7 @@ export default function AdminTestsPage() {
         {([['domainCode', 'Lĩnh vực', options.domains], ['levelCode', 'Trình độ', options.levels], ['certificateId', 'Chứng chỉ', options.certificates]] as const).map(([key,label,list]) => <label key={key} className="grid min-w-0 flex-1 basis-48 gap-1 text-xs font-semibold">{label}<Dropdown aria-label={label} value={filters[key]} onChange={e => { setFilters(f => ({ ...f, [key]: e.target.value })); setPage(1); }} className="h-11 min-w-0 rounded-xl border border-outline-variant px-3 text-sm"><option value="">Tất cả</option>{list.map(x => <option key={x.id} value={key === 'certificateId' ? x.id : x.code}>{x.name}</option>)}</Dropdown></label>)}
         <label className="grid gap-1 text-xs font-semibold">Loại bài kiểm tra<Dropdown aria-label="Loại bài kiểm tra" value={filters.kind} onChange={e => { setFilters(f => ({ ...f, kind: e.target.value })); setPage(1); }} className="h-11 rounded-xl border border-outline-variant px-3 text-sm"><option value="">Tất cả</option>{Object.entries(EXAM_KINDS).map(([v,l]) => <option key={v} value={v}>{l}</option>)}</Dropdown></label>
         <button onClick={() => { setFilters({ domainCode: '', levelCode: '', certificateId: '', kind: '' }); setStatus(''); setSearch(''); setSearchInput(''); setPage(1); }} className="ui-button ui-button-outline h-11 self-start sm:mt-5 rounded-xl border border-outline-variant px-4 text-sm">Xóa bộ lọc</button>
+        </div>
       </div>
 
       {!loading && (
@@ -155,7 +156,7 @@ export default function AdminTestsPage() {
           </div>
         ) : (
           items.map((exam) => (
-            <div key={exam.id} className="rounded-2xl border border-outline-variant/50 bg-surface-container-lowest p-5 shadow-[0_8px_28px_rgba(15,23,42,0.035)] hover:shadow-md transition-shadow flex flex-col justify-between">
+            <div key={exam.id} className="rounded-2xl border border-outline-variant/50 bg-surface-container-lowest p-5 shadow-[0_8px_28px_rgba(15,23,42,0.035)] hover:shadow-md transition-shadow content-card">
               <div>
                 <div className="flex items-start justify-between gap-2 mb-2">
                   <h3 className="font-bold text-on-surface text-base line-clamp-2 flex-1">{exam.title}</h3>
@@ -211,11 +212,10 @@ export default function AdminTestsPage() {
                 <span>Tạo bởi: <strong className="text-on-surface">{exam.createdBy?.userDetail?.displayName ?? 'Admin'}</strong></span>
                 <span>{new Date(exam.createdAt).toLocaleDateString('vi-VN')}</span>
               </div>
-              <ActionGroup className="mt-3">
+              <ActionGroup className="content-card-footer">
                 <ActionButton action="edit" href={`/admin/tests/builder?id=${exam.id}`} />
                 {exam.status === 'draft' && <ActionButton action="publish" loading={updatingId === exam.id} onClick={() => void updateStatus(exam.id, 'published')} />}
                 {exam.status === 'published' && <ActionButton action="draft" loading={updatingId === exam.id} onClick={() => void updateStatus(exam.id, 'draft')} />}
-                {exam.status === 'published' && <ActionButton action="archive" loading={updatingId === exam.id} onClick={() => void updateStatus(exam.id, 'archived')} />}
                 {exam.status === 'archived' && <ActionButton action="publish" loading={updatingId === exam.id} onClick={() => void updateStatus(exam.id, 'published')} />}
                 {exam.status === 'archived' && <ActionButton action="draft" loading={updatingId === exam.id} onClick={() => void updateStatus(exam.id, 'draft')} />}
                 <ActionButton action="delete" disabled={updatingId === exam.id} onClick={() => void removeExam(exam)} />

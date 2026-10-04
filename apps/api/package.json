@@ -14,7 +14,13 @@
     "db:seed": "ts-node prisma/seed.ts",
     "db:seed:aws": "ts-node prisma/seed-aws-clf-c02.ts",
     "db:studio": "prisma studio",
-    "db:reset": "prisma migrate reset --force"
+    "db:reset": "prisma migrate reset --force",
+    "db:seed:certification-lessons": "node --env-file=.env -r ts-node/register prisma/seed-certification-lessons.ts",
+    "test:certification": "node -r ts-node/register src/application/lesson/certification-study.spec.ts",
+    "db:seed:placement": "node --env-file=.env -r ts-node/register prisma/seed-placement.ts",
+    "test:placement": "node -r ts-node/register src/application/placement/placement.service.spec.ts",
+    "test:agenda": "node -r ts-node/register src/application/progress/learning-agenda.service.spec.ts",
+    "test:learning-ai": "node -r ts-node/register src/infrastructure/ai/apivn-learning-planner.spec.ts"
   },
   "dependencies": {
     "@nestjs/axios": "^12.0.0",

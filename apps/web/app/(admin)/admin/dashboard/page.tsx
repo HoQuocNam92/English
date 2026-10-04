@@ -204,19 +204,19 @@ export default function AdminDashboardPage() {
       <div className="grid grid-cols-12 gap-6 mb-xl">
         <div className="stat-card bg-surface-container-lowest p-lg col-span-12 lg:col-span-4 min-h-[360px] flex flex-col rounded-lg border border-outline-variant hover:shadow-[0_1px_3px_rgba(15,23,24,0.06)] hover:-translate-y-0.5 transition-all">
           <h3 className="font-headline-h3 text-headline-h3 text-on-surface mb-xl">Phân bố học liệu theo lĩnh vực CNTT</h3>
-          <div className="flex-1 relative flex items-center justify-center">
-            <div className="w-48 h-48 rounded-full border-[24px] border-surface-container-high relative flex items-center justify-center">
-              <div className="absolute inset-0 rounded-full border-[24px] border-transparent border-t-primary border-r-primary-container border-b-secondary-container opacity-90 transform rotate-45"></div>
-              <span className="font-headline-h2 text-headline-h2 text-on-surface absolute z-10 text-center flex flex-col">IT<span className="font-body-sm text-body-sm text-on-surface-variant font-normal">Sectors</span></span>
-            </div>
-          </div>
-          <div className="mt-lg grid grid-cols-2 gap-sm">
-            {(analytics?.domainsDistribution ?? []).slice(0, 4).map((dom, idx) => {
-              const bgClass = ['bg-primary', 'bg-primary-container', 'bg-secondary-container', 'bg-outline-variant'][idx] || 'bg-primary';
+          <p className="mb-4 text-xs text-on-surface-variant">Tổng bài học, từ vựng, câu hỏi và đề thi trong từng lĩnh vực.</p>
+          <div className="max-h-[360px] space-y-4 overflow-y-auto pr-2">
+            {loading ? <p className="text-sm text-on-surface-variant">Đang tải số liệu...</p> : !(analytics?.domainsDistribution ?? []).some(dom => dom.totalItems > 0) ? <p className="text-sm text-on-surface-variant">Chưa có học liệu.</p> : [...(analytics?.domainsDistribution ?? [])].sort((a, b) => b.totalItems - a.totalItems).map(dom => {
+              const percentage = dom.totalItems / totalDomainItems * 100;
               return (
-                <div key={dom.code} className="flex items-center gap-sm">
-                  <span className={`w-3 h-3 rounded-full ${bgClass}`}></span>
-                  <span className="font-body-sm text-body-sm truncate" title={dom.name}>{dom.name} ({Math.round((dom.totalItems / totalDomainItems) * 100)}%)</span>
+                <div key={dom.code}>
+                  <div className="mb-1.5 flex items-start justify-between gap-3 text-sm">
+                    <span className="min-w-0 text-on-surface">{dom.name}</span>
+                    <span className="shrink-0 text-xs text-on-surface-variant">{dom.totalItems.toLocaleString('vi-VN')} · {percentage.toLocaleString('vi-VN', { maximumFractionDigits: 1 })}%</span>
+                  </div>
+                  <div className="h-2 overflow-hidden rounded-full bg-surface-container-high" role="img" aria-label={`${dom.name}: ${dom.totalItems} học liệu, ${percentage.toFixed(1)}%`}>
+                    <div className="h-full rounded-full bg-primary" style={{ width: `${percentage}%` }} />
+                  </div>
                 </div>
               );
             })}

@@ -67,7 +67,7 @@ export async function apiRequest<T>(
   if (token) headers['Authorization'] = `Bearer ${token}`;
 
   const controller = new AbortController();
-  const timeout = setTimeout(() => controller.abort(), 15000);
+  const timeout = setTimeout(() => controller.abort(), path.startsWith('/placement-test/') ? 60000 : 15000);
 
   try {
     const res = await fetch(`${API_BASE}${path}`, {

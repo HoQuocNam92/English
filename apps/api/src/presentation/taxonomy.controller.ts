@@ -108,7 +108,7 @@ export class TaxonomyController {
 
   @Patch('certification-topics/:topicId/content-links')
   @RequirePermissions('certificates:manage')
-  updateCertificationTopicLinks(@Param('topicId') topicId: string, @Body() dto: { vocabularies?: string[]; questions?: string[] }) {
+  updateCertificationTopicLinks(@Param('topicId') topicId: string, @Body() dto: { vocabularies?: string[]; questions?: string[]; lessons?: string[] }) {
     return this.svc.updateCertificationTopicLinks(topicId, dto)
   }
 

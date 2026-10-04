@@ -177,9 +177,9 @@ export class AuthService {
     const displayName = payload.name ?? email
     const avatarUrl = payload.picture
     const googleId = payload.sub
-    
+
     if (!email || !googleId) throw new UnauthorizedException('Google token thiếu thông tin tài khoản')
-    
+
     return this.findOrCreateGoogleUser({ googleId, email, displayName, avatarUrl })
   }
 

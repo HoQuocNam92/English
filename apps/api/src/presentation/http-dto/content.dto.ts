@@ -34,13 +34,13 @@ export class CreateVocabularyDto {
   @IsOptional() @IsString() @MaxLength(100)
   pronunciationIpa?: string
 
-  @ApiPropertyOptional({ example: 'noun', enum: ['noun', 'verb', 'adjective', 'adverb', 'phrase', 'abbreviation'] })
-  @IsOptional() @IsEnum(['noun', 'verb', 'adjective', 'adverb', 'phrase', 'abbreviation'])
+  @ApiPropertyOptional({ example: 'noun', enum: ['noun', 'verb', 'adjective', 'adverb', 'phrase', 'abbreviation', 'technical term'] })
+  @IsOptional() @IsEnum(['noun', 'verb', 'adjective', 'adverb', 'phrase', 'abbreviation', 'technical term'])
   partOfSpeech?: string
 
   @ApiPropertyOptional({ type: [String] })
-  @IsOptional() @IsArray() @ArrayMaxSize(6) @ArrayUnique()
-  @IsEnum(['noun', 'verb', 'adjective', 'adverb', 'phrase', 'abbreviation'], { each: true })
+  @IsOptional() @IsArray() @ArrayMaxSize(7) @ArrayUnique()
+  @IsEnum(['noun', 'verb', 'adjective', 'adverb', 'phrase', 'abbreviation', 'technical term'], { each: true })
   partsOfSpeech?: string[]
 
   @ApiPropertyOptional({ type: [String] })
@@ -83,13 +83,13 @@ export class UpdateVocabularyDto {
   @IsOptional() @IsString() @MaxLength(100)
   pronunciationIpa?: string
 
-  @ApiPropertyOptional({ enum: ['noun', 'verb', 'adjective', 'adverb', 'phrase', 'abbreviation'] })
-  @IsOptional() @IsEnum(['noun', 'verb', 'adjective', 'adverb', 'phrase', 'abbreviation'])
+  @ApiPropertyOptional({ enum: ['noun', 'verb', 'adjective', 'adverb', 'phrase', 'abbreviation', 'technical term'] })
+  @IsOptional() @IsEnum(['noun', 'verb', 'adjective', 'adverb', 'phrase', 'abbreviation', 'technical term'])
   partOfSpeech?: string
 
   @ApiPropertyOptional({ type: [String] })
-  @IsOptional() @IsArray() @ArrayMaxSize(6) @ArrayUnique()
-  @IsEnum(['noun', 'verb', 'adjective', 'adverb', 'phrase', 'abbreviation'], { each: true })
+  @IsOptional() @IsArray() @ArrayMaxSize(7) @ArrayUnique()
+  @IsEnum(['noun', 'verb', 'adjective', 'adverb', 'phrase', 'abbreviation', 'technical term'], { each: true })
   partsOfSpeech?: string[]
 
   @ApiPropertyOptional({ type: [String] })
@@ -213,6 +213,10 @@ export class CreateLessonDto {
   @IsOptional() @IsArray() @ArrayMaxSize(200) @IsUUID('4', { each: true })
   vocabularyIds?: string[]
 
+  @ApiPropertyOptional({ type: [String] })
+  @IsOptional() @IsArray() @ArrayMaxSize(30) @ArrayUnique() @IsUUID('4', { each: true })
+  topicIds?: string[]
+
   @ApiPropertyOptional({ type: [LessonSectionDto] })
   @IsOptional() @IsArray() @ArrayMaxSize(100) @ValidateNested({ each: true }) @Type(() => LessonSectionDto)
   sections?: LessonSectionDto[]
@@ -241,6 +245,10 @@ export class UpdateLessonDto {
   certificateIds?: string[]
   @ApiPropertyOptional({ type: [String] }) @IsOptional() @IsArray() @ArrayMaxSize(200) @IsUUID('4', { each: true })
   vocabularyIds?: string[]
+
+  @ApiPropertyOptional({ type: [String] })
+  @IsOptional() @IsArray() @ArrayMaxSize(30) @ArrayUnique() @IsUUID('4', { each: true })
+  topicIds?: string[]
   @ApiPropertyOptional({ type: [LessonSectionDto] }) @IsOptional() @IsArray() @ArrayMaxSize(100) @ValidateNested({ each: true }) @Type(() => LessonSectionDto)
   sections?: LessonSectionDto[]
 }

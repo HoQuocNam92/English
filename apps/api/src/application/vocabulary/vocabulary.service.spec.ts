@@ -73,3 +73,11 @@ test('search and bulk filters include secondary domains without replacing text s
   assert.ok(calls.bulk.where.OR.length)
   assert.deepEqual(calls.bulk.where.AND, calls.list.where.AND)
 })
+
+ test('editing legacy technical terms accepts the existing classification alongside selected types', async () => {
+  const dto = Object.assign(new UpdateVocabularyDto(), { partsOfSpeech: ['technical term', 'noun', 'verb', 'adverb'], domainIds });
+  assert.equal((await validate(dto)).length, 0);
+  const { service, calls } = setup();
+  await service.update('word', dto);
+  assert.deepEqual(calls.update.data.partsOfSpeech, dto.partsOfSpeech);
+ })

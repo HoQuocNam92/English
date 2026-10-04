@@ -134,6 +134,18 @@ export class ExamsService {
       if (exam.availableFrom && exam.availableFrom > now) throw new BadRequestException('Bài thi chưa đến thời gian mở')
       if (exam.availableUntil && exam.availableUntil < now) throw new BadRequestException('Bài thi đã hết thời gian mở')
       if (!exam.questions.length) throw new BadRequestException('Bài thi chưa có câu hỏi')
+      if (exam.kind === 'practice' && exam.certificateId && exam.topics.length) {
+        const topics = await tx.certificationTopic.findMany({
+          where: { certificateId: exam.certificateId, code: { in: exam.topics } },
+          select: { lessons: { where: { lesson: { status: 'published', type: 'certification_review' } }, select: { lessonId: true } } },
+        })
+        if (topics.length) {
+          const lessonIds = [...new Set(topics.flatMap(topic => topic.lessons.map(link => link.lessonId)))]
+          const completed = await tx.learningProgress.count({ where: { learnerId, resourceType: 'lesson', resourceId: { in: lessonIds }, status: 'completed' } })
+          if (topics.some(topic => !topic.lessons.length) || completed !== lessonIds.length) throw new BadRequestException('Hãy hoàn thành bài học kiến thức của chủ đề trước khi làm Quiz.')
+        }
+      }
+
 
       await tx.examAttempt.updateMany({ where: { examId, learnerId, status: 'in_progress', expiresAt: { lte: now } }, data: { status: 'expired' } })
       const inProgress = await tx.examAttempt.findFirst({ where: { examId, learnerId, status: 'in_progress' }, include: { exam: true } })
@@ -154,7 +166,7 @@ export class ExamsService {
     const attempt = await this.prisma.examAttempt.findUnique({ where: { id: attemptId } })
     if (!attempt || attempt.learnerId !== learnerId) throw new NotFoundException('Không tìm thấy lượt làm bài')
     if (attempt.status !== 'in_progress') throw new BadRequestException('Lượt làm bài này đã được nộp trước đó')
-    
+
     const snapshot = (attempt.questionsSnapshot as any[]) || []
     const snapshotById = new Map(snapshot.map((question: any) => [question.id, question]))
     const answerByQuestion = new Map<string, any>()
@@ -179,7 +191,7 @@ export class ExamsService {
     const updatedSnapshot = snapshot.map((q: any) => {
       const ans = answerByQuestion.get(q.id)
       const selectedIds = ans?.selectedOptionIds ?? []
-      
+
       const correctOpts = q.options?.filter((o: any) => o.isCorrect) ?? []
       const correctIds = correctOpts.map((o: any) => o.id || o.key)
       const acceptedAnswers = (q.acceptedAnswers ?? []).map((value: string) => this.normalizeTextAnswer(value)).filter(Boolean)
@@ -281,12 +293,12 @@ export class ExamsService {
     const where = { learnerId }
 
     const [attempts, total] = await Promise.all([
-      this.prisma.examAttempt.findMany({ 
-        where, 
+      this.prisma.examAttempt.findMany({
+        where,
         skip,
         take: limit,
-        include: { exam: { select: { title: true, domain: true, level: true } } }, 
-        orderBy: { startedAt: 'desc' } 
+        include: { exam: { select: { title: true, domain: true, level: true } } },
+        orderBy: { startedAt: 'desc' }
       }),
       this.prisma.examAttempt.count({ where })
     ])

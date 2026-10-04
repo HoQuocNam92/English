@@ -38,11 +38,11 @@ export default function VocabularyQuizPage({ params }: { params: Promise<{ id: s
     try {
       // Get session words for this lesson
       const sessionRes: any = await apiClient.get(
-        lessonId === 'all' ? '/vocab-study/session' : `/vocab-study/session?lessonId=${lessonId}`
+        lessonId === 'all' ? '/vocab-study/quiz-words' : `/vocab-study/quiz-words?sourceLessonId=${lessonId}`
       );
       const words = sessionRes?.words ?? [];
       if (!words.length) {
-        setError('Không có từ vựng nào để kiểm tra.');
+        setError('Hãy học từ vựng trước. Quiz chỉ kiểm tra những từ bạn đã học.');
         return;
       }
       const ids = words.slice(0, 20).map((w: any) => w.id);

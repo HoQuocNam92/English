@@ -67,7 +67,7 @@ export default function AdminProgressPage() {
 
       {/* Filters */}
       <div className="mt-6 grid grid-cols-1 items-end gap-3 sm:grid-cols-2 xl:grid-cols-[minmax(260px,1.5fr)_repeat(3,minmax(140px,1fr))_auto] rounded-2xl border border-outline-variant/50 bg-white p-4">
-        <div className="grid min-w-0 gap-1 text-xs font-semibold text-on-surface-variant"><span>Tìm học viên</span>
+        <div className="grid w-full min-w-0 gap-1 text-xs font-semibold text-on-surface-variant lg:w-80 lg:shrink-0"><span>Tìm học viên</span>
         <SearchInput
           className="!w-full !max-w-none"
           value={searchInput}
@@ -80,8 +80,10 @@ export default function AdminProgressPage() {
           maxLength={100}
         />
         </div>
+        <div className="grid w-full min-w-0 gap-3 sm:grid-cols-2 xl:grid-cols-4 lg:ml-auto lg:max-w-3xl">
         {([['levelCode', 'Trình độ', options.levels], ['domainCode', 'Lĩnh vực', options.domains], ['certificateId', 'Mục tiêu chứng chỉ', options.certificates]] as const).map(([key, label, list]) => <label key={key} className="grid min-w-0 gap-1 text-xs font-semibold text-on-surface-variant">{label}<Dropdown aria-label={label} value={filters[key]} onChange={event => { setFilters(current => ({ ...current, [key]: event.target.value })); setPage(1); }} className="h-11 w-full rounded-xl border border-outline-variant bg-white px-3 text-sm text-on-surface"><option value="">Tất cả</option>{list.map(item => <option key={item.id} value={key === 'certificateId' ? item.id : item.code}>{item.name}</option>)}</Dropdown></label>)}
         <button type="button" onClick={() => { setFilters({ levelCode: '', domainCode: '', certificateId: '' }); setSearch(''); setSearchInput(''); setPage(1); }} className="h-11 rounded-xl border border-outline-variant px-4 text-sm">Xóa bộ lọc</button>
+        </div>
       </div>
 
       {!loading && (
@@ -101,8 +103,8 @@ export default function AdminProgressPage() {
       <div className="mt-4 rounded-2xl bg-surface-container-lowest overflow-hidden shadow-[0_8px_28px_rgba(15,23,42,0.05)]">
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
-            <thead>
-              <tr className="border-b border-outline-variant/20 text-xs text-on-surface-variant bg-surface-container-low/60">
+            <thead className="bg-white">
+              <tr className="border-b border-outline-variant/20 text-xs text-on-surface-variant bg-white">
                 <th className="px-4 py-3 text-left font-medium">Học viên</th>
                 <th className="px-4 py-3 text-left font-medium">Trình độ</th>
                 <th className="px-4 py-3 text-left font-medium">Tiến độ bài học</th>

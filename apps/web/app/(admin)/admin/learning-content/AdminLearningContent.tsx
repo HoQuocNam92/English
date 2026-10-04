@@ -20,6 +20,7 @@ const STATUSES = [
 ];
 
 const PARTS_OF_SPEECH_OPTIONS = [
+  { value: 'technical term', label: 'Thuật ngữ chuyên ngành' },
   { value: '', label: '— Chọn từ loại —' },
   { value: 'noun', label: 'Danh từ (noun)' },
   { value: 'verb', label: 'Động từ (verb)' },
@@ -30,6 +31,7 @@ const PARTS_OF_SPEECH_OPTIONS = [
 ];
 
 const PARTS_OF_SPEECH: Record<string, string> = {
+  'technical term': 'Thuật ngữ chuyên ngành',
   noun: 'Danh từ',
   verb: 'Động từ',
   adjective: 'Tính từ',
@@ -557,7 +559,7 @@ export default function AdminLearningContent({ createOnly = false }: { createOnl
       </div>
 
       {/* Filters */}
-      <div className="mt-6 flex flex-col sm:flex-row gap-3">
+      <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <SearchInput
           value={searchInput}
           onChange={setSearchInput}
@@ -568,6 +570,7 @@ export default function AdminLearningContent({ createOnly = false }: { createOnl
           placeholder="Tìm kiếm từ vựng, thuật ngữ, định nghĩa tiếng Anh hoặc tiếng Việt..."
           maxLength={100}
         />
+        <div className="flex flex-wrap gap-3 sm:ml-auto">
         <Dropdown
           value={domainCode}
           onChange={(e) => { setDomainCode(e.target.value); setPage(1); }}
@@ -583,6 +586,7 @@ export default function AdminLearningContent({ createOnly = false }: { createOnl
         >
           {STATUSES.map((s) => <option key={s.value} value={s.value}>{s.label}</option>)}
         </Dropdown>
+        </div>
       </div>
 
       {/* Summary */}
@@ -622,7 +626,7 @@ export default function AdminLearningContent({ createOnly = false }: { createOnl
           </div>
         ) : (
           items.map((v) => (
-            <div key={v.id} className="rounded-2xl border border-outline-variant/50 bg-surface-container-lowest p-5 shadow-[0_8px_28px_rgba(15,23,42,0.035)] hover:shadow-md transition-shadow flex flex-col justify-between">
+            <div key={v.id} className="rounded-2xl border border-outline-variant/50 bg-surface-container-lowest p-5 shadow-[0_8px_28px_rgba(15,23,42,0.035)] hover:shadow-md transition-shadow content-card">
               <div>
                 {/* Header */}
                 <div className="flex items-start justify-between gap-2">
@@ -690,7 +694,7 @@ export default function AdminLearningContent({ createOnly = false }: { createOnl
               )}
 
               {/* Card action buttons */}
-              <ActionGroup className="mt-4 pt-3 border-t border-outline-variant/20">
+              <ActionGroup className="content-card-footer border-t border-outline-variant/20">
                 <ActionButton action="edit" type="button" onClick={() => openEdit(v)} title="Chỉnh sửa" />
                 <ActionButton action="delete" type="button" onClick={() => setDeleteTarget(v)} title="Xóa" />
               </ActionGroup>

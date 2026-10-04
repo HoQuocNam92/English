@@ -669,26 +669,18 @@ export function ImportQuestionsModal({
               <div className="space-y-3 border-b border-outline-variant/30 pb-3">
                 {/* Row 1: Status Tabs & Quick Selection */}
                 <div className="flex flex-wrap items-center justify-between gap-3">
-                  <div className="flex items-center gap-2">
+                  <div className="ui-tabs">
                     <button
                       type="button"
                       onClick={() => setActiveTab('all')}
-                      className={`rounded-lg px-3 py-1.5 text-xs font-semibold transition-colors ${
-                        activeTab === 'all'
-                          ? 'bg-primary text-white'
-                          : 'bg-surface-container text-on-surface-variant hover:bg-surface-container-high'
-                      }`}
+                      className="ui-tab" aria-pressed={activeTab === 'all'}
                     >
                       Tất cả ({totalRowsCount})
                     </button>
                     <button
                       type="button"
                       onClick={() => setActiveTab('valid')}
-                      className={`flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-semibold transition-colors ${
-                        activeTab === 'valid'
-                          ? 'bg-emerald-600 text-white'
-                          : 'bg-emerald-50 text-emerald-700 hover:bg-emerald-100'
-                      }`}
+                      className="ui-tab" aria-pressed={activeTab === 'valid'}
                     >
                       <AppIcon className=" text-[14px]">check</AppIcon>
                       Hợp lệ ({totalValidCount})
@@ -697,11 +689,7 @@ export function ImportQuestionsModal({
                       <button
                         type="button"
                         onClick={() => setActiveTab('invalid')}
-                        className={`flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-semibold transition-colors ${
-                          activeTab === 'invalid'
-                            ? 'bg-red-600 text-white'
-                            : 'bg-red-50 text-red-700 hover:bg-red-100'
-                        }`}
+                        className="ui-tab" aria-pressed={activeTab === 'invalid'}
                       >
                         <AppIcon className=" text-[14px]">warning</AppIcon>
                         Có lỗi ({totalInvalidCount})
@@ -743,9 +731,9 @@ export function ImportQuestionsModal({
                 </div>
 
                 {/* Row 2: Detailed Filters */}
-                <div className="flex flex-wrap items-center gap-2 pt-1">
+                <div className="flex flex-col items-start gap-3 pt-1 lg:flex-row">
                   {/* Keyword Search */}
-                  <div className="relative min-w-[220px] flex-1">
+                  <div className="relative w-full lg:w-72 lg:shrink-0">
                     <AppIcon className=" absolute left-2.5 top-1/2 -translate-y-1/2 text-[18px] text-slate-400">
                       search
                     </AppIcon>
@@ -768,6 +756,7 @@ export function ImportQuestionsModal({
                     )}
                   </div>
 
+                  <div className="flex w-full flex-wrap gap-2 lg:ml-auto lg:w-auto lg:justify-end">
                   {/* File Source Filter (when > 1 file) */}
                   {files.length > 1 && (
                     <Dropdown
@@ -841,6 +830,7 @@ export function ImportQuestionsModal({
                       Đặt lại
                     </button>
                   )}
+                  </div>
                 </div>
               </div>
 
@@ -848,7 +838,7 @@ export function ImportQuestionsModal({
               <div className="overflow-hidden rounded-xl border border-outline-variant/40 bg-surface-container-lowest">
                 <div className="max-h-[360px] overflow-x-auto overflow-y-auto">
                   <table className="w-full text-left text-xs">
-                    <thead className="sticky top-0 z-10 border-b border-outline-variant/40 bg-surface-container-low text-on-surface-variant">
+                    <thead className="sticky top-0 z-10 border-b border-outline-variant/40 bg-white text-on-surface-variant">
                       <tr>
                         <th className="px-3 py-2.5 font-semibold w-10 text-center">
                           <input

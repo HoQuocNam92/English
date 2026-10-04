@@ -29,8 +29,21 @@ export class VocabStudyController {
     @Query('levelCode') levelCode?: string,
     @Query('continue') continueLearning?: string,
     @Query('sourceLessonId') sourceLessonId?: string,
+    @Query('topicId') topicId?: string,
+    @Query('reviewOnly') reviewOnly?: string,
+    @Query('onlyNew') onlyNew?: string,
   ) {
-    return this.svc.getStudySession(req.user.sub, { domainCode, levelCode, sourceLessonId, continueLearning: continueLearning === 'true' })
+    return this.svc.getStudySession(req.user.sub, { domainCode, levelCode, sourceLessonId, topicId, onlyNew: onlyNew !== 'false', reviewOnly: reviewOnly === 'true', continueLearning: continueLearning === 'true' })
+  }
+
+  @Get('certificate-progress')
+  getCertificateProgress(@Request() req: any, @Query('certificateId') certificateId: string) {
+    return this.svc.getCertificateStudyProgress(req.user.sub, certificateId)
+  }
+
+  @Get('quiz-words')
+  getQuizWords(@Request() req: any, @Query('sourceLessonId') sourceLessonId?: string) {
+    return this.svc.getQuizWords(req.user.sub, sourceLessonId)
   }
 
   @Get('review-session')

@@ -1,0 +1,306 @@
+[
+  {
+    "code": "1.1",
+    "title": "Lợi ích của điện toán đám mây",
+    "text": "Cloud computing lets teams provision resources when they need them instead of buying peak capacity in advance. Elasticity adjusts capacity as demand changes. Agility shortens the time needed to experiment. High availability requires an architecture that tolerates failures; moving an application to the cloud does not automatically make it highly available.",
+    "explanation": "Phân biệt khả năng tăng quy mô (scalability) với co giãn theo nhu cầu (elasticity). Cloud giúp thử nghiệm nhanh, trả theo mức sử dụng và tiếp cận người dùng toàn cầu. Độ sẵn sàng cao vẫn cần được thiết kế, chẳng hạn phân tán qua nhiều Availability Zone.",
+    "prompt": "A ticketing website receives traffic spikes during concerts. It wants capacity to increase for the event and decrease afterward. Which benefit addresses this requirement?",
+    "options": [
+      "Elasticity",
+      "A fixed server capacity",
+      "A longer hardware procurement cycle",
+      "Keeping all resources in one server"
+    ],
+    "answerExplanation": "Elasticity điều chỉnh tài nguyên theo tải. Mua cố định theo đỉnh tải làm lãng phí khi hết sự kiện.",
+    "trap": "Cloud tự động bảo đảm mọi ứng dụng không bao giờ ngừng hoạt động.",
+    "source": "https://docs.aws.amazon.com/aws-certification/latest/cloud-practitioner-02/cloud-practitioner-02-domain1.html"
+  },
+  {
+    "code": "1.2",
+    "title": "Nguyên tắc thiết kế trên AWS",
+    "text": "The AWS Well-Architected Framework evaluates operational excellence, security, reliability, performance efficiency, cost optimization, and sustainability. Decoupling components prevents one slow component from blocking an entire workflow. Automation makes deployments repeatable. Design for failure by distributing workloads and testing recovery.",
+    "explanation": "Sáu trụ cột là góc nhìn đánh giá kiến trúc. Không có một dịch vụ duy nhất giải quyết tất cả trụ cột. Hàng đợi giúp tách biệt các thành phần; triển khai tự động giảm thao tác thủ công và sai lệch cấu hình.",
+    "prompt": "An order service should accept orders even when the shipping service is temporarily slow. Which design is most suitable?",
+    "options": [
+      "Decouple the services with a queue",
+      "Make every order wait synchronously for shipping",
+      "Run both services inside one unmonitored process",
+      "Remove all retries and failure handling"
+    ],
+    "answerExplanation": "Hàng đợi giữ yêu cầu để dịch vụ vận chuyển xử lý sau. Đây là decoupling: tốc độ của một thành phần ít ảnh hưởng tới thành phần khác.",
+    "trap": "Tối ưu chi phí luôn có nghĩa là chọn tài nguyên rẻ nhất bất kể yêu cầu.",
+    "source": "https://docs.aws.amazon.com/aws-certification/latest/cloud-practitioner-02/cloud-practitioner-02-domain1.html"
+  },
+  {
+    "code": "1.3",
+    "title": "Chiến lược di chuyển lên đám mây",
+    "text": "Migration should start with business goals and an assessment of dependencies. Rehosting moves a workload with limited changes; replatforming makes selected platform changes; refactoring redesigns the application to use cloud capabilities. The AWS Cloud Adoption Framework helps organizations consider business, people, governance, platform, security, and operations.",
+    "explanation": "Chọn chiến lược theo thời gian, rủi ro và mục tiêu. Rehost nhanh nhưng không tự mang lại mọi lợi ích cloud-native; refactor đòi hỏi nhiều thay đổi hơn. Lập kế hoạch dữ liệu, phụ thuộc và kiểm thử trước khi cắt chuyển.",
+    "prompt": "A company must move a legacy application quickly and cannot redesign its code during the first phase. Which approach best fits?",
+    "options": [
+      "Rehost the application with minimal changes",
+      "Refactor every component before migration",
+      "Retire the application despite its business use",
+      "Replace the application with an unrelated product"
+    ],
+    "answerExplanation": "Rehost phù hợp yêu cầu thay đổi ít trong giai đoạn đầu; tối ưu có thể thực hiện sau khi di chuyển.",
+    "trap": "Mọi workload đều phải viết lại hoàn toàn trước khi chuyển lên AWS.",
+    "source": "https://docs.aws.amazon.com/aws-certification/latest/cloud-practitioner-02/cloud-practitioner-02-domain1.html"
+  },
+  {
+    "code": "1.4",
+    "title": "Kinh tế đám mây và TCO",
+    "text": "Cloud economics includes more than the compute bill. Compare total cost of ownership, including hardware, facilities, operations, and staff effort. Pay-as-you-go changes the spending pattern, but resources that are left running can still create waste. Right-sizing aligns capacity with measured demand.",
+    "explanation": "So sánh TCO thay vì chỉ so giá một máy chủ. Giảm đầu tư ban đầu không đồng nghĩa hóa đơn bằng không. Theo dõi mức sử dụng, điều chỉnh tài nguyên và tắt tài nguyên không cần thiết.",
+    "prompt": "A team compares an on-premises server price with an EC2 monthly estimate and ignores facilities and operations staff. What should it do?",
+    "options": [
+      "Include operational and facility costs in a TCO comparison",
+      "Compare only the server purchase price",
+      "Assume cloud resources are always free",
+      "Ignore resource utilization"
+    ],
+    "answerExplanation": "TCO tính toàn bộ chi phí sở hữu và vận hành, giúp so sánh hai phương án cùng phạm vi.",
+    "trap": "Chỉ cần nhìn giá CPU để quyết định phương án nào tiết kiệm hơn.",
+    "source": "https://docs.aws.amazon.com/aws-certification/latest/cloud-practitioner-02/cloud-practitioner-02-domain1.html"
+  },
+  {
+    "code": "2.1",
+    "title": "Mô hình trách nhiệm chia sẻ",
+    "text": "AWS protects the infrastructure that runs its services. Customers control their data, identities, access policies, and service configurations. With Amazon EC2, customers also maintain the guest operating system and installed software. Managed services shift some operational tasks to AWS, while customers still own important configuration and data responsibilities.",
+    "explanation": "AWS chịu trách nhiệm bảo mật hạ tầng cloud; khách hàng bảo mật những gì họ triển khai và cấu hình. Trách nhiệm thay đổi theo dịch vụ, nhưng không biến mất khi dùng dịch vụ được quản lý.",
+    "prompt": "A company runs its own application on Amazon EC2. Who patches the guest operating system?",
+    "options": [
+      "The customer",
+      "AWS for every EC2 guest operating system",
+      "The internet service provider",
+      "Nobody after the instance starts"
+    ],
+    "answerExplanation": "Với EC2, hệ điều hành khách và ứng dụng thuộc trách nhiệm của khách hàng; AWS bảo trì hạ tầng vật lý.",
+    "trap": "AWS chịu mọi trách nhiệm bảo mật dữ liệu và cấu hình của khách hàng.",
+    "source": "https://docs.aws.amazon.com/aws-certification/latest/cloud-practitioner-02/cloud-practitioner-02-domain2.html"
+  },
+  {
+    "code": "2.2",
+    "title": "Quản trị, nhật ký và tuân thủ",
+    "text": "AWS CloudTrail records account activity and API calls for auditing. AWS Config records resource configuration changes and can evaluate compliance rules. Amazon CloudWatch monitors metrics and logs. AWS Artifact provides access to AWS compliance reports. Encryption at rest and in transit address different stages of data protection.",
+    "explanation": "Chọn dịch vụ theo nhu cầu: ai gọi API dùng CloudTrail; cấu hình tài nguyên thay đổi dùng Config; metrics và logs vận hành dùng CloudWatch; báo cáo tuân thủ AWS dùng Artifact. Chứng nhận của AWS không thay thế trách nhiệm tuân thủ của ứng dụng.",
+    "prompt": "An auditor needs to identify which identity deleted an AWS resource through an API call. Which service is most relevant?",
+    "options": [
+      "AWS CloudTrail",
+      "AWS Pricing Calculator",
+      "Amazon Route 53",
+      "Amazon EFS"
+    ],
+    "answerExplanation": "CloudTrail lưu sự kiện hoạt động tài khoản và API để truy vết thao tác; CloudWatch tập trung quan sát vận hành.",
+    "trap": "CloudWatch, CloudTrail và Config là cùng một dịch vụ với ba tên khác nhau.",
+    "source": "https://docs.aws.amazon.com/aws-certification/latest/cloud-practitioner-02/cloud-practitioner-02-domain2.html"
+  },
+  {
+    "code": "2.3",
+    "title": "IAM và quyền truy cập",
+    "text": "Authentication verifies identity; authorization determines permitted actions. IAM policies grant permissions to AWS resources. Apply least privilege and use roles with temporary credentials when possible. Protect the root account, avoid routine root use, and use multi-factor authentication. Applications should not contain long-lived credentials in source code.",
+    "explanation": "Xác thực trả lời ai đang truy cập; phân quyền trả lời được phép làm gì. Cấp quyền tối thiểu theo nhiệm vụ, dùng IAM role cho workload và bảo vệ tài khoản root bằng MFA.",
+    "prompt": "An EC2 application needs to read one S3 bucket. Which approach follows security best practices?",
+    "options": [
+      "Attach an IAM role with narrowly scoped S3 permissions",
+      "Embed root access keys in the application",
+      "Give every user full administrator permissions",
+      "Make every S3 bucket public"
+    ],
+    "answerExplanation": "IAM role cung cấp thông tin xác thực tạm thời; policy giới hạn tới bucket và thao tác cần thiết.",
+    "trap": "MFA thay thế hoàn toàn việc phân quyền IAM.",
+    "source": "https://docs.aws.amazon.com/aws-certification/latest/cloud-practitioner-02/cloud-practitioner-02-domain2.html"
+  },
+  {
+    "code": "2.4",
+    "title": "Dịch vụ bảo vệ và phát hiện rủi ro",
+    "text": "AWS WAF filters web requests based on rules. AWS Shield provides DDoS protection. Amazon GuardDuty detects suspicious activity using supported data sources. Amazon Inspector helps identify vulnerabilities in supported workloads. A security design may combine preventive and detective controls instead of relying on one service.",
+    "explanation": "Phân biệt ngăn chặn với phát hiện. WAF xử lý quy tắc truy cập web; GuardDuty đưa ra phát hiện đáng ngờ; Inspector đánh giá lỗ hổng. Cần xử lý các phát hiện và cấu hình bảo vệ phù hợp.",
+    "prompt": "A website wants to block requests matching a known malicious HTTP pattern. Which service fits?",
+    "options": [
+      "AWS WAF",
+      "AWS Cost Explorer",
+      "Amazon Athena",
+      "AWS Budgets"
+    ],
+    "answerExplanation": "WAF áp dụng quy tắc cho yêu cầu web. Dịch vụ phân tích chi phí không lọc yêu cầu HTTP.",
+    "trap": "Bật công cụ phát hiện là đủ, không cần phản ứng trước cảnh báo.",
+    "source": "https://docs.aws.amazon.com/aws-certification/latest/cloud-practitioner-02/cloud-practitioner-02-domain2.html"
+  },
+  {
+    "code": "3.1",
+    "title": "Triển khai và vận hành trên cloud",
+    "text": "Use the AWS Management Console for interactive tasks, the CLI or SDKs for programmatic operations, and infrastructure as code for repeatable environments. AWS CloudFormation describes infrastructure using templates. A hybrid deployment connects on-premises resources with cloud resources.",
+    "explanation": "Giao diện Console phù hợp thao tác trực tiếp; CLI và SDK phù hợp tự động hóa. Infrastructure as Code giúp phiên bản hóa cấu hình và tái tạo môi trường, thay cho thao tác tay khó lặp lại.",
+    "prompt": "A team must deploy the same infrastructure in test and production from a version-controlled definition. Which choice best fits?",
+    "options": [
+      "AWS CloudFormation templates",
+      "Manual console changes without documentation",
+      "Screenshots of console settings",
+      "A spreadsheet containing account passwords"
+    ],
+    "answerExplanation": "CloudFormation triển khai từ template, giúp lặp lại và quản lý thay đổi hạ tầng.",
+    "trap": "Infrastructure as Code chỉ dùng để viết mã ứng dụng.",
+    "source": "https://docs.aws.amazon.com/aws-certification/latest/cloud-practitioner-02/cloud-practitioner-02-domain3.html"
+  },
+  {
+    "code": "3.2",
+    "title": "Region, Availability Zone và edge",
+    "text": "A Region is a geographic area containing multiple Availability Zones. Availability Zones provide isolated infrastructure within a Region. Deploying across multiple AZs supports high availability. Edge locations place content and services closer to users. Region selection should consider latency, service availability, and data residency requirements.",
+    "explanation": "Region không phải Availability Zone. Multi-AZ giảm ảnh hưởng của lỗi một AZ; multi-Region phục vụ mục tiêu khác như khôi phục thảm họa hoặc yêu cầu địa lý. Edge location không thay thế một Region đầy đủ.",
+    "prompt": "A workload must continue serving users if one Availability Zone becomes unavailable. Which design helps?",
+    "options": [
+      "Deploy across multiple Availability Zones",
+      "Deploy all instances in one AZ",
+      "Store backups only on the same instance",
+      "Choose one larger instance without redundancy"
+    ],
+    "answerExplanation": "Phân tán qua nhiều AZ giảm điểm lỗi đơn; tăng cấu hình một máy không giải quyết lỗi cả AZ.",
+    "trap": "Hai máy chủ trong cùng một AZ luôn tương đương với kiến trúc multi-AZ.",
+    "source": "https://docs.aws.amazon.com/aws-certification/latest/cloud-practitioner-02/cloud-practitioner-02-domain3.html"
+  },
+  {
+    "code": "3.3",
+    "title": "Lựa chọn dịch vụ compute",
+    "text": "Amazon EC2 provides virtual machines with control over the operating system. AWS Lambda runs functions in response to events without requiring customers to manage servers. ECS and EKS orchestrate containers; AWS Fargate runs supported container workloads without managing underlying servers. Load balancers distribute requests, while Auto Scaling adjusts capacity.",
+    "explanation": "Chọn theo mức kiểm soát và cách chạy. EC2 phù hợp khi cần kiểm soát hệ điều hành; Lambda phù hợp hàm theo sự kiện. Load balancing và scaling là hai vai trò khác nhau.",
+    "prompt": "A short function should run whenever an object is uploaded to S3, without managing servers. Which service is suitable?",
+    "options": [
+      "AWS Lambda",
+      "An always-running manually managed desktop",
+      "AWS Artifact",
+      "Amazon Route 53"
+    ],
+    "answerExplanation": "Lambda thực thi mã theo sự kiện, phù hợp xử lý upload; vẫn cần cấu hình quyền và logic xử lý lỗi.",
+    "trap": "Serverless nghĩa là không có máy chủ hoặc không còn trách nhiệm cấu hình.",
+    "source": "https://docs.aws.amazon.com/aws-certification/latest/cloud-practitioner-02/cloud-practitioner-02-domain3.html"
+  },
+  {
+    "code": "3.4",
+    "title": "Cơ sở dữ liệu trên AWS",
+    "text": "Amazon RDS manages relational database engines; Amazon Aurora is a relational database service compatible with MySQL and PostgreSQL. Amazon DynamoDB provides managed NoSQL key-value and document storage. Amazon ElastiCache supports in-memory caching. Choose a database according to the data model, access patterns, and operational requirements.",
+    "explanation": "Relational và NoSQL phục vụ mô hình dữ liệu khác nhau. Dịch vụ managed giảm một số việc vận hành, nhưng khách hàng vẫn thiết kế schema, truy vấn, quyền và phương án sử dụng dữ liệu.",
+    "prompt": "An application needs a managed relational database compatible with PostgreSQL. Which option fits?",
+    "options": [
+      "Amazon RDS for PostgreSQL",
+      "Amazon S3 as a relational database engine",
+      "Amazon CloudFront",
+      "AWS IAM"
+    ],
+    "answerExplanation": "RDS hỗ trợ engine PostgreSQL và quản lý các tác vụ hạ tầng database. S3 lưu object, không phải engine SQL quan hệ.",
+    "trap": "DynamoDB là một máy chủ PostgreSQL được đổi tên.",
+    "source": "https://docs.aws.amazon.com/aws-certification/latest/cloud-practitioner-02/cloud-practitioner-02-domain3.html"
+  },
+  {
+    "code": "3.5",
+    "title": "VPC và kết nối mạng",
+    "text": "Amazon VPC defines an isolated virtual network. Subnets divide address ranges within Availability Zones. Security groups control resource traffic. Route 53 provides DNS functionality. AWS Site-to-Site VPN connects networks using encrypted tunnels; AWS Direct Connect provides a dedicated network connection to AWS.",
+    "explanation": "VPC là phạm vi mạng logic; subnet gắn với một AZ. DNS định tuyến tên miền, không thay thế firewall. Chọn VPN hoặc Direct Connect dựa trên kiểu kết nối và yêu cầu; kết nối riêng không tự động đồng nghĩa mọi dữ liệu được mã hóa.",
+    "prompt": "A company wants an encrypted connection from its office network to a VPC over the internet. Which option fits?",
+    "options": [
+      "AWS Site-to-Site VPN",
+      "Amazon S3 lifecycle rules",
+      "AWS Artifact",
+      "Amazon RDS read replicas"
+    ],
+    "answerExplanation": "Site-to-Site VPN dùng tunnel mã hóa qua internet để nối hai mạng.",
+    "trap": "Security group quản lý chi phí sử dụng tài nguyên.",
+    "source": "https://docs.aws.amazon.com/aws-certification/latest/cloud-practitioner-02/cloud-practitioner-02-domain3.html"
+  },
+  {
+    "code": "3.6",
+    "title": "Object, block và file storage",
+    "text": "Amazon S3 stores objects in buckets. Amazon EBS provides block storage for EC2. Amazon EFS provides a managed shared file system. Select storage based on how applications access data, then consider durability, availability, and retrieval requirements. S3 lifecycle policies can move eligible objects to other storage classes.",
+    "explanation": "S3 phù hợp object như ảnh và backup; EBS là volume dạng block; EFS cho nhiều client dùng file system chung. Lựa chọn lớp lưu trữ phải cân nhắc tần suất và thời gian truy xuất.",
+    "prompt": "An EC2 application needs a block storage volume for its operating system and data. Which service should it use?",
+    "options": [
+      "Amazon EBS",
+      "Amazon Route 53",
+      "AWS CloudTrail",
+      "Amazon SNS"
+    ],
+    "answerExplanation": "EBS cung cấp block storage cho EC2; S3 là object storage còn EFS là shared file system.",
+    "trap": "S3 bucket là ổ đĩa block gắn trực tiếp vào EC2 giống EBS.",
+    "source": "https://docs.aws.amazon.com/aws-certification/latest/cloud-practitioner-02/cloud-practitioner-02-domain3.html"
+  },
+  {
+    "code": "3.7",
+    "title": "AI, machine learning và analytics",
+    "text": "Match the service to the task. Amazon SageMaker AI supports machine learning workflows. Amazon Lex supports conversational interfaces. Amazon Athena queries supported data in S3 using SQL. AWS Glue supports data integration. Amazon Quick Sight supports business intelligence dashboards.",
+    "explanation": "Không phải mọi bài toán AI đều cần tự huấn luyện mô hình. Analytics phân tích dữ liệu; machine learning xây dựng hoặc áp dụng mô hình. Chọn dịch vụ theo đầu ra mong muốn và nguồn dữ liệu.",
+    "prompt": "A team wants to run SQL queries on supported log files in S3 without managing a database server. Which service fits?",
+    "options": [
+      "Amazon Athena",
+      "AWS IAM",
+      "Amazon EBS",
+      "AWS Shield"
+    ],
+    "answerExplanation": "Athena phân tích dữ liệu S3 bằng SQL theo mô hình serverless; cần định dạng và cấu hình dữ liệu phù hợp.",
+    "trap": "Mọi dịch vụ analytics đều dùng để huấn luyện mô hình machine learning.",
+    "source": "https://docs.aws.amazon.com/aws-certification/latest/cloud-practitioner-02/cloud-practitioner-02-domain3.html"
+  },
+  {
+    "code": "3.8",
+    "title": "Tích hợp ứng dụng và các dịch vụ khác",
+    "text": "Amazon SQS provides queues for asynchronous processing. Amazon SNS publishes notifications to subscribers. Amazon EventBridge routes events using rules. AWS CodePipeline supports delivery pipelines. Amazon SES sends email. Decoupling applications with events or queues reduces direct dependencies.",
+    "explanation": "SQS là hàng đợi để consumer xử lý; SNS phù hợp publish/subscribe; EventBridge định tuyến sự kiện. Không nhầm hàng đợi công việc với gửi email hoặc hosting ứng dụng.",
+    "prompt": "Several independent services need to receive the same published notification. Which pattern is appropriate?",
+    "options": [
+      "Publish the notification through Amazon SNS to subscribers",
+      "Use one local file without distribution",
+      "Store an EC2 password in source code",
+      "Disable all event delivery"
+    ],
+    "answerExplanation": "SNS hỗ trợ publish/subscribe và fan-out tới các subscriber đã cấu hình.",
+    "trap": "Mỗi thông báo SNS chỉ có thể đến đúng một subscriber.",
+    "source": "https://docs.aws.amazon.com/aws-certification/latest/cloud-practitioner-02/cloud-practitioner-02-domain3.html"
+  },
+  {
+    "code": "4.1",
+    "title": "Mô hình giá và lựa chọn mua",
+    "text": "On-Demand pricing avoids a long-term capacity commitment. Savings Plans and Reserved Instances can reduce cost for eligible usage under commitments. Spot Instances use spare EC2 capacity and can be interrupted. Choose a purchasing option according to workload stability, flexibility, and interruption tolerance.",
+    "explanation": "Không có một lựa chọn mua tốt nhất cho mọi workload. Workload ổn định có thể phù hợp cam kết; tác vụ batch chịu gián đoạn có thể dùng Spot. Kiểm tra điều kiện của từng lựa chọn thay vì chỉ nhìn mức giảm giá.",
+    "prompt": "A batch job can checkpoint its work and tolerate interruption. It wants to use spare EC2 capacity at a lower cost. Which option fits?",
+    "options": [
+      "Spot Instances",
+      "Only the highest-priced fixed configuration",
+      "AWS Artifact reports",
+      "A root account access key"
+    ],
+    "answerExplanation": "Spot phù hợp khi workload có khả năng chịu gián đoạn và tiếp tục công việc; không phù hợp nếu buộc chạy liên tục mà không có phương án dự phòng.",
+    "trap": "Spot Instances có thể dùng như cam kết không bao giờ bị gián đoạn.",
+    "source": "https://docs.aws.amazon.com/aws-certification/latest/cloud-practitioner-02/cloud-practitioner-02-domain4.html"
+  },
+  {
+    "code": "4.2",
+    "title": "Ước tính, theo dõi và quản lý chi phí",
+    "text": "AWS Pricing Calculator estimates prospective costs. AWS Cost Explorer analyzes usage and cost trends. AWS Budgets defines budgets and alerts. Consolidated billing combines billing across accounts in AWS Organizations. Cost allocation tags help attribute eligible resource costs to teams or projects.",
+    "explanation": "Trước triển khai dùng công cụ ước tính; sau triển khai theo dõi mức sử dụng và xu hướng. Budget alert là cảnh báo, không mặc định là khóa tất cả tài nguyên. Quản lý chi phí cần có hành động sau khi nhận cảnh báo.",
+    "prompt": "A project owner wants an alert when estimated monthly spend approaches a budget threshold. Which tool fits?",
+    "options": [
+      "AWS Budgets",
+      "Amazon Route 53",
+      "Amazon EFS",
+      "AWS WAF"
+    ],
+    "answerExplanation": "Budgets cho phép đặt ngưỡng và thông báo chi phí; nhận cảnh báo không tự động bảo đảm mọi tài nguyên bị tắt.",
+    "trap": "AWS Pricing Calculator là hóa đơn cuối cùng đã được chốt.",
+    "source": "https://docs.aws.amazon.com/aws-certification/latest/cloud-practitioner-02/cloud-practitioner-02-domain4.html"
+  },
+  {
+    "code": "4.3",
+    "title": "Hỗ trợ và tài nguyên học tập",
+    "text": "Use AWS documentation for service behavior and AWS Support for eligible technical assistance under the applicable support plan. AWS re:Post provides community knowledge. AWS Trusted Advisor provides recommendations across supported checks. Service health information helps distinguish a provider incident from an application problem.",
+    "explanation": "Dùng tài liệu chính thức để kiểm tra chức năng, cộng đồng để tham khảo và Support khi cần trợ giúp phù hợp gói. Điều kiện và khả năng hỗ trợ có thể khác nhau theo gói, nên kiểm tra thông tin hiện hành thay vì học thuộc giá cũ.",
+    "prompt": "A team needs recommendations about supported cost optimization and security checks in its AWS environment. Which resource is relevant?",
+    "options": [
+      "AWS Trusted Advisor",
+      "A DNS hosted zone alone",
+      "An S3 object key name",
+      "An IAM password stored in a spreadsheet"
+    ],
+    "answerExplanation": "Trusted Advisor cung cấp các kiểm tra và khuyến nghị được hỗ trợ; cần xem điều kiện tính năng của tài khoản hoặc gói hỗ trợ.",
+    "trap": "Mọi gói hỗ trợ luôn có cùng phạm vi trợ giúp kỹ thuật.",
+    "source": "https://docs.aws.amazon.com/aws-certification/latest/cloud-practitioner-02/cloud-practitioner-02-domain4.html"
+  }
+]

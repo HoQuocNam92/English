@@ -14,6 +14,7 @@ export default function LearnerHomePage() {
   const [data, setData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [showAllDomains, setShowAllDomains] = useState(false);
 
   useEffect(() => {
     async function loadData() {
@@ -100,7 +101,11 @@ export default function LearnerHomePage() {
   const certificateProgressById = new Map((progress?.certProgress || []).map((item: any) => [item.certificateId, item]));
 
   const level = profile?.level?.name ?? profile?.level ?? 'Chưa thiết lập';
-  const domain = profile?.domains?.[0]?.domain?.name ?? profile?.domain?.name ?? profile?.itField ?? 'Chưa thiết lập';
+  const domainNames: string[] = Array.from(new Set<string>((profile?.domains ?? []).map((item: any) => item.domain?.name).filter(Boolean)));
+  if (!domainNames.length) {
+    const fallbackDomain = profile?.domain?.name ?? profile?.itField;
+    if (fallbackDomain) domainNames.push(fallbackDomain);
+  }
   const cert = profile?.certGoals?.[0]?.certificate?.name ?? profile?.targetCertification?.name ?? profile?.targetCert ?? 'Chưa thiết lập';
   const examActivities = attempts.map((a: any) => {
     const title = a.exam?.title ?? a.examTitle ?? t.practice.exams;
@@ -137,7 +142,7 @@ export default function LearnerHomePage() {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           {[
             { icon: '🎓', label: t.home.level, value: level, bg: 'bg-gradient-to-br from-indigo-100 to-violet-200' },
-            { icon: '💻', label: t.home.itField, value: domain, bg: 'bg-gradient-to-br from-sky-100 to-cyan-200' },
+            { icon: '💻', label: t.home.itField, value: domainNames.join(', ') || 'Chưa thiết lập', bg: 'bg-gradient-to-br from-sky-100 to-cyan-200' },
             { icon: '🏆', label: t.home.certGoal, value: cert, bg: 'bg-gradient-to-br from-amber-100 to-orange-200' },
           ].map((s) => (
             <div
@@ -145,12 +150,27 @@ export default function LearnerHomePage() {
               key={s.label}
               className="bg-surface-container border border-outline-variant rounded-lg p-4 flex items-center gap-4 hover:shadow-[0_1px_3px_rgba(15,23,24,0.06)] transition-shadow"
             >
-              <div className={`w-12 h-12 rounded-full ${s.bg} flex items-center justify-center shadow-xs ring-1 ring-white/70`}>
+              <div className={`w-12 h-12 shrink-0 rounded-full ${s.bg} flex items-center justify-center shadow-xs ring-1 ring-white/70`}>
                 <span className="text-2xl leading-none" aria-hidden="true"><AppIcon>{s.icon}</AppIcon></span>
               </div>
-              <div>
+              <div className="min-w-0 flex-1">
                 <p className="text-[12px] font-bold text-on-surface-variant uppercase tracking-[0.05em]">{s.label}</p>
-                <p className="text-[20px] font-semibold text-on-surface" style={{ lineHeight: '28px' }}>{s.label === t.home.level ? <LevelBadge level={level} className="text-sm" /> : s.value}</p>
+                {s.label === t.home.itField && domainNames.length > 0 ? (
+                  <div className="mt-2">
+                    <ul id="selected-it-domains" className="flex flex-wrap gap-1.5" aria-label="Lĩnh vực IT đã chọn">
+                      {(showAllDomains ? domainNames : domainNames.slice(0, 1)).map((name) => (
+                        <li key={name} title={name} className="max-w-full truncate rounded-lg bg-primary/10 px-2.5 py-1 text-sm font-medium text-primary">{name}</li>
+                      ))}
+                    </ul>
+                    {domainNames.length > 1 && (
+                      <button type="button" aria-expanded={showAllDomains} aria-controls="selected-it-domains" onClick={() => setShowAllDomains((shown) => !shown)} className="mt-1.5 rounded px-1 py-1 text-xs font-semibold text-primary hover:underline focus-visible:outline-2 focus-visible:outline-primary">
+                        {showAllDomains ? 'Thu gọn' : `+${domainNames.length - 1} lĩnh vực`}
+                      </button>
+                    )}
+                  </div>
+                ) : (
+                  <p className="text-[20px] font-semibold text-on-surface" style={{ lineHeight: '28px' }}>{s.label === t.home.level ? <LevelBadge level={level} className="text-sm" /> : s.value}</p>
+                )}
               </div>
             </div>
           ))}
@@ -348,7 +368,7 @@ export default function LearnerHomePage() {
                   <Link
                     key={certificate.id}
                     href={`/learn/certifications/${certificate.id}`}
-                    className="bg-surface-container border border-outline-variant rounded-lg p-5 hover:shadow-[0_1px_3px_rgba(15,23,24,0.08)] hover:border-primary/40 transition-all flex flex-col"
+                    className="bg-surface-container border border-outline-variant rounded-lg p-5 hover:shadow-[0_1px_3px_rgba(15,23,24,0.08)] hover:border-primary/40 transition-all content-card"
                   >
                     <div className="mb-4 flex items-start gap-3">
                       <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-amber-100 to-orange-200 ring-1 ring-amber-200/70">
@@ -369,7 +389,7 @@ export default function LearnerHomePage() {
                       <div className="h-1.5 overflow-hidden rounded-full bg-surface-container-highest">
                         <div className="h-full rounded-full bg-primary" style={{ width: `${progressPercent}%` }} />
                       </div>
-                      <div className="mt-4 flex items-center justify-end gap-1 text-[13px] font-bold text-primary">
+                      <div className="content-card-footer content-card-actions text-[13px] font-bold text-primary">
                         Xem lộ trình <span className="text-[16px]" aria-hidden="true"><IconText>{"➡️"}</IconText></span>
                       </div>
                     </div>

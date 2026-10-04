@@ -1,4 +1,4 @@
-import { ConflictException, Injectable, NotFoundException } from '@nestjs/common'
+import { BadRequestException, ConflictException, Injectable, NotFoundException } from '@nestjs/common'
 import { PrismaService } from '../../infrastructure/database/prisma.service'
 import { CreateLessonDto, UpdateLessonDto } from '../../presentation/http-dto/content.dto'
 
@@ -24,6 +24,7 @@ export class LessonsService {
     if (params.levelCode) where.level = { code: String(params.levelCode) }
     if (params.status) where.status = String(params.status)
     if (params.type) where.type = String(params.type)
+    if (params.topicId) where.certificationTopics = { some: { topicId: String(params.topicId) } }
     if (params.certificateId) where.certificates = { some: { certificateId: String(params.certificateId) } }
 
     const [data, total] = await Promise.all([
@@ -35,6 +36,7 @@ export class LessonsService {
           domain: true,
           level: true,
           certificates: { include: { certificate: true } },
+        certificationTopics: { include: { topic: true } },
           vocabularies: { include: { vocabulary: { select: { id: true, term: true } } } },
           createdBy: { include: { userDetail: true } },
           _count: { select: { sections: true, vocabularies: true } },
@@ -55,6 +57,7 @@ export class LessonsService {
         sections: { orderBy: { order: 'asc' } },
         vocabularies: { include: { vocabulary: true } },
         certificates: { include: { certificate: true } },
+        certificationTopics: { include: { topic: true } },
         createdBy: { include: { userDetail: true } },
       },
     })
@@ -63,6 +66,7 @@ export class LessonsService {
   }
 
   async create(dto: CreateLessonDto, createdById: string) {
+    await this.assertTopicLinks(dto.topicIds, dto.certificateIds ?? [], dto.type)
     const slug = await this.uniqueSlug(dto.title)
     return this.prisma.lesson.create({
       data: {
@@ -70,6 +74,7 @@ export class LessonsService {
         domainId: dto.domainId, levelId: dto.levelId, estimatedMinutes: dto.estimatedMinutes,
         thumbnailUrl: dto.thumbnailUrl, keyConcepts: dto.keyConcepts ?? [], status: (dto.status ?? 'draft') as any,
         publishedAt: dto.status === 'published' ? new Date() : undefined, createdById,
+        certificationTopics: dto.topicIds?.length ? { create: dto.topicIds.map(topicId => ({ topicId })) } : undefined,
         sections: dto.sections?.length ? { create: dto.sections as any } : undefined,
         certificates: dto.certificateIds?.length ? { create: dto.certificateIds.map(certificateId => ({ certificateId })) } : undefined,
         vocabularies: dto.vocabularyIds?.length ? { create: dto.vocabularyIds.map(vocabularyId => ({ vocabularyId })) } : undefined,
@@ -79,10 +84,12 @@ export class LessonsService {
   }
 
   async update(id: string, dto: UpdateLessonDto) {
-    await this.findOne(id)
+    const existing = await this.findOne(id)
+    await this.assertTopicLinks(dto.topicIds ?? existing.certificationTopics.map(link => link.topicId), dto.certificateIds ?? existing.certificates.map(link => link.certificateId), dto.type ?? existing.type)
     return this.prisma.$transaction(async tx => {
       if (dto.sections) await tx.lessonSection.deleteMany({ where: { lessonId: id } })
       if (dto.certificateIds) await tx.lessonCertificate.deleteMany({ where: { lessonId: id } })
+      if (dto.topicIds) await tx.certificationTopicLesson.deleteMany({ where: { lessonId: id } })
       if (dto.vocabularyIds) await tx.lessonVocabulary.deleteMany({ where: { lessonId: id } })
       const data: any = {
         ...(dto.title !== undefined && { title: dto.title.trim() }),
@@ -95,6 +102,7 @@ export class LessonsService {
         ...(dto.keyConcepts !== undefined && { keyConcepts: dto.keyConcepts }),
         ...(dto.status !== undefined && { status: dto.status }),
         ...(dto.status === 'published' && { publishedAt: new Date() }),
+        ...(dto.topicIds && { certificationTopics: { create: dto.topicIds.map(topicId => ({ topicId })) } }),
         ...(dto.sections && { sections: { create: dto.sections } }),
         ...(dto.certificateIds && { certificates: { create: dto.certificateIds.map(certificateId => ({ certificateId })) } }),
         ...(dto.vocabularyIds && { vocabularies: { create: dto.vocabularyIds.map(vocabularyId => ({ vocabularyId })) } }),
@@ -107,6 +115,13 @@ export class LessonsService {
     const lesson = await this.findOne(id)
     if (lesson.status === 'published') throw new ConflictException('Hãy chuyển bài học về bản nháp hoặc lưu trữ trước khi xóa')
     await this.prisma.lesson.delete({ where: { id } })
+  }
+
+  private async assertTopicLinks(topicIds: string[] | undefined, certificateIds: string[], type: string) {
+    if (!topicIds?.length) return
+    if (type !== 'certification_review') throw new BadRequestException('Chủ đề chứng chỉ chỉ nhận bài học ôn chứng chỉ.')
+    const topics = await this.prisma.certificationTopic.findMany({ where: { id: { in: topicIds } }, select: { id: true, certificateId: true } })
+    if (topics.length !== topicIds.length || topics.some(topic => !certificateIds.includes(topic.certificateId))) throw new BadRequestException('Chủ đề phải thuộc chứng chỉ đã chọn.')
   }
 
   private async uniqueSlug(title: string) {

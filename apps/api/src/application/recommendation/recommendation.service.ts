@@ -116,13 +116,13 @@ export class RecommendationService {
           type: 'exam',
           title: ex.title,
           summary: ex.description,
-          reason: `Ôn luyện chứng chỉ: Làm quiz về ${ex.domain?.name || 'CNTT'} trong lộ trình chứng chỉ đã chọn.`,
+          reason: `Học kiến thức ${ex.domain?.name || 'CNTT'} theo chứng chỉ đã chọn trước khi luyện Quiz.`,
           priority: 'high',
           priorityScore: 84,
           domainName: ex.domain?.name,
           levelName: ex.level?.name,
-          actionUrl: `/learn/quiz/${ex.id}`,
-          actionText: ex.kind === 'mock_exam' ? 'Làm đề thi thử' : 'Làm quiz ôn luyện',
+          actionUrl: ex.kind === 'mock_exam' ? `/learn/quiz/${ex.id}` : `/learn/certifications/${ex.certificateId}`,
+          actionText: ex.kind === 'mock_exam' ? 'Làm đề thi thử' : 'Học và luyện Quiz',
         })
       }
     }

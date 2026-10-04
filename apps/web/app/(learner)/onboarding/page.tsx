@@ -77,7 +77,7 @@ export default function OnboardingPage() {
     if (!goal || !canContinue) return;
     const invalidField = [
       { label: 'Số từ vựng mỗi ngày', value: dailyVocabularyTarget },
-      { label: 'Số bài Quiz mỗi tuần', value: weeklyExamTarget },
+      { label: 'Số bài kiểm tra mỗi tuần', value: weeklyExamTarget },
       { label: 'Số phút học mỗi ngày', value: dailyStudyTargetMinutes },
     ].find(field => !Number.isInteger(field.value));
     if (invalidField) {
@@ -105,7 +105,8 @@ export default function OnboardingPage() {
         router.replace(`/onboarding/placement-test?next=${encodeURIComponent(destination())}`);
         return;
       }
-      router.replace(destination());
+      await apiClient.post('/placement-test/plan', {});
+      router.replace('/learn/plan');
     } catch (error) {
       setErrorMessage(error instanceof Error ? error.message : 'Không thể tạo lộ trình. Vui lòng thử lại.');
       setIsSubmitting(false);
@@ -134,7 +135,7 @@ export default function OnboardingPage() {
 
         {step === 3 && <section><Header title="Xác định trình độ tiếng Anh" subtitle="Làm bài kiểm tra nhanh để hệ thống đề xuất lộ trình vừa sức, hoặc tự chọn nếu bạn đã biết trình độ của mình." /><div className="grid gap-4 md:grid-cols-2"><ChoiceCard selected={takePlacementTest} icon="quiz" title="Làm bài kiểm tra nhanh" description="10–15 câu · khoảng 5 phút · nhận trình độ đề xuất ngay" onClick={() => setTakePlacementTest(true)} /><ChoiceCard selected={!takePlacementTest} icon="tune" title="Tôi muốn tự chọn trình độ" description="Chọn trực tiếp mức phù hợp với kinh nghiệm hiện tại" onClick={() => setTakePlacementTest(false)} /></div>{!takePlacementTest && <div className="mt-5 grid gap-3 md:grid-cols-2">{LEVELS.map(item => <ChoiceCard key={item.id} selected={level === item.id} icon={item.icon} title={<LevelBadge level={{ code: item.id, name: item.title }} />} description={item.subtitle} onClick={() => setLevel(item.id)} />)}</div>}</section>}
 
-        {step === 4 && <section><Header title="Thiết lập kế hoạch học" subtitle="Mỗi ngày một lượng nhỏ, có ôn tập ngắt quãng và tổng kết vào cuối tuần." /><div className="rounded-2xl border border-outline-variant bg-white p-5"><div className="mb-5 rounded-xl bg-primary/5 p-4"><p className="text-sm font-bold text-primary">Nhịp học gợi ý mỗi ngày</p><p className="mt-1 text-sm text-on-surface-variant"><IconText>{"10 từ mới → 1 bài học ngắn → 5 câu luyện tập"}</IconText></p><p className="mt-2 text-xs text-on-surface-variant">Ngày 2 trở đi sẽ xen kẽ ôn từ cũ; ngày 7 có Weekly Review và Weekly Quiz.</p></div><div className="grid gap-4 sm:grid-cols-3"><NumberField label="Từ vựng/ngày" value={dailyVocabularyTarget} min={1} max={200} onChange={setDailyVocabularyTarget} /><NumberField label="Bài Quiz/tuần" value={weeklyExamTarget} min={1} max={50} onChange={setWeeklyExamTarget} /><NumberField label="Phút học/ngày" value={dailyStudyTargetMinutes} min={5} max={1440} onChange={setDailyStudyTargetMinutes} /></div><div className="mt-5 flex flex-wrap items-center gap-3 border-t border-border-subtle pt-5"><label className="flex items-center gap-2 text-sm font-semibold text-on-surface"><input type="checkbox" checked={reminderEnabled} onChange={event => setReminderEnabled(event.target.checked)} />Nhắc học mỗi ngày</label><input type="time" value={reminderTime} disabled={!reminderEnabled} onChange={event => setReminderTime(event.target.value)} className="rounded-lg border border-outline-variant px-3 py-2 text-sm disabled:opacity-50" /></div></div></section>}
+        {step === 4 && <section><Header title="Thiết lập kế hoạch học" subtitle="Mỗi ngày một lượng nhỏ, có ôn tập ngắt quãng và tổng kết vào cuối tuần." /><div className="rounded-2xl border border-outline-variant bg-white p-5"><div className="mb-5 rounded-xl bg-primary/5 p-4"><p className="text-sm font-bold text-primary">Nhịp học gợi ý mỗi ngày</p><p className="mt-1 text-sm text-on-surface-variant"><IconText>{"10 từ mới → 1 bài học ngắn → 5 câu luyện tập"}</IconText></p><p className="mt-2 text-xs text-on-surface-variant">Từ ngày 2, học xen kẽ với ôn từ đã học; ngày 7 ôn tập và làm bài kiểm tra cuối tuần.</p></div><div className="grid gap-4 sm:grid-cols-3"><NumberField label="Từ vựng/ngày" value={dailyVocabularyTarget} min={1} max={200} onChange={setDailyVocabularyTarget} /><NumberField label="Bài kiểm tra/tuần" value={weeklyExamTarget} min={1} max={50} onChange={setWeeklyExamTarget} /><NumberField label="Phút học/ngày" value={dailyStudyTargetMinutes} min={5} max={1440} onChange={setDailyStudyTargetMinutes} /></div><div className="mt-5 flex flex-wrap items-center gap-3 border-t border-border-subtle pt-5"><label className="flex items-center gap-2 text-sm font-semibold text-on-surface"><input type="checkbox" checked={reminderEnabled} onChange={event => setReminderEnabled(event.target.checked)} />Nhắc học mỗi ngày</label><input type="time" value={reminderTime} disabled={!reminderEnabled} onChange={event => setReminderTime(event.target.value)} className="rounded-lg border border-outline-variant px-3 py-2 text-sm disabled:opacity-50" /></div></div></section>}
 
         {errorMessage && <p className="mt-6 rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-700">{errorMessage}</p>}
         <div className="mt-10 flex items-center justify-between border-t border-border-subtle pt-6">

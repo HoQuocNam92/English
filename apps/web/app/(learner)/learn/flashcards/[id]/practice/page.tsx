@@ -10,7 +10,7 @@ import { apiClient } from '@/shared/api/api-client';
 import { LoadingSpinner, showToast } from '@/shared/ui';
 
 type Rating = 'easy' | 'medium' | 'hard' | 'mastered';
-type QuizQuestion = { type: 'fill_blank' | 'multiple_choice'; vocabularyId: string; prompt: string; hint?: string; options?: string[]; answer: string };
+type QuizQuestion = { type: 'fill_blank' | 'multiple_choice'; vocabularyId: string; prompt: string; hint?: string; options?: string[]; answer: string; explanation?: string; optionExplanations?: { option: string; correct: boolean; explanation: string }[] };
 
 export default function FlashcardPracticePage({ params }: { params: Promise<{ id: string }> }) {
   const unwrappedParams = React.use(params);
@@ -20,6 +20,12 @@ export default function FlashcardPracticePage({ params }: { params: Promise<{ id
   const onlyNeedsReview = searchParams?.get('onlyNeedsReview') === 'true';
   const domainCode = searchParams?.get('domainCode') ?? '';
   const sourceLessonId = searchParams?.get('sourceLessonId') ?? '';
+  const topicId = searchParams?.get('topicId') ?? '';
+  const certificateId = searchParams?.get('certificateId') ?? '';
+  const reviewOnly = searchParams?.get('reviewOnly') === 'true';
+  const returnUrl = certificateId ? `/learn/certifications/${certificateId}` : lessonId === 'review' ? '/learn/flashcards' : `/learn/flashcards/${lessonId}`;
+  const savingRef = React.useRef(false);
+  const [saving, setSaving] = useState(false);
   const levelCode = searchParams?.get('levelCode') ?? '';
 
   const [lesson, setLesson] = useState<any>(null);
@@ -31,6 +37,7 @@ export default function FlashcardPracticePage({ params }: { params: Promise<{ id
   const [error, setError] = useState('');
   const [isFinished, setIsFinished] = useState(false);
   const [sessionStats, setSessionStats] = useState<any>(null);
+  const [quizFailed, setQuizFailed] = useState(false);
   const [quizMode, setQuizMode] = useState(false);
   const [quizQuestions, setQuizQuestions] = useState<QuizQuestion[]>([]);
   const [quizIndex, setQuizIndex] = useState(0);
@@ -38,6 +45,7 @@ export default function FlashcardPracticePage({ params }: { params: Promise<{ id
   const [quizCorrect, setQuizCorrect] = useState(0);
   const [quizFeedback, setQuizFeedback] = useState<boolean | null>(null);
   const [quizMarkedMastered, setQuizMarkedMastered] = useState(false);
+  const [quizResponses, setQuizResponses] = useState<Record<number, { answer: string; correct: boolean; mastered: boolean }>>({});
 
   // Settings & modals
   const [showSettingsModal, setShowSettingsModal] = useState(false);
@@ -57,9 +65,13 @@ export default function FlashcardPracticePage({ params }: { params: Promise<{ id
   const loadPracticeSession = useCallback(async (filterOnlyNew: boolean, continueLearning = false) => {
     setLoading(true);
     setError('');
+    setSessionResults([]); setSkippedWords([]); setQuizMode(false); setQuizFailed(false);
     try {
       if (lessonId === 'all') {
         const sessionParams = new URLSearchParams();
+        sessionParams.set('onlyNew', String(filterOnlyNew));
+        if (topicId) sessionParams.set('topicId', topicId);
+        if (reviewOnly) sessionParams.set('reviewOnly', 'true');
         if (sourceLessonId) sessionParams.set('sourceLessonId', sourceLessonId);
         if (domainCode) sessionParams.set('domainCode', domainCode);
         if (levelCode) sessionParams.set('levelCode', levelCode);
@@ -73,8 +85,8 @@ export default function FlashcardPracticePage({ params }: { params: Promise<{ id
           res.meta = { ...(res?.meta ?? {}), ...initialMeta, dailyLimitReached: true };
         }
         const allWords = res?.words ?? [];
-        const filtered = filterOnlyNew ? allWords.filter((w: any) => w.studyStatus !== 'mastered') : allWords;
-        setLesson({ id: 'all', title: sourceLessonId ? 'Từ vựng theo bài học trong lộ trình' : domainCode ? `Từ vựng ${domainCode}${levelCode ? ` · ${levelCode}` : ''}` : 'Toàn bộ từ vựng IT Chuyên ngành' });
+        const filtered = filterOnlyNew ? allWords.filter((w: any) => w.studyStatus === 'new') : allWords;
+        setLesson({ id: 'all', title: topicId ? (reviewOnly ? 'Ôn tập từ vựng chứng chỉ đến hạn' : 'Học từ vựng theo chủ đề chứng chỉ') : sourceLessonId ? 'Từ vựng theo bài học trong lộ trình' : domainCode ? `Từ vựng ${domainCode}${levelCode ? ` · ${levelCode}` : ''}` : 'Toàn bộ từ vựng IT Chuyên ngành' });
         setWords(filtered);
         setSessionStats(res?.meta ?? null);
         setCurrentIdx(0);
@@ -125,7 +137,7 @@ export default function FlashcardPracticePage({ params }: { params: Promise<{ id
     } finally {
       setLoading(false);
     }
-  }, [lessonId, onlyNeedsReview, domainCode, levelCode, sourceLessonId]);
+  }, [lessonId, onlyNeedsReview, domainCode, levelCode, sourceLessonId, topicId, reviewOnly]);
 
   useEffect(() => {
     if (lessonId) {
@@ -135,49 +147,54 @@ export default function FlashcardPracticePage({ params }: { params: Promise<{ id
 
   const currentWord = words[currentIdx];
 
-  // Auto pronounce when word changes
-  useEffect(() => {
-    if (currentWord && autoPronounce && !isFinished) {
-      if (currentWord.audioUrl) {
-        void new Audio(currentWord.audioUrl).play();
-      } else if ('speechSynthesis' in window) {
-        window.speechSynthesis.cancel();
-        const u = new SpeechSynthesisUtterance(currentWord.term);
-        u.lang = 'en-US';
-        u.rate = 0.85;
-        window.speechSynthesis.speak(u);
+  const audioPlayer = React.useRef<HTMLAudioElement | null>(null);
+  const audioRequest = React.useRef(0);
+  const [speaking, setSpeaking] = useState(false);
+  const playPronunciation = useCallback(async () => {
+    if (!currentWord) return;
+    const request = ++audioRequest.current;
+    audioPlayer.current?.pause();
+    setSpeaking(true);
+    try {
+      let source = currentWord.audioUrl;
+      if (!source) {
+        const data = await apiClient.post<{ audio: string; mimeType: string }>('/translation/pronunciation', { text: currentWord.term });
+        source = `data:${data.mimeType};base64,${data.audio}`;
       }
+      if (request !== audioRequest.current) return;
+      const player = new Audio(source);
+      audioPlayer.current = player;
+      player.onended = () => { if (request === audioRequest.current) setSpeaking(false); };
+      player.onerror = () => { if (request === audioRequest.current) { setSpeaking(false); showToast('Không phát được âm thanh. Hãy thử lại.', 'error'); } };
+      await player.play();
+    } catch {
+      if (request === audioRequest.current) { setSpeaking(false); showToast('Chưa phát được âm thanh. Hãy bấm nút nghe để thử lại.', 'error'); }
     }
-  }, [currentWord, autoPronounce, isFinished]);
+  }, [currentWord]);
 
-  // Pronounce button handler
+  useEffect(() => {
+    setSpeaking(false);
+    if (currentWord && autoPronounce && !isFinished && !quizMode) void playPronunciation();
+    return () => { audioRequest.current++; audioPlayer.current?.pause(); };
+  }, [currentWord, autoPronounce, isFinished, quizMode, playPronunciation]);
+
   const pronounce = (e: React.MouseEvent) => {
     e.stopPropagation();
-    if (!currentWord) return;
-    if (currentWord.audioUrl) {
-      void new Audio(currentWord.audioUrl).play();
-      return;
-    }
-    if ('speechSynthesis' in window) {
-      window.speechSynthesis.cancel();
-      const u = new SpeechSynthesisUtterance(currentWord.term);
-      u.lang = 'en-US';
-      u.rate = 0.85;
-      window.speechSynthesis.speak(u);
-    }
+    if (!speaking) void playPronunciation();
   };
 
   const startQuiz = async (results: { word: any; rating: Rating }[]) => {
+    setQuizFailed(false);
     const included = results.filter(item => item.rating !== 'mastered');
     if (included.length === 0) { setIsFinished(true); showToast('Bạn đã hoàn thành phiên luyện từ vựng.', 'success', 'Hoàn thành'); return; }
-    const repetitions = Object.fromEntries(included.map(item => [item.word.id, item.rating === 'easy' ? 2 : item.rating === 'medium' ? 3 : 4]));
     try {
-      const response: any = await apiClient.post('/vocab-study/quiz', { vocabIds: included.map(item => item.word.id), repetitions });
+      const response: any = await apiClient.post('/vocab-study/quiz', { vocabIds: [...new Set(included.map(item => item.word.id))] });
       setQuizQuestions(response?.questions ?? []);
+      setQuizResponses({});
       setQuizIndex(0); setQuizAnswer(''); setQuizCorrect(0); setQuizFeedback(null); setQuizMarkedMastered(false); setQuizMode(true);
     } catch {
-      showToast('Không thể tạo bài kiểm tra từ vựng.', 'error');
-      setIsFinished(true);
+      showToast('Không thể tạo bài kiểm tra từ vựng. Tiến độ học đã lưu; hãy thử lại.', 'error');
+      setQuizFailed(true);
     }
   };
 
@@ -185,31 +202,18 @@ export default function FlashcardPracticePage({ params }: { params: Promise<{ id
   const handleRate = async (rating: Rating) => {
     if (!currentWord) return;
 
-    // Record session result
-    const nextResults = [...sessionResults, { word: currentWord, rating }];
-    setSessionResults(nextResults);
-
-    if (rating === 'mastered') {
-      setSkippedWords(prev => [...prev, currentWord]);
-    }
-
-    // Call API in background
+    if (savingRef.current) return;
+    savingRef.current = true; setSaving(true);
     try {
-      await apiClient.post('/vocab-study/rate', {
-        vocabularyId: currentWord.id,
-        rating,
-      });
+      await apiClient.post('/vocab-study/rate', { vocabularyId: currentWord.id, rating });
+      const nextResults = [...sessionResults, { word: currentWord, rating }];
+      setSessionResults(nextResults);
+      if (rating === 'mastered') setSkippedWords(prev => [...prev, currentWord]);
+      if (currentIdx + 1 < words.length) { setCurrentIdx(currentIdx + 1); setIsFlipped(false); }
+      else await startQuiz(nextResults);
     } catch {
-      /* best effort */
-    }
-
-    // Next card
-    if (currentIdx + 1 < words.length) {
-      setCurrentIdx(currentIdx + 1);
-      setIsFlipped(false);
-    } else {
-      await startQuiz(nextResults);
-    }
+      showToast('Chưa lưu được tiến độ. Vui lòng thử lại.', 'error');
+    } finally { savingRef.current = false; setSaving(false); }
   };
 
   const submitQuizAnswer = async (submittedAnswer?: string) => {
@@ -218,29 +222,49 @@ export default function FlashcardPracticePage({ params }: { params: Promise<{ id
     if (!question || quizFeedback !== null || !answer.trim()) return;
     if (submittedAnswer !== undefined) setQuizAnswer(submittedAnswer);
     const correct = answer.trim().toLocaleLowerCase('vi') === question.answer.trim().toLocaleLowerCase('vi');
-    setQuizFeedback(correct);
-    if (correct) setQuizCorrect(value => value + 1);
-    apiClient.post('/vocab-study/answer', { vocabularyId: question.vocabularyId, isCorrect: correct }).catch(() => undefined);
+    if (savingRef.current) return;
+    savingRef.current = true; setSaving(true);
+    try {
+      await apiClient.post('/vocab-study/answer', { vocabularyId: question.vocabularyId, isCorrect: correct });
+      setQuizFeedback(correct);
+      setQuizResponses(previous => ({ ...previous, [quizIndex]: { answer, correct, mastered: false } }));
+      if (correct) {
+        setQuizCorrect(value => value + 1);
+      } else {
+        setQuizQuestions(previous => [...previous, question]);
+      }
+    } catch { showToast('Chưa lưu được kết quả. Vui lòng thử lại.', 'error'); }
+    finally { savingRef.current = false; setSaving(false); }
+  };
+
+  const goToQuizQuestion = (index: number) => {
+    const saved = quizResponses[index];
+    setQuizIndex(index); setQuizAnswer(saved?.answer ?? ''); setQuizFeedback(saved?.correct ?? null); setQuizMarkedMastered(saved?.mastered ?? false);
   };
 
   const nextQuizQuestion = () => {
     if (quizIndex + 1 >= quizQuestions.length) { setQuizMode(false); setIsFinished(true); showToast('Bạn đã hoàn thành phiên luyện từ vựng.', 'success', 'Hoàn thành'); return; }
-    setQuizIndex(value => value + 1); setQuizAnswer(''); setQuizFeedback(null); setQuizMarkedMastered(false);
+    goToQuizQuestion(quizIndex + 1);
   };
 
-  const markQuizWordMastered = () => {
+  const markQuizWordMastered = async () => {
     const question = quizQuestions[quizIndex];
     if (!question || quizFeedback !== null) return;
-    setQuizMarkedMastered(true);
-    setQuizFeedback(true);
-    setQuizQuestions(previous => previous.filter((item, index) => index <= quizIndex || item.vocabularyId !== question.vocabularyId));
-    apiClient.post('/vocab-study/rate', { vocabularyId: question.vocabularyId, rating: 'mastered' }).catch(() => undefined);
+    if (savingRef.current) return;
+    savingRef.current = true; setSaving(true);
+    try {
+      await apiClient.post('/vocab-study/rate', { vocabularyId: question.vocabularyId, rating: 'mastered' });
+      setQuizMarkedMastered(true); setQuizFeedback(true);
+      setQuizResponses(previous => ({ ...previous, [quizIndex]: { answer: '', correct: true, mastered: true } }));
+      setQuizQuestions(previous => previous.filter((item, index) => index <= quizIndex || item.vocabularyId !== question.vocabularyId));
+    } catch { showToast('Chưa lưu được tiến độ. Vui lòng thử lại.', 'error'); }
+    finally { savingRef.current = false; setSaving(false); }
   };
 
   // Keyboard navigation
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (quizMode || isFinished || loading || !currentWord) return;
+      if (quizMode || quizFailed || isFinished || loading || !currentWord) return;
       if (e.code === 'Space') {
         e.preventDefault();
         setIsFlipped(prev => !prev);
@@ -257,7 +281,7 @@ export default function FlashcardPracticePage({ params }: { params: Promise<{ id
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [currentWord, isFinished, loading, quizMode]);
+  }, [currentWord, isFinished, loading, quizMode, quizFailed, isFlipped, sessionResults, currentIdx, words]);
 
   // Stop studying list
   const handleStopStudying = async () => {
@@ -304,7 +328,7 @@ export default function FlashcardPracticePage({ params }: { params: Promise<{ id
               </button>
             )}
             <Link
-              href={lessonId === 'review' ? '/learn/flashcards' : `/learn/flashcards/${lessonId}`}
+              href={returnUrl}
               className="px-4 py-2 rounded-xl bg-primary text-white text-xs font-bold shadow-xs hover:bg-indigo-700 transition-colors"
             >
               {lessonId === 'review' ? 'Về trang Flashcards' : 'Về bài học'}
@@ -315,17 +339,26 @@ export default function FlashcardPracticePage({ params }: { params: Promise<{ id
     );
   }
 
+  if (quizFailed) return <LearnerShell><div className="mx-auto max-w-xl space-y-4 px-4 py-10 text-center"><p>Tiến độ học đã lưu. Chưa tải được Quiz sau phiên học.</p><button disabled={saving} onClick={() => void startQuiz(sessionResults)} className="rounded-xl bg-primary px-4 py-3 text-white">Thử tải Quiz lại</button><Link href={returnUrl} className="block text-primary">Về bài học</Link></div></LearnerShell>;
+
   if (quizMode && quizQuestions.length > 0) {
     const question = quizQuestions[quizIndex];
     return <LearnerShell><div className="mx-auto w-full max-w-2xl space-y-5 px-4 py-10">
-      <div><p className="text-xs font-bold uppercase text-primary">Kiểm tra sau phiên học</p><h1 className="text-2xl font-black text-slate-900">Kiểm tra từ vựng</h1></div>
+      <div className="flex items-center justify-between gap-3"><h1 className="text-2xl font-black text-slate-900">Kiểm tra từ vựng</h1></div>
       <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-xs">
         <p className="mb-5 text-lg font-bold text-slate-900">{question.prompt}</p>
-        {question.type === 'multiple_choice' ? <div className="grid gap-3">{question.options?.map(option => <button key={option} type="button" disabled={quizFeedback !== null} onClick={() => void submitQuizAnswer(option)} className={`rounded-xl border p-3 text-left text-sm font-semibold ${quizAnswer === option ? 'border-primary bg-primary/5 text-primary' : 'border-slate-200'}`}>{option}</button>)}</div> : <input autoFocus value={quizAnswer} disabled={quizFeedback !== null} onChange={event => setQuizAnswer(event.target.value)} onKeyDown={event => event.key === 'Enter' && void submitQuizAnswer()} placeholder="Điền từ còn thiếu..." className="w-full rounded-xl border border-slate-300 px-4 py-3 text-base outline-none focus:border-primary" />}
+        {question.type === 'multiple_choice' ? <div className="grid gap-3">{question.options?.map(option => <button key={option} type="button" disabled={saving || quizFeedback !== null} onClick={() => void submitQuizAnswer(option)} className={`rounded-xl border p-3 text-left text-sm font-semibold ${quizAnswer === option ? 'border-primary bg-primary/5 text-primary' : 'border-slate-200'}`}>{option}</button>)}</div> : <input autoFocus value={quizAnswer} disabled={saving || quizFeedback !== null} onChange={event => setQuizAnswer(event.target.value)} onKeyDown={event => event.key === 'Enter' && void submitQuizAnswer()} placeholder="Điền từ còn thiếu..." className="w-full rounded-xl border border-slate-300 px-4 py-3 text-base outline-none focus:border-primary" />}
         {quizFeedback !== null && <div className={`mt-4 rounded-xl p-3 text-sm font-bold ${quizFeedback ? 'bg-emerald-50 text-emerald-700' : 'bg-rose-50 text-rose-700'}`}>{quizMarkedMastered ? 'Đã đánh dấu là đã biết.' : quizFeedback ? 'Chính xác!' : `Chưa đúng. Đáp án: ${question.answer}`}</div>}
+        {quizFeedback !== null && !quizMarkedMastered && <div className="mt-4 space-y-3 text-sm leading-6">
+          <p className="text-slate-700">{question.explanation ?? `Đáp án đúng: ${question.answer}`}</p>
+          {question.optionExplanations?.map(item => <div key={item.option} className={`rounded-xl border p-3 ${item.correct ? 'border-emerald-200 bg-emerald-50 text-emerald-800' : 'border-slate-200 text-slate-700'}`}><p className="font-bold">{item.correct ? 'Đáp án đúng' : 'Đáp án sai'}{quizAnswer === item.option ? ' · Bạn đã chọn' : ''}: {item.option}</p><p className="mt-1">{item.explanation}</p></div>)}
+        </div>}
       </div>
-      {quizFeedback !== null && <button type="button" onClick={nextQuizQuestion} className="w-full rounded-xl bg-primary py-3 text-sm font-bold text-white">{quizIndex + 1 >= quizQuestions.length ? 'Hoàn thành' : 'Tiếp theo'}</button>}
-      {quizFeedback === null && <div className={`grid gap-3 ${question.type === 'fill_blank' ? 'sm:grid-cols-2' : 'grid-cols-1'}`}>{question.type === 'fill_blank' && <button type="button" onClick={() => void submitQuizAnswer()} disabled={!quizAnswer.trim()} className="w-full rounded-xl bg-primary py-3 text-sm font-bold text-white disabled:opacity-50">Kiểm tra đáp án</button>}<button type="button" onClick={markQuizWordMastered} className="w-full rounded-xl border border-primary py-3 text-sm font-bold text-primary">Đã biết</button></div>}
+      <div className="flex items-center gap-3">
+        <button type="button" disabled={saving || quizIndex === 0} onClick={() => goToQuizQuestion(quizIndex - 1)} className="rounded-xl border border-primary px-5 py-3 text-sm font-bold text-primary disabled:opacity-40">Trước đó</button>
+        <button type="button" disabled={saving || quizFeedback === null} onClick={nextQuizQuestion} className="ml-auto rounded-xl bg-primary px-5 py-3 text-sm font-bold text-white disabled:opacity-40">{quizIndex + 1 >= quizQuestions.length ? 'Hoàn thành' : 'Tiếp tục'}</button>
+      </div>
+      {quizFeedback === null && <div className={`grid gap-3 ${question.type === 'fill_blank' ? 'sm:grid-cols-2' : 'grid-cols-1'}`}>{question.type === 'fill_blank' && <button type="button" onClick={() => void submitQuizAnswer()} disabled={saving || !quizAnswer.trim()} className="w-full rounded-xl bg-primary py-3 text-sm font-bold text-white disabled:opacity-50">Kiểm tra đáp án</button>}<button type="button" onClick={markQuizWordMastered} disabled={saving} className="w-full rounded-xl border border-primary py-3 text-sm font-bold text-primary">Đã biết</button></div>}
     </div></LearnerShell>;
   }
 
@@ -376,10 +409,10 @@ export default function FlashcardPracticePage({ params }: { params: Promise<{ id
               Học thêm từ mới
             </button>
             <Link
-              href={lessonId === 'review' ? '/learn/flashcards' : `/learn/flashcards/${lessonId}`}
+              href={returnUrl}
               className="flex-1 py-3.5 rounded-xl border border-slate-200 bg-white text-slate-700 hover:bg-slate-50 text-xs font-bold transition-colors text-center"
             >
-              {lessonId === 'review' ? 'Về trang Flashcards' : 'Về danh sách từ'}
+              {certificateId ? 'Về chứng chỉ' : lessonId === 'review' ? 'Về trang Flashcards' : 'Về danh sách từ'}
             </Link>
           </div>
         </div>
@@ -399,7 +432,7 @@ export default function FlashcardPracticePage({ params }: { params: Promise<{ id
         <div className="flex flex-wrap items-center justify-between gap-3 text-xs font-bold text-slate-600 pt-1">
           <div className="flex items-center gap-2 sm:gap-3 flex-wrap">
             <Link
-              href={lessonId === 'review' ? '/learn/flashcards' : `/learn/flashcards/${lessonId}`}
+              href={returnUrl}
               className="hover:text-primary transition-colors flex items-center gap-1"
             >
               &lt;&lt; {lessonId === 'review' ? 'Danh mục Flashcards' : 'Xem tất cả'}
@@ -454,7 +487,6 @@ export default function FlashcardPracticePage({ params }: { params: Promise<{ id
         {/* Card Progress Indicator */}
         <div className="flex justify-between items-center text-xs font-bold text-slate-500 pt-1">
           <span>Thẻ {currentIdx + 1} / {words.length}</span>
-          <span className="text-[11px] text-slate-400">Phím tắt: Space (lật), 1-4 (đánh giá)</span>
         </div>
 
         {/* ═════════════════════════════════════════════════════════════════════ */}
@@ -503,8 +535,7 @@ export default function FlashcardPracticePage({ params }: { params: Promise<{ id
                   </h2>
                   <button
                     type="button"
-                    onClick={pronounce}
-                    aria-label={`Phát âm từ ${currentWord.term}`}
+                    onClick={pronounce} disabled={speaking} aria-label={speaking ? 'Đang phát âm' : 'Nghe phát âm'}
                     className="w-10 h-10 rounded-full bg-slate-100 text-slate-600 hover:bg-primary hover:text-white flex items-center justify-center transition-colors shadow-2xs"
                   >
                     <AppIcon className=" text-xl">volume_up</AppIcon>
@@ -536,7 +567,7 @@ export default function FlashcardPracticePage({ params }: { params: Promise<{ id
                   <h3 className="text-2xl font-black text-slate-900">{currentWord.term}</h3>
                   <button
                     type="button"
-                    onClick={pronounce}
+                    onClick={pronounce} disabled={speaking} aria-label={speaking ? 'Đang phát âm' : 'Nghe phát âm'}
                     className="w-7 h-7 rounded-full bg-slate-100 text-slate-600 hover:bg-primary hover:text-white flex items-center justify-center"
                   >
                     <AppIcon className=" text-base">volume_up</AppIcon>
@@ -565,10 +596,10 @@ export default function FlashcardPracticePage({ params }: { params: Promise<{ id
 
                 {currentWord.examples && currentWord.examples.length > 0 && (
                   <div className="bg-indigo-50/70 border border-indigo-100 rounded-xl p-3 text-xs text-slate-800 space-y-1">
-                    <div className="font-bold text-primary text-[11px] uppercase tracking-wide">
-                      Ví dụ:
+                    <div className="font-bold text-primary text-xs">
+                      Ví dụ
                     </div>
-                    <p className="font-semibold">{currentWord.examples[0].sentenceEn}</p>
+                    <p className="text-sm font-normal leading-6">{currentWord.examples[0].sentenceEn.split(new RegExp(`(${currentWord.term.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, 'gi')).map((part: string, index: number) => part.toLowerCase() === currentWord.term.toLowerCase() ? <strong key={index} className="font-bold text-primary">{part}</strong> : <React.Fragment key={index}>{part}</React.Fragment>)}</p>
                     {currentWord.examples[0].translationVi && (
                       <p className="text-slate-600 italic">{currentWord.examples[0].translationVi}</p>
                     )}
@@ -593,6 +624,7 @@ export default function FlashcardPracticePage({ params }: { params: Promise<{ id
             {/* Dễ */}
             <button
               type="button"
+              disabled={saving}
               onClick={() => handleRate('easy')}
               className="flex flex-col items-center justify-center p-2.5 rounded-xl hover:bg-emerald-50 text-emerald-600 transition-colors group"
             >
@@ -605,6 +637,7 @@ export default function FlashcardPracticePage({ params }: { params: Promise<{ id
             {/* Trung bình */}
             <button
               type="button"
+              disabled={saving}
               onClick={() => handleRate('medium')}
               className="flex flex-col items-center justify-center p-2.5 rounded-xl hover:bg-amber-50 text-amber-600 transition-colors group"
             >
@@ -617,6 +650,7 @@ export default function FlashcardPracticePage({ params }: { params: Promise<{ id
             {/* Khó */}
             <button
               type="button"
+              disabled={saving}
               onClick={() => handleRate('hard')}
               className="flex flex-col items-center justify-center p-2.5 rounded-xl hover:bg-red-50 text-red-600 transition-colors group"
             >
@@ -629,6 +663,7 @@ export default function FlashcardPracticePage({ params }: { params: Promise<{ id
             {/* Đã biết, loại khỏi danh sách ôn tập */}
             <button
               type="button"
+              disabled={saving}
               onClick={() => handleRate('mastered')}
               className="flex flex-col items-center justify-center p-2.5 rounded-xl hover:bg-slate-100 text-slate-600 transition-colors group text-center"
             >

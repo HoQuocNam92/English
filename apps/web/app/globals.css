@@ -560,6 +560,7 @@ body {
   min-height: 44px;
   align-items: center;
   justify-content: center;
+  text-align: center;
   gap: 8px;
   border-radius: 12px;
   padding: 8px 16px;
@@ -587,6 +588,19 @@ body {
   min-height: 44px;
   border-radius: 12px;
 }
+
+
+/* Center action labels without overriding text-left cards, tabs or menu rows. */
+.admin-canvas :where(button.bg-primary, a.bg-primary):not(.text-left),
+.learner-canvas :where(button.bg-primary, a.bg-primary):not(.text-left) {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  gap: 8px;
+  line-height: 20px;
+}
+.ui-button svg { flex-shrink: 0; }
 
 
 /* Admin references use one 32px canvas gutter. Pages that already provide their
@@ -952,3 +966,27 @@ select.admin-select {
 @media (prefers-reduced-motion: reduce) {
   .dropdown-trigger, .dropdown-chevron { transition: none; }
 }
+
+/* Shared content card layout: actions stay at the bottom regardless of copy length. */
+.content-card { display: flex; flex-direction: column; min-width: 0; height: 100%; }
+.content-card-footer { margin-top: auto !important; padding-top: 24px; flex-shrink: 0; }
+.content-card-actions { display: flex; align-items: center; justify-content: flex-end; gap: 8px; }
+
+/* Shared admin segmented tabs. */
+.ui-tabs { display: inline-flex; align-items: center; gap: 4px; max-width: 100%; overflow-x: auto; padding: 4px; border-radius: 16px; background: white; }
+.ui-tab { display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0; min-height: 44px; padding: 10px 20px; border: 1px solid transparent; border-radius: 12px; font-size: 14px; font-weight: 600; color: var(--on-surface-variant); white-space: nowrap; gap: 8px; text-align: center; }
+.ui-tab:hover { background: var(--surface-container-low); }
+.ui-tab[aria-pressed="true"], .ui-tab[aria-current="page"] { background: white; color: var(--primary); border-color: var(--outline-variant); box-shadow: 0 1px 3px rgb(15 23 42 / 8%); }
+
+/* Shared admin list tables, including existing management lists. */
+.admin-list-table, .admin-canvas table { width: 100%; border-collapse: collapse; text-align: left; font-size: 14px; }
+.admin-list-table thead, .admin-canvas table thead { background: white; }
+.admin-list-table th, .admin-list-table td { padding: 16px; vertical-align: middle; }
+.admin-list-table th { font-size: 12px; font-weight: 600; color: var(--on-surface-variant); }
+.admin-list-table tbody > tr, .admin-canvas table tbody > tr { border-top: 1px solid var(--outline-variant); }
+.admin-list-table tbody > tr:hover { background: var(--surface-container-low); }
+
+/* Form controls inherit the same application typography. */
+button, input, select, textarea { font-family: inherit; }
+.ui-tabs { min-width: 0; }
+.ui-tab svg { flex-shrink: 0; }

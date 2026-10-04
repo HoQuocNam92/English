@@ -49,6 +49,7 @@ export default function AdminQuestionsPage() {
   const [search, setSearch] = React.useState('');
   const [status, setStatus] = React.useState('');
   const [type, setType] = React.useState('');
+  const [topic, setTopic] = React.useState('');
   const [skill, setSkill] = React.useState('');
   const [domainCode, setDomainCode] = React.useState('');
   const [examId, setExamId] = React.useState('');
@@ -72,6 +73,7 @@ export default function AdminQuestionsPage() {
         ...(status && { status }),
         ...(type && { type }),
         ...(skill && { skill }),
+        ...(topic && { topic }),
         ...(domainCode && { domainCode }),
         ...(examId && { examId }),
       });
@@ -83,7 +85,7 @@ export default function AdminQuestionsPage() {
     } finally {
       setLoading(false);
     }
-  }, [page, limit, search, status, type, skill, domainCode, examId]);
+  }, [page, limit, search, status, type, skill, domainCode, examId, topic]);
 
   React.useEffect(() => { void load(); }, [load]);
 
@@ -98,6 +100,17 @@ export default function AdminQuestionsPage() {
       setExams(examResult.data);
     }).catch(() => undefined);
   }, []);
+
+  const [updatingId, setUpdatingId] = React.useState<string | null>(null);
+  const changeStatus = async (question: QuestionItem) => {
+    setUpdatingId(question.id);
+    setError(null);
+    try {
+      await apiClient.patch(`/questions/${question.id}`, { status: question.status === 'published' ? 'draft' : 'published' });
+      await load();
+    } catch (cause) { setError(cause instanceof ApiClientError ? cause.message : 'Không thể cập nhật trạng thái câu hỏi'); }
+    finally { setUpdatingId(null); }
+  };
 
   const handleDelete = async (question: QuestionItem) => {
     if (!(await confirmDialog(`Xóa câu hỏi “${question.prompt.slice(0, 80)}${question.prompt.length > 80 ? '…' : ''}”? Câu hỏi cũng sẽ được gỡ khỏi các bộ đề liên quan.`, { title: 'Xóa câu hỏi?', confirmLabel: 'Xóa câu hỏi', tone: 'danger' }))) return;
@@ -160,9 +173,9 @@ export default function AdminQuestionsPage() {
             </span>
           ))}
         </div>
-        <div className="grid min-w-0 gap-3 md:grid-cols-2 xl:grid-cols-3">
+        <div className="flex min-w-0 flex-col items-start gap-4 lg:flex-row">
         <SearchInput
-          className="min-w-0"
+          className="min-w-0 lg:!w-80 lg:shrink-0"
           value={searchInput}
           onChange={setSearchInput}
           onSearch={(sanitized) => {
@@ -172,6 +185,7 @@ export default function AdminQuestionsPage() {
           placeholder="Tìm kiếm câu hỏi theo nội dung, từ khóa, tình huống..."
           maxLength={100}
         />
+        <div className="grid w-full min-w-0 gap-3 sm:grid-cols-2 xl:grid-cols-3 lg:ml-auto lg:max-w-3xl">
         <Dropdown
           value={type}
           onChange={(e) => { setType(e.target.value); setPage(1); }}
@@ -181,6 +195,7 @@ export default function AdminQuestionsPage() {
           <option value="">Tất cả loại câu hỏi</option>
           {Object.entries(QUESTION_TYPES).map(([value, item]) => <option key={value} value={value}>{item.label}</option>)}
         </Dropdown>
+        <Dropdown value={topic} onChange={(e) => { setTopic(e.target.value); setPage(1); }} aria-label="Lọc câu kiểm tra trình độ" className="min-w-0 w-full rounded-xl bg-surface-container-lowest px-3 py-2 text-sm text-on-surface shadow-[inset_0_0_0_1px_rgba(99,102,241,0.16)]"><option value="">Tất cả mục đích</option><option value="placement">Kiểm tra trình độ</option></Dropdown>
         <Dropdown value={skill} onChange={(e) => { setSkill(e.target.value); setPage(1); }} className="min-w-0 w-full rounded-xl bg-surface-container-lowest px-3 py-2 text-sm text-on-surface shadow-[inset_0_0_0_1px_rgba(99,102,241,0.16)] focus:outline-none" aria-label="Lọc theo kỹ năng">
           <option value="">Tất cả kỹ năng</option>{Object.entries(SKILLS).map(([value,label]) => <option key={value} value={value}>{label}</option>)}
         </Dropdown>
@@ -209,6 +224,7 @@ export default function AdminQuestionsPage() {
         >
           {STATUSES.map((s) => <option key={s.value} value={s.value}>{s.label}</option>)}
         </Dropdown>
+        </div>
         </div>
       </div>
 
@@ -251,67 +267,25 @@ export default function AdminQuestionsPage() {
             <p className="text-sm text-on-surface-variant">Không tìm thấy câu hỏi nào</p>
           </div>
         ) : (
-          <div className="divide-y divide-outline-variant/20">
+          <div className="overflow-x-auto"><table className="admin-list-table min-w-[1000px]"><thead><tr><th>Câu hỏi</th><th>Loại / kỹ năng</th><th>Lĩnh vực</th><th>Trình độ</th><th>Bộ đề</th><th>Trạng thái</th><th className="text-right">Thao tác</th></tr></thead><tbody>
             {items.map((q, idx) => {
               const qType = QUESTION_TYPES[q.type] ?? { label: q.type, icon: 'help', color: 'text-gray-500' };
               const isExpanded = expanded === q.id;
-              return (
-                <div key={q.id}>
-                  <button
-                    onClick={() => setExpanded(isExpanded ? null : q.id)}
-                    className="w-full text-left px-5 py-4 hover:bg-surface-container/50 transition-colors"
-                  >
-                    <div className="flex items-start gap-3">
-                      <span className="text-xs font-mono text-on-surface-variant mt-0.5 w-7 shrink-0 font-semibold">
-                        {(page - 1) * limit + idx + 1}.
-                      </span>
-                      <AppIcon className={` text-[18px] mt-0.5 ${qType.color} shrink-0`}>
-                        {qType.icon}
-                      </AppIcon>
-                      <div className="flex-1 min-w-0">
-                        <p className="text-sm font-medium text-on-surface line-clamp-2">{q.prompt}</p>
-                        <div className="mt-1.5 flex flex-wrap gap-2 items-center">
-                          <span className="text-xs font-medium text-on-surface-variant bg-surface-container px-2 py-0.5 rounded">
-                            {qType.label}
-                          </span>
-                          <span className="rounded bg-violet-50 px-2 py-0.5 text-xs font-semibold text-violet-700">{SKILLS[q.skill] ?? q.skill}</span>
-                          {q.domain && (
-                            <span className="text-xs text-secondary bg-secondary/10 px-2 py-0.5 rounded font-medium">
-                              {q.domain.name}
-                            </span>
-                          )}
-                          {q.level && (
-                            <LevelBadge level={q.level} />
-                          )}
-                          {(q.examQuestions?.length ?? 0) > 0 ? (
-                            <span className="inline-flex items-center gap-1 rounded bg-indigo-50 px-2 py-0.5 text-xs font-medium text-indigo-700">
-                              <AppIcon className=" text-[14px]">assignment</AppIcon>
-                              {q.examQuestions!.length} bộ đề
-                            </span>
-                          ) : (
-                            <span className="text-xs text-on-surface-variant">Chưa xếp bộ đề</span>
-                          )}
-                          <span className="text-xs text-on-surface-variant">· {q.points} điểm</span>
-                        </div>
-                      </div>
-                      <div className="flex shrink-0 self-stretch flex-col items-end justify-between gap-2">
-                        <AppIcon className={` text-[20px] text-on-surface-variant transition-transform shrink-0 ${isExpanded ? 'rotate-180' : ''}`}>
-                          expand_more
-                        </AppIcon>
-                        {q.status === 'published' ? (
-                          <span className="text-xs text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full font-medium whitespace-nowrap">Đã xuất bản</span>
-                        ) : (
-                          <span className="text-xs text-amber-700 bg-amber-50 px-2 py-0.5 rounded-full font-medium whitespace-nowrap">Bản nháp</span>
-                        )}
-                      </div>
-                    </div>
-                  </button>
-
+              return <React.Fragment key={q.id}>
+                <tr>
+                  <td className="max-w-[360px]"><button type="button" aria-expanded={isExpanded} onClick={() => setExpanded(isExpanded ? null : q.id)} className="text-left text-sm font-semibold text-on-surface hover:text-primary"><span className="mr-2 text-xs text-on-surface-variant">{(page - 1) * limit + idx + 1}.</span>{q.prompt}</button></td>
+                  <td><p>{qType.label}</p><p className="mt-1 text-xs text-on-surface-variant">{SKILLS[q.skill] ?? q.skill}</p></td>
+                  <td>{q.domain?.name ?? '—'}</td><td><LevelBadge level={q.level} /></td>
+                  <td>{q.examQuestions?.length ?? 0}</td>
+                  <td><span className={`whitespace-nowrap rounded-full px-2 py-1 text-xs font-medium ${q.status === 'published' ? 'bg-emerald-50 text-emerald-700' : 'bg-amber-50 text-amber-700'}`}>{q.status === 'published' ? 'Đã xuất bản' : 'Bản nháp'}</span></td>
+                  <td><ActionGroup><ActionButton action="view" onClick={() => setExpanded(isExpanded ? null : q.id)} /><ActionButton action="edit" href={`/admin/questions/editor?id=${q.id}`} /><ActionButton action={q.status === 'published' ? 'draft' : 'publish'} loading={updatingId === q.id} onClick={() => void changeStatus(q)} /><ActionButton action="delete" loading={deletingId === q.id} onClick={() => void handleDelete(q)} /></ActionGroup></td>
+                </tr>
                   {/* Expanded content */}
                   {isExpanded && (
-                    <div className="px-14 pb-5 space-y-4">
+                    <tr><td colSpan={7}><div className="space-y-4 p-4">
                       <ActionGroup>
                         <ActionButton action="edit" href={`/admin/questions/editor?id=${q.id}`} />
+                        <ActionButton action={q.status === 'published' ? 'draft' : 'publish'} loading={updatingId === q.id} disabled={updatingId === q.id} onClick={() => void changeStatus(q)} />
                         <ActionButton action="delete" type="button" disabled={deletingId === q.id} onClick={() => void handleDelete(q)} loading={deletingId === q.id} />
                       </ActionGroup>
                       <div className="grid gap-3 md:grid-cols-2">
@@ -378,12 +352,11 @@ export default function AdminQuestionsPage() {
                           <p className="text-sm text-blue-950 leading-relaxed">{q.explanation}</p>
                         </div>
                       )}
-                    </div>
+                    </div></td></tr>
                   )}
-                </div>
-              );
+                </React.Fragment>;
             })}
-          </div>
+          </tbody></table></div>
         )}
       </div>
 

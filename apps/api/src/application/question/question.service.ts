@@ -20,7 +20,7 @@ export class QuestionsService {
   async findAll(params: any) {
     const page = Math.max(1, Number(params?.page) || 1)
     const limit = Math.min(Math.max(1, Number(params?.limit) || 20), 100)
-    const { search, domainCode, levelCode, status, type, skill, examId } = params || {}
+    const { search, domainCode, levelCode, status, type, skill, examId, topic } = params || {}
     const skip = (page - 1) * limit
     const where: any = {}
     if (search) where.prompt = { contains: search, mode: 'insensitive' }
@@ -29,6 +29,7 @@ export class QuestionsService {
     if (status) where.status = status
     if (type) where.type = type
     if (skill) where.skill = skill
+    if (topic) where.topics = { has: String(topic) }
     if (examId) where.examQuestions = { some: { examId } }
     const [data, total] = await Promise.all([
       this.prisma.question.findMany({

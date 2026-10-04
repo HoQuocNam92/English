@@ -30,7 +30,7 @@ export class VocabStudyService {
   // Get study session: all words matching filters
   // Priority: 1) 'learning' words with nextReviewAt <= now, 2) 'new' words
   // Accepts optional filters: domainCode, levelCode
-  async getStudySession(learnerId: string, filters?: { domainCode?: string; levelCode?: string; sourceLessonId?: string; continueLearning?: boolean }) {
+  async getStudySession(learnerId: string, filters?: { domainCode?: string; levelCode?: string; sourceLessonId?: string; topicId?: string; reviewOnly?: boolean; onlyNew?: boolean; continueLearning?: boolean }) {
     // Build vocab filter
     const vocabWhere: any = { status: 'published' }
     if (filters?.domainCode) vocabWhere.OR = [{ domain: { code: filters.domainCode } }, { domains: { some: { domain: { code: filters.domainCode } } } }]
@@ -42,15 +42,26 @@ export class VocabStudyService {
       if (!lesson || lesson.status !== 'published') throw new BadRequestException('Bài học không khả dụng.')
       vocabWhere.id = { in: lesson.vocabularies.map(link => link.vocabularyId) }
     }
+    if (filters?.topicId) {
+      const topic = await this.prisma.certificationTopic.findUnique({ where: { id: filters.topicId }, select: { id: true } })
+      if (!topic) throw new BadRequestException('Chủ đề không khả dụng.')
+      vocabWhere.certificationTopics = { some: { topicId: filters.topicId } }
+    }
     if (filters?.levelCode) {
       vocabWhere.level = { code: filters.levelCode }
     }
 
+    if (filters?.onlyNew === false && !filters?.reviewOnly) {
+      vocabWhere.AND = [{ OR: [
+        { vocabProgress: { none: { learnerId, lastRating: { not: null } } } },
+        { vocabProgress: { some: { learnerId, status: 'learning', nextReviewAt: { lte: new Date() } } } },
+      ] }];
+    }
     // Get new words (no progress record)
     const newWords = await this.prisma.vocabulary.findMany({
       where: {
         ...vocabWhere,
-        vocabProgress: { none: { learnerId } },
+        vocabProgress: filters?.reviewOnly ? { some: { learnerId, lastRating: { in: ['easy', 'medium', 'hard'] }, nextReviewAt: { lte: new Date() } } } : filters?.onlyNew === false ? undefined : { none: { learnerId, lastRating: { not: null } } },
       },
       include: {
         examples: { orderBy: { order: 'asc' }, take: 3 },
@@ -71,7 +82,7 @@ export class VocabStudyService {
     })
     const dailyTarget = profile?.dailyVocabularyTarget ?? 10
     const remainingToday = filters?.continueLearning ? dailyTarget : Math.max(0, dailyTarget - studiedToday)
-    const words = newWords.slice(0, remainingToday)
+    const words = filters?.reviewOnly ? newWords : newWords.slice(0, remainingToday)
 
     return {
       words: words.map(w => ({
@@ -90,24 +101,50 @@ export class VocabStudyService {
     }
   }
 
+  async getCertificateStudyProgress(learnerId: string, certificateId: string) {
+    if (!certificateId) throw new BadRequestException('Vui lòng chọn chứng chỉ.')
+    const topics = await this.prisma.certificationTopic.findMany({
+      where: { certificateId },
+      select: { id: true, vocabularies: { where: { vocabulary: { status: 'published' } }, select: { vocabulary: { select: { id: true, vocabProgress: { where: { learnerId, lastRating: { not: null }, lastReviewAt: { not: null } }, select: { lastRating: true, nextReviewAt: true } } } } } } },
+    })
+    const now = new Date()
+    return { topics: topics.map(topic => {
+      const studied = topic.vocabularies.filter(link => link.vocabulary.vocabProgress.length > 0)
+      return { topicId: topic.id, total: topic.vocabularies.length, studied: studied.length, due: studied.filter(link => link.vocabulary.vocabProgress.some(progress => progress.lastRating !== 'mastered' && progress.nextReviewAt && progress.nextReviewAt <= now)).length }
+    }) }
+  }
+
+  async getQuizWords(learnerId: string, sourceLessonId?: string) {
+    if (sourceLessonId) {
+      const lesson = await this.prisma.lesson.findUnique({ where: { id: sourceLessonId }, select: { status: true } })
+      if (lesson?.status !== 'published') throw new BadRequestException('Bài học không khả dụng.')
+    }
+    return { words: await this.prisma.vocabulary.findMany({
+      where: { status: 'published', ...(sourceLessonId ? { lessons: { some: { lessonId: sourceLessonId } } } : {}), vocabProgress: { some: { learnerId, lastRating: { in: ['easy', 'medium', 'hard'] }, lastReviewAt: { not: null } } } },
+      select: { id: true }, take: 20, orderBy: { term: 'asc' },
+    }) }
+  }
+
   // Generate quiz from given vocabulary IDs
   async generateQuiz(learnerId: string, vocabIds: string[], repetitions: Record<string, number> = {}) {
     if (!Array.isArray(vocabIds) || !vocabIds.length || vocabIds.some(id => typeof id !== 'string' || !id.trim())) {
       throw new BadRequestException('Vui lòng chọn từ vựng để tạo bài kiểm tra.')
     }
     const vocabs = await this.prisma.vocabulary.findMany({
-      where: { id: { in: vocabIds } },
+      where: { id: { in: [...new Set(vocabIds)] }, status: 'published', vocabProgress: { some: { learnerId, lastRating: { in: ['easy', 'medium', 'hard'] }, lastReviewAt: { not: null } } } },
       include: { examples: { orderBy: { order: 'asc' }, take: 3 } },
     })
 
+    if (vocabs.length !== new Set(vocabIds).size) throw new BadRequestException('Quiz chỉ dành cho từ bạn đã học và cần kiểm tra.')
+
     // Get some random words for multiple choice distractors
     const allVocabs = await this.prisma.vocabulary.findMany({
-      where: { status: 'published', id: { notIn: vocabIds } },
+      where: { status: 'published', id: { notIn: vocabIds }, vocabProgress: { some: { learnerId, lastRating: { not: null } } } },
       select: { id: true, term: true, definitionVi: true },
       take: 50,
     })
 
-    const questions = vocabs.flatMap(v => Array.from({ length: Math.max(1, Math.min(4, repetitions[v.id] ?? 1)) }, (_, repetitionIndex) => {
+    const questions = vocabs.flatMap(v => Array.from({ length: 1 }, (_, repetitionIndex) => {
       const hasExample = v.examples.length > 0 && v.examples[0].sentenceEn?.includes(v.term)
       const useFillBlank = hasExample && repetitionIndex % 2 === 1
 
@@ -121,25 +158,37 @@ export class VocabStudyService {
           prompt: sentence,
           hint: v.definitionVi,
           answer: v.term,
+          explanation: `Từ cần điền là “${v.term}”, nghĩa là: ${v.definitionVi ?? v.definitionEn}. ${example.translationVi ?? ""}`,
         }
       } else if (repetitionIndex % 2 === 0) {
         // Hiện từ tiếng Anh, chọn nghĩa tiếng Việt.
         const distractors = allVocabs
-          .filter(d => d.id !== v.id)
+          .filter(d => d.definitionVi && d.definitionVi !== v.definitionVi)
           .sort(() => Math.random() - 0.5)
+          .filter((d, index, list) => list.findIndex(item => item.definitionVi === d.definitionVi) === index)
           .slice(0, 3)
-          .map(d => d.definitionVi)
-        const options = [v.definitionVi, ...distractors].sort(() => Math.random() - 0.5)
+        const options = [v.definitionVi, ...distractors.map(d => d.definitionVi)].sort(() => Math.random() - 0.5)
         return {
           type: 'multiple_choice' as const,
           vocabularyId: v.id,
           prompt: `Nghĩa của "${v.term}" là gì?`,
           options,
           answer: v.definitionVi,
+          explanation: `“${v.term}” có nghĩa là: ${v.definitionVi ?? v.definitionEn}.`,
+          optionExplanations: [
+            { option: v.definitionVi, correct: true, explanation: `Đúng: đây là nghĩa của “${v.term}”. ${v.definitionEn}` },
+            ...distractors.map(d => ({ option: d.definitionVi, correct: false, explanation: `Sai: đây là nghĩa của “${d.term}”, không phải “${v.term}”.` })),
+          ],
         }
       } else {
-        const distractors = allVocabs.filter(d => d.id !== v.id).sort(() => Math.random() - 0.5).slice(0, 3).map(d => d.term)
-        return { type: 'multiple_choice' as const, vocabularyId: v.id, prompt: v.definitionVi, options: [v.term, ...distractors].sort(() => Math.random() - 0.5), answer: v.term }
+        const distractors = allVocabs.filter(d => d.term !== v.term).sort(() => Math.random() - 0.5).slice(0, 3)
+        return { type: 'multiple_choice' as const, vocabularyId: v.id, prompt: v.definitionVi, options: [v.term, ...distractors.map(d => d.term)].sort(() => Math.random() - 0.5), answer: v.term,
+          explanation: `“${v.term}” có nghĩa là: ${v.definitionVi ?? v.definitionEn}.`,
+          optionExplanations: [
+            { option: v.term, correct: true, explanation: `Đúng: “${v.term}” khớp với nghĩa trong câu hỏi.` },
+            ...distractors.map(d => ({ option: d.term, correct: false, explanation: `Sai: “${d.term}” có nghĩa là: ${d.definitionVi ?? 'Chưa có nghĩa tiếng Việt'}, khác với nghĩa được hỏi.` })),
+          ],
+        }
       }
     }))
 
@@ -152,25 +201,9 @@ export class VocabStudyService {
     const existing = await this.prisma.vocabularyProgress.findUnique({
       where: { learnerId_vocabularyId: { learnerId, vocabularyId } },
     })
+    if (!existing?.lastRating || existing.lastRating === 'mastered') throw new BadRequestException('Hãy học từ trước khi trả lời Quiz.')
 
     const now = new Date()
-
-    if (!existing) {
-      // Create new progress record
-      return this.prisma.vocabularyProgress.create({
-        data: {
-          learnerId,
-          vocabularyId,
-          status: isCorrect ? 'learning' : 'new',
-          correctCount: isCorrect ? 1 : 0,
-          wrongCount: isCorrect ? 0 : 1,
-          lastReviewAt: now,
-          nextReviewAt: isCorrect
-            ? new Date(now.getTime() + 4 * 60 * 60 * 1000) // 4 hours
-            : new Date(now.getTime() + 30 * 60 * 1000), // 30 minutes
-        },
-      })
-    }
 
     const newCorrect = isCorrect ? existing.correctCount + 1 : existing.correctCount
     const newWrong = isCorrect ? existing.wrongCount : existing.wrongCount + 1
@@ -228,6 +261,9 @@ export class VocabStudyService {
 
   // Rate word with 4-level SRS: easy, medium, hard, mastered
   async rateWord(learnerId: string, vocabularyId: string, rating: 'easy' | 'medium' | 'hard' | 'mastered') {
+    if (!['easy', 'medium', 'hard', 'mastered'].includes(rating)) throw new BadRequestException('Đánh giá không hợp lệ.')
+    const vocabulary = await this.prisma.vocabulary.findUnique({ where: { id: vocabularyId }, select: { status: true } })
+    if (vocabulary?.status !== 'published') throw new BadRequestException('Từ vựng không khả dụng.')
     const existing = await this.prisma.vocabularyProgress.findUnique({
       where: { learnerId_vocabularyId: { learnerId, vocabularyId } },
     })

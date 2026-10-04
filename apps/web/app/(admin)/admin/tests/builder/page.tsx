@@ -77,7 +77,7 @@ export default function TestBuilderPage() {
           setLevelId(exam.levelId ?? '');
           setCertificateId(exam.certificateId ?? '');
           setTopics((exam.topics ?? []).join(', '));
-          setStatus(exam.status ?? 'draft');
+          setStatus(exam.status === 'published' ? 'published' : 'draft');
           setKind(exam.kind ?? 'practice');
           setSelectedQuestionIds((exam.questions ?? []).map((q: any) => q.id ?? q.questionId));
         }
@@ -385,7 +385,7 @@ export default function TestBuilderPage() {
             {/* Trạng thái bài thi */}
             <div>
               <label className="block text-sm font-semibold text-slate-900 mb-2">Trạng thái bài thi</label>
-              <div className="grid grid-cols-3 gap-2.5">
+              <div className="grid w-full min-w-0 gap-2.5 sm:ml-auto sm:grid-cols-2">
                 <label
                   className={`flex flex-col items-center justify-center p-3 rounded-xl border text-center cursor-pointer transition-all ${
                     status === 'draft'
@@ -426,25 +426,7 @@ export default function TestBuilderPage() {
                   <span className="text-[10px] text-slate-500 mt-0.5">Học viên vào thi</span>
                 </label>
 
-                <label
-                  className={`flex flex-col items-center justify-center p-3 rounded-xl border text-center cursor-pointer transition-all ${
-                    status === 'archived'
-                      ? 'border-slate-400 bg-slate-100 text-slate-900 ring-2 ring-slate-300 shadow-xs'
-                      : 'border-slate-200 bg-white hover:bg-slate-50 text-slate-700'
-                  }`}
-                >
-                  <input
-                    type="radio"
-                    name="examStatus"
-                    value="archived"
-                    checked={status === 'archived'}
-                    onChange={() => setStatus('archived')}
-                    className="sr-only"
-                  />
-                  <AppIcon className=" text-[20px] text-slate-500 mb-1">archive</AppIcon>
-                  <span className="text-xs font-bold">Đã đóng</span>
-                  <span className="text-[10px] text-slate-500 mt-0.5">Lưu trữ</span>
-                </label>
+
               </div>
             </div>
           </div>
@@ -461,8 +443,9 @@ export default function TestBuilderPage() {
               </span>
             </div>
 
+            <div className="flex flex-col items-start gap-3 sm:flex-row">
             {/* Search Input */}
-            <div className="relative">
+            <div className="relative w-full sm:w-56 sm:shrink-0">
               <AppIcon className=" absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-[18px]">
                 search
               </AppIcon>
@@ -485,7 +468,7 @@ export default function TestBuilderPage() {
             </div>
 
             {/* Filter Dropdowns: Domain & Level */}
-            <div className="grid grid-cols-2 gap-2.5">
+            <div className="grid w-full min-w-0 gap-2.5 sm:ml-auto sm:grid-cols-2">
               <div>
                 <Dropdown
                   value={qFilterDomain}
@@ -511,6 +494,8 @@ export default function TestBuilderPage() {
                   {levels.map(l => <option key={l.id} value={l.id}>{l.name}</option>)}
                 </Dropdown>
               </div>
+            </div>
+
             </div>
 
             {/* View Tabs & Batch Actions */}

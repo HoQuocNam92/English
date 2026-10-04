@@ -1,0 +1,1577 @@
+[
+  {
+    "tag": "placement-v2-cloud-1-beginner",
+    "domain": "CLOUD",
+    "level": "beginner",
+    "prompt": "In this passage, what does \"provision\" mean?",
+    "context": "Teams provision virtual machines when demand rises and release them after the event. They pay for the resources while they are running.",
+    "options": [
+      "create and prepare resources for use",
+      "remove all stored files",
+      "publish an advertisement",
+      "inspect a cable"
+    ],
+    "correctIndex": 0,
+    "explanation": "Trong ngữ cảnh này, \"provision\" mang nghĩa: create and prepare resources for use."
+  },
+  {
+    "tag": "placement-v2-cloud-1-intermediate",
+    "domain": "CLOUD",
+    "level": "intermediate",
+    "prompt": "Which statement best paraphrases the passage?",
+    "context": "Teams provision virtual machines when demand rises and release them after the event. They pay for the resources while they are running.",
+    "options": [
+      "Virtual machines must always run for a full year.",
+      "The passage says no checks are necessary.",
+      "The passage requires every system to be publicly accessible.",
+      "Resources can be added temporarily for a busy event."
+    ],
+    "correctIndex": 3,
+    "explanation": "Ý được đoạn văn hỗ trợ: Resources can be added temporarily for a busy event."
+  },
+  {
+    "tag": "placement-v2-cloud-1-advanced",
+    "domain": "CLOUD",
+    "level": "advanced",
+    "prompt": "Which claim goes beyond what the passage supports?",
+    "context": "Teams provision virtual machines when demand rises and release them after the event. They pay for the resources while they are running.",
+    "options": [
+      "The passage discusses provision.",
+      "The passage describes a technical workflow or limitation.",
+      "Virtual machines must always run for a full year.",
+      "Resources can be added temporarily for a busy event."
+    ],
+    "correctIndex": 2,
+    "explanation": "Không thể suy ra nhận định: Virtual machines must always run for a full year. Đối chiếu điều kiện và giới hạn được nêu trong đoạn văn."
+  },
+  {
+    "tag": "placement-v2-cloud-2-beginner",
+    "domain": "CLOUD",
+    "level": "beginner",
+    "prompt": "In this passage, what does \"redundant\" mean?",
+    "context": "The service uses redundant servers in separate locations. If one server fails, another can continue serving requests, although failover may take a few seconds.",
+    "options": [
+      "too expensive to maintain",
+      "shared with every visitor",
+      "encrypted with a password",
+      "available as an additional copy or backup"
+    ],
+    "correctIndex": 3,
+    "explanation": "Trong ngữ cảnh này, \"redundant\" mang nghĩa: available as an additional copy or backup."
+  },
+  {
+    "tag": "placement-v2-cloud-2-intermediate",
+    "domain": "CLOUD",
+    "level": "intermediate",
+    "prompt": "Which statement best paraphrases the passage?",
+    "context": "The service uses redundant servers in separate locations. If one server fails, another can continue serving requests, although failover may take a few seconds.",
+    "options": [
+      "The passage says no checks are necessary.",
+      "The passage requires every system to be publicly accessible.",
+      "An additional server helps the service continue during a failure.",
+      "The design guarantees that no request will ever fail."
+    ],
+    "correctIndex": 2,
+    "explanation": "Ý được đoạn văn hỗ trợ: An additional server helps the service continue during a failure."
+  },
+  {
+    "tag": "placement-v2-cloud-2-advanced",
+    "domain": "CLOUD",
+    "level": "advanced",
+    "prompt": "Which claim goes beyond what the passage supports?",
+    "context": "The service uses redundant servers in separate locations. If one server fails, another can continue serving requests, although failover may take a few seconds.",
+    "options": [
+      "The passage describes a technical workflow or limitation.",
+      "The design guarantees that no request will ever fail.",
+      "An additional server helps the service continue during a failure.",
+      "The passage discusses redundant."
+    ],
+    "correctIndex": 1,
+    "explanation": "Không thể suy ra nhận định: The design guarantees that no request will ever fail. Đối chiếu điều kiện và giới hạn được nêu trong đoạn văn."
+  },
+  {
+    "tag": "placement-v2-cloud-3-beginner",
+    "domain": "CLOUD",
+    "level": "beginner",
+    "prompt": "In this passage, what does \"on demand\" mean?",
+    "context": "Storage is allocated on demand. Customers request more space when needed rather than purchasing the maximum amount in advance.",
+    "options": [
+      "without checking permissions",
+      "after the contract ends",
+      "when it is needed",
+      "only once every year"
+    ],
+    "correctIndex": 2,
+    "explanation": "Trong ngữ cảnh này, \"on demand\" mang nghĩa: when it is needed."
+  },
+  {
+    "tag": "placement-v2-cloud-3-intermediate",
+    "domain": "CLOUD",
+    "level": "intermediate",
+    "prompt": "Which statement best paraphrases the passage?",
+    "context": "Storage is allocated on demand. Customers request more space when needed rather than purchasing the maximum amount in advance.",
+    "options": [
+      "The passage requires every system to be publicly accessible.",
+      "Customers can request extra space as their needs grow.",
+      "All allocated storage is always free of charge.",
+      "The passage says no checks are necessary."
+    ],
+    "correctIndex": 1,
+    "explanation": "Ý được đoạn văn hỗ trợ: Customers can request extra space as their needs grow."
+  },
+  {
+    "tag": "placement-v2-cloud-3-advanced",
+    "domain": "CLOUD",
+    "level": "advanced",
+    "prompt": "Which claim goes beyond what the passage supports?",
+    "context": "Storage is allocated on demand. Customers request more space when needed rather than purchasing the maximum amount in advance.",
+    "options": [
+      "All allocated storage is always free of charge.",
+      "Customers can request extra space as their needs grow.",
+      "The passage discusses on demand.",
+      "The passage describes a technical workflow or limitation."
+    ],
+    "correctIndex": 0,
+    "explanation": "Không thể suy ra nhận định: All allocated storage is always free of charge. Đối chiếu điều kiện và giới hạn được nêu trong đoạn văn."
+  },
+  {
+    "tag": "placement-v2-cloud-4-beginner",
+    "domain": "CLOUD",
+    "level": "beginner",
+    "prompt": "In this passage, what does \"mitigate\" mean?",
+    "context": "Encryption helps mitigate the impact of exposed storage media. Access controls are still required to prevent unauthorized users from reading live data.",
+    "options": [
+      "copy data to public storage",
+      "reduce the severity of a risk",
+      "eliminate every possible threat",
+      "increase the number of users"
+    ],
+    "correctIndex": 1,
+    "explanation": "Trong ngữ cảnh này, \"mitigate\" mang nghĩa: reduce the severity of a risk."
+  },
+  {
+    "tag": "placement-v2-cloud-4-intermediate",
+    "domain": "CLOUD",
+    "level": "intermediate",
+    "prompt": "Which statement best paraphrases the passage?",
+    "context": "Encryption helps mitigate the impact of exposed storage media. Access controls are still required to prevent unauthorized users from reading live data.",
+    "options": [
+      "Encryption and access controls address different risks.",
+      "Encryption makes access controls unnecessary.",
+      "The passage says no checks are necessary.",
+      "The passage requires every system to be publicly accessible."
+    ],
+    "correctIndex": 0,
+    "explanation": "Ý được đoạn văn hỗ trợ: Encryption and access controls address different risks."
+  },
+  {
+    "tag": "placement-v2-cloud-4-advanced",
+    "domain": "CLOUD",
+    "level": "advanced",
+    "prompt": "Which claim goes beyond what the passage supports?",
+    "context": "Encryption helps mitigate the impact of exposed storage media. Access controls are still required to prevent unauthorized users from reading live data.",
+    "options": [
+      "Encryption and access controls address different risks.",
+      "The passage discusses mitigate.",
+      "The passage describes a technical workflow or limitation.",
+      "Encryption makes access controls unnecessary."
+    ],
+    "correctIndex": 3,
+    "explanation": "Không thể suy ra nhận định: Encryption makes access controls unnecessary. Đối chiếu điều kiện và giới hạn được nêu trong đoạn văn."
+  },
+  {
+    "tag": "placement-v2-cloud-5-beginner",
+    "domain": "CLOUD",
+    "level": "beginner",
+    "prompt": "In this passage, what does \"whereas\" mean?",
+    "context": "The customer manages application data, whereas the provider maintains the physical data center. Both parties have security responsibilities.",
+    "options": [
+      "while indicating a contrast",
+      "because of a previous failure",
+      "unless a condition is met",
+      "in addition to a deadline"
+    ],
+    "correctIndex": 0,
+    "explanation": "Trong ngữ cảnh này, \"whereas\" mang nghĩa: while indicating a contrast."
+  },
+  {
+    "tag": "placement-v2-cloud-5-intermediate",
+    "domain": "CLOUD",
+    "level": "intermediate",
+    "prompt": "Which statement best paraphrases the passage?",
+    "context": "The customer manages application data, whereas the provider maintains the physical data center. Both parties have security responsibilities.",
+    "options": [
+      "The provider alone is responsible for all customer data decisions.",
+      "The passage says no checks are necessary.",
+      "The passage requires every system to be publicly accessible.",
+      "Customer and provider responsibilities cover different parts of the system."
+    ],
+    "correctIndex": 3,
+    "explanation": "Ý được đoạn văn hỗ trợ: Customer and provider responsibilities cover different parts of the system."
+  },
+  {
+    "tag": "placement-v2-cloud-5-advanced",
+    "domain": "CLOUD",
+    "level": "advanced",
+    "prompt": "Which claim goes beyond what the passage supports?",
+    "context": "The customer manages application data, whereas the provider maintains the physical data center. Both parties have security responsibilities.",
+    "options": [
+      "The passage discusses whereas.",
+      "The passage describes a technical workflow or limitation.",
+      "The provider alone is responsible for all customer data decisions.",
+      "Customer and provider responsibilities cover different parts of the system."
+    ],
+    "correctIndex": 2,
+    "explanation": "Không thể suy ra nhận định: The provider alone is responsible for all customer data decisions. Đối chiếu điều kiện và giới hạn được nêu trong đoạn văn."
+  },
+  {
+    "tag": "placement-v2-cybersec-1-beginner",
+    "domain": "CYBERSEC",
+    "level": "beginner",
+    "prompt": "In this passage, what does \"revoke\" mean?",
+    "context": "Administrators revoke access when an employee leaves. Removing the account permissions prevents future authorized use of company systems.",
+    "options": [
+      "take away a permission",
+      "approve a new request",
+      "compress a file",
+      "record a training session"
+    ],
+    "correctIndex": 0,
+    "explanation": "Trong ngữ cảnh này, \"revoke\" mang nghĩa: take away a permission."
+  },
+  {
+    "tag": "placement-v2-cybersec-1-intermediate",
+    "domain": "CYBERSEC",
+    "level": "intermediate",
+    "prompt": "Which statement best paraphrases the passage?",
+    "context": "Administrators revoke access when an employee leaves. Removing the account permissions prevents future authorized use of company systems.",
+    "options": [
+      "Removing permissions erases every copy of data the employee already downloaded.",
+      "The passage says no checks are necessary.",
+      "The passage requires every system to be publicly accessible.",
+      "An employee who leaves should lose access permissions."
+    ],
+    "correctIndex": 3,
+    "explanation": "Ý được đoạn văn hỗ trợ: An employee who leaves should lose access permissions."
+  },
+  {
+    "tag": "placement-v2-cybersec-1-advanced",
+    "domain": "CYBERSEC",
+    "level": "advanced",
+    "prompt": "Which claim goes beyond what the passage supports?",
+    "context": "Administrators revoke access when an employee leaves. Removing the account permissions prevents future authorized use of company systems.",
+    "options": [
+      "The passage discusses revoke.",
+      "The passage describes a technical workflow or limitation.",
+      "Removing permissions erases every copy of data the employee already downloaded.",
+      "An employee who leaves should lose access permissions."
+    ],
+    "correctIndex": 2,
+    "explanation": "Không thể suy ra nhận định: Removing permissions erases every copy of data the employee already downloaded. Đối chiếu điều kiện và giới hạn được nêu trong đoạn văn."
+  },
+  {
+    "tag": "placement-v2-cybersec-2-beginner",
+    "domain": "CYBERSEC",
+    "level": "beginner",
+    "prompt": "In this passage, what does \"authenticate\" mean?",
+    "context": "The system authenticates users with a password and a second factor before allowing them to sign in. Permission checks then determine which records they may view.",
+    "options": [
+      "approve every requested action",
+      "delete inactive accounts",
+      "hide the login page",
+      "verify an identity"
+    ],
+    "correctIndex": 3,
+    "explanation": "Trong ngữ cảnh này, \"authenticate\" mang nghĩa: verify an identity."
+  },
+  {
+    "tag": "placement-v2-cybersec-2-intermediate",
+    "domain": "CYBERSEC",
+    "level": "intermediate",
+    "prompt": "Which statement best paraphrases the passage?",
+    "context": "The system authenticates users with a password and a second factor before allowing them to sign in. Permission checks then determine which records they may view.",
+    "options": [
+      "The passage says no checks are necessary.",
+      "The passage requires every system to be publicly accessible.",
+      "Identity verification happens before record-level permission checks.",
+      "Every authenticated user can view all records."
+    ],
+    "correctIndex": 2,
+    "explanation": "Ý được đoạn văn hỗ trợ: Identity verification happens before record-level permission checks."
+  },
+  {
+    "tag": "placement-v2-cybersec-2-advanced",
+    "domain": "CYBERSEC",
+    "level": "advanced",
+    "prompt": "Which claim goes beyond what the passage supports?",
+    "context": "The system authenticates users with a password and a second factor before allowing them to sign in. Permission checks then determine which records they may view.",
+    "options": [
+      "The passage describes a technical workflow or limitation.",
+      "Every authenticated user can view all records.",
+      "Identity verification happens before record-level permission checks.",
+      "The passage discusses authenticate."
+    ],
+    "correctIndex": 1,
+    "explanation": "Không thể suy ra nhận định: Every authenticated user can view all records. Đối chiếu điều kiện và giới hạn được nêu trong đoạn văn."
+  },
+  {
+    "tag": "placement-v2-cybersec-3-beginner",
+    "domain": "CYBERSEC",
+    "level": "beginner",
+    "prompt": "In this passage, what does \"quarantine\" mean?",
+    "context": "A suspicious file is quarantined in an isolated area while analysts examine it. The file is not allowed to execute on the workstation.",
+    "options": [
+      "permanently accept a connection",
+      "grant full administrator rights",
+      "isolate something for investigation",
+      "publish something for general use"
+    ],
+    "correctIndex": 2,
+    "explanation": "Trong ngữ cảnh này, \"quarantine\" mang nghĩa: isolate something for investigation."
+  },
+  {
+    "tag": "placement-v2-cybersec-3-intermediate",
+    "domain": "CYBERSEC",
+    "level": "intermediate",
+    "prompt": "Which statement best paraphrases the passage?",
+    "context": "A suspicious file is quarantined in an isolated area while analysts examine it. The file is not allowed to execute on the workstation.",
+    "options": [
+      "The passage requires every system to be publicly accessible.",
+      "The suspicious file is kept from running during analysis.",
+      "Every quarantined file has already been proven malicious.",
+      "The passage says no checks are necessary."
+    ],
+    "correctIndex": 1,
+    "explanation": "Ý được đoạn văn hỗ trợ: The suspicious file is kept from running during analysis."
+  },
+  {
+    "tag": "placement-v2-cybersec-3-advanced",
+    "domain": "CYBERSEC",
+    "level": "advanced",
+    "prompt": "Which claim goes beyond what the passage supports?",
+    "context": "A suspicious file is quarantined in an isolated area while analysts examine it. The file is not allowed to execute on the workstation.",
+    "options": [
+      "Every quarantined file has already been proven malicious.",
+      "The suspicious file is kept from running during analysis.",
+      "The passage discusses quarantine.",
+      "The passage describes a technical workflow or limitation."
+    ],
+    "correctIndex": 0,
+    "explanation": "Không thể suy ra nhận định: Every quarantined file has already been proven malicious. Đối chiếu điều kiện và giới hạn được nêu trong đoạn văn."
+  },
+  {
+    "tag": "placement-v2-cybersec-4-beginner",
+    "domain": "CYBERSEC",
+    "level": "beginner",
+    "prompt": "In this passage, what does \"least privilege\" mean?",
+    "context": "Under least privilege, a support agent may read customer tickets but cannot change billing settings. Additional permissions require approval.",
+    "options": [
+      "unlimited access after signing in",
+      "only the permissions needed for a task",
+      "the highest possible access level",
+      "the same password for every user"
+    ],
+    "correctIndex": 1,
+    "explanation": "Trong ngữ cảnh này, \"least privilege\" mang nghĩa: only the permissions needed for a task."
+  },
+  {
+    "tag": "placement-v2-cybersec-4-intermediate",
+    "domain": "CYBERSEC",
+    "level": "intermediate",
+    "prompt": "Which statement best paraphrases the passage?",
+    "context": "Under least privilege, a support agent may read customer tickets but cannot change billing settings. Additional permissions require approval.",
+    "options": [
+      "Ticket access does not automatically allow billing changes.",
+      "Least privilege prevents every kind of security incident.",
+      "The passage says no checks are necessary.",
+      "The passage requires every system to be publicly accessible."
+    ],
+    "correctIndex": 0,
+    "explanation": "Ý được đoạn văn hỗ trợ: Ticket access does not automatically allow billing changes."
+  },
+  {
+    "tag": "placement-v2-cybersec-4-advanced",
+    "domain": "CYBERSEC",
+    "level": "advanced",
+    "prompt": "Which claim goes beyond what the passage supports?",
+    "context": "Under least privilege, a support agent may read customer tickets but cannot change billing settings. Additional permissions require approval.",
+    "options": [
+      "Ticket access does not automatically allow billing changes.",
+      "The passage discusses least privilege.",
+      "The passage describes a technical workflow or limitation.",
+      "Least privilege prevents every kind of security incident."
+    ],
+    "correctIndex": 3,
+    "explanation": "Không thể suy ra nhận định: Least privilege prevents every kind of security incident. Đối chiếu điều kiện và giới hạn được nêu trong đoạn văn."
+  },
+  {
+    "tag": "placement-v2-cybersec-5-beginner",
+    "domain": "CYBERSEC",
+    "level": "beginner",
+    "prompt": "In this passage, what does \"despite\" mean?",
+    "context": "Despite using strong encryption, the team suffered a breach because an attacker stole an administrator session. The team strengthened session controls afterward.",
+    "options": [
+      "even though",
+      "only if",
+      "as a direct result of",
+      "before"
+    ],
+    "correctIndex": 0,
+    "explanation": "Trong ngữ cảnh này, \"despite\" mang nghĩa: even though."
+  },
+  {
+    "tag": "placement-v2-cybersec-5-intermediate",
+    "domain": "CYBERSEC",
+    "level": "intermediate",
+    "prompt": "Which statement best paraphrases the passage?",
+    "context": "Despite using strong encryption, the team suffered a breach because an attacker stole an administrator session. The team strengthened session controls afterward.",
+    "options": [
+      "The incident proves encryption has no security value.",
+      "The passage says no checks are necessary.",
+      "The passage requires every system to be publicly accessible.",
+      "Encryption alone did not prevent misuse of a stolen session."
+    ],
+    "correctIndex": 3,
+    "explanation": "Ý được đoạn văn hỗ trợ: Encryption alone did not prevent misuse of a stolen session."
+  },
+  {
+    "tag": "placement-v2-cybersec-5-advanced",
+    "domain": "CYBERSEC",
+    "level": "advanced",
+    "prompt": "Which claim goes beyond what the passage supports?",
+    "context": "Despite using strong encryption, the team suffered a breach because an attacker stole an administrator session. The team strengthened session controls afterward.",
+    "options": [
+      "The passage discusses despite.",
+      "The passage describes a technical workflow or limitation.",
+      "The incident proves encryption has no security value.",
+      "Encryption alone did not prevent misuse of a stolen session."
+    ],
+    "correctIndex": 2,
+    "explanation": "Không thể suy ra nhận định: The incident proves encryption has no security value. Đối chiếu điều kiện và giới hạn được nêu trong đoạn văn."
+  },
+  {
+    "tag": "placement-v2-networking-1-beginner",
+    "domain": "NETWORKING",
+    "level": "beginner",
+    "prompt": "In this passage, what does \"route\" mean?",
+    "context": "The router selects a route for each packet based on its destination. The selected path may change if a link becomes unavailable.",
+    "options": [
+      "a path used to reach a destination",
+      "a secret used to sign in",
+      "a copy of a local document",
+      "a command to close a browser"
+    ],
+    "correctIndex": 0,
+    "explanation": "Trong ngữ cảnh này, \"route\" mang nghĩa: a path used to reach a destination."
+  },
+  {
+    "tag": "placement-v2-networking-1-intermediate",
+    "domain": "NETWORKING",
+    "level": "intermediate",
+    "prompt": "Which statement best paraphrases the passage?",
+    "context": "The router selects a route for each packet based on its destination. The selected path may change if a link becomes unavailable.",
+    "options": [
+      "Every packet always follows the same physical path.",
+      "The passage says no checks are necessary.",
+      "The passage requires every system to be publicly accessible.",
+      "A failed link can cause packets to use another path."
+    ],
+    "correctIndex": 3,
+    "explanation": "Ý được đoạn văn hỗ trợ: A failed link can cause packets to use another path."
+  },
+  {
+    "tag": "placement-v2-networking-1-advanced",
+    "domain": "NETWORKING",
+    "level": "advanced",
+    "prompt": "Which claim goes beyond what the passage supports?",
+    "context": "The router selects a route for each packet based on its destination. The selected path may change if a link becomes unavailable.",
+    "options": [
+      "The passage discusses route.",
+      "The passage describes a technical workflow or limitation.",
+      "Every packet always follows the same physical path.",
+      "A failed link can cause packets to use another path."
+    ],
+    "correctIndex": 2,
+    "explanation": "Không thể suy ra nhận định: Every packet always follows the same physical path. Đối chiếu điều kiện và giới hạn được nêu trong đoạn văn."
+  },
+  {
+    "tag": "placement-v2-networking-2-beginner",
+    "domain": "NETWORKING",
+    "level": "beginner",
+    "prompt": "In this passage, what does \"resolve\" mean?",
+    "context": "A DNS resolver translates a host name into an IP address. Cached results may be reused until their time to live expires.",
+    "options": [
+      "erase every cached response",
+      "encrypt all network traffic",
+      "assign a user role",
+      "find the address associated with a name"
+    ],
+    "correctIndex": 3,
+    "explanation": "Trong ngữ cảnh này, \"resolve\" mang nghĩa: find the address associated with a name."
+  },
+  {
+    "tag": "placement-v2-networking-2-intermediate",
+    "domain": "NETWORKING",
+    "level": "intermediate",
+    "prompt": "Which statement best paraphrases the passage?",
+    "context": "A DNS resolver translates a host name into an IP address. Cached results may be reused until their time to live expires.",
+    "options": [
+      "The passage says no checks are necessary.",
+      "The passage requires every system to be publicly accessible.",
+      "A cached address can be used while it remains valid.",
+      "DNS resolution proves a website is safe to visit."
+    ],
+    "correctIndex": 2,
+    "explanation": "Ý được đoạn văn hỗ trợ: A cached address can be used while it remains valid."
+  },
+  {
+    "tag": "placement-v2-networking-2-advanced",
+    "domain": "NETWORKING",
+    "level": "advanced",
+    "prompt": "Which claim goes beyond what the passage supports?",
+    "context": "A DNS resolver translates a host name into an IP address. Cached results may be reused until their time to live expires.",
+    "options": [
+      "The passage describes a technical workflow or limitation.",
+      "DNS resolution proves a website is safe to visit.",
+      "A cached address can be used while it remains valid.",
+      "The passage discusses resolve."
+    ],
+    "correctIndex": 1,
+    "explanation": "Không thể suy ra nhận định: DNS resolution proves a website is safe to visit. Đối chiếu điều kiện và giới hạn được nêu trong đoạn văn."
+  },
+  {
+    "tag": "placement-v2-networking-3-beginner",
+    "domain": "NETWORKING",
+    "level": "beginner",
+    "prompt": "In this passage, what does \"latency\" mean?",
+    "context": "Latency measures how long a request takes to travel to a service and return. A high-bandwidth connection may still have noticeable latency.",
+    "options": [
+      "number of logged-in administrators",
+      "length of a password",
+      "delay in communication",
+      "amount of disk storage"
+    ],
+    "correctIndex": 2,
+    "explanation": "Trong ngữ cảnh này, \"latency\" mang nghĩa: delay in communication."
+  },
+  {
+    "tag": "placement-v2-networking-3-intermediate",
+    "domain": "NETWORKING",
+    "level": "intermediate",
+    "prompt": "Which statement best paraphrases the passage?",
+    "context": "Latency measures how long a request takes to travel to a service and return. A high-bandwidth connection may still have noticeable latency.",
+    "options": [
+      "The passage requires every system to be publicly accessible.",
+      "More bandwidth does not necessarily remove communication delay.",
+      "High bandwidth always guarantees an immediate response.",
+      "The passage says no checks are necessary."
+    ],
+    "correctIndex": 1,
+    "explanation": "Ý được đoạn văn hỗ trợ: More bandwidth does not necessarily remove communication delay."
+  },
+  {
+    "tag": "placement-v2-networking-3-advanced",
+    "domain": "NETWORKING",
+    "level": "advanced",
+    "prompt": "Which claim goes beyond what the passage supports?",
+    "context": "Latency measures how long a request takes to travel to a service and return. A high-bandwidth connection may still have noticeable latency.",
+    "options": [
+      "High bandwidth always guarantees an immediate response.",
+      "More bandwidth does not necessarily remove communication delay.",
+      "The passage discusses latency.",
+      "The passage describes a technical workflow or limitation."
+    ],
+    "correctIndex": 0,
+    "explanation": "Không thể suy ra nhận định: High bandwidth always guarantees an immediate response. Đối chiếu điều kiện và giới hạn được nêu trong đoạn văn."
+  },
+  {
+    "tag": "placement-v2-networking-4-beginner",
+    "domain": "NETWORKING",
+    "level": "beginner",
+    "prompt": "In this passage, what does \"drop\" mean?",
+    "context": "The firewall drops packets that do not match an allowed rule. Those packets are discarded rather than forwarded to the internal service.",
+    "options": [
+      "copy to every server",
+      "discard without forwarding",
+      "save as an approved backup",
+      "grant access automatically"
+    ],
+    "correctIndex": 1,
+    "explanation": "Trong ngữ cảnh này, \"drop\" mang nghĩa: discard without forwarding."
+  },
+  {
+    "tag": "placement-v2-networking-4-intermediate",
+    "domain": "NETWORKING",
+    "level": "intermediate",
+    "prompt": "Which statement best paraphrases the passage?",
+    "context": "The firewall drops packets that do not match an allowed rule. Those packets are discarded rather than forwarded to the internal service.",
+    "options": [
+      "Packets rejected by the firewall do not reach the internal service through it.",
+      "Every dropped packet must contain malicious software.",
+      "The passage says no checks are necessary.",
+      "The passage requires every system to be publicly accessible."
+    ],
+    "correctIndex": 0,
+    "explanation": "Ý được đoạn văn hỗ trợ: Packets rejected by the firewall do not reach the internal service through it."
+  },
+  {
+    "tag": "placement-v2-networking-4-advanced",
+    "domain": "NETWORKING",
+    "level": "advanced",
+    "prompt": "Which claim goes beyond what the passage supports?",
+    "context": "The firewall drops packets that do not match an allowed rule. Those packets are discarded rather than forwarded to the internal service.",
+    "options": [
+      "Packets rejected by the firewall do not reach the internal service through it.",
+      "The passage discusses drop.",
+      "The passage describes a technical workflow or limitation.",
+      "Every dropped packet must contain malicious software."
+    ],
+    "correctIndex": 3,
+    "explanation": "Không thể suy ra nhận định: Every dropped packet must contain malicious software. Đối chiếu điều kiện và giới hạn được nêu trong đoạn văn."
+  },
+  {
+    "tag": "placement-v2-networking-5-beginner",
+    "domain": "NETWORKING",
+    "level": "beginner",
+    "prompt": "In this passage, what does \"unless\" mean?",
+    "context": "Clients cannot reach the private service unless they connect through the approved VPN. The VPN connection does not replace application authentication.",
+    "options": [
+      "except when a condition is satisfied",
+      "even though a condition fails",
+      "as soon as a file is deleted",
+      "because an account is public"
+    ],
+    "correctIndex": 0,
+    "explanation": "Trong ngữ cảnh này, \"unless\" mang nghĩa: except when a condition is satisfied."
+  },
+  {
+    "tag": "placement-v2-networking-5-intermediate",
+    "domain": "NETWORKING",
+    "level": "intermediate",
+    "prompt": "Which statement best paraphrases the passage?",
+    "context": "Clients cannot reach the private service unless they connect through the approved VPN. The VPN connection does not replace application authentication.",
+    "options": [
+      "Connecting to the VPN grants access to every application account.",
+      "The passage says no checks are necessary.",
+      "The passage requires every system to be publicly accessible.",
+      "VPN connectivity and application authentication are separate requirements."
+    ],
+    "correctIndex": 3,
+    "explanation": "Ý được đoạn văn hỗ trợ: VPN connectivity and application authentication are separate requirements."
+  },
+  {
+    "tag": "placement-v2-networking-5-advanced",
+    "domain": "NETWORKING",
+    "level": "advanced",
+    "prompt": "Which claim goes beyond what the passage supports?",
+    "context": "Clients cannot reach the private service unless they connect through the approved VPN. The VPN connection does not replace application authentication.",
+    "options": [
+      "The passage discusses unless.",
+      "The passage describes a technical workflow or limitation.",
+      "Connecting to the VPN grants access to every application account.",
+      "VPN connectivity and application authentication are separate requirements."
+    ],
+    "correctIndex": 2,
+    "explanation": "Không thể suy ra nhận định: Connecting to the VPN grants access to every application account. Đối chiếu điều kiện và giới hạn được nêu trong đoạn văn."
+  },
+  {
+    "tag": "placement-v2-data_eng-1-beginner",
+    "domain": "DATA_ENG",
+    "level": "beginner",
+    "prompt": "In this passage, what does \"ingest\" mean?",
+    "context": "The pipeline ingests records from several systems and validates their formats before loading them into the warehouse. Invalid rows are sent for review.",
+    "options": [
+      "bring data into a system",
+      "delete the destination database",
+      "publish a dashboard",
+      "train a language model"
+    ],
+    "correctIndex": 0,
+    "explanation": "Trong ngữ cảnh này, \"ingest\" mang nghĩa: bring data into a system."
+  },
+  {
+    "tag": "placement-v2-data_eng-1-intermediate",
+    "domain": "DATA_ENG",
+    "level": "intermediate",
+    "prompt": "Which statement best paraphrases the passage?",
+    "context": "The pipeline ingests records from several systems and validates their formats before loading them into the warehouse. Invalid rows are sent for review.",
+    "options": [
+      "Every ingested record is accepted without validation.",
+      "The passage says no checks are necessary.",
+      "The passage requires every system to be publicly accessible.",
+      "Records are checked before they enter the warehouse."
+    ],
+    "correctIndex": 3,
+    "explanation": "Ý được đoạn văn hỗ trợ: Records are checked before they enter the warehouse."
+  },
+  {
+    "tag": "placement-v2-data_eng-1-advanced",
+    "domain": "DATA_ENG",
+    "level": "advanced",
+    "prompt": "Which claim goes beyond what the passage supports?",
+    "context": "The pipeline ingests records from several systems and validates their formats before loading them into the warehouse. Invalid rows are sent for review.",
+    "options": [
+      "The passage discusses ingest.",
+      "The passage describes a technical workflow or limitation.",
+      "Every ingested record is accepted without validation.",
+      "Records are checked before they enter the warehouse."
+    ],
+    "correctIndex": 2,
+    "explanation": "Không thể suy ra nhận định: Every ingested record is accepted without validation. Đối chiếu điều kiện và giới hạn được nêu trong đoạn văn."
+  },
+  {
+    "tag": "placement-v2-data_eng-2-beginner",
+    "domain": "DATA_ENG",
+    "level": "beginner",
+    "prompt": "In this passage, what does \"deduplicate\" mean?",
+    "context": "The job deduplicates records using an event identifier. Records with the same identifier are treated as repeated deliveries of one event.",
+    "options": [
+      "add an identifier to every user",
+      "encrypt a storage volume",
+      "split a table by region",
+      "remove repeated entries"
+    ],
+    "correctIndex": 3,
+    "explanation": "Trong ngữ cảnh này, \"deduplicate\" mang nghĩa: remove repeated entries."
+  },
+  {
+    "tag": "placement-v2-data_eng-2-intermediate",
+    "domain": "DATA_ENG",
+    "level": "intermediate",
+    "prompt": "Which statement best paraphrases the passage?",
+    "context": "The job deduplicates records using an event identifier. Records with the same identifier are treated as repeated deliveries of one event.",
+    "options": [
+      "The passage says no checks are necessary.",
+      "The passage requires every system to be publicly accessible.",
+      "Repeated deliveries can be recognized by their event identifier.",
+      "Two records with different identifiers can never describe the same real event."
+    ],
+    "correctIndex": 2,
+    "explanation": "Ý được đoạn văn hỗ trợ: Repeated deliveries can be recognized by their event identifier."
+  },
+  {
+    "tag": "placement-v2-data_eng-2-advanced",
+    "domain": "DATA_ENG",
+    "level": "advanced",
+    "prompt": "Which claim goes beyond what the passage supports?",
+    "context": "The job deduplicates records using an event identifier. Records with the same identifier are treated as repeated deliveries of one event.",
+    "options": [
+      "The passage describes a technical workflow or limitation.",
+      "Two records with different identifiers can never describe the same real event.",
+      "Repeated deliveries can be recognized by their event identifier.",
+      "The passage discusses deduplicate."
+    ],
+    "correctIndex": 1,
+    "explanation": "Không thể suy ra nhận định: Two records with different identifiers can never describe the same real event. Đối chiếu điều kiện và giới hạn được nêu trong đoạn văn."
+  },
+  {
+    "tag": "placement-v2-data_eng-3-beginner",
+    "domain": "DATA_ENG",
+    "level": "beginner",
+    "prompt": "In this passage, what does \"upstream\" mean?",
+    "context": "An upstream source changed its schema, so the downstream transformation failed. The team updated the transformation to handle the new field names.",
+    "options": [
+      "inside the user interface",
+      "after the storage archive",
+      "earlier in the flow of data",
+      "closer to the final report"
+    ],
+    "correctIndex": 2,
+    "explanation": "Trong ngữ cảnh này, \"upstream\" mang nghĩa: earlier in the flow of data."
+  },
+  {
+    "tag": "placement-v2-data_eng-3-intermediate",
+    "domain": "DATA_ENG",
+    "level": "intermediate",
+    "prompt": "Which statement best paraphrases the passage?",
+    "context": "An upstream source changed its schema, so the downstream transformation failed. The team updated the transformation to handle the new field names.",
+    "options": [
+      "The passage requires every system to be publicly accessible.",
+      "A source change can affect a later transformation.",
+      "Updating one transformation guarantees that all future schema changes are harmless.",
+      "The passage says no checks are necessary."
+    ],
+    "correctIndex": 1,
+    "explanation": "Ý được đoạn văn hỗ trợ: A source change can affect a later transformation."
+  },
+  {
+    "tag": "placement-v2-data_eng-3-advanced",
+    "domain": "DATA_ENG",
+    "level": "advanced",
+    "prompt": "Which claim goes beyond what the passage supports?",
+    "context": "An upstream source changed its schema, so the downstream transformation failed. The team updated the transformation to handle the new field names.",
+    "options": [
+      "Updating one transformation guarantees that all future schema changes are harmless.",
+      "A source change can affect a later transformation.",
+      "The passage discusses upstream.",
+      "The passage describes a technical workflow or limitation."
+    ],
+    "correctIndex": 0,
+    "explanation": "Không thể suy ra nhận định: Updating one transformation guarantees that all future schema changes are harmless. Đối chiếu điều kiện và giới hạn được nêu trong đoạn văn."
+  },
+  {
+    "tag": "placement-v2-data_eng-4-beginner",
+    "domain": "DATA_ENG",
+    "level": "beginner",
+    "prompt": "In this passage, what does \"idempotent\" mean?",
+    "context": "The load operation is idempotent: retrying the same batch does not add duplicate rows. A batch key is used to identify previous work.",
+    "options": [
+      "creating a new result on every retry",
+      "having the same effect when repeated",
+      "running without any input",
+      "finishing in zero time"
+    ],
+    "correctIndex": 1,
+    "explanation": "Trong ngữ cảnh này, \"idempotent\" mang nghĩa: having the same effect when repeated."
+  },
+  {
+    "tag": "placement-v2-data_eng-4-intermediate",
+    "domain": "DATA_ENG",
+    "level": "intermediate",
+    "prompt": "Which statement best paraphrases the passage?",
+    "context": "The load operation is idempotent: retrying the same batch does not add duplicate rows. A batch key is used to identify previous work.",
+    "options": [
+      "Retrying an already loaded batch should not duplicate its rows.",
+      "Idempotency guarantees that the load operation never fails.",
+      "The passage says no checks are necessary.",
+      "The passage requires every system to be publicly accessible."
+    ],
+    "correctIndex": 0,
+    "explanation": "Ý được đoạn văn hỗ trợ: Retrying an already loaded batch should not duplicate its rows."
+  },
+  {
+    "tag": "placement-v2-data_eng-4-advanced",
+    "domain": "DATA_ENG",
+    "level": "advanced",
+    "prompt": "Which claim goes beyond what the passage supports?",
+    "context": "The load operation is idempotent: retrying the same batch does not add duplicate rows. A batch key is used to identify previous work.",
+    "options": [
+      "Retrying an already loaded batch should not duplicate its rows.",
+      "The passage discusses idempotent.",
+      "The passage describes a technical workflow or limitation.",
+      "Idempotency guarantees that the load operation never fails."
+    ],
+    "correctIndex": 3,
+    "explanation": "Không thể suy ra nhận định: Idempotency guarantees that the load operation never fails. Đối chiếu điều kiện và giới hạn được nêu trong đoạn văn."
+  },
+  {
+    "tag": "placement-v2-data_eng-5-beginner",
+    "domain": "DATA_ENG",
+    "level": "beginner",
+    "prompt": "In this passage, what does \"provided that\" mean?",
+    "context": "The report is accurate provided that all source events arrive before the cutoff. Late events are included in the next report.",
+    "options": [
+      "on the condition that",
+      "in spite of the fact that",
+      "instead of checking whether",
+      "without any need for"
+    ],
+    "correctIndex": 0,
+    "explanation": "Trong ngữ cảnh này, \"provided that\" mang nghĩa: on the condition that."
+  },
+  {
+    "tag": "placement-v2-data_eng-5-intermediate",
+    "domain": "DATA_ENG",
+    "level": "intermediate",
+    "prompt": "Which statement best paraphrases the passage?",
+    "context": "The report is accurate provided that all source events arrive before the cutoff. Late events are included in the next report.",
+    "options": [
+      "Late events are permanently deleted from the system.",
+      "The passage says no checks are necessary.",
+      "The passage requires every system to be publicly accessible.",
+      "The current report depends on events arriving before the cutoff."
+    ],
+    "correctIndex": 3,
+    "explanation": "Ý được đoạn văn hỗ trợ: The current report depends on events arriving before the cutoff."
+  },
+  {
+    "tag": "placement-v2-data_eng-5-advanced",
+    "domain": "DATA_ENG",
+    "level": "advanced",
+    "prompt": "Which claim goes beyond what the passage supports?",
+    "context": "The report is accurate provided that all source events arrive before the cutoff. Late events are included in the next report.",
+    "options": [
+      "The passage discusses provided that.",
+      "The passage describes a technical workflow or limitation.",
+      "Late events are permanently deleted from the system.",
+      "The current report depends on events arriving before the cutoff."
+    ],
+    "correctIndex": 2,
+    "explanation": "Không thể suy ra nhận định: Late events are permanently deleted from the system. Đối chiếu điều kiện và giới hạn được nêu trong đoạn văn."
+  },
+  {
+    "tag": "placement-v2-data_sci-1-beginner",
+    "domain": "DATA_SCI",
+    "level": "beginner",
+    "prompt": "In this passage, what does \"predict\" mean?",
+    "context": "The model predicts whether a customer will cancel based on past behavior. Its output is an estimate, not a guarantee of what the customer will do.",
+    "options": [
+      "estimate a future or unknown outcome",
+      "prove that every outcome is certain",
+      "delete historical information",
+      "label every customer manually"
+    ],
+    "correctIndex": 0,
+    "explanation": "Trong ngữ cảnh này, \"predict\" mang nghĩa: estimate a future or unknown outcome."
+  },
+  {
+    "tag": "placement-v2-data_sci-1-intermediate",
+    "domain": "DATA_SCI",
+    "level": "intermediate",
+    "prompt": "Which statement best paraphrases the passage?",
+    "context": "The model predicts whether a customer will cancel based on past behavior. Its output is an estimate, not a guarantee of what the customer will do.",
+    "options": [
+      "A prediction determines what the customer must do.",
+      "The passage says no checks are necessary.",
+      "The passage requires every system to be publicly accessible.",
+      "The model estimates cancellation risk from earlier behavior."
+    ],
+    "correctIndex": 3,
+    "explanation": "Ý được đoạn văn hỗ trợ: The model estimates cancellation risk from earlier behavior."
+  },
+  {
+    "tag": "placement-v2-data_sci-1-advanced",
+    "domain": "DATA_SCI",
+    "level": "advanced",
+    "prompt": "Which claim goes beyond what the passage supports?",
+    "context": "The model predicts whether a customer will cancel based on past behavior. Its output is an estimate, not a guarantee of what the customer will do.",
+    "options": [
+      "The passage discusses predict.",
+      "The passage describes a technical workflow or limitation.",
+      "A prediction determines what the customer must do.",
+      "The model estimates cancellation risk from earlier behavior."
+    ],
+    "correctIndex": 2,
+    "explanation": "Không thể suy ra nhận định: A prediction determines what the customer must do. Đối chiếu điều kiện và giới hạn được nêu trong đoạn văn."
+  },
+  {
+    "tag": "placement-v2-data_sci-2-beginner",
+    "domain": "DATA_SCI",
+    "level": "beginner",
+    "prompt": "In this passage, what does \"bias\" mean?",
+    "context": "The training sample contains mostly urban customers. This sampling bias may make the model less reliable for rural customers.",
+    "options": [
+      "a random name for the model",
+      "a way to encrypt a data file",
+      "an exact copy of every customer",
+      "a systematic distortion in the data or results"
+    ],
+    "correctIndex": 3,
+    "explanation": "Trong ngữ cảnh này, \"bias\" mang nghĩa: a systematic distortion in the data or results."
+  },
+  {
+    "tag": "placement-v2-data_sci-2-intermediate",
+    "domain": "DATA_SCI",
+    "level": "intermediate",
+    "prompt": "Which statement best paraphrases the passage?",
+    "context": "The training sample contains mostly urban customers. This sampling bias may make the model less reliable for rural customers.",
+    "options": [
+      "The passage says no checks are necessary.",
+      "The passage requires every system to be publicly accessible.",
+      "An unrepresentative sample can reduce reliability for some groups.",
+      "A larger urban-only sample guarantees good rural performance."
+    ],
+    "correctIndex": 2,
+    "explanation": "Ý được đoạn văn hỗ trợ: An unrepresentative sample can reduce reliability for some groups."
+  },
+  {
+    "tag": "placement-v2-data_sci-2-advanced",
+    "domain": "DATA_SCI",
+    "level": "advanced",
+    "prompt": "Which claim goes beyond what the passage supports?",
+    "context": "The training sample contains mostly urban customers. This sampling bias may make the model less reliable for rural customers.",
+    "options": [
+      "The passage describes a technical workflow or limitation.",
+      "A larger urban-only sample guarantees good rural performance.",
+      "An unrepresentative sample can reduce reliability for some groups.",
+      "The passage discusses bias."
+    ],
+    "correctIndex": 1,
+    "explanation": "Không thể suy ra nhận định: A larger urban-only sample guarantees good rural performance. Đối chiếu điều kiện và giới hạn được nêu trong đoạn văn."
+  },
+  {
+    "tag": "placement-v2-data_sci-3-beginner",
+    "domain": "DATA_SCI",
+    "level": "beginner",
+    "prompt": "In this passage, what does \"held-out\" mean?",
+    "context": "The team evaluates performance on held-out data that was not used for training. This helps estimate how the model behaves on unfamiliar examples.",
+    "options": [
+      "created by copying the answers",
+      "used repeatedly to fit model weights",
+      "kept separate from training",
+      "deleted before evaluation"
+    ],
+    "correctIndex": 2,
+    "explanation": "Trong ngữ cảnh này, \"held-out\" mang nghĩa: kept separate from training."
+  },
+  {
+    "tag": "placement-v2-data_sci-3-intermediate",
+    "domain": "DATA_SCI",
+    "level": "intermediate",
+    "prompt": "Which statement best paraphrases the passage?",
+    "context": "The team evaluates performance on held-out data that was not used for training. This helps estimate how the model behaves on unfamiliar examples.",
+    "options": [
+      "The passage requires every system to be publicly accessible.",
+      "Separate evaluation data helps assess performance beyond training examples.",
+      "Good held-out performance guarantees perfect future predictions.",
+      "The passage says no checks are necessary."
+    ],
+    "correctIndex": 1,
+    "explanation": "Ý được đoạn văn hỗ trợ: Separate evaluation data helps assess performance beyond training examples."
+  },
+  {
+    "tag": "placement-v2-data_sci-3-advanced",
+    "domain": "DATA_SCI",
+    "level": "advanced",
+    "prompt": "Which claim goes beyond what the passage supports?",
+    "context": "The team evaluates performance on held-out data that was not used for training. This helps estimate how the model behaves on unfamiliar examples.",
+    "options": [
+      "Good held-out performance guarantees perfect future predictions.",
+      "Separate evaluation data helps assess performance beyond training examples.",
+      "The passage discusses held-out.",
+      "The passage describes a technical workflow or limitation."
+    ],
+    "correctIndex": 0,
+    "explanation": "Không thể suy ra nhận định: Good held-out performance guarantees perfect future predictions. Đối chiếu điều kiện và giới hạn được nêu trong đoạn văn."
+  },
+  {
+    "tag": "placement-v2-data_sci-4-beginner",
+    "domain": "DATA_SCI",
+    "level": "beginner",
+    "prompt": "In this passage, what does \"overfit\" mean?",
+    "context": "A complex model overfits the training set: it performs very well on known examples but poorly on new cases. The team simplifies the model and reevaluates it.",
+    "options": [
+      "ignore every training example",
+      "learn training-specific patterns that do not generalize well",
+      "use too little memory to run",
+      "return no predictions at all"
+    ],
+    "correctIndex": 1,
+    "explanation": "Trong ngữ cảnh này, \"overfit\" mang nghĩa: learn training-specific patterns that do not generalize well."
+  },
+  {
+    "tag": "placement-v2-data_sci-4-intermediate",
+    "domain": "DATA_SCI",
+    "level": "intermediate",
+    "prompt": "Which statement best paraphrases the passage?",
+    "context": "A complex model overfits the training set: it performs very well on known examples but poorly on new cases. The team simplifies the model and reevaluates it.",
+    "options": [
+      "Strong training performance may hide weak performance on new cases.",
+      "Adding more complexity always improves generalization.",
+      "The passage says no checks are necessary.",
+      "The passage requires every system to be publicly accessible."
+    ],
+    "correctIndex": 0,
+    "explanation": "Ý được đoạn văn hỗ trợ: Strong training performance may hide weak performance on new cases."
+  },
+  {
+    "tag": "placement-v2-data_sci-4-advanced",
+    "domain": "DATA_SCI",
+    "level": "advanced",
+    "prompt": "Which claim goes beyond what the passage supports?",
+    "context": "A complex model overfits the training set: it performs very well on known examples but poorly on new cases. The team simplifies the model and reevaluates it.",
+    "options": [
+      "Strong training performance may hide weak performance on new cases.",
+      "The passage discusses overfit.",
+      "The passage describes a technical workflow or limitation.",
+      "Adding more complexity always improves generalization."
+    ],
+    "correctIndex": 3,
+    "explanation": "Không thể suy ra nhận định: Adding more complexity always improves generalization. Đối chiếu điều kiện và giới hạn được nêu trong đoạn văn."
+  },
+  {
+    "tag": "placement-v2-data_sci-5-beginner",
+    "domain": "DATA_SCI",
+    "level": "beginner",
+    "prompt": "In this passage, what does \"correlation\" mean?",
+    "context": "Sales and advertising spending are correlated in this dataset. Other factors may influence both variables, so the team avoids claiming that advertising alone caused the increase.",
+    "options": [
+      "an observed relationship between variables",
+      "proof that one variable causes another",
+      "a guarantee of future revenue",
+      "the deletion of unrelated records"
+    ],
+    "correctIndex": 0,
+    "explanation": "Trong ngữ cảnh này, \"correlation\" mang nghĩa: an observed relationship between variables."
+  },
+  {
+    "tag": "placement-v2-data_sci-5-intermediate",
+    "domain": "DATA_SCI",
+    "level": "intermediate",
+    "prompt": "Which statement best paraphrases the passage?",
+    "context": "Sales and advertising spending are correlated in this dataset. Other factors may influence both variables, so the team avoids claiming that advertising alone caused the increase.",
+    "options": [
+      "Correlation proves that advertising is the only cause of higher sales.",
+      "The passage says no checks are necessary.",
+      "The passage requires every system to be publicly accessible.",
+      "An observed relationship alone does not establish a causal explanation."
+    ],
+    "correctIndex": 3,
+    "explanation": "Ý được đoạn văn hỗ trợ: An observed relationship alone does not establish a causal explanation."
+  },
+  {
+    "tag": "placement-v2-data_sci-5-advanced",
+    "domain": "DATA_SCI",
+    "level": "advanced",
+    "prompt": "Which claim goes beyond what the passage supports?",
+    "context": "Sales and advertising spending are correlated in this dataset. Other factors may influence both variables, so the team avoids claiming that advertising alone caused the increase.",
+    "options": [
+      "The passage discusses correlation.",
+      "The passage describes a technical workflow or limitation.",
+      "Correlation proves that advertising is the only cause of higher sales.",
+      "An observed relationship alone does not establish a causal explanation."
+    ],
+    "correctIndex": 2,
+    "explanation": "Không thể suy ra nhận định: Correlation proves that advertising is the only cause of higher sales. Đối chiếu điều kiện và giới hạn được nêu trong đoạn văn."
+  },
+  {
+    "tag": "placement-v2-software_eng-1-beginner",
+    "domain": "SOFTWARE_ENG",
+    "level": "beginner",
+    "prompt": "In this passage, what does \"refactor\" mean?",
+    "context": "The developer refactors a function to make it easier to read while preserving its external behavior. Existing tests help detect unintended changes.",
+    "options": [
+      "improve internal structure without intentionally changing behavior",
+      "add every requested feature",
+      "remove all automated tests",
+      "change the public API without notice"
+    ],
+    "correctIndex": 0,
+    "explanation": "Trong ngữ cảnh này, \"refactor\" mang nghĩa: improve internal structure without intentionally changing behavior."
+  },
+  {
+    "tag": "placement-v2-software_eng-1-intermediate",
+    "domain": "SOFTWARE_ENG",
+    "level": "intermediate",
+    "prompt": "Which statement best paraphrases the passage?",
+    "context": "The developer refactors a function to make it easier to read while preserving its external behavior. Existing tests help detect unintended changes.",
+    "options": [
+      "Refactoring guarantees that the function contains no defects.",
+      "The passage says no checks are necessary.",
+      "The passage requires every system to be publicly accessible.",
+      "Tests help check that a structural change preserves behavior."
+    ],
+    "correctIndex": 3,
+    "explanation": "Ý được đoạn văn hỗ trợ: Tests help check that a structural change preserves behavior."
+  },
+  {
+    "tag": "placement-v2-software_eng-1-advanced",
+    "domain": "SOFTWARE_ENG",
+    "level": "advanced",
+    "prompt": "Which claim goes beyond what the passage supports?",
+    "context": "The developer refactors a function to make it easier to read while preserving its external behavior. Existing tests help detect unintended changes.",
+    "options": [
+      "The passage discusses refactor.",
+      "The passage describes a technical workflow or limitation.",
+      "Refactoring guarantees that the function contains no defects.",
+      "Tests help check that a structural change preserves behavior."
+    ],
+    "correctIndex": 2,
+    "explanation": "Không thể suy ra nhận định: Refactoring guarantees that the function contains no defects. Đối chiếu điều kiện và giới hạn được nêu trong đoạn văn."
+  },
+  {
+    "tag": "placement-v2-software_eng-2-beginner",
+    "domain": "SOFTWARE_ENG",
+    "level": "beginner",
+    "prompt": "In this passage, what does \"deprecate\" mean?",
+    "context": "The library deprecates an old method but keeps it available for now. Developers are advised to migrate before the method is removed in a later version.",
+    "options": [
+      "remove immediately in every environment",
+      "approve as the only supported method",
+      "rename every caller automatically",
+      "discourage use ahead of possible removal"
+    ],
+    "correctIndex": 3,
+    "explanation": "Trong ngữ cảnh này, \"deprecate\" mang nghĩa: discourage use ahead of possible removal."
+  },
+  {
+    "tag": "placement-v2-software_eng-2-intermediate",
+    "domain": "SOFTWARE_ENG",
+    "level": "intermediate",
+    "prompt": "Which statement best paraphrases the passage?",
+    "context": "The library deprecates an old method but keeps it available for now. Developers are advised to migrate before the method is removed in a later version.",
+    "options": [
+      "The passage says no checks are necessary.",
+      "The passage requires every system to be publicly accessible.",
+      "The old method may still work while migration is recommended.",
+      "A deprecated method must already be unavailable."
+    ],
+    "correctIndex": 2,
+    "explanation": "Ý được đoạn văn hỗ trợ: The old method may still work while migration is recommended."
+  },
+  {
+    "tag": "placement-v2-software_eng-2-advanced",
+    "domain": "SOFTWARE_ENG",
+    "level": "advanced",
+    "prompt": "Which claim goes beyond what the passage supports?",
+    "context": "The library deprecates an old method but keeps it available for now. Developers are advised to migrate before the method is removed in a later version.",
+    "options": [
+      "The passage describes a technical workflow or limitation.",
+      "A deprecated method must already be unavailable.",
+      "The old method may still work while migration is recommended.",
+      "The passage discusses deprecate."
+    ],
+    "correctIndex": 1,
+    "explanation": "Không thể suy ra nhận định: A deprecated method must already be unavailable. Đối chiếu điều kiện và giới hạn được nêu trong đoạn văn."
+  },
+  {
+    "tag": "placement-v2-software_eng-3-beginner",
+    "domain": "SOFTWARE_ENG",
+    "level": "beginner",
+    "prompt": "In this passage, what does \"regression\" mean?",
+    "context": "A recent change introduced a regression: a previously working search filter now fails. The team adds a test for that behavior before fixing it.",
+    "options": [
+      "a new visual theme",
+      "the first release of a product",
+      "a failure in behavior that used to work",
+      "an improvement in every feature"
+    ],
+    "correctIndex": 2,
+    "explanation": "Trong ngữ cảnh này, \"regression\" mang nghĩa: a failure in behavior that used to work."
+  },
+  {
+    "tag": "placement-v2-software_eng-3-intermediate",
+    "domain": "SOFTWARE_ENG",
+    "level": "intermediate",
+    "prompt": "Which statement best paraphrases the passage?",
+    "context": "A recent change introduced a regression: a previously working search filter now fails. The team adds a test for that behavior before fixing it.",
+    "options": [
+      "The passage requires every system to be publicly accessible.",
+      "The change broke behavior that had worked before.",
+      "Every new bug is necessarily a regression.",
+      "The passage says no checks are necessary."
+    ],
+    "correctIndex": 1,
+    "explanation": "Ý được đoạn văn hỗ trợ: The change broke behavior that had worked before."
+  },
+  {
+    "tag": "placement-v2-software_eng-3-advanced",
+    "domain": "SOFTWARE_ENG",
+    "level": "advanced",
+    "prompt": "Which claim goes beyond what the passage supports?",
+    "context": "A recent change introduced a regression: a previously working search filter now fails. The team adds a test for that behavior before fixing it.",
+    "options": [
+      "Every new bug is necessarily a regression.",
+      "The change broke behavior that had worked before.",
+      "The passage discusses regression.",
+      "The passage describes a technical workflow or limitation."
+    ],
+    "correctIndex": 0,
+    "explanation": "Không thể suy ra nhận định: Every new bug is necessarily a regression. Đối chiếu điều kiện và giới hạn được nêu trong đoạn văn."
+  },
+  {
+    "tag": "placement-v2-software_eng-4-beginner",
+    "domain": "SOFTWARE_ENG",
+    "level": "beginner",
+    "prompt": "In this passage, what does \"compatible\" mean?",
+    "context": "The new API response adds an optional field and remains compatible with existing clients that ignore unknown fields. Clients with strict schemas may require updates.",
+    "options": [
+      "unable to change in future",
+      "able to work with another system under stated conditions",
+      "identical in every detail",
+      "guaranteed to accept any input"
+    ],
+    "correctIndex": 1,
+    "explanation": "Trong ngữ cảnh này, \"compatible\" mang nghĩa: able to work with another system under stated conditions."
+  },
+  {
+    "tag": "placement-v2-software_eng-4-intermediate",
+    "domain": "SOFTWARE_ENG",
+    "level": "intermediate",
+    "prompt": "Which statement best paraphrases the passage?",
+    "context": "The new API response adds an optional field and remains compatible with existing clients that ignore unknown fields. Clients with strict schemas may require updates.",
+    "options": [
+      "Compatibility depends partly on how clients handle unknown fields.",
+      "Adding a field is safe for every possible client.",
+      "The passage says no checks are necessary.",
+      "The passage requires every system to be publicly accessible."
+    ],
+    "correctIndex": 0,
+    "explanation": "Ý được đoạn văn hỗ trợ: Compatibility depends partly on how clients handle unknown fields."
+  },
+  {
+    "tag": "placement-v2-software_eng-4-advanced",
+    "domain": "SOFTWARE_ENG",
+    "level": "advanced",
+    "prompt": "Which claim goes beyond what the passage supports?",
+    "context": "The new API response adds an optional field and remains compatible with existing clients that ignore unknown fields. Clients with strict schemas may require updates.",
+    "options": [
+      "Compatibility depends partly on how clients handle unknown fields.",
+      "The passage discusses compatible.",
+      "The passage describes a technical workflow or limitation.",
+      "Adding a field is safe for every possible client."
+    ],
+    "correctIndex": 3,
+    "explanation": "Không thể suy ra nhận định: Adding a field is safe for every possible client. Đối chiếu điều kiện và giới hạn được nêu trong đoạn văn."
+  },
+  {
+    "tag": "placement-v2-software_eng-5-beginner",
+    "domain": "SOFTWARE_ENG",
+    "level": "beginner",
+    "prompt": "In this passage, what does \"where feasible\" mean?",
+    "context": "The team automates repeated checks where feasible, but keeps manual review for ambiguous design decisions. Automation supports rather than replaces all judgment.",
+    "options": [
+      "when practical and possible",
+      "even when impossible",
+      "only after every release fails",
+      "without considering the task"
+    ],
+    "correctIndex": 0,
+    "explanation": "Trong ngữ cảnh này, \"where feasible\" mang nghĩa: when practical and possible."
+  },
+  {
+    "tag": "placement-v2-software_eng-5-intermediate",
+    "domain": "SOFTWARE_ENG",
+    "level": "intermediate",
+    "prompt": "Which statement best paraphrases the passage?",
+    "context": "The team automates repeated checks where feasible, but keeps manual review for ambiguous design decisions. Automation supports rather than replaces all judgment.",
+    "options": [
+      "Automation removes the need for any human judgment.",
+      "The passage says no checks are necessary.",
+      "The passage requires every system to be publicly accessible.",
+      "Some checks can be automated while other decisions still need review."
+    ],
+    "correctIndex": 3,
+    "explanation": "Ý được đoạn văn hỗ trợ: Some checks can be automated while other decisions still need review."
+  },
+  {
+    "tag": "placement-v2-software_eng-5-advanced",
+    "domain": "SOFTWARE_ENG",
+    "level": "advanced",
+    "prompt": "Which claim goes beyond what the passage supports?",
+    "context": "The team automates repeated checks where feasible, but keeps manual review for ambiguous design decisions. Automation supports rather than replaces all judgment.",
+    "options": [
+      "The passage discusses where feasible.",
+      "The passage describes a technical workflow or limitation.",
+      "Automation removes the need for any human judgment.",
+      "Some checks can be automated while other decisions still need review."
+    ],
+    "correctIndex": 2,
+    "explanation": "Không thể suy ra nhận định: Automation removes the need for any human judgment. Đối chiếu điều kiện và giới hạn được nêu trong đoạn văn."
+  },
+  {
+    "tag": "placement-v2-devops-1-beginner",
+    "domain": "DEVOPS",
+    "level": "beginner",
+    "prompt": "In this passage, what does \"deploy\" mean?",
+    "context": "The pipeline deploys the tested application to a staging environment before production. The team verifies it in staging before approving the release.",
+    "options": [
+      "put an application into an environment for use",
+      "delete its source repository",
+      "write every unit test manually",
+      "remove the monitoring system"
+    ],
+    "correctIndex": 0,
+    "explanation": "Trong ngữ cảnh này, \"deploy\" mang nghĩa: put an application into an environment for use."
+  },
+  {
+    "tag": "placement-v2-devops-1-intermediate",
+    "domain": "DEVOPS",
+    "level": "intermediate",
+    "prompt": "Which statement best paraphrases the passage?",
+    "context": "The pipeline deploys the tested application to a staging environment before production. The team verifies it in staging before approving the release.",
+    "options": [
+      "Deploying to staging automatically proves the release is defect-free.",
+      "The passage says no checks are necessary.",
+      "The passage requires every system to be publicly accessible.",
+      "The application is checked in staging before production release."
+    ],
+    "correctIndex": 3,
+    "explanation": "Ý được đoạn văn hỗ trợ: The application is checked in staging before production release."
+  },
+  {
+    "tag": "placement-v2-devops-1-advanced",
+    "domain": "DEVOPS",
+    "level": "advanced",
+    "prompt": "Which claim goes beyond what the passage supports?",
+    "context": "The pipeline deploys the tested application to a staging environment before production. The team verifies it in staging before approving the release.",
+    "options": [
+      "The passage discusses deploy.",
+      "The passage describes a technical workflow or limitation.",
+      "Deploying to staging automatically proves the release is defect-free.",
+      "The application is checked in staging before production release."
+    ],
+    "correctIndex": 2,
+    "explanation": "Không thể suy ra nhận định: Deploying to staging automatically proves the release is defect-free. Đối chiếu điều kiện và giới hạn được nêu trong đoạn văn."
+  },
+  {
+    "tag": "placement-v2-devops-2-beginner",
+    "domain": "DEVOPS",
+    "level": "beginner",
+    "prompt": "In this passage, what does \"rollback\" mean?",
+    "context": "After error rates increase, the operator rolls back to the previous release. The team separately checks whether database changes are also reversible.",
+    "options": [
+      "force every server to restart daily",
+      "increase the amount of traffic",
+      "publish the same broken version again",
+      "return to an earlier version"
+    ],
+    "correctIndex": 3,
+    "explanation": "Trong ngữ cảnh này, \"rollback\" mang nghĩa: return to an earlier version."
+  },
+  {
+    "tag": "placement-v2-devops-2-intermediate",
+    "domain": "DEVOPS",
+    "level": "intermediate",
+    "prompt": "Which statement best paraphrases the passage?",
+    "context": "After error rates increase, the operator rolls back to the previous release. The team separately checks whether database changes are also reversible.",
+    "options": [
+      "The passage says no checks are necessary.",
+      "The passage requires every system to be publicly accessible.",
+      "Reverting the application may require separate consideration of database changes.",
+      "Application rollback automatically reverses all database changes."
+    ],
+    "correctIndex": 2,
+    "explanation": "Ý được đoạn văn hỗ trợ: Reverting the application may require separate consideration of database changes."
+  },
+  {
+    "tag": "placement-v2-devops-2-advanced",
+    "domain": "DEVOPS",
+    "level": "advanced",
+    "prompt": "Which claim goes beyond what the passage supports?",
+    "context": "After error rates increase, the operator rolls back to the previous release. The team separately checks whether database changes are also reversible.",
+    "options": [
+      "The passage describes a technical workflow or limitation.",
+      "Application rollback automatically reverses all database changes.",
+      "Reverting the application may require separate consideration of database changes.",
+      "The passage discusses rollback."
+    ],
+    "correctIndex": 1,
+    "explanation": "Không thể suy ra nhận định: Application rollback automatically reverses all database changes. Đối chiếu điều kiện và giới hạn được nêu trong đoạn văn."
+  },
+  {
+    "tag": "placement-v2-devops-3-beginner",
+    "domain": "DEVOPS",
+    "level": "beginner",
+    "prompt": "In this passage, what does \"immutable\" mean?",
+    "context": "An immutable image is replaced rather than edited after deployment. To change the application, the team builds and deploys a new image.",
+    "options": [
+      "available without any permissions",
+      "automatically free of vulnerabilities",
+      "not modified after creation in the described workflow",
+      "unable to be replaced"
+    ],
+    "correctIndex": 2,
+    "explanation": "Trong ngữ cảnh này, \"immutable\" mang nghĩa: not modified after creation in the described workflow."
+  },
+  {
+    "tag": "placement-v2-devops-3-intermediate",
+    "domain": "DEVOPS",
+    "level": "intermediate",
+    "prompt": "Which statement best paraphrases the passage?",
+    "context": "An immutable image is replaced rather than edited after deployment. To change the application, the team builds and deploys a new image.",
+    "options": [
+      "The passage requires every system to be publicly accessible.",
+      "Application changes are delivered through a new image.",
+      "An immutable image can never contain a security vulnerability.",
+      "The passage says no checks are necessary."
+    ],
+    "correctIndex": 1,
+    "explanation": "Ý được đoạn văn hỗ trợ: Application changes are delivered through a new image."
+  },
+  {
+    "tag": "placement-v2-devops-3-advanced",
+    "domain": "DEVOPS",
+    "level": "advanced",
+    "prompt": "Which claim goes beyond what the passage supports?",
+    "context": "An immutable image is replaced rather than edited after deployment. To change the application, the team builds and deploys a new image.",
+    "options": [
+      "An immutable image can never contain a security vulnerability.",
+      "Application changes are delivered through a new image.",
+      "The passage discusses immutable.",
+      "The passage describes a technical workflow or limitation."
+    ],
+    "correctIndex": 0,
+    "explanation": "Không thể suy ra nhận định: An immutable image can never contain a security vulnerability. Đối chiếu điều kiện và giới hạn được nêu trong đoạn văn."
+  },
+  {
+    "tag": "placement-v2-devops-4-beginner",
+    "domain": "DEVOPS",
+    "level": "beginner",
+    "prompt": "In this passage, what does \"drift\" mean?",
+    "context": "Configuration drift occurs when a server is changed manually and no longer matches the declared configuration. The team compares actual state with its configuration files.",
+    "options": [
+      "a new password for an operator",
+      "a difference between intended and actual configuration",
+      "a reduction in response time",
+      "a successful automated backup"
+    ],
+    "correctIndex": 1,
+    "explanation": "Trong ngữ cảnh này, \"drift\" mang nghĩa: a difference between intended and actual configuration."
+  },
+  {
+    "tag": "placement-v2-devops-4-intermediate",
+    "domain": "DEVOPS",
+    "level": "intermediate",
+    "prompt": "Which statement best paraphrases the passage?",
+    "context": "Configuration drift occurs when a server is changed manually and no longer matches the declared configuration. The team compares actual state with its configuration files.",
+    "options": [
+      "Manual changes can cause actual state to diverge from declared state.",
+      "Configuration files alone guarantee that no manual changes ever occur.",
+      "The passage says no checks are necessary.",
+      "The passage requires every system to be publicly accessible."
+    ],
+    "correctIndex": 0,
+    "explanation": "Ý được đoạn văn hỗ trợ: Manual changes can cause actual state to diverge from declared state."
+  },
+  {
+    "tag": "placement-v2-devops-4-advanced",
+    "domain": "DEVOPS",
+    "level": "advanced",
+    "prompt": "Which claim goes beyond what the passage supports?",
+    "context": "Configuration drift occurs when a server is changed manually and no longer matches the declared configuration. The team compares actual state with its configuration files.",
+    "options": [
+      "Manual changes can cause actual state to diverge from declared state.",
+      "The passage discusses drift.",
+      "The passage describes a technical workflow or limitation.",
+      "Configuration files alone guarantee that no manual changes ever occur."
+    ],
+    "correctIndex": 3,
+    "explanation": "Không thể suy ra nhận định: Configuration files alone guarantee that no manual changes ever occur. Đối chiếu điều kiện và giới hạn được nêu trong đoạn văn."
+  },
+  {
+    "tag": "placement-v2-devops-5-beginner",
+    "domain": "DEVOPS",
+    "level": "beginner",
+    "prompt": "In this passage, what does \"gradually\" mean?",
+    "context": "The release is gradually exposed to a small share of users while errors are monitored. The team expands exposure only if the observed results meet its criteria.",
+    "options": [
+      "in stages rather than all at once",
+      "without any monitoring",
+      "after every user signs out",
+      "with no possibility of stopping"
+    ],
+    "correctIndex": 0,
+    "explanation": "Trong ngữ cảnh này, \"gradually\" mang nghĩa: in stages rather than all at once."
+  },
+  {
+    "tag": "placement-v2-devops-5-intermediate",
+    "domain": "DEVOPS",
+    "level": "intermediate",
+    "prompt": "Which statement best paraphrases the passage?",
+    "context": "The release is gradually exposed to a small share of users while errors are monitored. The team expands exposure only if the observed results meet its criteria.",
+    "options": [
+      "Success with a small sample guarantees success for all users.",
+      "The passage says no checks are necessary.",
+      "The passage requires every system to be publicly accessible.",
+      "A staged release can be expanded after evaluating observed results."
+    ],
+    "correctIndex": 3,
+    "explanation": "Ý được đoạn văn hỗ trợ: A staged release can be expanded after evaluating observed results."
+  },
+  {
+    "tag": "placement-v2-devops-5-advanced",
+    "domain": "DEVOPS",
+    "level": "advanced",
+    "prompt": "Which claim goes beyond what the passage supports?",
+    "context": "The release is gradually exposed to a small share of users while errors are monitored. The team expands exposure only if the observed results meet its criteria.",
+    "options": [
+      "The passage discusses gradually.",
+      "The passage describes a technical workflow or limitation.",
+      "Success with a small sample guarantees success for all users.",
+      "A staged release can be expanded after evaluating observed results."
+    ],
+    "correctIndex": 2,
+    "explanation": "Không thể suy ra nhận định: Success with a small sample guarantees success for all users. Đối chiếu điều kiện và giới hạn được nêu trong đoạn văn."
+  }
+]

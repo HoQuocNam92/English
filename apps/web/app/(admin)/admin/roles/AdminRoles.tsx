@@ -4,6 +4,7 @@ import { useRouter } from 'next/navigation';
 import { completeCreation, CreatePage, FormSurface } from '@/shared/ui/CreatePage';
 import { ActionButton, ActionGroup } from '@/shared/ui/ActionButton';
 
+import { ListTools, matchesSearch } from '@/shared/ui/ListTools';
 import { Dropdown } from '@/shared/ui/Dropdown';
 import * as React from 'react';
 import { confirmDialog, PageHeader } from '@/shared/ui';
@@ -118,6 +119,7 @@ export default function AdminRoles({ createKind }: { createKind?: 'role' | 'perm
   const [error, setError] = React.useState<string | null>(null);
   const [permissionModal, setPermissionModal] = React.useState(createKind === 'permission');
   const [roleModal, setRoleModal] = React.useState(createKind === 'role');
+  const [search,setSearch]=React.useState(''),[filter,setFilter]=React.useState('');
   const [activeTab, setActiveTab] = React.useState<'roles' | 'permissions'>('roles');
   const [editingPermission, setEditingPermission] = React.useState<PermissionItem | null>(null);
   const [savingPermission, setSavingPermission] = React.useState(false);
@@ -237,11 +239,12 @@ export default function AdminRoles({ createKind }: { createKind?: 'role' | 'perm
         <div className="mb-6 p-4 rounded-xl bg-error-container text-on-error-container text-sm font-semibold">{error}</div>
       )}
 
-      <div className="mb-7 inline-flex rounded-xl bg-surface-container-low p-1">
-        <button type="button" onClick={() => setActiveTab('roles')} className={`rounded-lg px-5 py-2.5 text-sm font-semibold transition ${activeTab === 'roles' ? 'bg-white text-primary shadow-sm' : 'text-on-surface-variant'}`}>Nhóm người dùng</button>
-        <button type="button" onClick={() => setActiveTab('permissions')} className={`rounded-lg px-5 py-2.5 text-sm font-semibold transition ${activeTab === 'permissions' ? 'bg-white text-primary shadow-sm' : 'text-on-surface-variant'}`}>Các việc được phép làm</button>
+      <div className="ui-tabs mb-7">
+        <button type="button" onClick={() => setActiveTab('roles')} className="ui-tab" aria-pressed={activeTab === 'roles'}>Nhóm người dùng</button>
+        <button type="button" onClick={() => setActiveTab('permissions')} className="ui-tab" aria-pressed={activeTab === 'permissions'}>Các việc được phép làm</button>
       </div>
 
+      <ListTools search={search} onSearch={setSearch} filter={filter} onFilter={setFilter} options={activeTab === 'roles' ? [{value:'',label:'Tất cả nhóm'},{value:'assigned',label:'Đã có người dùng'},{value:'empty',label:'Chưa có người dùng'}] : [{value:'',label:'Tất cả tài nguyên'},...Array.from(new Set(permissions.map(item=>item.resource))).map(resource=>({value:resource,label:resourceLabel(resource)}))]} />
       {/* Summary stats */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 mb-8">
         {[
@@ -272,7 +275,7 @@ export default function AdminRoles({ createKind }: { createKind?: 'role' | 'perm
           {loading ? (
             [1, 2, 3].map((i) => <SkeletonCard key={i} />)
           ) : (
-            roles.map((role) => (
+            roles.filter(role=>matchesSearch(search,role.name,role.code,role.description) && (!filter || ((role.userCount ?? 0)>0) === (filter==='assigned'))).map((role) => (
               <RoleCard
                 key={role.id}
                 role={role}
@@ -296,7 +299,7 @@ export default function AdminRoles({ createKind }: { createKind?: 'role' | 'perm
             </div>
           </div>
           ) : (
-            <PermissionTree permissions={permissions} renderMeta={(permission) => {
+            <PermissionTree permissions={permissions.filter(item=>matchesSearch(search,item.code,item.name,item.resource) && (!filter || item.resource===filter))} renderMeta={(permission) => {
               const rolesWithPerm = roles.filter((role) => role.permissions?.some((item) => item.id === permission.id));
               return <div className="flex flex-wrap items-center justify-end gap-2"><div className="hidden flex-wrap justify-end gap-1.5 md:flex">{rolesWithPerm.map((role) => <span key={role.id} className="rounded-full border border-primary/20 bg-primary/5 px-2 py-1 text-[11px] font-semibold text-primary">{roleLabel(role.code, role.name)}</span>)}</div><ActionGroup><ActionButton action="edit" type="button" onClick={() => openEditPermission(permission as PermissionItem)} title="Sửa" />
 <ActionButton action="delete" type="button" onClick={() => void deletePermission(permission as PermissionItem)} title="Xóa" /></ActionGroup></div>;

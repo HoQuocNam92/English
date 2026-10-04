@@ -196,22 +196,22 @@ function LearnerProfileContent() {
         </section>
 
         {/* Tab Navigation */}
-        <div className="flex gap-2 border-b border-outline-variant/30 pb-2">
+        <div className="ui-tabs">
           <button
             onClick={() => setActiveTab('info')}
-            className={`rounded-xl px-4 py-2 text-xs font-bold transition-colors ${activeTab === 'info' ? 'bg-primary text-white' : 'text-on-surface-variant hover:bg-surface-container'}`}
+            className="ui-tab" aria-pressed={activeTab === 'info'}
           >
             Hồ sơ cá nhân
           </button>
           <button
             onClick={() => setActiveTab('goals')}
-            className={`rounded-xl px-4 py-2 text-xs font-bold transition-colors ${activeTab === 'goals' ? 'bg-primary text-white' : 'text-on-surface-variant hover:bg-surface-container'}`}
+            className="ui-tab" aria-pressed={activeTab === 'goals'}
           >
             Mục tiêu & Trình độ học tập
           </button>
           <button
             onClick={() => setActiveTab('history')}
-            className={`rounded-xl px-4 py-2 text-xs font-bold transition-colors ${activeTab === 'history' ? 'bg-primary text-white' : 'text-on-surface-variant hover:bg-surface-container'}`}
+            className="ui-tab" aria-pressed={activeTab === 'history'}
           >
             Lịch sử học tập
           </button>

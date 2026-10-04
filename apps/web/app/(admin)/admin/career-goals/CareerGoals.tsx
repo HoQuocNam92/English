@@ -5,6 +5,7 @@ import { completeCreation, CreatePage } from '@/shared/ui/CreatePage';
 import { ActionButton, ActionGroup } from '@/shared/ui/ActionButton';
 
 import * as React from 'react';
+import { ListTools, matchesSearch } from '@/shared/ui/ListTools';
 import { PageHeader } from '@/shared/ui';
 import { apiClient, ApiClientError } from '@/shared/api/api-client';
 
@@ -12,7 +13,10 @@ type CareerGoal = { id: string; code: string; name: string; description?: string
 
 export default function CareerGoals({ createOnly = false }: { createOnly?: boolean }) {
   const router = useRouter();
+  const [search, setSearch] = React.useState('');
+  const [filter, setFilter] = React.useState('');
   const [items, setItems] = React.useState<CareerGoal[]>([]);
+  const visible = items.filter(item => matchesSearch(search, item.name, item.code, item.description) && (!filter || (filter === 'assigned' ? (item._count?.profileGoals ?? 0) > 0 : (item._count?.profileGoals ?? 0) === 0)));
   const [form, setForm] = React.useState({ id: '', code: '', name: '', description: '' });
   const [loading, setLoading] = React.useState(true);
   const [saving, setSaving] = React.useState(false);
@@ -49,11 +53,12 @@ export default function CareerGoals({ createOnly = false }: { createOnly?: boole
 
   return <main className="flex-1 p-margin">
     <PageHeader title="Mục tiêu nghề nghiệp" description="Quản lý các định hướng Cloud, Security, Data, DevOps và những hướng nghề nghiệp dùng để phân nhóm học viên." icon="flag" iconClassName="from-amber-500 to-orange-600" action={<button type="button" onClick={() => router.push('/admin/career-goals/new')} className="inline-flex h-10 items-center gap-2 rounded-xl bg-primary px-4 text-sm font-semibold text-white"><AppIcon aria-hidden="true" className="" style={{ fontSize: 18 }}>add</AppIcon>Thêm mục tiêu</button>} />
+    <ListTools search={search} onSearch={setSearch} filter={filter} onFilter={setFilter} options={[{value:'',label:'Tất cả mục tiêu'},{value:'assigned',label:'Đã có học viên'},{value:'empty',label:'Chưa có học viên'}]} />
     {error && <div className="mt-5 rounded-xl bg-error-container p-3 text-sm text-on-error-container">{error}</div>}
     {form.id && <section className="mt-6 rounded-2xl border border-outline-variant bg-white">{goalForm}</section>}
     <div className="mt-5 overflow-hidden rounded-2xl border border-outline-variant bg-white">
-      <table className="w-full text-left text-sm"><thead className="bg-surface-container-low"><tr><th className="p-4">Mã</th><th className="p-4">Mục tiêu nghề nghiệp</th><th className="p-4">Học viên</th><th className="p-4">Nhóm</th><th className="p-4 text-right">Thao tác</th></tr></thead><tbody className="divide-y divide-outline-variant/40">
-        {loading ? <tr><td colSpan={5} className="p-10 text-center">Đang tải...</td></tr> : items.length ? items.map(item => <tr key={item.id}><td className="p-4 font-mono text-xs font-bold text-primary">{item.code}</td><td className="p-4"><strong>{item.name}</strong><p className="mt-1 text-xs text-on-surface-variant">{item.description || 'Chưa có mô tả'}</p></td><td className="p-4">{item._count?.profileGoals ?? 0}</td><td className="p-4">{item._count?.learnerGroups ?? 0}</td><td className="p-4 text-right"><ActionGroup><ActionButton action="edit" type="button" onClick={() => setForm({ id: item.id, code: item.code, name: item.name, description: item.description ?? '' })} /></ActionGroup></td></tr>) : <tr><td colSpan={5} className="p-10 text-center text-on-surface-variant">Chưa có mục tiêu nghề nghiệp.</td></tr>}
+      <table className="w-full text-left text-sm"><thead className="bg-white"><tr><th className="p-4">Mã</th><th className="p-4">Mục tiêu nghề nghiệp</th><th className="p-4">Học viên</th><th className="p-4">Nhóm</th><th className="p-4 text-right">Thao tác</th></tr></thead><tbody className="divide-y divide-outline-variant/40">
+        {loading ? <tr><td colSpan={5} className="p-10 text-center">Đang tải...</td></tr> : visible.length ? visible.map(item => <tr key={item.id}><td className="p-4 font-mono text-xs font-bold text-primary">{item.code}</td><td className="p-4"><strong>{item.name}</strong><p className="mt-1 text-xs text-on-surface-variant">{item.description || 'Chưa có mô tả'}</p></td><td className="p-4">{item._count?.profileGoals ?? 0}</td><td className="p-4">{item._count?.learnerGroups ?? 0}</td><td className="p-4 text-right"><ActionGroup><ActionButton action="edit" type="button" onClick={() => setForm({ id: item.id, code: item.code, name: item.name, description: item.description ?? '' })} /></ActionGroup></td></tr>) : <tr><td colSpan={5} className="p-10 text-center text-on-surface-variant">Không có mục tiêu phù hợp.</td></tr>}
       </tbody></table>
     </div>
   </main>;

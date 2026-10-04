@@ -1,3 +1,4 @@
+import { vietnamPeriods } from './learning-agenda.service'
 import { BadRequestException, ForbiddenException, Injectable, NotFoundException } from '@nestjs/common'
 import { ProgressResourceType, ProgressStatus } from '@prisma/client'
 import { PrismaService } from '../../infrastructure/database/prisma.service'
@@ -93,16 +94,17 @@ export class ProgressService {
 
     const activityDates = new Set<string>()
     const addActivityDate = (date?: Date | null) => {
-      if (date) activityDates.add(date.toISOString().slice(0, 10))
+      if (date) activityDates.add(vietnamPeriods(date).label)
     }
+    progress.filter(item => item.resourceType === 'lesson' && item.status !== 'not_started').forEach(item => addActivityDate(item.completedAt ?? item.updatedAt ?? item.startedAt))
     vocabularyActivity.forEach(item => addActivityDate(item.lastReviewAt ?? item.createdAt))
     quizActivity.forEach(item => addActivityDate(item.submittedAt ?? item.startedAt))
 
     let studyStreak = 0
     const cursor = new Date()
-    const today = cursor.toISOString().slice(0, 10)
+    const today = vietnamPeriods(cursor).label
     if (!activityDates.has(today)) cursor.setUTCDate(cursor.getUTCDate() - 1)
-    while (activityDates.has(cursor.toISOString().slice(0, 10))) {
+    while (activityDates.has(vietnamPeriods(cursor).label)) {
       studyStreak += 1
       cursor.setUTCDate(cursor.getUTCDate() - 1)
     }
@@ -118,9 +120,9 @@ export class ProgressService {
     const quizTarget = Math.max(1, profile?.weeklyExamTarget ?? 2)
 
     const milestoneDefinitions = [
-      { id: 'first_lesson', title: 'Hoàn thành bài đầu tiên', description: 'Bắt đầu hành trình học tập đầu tiên', icon: '🚀', target: 1, current: firstActivityCount, xp: 50, color: 'violet' },
-      ...(includesVocabulary ? [{ id: 'learn_words', title: `Học ${vocabularyTarget} từ trong 1 tuần`, description: `${dailyVocabularyTarget} từ/ngày × 7 ngày; nội dung ở trình độ ${profile?.level.name ?? 'hiện tại'}`, icon: '📚', target: vocabularyTarget, current: vocabularyActivity.length, xp: 150, color: 'blue' }] : []),
-      ...(includesCertification ? [{ id: 'complete_quizzes', title: `Làm ${quizTarget} quiz`, description: 'Theo mục tiêu quiz mỗi tuần trong lộ trình chứng chỉ', icon: '🧠', target: quizTarget, current: quizActivity.length, xp: 100, color: 'fuchsia' }] : []),
+      { id: 'first_lesson', title: 'Hoàn thành hoạt động đầu tiên', description: 'Bắt đầu hành trình học tập đầu tiên', icon: '🚀', target: 1, current: firstActivityCount, xp: 50, color: 'violet' },
+      ...(includesVocabulary ? [{ id: 'learn_words', title: `Học ${vocabularyTarget} từ`, description: `Cột mốc tích lũy tương đương ${dailyVocabularyTarget} từ/ngày trong 7 ngày; trình độ ${profile?.level.name ?? 'hiện tại'}`, icon: '📚', target: vocabularyTarget, current: vocabularyActivity.length, xp: 150, color: 'blue' }] : []),
+      ...(includesCertification ? [{ id: 'complete_quizzes', title: `Làm ${quizTarget} quiz`, description: 'Cột mốc tích lũy dựa trên mục tiêu Quiz mỗi tuần', icon: '🧠', target: quizTarget, current: quizActivity.length, xp: 100, color: 'fuchsia' }] : []),
       { id: 'seven_day_streak', title: 'Học 7 ngày liên tiếp', description: 'Duy trì thói quen học mỗi ngày', icon: '🔥', target: 7, current: studyStreak, xp: 250, color: 'orange' },
       ...(includesCertification ? [{ id: 'complete_domain', title: 'Hoàn thành 1 domain', description: 'Chinh phục trọn vẹn một domain chứng chỉ', icon: '🏆', target: 1, current: completedDomains, xp: 300, color: 'amber' }] : []),
     ].map(item => ({

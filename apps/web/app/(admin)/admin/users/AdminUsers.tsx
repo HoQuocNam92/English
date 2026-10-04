@@ -369,28 +369,28 @@ export default function AdminUsers({ createOnly = false }: { createOnly?: boolea
       {/* Content Area - Bento/Card Style */}
       <div className="bg-surface-container-lowest rounded-2xl border border-outline-variant/55 overflow-hidden flex flex-col shadow-[0_12px_40px_rgba(15,23,42,0.055)]">
         {/* Tabs */}
-        <div className="flex border-b border-outline-variant/50 overflow-x-auto px-5 pt-1">
+        <div className="ui-tabs m-4 self-start">
           <button
             onClick={() => { setRoleFilter(''); setPage(1); }}
-            className={`px-md py-md font-interface-sb text-interface-sb whitespace-nowrap ${roleFilter === '' ? 'border-b-2 border-primary-container text-primary-container' : 'text-on-surface-variant hover:text-on-surface transition-colors'}`}
+            className="ui-tab" aria-pressed={roleFilter === ''}
           >
             Tất cả
           </button>
           <button
             onClick={() => { setRoleFilter('learner'); setPage(1); }}
-            className={`px-md py-md font-interface-sb text-interface-sb whitespace-nowrap ${roleFilter === 'learner' ? 'border-b-2 border-primary-container text-primary-container' : 'text-on-surface-variant hover:text-on-surface transition-colors'}`}
+            className="ui-tab" aria-pressed={roleFilter === 'learner'}
           >
             Người học
           </button>
           <button
             onClick={() => { setRoleFilter('teacher'); setPage(1); }}
-            className={`px-md py-md font-interface-sb text-interface-sb whitespace-nowrap ${roleFilter === 'teacher' ? 'border-b-2 border-primary-container text-primary-container' : 'text-on-surface-variant hover:text-on-surface transition-colors'}`}
+            className="ui-tab" aria-pressed={roleFilter === 'teacher'}
           >
             Giảng viên
           </button>
           <button
             onClick={() => { setRoleFilter('admin'); setPage(1); }}
-            className={`px-md py-md font-interface-sb text-interface-sb whitespace-nowrap ${roleFilter === 'admin' ? 'border-b-2 border-primary-container text-primary-container' : 'text-on-surface-variant hover:text-on-surface transition-colors'}`}
+            className="ui-tab" aria-pressed={roleFilter === 'admin'}
           >
             Quản trị viên
           </button>
@@ -413,8 +413,8 @@ export default function AdminUsers({ createOnly = false }: { createOnly?: boolea
         {/* Data Table */}
         <div className="overflow-x-auto w-full">
           <table className="w-full table-fixed text-left border-collapse">
-            <thead>
-              <tr className="bg-surface-container-low/75 border-y border-outline-variant/50">
+            <thead className="bg-white">
+              <tr className="bg-white border-y border-outline-variant/50">
                 <th className="w-[23%] p-md font-interface-sb text-interface-sb text-on-surface-variant">Người dùng</th>
                 <th className="w-[23%] p-md font-interface-sb text-interface-sb text-on-surface-variant">Email</th>
                 <th className="w-[13%] p-md font-interface-sb text-interface-sb text-on-surface-variant">Vai trò</th>

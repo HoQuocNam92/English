@@ -53,6 +53,17 @@ export default function AdminCertifications({ createOnly = false }: { createOnly
     if (!createOnly) void load();
   }, [createOnly]);
 
+  const [updatingId, setUpdatingId] = React.useState<string | null>(null);
+  const changePublication = async (cert: CertificateItem) => {
+    setUpdatingId(cert.id);
+    setError(null);
+    try {
+      const saved = await apiClient.patch<CertificateItem>(`/certificates/${cert.id}`, { isActive: !cert.isActive });
+      handleSaved(saved);
+    } catch (cause) { setError(cause instanceof ApiClientError ? cause.message : 'Không thể cập nhật trạng thái chứng chỉ'); }
+    finally { setUpdatingId(null); }
+  };
+
   const handleSearch = (sanitized: string) => {
     if (!sanitized) {
       setFilteredCerts(certs);
@@ -133,7 +144,6 @@ export default function AdminCertifications({ createOnly = false }: { createOnly
         )}
 
         <div className="flex flex-wrap items-center gap-sm mt-md md:mt-0">
-          <SearchInput value={searchInput} onChange={setSearchInput} onSearch={value => { handleSearch(value); }} placeholder="Tìm kiếm chứng chỉ…" />
           <button
             onClick={openCreate}
             className="bg-primary text-on-primary font-interface-sb py-sm px-md rounded-lg hover:bg-primary-container transition-colors flex items-center gap-xs"
@@ -142,6 +152,10 @@ export default function AdminCertifications({ createOnly = false }: { createOnly
             Thêm chứng chỉ mới
           </button>
         </div>
+      </div>
+
+      <div className="flex items-center gap-3">
+          <SearchInput value={searchInput} onChange={setSearchInput} onSearch={value => { handleSearch(value); }} placeholder="Tìm kiếm chứng chỉ…" />
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-2 gap-lg">
@@ -173,13 +187,14 @@ export default function AdminCertifications({ createOnly = false }: { createOnly
                     <Link href={`/admin/certifications/${c.id}`} className="font-headline-h3 text-headline-h3 text-on-surface flex items-center gap-2 hover:text-primary">
                       {c.name}
                       {!c.isActive && (
-                        <span className="text-xs bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full font-normal">Ẩn</span>
+                        <span className="text-xs bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full font-normal">Bản nháp</span>
                       )}
                     </Link>
                     <span className="text-xs text-on-surface-variant">{c.code} • {c.provider}</span>
                   </div>
                   <ActionGroup>
                     <ActionButton action="edit" onClick={() => openEdit(c)} />
+                    <ActionButton action={c.isActive ? 'draft' : 'publish'} loading={updatingId === c.id} disabled={updatingId === c.id} onClick={() => void changePublication(c)} />
                     <ActionButton action="delete" onClick={() => void remove(c)} />
                   </ActionGroup>
                 </div>

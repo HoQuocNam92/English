@@ -4,6 +4,7 @@ import { IconText, AppIcon } from '@/shared/ui/AppIcon';
 import * as React from 'react';
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
+import { useSearchParams } from 'next/navigation';
 import { LearnerShell } from '@/shared/layout';
 import { apiClient } from '@/shared/api/api-client';
 import { LoadingSpinner, Pagination } from '@/shared/ui';
@@ -11,6 +12,9 @@ import { LoadingSpinner, Pagination } from '@/shared/ui';
 export default function LearnerQuizResultPage({ params }: { params: Promise<{ id: string }> }) {
   const unwrappedParams = React.use(params);
   const attemptId = unwrappedParams.id;
+  const searchParams = useSearchParams();
+  const certificateId = searchParams.get('certificateId');
+  const topicId = searchParams.get('topicId');
 
   const [attempt, setAttempt] = useState<any>(null);
   const [loading, setLoading] = useState(true);
@@ -80,10 +84,10 @@ export default function LearnerQuizResultPage({ params }: { params: Promise<{ id
 
           <div className="flex flex-col sm:flex-row gap-3 w-full md:w-auto">
             <Link
-              href="/learn/certifications"
+              href={certificateId && topicId ? `/learn/certifications/${certificateId}/topics/${topicId}` : "/learn/certifications"}
               className="px-5 py-2.5 bg-primary hover:bg-indigo-700 !text-white font-bold text-xs rounded-xl transition-colors shadow-2xs text-center"
             >
-              <span className="!text-white">Làm đề thi khác</span>
+              <span className="!text-white">{certificateId && topicId ? 'Ôn lại kiến thức' : 'Làm đề thi khác'}</span>
             </Link>
           </div>
         </div>

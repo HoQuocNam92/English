@@ -3,8 +3,6 @@ import { AppIcon } from '@/shared/ui/AppIcon';
 
 import Link from 'next/link';
 import { Eye, EyeOff } from 'lucide-react';
-import { PublicHeader } from '@/shared/layout/PublicHeader';
-import { Footer } from '@/shared/layout/Footer';
 import { useRouter } from 'next/navigation';
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/features/auth/presentation';
@@ -53,7 +51,6 @@ export default function LoginPage() {
 
   return (
     <div className="flex min-h-screen flex-col bg-white text-on-surface">
-      <PublicHeader />
       <main className="flex flex-1 w-full bg-background antialiased overflow-hidden">
       {/* Left Section (45% Visual/Brand) */}
       <section className="hidden lg:flex w-[45%] flex-col relative bg-surface-container-low border-r border-outline-variant/30 overflow-hidden">
@@ -91,6 +88,7 @@ export default function LoginPage() {
       <section className="w-full lg:w-[55%] flex items-center justify-center bg-surface-container-lowest p-6 md:p-12 lg:p-16 relative">
         {/* Form Container */}
         <div className="w-full max-w-[420px] flex flex-col py-8">
+          <Link href="/" className="mb-6 inline-flex w-fit items-center gap-2 rounded-lg py-2 text-sm font-semibold text-primary hover:underline focus-visible:outline-2 focus-visible:outline-primary"><span aria-hidden="true">←</span>Quay lại trang chủ</Link>
           <div className="mb-8 text-left">
             <h2 className="text-2xl lg:text-3xl font-bold text-on-surface mb-2 tracking-tight">Chào mừng trở lại</h2>
             <p className="text-sm text-on-surface-variant">Đăng nhập để quản lý hệ thống học tập</p>
@@ -223,15 +221,10 @@ export default function LoginPage() {
             </button>
           </form>
 
-          {/* Security Note */}
-          <div className="mt-8 pt-4 border-t border-outline-variant/30 flex items-center justify-center gap-1.5 text-outline">
-            <AppIcon className=" text-[16px]">shield</AppIcon>
-            <span className="text-xs">Cổng quản trị bảo mật nội bộ</span>
-          </div>
+
         </div>
       </section>
       </main>
-      <Footer />
     </div>
   );
 }
