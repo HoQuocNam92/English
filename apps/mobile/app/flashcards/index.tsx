@@ -1,3 +1,5 @@
+import { Button } from '../../src/shared/ui/primitives';
+import { FilterSelect } from '../../src/shared/ui/FilterSelect';
 import { Text, TextInput, TouchableOpacity } from '../../src/shared/ui/primitives';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { Animated, Alert, Dimensions, KeyboardAvoidingView, Platform, StyleSheet, View } from 'react-native';
@@ -35,7 +37,7 @@ interface QuizQuestion {
   options?: string[];
   answer: string;
   explanation?: string;
-  optionExplanations?: Record<string, string>;
+  optionExplanations?: { option: string; correct: boolean; explanation: string }[];
 }
 
 type Phase = 'learn' | 'quiz' | 'summary';
@@ -45,7 +47,7 @@ type Phase = 'learn' | 'quiz' | 'summary';
 export default function FlashcardsScreen() {
   const { colors } = useTheme();
   const router = useRouter();
-  const params = useLocalSearchParams<{ lessonId?: string; domainCode?: string; levelCode?: string; mode?: string }>();
+  const params = useLocalSearchParams<{ lessonId?: string; sourceLessonId?: string; topicId?: string; domainCode?: string; levelCode?: string; mode?: string }>();
 
   const isReview = params.mode === 'review';
   const [phase, setPhase] = useState<Phase>('learn');
@@ -64,7 +66,7 @@ export default function FlashcardsScreen() {
 
   // Learn phase
   const [flipped, setFlipped] = useState(false);
-  const [onlyNew, setOnlyNew] = useState(true);
+  const [onlyNew, setOnlyNew] = useState(params.mode !== 'review'); const [autoPronounce, setAutoPronounce] = useState(false); const [showKnown, setShowKnown] = useState(false);
   const [responses, setResponses] = useState<Record<number, { answer: string; mastered?: boolean }>>({});
 
   // Quiz phase
@@ -108,14 +110,24 @@ export default function FlashcardsScreen() {
     setLoading(true);
     setError('');
     try {
+      if (params.mode === 'quiz') {
+        const source = params.sourceLessonId || params.lessonId;
+        const eligible = await api.get<any>(`/vocab-study/quiz-words${source ? `?sourceLessonId=${encodeURIComponent(source)}` : ''}`);
+        const ids = (eligible.words ?? []).map((word: any) => word.id);
+        if (!ids.length) { setWords([]); setError('Hãy học từ vựng trước. Quiz chỉ kiểm tra những từ bạn đã học.'); return; }
+        const vocabulary = await Promise.all(ids.map((id: string) => api.get<VocabWord>(`/vocabulary/${id}`)));
+        setWords(vocabulary); setMasteredSet(new Set()); setAllTimeResults([]); await startQuiz(ids); return;
+      }
       const qs = new URLSearchParams();
-      if (params.lessonId) qs.set('lessonId', params.lessonId);
+      if (params.sourceLessonId || params.lessonId) qs.set('sourceLessonId', params.sourceLessonId || params.lessonId!);
+      if (params.topicId) qs.set('topicId', params.topicId);
+      if (isReview) qs.set('reviewOnly', 'true');
       if (params.domainCode) qs.set('domainCode', params.domainCode);
       if (params.levelCode) qs.set('levelCode', params.levelCode);
       if (continueLearning) qs.set('continue', 'true');
       qs.set('onlyNew', String(onlyNew));
       const query = qs.toString() ? `?${qs.toString()}` : '';
-      let res: any = await api.get(isReview ? '/vocab-study/review-session' : `/vocab-study/session${query}`);
+      let res: any = await api.get(`/vocab-study/session${query}`);
       const initialMeta = res.meta ?? null;
       const reachedDailyTarget = Boolean(initialMeta?.dailyLimitReached);
       setDailyLimitNotice(reachedDailyTarget);
@@ -141,7 +153,7 @@ export default function FlashcardsScreen() {
     } finally {
       setLoading(false);
     }
-  }, [params.lessonId, params.domainCode, params.levelCode, isReview, onlyNew]);
+  }, [params.lessonId, params.sourceLessonId, params.topicId, params.mode, params.domainCode, params.levelCode, isReview, onlyNew]);
 
   useEffect(() => { loadSession(); }, [loadSession]);
 
@@ -250,6 +262,7 @@ export default function FlashcardsScreen() {
   // ── Handle quiz completion ──────────────────────────────────────────────────
 
   const handleQuizComplete = () => {
+    if (params.mode === 'quiz') { setMasteredSet(new Set(quizResults.filter(result => result.correct).map(result => result.vocabId))); setPhase('summary'); return; }
     const latest = new Map(quizResults.map(result => [result.vocabId, result]));
     const correctIds = [...latest.values()].filter(r => r.correct).map(r => r.vocabId);
     const wrongIds = [...latest.values()].filter(r => !r.correct).map(r => r.vocabId);
@@ -362,6 +375,8 @@ export default function FlashcardsScreen() {
   // PHASE 1: LEARN
   // ═══════════════════════════════════════════════════════════════════════════
 
+  useEffect(() => { if (autoPronounce && phase === 'learn' && currentWord?.term) void speak(currentWord.term); return () => { void Speech.stop(); }; }, [autoPronounce, phase, currentWord?.id]);
+
   const renderLearnPhase = () => {
     if (!currentWord || currentBatch.length === 0 || allDone) {
       return <View style={styles.emptySession}><EmptyState icon="school" title={isReview ? "Chưa có từ đến hạn ôn" : "Không còn từ mới"} detail={isReview ? "Quay lại sau hoặc tiếp tục học từ mới." : "Những từ đã học và đã biết đã được loại khỏi phiên mặc định."} />
@@ -371,6 +386,7 @@ export default function FlashcardsScreen() {
 
     return (
       <View style={styles.phaseContainer}>
+        <View style={{flexDirection:'row',flexWrap:'wrap',gap:8}}><FilterSelect label="Phát âm tự động" value={String(autoPronounce)} onChange={value => setAutoPronounce(value === 'true')} items={[{value:'false',label:'Tắt'},{value:'true',label:'Bật'}]}/><Button onPress={() => setShowKnown(value => !value)}>Các từ đã biết ({Object.values(ratings).filter(rating => rating === 'mastered').length})</Button></View>{showKnown && <View>{words.filter(word => ratings[word.id] === 'mastered').map(word => <Text key={word.id}>{word.term}</Text>)}{!Object.values(ratings).includes('mastered') && <Text>Chưa có từ nào được đánh dấu đã biết trong phiên.</Text>}</View>}
         <View style={styles.sessionToolbar}><Text style={[styles.dailyText, { color: colors.onSurfaceVariant }]}>{isReview ? `${totalWords} từ đến hạn ôn` : `Hôm nay: ${sessionMeta?.studiedToday ?? 0}/${sessionMeta?.maxDailyNewWords ?? '—'} từ mới`}</Text><TouchableOpacity onPress={() => router.push('/flashcards/history' as any)}><Text style={[styles.historyLink, { color: colors.primary }]}>Từ đã học</Text></TouchableOpacity></View>
         {dailyLimitNotice && <View style={styles.dailyNotice}><MaterialIcons name="check-circle" size={14} color="#a16207" /><Text style={styles.dailyNoticeText}>Đã đủ mục tiêu hôm nay · đang học thêm</Text></View>}
 
@@ -532,7 +548,7 @@ export default function FlashcardsScreen() {
           {(currentQuestion.options ?? [currentQuestion.answer]).map(option => {
             const correct = option === currentQuestion.answer;
             const word = words.find(word => word.definitionVi === option || word.term === option);
-            return <Text key={option} style={{ color: correct ? colors.success : colors.onSurfaceVariant }}><Text style={{ fontWeight: '700' }}>{correct ? 'Đúng' : 'Sai'}: {option}. </Text>{currentQuestion.optionExplanations?.[option] ?? (correct ? `Đây là đáp án phù hợp với nghĩa của “${words.find(word => word.id === currentQuestion.vocabularyId)?.term ?? currentQuestion.answer}”.` : word ? `Đây là nghĩa của “${word.term}”, không phải từ đang hỏi.` : 'Đáp án này không khớp với nghĩa của từ đang hỏi.')}</Text>;
+            return <Text key={option} style={{ color: correct ? colors.success : colors.onSurfaceVariant }}><Text style={{ fontWeight: '700' }}>{correct ? 'Đúng' : 'Sai'}: {option}. </Text>{currentQuestion.optionExplanations?.find(item => item.option === option)?.explanation ?? (correct ? `Đây là đáp án phù hợp với nghĩa của “${words.find(word => word.id === currentQuestion.vocabularyId)?.term ?? currentQuestion.answer}”.` : word ? `Đây là nghĩa của “${word.term}”, không phải từ đang hỏi.` : 'Đáp án này không khớp với nghĩa của từ đang hỏi.')}</Text>;
           })}
         </View>}
         <View style={{ flexDirection: 'row', justifyContent: 'space-between', gap: 12 }}>

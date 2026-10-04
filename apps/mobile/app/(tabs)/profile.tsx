@@ -83,7 +83,7 @@ export default function MobileProfileScreen() {
                 <Text style={styles.avatarTextLarge}>{avatarLetter}</Text>
               </View>
             )}
-            <TouchableOpacity style={[styles.editAvatarButton, { backgroundColor: '#4F46E5' }]} onPress={() => router.push('/profile/edit' as any)}>
+            <TouchableOpacity style={[styles.editAvatarButton, { backgroundColor: colors.primary }]} onPress={() => router.push('/profile/edit' as any)}>
               <MaterialIcons name="edit" size={16} color="#ffffff" />
             </TouchableOpacity>
           </View>
@@ -130,9 +130,14 @@ export default function MobileProfileScreen() {
         {/* Action List */}
         <View style={[styles.menuList, { backgroundColor: colors.surfaceContainerLowest, borderColor: colors.outlineVariant }]}>
           {[
+            ['article', 'Danh mục học tập', '/catalog'],
+            ['history', 'Lịch sử học tập', '/profile/history'],
+            ['school', 'Lộ trình học', '/learning-plan'],
             ['style', 'Tổng quan từ vựng', '/flashcards/dashboard'],
             ['history', 'Từ đã học', '/flashcards/history'],
             ['school', 'Kiểm tra trình độ', '/placement-test'],
+            ['security', 'Chính sách bảo mật', '/privacy'],
+            ['article', 'Điều khoản sử dụng', '/terms'],
           ].map(([icon, label, route], index, list) => (
             <TouchableOpacity key={route} style={[styles.menuListItem, { borderBottomColor: colors.outlineVariant, borderBottomWidth: index === list.length - 1 ? 0 : 1 }]} onPress={() => router.push(route as any)}>
               <View style={styles.menuListLeft}><MaterialIcons name={icon as any} size={22} color={colors.primary} /><Text style={[styles.menuListText, { color: colors.onSurface }]}>{label}</Text></View>

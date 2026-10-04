@@ -25,7 +25,8 @@ export default function EntryScreen() {
           <MaterialIcons name="arrow-forward" size={20} color="#ffffff" />
         </TouchableOpacity>
 
-
+        <TouchableOpacity onPress={() => router.push('/privacy' as any)}><Text style={{ textAlign: 'center', color: colors.primary }}>Chính sách bảo mật</Text></TouchableOpacity>
+        <TouchableOpacity onPress={() => router.push('/terms' as any)}><Text style={{ textAlign: 'center', color: colors.primary }}>Điều khoản sử dụng</Text></TouchableOpacity>
       </View>
     </View>
   );

@@ -1,7 +1,8 @@
+import { Button, Tabs } from '../../src/shared/ui/primitives';
 import { Text, TextInput, TouchableOpacity } from '../../src/shared/ui/primitives';
 import { useCallback, useMemo, useState } from 'react';
 import { ScrollView, StyleSheet, View } from 'react-native';
-import { useFocusEffect, useRouter } from 'expo-router';
+import { useFocusEffect, usePathname, useRouter } from 'expo-router';
 import { MaterialIcons } from '../../src/shared/ui/AppIcon';
 import { api } from '../../src/shared/api/api-client';
 import { useTheme } from '../../src/shared/store/theme-context';
@@ -14,7 +15,7 @@ type Dashboard = { stats: { learned: number; remembered: number; needsReview: nu
 
 export default function VocabularyDashboardScreen() {
   const { colors } = useTheme();
-  const router = useRouter();
+  const router = useRouter(); const pathname = usePathname(); const exploring = pathname.endsWith('/explore');
   const [dashboard, setDashboard] = useState<Dashboard | null>(null);
   const [groups, setGroups] = useState<Group[]>([]);
   const [loading, setLoading] = useState(true);
@@ -61,21 +62,24 @@ export default function VocabularyDashboardScreen() {
     <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={s.chips}>{[{ code: '', name: 'Tất cả' }, ...items].map(item => <TouchableOpacity key={item.code} accessibilityRole="button" accessibilityState={{ selected: item.code === selected }} onPress={() => select(item.code)} style={[s.chip, { borderColor: colors.outlineVariant, backgroundColor: item.code === selected ? colors.primary : colors.surfaceContainerLowest }]}><Text style={{ color: item.code === selected ? colors.onPrimary : colors.onSurface }}>{item.name}</Text></TouchableOpacity>)}</ScrollView>
   </View>;
   return <FeatureScreen title="Từ vựng CNTT" subtitle="Học từ mới, ôn tập và khám phá chuyên ngành" loading={loading} error={error} onRetry={load}>
-    <View style={s.section}>
-      <View style={s.stats}>{([['Đã học', dashboard?.stats.learned], ['Đã nhớ', dashboard?.stats.remembered], ['Đến hạn ôn', dashboard?.stats.needsReview]] as const).map(([label, value]) => <View key={label} style={[s.stat, { backgroundColor: colors.surfaceContainerLowest, borderColor: colors.outlineVariant }]}><Text style={[s.number, { color: colors.primary }]}>{value ?? 0}</Text><Text style={[s.statLabel, { color: colors.onSurfaceVariant }]}>{label}</Text></View>)}</View>
+    <View style={s.section}><Tabs items={[{value:'studying',label:'Đang học'},{value:'explore',label:'Khám phá'}]} value={exploring ? 'explore' : 'studying'} onChange={value => router.push((value === 'explore' ? '/flashcards/explore' : '/flashcards/dashboard') as any)}/>
+      {!exploring && <><View style={s.stats}>{([['Đã học', dashboard?.stats.learned], ['Đã nhớ', dashboard?.stats.remembered], ['Đến hạn ôn', dashboard?.stats.needsReview]] as const).map(([label, value]) => <View key={label} style={[s.stat, { backgroundColor: colors.surfaceContainerLowest, borderColor: colors.outlineVariant }]}><Text style={[s.number, { color: colors.primary }]}>{value ?? 0}</Text><Text style={[s.statLabel, { color: colors.onSurfaceVariant }]}>{label}</Text></View>)}</View>
       <TouchableOpacity accessibilityRole="button" onPress={() => router.push('/flashcards' as any)} style={[s.action, { backgroundColor: colors.primary }]}><MaterialIcons name="add-circle-outline" size={24} color="#fff" /><Text style={s.actionText}>Học từ mới hôm nay</Text></TouchableOpacity>
       <TouchableOpacity accessibilityRole="button" onPress={() => router.push('/flashcards?mode=review' as any)} style={[s.action, { backgroundColor: colors.primaryContainer }]}><MaterialIcons name="schedule" size={24} color={colors.primary} /><Text style={[s.actionText, { color: colors.onPrimaryContainer }]}>Ôn tập đến hạn ({dashboard?.stats.needsReview ?? 0})</Text></TouchableOpacity>
       <TouchableOpacity accessibilityRole="button" onPress={() => router.push('/flashcards/history' as any)} style={s.history}><Text style={[s.label, { color: colors.primary }]}>Xem từ đã học và lịch sử →</Text></TouchableOpacity>
       <Text style={[s.heading, { color: colors.onSurface }]}>Hoạt động 8 tuần gần đây</Text>
       <View style={s.heatmap}>{days.map(day => <View key={day.date} accessible accessibilityLabel={`${day.date}: ${day.count} từ đã ôn`} style={[s.day, { backgroundColor: day.count > 15 ? colors.primary : day.count > 5 ? '#9990ee' : day.count > 0 ? colors.primaryContainer : colors.surfaceContainer }]} />)}</View>
       <Text style={{ color: colors.onSurfaceVariant, fontSize: 12 }}>Màu càng đậm, số từ đã ôn càng nhiều.</Text>
-      <Text style={[s.heading, { color: colors.onSurface }]}>Khám phá từ vựng</Text>
+      <Button onPress={() => router.push('/flashcards?mode=quiz' as any)}>Kiểm tra từ đã học</Button>
+      <Button onPress={() => router.push('/flashcards/explore' as any)}>Khám phá từ vựng</Button></>}
+      {exploring && <><Text style={[s.heading, { color: colors.onSurface }]}>Khám phá từ vựng</Text>
       <TextInput accessibilityLabel="Tìm lĩnh vực hoặc trình độ" placeholder="Tìm lĩnh vực hoặc trình độ…" placeholderTextColor={colors.outline} value={search} onChangeText={setSearch} style={[s.search, { color: colors.onSurface, borderColor: colors.outlineVariant, backgroundColor: colors.surfaceContainerLowest }]} />
       {chips('Lĩnh vực', domains, domain, setDomain)}
       {chips('Trình độ', levels, level, setLevel)}
+      <Button onPress={() => { setSearch(''); setDomain(''); setLevel(''); }}>Xóa bộ lọc</Button>
       <Text style={{ color: colors.onSurfaceVariant }}>{filtered.length} nhóm từ vựng</Text>
-      {filtered.map(group => <TouchableOpacity key={group.id} accessibilityRole="button" onPress={() => router.push({ pathname: '/flashcards', params: { domainCode: group.domain.code, levelCode: group.level.code } } as any)} style={[s.group, { borderColor: colors.outlineVariant, backgroundColor: colors.surfaceContainerLowest }]}><View style={{ flex: 1 }}><Text style={[s.label, { color: colors.onSurface }]}>{group.domain.name}</Text><Text style={[s.groupMeta, { color: colors.onSurfaceVariant }]}>{group.level.name} · {group.count} từ</Text></View><MaterialIcons name="chevron-right" size={24} color={colors.primary} /></TouchableOpacity>)}
-      {!filtered.length && <EmptyState icon="search-off" title="Không có nhóm từ phù hợp" detail="Thử đổi lĩnh vực, trình độ hoặc từ khóa tìm kiếm." />}
+      {filtered.map(group => <TouchableOpacity key={group.id} accessibilityRole="button" onPress={() => router.push({ pathname: '/flashcards/words', params: { domainCode: group.domain.code, levelCode: group.level.code } } as any)} style={[s.group, { borderColor: colors.outlineVariant, backgroundColor: colors.surfaceContainerLowest }]}><View style={{ flex: 1 }}><Text style={[s.label, { color: colors.onSurface }]}>{group.domain.name}</Text><Text style={[s.groupMeta, { color: colors.onSurfaceVariant }]}>{group.level.name} · {group.count} từ</Text></View><MaterialIcons name="chevron-right" size={24} color={colors.primary} /></TouchableOpacity>)}
+      {!filtered.length && <EmptyState icon="search-off" title="Không có nhóm từ phù hợp" detail="Thử đổi lĩnh vực, trình độ hoặc từ khóa tìm kiếm." />}</>}
     </View>
   </FeatureScreen>;
 }

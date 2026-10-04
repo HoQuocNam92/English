@@ -93,40 +93,40 @@ export default function FlashcardPracticePage({ params }: { params: Promise<{ id
         setIsFlipped(false);
         setIsFinished(false);
       } else if (lessonId === 'review') {
-        const res: any = await apiClient.get('/vocab-study/practice-session/review');
+        const res: any = await apiClient.get('/vocab-study/session?reviewOnly=true&onlyNew=false');
         if (!res || !res.words) {
           setError('Không thể tải danh sách từ cần ôn tập.');
           return;
         }
-        setLesson(res.lesson);
+        setLesson(res.lesson ?? { id: lessonId, title: lessonId === 'review' ? 'Ôn tập từ vựng đến hạn' : 'Từ vựng theo bài học' });
         setWords(res.words);
-        setSessionStats(res.stats ?? null);
+        setSessionStats(res.meta ?? null);
         setCurrentIdx(0);
         setIsFlipped(false);
         setIsFinished(false);
       } else {
-        const queryParams = new URLSearchParams();
+        const queryParams = new URLSearchParams({ sourceLessonId: lessonId, onlyNew: String(filterOnlyNew && !onlyNeedsReview) });
         if (onlyNeedsReview) {
-          queryParams.set('onlyNeedsReview', 'true');
+          queryParams.set('reviewOnly', 'true');
         } else if (filterOnlyNew) {
           queryParams.set('onlyNew', 'true');
         }
         if (continueLearning) queryParams.set('continue', 'true');
         const queryString = queryParams.toString() ? `?${queryParams.toString()}` : '';
-        let res: any = await apiClient.get(`/vocab-study/practice-session/${lessonId}${queryString}`);
-        const initialStats = res?.stats ?? null;
+        let res: any = await apiClient.get(`/vocab-study/session${queryString}`);
+        const initialStats = res?.meta ?? null;
         if (!continueLearning && initialStats?.dailyLimitReached && (res?.words?.length ?? 0) === 0) {
           queryParams.set('continue', 'true');
-          res = await apiClient.get(`/vocab-study/practice-session/${lessonId}?${queryParams.toString()}`);
-          res.stats = { ...(res?.stats ?? {}), ...initialStats, dailyLimitReached: true };
+          res = await apiClient.get(`/vocab-study/session?${queryParams.toString()}`);
+          res.meta = { ...(res?.meta ?? {}), ...initialStats, dailyLimitReached: true };
         }
         if (!res || !res.words) {
           setError('Không thể tải bài học để luyện tập.');
           return;
         }
-        setLesson(res.lesson);
+        setLesson(res.lesson ?? { id: lessonId, title: lessonId === 'review' ? 'Ôn tập từ vựng đến hạn' : 'Từ vựng theo bài học' });
         setWords(res.words);
-        setSessionStats(res.stats ?? null);
+        setSessionStats(res.meta ?? null);
         setCurrentIdx(0);
         setIsFlipped(false);
         setIsFinished(false);
@@ -285,23 +285,8 @@ export default function FlashcardPracticePage({ params }: { params: Promise<{ id
 
   // Stop studying list
   const handleStopStudying = async () => {
-    if (lessonId === 'all') {
-      router.push('/learn/flashcards');
-      return;
-    }
-    setStopping(true);
-    try {
-      await apiClient.post('/vocab-study/toggle-studying', {
-        lessonId,
-        isStudying: false,
-      });
-      setConfirmStopModal(false);
-      router.push('/learn/flashcards');
-    } catch {
-      showToast('Không thể cập nhật trạng thái.', 'error');
-    } finally {
-      setStopping(false);
-    }
+    setConfirmStopModal(false);
+    router.push('/learn/flashcards');
   };
 
   if (loading) return <LearnerShell><LoadingSpinner /></LearnerShell>;

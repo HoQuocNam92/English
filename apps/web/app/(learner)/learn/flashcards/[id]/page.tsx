@@ -55,7 +55,9 @@ export default function LessonVocabularyDetailPage({ params }: { params: Promise
         });
         setDisplayWords(words);
       } else {
-        const res: any = await apiClient.get(`/vocab-study/lesson/${lessonId}`);
+        const [lesson, session]: any[] = await Promise.all([apiClient.get(`/lessons/${lessonId}`), apiClient.get(`/vocab-study/session?sourceLessonId=${encodeURIComponent(lessonId)}&onlyNew=false`)]);
+        const words = session.words ?? [];
+        const res = { lesson, words, stats: { total: words.length, remembered: words.filter((word: any) => word.studyStatus === 'mastered').length, needsReview: words.filter((word: any) => word.studyStatus === 'learning').length, newCount: words.filter((word: any) => word.studyStatus === 'new').length, isStudying: true } };
         if (!res) {
           setError('Không tìm thấy bài học');
           return;
@@ -93,23 +95,8 @@ export default function LessonVocabularyDetailPage({ params }: { params: Promise
 
   // Stop studying list
   const handleStopStudying = async () => {
-    if (lessonId === 'all') {
-      router.push('/learn/flashcards');
-      return;
-    }
-    setStopping(true);
-    try {
-      await apiClient.post('/vocab-study/toggle-studying', {
-        lessonId,
-        isStudying: false,
-      });
-      setConfirmStopModal(false);
-      router.push('/learn/flashcards');
-    } catch {
-      showToast('Không thể cập nhật trạng thái.', 'error');
-    } finally {
-      setStopping(false);
-    }
+    setConfirmStopModal(false);
+    router.push('/learn/flashcards');
   };
 
   if (loading) return <LearnerShell><LoadingSpinner /></LearnerShell>;

@@ -179,6 +179,7 @@ export default function MobileQuizScreen() {
 
       {/* Question Content */}
       <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
+        <View style={{flexDirection:'row',flexWrap:'wrap',gap:8,marginBottom:16}}>{questions.map((question,index)=><TouchableOpacity key={question.id} accessibilityLabel={`Câu ${index+1}`} accessibilityState={{selected:currentIndex===index}} onPress={()=>setCurrentIndex(index)} style={{minWidth:44,minHeight:44,alignItems:'center',borderRadius:10,backgroundColor:currentIndex===index ? colors.primary : (answers[question.id]?.length || textAnswers[question.id]?.trim()) ? '#dcfce7' : colors.surfaceContainer}}><Text style={{color:currentIndex===index?'#fff':colors.text}}>{index+1}</Text></TouchableOpacity>)}</View>
         {currentQuestion && (
           <View style={styles.questionSection}>
             <Text style={styles.questionTitle}>

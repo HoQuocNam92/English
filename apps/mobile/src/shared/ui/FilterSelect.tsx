@@ -1,0 +1,7 @@
+import { useState } from 'react';
+import { Modal, ScrollView, View } from 'react-native';
+import { Text, TouchableOpacity, controlStyles } from './primitives';
+export function FilterSelect({ label, value, items, onChange }: { label: string; value: string; items: { value: string; label: string }[]; onChange: (value: string) => void }) {
+ const [open, setOpen] = useState(false);
+ return <><TouchableOpacity accessibilityLabel={label} onPress={() => setOpen(true)} style={[controlStyles.card, { padding: 10, minWidth: 130, flex: 1 }]}><Text style={{ fontSize: 12 }}>{label}</Text><Text style={{ color: '#3525cd', fontWeight: '600' }}>{items.find(item => item.value === value)?.label || 'Tất cả'} ▾</Text></TouchableOpacity><Modal visible={open} transparent animationType="fade" onRequestClose={() => setOpen(false)}><View style={{ flex: 1, justifyContent: 'center', padding: 24, backgroundColor: '#0008' }}><View style={[controlStyles.card, { maxHeight: '80%' }]}><Text style={{ fontWeight: '700', marginBottom: 12 }}>{label}</Text><ScrollView>{items.map(item => <TouchableOpacity accessibilityRole="radio" accessibilityState={{ checked: value === item.value }} key={item.value} onPress={() => { onChange(item.value); setOpen(false); }} style={{ padding: 12 }}><Text style={{ color: value === item.value ? '#3525cd' : '#191c1e' }}>{item.label}</Text></TouchableOpacity>)}</ScrollView><TouchableOpacity onPress={() => setOpen(false)}><Text style={{ textAlign: 'center', color: '#3525cd' }}>Đóng</Text></TouchableOpacity></View></View></Modal></>;
+}

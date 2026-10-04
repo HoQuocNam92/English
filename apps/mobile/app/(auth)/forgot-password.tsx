@@ -48,6 +48,7 @@ export default function MobileForgotPasswordScreen() {
         <TouchableOpacity disabled={loading} onPress={sent ? () => setSent(false) : sendLink} style={styles.submitBtn}>
           {loading ? <ActivityIndicator color="white" /> : <Text style={styles.submitBtnText}>{sent ? 'Gửi lại liên kết' : 'Gửi liên kết'}</Text>}
         </TouchableOpacity>
+        <TouchableOpacity onPress={() => router.push('/reset-password' as any)}><Text style={{ color: colors.primary }}>Đã có liên kết? Đặt lại mật khẩu</Text></TouchableOpacity>
       </View>
     </ScrollView>
   );

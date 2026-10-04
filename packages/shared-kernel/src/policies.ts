@@ -1,0 +1,18 @@
+export const privacySections = [
+  ['1. Thông tin được xử lý', 'Nền tảng xử lý thông tin tài khoản bạn cung cấp, như họ tên và email, cùng dữ liệu phát sinh khi học: bài học đã truy cập, tiến độ, câu trả lời và kết quả luyện tập. Những dữ liệu này giúp xác định tài khoản và ghi nhận quá trình học của bạn.'],
+  ['2. Mục đích sử dụng', 'Thông tin được sử dụng để đăng nhập, quản lý tài khoản, cung cấp nội dung học, lưu kết quả và hiển thị tiến độ. Quản trị viên và giáo viên được phân quyền có thể sử dụng dữ liệu học tập để quản lý và hỗ trợ người học trong phạm vi nhiệm vụ của họ.'],
+  ['3. Lưu trữ trên trình duyệt', 'Thông tin phiên đăng nhập được lưu trong localStorage hoặc sessionStorage tùy lựa chọn ghi nhớ đăng nhập. Một số tùy chọn giao diện cũng được lưu trên trình duyệt. Bạn có thể đăng xuất và xóa dữ liệu trang trong cài đặt trình duyệt; thao tác này không tự động xóa dữ liệu tài khoản đã lưu trên hệ thống.'],
+  ['4. Quyền truy cập và dịch vụ liên quan', 'Dữ liệu tài khoản và học tập cần được truy cập theo quyền của người dùng, giáo viên và quản trị viên. Khi bạn sử dụng đăng nhập Google hoặc cho phép thông báo, dịch vụ tương ứng có thể xử lý thông tin cần thiết để thực hiện chức năng đó theo chính sách riêng của nhà cung cấp.'],
+  ['5. Quản lý thông tin cá nhân', 'Bạn có thể xem và cập nhật các thông tin được hỗ trợ trong trang hồ sơ. Với yêu cầu sửa hoặc xóa dữ liệu ngoài các chức năng hiện có, hãy liên hệ quản trị viên đơn vị cung cấp tài khoản hoặc vận hành nền tảng để được xử lý.'],
+  ['6. Bảo vệ tài khoản', 'Hãy dùng mật khẩu khó đoán, không chia sẻ thông tin đăng nhập và đăng xuất khi dùng thiết bị chung. Chỉ cho phép thông báo hoặc các quyền trình duyệt khi bạn có nhu cầu sử dụng tính năng tương ứng.'],
+  ['7. Thay đổi chính sách', 'Chính sách này có thể được cập nhật khi cách xử lý dữ liệu hoặc tính năng thay đổi. Nội dung cập nhật được công bố tại trang này.'],
+];
+
+export const termsSections = [
+  ['1. Phạm vi sử dụng', 'TechEnglish Pro cung cấp bài học, từ vựng và hoạt động luyện tập tiếng Anh chuyên ngành CNTT. Khi sử dụng nền tảng, bạn cần tuân thủ các điều khoản dưới đây và sử dụng dịch vụ cho mục đích học tập hợp lệ.'],
+  ['2. Tài khoản và trách nhiệm của bạn', 'Bạn cần cung cấp thông tin tài khoản chính xác, bảo vệ thông tin đăng nhập và chịu trách nhiệm về hoạt động trên tài khoản của mình. Không sử dụng tài khoản của người khác hoặc chia sẻ quyền truy cập trái phép. Nếu phát hiện tài khoản bị truy cập bất thường, hãy đổi mật khẩu và thông báo cho quản trị viên nền tảng.'],
+  ['3. Nội dung học tập', 'Nội dung trên nền tảng được cung cấp để hỗ trợ học tập. Bạn có thể sử dụng nội dung trong phạm vi các chức năng được cho phép. Không sao chép, phân phối hoặc khai thác thương mại tài liệu khi chưa có sự cho phép của chủ sở hữu quyền tương ứng.'],
+  ['4. Hành vi không được phép', 'Không can thiệp vào hệ thống, tìm cách truy cập dữ liệu của người khác, phát tán mã độc, gian lận kết quả học tập hoặc đăng tải nội dung vi phạm quyền của người khác. Quyền truy cập có thể bị hạn chế khi có hành vi lạm dụng hoặc ảnh hưởng đến an toàn của nền tảng.'],
+  ['5. Kết quả học tập và hoạt động dịch vụ', 'Kết quả bài tập và đánh giá trên nền tảng phục vụ việc theo dõi học tập; chúng không thay thế chứng chỉ do tổ chức khảo thí cấp. Hiệu quả học phụ thuộc vào trình độ và quá trình luyện tập của mỗi người. Nền tảng có thể cần bảo trì hoặc cập nhật, gây gián đoạn truy cập tạm thời.'],
+  ['6. Cập nhật điều khoản', 'Các điều khoản có thể được cập nhật khi tính năng hoặc cách vận hành thay đổi. Phiên bản mới sẽ được đăng trên trang này để bạn có thể xem lại trước khi tiếp tục sử dụng dịch vụ.'],
+];
