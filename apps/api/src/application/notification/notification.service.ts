@@ -1,5 +1,4 @@
 import { Injectable, Logger } from '@nestjs/common'
-import { Cron, CronExpression } from '@nestjs/schedule'
 import { ConfigService } from '@nestjs/config'
 import { dueReminderDate } from './reminder-time'
 import { applicationDefault, cert, getApps, initializeApp } from 'firebase-admin/app'
@@ -43,12 +42,6 @@ export class NotificationService {
 
   remove(userId: string, token: string) {
     return this.prisma.pushSubscription.updateMany({ where: { userId, token }, data: { active: false } })
-  }
-
-  @Cron(CronExpression.EVERY_MINUTE)
-  async sendScheduledLearningReminders() {
-    if (this.config.get<string>('LEARNING_REMINDER_SCHEDULER') === 'external') return
-    return this.dispatchLearningReminders()
   }
 
   getPending(userId: string) {

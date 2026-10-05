@@ -11,5 +11,5 @@ Xem [README.md](README.md) để cài đặt, cấu hình môi trường, migrat
 Tài liệu bổ sung:
 
 - [Docker và CI/CD](docker/README.md)
-- [Lập lịch nhắc học trên Windows Server](docs/windows-learning-reminders.md)
+- [Lập lịch nhắc học trên Ubuntu Server](docs/ubuntu-learning-reminders.md)
 - [Kiểm thử hệ thống](docs/testing/README.md)

@@ -12,6 +12,7 @@ services:
       required: false
     environment:
       NODE_ENV: production
+      LEARNING_REMINDER_JOB_KEY: ${LEARNING_REMINDER_JOB_KEY:-}
       DATABASE_URL: ${DATABASE_URL:?Set the existing PostgreSQL connection URL}
       JWT_SECRET: ${JWT_SECRET:?Set JWT_SECRET in .env.compose}
       HOST: 0.0.0.0

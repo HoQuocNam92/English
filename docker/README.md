@@ -142,3 +142,7 @@ Chạy `node docker/migrate.cjs` từ root với DATABASE_URL đã cấu hình. 
 
 Không sử dụng db push, reset hoặc migrate resolve. Schema trong docker/prisma/schema.prisma là bản sao sinh từ schema chính, không commit.
 Mọi thay đổi schema tiếp theo phải có migration tương đương cho **cả hai lịch sử**. CI kiểm tra schema sau migration fresh-install để phát hiện thiếu migration. Không sửa initial-schema SQL sau khi đã triển khai nó.
+
+## Nhắc học trên Ubuntu
+
+Đặt `LEARNING_REMINDER_JOB_KEY` trong `.env.compose`, tạo lại container API và cài cron trên host theo [hướng dẫn nhắc học Ubuntu](../docs/ubuntu-learning-reminders.md). Cron gọi port API đã publish trên `127.0.0.1`; không cần cài cron bên trong container.

@@ -1,0 +1,4 @@
+SHELL=/bin/bash
+PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+MAILTO=""
+* * * * * root /usr/local/lib/techenglish/run-learning-reminders.sh >/dev/null 2>&1

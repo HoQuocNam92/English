@@ -13,7 +13,6 @@ import { TaxonomyModule } from './modules/taxonomy.module'
 import { UploadModule } from './modules/upload.module'
 import { VocabStudyModule } from './modules/vocab-study.module'
 import { RecommendationModule } from './modules/recommendation.module'
-import { ScheduleModule } from '@nestjs/schedule'
 import { NotificationModule } from './modules/notification.module'
 import { LessonModule } from './modules/lesson.module'
 import { LearnerGroupModule } from './modules/learner-group.module'
@@ -27,7 +26,6 @@ import { PlacementTestController } from './presentation/placement-test.controlle
   ],
   imports: [
     ConfigModule.forRoot({ isGlobal: true }),
-    ScheduleModule.forRoot(),
     PrismaModule,
     AuthModule,
     UserModule,

@@ -39,6 +39,7 @@ services:
         required: false
     environment:
       NODE_ENV: production
+      LEARNING_REMINDER_JOB_KEY: ${LEARNING_REMINDER_JOB_KEY:-}
       DATABASE_URL: postgresql://techenglish:${POSTGRES_PASSWORD}@db:5432/techenglish?schema=public
       JWT_SECRET: ${JWT_SECRET:?Set JWT_SECRET in .env.compose}
       HOST: 0.0.0.0

@@ -24,11 +24,10 @@ test('in-web reminders work without Firebase and repeated calls do not duplicate
       records.add(key); return { count: 1 }
     } },
   }
-  const service = new NotificationService(prisma, new ConfigService({ LEARNING_REMINDER_SCHEDULER: 'external' }))
+  const service = new NotificationService(prisma, new ConfigService())
   const now = new Date('2026-10-05T14:00:00Z')
   assert.deepEqual(await service.dispatchLearningReminders(now), { created: 1 })
   assert.deepEqual(await service.dispatchLearningReminders(now), { created: 0 })
-  assert.equal(await service.sendScheduledLearningReminders(), undefined)
 })
 
 test('pending and read operations are scoped to the authenticated user', async () => {

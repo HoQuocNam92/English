@@ -21,7 +21,7 @@ Nền tảng học tiếng Anh chuyên ngành CNTT, học từ vựng và luyệ
 - Khi trả lời câu hỏi từ vựng: đáp án đúng màu xanh, lựa chọn sai màu đỏ; giải thích chỉ mở khi bấm **Xem chi tiết**.
 - Lọc lịch sử ôn tập theo khoảng ngày; danh sách hỗ trợ phân trang, trang con có nút quay lại.
 - Báo cáo học tập, kết quả bài thi và gợi ý học bằng luật hoặc dịch vụ AI tùy cấu hình.
-- Nhắc học lưu trên máy chủ và hiển thị trong web; hỗ trợ Windows Task Scheduler gọi API.
+- Nhắc học lưu trên máy chủ và hiển thị trong web; hỗ trợ cron trên Ubuntu gọi API.
 - Upload ảnh qua Cloudinary và thông báo đẩy qua Firebase khi được cấu hình.
 
 ## Cấu trúc
@@ -38,7 +38,7 @@ packages/
   shared-kernel/        # Nghiệp vụ dùng chung
 docker/                 # Container, migration cho cài đặt mới, tài liệu triển khai
 docs/                   # Tài liệu hệ thống và kiểm thử
-scripts/windows/        # Script lập lịch nhắc học
+scripts/ubuntu/        # Script lập lịch nhắc học
 ```
 
 ## Cài đặt và chạy local
@@ -149,17 +149,17 @@ pnpm --filter @techenglish/api test:learning-ai
 
 Xem [tài liệu kiểm thử](docs/testing/README.md) cho danh mục và kịch bản kiểm thử hệ thống.
 
-## Nhắc học trên web và Windows Server
+## Nhắc học trên web và Ubuntu Server
 
 Nhắc học được lưu vào bảng `learning_notifications`; migration `20261005040000_learning_notifications` cần được áp dụng khi triển khai.
 
-- Mặc định, NestJS chạy lịch kiểm tra nhắc học mỗi phút.
-- Dùng Windows Task Scheduler: đặt `LEARNING_REMINDER_SCHEDULER=external` và `LEARNING_REMINDER_JOB_KEY` là khóa ngẫu nhiên tối thiểu 32 ký tự.
+- Cron trên Ubuntu gọi API mỗi phút; backend không tự chạy lịch nhắc học trong NestJS.
+- Đặt `LEARNING_REMINDER_JOB_KEY` là khóa ngẫu nhiên tối thiểu 32 ký tự; cài lịch bằng `sudo bash scripts/ubuntu/install-learning-reminders.sh /etc/techenglish/learning-reminders.curl`.
 - Scheduler gọi `POST /api/v1/internal/jobs/learning-reminders` với header `x-scheduler-key`. Khóa này chỉ nằm trên server.
 - Web kiểm tra thông báo khi đang mở; thông báo chưa đọc được lưu để hiển thị khi người học quay lại. Nhắc trong web không cần quyền thông báo trình duyệt.
 - Thông báo ngoài cửa sổ web vẫn cần cấu hình Firebase và quyền thông báo phù hợp.
 
-Xem [hướng dẫn Windows Server](docs/windows-learning-reminders.md) và script trong [scripts/windows](scripts/windows).
+Xem [hướng dẫn Ubuntu Server](docs/ubuntu-learning-reminders.md) và script trong [scripts/ubuntu](scripts/ubuntu).
 
 ## Dữ liệu kiểm tra từ vựng
 
@@ -181,7 +181,7 @@ Sau khi seed ở môi trường phát triển:
 
 - **Prisma thiếu model hoặc phương thức:** chạy `pnpm --filter @techenglish/api db:generate`, sau đó build lại backend.
 - **Web không gọi được API:** kiểm tra API đang chạy, `NEXT_PUBLIC_API_URL`, `WEB_URL` và `CORS_ORIGIN`; build lại frontend nếu đã đổi biến public.
-- **Nhắc học không hiển thị:** kiểm tra migration, giờ/múi giờ của hồ sơ, chế độ scheduler và kết quả task trên Windows.
+- **Nhắc học không hiển thị:** kiểm tra migration, giờ/múi giờ của hồ sơ, khóa gọi API, trạng thái cron và log trên Ubuntu.
 - **Migration runner không tìm thấy database:** truyền `DATABASE_URL` bằng môi trường hoặc dùng `node --env-file=apps/api/.env docker/migrate.cjs`.
 
 ## Docker và CI/CD

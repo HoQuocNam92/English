@@ -1,0 +1,3 @@
+# Copy outside the repo, chmod 600, then replace the key with the API job key.
+url = "http://127.0.0.1:8080/api/v1/internal/jobs/learning-reminders"
+header = "x-scheduler-key: REPLACE_WITH_THE_SAME_RANDOM_32_PLUS_CHARACTER_KEY_AS_API"
