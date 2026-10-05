@@ -1,0 +1,4 @@
+{
+  "ApiBaseUrl": "https://your-api.example.com/api/v1",
+  "JobKey": "REPLACE_WITH_THE_SAME_RANDOM_32_PLUS_CHARACTER_KEY_AS_API"
+}

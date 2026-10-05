@@ -1,56 +1,15 @@
-# START HERE — TechEnglish Pro / KLCN028
+# Bắt đầu với TechEnglish Pro
 
-## Stack cố định
-- Backend API: NestJS + TypeScript
-- Web Admin/Teacher: Next.js + TypeScript
-- Mobile Learner: React Native + TypeScript
-- Architecture: Clean Architecture
-- Database: PostgreSQL
-- ORM: Prisma
-- UI source of truth: `design-reference/stitch_techenglish_pro/`
+Xem [README.md](README.md) để cài đặt, cấu hình môi trường, migration, chạy và build backend/frontend.
 
-## Cấu trúc root chuẩn
+- `apps/api`: backend NestJS, Prisma và PostgreSQL.
+- `apps/web`: Next.js dành cho học viên, giảng viên và quản trị viên.
+- `apps/mobile`: ứng dụng Expo/React Native.
+- `packages`: kiểu API, design tokens và nghiệp vụ dùng chung.
+- `docs`: tài liệu phân tích, kiến trúc và kiểm thử.
 
-```text
-English/
-├─ .claude/
-├─ docs/
-├─ design-reference/
-├─ apps/
-│  ├─ api/
-│  ├─ web/
-│  └─ mobile/
-├─ packages/
-│  ├─ contracts/
-│  ├─ design-tokens/
-│  └─ shared-kernel/
-├─ CLAUDE.md
-├─ KIT_INDEX.md
-└─ README_START_HERE.md
-```
+Tài liệu bổ sung:
 
-Không còn `apps/` và `packages/`.
-Không bọc toàn bộ source trong một `src/` ở root.
-
-## Ý nghĩa
-- `apps/api` = NestJS backend
-- `apps/web` = Next.js web
-- `apps/mobile` = React Native mobile
-- `packages` = shared package
-- `docs` = yêu cầu + kiến trúc + technical docs
-- `.claude` = rules / commands / agents
-- `design-reference` = UI Stitch
-
-## Prompt khởi động
-Đọc `CLAUDE.md`, `docs/16-tech-stack.md`, `docs/17-clean-architecture.md`,
-`docs/22-postgresql-prisma.md`, sau đó kiểm tra toàn bộ repository.
-
-Không code ngay.
-
-Hãy:
-1. Xác nhận source nằm trực tiếp ở `apps/` và `packages/`.
-2. Map code hiện tại sang Clean Architecture.
-3. Kiểm tra PostgreSQL + Prisma.
-4. Kiểm tra UI mapping với Stitch.
-5. Đề xuất roadmap implementation.
-6. Chờ tôi xác nhận.
+- [Docker và CI/CD](docker/README.md)
+- [Lập lịch nhắc học trên Windows Server](docs/windows-learning-reminders.md)
+- [Kiểm thử hệ thống](docs/testing/README.md)

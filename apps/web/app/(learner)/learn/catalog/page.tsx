@@ -1,4 +1,5 @@
 'use client';
+import { PaginatedList } from '@/shared/ui/PaginatedList';
 import { AppIcon } from '@/shared/ui/AppIcon';
 
 import { useState } from 'react';
@@ -31,7 +32,8 @@ export default function LearningCatalogPage() {
     <LearnerShell>
       <div className="flex-grow w-full py-4">
         {/* Header & Search/Filters Section */}
-        <section className="mb-8">
+        <Link href="/learn/lessons" className="mb-4 inline-flex py-2 text-sm font-semibold text-primary">← Quay lại bài học</Link>
+<section className="mb-8">
           <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-4 mb-6">
             <div>
               <h1 className="text-[30px] font-bold text-on-surface mb-2 leading-[38px] tracking-[-0.02em]">
@@ -64,7 +66,7 @@ export default function LearningCatalogPage() {
 
         {/* Catalog Grid */}
         <section>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <PaginatedList className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {visibleModules.map((module) => (
               <Link
                 key={module.id}
@@ -94,7 +96,7 @@ export default function LearningCatalogPage() {
               </Link>
             ))}
             {!visibleModules.length && <p className="text-sm text-on-surface-variant">Không có chuyên đề phù hợp.</p>}
-          </div>
+          </PaginatedList>
         </section>
       </div>
     </LearnerShell>

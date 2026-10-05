@@ -1,7 +1,7 @@
 {
   "name": "techenglish-pro",
   "private": true,
-  "packageManager": "pnpm@11.9.0",
+  "packageManager": "pnpm@12.8.1",
   "scripts": {
     "typecheck": "pnpm run typecheck:packages",
     "typecheck:packages": "pnpm -r --filter \"@techenglish/*\" run typecheck"
@@ -12,5 +12,3 @@
     "typescript": "^5.9.2"
   }
 }
-
-

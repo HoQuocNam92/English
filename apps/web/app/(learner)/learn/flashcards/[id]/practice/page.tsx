@@ -189,7 +189,12 @@ export default function FlashcardPracticePage({ params }: { params: Promise<{ id
     if (included.length === 0) { setIsFinished(true); showToast('Bạn đã hoàn thành phiên luyện từ vựng.', 'success', 'Hoàn thành'); return; }
     try {
       const response: any = await apiClient.post('/vocab-study/quiz', { vocabIds: [...new Set(included.map(item => item.word.id))] });
-      setQuizQuestions(response?.questions ?? []);
+      if (!response?.questions?.length) {
+        setIsFinished(true); setQuizMode(false);
+        showToast('Tiến độ học đã lưu. Các từ này chưa có câu hỏi ngắn phù hợp để kiểm tra.', 'info');
+        return;
+      }
+      setQuizQuestions(response.questions);
       setQuizResponses({});
       setQuizIndex(0); setQuizAnswer(''); setQuizCorrect(0); setQuizFeedback(null); setQuizMarkedMastered(false); setQuizMode(true);
     } catch {
@@ -328,16 +333,19 @@ export default function FlashcardPracticePage({ params }: { params: Promise<{ id
 
   if (quizMode && quizQuestions.length > 0) {
     const question = quizQuestions[quizIndex];
-    return <LearnerShell><div className="mx-auto w-full max-w-2xl space-y-5 px-4 py-10">
+    return <LearnerShell><div className="w-full space-y-5 py-10"><Link href={returnUrl} className="inline-flex items-center gap-2 text-sm font-semibold text-primary">← Quay lại bài học</Link>
       <div className="flex items-center justify-between gap-3"><h1 className="text-2xl font-black text-slate-900">Kiểm tra từ vựng</h1></div>
       <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-xs">
         <p className="mb-5 text-lg font-bold text-slate-900">{question.prompt}</p>
-        {question.type === 'multiple_choice' ? <div className="grid gap-3">{question.options?.map(option => <button key={option} type="button" disabled={saving || quizFeedback !== null} onClick={() => void submitQuizAnswer(option)} className={`rounded-xl border p-3 text-left text-sm font-semibold ${quizAnswer === option ? 'border-primary bg-primary/5 text-primary' : 'border-slate-200'}`}>{option}</button>)}</div> : <input autoFocus value={quizAnswer} disabled={saving || quizFeedback !== null} onChange={event => setQuizAnswer(event.target.value)} onKeyDown={event => event.key === 'Enter' && void submitQuizAnswer()} placeholder="Điền từ còn thiếu..." className="w-full rounded-xl border border-slate-300 px-4 py-3 text-base outline-none focus:border-primary" />}
-        {quizFeedback !== null && <div className={`mt-4 rounded-xl p-3 text-sm font-bold ${quizFeedback ? 'bg-emerald-50 text-emerald-700' : 'bg-rose-50 text-rose-700'}`}>{quizMarkedMastered ? 'Đã đánh dấu là đã biết.' : quizFeedback ? 'Chính xác!' : `Chưa đúng. Đáp án: ${question.answer}`}</div>}
-        {quizFeedback !== null && !quizMarkedMastered && <div className="mt-4 space-y-3 text-sm leading-6">
-          <p className="text-slate-700">{question.explanation ?? `Đáp án đúng: ${question.answer}`}</p>
-          {question.optionExplanations?.map(item => <div key={item.option} className={`rounded-xl border p-3 ${item.correct ? 'border-emerald-200 bg-emerald-50 text-emerald-800' : 'border-slate-200 text-slate-700'}`}><p className="font-bold">{item.correct ? 'Đáp án đúng' : 'Đáp án sai'}{quizAnswer === item.option ? ' · Bạn đã chọn' : ''}: {item.option}</p><p className="mt-1">{item.explanation}</p></div>)}
-        </div>}
+        {question.type === 'multiple_choice' ? <div className="grid gap-3">{question.options?.map(option => {
+          const answered = quizFeedback !== null && !quizMarkedMastered;
+          const correct = answered && option === question.answer;
+          const wrong = answered && option === quizAnswer && !correct;
+          return <button key={option} type="button" disabled={saving || quizFeedback !== null} onClick={() => void submitQuizAnswer(option)} className={`flex items-center justify-between gap-3 rounded-xl border p-3 text-left text-sm font-semibold transition-colors ${correct ? 'border-emerald-400 bg-emerald-50 text-emerald-800' : wrong ? 'border-rose-400 bg-rose-50 text-rose-800' : 'border-slate-200 text-slate-900 hover:border-primary/40'}`}><span>{option}</span>{correct && <span className="shrink-0 text-xs">✓ Đúng</span>}{wrong && <span className="shrink-0 text-xs">✕ Bạn chọn</span>}</button>;
+        })}</div> : <input autoFocus value={quizAnswer} disabled={saving || quizFeedback !== null} onChange={event => setQuizAnswer(event.target.value)} onKeyDown={event => event.key === 'Enter' && void submitQuizAnswer()} placeholder="Điền từ còn thiếu..." className={`w-full rounded-xl border px-4 py-3 text-base outline-none focus:border-primary ${quizFeedback === null ? 'border-slate-300' : quizFeedback ? 'border-emerald-400 bg-emerald-50' : 'border-rose-400 bg-rose-50'}`} />}
+        {quizFeedback !== null && <p role="status" className={`mt-4 text-sm font-semibold ${quizFeedback ? 'text-emerald-700' : 'text-rose-700'}`}>{quizMarkedMastered ? 'Đã đánh dấu là đã biết.' : quizFeedback ? 'Chính xác!' : 'Chưa đúng. Đáp án đúng đã được tô xanh.'}</p>}
+        {quizFeedback !== null && !quizMarkedMastered && <details key={quizIndex} className="mt-4 rounded-xl border border-slate-200 text-sm"><summary className="cursor-pointer px-4 py-3 font-semibold text-primary focus-visible:outline-2 focus-visible:outline-primary">Xem chi tiết</summary><div className="border-t border-slate-100 px-4 py-3 leading-6 text-slate-700">{question.type === 'fill_blank' && <p className="font-semibold text-emerald-700">Đáp án đúng: {question.answer}</p>}<p>{!quizFeedback ? question.optionExplanations?.find(item => item.option === quizAnswer)?.explanation ?? question.explanation : question.explanation ?? 'Bạn đã chọn đúng nghĩa của từ.'}</p></div></details>}
+
       </div>
       <div className="flex items-center gap-3">
         <button type="button" disabled={saving || quizIndex === 0} onClick={() => goToQuizQuestion(quizIndex - 1)} className="rounded-xl border border-primary px-5 py-3 text-sm font-bold text-primary disabled:opacity-40">Trước đó</button>
@@ -355,7 +363,7 @@ export default function FlashcardPracticePage({ params }: { params: Promise<{ id
 
     return (
       <LearnerShell>
-        <div className="w-full max-w-[640px] mx-auto px-4 py-10 space-y-8">
+        <div className="w-full py-10 space-y-8">
           <div className="text-center space-y-3">
             <div className="w-20 h-20 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center mx-auto text-4xl shadow-xs">
               <IconText>{"\n              🎉\n            "}</IconText></div>
@@ -407,7 +415,7 @@ export default function FlashcardPracticePage({ params }: { params: Promise<{ id
 
   return (
     <LearnerShell>
-      <div className="w-full max-w-3xl mx-auto px-4 py-6 space-y-5">
+      <div className="w-full py-6 space-y-5">
         {/* Header Title */}
         <h1 className="text-xl lg:text-2xl font-black text-slate-900 tracking-tight">
           Luyện tập: {lesson?.title || 'Từ vựng'}

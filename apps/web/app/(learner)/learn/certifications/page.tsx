@@ -1,4 +1,5 @@
 'use client';
+import { PaginatedList } from '@/shared/ui/PaginatedList';
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
@@ -31,7 +32,7 @@ export default function CertificationsPage() {
     {error && <p className="rounded-xl border border-error/30 bg-error-container p-4 text-sm text-error">{error}</p>}
     {!error && !certificates.length && <p className="rounded-xl border border-dashed p-8 text-center text-sm text-on-surface-variant">Chưa có chứng chỉ đang hoạt động.</p>}
     <ListTools search={search} onSearch={setSearch} filter={filter} onFilter={setFilter} options={[{value:'',label:'Tất cả tiến độ'},{value:'started',label:'Đã bắt đầu học'},{value:'new',label:'Chưa bắt đầu'}]} />
-    <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">{certificates.filter(certificate => matchesSearch(search,certificate.name,certificate.code,certificate.provider) && (!filter || (progress.some(item=>item.certificateId===certificate.id && item.completionPercent>0) === (filter==='started')))).map((certificate) => {
+    <PaginatedList className="grid grid-cols-1 gap-6 lg:grid-cols-2">{certificates.filter(certificate => matchesSearch(search,certificate.name,certificate.code,certificate.provider) && (!filter || (progress.some(item=>item.certificateId===certificate.id && item.completionPercent>0) === (filter==='started')))).map((certificate) => {
       const itemProgress = progress.find((item) => item.certificateId === certificate.id);
       const percent = Math.round(itemProgress?.completionPercent ?? 0);
       const domains = (certificate.domains ?? []).map((item: any) => item.domain?.name).filter(Boolean);
@@ -42,6 +43,6 @@ export default function CertificationsPage() {
         <div className="mt-4 flex flex-wrap gap-2">{domains.map((name: string) => <span key={name} className="rounded-full bg-primary/10 px-2.5 py-1 text-xs font-semibold text-primary">{name}</span>)}</div>
         <div className="content-card-footer"><div className="content-card-actions border-t border-outline-variant pt-4"><Link href={`/learn/certifications/${certificate.id}`} className="ui-button ui-button-primary text-sm">{percent > 0 ? 'Tiếp tục ôn' : 'Xem lộ trình'}</Link></div></div>
       </article>;
-    })}</div>
+    })}</PaginatedList>
   </div></LearnerShell>;
 }

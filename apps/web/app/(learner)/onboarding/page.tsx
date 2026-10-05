@@ -100,6 +100,7 @@ export default function OnboardingPage() {
         reminderEnabled,
         reminderTime: reminderEnabled ? reminderTime : undefined,
       });
+      window.dispatchEvent(new CustomEvent('techenglish:reminder-settings', { detail: { reminderEnabled, reminderTime } }));
       if (reminderEnabled) await registerWebLearningNotifications().catch(() => false);
       if (takePlacementTest) {
         router.replace(`/onboarding/placement-test?next=${encodeURIComponent(destination())}`);

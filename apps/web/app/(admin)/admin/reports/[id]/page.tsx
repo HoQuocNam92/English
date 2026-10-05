@@ -1,4 +1,6 @@
-'use client'
+'use client';
+import { PaginatedTable } from '@/shared/ui/PaginatedTable';
+import Link from 'next/link';
 
 import { useEffect, useState } from 'react'
 import { useParams } from 'next/navigation'
@@ -77,7 +79,7 @@ export default function ReportDetailPage() {
   }
 
   return (
-    <div className="p-6">
+    <div className="p-6"><Link href="/admin/reports" className="mb-4 inline-flex items-center gap-2 rounded-lg py-2 text-sm font-semibold text-primary hover:underline"><span aria-hidden="true">←</span>Quay lại</Link>
       <PageHeader 
         title={data.domain.name} 
         description={data.domain.description || 'Domain Performance Report'} 
@@ -116,7 +118,7 @@ export default function ReportDetailPage() {
         <div className="-my-2 overflow-x-auto sm:-mx-6 lg:-mx-8">
           <div className="py-2 align-middle inline-block min-w-full sm:px-6 lg:px-8">
             <div className="shadow overflow-hidden border-b border-gray-200 sm:rounded-lg">
-              <table className="min-w-full divide-y divide-gray-200">
+              <PaginatedTable enabled={data.learners.length > 0}><table className="min-w-full divide-y divide-gray-200">
                 <thead className="bg-white">
                   <tr>
                     <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -183,7 +185,7 @@ export default function ReportDetailPage() {
                     ))
                   )}
                 </tbody>
-              </table>
+              </table></PaginatedTable>
             </div>
           </div>
         </div>

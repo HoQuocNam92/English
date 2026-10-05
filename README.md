@@ -1,237 +1,202 @@
 # TechEnglish Pro
 
-Nền tảng học tiếng Anh chuyên ngành CNTT và luyện thi chứng chỉ quốc tế, được phát triển dưới dạng monorepo cho Web, Mobile và REST API.
+Nền tảng học tiếng Anh chuyên ngành CNTT, học từ vựng và luyện thi chứng chỉ. Dự án dùng monorepo gồm web dành cho học viên/quản trị, ứng dụng mobile và REST API.
 
-## Tổng quan
+## Công nghệ và địa chỉ
 
-| Ứng dụng | Công nghệ chính | Địa chỉ mặc định |
+| Thành phần | Công nghệ | Địa chỉ local |
 | --- | --- | --- |
-| Web | Next.js 15, React 19, Tailwind CSS 4 | `http://localhost:3000` |
-| API | NestJS 11, Prisma 5, PostgreSQL | `http://localhost:8080/api/v1` |
+| Frontend | Next.js 15, React 19, Tailwind CSS 4 | http://localhost:3000 |
+| Backend | NestJS 11, Prisma 5, PostgreSQL | http://localhost:8080/api/v1 |
+| API docs | Swagger | http://localhost:8080/api/docs |
 | Mobile | Expo SDK 57, React Native | Expo Dev Server |
-| API Docs | Swagger | `http://localhost:8080/api/docs` |
 
-TechEnglish Pro hỗ trợ ba nhóm người dùng:
+## Chức năng
 
-- **Học viên:** onboarding cá nhân hóa, bài học chuyên ngành, flashcard/SRS, bài kiểm tra, tiến độ và gợi ý học tập.
-- **Giảng viên:** quản lý nội dung, câu hỏi, bài học, học viên, nhóm học viên và kết quả học tập.
-- **Quản trị viên:** toàn bộ nghiệp vụ giảng viên cùng quản lý người dùng, vai trò, quyền, danh mục và chứng chỉ.
+- Đăng ký, đăng nhập, Google OAuth, khôi phục mật khẩu và phân quyền theo vai trò.
+- Quản lý người dùng, học viên, nhóm học viên, cấp độ và mục tiêu nghề nghiệp.
+- Quản lý bài học, từ vựng, ngân hàng câu hỏi, đề thi và chứng chỉ theo lĩnh vực/chủ đề.
+- Kiểm tra đầu vào, lộ trình cá nhân, kế hoạch học theo tuần và theo dõi tiến độ.
+- Học từ vựng bằng flashcard, ôn tập theo lịch và kiểm tra nghĩa của từ.
+- Khi trả lời câu hỏi từ vựng: đáp án đúng màu xanh, lựa chọn sai màu đỏ; giải thích chỉ mở khi bấm **Xem chi tiết**.
+- Lọc lịch sử ôn tập theo khoảng ngày; danh sách hỗ trợ phân trang, trang con có nút quay lại.
+- Báo cáo học tập, kết quả bài thi và gợi ý học bằng luật hoặc dịch vụ AI tùy cấu hình.
+- Nhắc học lưu trên máy chủ và hiển thị trong web; hỗ trợ Windows Task Scheduler gọi API.
+- Upload ảnh qua Cloudinary và thông báo đẩy qua Firebase khi được cấu hình.
 
-## Tính năng chính
-
-- Xác thực bằng email/mật khẩu, JWT, Google OAuth và khôi phục mật khẩu bằng OTP.
-- Phân quyền RBAC theo vai trò và quyền chi tiết.
-- Quản lý bài học, từ vựng, ví dụ, lĩnh vực CNTT và cấp độ học tập.
-- Ngân hàng câu hỏi, nhập câu hỏi từ Excel và tạo bài kiểm tra.
-- Chứng chỉ, blueprint theo domain/topic và liên kết nội dung ôn tập.
-- Flashcard và theo dõi từ vựng bằng cơ chế lặp lại ngắt quãng.
-- Bài kiểm tra xếp lớp, bài thi mô phỏng, chấm điểm và xem lại đáp án.
-- Hồ sơ học viên, mục tiêu nghề nghiệp/chứng chỉ và lộ trình học.
-- Báo cáo tiến độ, phân tích kết quả và gợi ý học tập bằng luật hoặc AI tùy chọn.
-- Nhóm học viên và thông báo đẩy qua Firebase.
-- Upload hình ảnh qua Cloudinary.
-
-## Cấu trúc dự án
+## Cấu trúc
 
 ```text
-English/
-├── apps/
-│   ├── api/                    # NestJS REST API
-│   │   ├── prisma/             # Schema, migrations và seed
-│   │   └── src/
-│   │       ├── application/    # Nghiệp vụ
-│   │       ├── infrastructure/ # Prisma và dịch vụ ngoài
-│   │       ├── modules/        # NestJS modules
-│   │       └── presentation/   # Controllers, DTOs và filters
-│   ├── web/                    # Next.js App Router
-│   └── mobile/                 # Expo Router / React Native
-├── packages/
-│   ├── contracts/              # Kiểu và giao ước dùng chung
-│   ├── design-tokens/          # Màu sắc và design tokens
-│   └── shared-kernel/          # Tiện ích nghiệp vụ dùng chung
-├── docs/                       # Tài liệu phân tích và kiểm thử
-├── pnpm-workspace.yaml
-└── tsconfig.base.json
+apps/
+  api/                  # NestJS: application, infrastructure, modules, presentation
+    prisma/             # Schema, migration, seed và dữ liệu từ vựng
+  web/                  # Next.js App Router và UI dùng chung
+  mobile/               # Expo Router
+packages/
+  contracts/            # Kiểu/giao ước API
+  design-tokens/        # Màu sắc và token giao diện
+  shared-kernel/        # Nghiệp vụ dùng chung
+docker/                 # Container, migration cho cài đặt mới, tài liệu triển khai
+docs/                   # Tài liệu hệ thống và kiểm thử
+scripts/windows/        # Script lập lịch nhắc học
 ```
 
-## Yêu cầu hệ thống
+## Cài đặt và chạy local
 
-- Node.js 20 trở lên.
-- pnpm 11 (phiên bản dự án: `11.9.0`).
-- PostgreSQL 15 trở lên.
-- Expo Go hoặc Android/iOS emulator nếu chạy ứng dụng mobile.
-
-## Cài đặt nhanh
-
-### 1. Cài dependencies
+Chuẩn bị Node.js 24 (cùng phiên bản CI), pnpm theo `packageManager` trong [package.json](package.json) — hiện là `12.8.1` — và PostgreSQL. Chạy các lệnh dưới đây tại thư mục gốc.
 
 ```bash
 git clone https://github.com/HoQuocNam92/English.git
 cd English
-pnpm install
+pnpm install --frozen-lockfile
 ```
 
-### 2. Tạo cấu hình môi trường
+### 1. Cấu hình môi trường
 
-Sao chép các file mẫu:
+Linux/macOS:
+
+```bash
+cp apps/api/.env.example apps/api/.env
+cp apps/web/.env.example apps/web/.env.local
+```
+
+PowerShell:
 
 ```powershell
-Copy-Item .env.example .env
 Copy-Item apps/api/.env.example apps/api/.env
 Copy-Item apps/web/.env.example apps/web/.env.local
 ```
 
-Tối thiểu cần cấu hình `DATABASE_URL` và `JWT_SECRET` trong `apps/api/.env`. Các cấu hình OpenAI, Google OAuth, Cloudinary, Firebase và SMTP là tùy chọn theo tính năng sử dụng.
+Trong `apps/api/.env`, cấu hình `DATABASE_URL`, `JWT_SECRET`, `HOST`, `PORT`, `API_PUBLIC_URL`, `WEB_URL` và `CORS_ORIGIN`. File mẫu đã có địa chỉ local; thay mật khẩu database và JWT secret theo môi trường của bạn.
 
-Không commit file `.env` chứa khóa bí mật lên Git.
+Trong `apps/web/.env.local`, đặt `NEXT_PUBLIC_API_URL=http://localhost:8080/api/v1`. Khi đổi địa chỉ triển khai, cấu hình lại biến này **trước khi build frontend**.
 
-### 3. Chuẩn bị Prisma và database
+Google OAuth, SMTP, Cloudinary, Firebase và AI chỉ cần cấu hình khi sử dụng tính năng tương ứng. Không đưa khóa máy chủ vào biến `NEXT_PUBLIC_*` hoặc commit file môi trường thật.
 
-Tạo Prisma Client (không thay đổi dữ liệu):
+### 2. Tạo Prisma Client và áp dụng migration
 
 ```bash
 pnpm --filter @techenglish/api db:generate
+node --env-file=apps/api/.env docker/migrate.cjs
 ```
 
-Áp dụng các migration đã có:
+Migration runner chọn lịch sử phù hợp cho database mới hoặc database đã có Prisma migration. Các migration bổ sung được duy trì trong cả `apps/api/prisma/migrations` và `docker/prisma/migrations`.
 
-```bash
-node docker/migrate.cjs
-```
-
-Nạp dữ liệu mẫu khi cần:
+Lệnh trên không tự seed hoặc reset dữ liệu. Nếu cần dữ liệu mẫu cho môi trường phát triển:
 
 ```bash
 pnpm --filter @techenglish/api db:seed
 ```
 
-> `db:generate` chỉ tạo mã Prisma Client. Không dùng `db:reset` trên database có dữ liệu cần giữ vì lệnh đó xóa và tạo lại database.
+Không chạy `db:reset` trên database cần giữ dữ liệu.
 
-### 4. Chạy ứng dụng
+### 3. Chạy backend và frontend
 
-Mở các terminal riêng từ thư mục gốc.
+Mở hai terminal riêng:
 
 ```bash
-# Backend
 pnpm --filter @techenglish/api dev
+```
 
-# Web
+```bash
 pnpm --filter web dev
+```
 
-# Mobile
+Trang giới thiệu: http://localhost:3000/landing. Đăng nhập: http://localhost:3000/login.
+
+Mobile tùy chọn:
+
+```bash
 pnpm --filter mobile dev
 ```
 
-## Các lệnh thường dùng
-
-| Lệnh | Công dụng |
-| --- | --- |
-| `pnpm --filter @techenglish/api dev` | Chạy API ở chế độ watch |
-| `pnpm --filter @techenglish/api build` | Build API |
-| `pnpm --filter @techenglish/api test` | Chạy test API |
-| `pnpm --filter @techenglish/api db:generate` | Tạo lại Prisma Client |
-| `node docker/migrate.cjs` | Áp dụng migration hiện có |
-| `pnpm --filter @techenglish/api db:seed` | Nạp dữ liệu mẫu |
-| `pnpm --filter @techenglish/api db:studio` | Mở Prisma Studio |
-| `pnpm --filter web dev` | Chạy Next.js dev server |
-| `pnpm --filter web build` | Build Web production |
-| `pnpm --filter web typecheck` | Kiểm tra TypeScript Web |
-| `pnpm --filter mobile dev` | Chạy Expo dev server |
-| `pnpm --filter mobile typecheck` | Kiểm tra TypeScript Mobile |
-| `pnpm typecheck` | Kiểm tra các package dùng chung |
-
-## Database
-
-Prisma schema hiện có 38 model, thuộc các nhóm:
-
-- Xác thực và RBAC: user, role, permission, refresh token và password reset.
-- Hồ sơ học viên: cấp độ, mục tiêu, lĩnh vực, chứng chỉ và nhóm học viên.
-- Nội dung: lesson, section, vocabulary, example và các bảng liên kết.
-- Chứng chỉ: certificate, domain, certification topic và blueprint nội dung.
-- Đánh giá: question, option, exam, attempt và answer.
-- Tiến độ: learning progress, vocabulary progress và thông báo đẩy.
-
-Mọi thay đổi schema phải có migration tương đương cho lịch sử hiện có (`apps/api/prisma/migrations`) và cài đặt mới (`docker/prisma/migrations`).
-
-## API và Swagger
-
-- Base URL: `http://localhost:8080/api/v1`
-- Swagger UI: `http://localhost:8080/api/docs`
-
-Các nhóm endpoint chính gồm auth, users, roles, learner profiles, learner groups, lessons, vocabulary, vocab study, questions, exams, progress, recommendations, notifications, taxonomy, certificates, analytics và upload.
-
-Swagger là nguồn tham chiếu chính xác nhất cho request/response của phiên bản đang chạy.
-
-## Tài khoản seed
-
-Sau khi chạy seed, có thể sử dụng:
-
-| Vai trò | Email | Mật khẩu |
-| --- | --- | --- |
-| Admin | `admin@techenglish.pro` | `Demo@123456` |
-| Giảng viên | `nguyen.thanh@techenglish.pro` | `Demo@123456` |
-| Học viên | `learner1@techenglish.pro` | `Demo@123456` |
-
-Chỉ sử dụng các tài khoản/mật khẩu mẫu trong môi trường phát triển.
-
-## Xử lý lỗi thường gặp
-
-### PrismaService không có `$connect`, `user`, `question` hoặc `$transaction`
-
-Đây thường là dấu hiệu Prisma Client chưa được tạo hoặc `node_modules` chưa hoàn chỉnh:
+## Build production
 
 ```bash
 pnpm --filter @techenglish/api db:generate
 pnpm --filter @techenglish/api build
+pnpm --filter web build
 ```
 
-### pnpm báo `ERR_PNPM_EEXIST` khi tạo symlink
-
-Dừng các tiến trình Node, đổi tên thư mục `node_modules`, sau đó cài lại:
-
-```powershell
-Get-Process node -ErrorAction SilentlyContinue | Stop-Process
-Rename-Item node_modules node_modules_old
-pnpm install
-```
-
-Sau khi xác nhận dự án hoạt động bình thường, có thể xóa `node_modules_old`.
-
-### Web không gọi được API
-
-Kiểm tra các giá trị sau có cùng host và port với môi trường đang chạy:
-
-- `NEXT_PUBLIC_API_URL` trong `apps/web/.env.local`.
-- `WEB_URL` và `CORS_ORIGIN` trong `apps/api/.env`.
-
-## Kiểm tra trước khi commit
+Chạy các bản build trong hai terminal:
 
 ```bash
-pnpm --filter @techenglish/api build
+pnpm --filter @techenglish/api start
+```
+
+```bash
+pnpm --filter web start
+```
+
+Backend xuất mã vào `apps/api/dist`; frontend tạo `apps/web/.next`. Cấu hình môi trường production, CORS và database trước khi khởi động. Áp dụng migration bằng runner trước khi dùng chức năng mới; không commit thư mục build.
+
+## Kiểm thử
+
+```bash
+pnpm --filter @techenglish/api test
 pnpm --filter web typecheck
-pnpm --filter mobile typecheck
 pnpm typecheck
 ```
 
-## Tác giả
+Lệnh test backend bao gồm xác thực, người dùng, từ vựng, tiến độ, gợi ý AI và nhắc học. Có thêm các bộ kiểm thử nghiệp vụ:
 
-Hồ Quốc Nam — Đại học Công nghiệp TP.HCM (IUH)
+```bash
+pnpm --filter @techenglish/api test:certification
+pnpm --filter @techenglish/api test:placement
+pnpm --filter @techenglish/api test:agenda
+pnpm --filter @techenglish/api test:learning-ai
+```
 
-## Giấy phép
+Xem [tài liệu kiểm thử](docs/testing/README.md) cho danh mục và kịch bản kiểm thử hệ thống.
+
+## Nhắc học trên web và Windows Server
+
+Nhắc học được lưu vào bảng `learning_notifications`; migration `20261005040000_learning_notifications` cần được áp dụng khi triển khai.
+
+- Mặc định, NestJS chạy lịch kiểm tra nhắc học mỗi phút.
+- Dùng Windows Task Scheduler: đặt `LEARNING_REMINDER_SCHEDULER=external` và `LEARNING_REMINDER_JOB_KEY` là khóa ngẫu nhiên tối thiểu 32 ký tự.
+- Scheduler gọi `POST /api/v1/internal/jobs/learning-reminders` với header `x-scheduler-key`. Khóa này chỉ nằm trên server.
+- Web kiểm tra thông báo khi đang mở; thông báo chưa đọc được lưu để hiển thị khi người học quay lại. Nhắc trong web không cần quyền thông báo trình duyệt.
+- Thông báo ngoài cửa sổ web vẫn cần cấu hình Firebase và quyền thông báo phù hợp.
+
+Xem [hướng dẫn Windows Server](docs/windows-learning-reminders.md) và script trong [scripts/windows](scripts/windows).
+
+## Dữ liệu kiểm tra từ vựng
+
+Nghĩa ngắn phục vụ câu hỏi được tách khỏi định nghĩa đầy đủ, không thay đổi tiến độ học. Câu có nghĩa quá dài hoặc tham chiếu chưa giải quyết được sẽ không dùng để sinh lựa chọn trắc nghiệm.
+
+Xem [ghi chú dữ liệu](apps/api/prisma/data/vocabulary-quiz-notes.md), [danh sách cần biên tập](apps/api/prisma/data/vocabulary-quiz-review.json) và [bộ nghĩa ngắn](apps/api/src/application/vocab-study/quiz-meanings.ts).
+
+## Tài khoản mẫu
+
+Sau khi seed ở môi trường phát triển:
+
+| Vai trò | Email | Mật khẩu |
+| --- | --- | --- |
+| Quản trị viên | `admin@techenglish.pro` | `Demo@123456` |
+| Giảng viên | `nguyen.thanh@techenglish.pro` | `Demo@123456` |
+| Học viên | `learner1@techenglish.pro` | `Demo@123456` |
+
+## Lỗi thường gặp
+
+- **Prisma thiếu model hoặc phương thức:** chạy `pnpm --filter @techenglish/api db:generate`, sau đó build lại backend.
+- **Web không gọi được API:** kiểm tra API đang chạy, `NEXT_PUBLIC_API_URL`, `WEB_URL` và `CORS_ORIGIN`; build lại frontend nếu đã đổi biến public.
+- **Nhắc học không hiển thị:** kiểm tra migration, giờ/múi giờ của hồ sơ, chế độ scheduler và kết quả task trên Windows.
+- **Migration runner không tìm thấy database:** truyền `DATABASE_URL` bằng môi trường hoặc dùng `node --env-file=apps/api/.env docker/migrate.cjs`.
+
+## Docker và CI/CD
+
+Xem [hướng dẫn Docker và triển khai](docker/README.md) cho Compose, PostgreSQL hiện có, backup và rollback.
+
+- [Docker Compose](docker-compose.yml), [Dockerfile](Dockerfile), [môi trường mẫu](.env.compose.example).
+- [CI và build image GHCR](.github/workflows/ci.yml).
+- [Triển khai server](.github/workflows/deploy.yml).
+- [Build mobile qua EAS](.github/workflows/mobile-build.yml).
+
+CI trên `main` chạy kiểm tra và build trước khi xuất bản container. Build local không đồng nghĩa với đã triển khai hoặc đã áp dụng migration trên server.
+
+## Tác giả và giấy phép
+
+Hồ Quốc Nam — Đại học Công nghiệp TP.HCM (IUH).
 
 Private — All rights reserved.
-
-## Docker Compose và CI/CD
-
-Cấu hình gồm PostgreSQL, API NestJS, web Next.js và profile Expo mobile; không dùng Redis.
-
-Database mới dùng migration khởi tạo riêng đã kiểm tra trên PostgreSQL tạm; database hiện có giữ lịch sử migration cũ. Runner không reset hoặc tự seed dữ liệu.
-
-Xem [hướng dẫn Docker, CI/CD, mobile EAS và triển khai](docker/README.md) để biết cấu hình môi trường, secrets, các lệnh chạy, backup và rollback.
-
-- [Docker Compose](docker-compose.yml), [Dockerfile](Dockerfile), [env mẫu](.env.compose.example).
-- [CI và publish image GHCR](.github/workflows/ci.yml).
-- [Triển khai server](.github/workflows/deploy.yml).
-- [Build APK/IPA qua EAS](.github/workflows/mobile-build.yml).
-
-Để dùng PostgreSQL hiện tại làm nguồn dữ liệu, dùng [compose.postgres.yml](compose.postgres.yml) theo mục “Dùng PostgreSQL hiện có làm nguồn chuẩn” trong [hướng dẫn Docker](docker/README.md). Cấu hình này không tự chạy migration hoặc seed.

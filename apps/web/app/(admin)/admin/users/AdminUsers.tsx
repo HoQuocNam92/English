@@ -368,39 +368,23 @@ export default function AdminUsers({ createOnly = false }: { createOnly?: boolea
 
       {/* Content Area - Bento/Card Style */}
       <div className="bg-surface-container-lowest rounded-2xl border border-outline-variant/55 overflow-hidden flex flex-col shadow-[0_12px_40px_rgba(15,23,42,0.055)]">
-        {/* Tabs */}
-        <div className="ui-tabs m-4 self-start">
-          <button
-            onClick={() => { setRoleFilter(''); setPage(1); }}
-            className="ui-tab" aria-pressed={roleFilter === ''}
-          >
-            Tất cả
-          </button>
-          <button
-            onClick={() => { setRoleFilter('learner'); setPage(1); }}
-            className="ui-tab" aria-pressed={roleFilter === 'learner'}
-          >
-            Người học
-          </button>
-          <button
-            onClick={() => { setRoleFilter('teacher'); setPage(1); }}
-            className="ui-tab" aria-pressed={roleFilter === 'teacher'}
-          >
-            Giảng viên
-          </button>
-          <button
-            onClick={() => { setRoleFilter('admin'); setPage(1); }}
-            className="ui-tab" aria-pressed={roleFilter === 'admin'}
-          >
-            Quản trị viên
-          </button>
-        </div>
-
         {/* Toolbar */}
         <div className="p-5 flex flex-col md:flex-row gap-4 justify-between items-center bg-surface-container-low/55">
           <SearchInput value={searchInput} onChange={setSearchInput} onSearch={value => { setPage(1); setSearch(value); }} placeholder="Tìm kiếm theo tên, email…" />
-          <div className="flex w-full md:w-auto justify-end gap-sm ml-auto">
+          <div className="flex w-full flex-wrap gap-3 md:w-auto md:justify-end md:ml-auto">
             <Dropdown
+              aria-label="Lọc theo vai trò"
+              value={roleFilter}
+              onChange={(e) => { setRoleFilter(e.target.value); setPage(1); }}
+              className="h-10 px-4 border border-outline-variant/70 rounded-xl text-sm font-medium text-on-surface hover:bg-surface-container-low transition-colors bg-surface-container-lowest focus:outline-none focus:ring-4 focus:ring-primary/10"
+            >
+              <option value="">Tất cả vai trò</option>
+              <option value="learner">Người học</option>
+              <option value="teacher">Giảng viên</option>
+              <option value="admin">Quản trị viên</option>
+            </Dropdown>
+            <Dropdown
+              aria-label="Lọc theo trạng thái"
               value={statusFilter}
               onChange={(e) => { setStatusFilter(e.target.value); setPage(1); }}
               className="h-10 px-4 border border-outline-variant/70 rounded-xl text-sm font-medium text-on-surface hover:bg-surface-container-low transition-colors bg-surface-container-lowest focus:outline-none focus:ring-4 focus:ring-primary/10"

@@ -7,7 +7,7 @@ import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { LearnerShell } from '@/shared/layout';
 import { apiClient } from '@/shared/api/api-client';
-import { LoadingSpinner, showToast } from '@/shared/ui';
+import { LoadingSpinner, showToast, confirmDialog } from '@/shared/ui';
 
 export default function LearnerQuizTakingPage({ params }: { params: Promise<{ id: string }> }) {
   const unwrappedParams = React.use(params);
@@ -147,7 +147,8 @@ interface UnansweredQuestion {
 
   return (
     <LearnerShell>
-      <div className="flex flex-col gap-6 max-w-5xl mx-auto pb-12">
+      <div className="flex w-full flex-col gap-6 pb-12">
+        <button type="button" disabled={submitting} onClick={async () => { if (await confirmDialog('Quay lại sẽ rời lượt làm bài hiện tại. Bạn muốn quay lại?', { confirmLabel: 'Quay lại' })) router.push(certificateId ? (topicId ? `/learn/certifications/${certificateId}/topics/${topicId}` : `/learn/certifications/${certificateId}`) : '/learn/certifications'); }} className="self-start text-sm font-semibold text-primary">← Quay lại</button>
         {/* Exam Header Bar */}
         <div className="p-4 rounded-2xl bg-surface-container-lowest border border-outline-variant/40 shadow-2xs flex flex-wrap justify-between items-center gap-4 sticky top-20 z-20">
           <div>

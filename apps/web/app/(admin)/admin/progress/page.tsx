@@ -66,7 +66,7 @@ export default function AdminProgressPage() {
       <PageHeader title="Tiến độ học tập toàn hệ thống" description="Báo cáo tiến độ hoàn thành bài học, tỷ lệ đạt bài thi và năng lực học viên" />
 
       {/* Filters */}
-      <div className="mt-6 grid grid-cols-1 items-end gap-3 sm:grid-cols-2 xl:grid-cols-[minmax(260px,1.5fr)_repeat(3,minmax(140px,1fr))_auto] rounded-2xl border border-outline-variant/50 bg-white p-4">
+      <div className="mt-6 flex flex-wrap items-end gap-4 rounded-2xl border border-outline-variant/50 bg-white p-4">
         <div className="grid w-full min-w-0 gap-1 text-xs font-semibold text-on-surface-variant lg:w-80 lg:shrink-0"><span>Tìm học viên</span>
         <SearchInput
           className="!w-full !max-w-none"
@@ -80,9 +80,9 @@ export default function AdminProgressPage() {
           maxLength={100}
         />
         </div>
-        <div className="grid w-full min-w-0 gap-3 sm:grid-cols-2 xl:grid-cols-4 lg:ml-auto lg:max-w-3xl">
+        <div className="grid w-full min-w-0 items-end gap-3 sm:grid-cols-2 xl:grid-cols-[repeat(3,minmax(140px,1fr))_auto] lg:ml-auto lg:flex-1 lg:basis-[560px]">
         {([['levelCode', 'Trình độ', options.levels], ['domainCode', 'Lĩnh vực', options.domains], ['certificateId', 'Mục tiêu chứng chỉ', options.certificates]] as const).map(([key, label, list]) => <label key={key} className="grid min-w-0 gap-1 text-xs font-semibold text-on-surface-variant">{label}<Dropdown aria-label={label} value={filters[key]} onChange={event => { setFilters(current => ({ ...current, [key]: event.target.value })); setPage(1); }} className="h-11 w-full rounded-xl border border-outline-variant bg-white px-3 text-sm text-on-surface"><option value="">Tất cả</option>{list.map(item => <option key={item.id} value={key === 'certificateId' ? item.id : item.code}>{item.name}</option>)}</Dropdown></label>)}
-        <button type="button" onClick={() => { setFilters({ levelCode: '', domainCode: '', certificateId: '' }); setSearch(''); setSearchInput(''); setPage(1); }} className="h-11 rounded-xl border border-outline-variant px-4 text-sm">Xóa bộ lọc</button>
+        <button type="button" onClick={() => { setFilters({ levelCode: '', domainCode: '', certificateId: '' }); setSearch(''); setSearchInput(''); setPage(1); }} className="h-11 whitespace-nowrap rounded-xl border border-outline-variant px-4 text-sm">Xóa bộ lọc</button>
         </div>
       </div>
 

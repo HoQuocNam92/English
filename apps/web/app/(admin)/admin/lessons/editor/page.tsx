@@ -1,4 +1,5 @@
 'use client';
+import Link from 'next/link';
 
 import { FormPageLayout } from '@/shared/ui/CreatePage';
 import { Dropdown } from '@/shared/ui/Dropdown';
@@ -38,8 +39,8 @@ export default function LessonEditorPage() {
   const category = CONTENT_TYPES[form.type];
   const topicOptions = options.certificates.filter(cert => form.certificateIds.includes(cert.id)).flatMap(cert => (cert.domains ?? []).flatMap(domain => domain.certificationTopics.map(topic => ({ ...topic, label: `${cert.code} · ${domain.domain.name} · ${topic.code} ${topic.name}` }))));
 
-  if (loading) return <FormPageLayout><PageHeader title="Quản lý bài học" description="Đang tải biểu mẫu..." /><p className="mt-10 text-center text-on-surface-variant">Đang tải...</p></FormPageLayout>;
-  return <FormPageLayout><PageHeader icon={category?.icon} iconClassName={category?.iconClassName} title={`${lessonId ? 'Chỉnh sửa' : 'Thêm'} ${category?.item ?? 'bài học'}`} description={category?.intro ?? 'Biên soạn nội dung học tập'} />
+  if (loading) return <FormPageLayout><Link href="/admin/lessons" className="mb-4 inline-flex items-center gap-2 rounded-lg py-2 text-sm font-semibold text-primary hover:underline"><span aria-hidden="true">←</span>Quay lại</Link><PageHeader title="Quản lý bài học" description="Đang tải biểu mẫu..." /><p className="mt-10 text-center text-on-surface-variant">Đang tải...</p></FormPageLayout>;
+  return <FormPageLayout><Link href="/admin/lessons" className="mb-4 inline-flex items-center gap-2 rounded-lg py-2 text-sm font-semibold text-primary hover:underline"><span aria-hidden="true">←</span>Quay lại</Link><PageHeader icon={category?.icon} iconClassName={category?.iconClassName} title={`${lessonId ? 'Chỉnh sửa' : 'Thêm'} ${category?.item ?? 'bài học'}`} description={category?.intro ?? 'Biên soạn nội dung học tập'} />
     <form onSubmit={submit} className="mt-6 w-full space-y-6">
       {error && <div className="rounded-xl bg-error-container p-3 text-sm text-on-error-container">{error}</div>}
       <section className="grid gap-4 rounded-2xl bg-surface-container-lowest p-6 shadow-sm md:grid-cols-2">

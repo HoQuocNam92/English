@@ -1,6 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common'
 import { Cron, CronExpression } from '@nestjs/schedule'
 import { ConfigService } from '@nestjs/config'
+import { dueReminderDate } from './reminder-time'
 import { applicationDefault, cert, getApps, initializeApp } from 'firebase-admin/app'
 import { getMessaging, Messaging } from 'firebase-admin/messaging'
 import { PrismaService } from '../../infrastructure/database/prisma.service'
@@ -10,14 +11,14 @@ export class NotificationService {
   private readonly logger = new Logger(NotificationService.name)
   private readonly messaging: Messaging | null
 
-  constructor(private readonly prisma: PrismaService, config: ConfigService) {
+  constructor(private readonly prisma: PrismaService, private readonly config: ConfigService) {
     try {
       const projectId = config.get<string>('FIREBASE_PROJECT_ID')
       const clientEmail = config.get<string>('FIREBASE_CLIENT_EMAIL')
       const privateKey = config.get<string>('FIREBASE_PRIVATE_KEY')?.replace(/\\n/g, '\n')
       if ((!projectId || !clientEmail || !privateKey) && !process.env.GOOGLE_APPLICATION_CREDENTIALS) {
         this.messaging = null
-        this.logger.warn('Firebase chưa được cấu hình; thông báo từ máy chủ đang tạm tắt.')
+        this.logger.warn('Firebase chưa được cấu hình; chỉ thông báo đẩy đang tắt, lời nhắc trong web vẫn hoạt động.')
         return
       }
       if (!getApps().length) {
@@ -28,7 +29,7 @@ export class NotificationService {
       this.messaging = getMessaging()
     } catch {
       this.messaging = null
-      this.logger.warn('Firebase chưa được cấu hình; thông báo từ máy chủ đang tạm tắt.')
+      this.logger.warn('Firebase chưa được cấu hình; chỉ thông báo đẩy đang tắt, lời nhắc trong web vẫn hoạt động.')
     }
   }
 
@@ -46,25 +47,42 @@ export class NotificationService {
 
   @Cron(CronExpression.EVERY_MINUTE)
   async sendScheduledLearningReminders() {
-    if (!this.messaging) return
+    if (this.config.get<string>('LEARNING_REMINDER_SCHEDULER') === 'external') return
+    return this.dispatchLearningReminders()
+  }
+
+  getPending(userId: string) {
+    return this.prisma.learningNotification.findMany({
+      where: { userId, readAt: null, user: { learnerProfile: { reminderEnabled: true } } }, orderBy: { createdAt: 'desc' }, take: 20,
+    })
+  }
+
+  markRead(userId: string, id: string) {
+    return this.prisma.learningNotification.updateMany({ where: { id, userId, readAt: null }, data: { readAt: new Date() } })
+  }
+
+  async dispatchLearningReminders(now = new Date()) {
     const profiles = await this.prisma.learnerProfile.findMany({
-      where: { reminderEnabled: true, reminderTime: { not: null }, user: { pushSubscriptions: { some: { active: true } } } },
+      where: { reminderEnabled: true, reminderTime: { not: null }, user: { status: 'active', deletedAt: null } },
       include: { user: { include: { userDetail: true, pushSubscriptions: { where: { active: true } } } } },
     })
-    const now = new Date()
+    let created = 0
     for (const profile of profiles) {
-      const timezone = profile.user.userDetail?.timezone || 'Asia/Ho_Chi_Minh'
-      const parts = new Intl.DateTimeFormat('en-GB', { timeZone: timezone, hour: '2-digit', minute: '2-digit', hour12: false }).format(now)
-      if (parts !== profile.reminderTime) continue
-      const dateParts = new Intl.DateTimeFormat('en-CA', { timeZone: timezone, year: 'numeric', month: '2-digit', day: '2-digit' }).formatToParts(now)
-      const part = (type: Intl.DateTimeFormatPartTypes) => dateParts.find(item => item.type === type)?.value || ''
-      const localDate = `${part('year')}-${part('month')}-${part('day')}`
+      const localDate = dueReminderDate(now, profile.reminderTime!, profile.user.userDetail?.timezone || 'Asia/Ho_Chi_Minh')
+      if (!localDate) continue
+      const title = 'Đến giờ học rồi!'
+      const body = `Hôm nay bạn có mục tiêu ${profile.dailyVocabularyTarget} từ và ${profile.dailyStudyTargetMinutes} phút học.`
+      const result = await this.prisma.learningNotification.createMany({
+        data: [{ userId: profile.userId, localDate, title, body }], skipDuplicates: true,
+      })
+      created += result.count
+      if (!this.messaging) continue
       for (const subscription of profile.user.pushSubscriptions) {
         if (subscription.lastSentDate?.toISOString().slice(0, 10) === localDate) continue
         try {
           await this.messaging.send({
             token: subscription.token,
-            notification: { title: 'Đến giờ học rồi!', body: `Hôm nay bạn còn mục tiêu ${profile.dailyVocabularyTarget} từ và ${profile.dailyStudyTargetMinutes} phút học.` },
+            notification: { title, body },
             data: { route: '/learn', type: 'learning_reminder' },
             webpush: { fcmOptions: { link: process.env.WEB_URL || '/learn' } },
             android: { notification: { channelId: 'learning-reminders' } },
@@ -78,5 +96,6 @@ export class NotificationService {
         }
       }
     }
+    return { created }
   }
 }

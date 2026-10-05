@@ -1,3 +1,4 @@
+import { quizMeaning } from './quiz-meaning'
 import { BadRequestException, Injectable } from '@nestjs/common'
 import { PrismaService } from '../../infrastructure/database/prisma.service'
 
@@ -135,7 +136,7 @@ export class VocabStudyService {
       include: { examples: { orderBy: { order: 'asc' }, take: 3 } },
     })
 
-    if (vocabs.length !== new Set(vocabIds).size) throw new BadRequestException('Quiz chỉ dành cho từ bạn đã học và cần kiểm tra.')
+    if (vocabs.length !== new Set(vocabIds).size) throw new BadRequestException('Bài kiểm tra chỉ dành cho từ bạn đã học và cần kiểm tra.')
 
     // Get some random words for multiple choice distractors
     const allVocabs = await this.prisma.vocabulary.findMany({
@@ -144,53 +145,25 @@ export class VocabStudyService {
       take: 50,
     })
 
-    const questions = vocabs.flatMap(v => Array.from({ length: 1 }, (_, repetitionIndex) => {
-      const hasExample = v.examples.length > 0 && v.examples[0].sentenceEn?.includes(v.term)
-      const useFillBlank = hasExample && repetitionIndex % 2 === 1
-
-      if (useFillBlank) {
-        // Fill-in-the-blank
-        const example = v.examples[0]
-        const sentence = example.sentenceEn.replace(new RegExp(v.term.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'gi'), '___')
-        return {
-          type: 'fill_blank' as const,
-          vocabularyId: v.id,
-          prompt: sentence,
-          hint: v.definitionVi,
-          answer: v.term,
-          explanation: `Từ cần điền là “${v.term}”, nghĩa là: ${v.definitionVi ?? v.definitionEn}. ${example.translationVi ?? ""}`,
-        }
-      } else if (repetitionIndex % 2 === 0) {
-        // Hiện từ tiếng Anh, chọn nghĩa tiếng Việt.
-        const distractors = allVocabs
-          .filter(d => d.definitionVi && d.definitionVi !== v.definitionVi)
-          .sort(() => Math.random() - 0.5)
-          .filter((d, index, list) => list.findIndex(item => item.definitionVi === d.definitionVi) === index)
-          .slice(0, 3)
-        const options = [v.definitionVi, ...distractors.map(d => d.definitionVi)].sort(() => Math.random() - 0.5)
-        return {
-          type: 'multiple_choice' as const,
-          vocabularyId: v.id,
-          prompt: `Nghĩa của "${v.term}" là gì?`,
-          options,
-          answer: v.definitionVi,
-          explanation: `“${v.term}” có nghĩa là: ${v.definitionVi ?? v.definitionEn}.`,
-          optionExplanations: [
-            { option: v.definitionVi, correct: true, explanation: `Đúng: đây là nghĩa của “${v.term}”. ${v.definitionEn}` },
-            ...distractors.map(d => ({ option: d.definitionVi, correct: false, explanation: `Sai: đây là nghĩa của “${d.term}”, không phải “${v.term}”.` })),
-          ],
-        }
-      } else {
-        const distractors = allVocabs.filter(d => d.term !== v.term).sort(() => Math.random() - 0.5).slice(0, 3)
-        return { type: 'multiple_choice' as const, vocabularyId: v.id, prompt: v.definitionVi, options: [v.term, ...distractors.map(d => d.term)].sort(() => Math.random() - 0.5), answer: v.term,
-          explanation: `“${v.term}” có nghĩa là: ${v.definitionVi ?? v.definitionEn}.`,
-          optionExplanations: [
-            { option: v.term, correct: true, explanation: `Đúng: “${v.term}” khớp với nghĩa trong câu hỏi.` },
-            ...distractors.map(d => ({ option: d.term, correct: false, explanation: `Sai: “${d.term}” có nghĩa là: ${d.definitionVi ?? 'Chưa có nghĩa tiếng Việt'}, khác với nghĩa được hỏi.` })),
-          ],
-        }
-      }
-    }))
+    const ready = vocabs.map(v => ({ ...v, meaning: quizMeaning(v) })).filter(v => v.meaning)
+    const pool = [...allVocabs, ...vocabs].map(v => ({ ...v, meaning: quizMeaning(v) })).filter(v => v.meaning)
+    const questions = ready.flatMap(v => {
+      const distractors = pool.filter(d => d.id !== v.id && d.meaning !== v.meaning)
+        .sort(() => Math.random() - 0.5)
+        .filter((d, index, list) => list.findIndex(item => item.meaning === d.meaning) === index).slice(0, 3)
+      if (!distractors.length) return []
+      return [{
+        type: 'multiple_choice' as const, vocabularyId: v.id,
+        prompt: `Nghĩa của "${v.term}" là gì?`,
+        options: [v.meaning!, ...distractors.map(d => d.meaning!)].sort(() => Math.random() - 0.5),
+        answer: v.meaning!,
+        explanation: `“${v.term}” có nghĩa là: ${v.meaning}`,
+        optionExplanations: [
+          { option: v.meaning!, correct: true, explanation: `“${v.term}” có nghĩa là: ${v.meaning}` },
+          ...distractors.map(d => ({ option: d.meaning!, correct: false, explanation: `Bạn chọn nghĩa của “${d.term}”, không phải “${v.term}”.` })),
+        ],
+      }]
+    })
 
     // Shuffle questions
     return { questions: questions.sort(() => Math.random() - 0.5) }
@@ -336,8 +309,18 @@ export class VocabStudyService {
   }
 
   // Get flashcards dashboard stats and heatmap
-  async getDashboard(learnerId: string) {
+  async getDashboard(learnerId: string, from?: string, to?: string) {
     const now = new Date()
+    let rangeStart = new Date(now.getTime() - 60 * 24 * 60 * 60 * 1000)
+    let rangeEnd = now
+    if (from !== undefined || to !== undefined) {
+      const valid = (value?: string) => !!value && /^\d{4}-\d{2}-\d{2}$/.test(value) && !Number.isNaN(Date.parse(value)) && new Date(value).toISOString().slice(0, 10) === value
+      if (!valid(from) || !valid(to)) throw new BadRequestException('Vui lòng chọn ngày bắt đầu và kết thúc hợp lệ.')
+      rangeStart = new Date(`${from}T00:00:00.000Z`)
+      rangeEnd = new Date(`${to}T23:59:59.999Z`)
+      if (rangeStart > rangeEnd || to! > now.toISOString().slice(0, 10)) throw new BadRequestException('Khoảng ngày không hợp lệ.')
+      if (rangeEnd.getTime() - rangeStart.getTime() >= 366 * 86400000) throw new BadRequestException('Vui lòng chọn tối đa 366 ngày.')
+    }
 
     // 1. Overall stats
     const [learnedCount, masteredCount, needsReviewCount] = await Promise.all([
@@ -352,10 +335,9 @@ export class VocabStudyService {
       }),
     ])
 
-    // 2. Heatmap: Activity in last 60 days
-    const sixtyDaysAgo = new Date(now.getTime() - 60 * 24 * 60 * 60 * 1000)
+    // Activity for the selected inclusive date range.
     const recentActivity = await this.prisma.vocabularyProgress.findMany({
-      where: { learnerId, lastReviewAt: { gte: sixtyDaysAgo } },
+      where: { learnerId, lastReviewAt: { gte: rangeStart, lte: rangeEnd } },
       select: { lastReviewAt: true },
     })
 

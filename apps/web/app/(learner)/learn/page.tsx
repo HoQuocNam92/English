@@ -54,22 +54,6 @@ export default function LearnerHomePage() {
     loadData();
   }, []);
 
-  useEffect(() => {
-    const reminderTime = data?.journey?.targets?.reminderTime;
-    if (!data?.journey?.targets?.reminderEnabled || !reminderTime || typeof window === 'undefined') return;
-    const checkReminder = () => {
-      const now = new Date();
-      const current = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
-      const key = `learning-reminder-${now.toISOString().slice(0, 10)}`;
-      if (current === reminderTime && !localStorage.getItem(key) && 'Notification' in window && Notification.permission === 'granted') {
-        new Notification('Đến giờ học TechEnglish Pro', { body: 'Hãy tiếp tục hành trình và hoàn thành mục tiêu hôm nay nhé!' });
-        localStorage.setItem(key, 'sent');
-      }
-    };
-    checkReminder();
-    const timer = window.setInterval(checkReminder, 30000);
-    return () => window.clearInterval(timer);
-  }, [data?.journey]);
 
   if (loading) return <LearnerShell><LoadingSpinner /></LearnerShell>;
 
@@ -266,7 +250,7 @@ export default function LearnerHomePage() {
                       : 'bg-emerald-100 text-emerald-800 border-emerald-200';
                   const priorityIcon = isUrgent ? '🚨' : isHigh ? '🧠' : '🎯';
 
-                  const typeLabel = rec.type === 'lesson' ? 'Bài học' : rec.type === 'exam' ? 'Quiz chứng chỉ' : rec.type === 'vocab' ? 'Từ vựng' : 'Tình huống';
+                  const typeLabel = rec.type === 'lesson' ? 'Bài học' : rec.type === 'exam' ? 'Bài kiểm tra chứng chỉ' : rec.type === 'vocab' ? 'Từ vựng' : 'Tình huống';
 
                   return (
                     <div

@@ -17,8 +17,8 @@ export class VocabStudyController {
 
   @Get('dashboard')
   @ApiOperation({ summary: 'Get flashcards dashboard (stats, heatmap)' })
-  getDashboard(@Request() req: any) {
-    return this.svc.getDashboard(req.user.sub)
+  getDashboard(@Request() req: any, @Query('from') from?: string, @Query('to') to?: string) {
+    return this.svc.getDashboard(req.user.sub, from, to)
   }
 
   @Get('session')

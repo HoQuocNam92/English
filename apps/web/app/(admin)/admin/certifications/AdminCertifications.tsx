@@ -1,4 +1,5 @@
 'use client';
+import { PaginatedList } from '@/shared/ui/PaginatedList';
 import { AppIcon } from '@/shared/ui/AppIcon';
 import { useRouter } from 'next/navigation';
 import { completeCreation, CreatePage, FormSurface } from '@/shared/ui/CreatePage';
@@ -158,7 +159,7 @@ export default function AdminCertifications({ createOnly = false }: { createOnly
           <SearchInput value={searchInput} onChange={setSearchInput} onSearch={value => { handleSearch(value); }} placeholder="Tìm kiếm chứng chỉ…" />
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-2 gap-lg">
+      <PaginatedList enabled={!loading} className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-2 gap-lg">
         {loading ? (
           <div className="col-span-full py-8 text-center text-on-surface-variant">Đang tải...</div>
         ) : filteredCerts.length === 0 ? (
@@ -227,7 +228,7 @@ export default function AdminCertifications({ createOnly = false }: { createOnly
             );
           })
         )}
-      </div>
+      </PaginatedList>
       <CertificateModal open={modalOpen} initial={editTarget} onClose={() => setModalOpen(false)} onSaved={handleSaved} />
     </main>
   );

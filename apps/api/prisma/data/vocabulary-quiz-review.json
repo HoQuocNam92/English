@@ -1,0 +1,1123 @@
+{
+  "total": 2589,
+  "quizReady": 2310,
+  "edited": 38,
+  "needsEditorialReview": [
+    {
+      "id": "b3a0eb16-c466-4b88-a070-23e61945bb1b",
+      "term": "active-active"
+    },
+    {
+      "id": "831c8535-f706-43f3-b08c-bc5e7eefe3fb",
+      "term": "Active Directory"
+    },
+    {
+      "id": "f03b4b4d-ddc3-41f2-9e4b-57576311fae2",
+      "term": "Advanced Encryption Standard"
+    },
+    {
+      "id": "2c239aa1-496f-4318-a7ae-26ad70c02cbb",
+      "term": "Advanced Micro Devices"
+    },
+    {
+      "id": "80495a6f-2320-4b47-a794-b1874250ce30",
+      "term": "ALPN"
+    },
+    {
+      "id": "9d005190-b2e1-4a0a-96be-7b763147c652",
+      "term": "Amazon AppFlow"
+    },
+    {
+      "id": "665709a5-1aed-4228-8298-66f6516636c8",
+      "term": "Amazon Comprehend Medical"
+    },
+    {
+      "id": "d0f6381e-5d91-46d4-b8be-36701fe3e19e",
+      "term": "Amazon DocumentDB"
+    },
+    {
+      "id": "ef4e15e0-d72e-4352-a4b9-10b6362cec9f",
+      "term": "Amazon ECR"
+    },
+    {
+      "id": "2ea93b89-0476-468e-a13b-72b61a962315",
+      "term": "Amazon ECS"
+    },
+    {
+      "id": "694523a4-803b-461a-968f-2d1d81980b3b",
+      "term": "Amazon EKS"
+    },
+    {
+      "id": "b1f03f6d-5cc9-48ea-82bd-c27603f5d976",
+      "term": "Amazon Kendra"
+    },
+    {
+      "id": "1c5add97-b7d7-41ed-92d2-53a686b944cf",
+      "term": "Amazon Lex"
+    },
+    {
+      "id": "40bf8b2a-f9ea-4c1a-af68-cdc45919b2e9",
+      "term": "Amazon Location"
+    },
+    {
+      "id": "48d70778-9dec-42d6-9726-961b063ce993",
+      "term": "Amazon Managed Grafana"
+    },
+    {
+      "id": "5dd32fab-fb89-43e7-96fe-b6a46c01c7a7",
+      "term": "Amazon ML"
+    },
+    {
+      "id": "e83743df-cd47-44ac-a7eb-5d182c2762b9",
+      "term": "Amazon MWAA"
+    },
+    {
+      "id": "8e8bc68d-b61e-4e64-8815-9c214c27568e",
+      "term": "Amazon Pinpoint"
+    },
+    {
+      "id": "f81cec3f-44b8-4231-a2bf-e3ef9e9c3578",
+      "term": "Amazon Q Developer in chat applications"
+    },
+    {
+      "id": "f5319a04-03aa-4cf8-b592-6c42b45ebe9a",
+      "term": "Amazon QLDB"
+    },
+    {
+      "id": "dc1a2400-e00e-423e-aacd-0faf137f3e69",
+      "term": "Amazon Rekognition"
+    },
+    {
+      "id": "6a0ec3fe-03ef-4966-b962-b02293aa6edb",
+      "term": "Amplify"
+    },
+    {
+      "id": "77ed5eab-f086-4bb0-9afb-9c00d439ff15",
+      "term": "Amplify Hosting"
+    },
+    {
+      "id": "71797857-64de-4e12-b300-ec1ea6015056",
+      "term": "Amplify Studio"
+    },
+    {
+      "id": "3b8ed42f-499c-4912-8b4c-1e7d028903bc",
+      "term": "Apple Safari"
+    },
+    {
+      "id": "855a126f-6d75-45a9-8447-e774f364debf",
+      "term": "Application Auto Scaling"
+    },
+    {
+      "id": "1a8497c6-3c09-464f-a67f-64ac3fe2e8a2",
+      "term": "Application Discovery Service"
+    },
+    {
+      "id": "a1083e60-55ff-4171-97f2-3ff227c75a2e",
+      "term": "ARPA"
+    },
+    {
+      "id": "cd115706-f8b5-4520-8190-87cfc7762a28",
+      "term": "ARPANET"
+    },
+    {
+      "id": "5d1e7a05-8e2b-480c-8e02-2d30df55c8cf",
+      "term": "ASCII"
+    },
+    {
+      "id": "b659a744-da71-4f41-b26a-7e1edf6066aa",
+      "term": "Asymmetric Logical Unit Access"
+    },
+    {
+      "id": "6a207c94-21e8-45f6-a54a-36f22f83f3d9",
+      "term": "attestation"
+    },
+    {
+      "id": "65a543ac-1d53-4c34-8b49-5fe9989a4bc1",
+      "term": "attr"
+    },
+    {
+      "id": "d68c5436-08ff-4070-b88e-650ce1e18446",
+      "term": "Aurora"
+    },
+    {
+      "id": "697feec3-32af-4fab-9be6-b0a6bd09eb30",
+      "term": "Authenticator"
+    },
+    {
+      "id": "19acc0c4-09a4-435f-98f7-b9f9a4caa570",
+      "term": "AWS Auto Scaling"
+    },
+    {
+      "id": "377eed23-5d22-48c1-a99a-39891f89b620",
+      "term": "AWS Cloud Control API"
+    },
+    {
+      "id": "0333d746-ef73-435e-bdfe-79513cdd3c4d",
+      "term": "AWS DeepLens"
+    },
+    {
+      "id": "edf5041c-aed8-43eb-a11f-f5e7879d0be1",
+      "term": "AWS Elemental MediaConnect"
+    },
+    {
+      "id": "b61b72bc-463d-4be2-9c8f-bf653d84047a",
+      "term": "AWS Elemental MediaLive"
+    },
+    {
+      "id": "238846e5-d6bf-462e-96ef-51f581a1f3a9",
+      "term": "AWS Elemental MediaStore"
+    },
+    {
+      "id": "1c515d96-f705-4fe1-9ccc-29bb4d4278c4",
+      "term": "AWS GovCloud (US)"
+    },
+    {
+      "id": "28045e7c-78f9-4cd9-bfaa-ed0a6c6abc31",
+      "term": "AWS IoT Device Defender"
+    },
+    {
+      "id": "b7131ae2-4a62-446f-81c2-1102b8cfb3d0",
+      "term": "AWS IoT Greengrass"
+    },
+    {
+      "id": "f0b35ac0-a853-46d7-b42d-acb740effc0a",
+      "term": "AWS Microservice Extractor for .NET"
+    },
+    {
+      "id": "0ff23e06-b8c7-4a54-be6d-1f615d89ddab",
+      "term": "AWS Mobile SDK"
+    },
+    {
+      "id": "0b1a0a4d-55f4-4156-9aa9-fece6a9f6ec9",
+      "term": "AWS Panorama"
+    },
+    {
+      "id": "21f3bcf6-d84e-421b-8ed1-cffbfb689653",
+      "term": "AWS RoboMaker"
+    },
+    {
+      "id": "a74ce213-5195-4214-b2ef-ba3126d0e9d7",
+      "term": "AWS Serverless Application Repository"
+    },
+    {
+      "id": "0a3754ae-d82c-4ad9-9c66-f573ce288047",
+      "term": "AWS STS"
+    },
+    {
+      "id": "5e745ff7-bf6d-478a-ab0e-40c1d22ae948",
+      "term": "AWS Toolkit for Eclipse"
+    },
+    {
+      "id": "5d386841-7f56-40c4-b409-480cbec1209b",
+      "term": "AWS Toolkit for JetBrains"
+    },
+    {
+      "id": "a193b220-18f9-4787-b685-895978da13b0",
+      "term": "AWS Toolkit for Visual Studio Code"
+    },
+    {
+      "id": "74946cdd-aa93-486e-8788-8bd55fad58d3",
+      "term": "AWS Tools for PowerShell"
+    },
+    {
+      "id": "ea7695b8-52cf-42b2-aec0-a120bb2324ea",
+      "term": "bfcache"
+    },
+    {
+      "id": "4baab4c1-396b-454c-9962-f835831e0869",
+      "term": "Bitwise flags"
+    },
+    {
+      "id": "841d57b5-a10d-4a37-bba3-0aacd01674ac",
+      "term": "Block (CSS)"
+    },
+    {
+      "id": "a0e2b9b7-f27f-4004-931d-924b5149242e",
+      "term": "Bounding box"
+    },
+    {
+      "id": "0836ef7f-ee03-4e9e-adfe-e07faf94eb91",
+      "term": "Breadcrumb"
+    },
+    {
+      "id": "6b9ac067-982a-4b0f-a0db-eecc9e88ea35",
+      "term": "Business plan"
+    },
+    {
+      "id": "e6afecd3-a507-4fae-857a-d3d2e8839ac7",
+      "term": "CA certificate"
+    },
+    {
+      "id": "5dc0f50d-715d-4dc0-ba7a-f9c73c57b0b6",
+      "term": "Cache"
+    },
+    {
+      "id": "8ec72616-d3c4-4882-b750-c8efcba2a421",
+      "term": "cache security group"
+    },
+    {
+      "id": "7c67d97d-8ea4-4b23-94a1-963aea117980",
+      "term": "Call stack"
+    },
+    {
+      "id": "4c5fd70d-b09c-409d-9482-e0cfc9f539ef",
+      "term": "Camel case"
+    },
+    {
+      "id": "31e8cfc4-9bda-4fc4-810a-570db3fda2ec",
+      "term": "campaign"
+    },
+    {
+      "id": "b976be99-3374-4f3f-9a7b-41fa41158ab5",
+      "term": "Canonical order"
+    },
+    {
+      "id": "eacc15ba-cd0d-412f-a028-909bdfba5712",
+      "term": "Card sorting"
+    },
+    {
+      "id": "56ee5abe-3511-4608-9aba-e6daff933178",
+      "term": "Certified"
+    },
+    {
+      "id": "32bcbba8-4492-409b-bad1-d2fd3b19564e",
+      "term": "chain"
+    },
+    {
+      "id": "cc2be25e-425d-4b0d-87fd-f9c43c1510d0",
+      "term": "checkout"
+    },
+    {
+      "id": "3c3033f4-2944-4239-a347-e57648b9ec2a",
+      "term": "cherry-picking"
+    },
+    {
+      "id": "1b795643-95af-4fe2-8a50-02275511c128",
+      "term": "Ciphertext"
+    },
+    {
+      "id": "35d893c2-03e7-4d36-a714-b1feb0e12139",
+      "term": "Client VPN"
+    },
+    {
+      "id": "4c8c5219-34f7-44c2-8380-282caf0072d6",
+      "term": "CloudHSM"
+    },
+    {
+      "id": "91d56035-99fe-42ee-8cb5-7ab1089a794d",
+      "term": "CloudSearch"
+    },
+    {
+      "id": "116f5051-aee5-4b43-b850-62ea6c5aee94",
+      "term": "CloudWatch Events"
+    },
+    {
+      "id": "5c3a9778-7c7e-48bf-bb4b-166e83992ca1",
+      "term": "cluster compute instance"
+    },
+    {
+      "id": "c56dc569-ba53-48c2-a268-0b3d8f6ae338",
+      "term": "CMS"
+    },
+    {
+      "id": "d2395f38-f53b-443b-8ae3-5c0c26c995a3",
+      "term": "Code splitting"
+    },
+    {
+      "id": "da985192-c2a0-4f20-b16c-bdca1afec8c8",
+      "term": "commit object"
+    },
+    {
+      "id": "a0f5ac3b-5b98-4217-80ea-6f2ba4370a78",
+      "term": "Compression Dictionary Transport"
+    },
+    {
+      "id": "785cee39-21a0-4250-9f00-5403ba9f9ef8",
+      "term": "Console Mobile Application"
+    },
+    {
+      "id": "5f16a01a-24ed-4603-a9c8-d731c863469f",
+      "term": "container instance"
+    },
+    {
+      "id": "7bef05db-e2f3-4101-8165-435ff7adf58b",
+      "term": "content delivery network (CDN)"
+    },
+    {
+      "id": "2f1335bb-e792-45db-8bb8-9940f9d230bc",
+      "term": "contextual metadata"
+    },
+    {
+      "id": "e8475326-f6af-4168-b9a7-7c481dd582a6",
+      "term": "continuous integration"
+    },
+    {
+      "id": "894faab0-c5a9-4cf1-a363-efe34c47313b",
+      "term": "Copyleft"
+    },
+    {
+      "id": "fe871cc1-fef8-42f0-9000-574b9856b095",
+      "term": "CORS"
+    },
+    {
+      "id": "3b7aa951-cd06-4a1e-ac06-705210927abe",
+      "term": "CORS-safelisted response header"
+    },
+    {
+      "id": "8c3351bf-13b0-4785-911a-b386cdc655d3",
+      "term": "coverage"
+    },
+    {
+      "id": "09fc95a7-e83e-4ec9-8850-1b7a186d3287",
+      "term": "Cryptographic Computing for Clean Rooms (C3R)"
+    },
+    {
+      "id": "41cdbee3-d87f-45c3-9cad-117a28b96035",
+      "term": "dangling object"
+    },
+    {
+      "id": "33c13e9f-e009-4b52-a15a-a8aa8e037a15",
+      "term": "Data Pipeline"
+    },
+    {
+      "id": "66cca8ee-e84d-4543-85a8-538eeae4cf5a",
+      "term": "debconf"
+    },
+    {
+      "id": "7d2a64ed-41f2-44da-860d-b86c793e2747",
+      "term": "Deserialization"
+    },
+    {
+      "id": "8ed8c5bb-a713-43d1-aab4-3008338ee407",
+      "term": "Device Plugin"
+    },
+    {
+      "id": "2e45287e-68f1-4d10-923d-415ced0b5e78",
+      "term": "Differentiated Services Code Point"
+    },
+    {
+      "id": "3eab6619-6834-403f-9aed-8db7395a8e07",
+      "term": "Direct Memory Access Remapping"
+    },
+    {
+      "id": "2db247cd-75da-4a27-b3d7-da5cef911ac1",
+      "term": "Directory Service"
+    },
+    {
+      "id": "81942469-2f66-4155-beed-c0fe552acbab",
+      "term": "Distributed Denial of Service (DDoS)"
+    },
+    {
+      "id": "613d7439-f958-4155-ab17-df9272ebe111",
+      "term": "dmesg"
+    },
+    {
+      "id": "cf48a6ee-8d43-47b2-bf88-f65e4aa15f77",
+      "term": "Domain Name System"
+    },
+    {
+      "id": "876dcbb1-8dd3-4004-a168-ca5c5337819d",
+      "term": "ECMA"
+    },
+    {
+      "id": "cf8158ba-7f60-4179-9e90-4ce6a52be9d5",
+      "term": "Effective connection type"
+    },
+    {
+      "id": "a69b3f96-b40c-447b-ab41-f5114e3629cb",
+      "term": "Elastic"
+    },
+    {
+      "id": "8a82c3bc-1eef-4085-affd-90194b69d528",
+      "term": "Elastic Inference"
+    },
+    {
+      "id": "0c11a569-ed0a-4d25-8947-9face27b2662",
+      "term": "EMP"
+    },
+    {
+      "id": "d3077443-c165-4bef-9831-3b9a94ca6c30",
+      "term": "Entity"
+    },
+    {
+      "id": "4c19530a-3baf-40f5-bbc0-5bb9d564f527",
+      "term": "event"
+    },
+    {
+      "id": "3229c6f1-f321-4b65-8a31-48c361e64541",
+      "term": "EventBridge"
+    },
+    {
+      "id": "2b8f04a4-c13e-4f29-90c9-2576df8680ca",
+      "term": "Expanded Security Maintenance"
+    },
+    {
+      "id": "91b3c545-5f21-451e-addf-8296bc2552bc",
+      "term": "Extended Count Key Data"
+    },
+    {
+      "id": "aa7dd86b-2f68-4855-8255-b54e5cce72d8",
+      "term": "Extrinsic size"
+    },
+    {
+      "id": "d71471eb-c3f2-47f6-8dc2-48c12fadfb7e",
+      "term": "failover"
+    },
+    {
+      "id": "400f1e9d-2089-40c0-8f8a-75129ebaffcd",
+      "term": "Fast Common Gateway Interface"
+    },
+    {
+      "id": "13a283e5-820d-45de-8539-3025a29f9a19",
+      "term": "feature transformation"
+    },
+    {
+      "id": "50505917-41b2-49c5-80ef-8b92c888cc04",
+      "term": "Federated identity"
+    },
+    {
+      "id": "6643750c-25fc-47d2-8b0f-e03134476f21",
+      "term": "Fingerprinting"
+    },
+    {
+      "id": "883a1577-685a-43ed-a7d9-3af0e49333ef",
+      "term": "Firehose"
+    },
+    {
+      "id": "5b7be8fb-20a9-425c-91e7-fff2d51c2a50",
+      "term": "Firewall"
+    },
+    {
+      "id": "81839b28-8615-4dbb-8215-e2ecdf9f5fe1",
+      "term": "First Input Delay (FID)"
+    },
+    {
+      "id": "d5df25a5-6d09-4ace-8b48-72c6a8a77b3e",
+      "term": "First Paint (FP)"
+    },
+    {
+      "id": "8ab4583c-e19e-46b7-9eca-225a5b2da40d",
+      "term": "Free Identity, Policy, and Audit"
+    },
+    {
+      "id": "a7ac9654-29bd-4d38-9daa-8b1846658a77",
+      "term": "Fuzz testing"
+    },
+    {
+      "id": "06627768-7d32-4aa8-8074-1ff80a830f78",
+      "term": "GameKit"
+    },
+    {
+      "id": "eaee4d58-1a79-41f9-a459-3c9f385519f5",
+      "term": "General header"
+    },
+    {
+      "id": "45d4f16a-73e6-4c2b-b91c-846e13659097",
+      "term": "global consistency"
+    },
+    {
+      "id": "b636892d-b699-41c5-b504-b8160beb1d21",
+      "term": "Graceful degradation"
+    },
+    {
+      "id": "ad8efe28-3a00-405c-9310-bf8d2a7fe69f",
+      "term": "Grid"
+    },
+    {
+      "id": "3bfb9712-ec45-499d-9500-a7b7cc52020d",
+      "term": "Grid container"
+    },
+    {
+      "id": "a1868fa5-2ef4-48e6-9085-95226e54fb51",
+      "term": "Hash routing"
+    },
+    {
+      "id": "4ca9043a-856c-47f9-bd6c-bc9d5bd4bcfc",
+      "term": "Head-of-line blocking"
+    },
+    {
+      "id": "39206294-159d-4688-8e62-56b61c6e55a4",
+      "term": "HealthLake"
+    },
+    {
+      "id": "e52e6967-d0d2-41e9-bbae-d541b4d25a9b",
+      "term": "Hoisting"
+    },
+    {
+      "id": "69b52a3d-97dc-43be-8ce3-7ca48071fff7",
+      "term": "hot standby"
+    },
+    {
+      "id": "8dad7226-02b5-44f6-9c3c-04616e8eca10",
+      "term": "Houdini"
+    },
+    {
+      "id": "b8ac87f5-5789-4873-8a54-9187818fc624",
+      "term": "HPKP"
+    },
+    {
+      "id": "d2040010-b016-46a5-b9b6-acdc3fa0c2cf",
+      "term": "HRNN"
+    },
+    {
+      "id": "3249828b-a822-4a42-84c0-c4c6192a89f3",
+      "term": "HSTS"
+    },
+    {
+      "id": "570cf5d4-3ebf-42b4-9778-c9b9219b6414",
+      "term": "HTTP"
+    },
+    {
+      "id": "b74a1c4e-3a5b-4efd-8128-aa79b0796ec8",
+      "term": "HTTP content"
+    },
+    {
+      "id": "af6b14c6-c13e-42d8-b0ac-f256215c6591",
+      "term": "hugepage"
+    },
+    {
+      "id": "dfdc99a9-48b7-495a-a64a-694927e4591e",
+      "term": "IAM Access Analyzer"
+    },
+    {
+      "id": "f0724965-8ab8-41d0-b252-7213b6903686",
+      "term": "IANA"
+    },
+    {
+      "id": "080d76c5-15db-47df-afc4-8fcb160a12d4",
+      "term": "ICE"
+    },
+    {
+      "id": "1f526dfc-6e8d-4237-a401-a4a8257584b8",
+      "term": "IDE"
+    },
+    {
+      "id": "57962c74-8ca6-4d30-9ba5-d5d7efd69c7c",
+      "term": "IdP"
+    },
+    {
+      "id": "02ad5727-d68e-4539-8b81-5277d6b3919e",
+      "term": "IETF"
+    },
+    {
+      "id": "4e5a0b3b-9a00-4891-a377-926ac64d9323",
+      "term": "Information architecture"
+    },
+    {
+      "id": "d788e503-60e9-4ba1-8eb2-bfe0d15dadec",
+      "term": "in-place deployment"
+    },
+    {
+      "id": "ef1955dc-e4dc-42b9-a779-0db8172a1ec2",
+      "term": "instance group"
+    },
+    {
+      "id": "d43a3fca-4f9b-468b-a1ca-b962b5f7ac88",
+      "term": "Interaction to Next Paint (INP)"
+    },
+    {
+      "id": "ed85d447-c714-4538-8205-791c713b2d33",
+      "term": "Internationalization (i18n)"
+    },
+    {
+      "id": "71efdcf0-4197-44a4-97d1-441e54d5a9a1",
+      "term": "ISP"
+    },
+    {
+      "id": "6eb1b6cb-d4ab-4003-8b09-54f781fedc6f",
+      "term": "Istio"
+    },
+    {
+      "id": "6f1a1650-efdf-4c5d-9082-640fbc5b9045",
+      "term": "item exploration"
+    },
+    {
+      "id": "4b6988bc-6b4c-49e9-a3a0-5475e9a752df",
+      "term": "Jank"
+    },
+    {
+      "id": "773aee6b-f571-488e-bcfd-bec36f02017e",
+      "term": "JavaScript"
+    },
+    {
+      "id": "5dc272b9-b274-436b-be6d-30a805bfe87a",
+      "term": "JavaScript Object Notation"
+    },
+    {
+      "id": "20a3b0d3-a68e-4c62-ba35-c5df47263ed8",
+      "term": "Jitter"
+    },
+    {
+      "id": "922c7dfd-9ddb-4797-be65-b540be4475f2",
+      "term": "Just-In-Time Compilation (JIT)"
+    },
+    {
+      "id": "5a1e022c-245f-441e-999a-c6504180b9bf",
+      "term": "Largest Contentful Paint (LCP)"
+    },
+    {
+      "id": "cedc9af7-72cd-42b9-b185-29436ebcdcfd",
+      "term": "Launch Wizard"
+    },
+    {
+      "id": "07225776-41ec-4f81-a527-14227b5e57ca",
+      "term": "Layout mode"
+    },
+    {
+      "id": "448f2a91-ea49-40b7-bca1-2883bec2893c",
+      "term": "Lazy load"
+    },
+    {
+      "id": "5438d36b-6403-4129-a2e7-4d78cc4e1050",
+      "term": "Linguist"
+    },
+    {
+      "id": "26006555-4684-4456-9b8f-0736c7ea8f38",
+      "term": "Lookout for Equipment"
+    },
+    {
+      "id": "6e8c9add-932a-4127-8405-5dd15fbdcca4",
+      "term": "Lookout for Metrics"
+    },
+    {
+      "id": "55218ce0-18be-4248-8fdb-1832b90a8122",
+      "term": "Media (Audio-visual presentation)"
+    },
+    {
+      "id": "c0a4ab23-a54b-467c-ad7b-47d770bc9b1f",
+      "term": "Media query"
+    },
+    {
+      "id": "25bb21af-cbd8-48be-a2e9-334ade8e6ba5",
+      "term": "MIME type"
+    },
+    {
+      "id": "29dd9035-a478-4b69-a016-5469771539fc",
+      "term": "Mixin"
+    },
+    {
+      "id": "2336106d-d10e-4334-badb-cd314c2243b1",
+      "term": "Mobile first"
+    },
+    {
+      "id": "bb22b95a-702c-4aef-a59e-7a6326a242f7",
+      "term": "Mobile Hub"
+    },
+    {
+      "id": "9993b13f-9a78-441a-87c0-e48f8f64f05e",
+      "term": "Nimble Studio"
+    },
+    {
+      "id": "62e2a1d3-feed-4852-9d9c-c1a62c24c5b4",
+      "term": "Non-normative"
+    },
+    {
+      "id": "261605d2-30bb-47e1-a3ea-5d4eebb0ad87",
+      "term": "OOP"
+    },
+    {
+      "id": "36eb98e7-6df3-428a-b069-6f74fc0c1c23",
+      "term": "Open Shortest Path First"
+    },
+    {
+      "id": "d265d232-40d5-4c97-a381-ae2286f1c091",
+      "term": "PAC"
+    },
+    {
+      "id": "b5dc7257-6493-46fd-b279-b7f75283ead5",
+      "term": "Page prediction"
+    },
+    {
+      "id": "9eb6f740-5f0d-4341-bc4c-887f5d738eb1",
+      "term": "Parse"
+    },
+    {
+      "id": "1b69ac42-71eb-4f62-877f-4604b5aae279",
+      "term": "participating notifications"
+    },
+    {
+      "id": "ec59f0f4-10a9-409c-b731-bc2aaed01376",
+      "term": "PDF"
+    },
+    {
+      "id": "03dfce72-00f1-453f-9be2-dd9d95c4aa28",
+      "term": "pilot light"
+    },
+    {
+      "id": "0ed90a24-1558-4a13-b2d3-80db3d77a75c",
+      "term": "Placeholder names"
+    },
+    {
+      "id": "7309e7d3-f9f5-4ec4-bbfb-62a473a708ff",
+      "term": "Pod Disruption Budget"
+    },
+    {
+      "id": "84868a2c-ea25-4d1a-933d-e35ecc92c4f8",
+      "term": "Porting Assistant for .NET"
+    },
+    {
+      "id": "bc263f89-0cae-49e3-b465-19074cfe8b32",
+      "term": "Preflight request"
+    },
+    {
+      "id": "e664ba91-a9dd-4304-b310-2d655c1983c1",
+      "term": "Prerender"
+    },
+    {
+      "id": "ddfb4b6b-5834-4108-ab7e-b62cdf7eeaf4",
+      "term": "Principle of least privilege"
+    },
+    {
+      "id": "b557ffed-5410-444c-9c4b-9f4bfa63ce97",
+      "term": "private content"
+    },
+    {
+      "id": "3cb7b086-2f44-45ad-a90e-384fc2a73936",
+      "term": "Privileged"
+    },
+    {
+      "id": "2afb2d5c-1585-405a-a3d1-e82d439d0cab",
+      "term": "Probe"
+    },
+    {
+      "id": "017541d1-b481-4a04-b55a-64f0868c5356",
+      "term": "Progressive enhancement"
+    },
+    {
+      "id": "0c2afe54-4bc4-453b-9325-d7d7c32aeec7",
+      "term": "Progressive web applications (PWAs)"
+    },
+    {
+      "id": "95420f91-795b-4aa7-babd-93255a4f753b",
+      "term": "Prototype-based programming"
+    },
+    {
+      "id": "165aedf8-8e8f-4457-bde8-fe0dfee44864",
+      "term": "push"
+    },
+    {
+      "id": "a83294ef-9264-44e7-b97c-e5944cf4a2d6",
+      "term": "Quality of Service (QoS)"
+    },
+    {
+      "id": "5c0d2f9b-eb71-4dd9-96e2-8d04f7c8271c",
+      "term": "query string authentication"
+    },
+    {
+      "id": "520e2071-b625-49f6-ba3f-8e36734f4eb6",
+      "term": "Quick"
+    },
+    {
+      "id": "82aee318-1d7d-4042-86fa-b6321587bc17",
+      "term": "RAIL"
+    },
+    {
+      "id": "8309127f-c735-429f-9b2b-dbaa24ec3189",
+      "term": "Rate limit"
+    },
+    {
+      "id": "dd0fd09a-4132-44b8-94c1-d23bbd694283",
+      "term": "reachability bitmaps"
+    },
+    {
+      "id": "bab04957-6eb8-416d-aee8-8d49166b46e9",
+      "term": "Reading order"
+    },
+    {
+      "id": "f3cf8a32-3885-4765-996c-7bc5627a0053",
+      "term": "read local/write global"
+    },
+    {
+      "id": "499951a0-96cd-46dd-a6b8-f92c309a5472",
+      "term": "read local/write local"
+    },
+    {
+      "id": "390aeb6c-abc8-400b-90ca-a8e7667d9b6e",
+      "term": "recipe"
+    },
+    {
+      "id": "b594c610-606e-4867-b172-3ad9f5a2266d",
+      "term": "Rendering engine"
+    },
+    {
+      "id": "179d466d-8f4a-4746-a782-447a3a8b6425",
+      "term": "Repaint"
+    },
+    {
+      "id": "e853d9ed-39da-4022-8210-31639180ff41",
+      "term": "Replaced elements"
+    },
+    {
+      "id": "77f2989d-c8ac-4232-9861-f7c15929687c",
+      "term": "Replay attack"
+    },
+    {
+      "id": "b4a108f9-7138-4ef6-8280-de6e94d9f4f4",
+      "term": "reputation"
+    },
+    {
+      "id": "81510b90-80cd-447a-bf2d-524adbe4fb2b",
+      "term": "Requester Pays"
+    },
+    {
+      "id": "12ef7ff5-de38-4340-bb35-98d9eb10fa09",
+      "term": "Responsive Web Design (RWD)"
+    },
+    {
+      "id": "c5cb9723-1de1-426b-8686-6e0828ad5c05",
+      "term": "review"
+    },
+    {
+      "id": "e165e032-1521-4687-ac27-5a581a75e7d9",
+      "term": "revision"
+    },
+    {
+      "id": "a5b3596d-a035-40d1-a037-ec764ab223ba",
+      "term": "Router Information Protocol"
+    },
+    {
+      "id": "d5dfd013-27f9-4b65-987b-749bb3365dc5",
+      "term": "RTP (Real-time Transport Protocol) and SRTP (Secure RTP)"
+    },
+    {
+      "id": "2b8c18f4-bef4-4804-ba27-8321a7c8b338",
+      "term": "SageMaker AI"
+    },
+    {
+      "id": "86979464-6bcb-4317-a55e-c939634fd810",
+      "term": "schema"
+    },
+    {
+      "id": "fbb15111-a32e-4f81-b4ad-221f1503f6d6",
+      "term": "SCP"
+    },
+    {
+      "id": "83aa82cf-beca-4d53-a9f3-1196c85c8ab9",
+      "term": "Screen reader"
+    },
+    {
+      "id": "9c1b52e1-dfaa-4979-9aab-c51d1e986a1a",
+      "term": "Script-supporting element"
+    },
+    {
+      "id": "215ce241-3d57-4226-94b1-009145e0a727",
+      "term": "Scroll snap"
+    },
+    {
+      "id": "726bc691-75ce-4e2e-9740-600688fd7f24",
+      "term": "SCTP"
+    },
+    {
+      "id": "bd8c5489-9619-4350-a698-ab77676789ca",
+      "term": "Semantics"
+    },
+    {
+      "id": "3ca708d1-abe5-4a6a-b1bd-e758ea42e49f",
+      "term": "Server Timing"
+    },
+    {
+      "id": "235c1b76-d882-4c19-9f57-5606cf77a6bf",
+      "term": "Service Catalog"
+    },
+    {
+      "id": "92269a7e-0097-49b1-a07b-a5320e050c48",
+      "term": "service control policy"
+    },
+    {
+      "id": "91272d27-cb10-4a1d-b56a-e84695ac85f5",
+      "term": "Shallow copy"
+    },
+    {
+      "id": "71eeae67-95cf-43f0-8ea9-cdb00960b270",
+      "term": "shallow repository"
+    },
+    {
+      "id": "1fc35d79-84d9-43f6-810d-38a4e6784686",
+      "term": "Shield"
+    },
+    {
+      "id": "c2e0439a-2de0-4b7e-a3f8-82b467fb717f",
+      "term": "Site"
+    },
+    {
+      "id": "f6d2b628-56c4-400c-81f2-ed95bcb2470b",
+      "term": "Sloppy mode"
+    },
+    {
+      "id": "54f5b180-bf54-44b2-9013-2c643f4e1128",
+      "term": "Small Computer System Interface"
+    },
+    {
+      "id": "ef7fe31d-7c21-42da-a3c2-28d744bca2a1",
+      "term": "SMPTE (Society of Motion Picture and Television Engineers)"
+    },
+    {
+      "id": "4e4429fd-efb7-4bbe-9fd3-7c894f473835",
+      "term": "Social engineering"
+    },
+    {
+      "id": "7ae428e2-3225-40ac-a31c-334f4766d1fe",
+      "term": "Source map"
+    },
+    {
+      "id": "350148d4-9f99-481c-bf8f-ee9687081263",
+      "term": "SPA (Single-page application)"
+    },
+    {
+      "id": "e2fccdf9-ae98-459f-9d89-ef0b76d72a65",
+      "term": "SRI"
+    },
+    {
+      "id": "e564c463-adbd-4970-b56b-1619e9f1f83f",
+      "term": "Stacking context"
+    },
+    {
+      "id": "ef5374cb-2e4c-4eb8-ba28-1389feec3372",
+      "term": "Static method"
+    },
+    {
+      "id": "5095a2c1-d95c-44d0-8e9f-6da2f300f128",
+      "term": "stopword"
+    },
+    {
+      "id": "eaf7465d-2630-4a17-9442-cf02b02e9669",
+      "term": "Task selector"
+    },
+    {
+      "id": "5e305e3b-0f79-4c2f-a7a6-f2895b51cc1a",
+      "term": "Temporary Filesystem"
+    },
+    {
+      "id": "f2b4ada2-b340-4219-9ec5-bd4d29491ebb",
+      "term": "Ticket Granting Service"
+    },
+    {
+      "id": "d74d3bee-bb10-4de9-acba-651362341844",
+      "term": "Timestream"
+    },
+    {
+      "id": "2793ae0f-12cb-4ec4-83a5-a0b00274f66c",
+      "term": "Time to Interactive (TTI)"
+    },
+    {
+      "id": "90f73bbe-e2ec-46cb-820e-251fabc54408",
+      "term": "TLS"
+    },
+    {
+      "id": "b9000bb0-69cb-44d6-a3ec-7bd1556fda6b",
+      "term": "topologies"
+    },
+    {
+      "id": "2db5b42f-fbf7-42ba-8166-9bad2b7f3d56",
+      "term": "traffic graph"
+    },
+    {
+      "id": "928e19d1-c364-4171-a384-8d3bf7d0dd4d",
+      "term": "Transfer Family"
+    },
+    {
+      "id": "055bdc72-133c-457f-af6e-5ed202e772c8",
+      "term": "Translation Lookaside Buffer"
+    },
+    {
+      "id": "5d399d57-be62-4770-8a26-e35ed2259bfd",
+      "term": "Transport Layer Security (TLS)"
+    },
+    {
+      "id": "71dc3dc1-2f17-4041-80ca-4163b9209161",
+      "term": "Trusted Advisor"
+    },
+    {
+      "id": "b3a261b7-cf0b-4fc9-8c1a-f47b537c0e5c",
+      "term": "Trusted Platform Module"
+    },
+    {
+      "id": "063e9bcb-27a5-4eca-a9ed-67226695dc10",
+      "term": "UAAG"
+    },
+    {
+      "id": "964ffaeb-ae06-4584-865c-b12df05c3ce3",
+      "term": "Uniform Resource Identifier"
+    },
+    {
+      "id": "de77857c-c5bd-4b83-973f-df1ba0f81616",
+      "term": "Uniform Resource Locator"
+    },
+    {
+      "id": "da9f529d-d7e5-4e54-8ef7-10c8065ca5e3",
+      "term": "Universally Unique Identifiers"
+    },
+    {
+      "id": "77965730-4940-4e24-8bb3-1225808b81b2",
+      "term": "untrusted"
+    },
+    {
+      "id": "70e0c04c-d33d-46f1-89e4-e821aa8d0ea0",
+      "term": "Update Sequence Number"
+    },
+    {
+      "id": "7718b569-0003-4242-a056-67cad8c6c6ba",
+      "term": "User Interface"
+    },
+    {
+      "id": "2279173b-8297-4091-b5ec-436b9ff41409",
+      "term": "USER_PERSONALIZATION recipes"
+    },
+    {
+      "id": "97695394-23df-430c-aee2-7df1ea835e3c",
+      "term": "userspace"
+    },
+    {
+      "id": "2fb66a32-3061-4854-8e48-59f8c1f5eaa0",
+      "term": "Version Control System"
+    },
+    {
+      "id": "8dcbec89-ca34-4575-9f9f-bdf991749971",
+      "term": "Virtual File System"
+    },
+    {
+      "id": "419bf71b-3f00-45a8-bd57-80b5fd8377f3",
+      "term": "Virtual Function I/O"
+    },
+    {
+      "id": "dc7eca45-aa11-4a65-87dc-ffad17fb9da0",
+      "term": "Virtual Graphics Processing Unit"
+    },
+    {
+      "id": "46610a64-aafc-4170-9ec5-bb98e64e704d",
+      "term": "Virtual Machine"
+    },
+    {
+      "id": "b91e58ad-91d4-4b90-bf87-c82b507e109c",
+      "term": "VPC endpoint"
+    },
+    {
+      "id": "b349b260-f9ad-42d7-85ed-98d76d49f2d7",
+      "term": "WAI"
+    },
+    {
+      "id": "7683348c-27c0-4c28-a408-daac98e66467",
+      "term": "WCAG"
+    },
+    {
+      "id": "12a3280c-6292-4738-b01d-2a4234c5aef4",
+      "term": "Web Cache Communication Protocol"
+    },
+    {
+      "id": "89effc17-28e1-4251-b084-6431bf211f93",
+      "term": "Web performance"
+    },
+    {
+      "id": "b5895b94-6b5a-48b5-9334-c45c36f75c73",
+      "term": "WorkSpaces"
+    },
+    {
+      "id": "b6096727-9e6f-483c-b503-74ebdd5742d0",
+      "term": "World Wide Identifier"
+    },
+    {
+      "id": "be0f77dd-b2f8-4922-846e-7be10e5f83b8",
+      "term": "Wrapper"
+    }
+  ]
+}

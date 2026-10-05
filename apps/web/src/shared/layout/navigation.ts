@@ -73,12 +73,6 @@ export const adminNavigation: NavigationGroup[] = [
       { label: 'Báo cáo thống kê', href: '/admin/reports', icon: 'analytics' },
     ],
   },
-  {
-    group: 'Ứng dụng người học',
-    items: [
-      { label: 'Xem giao diện người học', href: '/admin/learner-preview', icon: 'phone_iphone' },
-    ],
-  },
 ];
 
 // ─── Combined Portal Navigation (Admin + Teacher unified) ────────────────────
@@ -132,12 +126,6 @@ export const combinedNavigation: NavigationGroup[] = [
     adminOnly: true,
     items: [
       { label: 'Báo cáo thống kê', href: '/admin/reports', icon: 'analytics', adminOnly: true },
-    ],
-  },
-  {
-    group: 'Công cụ học tập',
-    items: [
-      { label: 'Xem giao diện người học', href: '/admin/learner-preview', icon: 'phone_iphone' },
     ],
   },
 ];

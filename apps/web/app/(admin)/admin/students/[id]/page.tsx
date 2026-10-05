@@ -1,4 +1,5 @@
 'use client';
+import { PaginatedList } from '@/shared/ui/PaginatedList';
 import { AppIcon } from '@/shared/ui/AppIcon';
 
 import { ActionButton, ActionGroup } from '@/shared/ui/ActionButton';
@@ -155,10 +156,6 @@ export default function AdminStudentDetailPage({
                       {displayName.charAt(0).toUpperCase()}
                     </div>
                   )}
-                  <span className="absolute bottom-0 right-0 bg-primary-container text-primary text-[10px] font-bold px-2 py-0.5 rounded-full border-2 border-surface flex items-center gap-0.5">
-                    <AppIcon className=" text-[12px]">school</AppIcon>
-                    PRO
-                  </span>
                 </div>
 
                 <h2 className="font-headline-h3 text-headline-h3 text-on-surface mb-1">{displayName}</h2>
@@ -339,7 +336,7 @@ export default function AdminStudentDetailPage({
                   Học viên chưa làm bài thi nào.
                 </div>
               ) : (
-                <ul className="divide-y divide-outline-variant">
+                <PaginatedList as="ul" className="divide-y divide-outline-variant">
                   {recentAttempts.map((attempt: any) => {
                     const isPassed = Boolean(attempt.passed ?? ((attempt.scorePercent ?? 0) >= 70));
                     const score = Math.round(Number(attempt.scorePercent ?? attempt.score ?? 0));
@@ -392,7 +389,7 @@ export default function AdminStudentDetailPage({
                       </li>
                     );
                   })}
-                </ul>
+                </PaginatedList>
               )}
             </div>
           </div>

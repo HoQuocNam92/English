@@ -92,12 +92,8 @@ export default function RegisterPage() {
     <main className="flex min-h-screen w-full bg-background text-on-surface antialiased overflow-hidden">
       {/* Left Section (45% Visual/Brand) */}
       <section className="hidden lg:flex w-[45%] flex-col relative bg-surface-container-low border-r border-outline-variant/30 overflow-hidden">
-        <div className="relative z-10 flex flex-col h-full p-8 xl:p-12 justify-between">
-          <div>
-            <BrandLogo />
-          </div>
-
-          <div className="my-auto max-w-[90%]">
+        <div className="relative z-10 flex flex-col h-full p-8 xl:p-12">
+          <div className="mt-8 max-w-[90%] xl:mt-12">
             <h2 className="text-3xl xl:text-4xl font-extrabold text-on-surface mb-4 leading-tight">
               Tạo tài khoản Học viên mới
             </h2>
@@ -124,6 +120,7 @@ export default function RegisterPage() {
       <section className="w-full lg:w-[55%] flex items-center justify-center bg-surface-container-lowest p-6 md:p-12 lg:p-16 relative">
         <div className="w-full max-w-[420px] flex flex-col py-8">
           <BrandLogo className="mb-8 lg:hidden" />
+          <Link href="/" className="mb-6 inline-flex w-fit items-center gap-2 rounded-lg py-2 text-sm font-semibold text-primary hover:underline focus-visible:outline-2 focus-visible:outline-primary"><span aria-hidden="true">←</span>Quay lại trang chủ</Link>
           <div className="mb-6 text-left">
             <h2 className="text-2xl lg:text-3xl font-bold text-on-surface mb-2 tracking-tight">Đăng ký</h2>
             <p className="text-sm text-on-surface-variant">Bắt đầu học miễn phí trong 30 giây</p>

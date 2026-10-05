@@ -16,6 +16,7 @@ interface QuizQuestion {
   hint?: string;
   options?: string[];
   answer: string;
+  optionExplanations?: { option: string; correct: boolean; explanation: string }[];
 }
 
 export default function VocabularyQuizPage({ params }: { params: Promise<{ id: string }> }) {
@@ -65,10 +66,11 @@ export default function VocabularyQuizPage({ params }: { params: Promise<{ id: s
     if (lessonId) loadQuiz();
   }, [lessonId, loadQuiz]);
 
-  const submitAnswer = async () => {
+  const submitAnswer = async (choice?: string) => {
     const q = questions[quizIdx];
-    if (!q) return;
-    const ans = q.type === 'fill_blank' ? userAnswer.trim() : selectedOption ?? '';
+    if (!q || showResult) return;
+    const ans = q.type === 'fill_blank' ? userAnswer.trim() : choice ?? selectedOption ?? '';
+    if (choice !== undefined) setSelectedOption(choice);
     const isCorrect = ans.toLowerCase() === q.answer.toLowerCase();
     setShowResult(true);
     const result = { vocabId: q.vocabularyId, term: q.answer, correct: isCorrect };
@@ -114,7 +116,7 @@ export default function VocabularyQuizPage({ params }: { params: Promise<{ id: s
 
     return (
       <LearnerShell>
-        <div className="space-y-8 w-full max-w-3xl mx-auto py-8">
+        <div className="space-y-8 w-full py-8">
           <div className="text-center space-y-3">
             <div className={`mx-auto w-32 h-32 rounded-full border-4 flex flex-col items-center justify-center ${pct >= 80 ? 'border-green-400' : pct >= 50 ? 'border-amber-400' : 'border-red-400'}`}>
               <span className="text-3xl"><IconText>{pct >= 80 ? '🎉' : pct >= 50 ? '💪' : '📚'}</IconText></span>
@@ -165,7 +167,7 @@ export default function VocabularyQuizPage({ params }: { params: Promise<{ id: s
 
   return (
     <LearnerShell>
-      <div className="space-y-6 w-full max-w-3xl mx-auto py-8">
+      <div className="space-y-6 w-full py-8">
         <div className="flex justify-between items-center">
           <div>
             <Link href={`/learn/flashcards/${lessonId}`} className="text-xs font-bold text-slate-500 hover:text-primary flex items-center gap-1 mb-1">
@@ -185,7 +187,7 @@ export default function VocabularyQuizPage({ params }: { params: Promise<{ id: s
 
         <div className="bg-white border border-slate-200 rounded-2xl p-8 space-y-6 shadow-sm">
           <p className="text-xs font-bold uppercase tracking-wider text-slate-400">
-            {currentQ.type === 'fill_blank' ? 'Điền từ vào chỗ trống' : 'Chọn từ đúng cho nghĩa'}
+            {currentQ.type === 'fill_blank' ? 'Điền từ vào chỗ trống' : 'Chọn nghĩa đúng của từ'}
           </p>
           <p className="text-xl font-black text-slate-900 leading-relaxed">{currentQ.prompt}</p>
           {currentQ.hint && <p className="text-sm text-slate-500 italic"><IconText>{"💡 "}</IconText>{currentQ.hint}</p>}
@@ -223,13 +225,13 @@ export default function VocabularyQuizPage({ params }: { params: Promise<{ id: s
                   <button
                     key={i}
                     disabled={showResult}
-                    onClick={() => setSelectedOption(opt)}
+                    onClick={() => void submitAnswer(opt)}
                     className={`w-full flex items-center gap-4 px-5 py-4 rounded-xl border-2 text-left transition-all ${cls}`}
                   >
                     <span className="flex-shrink-0 w-8 h-8 flex items-center justify-center rounded-full bg-slate-100 text-sm font-black text-slate-600">
                       {String.fromCharCode(65 + i)}
                     </span>
-                    <span className="text-base font-semibold text-slate-800 flex-1">{opt}</span>
+                    <span className="text-base font-semibold text-slate-800 flex-1">{showResult && <span className="mb-1 block text-xs">{isAnswer ? 'Đáp án đúng' : 'Bạn đã chọn · Chưa đúng'}</span>}{opt}</span>
                     {showResult && isAnswer && <AppIcon className=" text-green-600">check_circle</AppIcon>}
                     {showResult && isSelected && !isAnswer && <AppIcon className=" text-red-500">cancel</AppIcon>}
                   </button>
@@ -238,25 +240,14 @@ export default function VocabularyQuizPage({ params }: { params: Promise<{ id: s
             </div>
           )}
 
-          {showResult && (
-            <div className={`flex items-center gap-3 px-5 py-4 rounded-xl ${isCorrectAnswer ? 'bg-green-50 border border-green-200' : 'bg-red-50 border border-red-200'}`}>
-              <AppIcon className={` text-2xl ${isCorrectAnswer ? 'text-green-600' : 'text-red-500'}`}>
-                {isCorrectAnswer ? 'check_circle' : 'highlight_off'}
-              </AppIcon>
-              <div>
-                <p className={`font-black ${isCorrectAnswer ? 'text-green-700' : 'text-red-700'}`}>
-                  <IconText>{isCorrectAnswer ? 'Chính xác! 🎉' : 'Chưa đúng'}</IconText>
-                </p>
-                {!isCorrectAnswer && <p className="text-red-600 text-sm mt-1">Đáp án đúng: <span className="font-black">{currentQ.answer}</span></p>}
-              </div>
-            </div>
-          )}
+          {showResult && <details key={quizIdx} className="rounded-xl border border-slate-200 text-sm"><summary className="cursor-pointer px-4 py-3 font-semibold text-primary">Xem chi tiết</summary><div className="border-t border-slate-100 px-4 py-3 leading-6 text-slate-700"><p className="font-semibold text-emerald-700">Đáp án đúng: {currentQ.answer}</p><p className="mt-2">{currentQ.optionExplanations?.find(item => item.option === (isCorrectAnswer ? currentQ.answer : selectedOption))?.explanation ?? 'Lựa chọn cần khớp với nghĩa của từ trong câu hỏi.'}</p></div></details>}
+
         </div>
 
-        {!showResult ? (
+        {!showResult && currentQ.type === 'multiple_choice' ? null : !showResult ? (
           <button
             disabled={currentQ.type === 'fill_blank' ? !userAnswer.trim() : !selectedOption}
-            onClick={submitAnswer}
+            onClick={() => void submitAnswer()}
             className="w-full py-4 rounded-xl text-sm font-black bg-primary hover:bg-indigo-700 !text-white transition-colors disabled:opacity-40 shadow-sm"
           >
             Kiểm tra

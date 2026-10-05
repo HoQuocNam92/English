@@ -1,4 +1,5 @@
 'use client';
+import { PaginatedList } from '@/shared/ui/PaginatedList';
 import { AppIcon } from '@/shared/ui/AppIcon';
 
 import * as React from 'react';
@@ -43,8 +44,8 @@ function SelectionCheckbox({ checked, indeterminate, disabled, onChange, label }
   return <input ref={ref} type="checkbox" aria-label={label} checked={checked} disabled={disabled} onChange={onChange} className="h-4 w-4 accent-primary" />;
 }
 
-function TreeBranch({ node, depth, selectedIds, busyId, onToggle, onToggleMany, renderMeta }: {
-  node: TreeNode; depth: number; selectedIds?: Set<string>; busyId?: string | null;
+function TreeBranch({ node, depth, selectedIds, busyId, onToggle, onToggleMany, renderMeta, paginate }: {
+  node: TreeNode; depth: number; paginate?: boolean; selectedIds?: Set<string>; busyId?: string | null;
   onToggle?: (permission: Permission) => void; onToggleMany?: (permissions: Permission[], selected: boolean) => void;
   renderMeta?: (permission: Permission) => React.ReactNode;
 }) {
@@ -68,16 +69,16 @@ function TreeBranch({ node, depth, selectedIds, busyId, onToggle, onToggleMany, 
     </div>
     {!isLeaf && open && <div className="relative mt-1 space-y-1 before:absolute before:bottom-2 before:top-0 before:w-px before:bg-outline-variant/70" style={{ ['--tree-line' as string]: `${(depth + 1) * 22 + 16}px` }}>
       <style>{`.permission-tree-line-${depth}::before{left:var(--tree-line)}`}</style>
-      <div className={`permission-tree-line-${depth} space-y-1`}>{node.children.map((child) => <TreeBranch key={child.id} node={child} depth={depth + 1} selectedIds={selectedIds} busyId={busyId} onToggle={onToggle} onToggleMany={onToggleMany} renderMeta={renderMeta} />)}</div>
+      <PaginatedList enabled={Boolean(paginate && depth === 0)} className={`permission-tree-line-${depth} space-y-1`}>{node.children.map((child) => <TreeBranch key={child.id} node={child} depth={depth + 1} selectedIds={selectedIds} busyId={busyId} onToggle={onToggle} onToggleMany={onToggleMany} renderMeta={renderMeta} />)}</PaginatedList>
     </div>}
   </div>;
 }
 
-export function PermissionTree({ permissions, selectedIds, busyId, onToggle, onToggleMany, renderMeta }: {
-  permissions: Permission[]; selectedIds?: Set<string>; busyId?: string | null;
+export function PermissionTree({ permissions, selectedIds, busyId, onToggle, onToggleMany, renderMeta, paginate }: {
+  paginate?: boolean; permissions: Permission[]; selectedIds?: Set<string>; busyId?: string | null;
   onToggle?: (permission: Permission) => void; onToggleMany?: (permissions: Permission[], selected: boolean) => void;
   renderMeta?: (permission: Permission) => React.ReactNode;
 }) {
   const tree = React.useMemo(() => buildTree(permissions), [permissions]);
-  return <div className="rounded-2xl border border-outline-variant bg-white p-3 shadow-sm"><TreeBranch node={tree} depth={0} selectedIds={selectedIds} busyId={busyId} onToggle={onToggle} onToggleMany={onToggleMany} renderMeta={renderMeta} /></div>;
+  return <div className="rounded-2xl border border-outline-variant bg-white p-3 shadow-sm"><TreeBranch paginate={paginate} node={tree} depth={0} selectedIds={selectedIds} busyId={busyId} onToggle={onToggle} onToggleMany={onToggleMany} renderMeta={renderMeta} /></div>;
 }

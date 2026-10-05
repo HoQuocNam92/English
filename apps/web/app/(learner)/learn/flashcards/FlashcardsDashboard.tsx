@@ -1,4 +1,5 @@
 'use client';
+import { PaginatedList } from '@/shared/ui/PaginatedList';
 import { VocabularyRecommendations } from '@/shared/ui/VocabularyRecommendations';
 import { Pagination } from '@/shared/ui/Pagination';
 import { AppIcon } from '@/shared/ui/AppIcon';
@@ -30,6 +31,28 @@ export default function FlashcardsDashboard({ activeTab }: { activeTab: TabType 
   const [domain, setDomain] = useState('');
   const [level, setLevel] = useState('');
   const [userProfile, setUserProfile] = useState<any>(null);
+  const [activityDays, setActivityDays] = useState(30);
+  const today = new Date().toISOString().slice(0, 10);
+  const [activityFrom, setActivityFrom] = useState(() => new Date(Date.now() - 29 * 86400000).toISOString().slice(0, 10));
+  const [activityTo, setActivityTo] = useState(today);
+  const [activityError, setActivityError] = useState('');
+  const [activityLoading, setActivityLoading] = useState(false);
+  const activityStart = activityDays ? new Date(Date.now() - (activityDays - 1) * 86400000).toISOString().slice(0, 10) : activityFrom;
+  const activityEnd = activityDays ? today : activityTo;
+  const activityCount = activityStart && activityEnd ? Math.round((Date.parse(activityEnd) - Date.parse(activityStart)) / 86400000) + 1 : 0;
+  const activityValid = activityCount > 0 && activityCount <= 366 && activityEnd <= today;
+
+  useEffect(() => {
+    if (loading) return;
+    if (!activityValid) { setActivityError('Chọn khoảng ngày hợp lệ, tối đa 366 ngày và không vượt quá hôm nay.'); setActivityLoading(false); return; }
+    let active = true;
+    setActivityError(''); setActivityLoading(true);
+    apiClient.get<{ heatmap: { date: string; count: number }[] }>(`/vocab-study/dashboard?from=${activityStart}&to=${activityEnd}`)
+      .then(result => { if (active) setDashboardData(previous => ({ ...previous, heatmap: result.heatmap })); })
+      .catch(() => { if (active) setActivityError('Không tải được hoạt động trong khoảng ngày này.'); })
+      .finally(() => { if (active) setActivityLoading(false); });
+    return () => { active = false; };
+  }, [activityStart, activityEnd, activityValid, loading]);
   const [historyPeriod, setHistoryPeriod] = useState<'day' | 'month' | 'year' | 'all'>('month');
   const [historyRating, setHistoryRating] = useState('all');
   const [historyPage, setHistoryPage] = useState(1);
@@ -136,14 +159,14 @@ export default function FlashcardsDashboard({ activeTab }: { activeTab: TabType 
     );
   });
 
-  // Generate 8 weeks (56 days) for activity heatmap
+  // Render the selected date range from oldest to newest.
   const renderHeatmap = () => {
     const days: { date: string; count: number; level: number }[] = [];
     const countMap = new Map(dashboardData.heatmap.map(h => [h.date, h.count]));
-    const now = new Date();
+    const end = new Date(`${activityEnd}T00:00:00Z`);
 
-    for (let i = 55; i >= 0; i--) {
-      const d = new Date(now.getTime() - i * 24 * 60 * 60 * 1000);
+    for (let i = activityCount - 1; i >= 0; i--) {
+      const d = new Date(end.getTime() - i * 86400000);
       const dateStr = d.toISOString().slice(0, 10);
       const count = countMap.get(dateStr) ?? 0;
       let level = 0;
@@ -161,14 +184,14 @@ export default function FlashcardsDashboard({ activeTab }: { activeTab: TabType 
     ];
 
     return (
-      <div className="flex flex-wrap gap-1 mt-4 items-center justify-start overflow-x-auto py-2">
-        {days.map(d => (
-          <div
-            key={d.date}
-            title={`${d.date}: ${d.count} từ đã ôn`}
-            className={`w-3.5 h-3.5 rounded-xs transition-transform hover:scale-125 cursor-pointer ${levelColors[d.level]}`}
-          />
-        ))}
+      <div className="mt-4 overflow-x-auto pb-2">
+        <div style={{ minWidth: activityCount * 11 }}>
+          <div className="grid gap-[3px] py-2" style={{ gridTemplateColumns: `repeat(${activityCount}, minmax(0, 1fr))` }} role="img" aria-label={`Hoạt động ôn tập từ ${activityStart} đến ${activityEnd}, theo thứ tự từ trái sang phải`}>
+            {days.map((d, index) => <div key={d.date} title={`${new Date(`${d.date}T12:00:00Z`).toLocaleDateString('vi-VN')}: ${d.count} từ đã ôn${d.date === today ? ' · Hôm nay' : ''}`} className={`h-3.5 rounded-sm ${d.date === today ? 'ring-1 ring-primary ring-offset-2' : ''} ${levelColors[d.level]}`} />)}
+          </div>
+          <div className="mt-2 flex justify-between text-[11px] text-slate-500"><span>{new Date(`${days[0].date}T12:00:00Z`).toLocaleDateString('vi-VN', { day: 'numeric', month: 'numeric' })}</span><span className="font-semibold text-primary">{activityEnd === today ? 'Hôm nay · ' : ''}{new Date(`${activityEnd}T12:00:00Z`).toLocaleDateString('vi-VN', { day: 'numeric', month: 'numeric' })}</span></div>
+        </div>
+        <p className="mt-3 text-xs leading-5 text-slate-500">Mỗi ô là một ngày, từ trái sang phải. Màu càng đậm thì càng nhiều từ đã ôn; ô nhạt là chưa có hoạt động.</p>
       </div>
     );
   };
@@ -183,7 +206,8 @@ export default function FlashcardsDashboard({ activeTab }: { activeTab: TabType 
 
   return (
     <LearnerShell>
-      <div className="w-full max-w-5xl mx-auto px-4 py-6 space-y-6">
+      <div className="w-full py-6 space-y-6">
+        <Link href="/learn/lessons" className="inline-flex items-center gap-2 rounded-lg py-2 text-sm font-semibold text-primary hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"><AppIcon className="text-[18px]" aria-hidden="true">arrow_back</AppIcon>Quay lại bài học</Link>
         {/* Header Title */}
         <div className="space-y-4">
           <div className="flex items-center gap-2">
@@ -313,8 +337,8 @@ export default function FlashcardsDashboard({ activeTab }: { activeTab: TabType 
 
               {/* Activity Heatmap */}
               <div className="pt-4 border-t border-slate-100">
-                <div className="flex justify-between items-center text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-1">
-                  <span>Hoạt động ôn tập (56 ngày gần nhất)</span>
+                <div className="flex flex-wrap justify-between items-center gap-3 text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-1">
+                  <div className="flex flex-wrap items-center gap-3"><span>Hoạt động ôn tập</span><Dropdown aria-label="Khoảng thời gian hoạt động ôn tập" value={String(activityDays)} onChange={event => setActivityDays(Number(event.target.value))} className="rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs font-semibold normal-case tracking-normal text-slate-700"><option value="7">7 ngày gần đây</option><option value="30">30 ngày gần đây</option><option value="56">8 tuần gần đây</option><option value="0">Tùy chọn ngày</option></Dropdown></div>
                   <div className="flex items-center gap-1.5 lowercase">
                     <span>Ít</span>
                     <span className="w-2.5 h-2.5 rounded-xs bg-slate-100 inline-block" />
@@ -324,7 +348,8 @@ export default function FlashcardsDashboard({ activeTab }: { activeTab: TabType 
                     <span>Nhiều</span>
                   </div>
                 </div>
-                {renderHeatmap()}
+                {activityDays === 0 && <div className="mt-4 flex flex-wrap items-end gap-3"><label className="grid gap-1 text-xs font-semibold text-slate-600">Từ ngày<input type="date" value={activityFrom} max={activityTo || today} onChange={event => setActivityFrom(event.target.value)} className="rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-800" /></label><label className="grid gap-1 text-xs font-semibold text-slate-600">Đến ngày<input type="date" value={activityTo} min={activityFrom} max={today} onChange={event => setActivityTo(event.target.value)} className="rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-800" /></label>{activityValid && <span className="pb-2 text-xs text-slate-500">{activityCount} ngày</span>}</div>}
+                {activityError ? <p role="alert" className="mt-4 text-sm text-rose-600">{activityError}</p> : activityLoading ? <p role="status" className="mt-4 text-sm text-slate-500">Đang tải hoạt động…</p> : activityValid ? renderHeatmap() : null}
               </div>
             </div>
 
@@ -345,7 +370,7 @@ export default function FlashcardsDashboard({ activeTab }: { activeTab: TabType 
             </div>
 
             {/* List of Studying Lessons */}
-            <div className="space-y-4">
+            {dashboardData.studyingLessons.length > 0 && <div className="space-y-4">
               <div className="flex justify-between items-center">
                 <h2 className="text-sm font-bold uppercase tracking-wider text-slate-500">
                   Bộ từ đang học ({dashboardData.studyingLessons.length})
@@ -360,22 +385,7 @@ export default function FlashcardsDashboard({ activeTab }: { activeTab: TabType 
                 )}
               </div>
 
-              {dashboardData.studyingLessons.length === 0 ? (
-                <div className="bg-white border border-slate-200 rounded-3xl p-10 text-center space-y-4">
-                  <AppIcon className=" text-5xl text-slate-300">menu_book</AppIcon>
-                  <p className="text-sm font-semibold text-slate-600">
-                    Bạn chưa chọn bộ từ nào để học.
-                  </p>
-                  <Link
-                    href="/learn/flashcards/explore"
-                    className="px-6 py-2.5 rounded-xl bg-primary text-white text-xs font-bold shadow-xs hover:bg-primary/90 transition-colors inline-flex items-center gap-2"
-                  >
-                    <AppIcon className=" text-sm">explore</AppIcon>
-                    Khám phá kho từ vựng
-                  </Link>
-                </div>
-              ) : (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                <PaginatedList className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                   {dashboardData.studyingLessons.map((item: any) => (
                     <div
                       key={item.id}
@@ -439,9 +449,8 @@ export default function FlashcardsDashboard({ activeTab }: { activeTab: TabType 
                       </div>
                     </div>
                   ))}
-                </div>
-              )}
-            </div>
+                </PaginatedList>
+            </div>}
 
 
           </div>
@@ -512,7 +521,7 @@ export default function FlashcardsDashboard({ activeTab }: { activeTab: TabType 
                 <p className="text-sm font-semibold">Không tìm thấy bộ từ vựng phù hợp với bộ lọc.</p>
               </div>
             ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              <PaginatedList className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 {filteredExplore.map((lesson: any, lessonIndex: number) => {
                   const iconStyles = [
                     'bg-blue-50 text-blue-600',
@@ -558,7 +567,7 @@ export default function FlashcardsDashboard({ activeTab }: { activeTab: TabType 
                   </Link>
                   );
                 })}
-              </div>
+              </PaginatedList>
             )}
           </div>
         )}

@@ -137,3 +137,50 @@ test('answer cannot create progress for an unseen word', async () => {
   const service = new VocabStudyService({ vocabularyProgress: { findUnique: async () => null } } as any)
   await assert.rejects(() => service.submitAnswer('user-B', 'unseen', true))
 })
+
+
+test('quiz meanings are concise and do not leak the full English dictionary explanation', async () => {
+  let call = 0
+  const service = new VocabStudyService({ vocabulary: { findMany: async () => ++call === 1
+    ? [{ id: 'sample', term: 'Sample interface', definitionVi: 'Giao diện giữa các ứng dụng. ' + 'Chi tiết dài. '.repeat(60), definitionEn: 'Long English explanation', examples: [] }]
+    : [{ id: 'wrong', term: 'Cloud', definitionVi: 'Tài nguyên máy tính qua mạng.' }]
+  } } as any)
+  const { questions } = await service.generateQuiz('learner', ['sample'])
+  assert.equal(questions.length, 1)
+  assert.equal(questions[0].answer, 'Giao diện giữa các ứng dụng.')
+  assert.ok(questions[0].options.every(text => text.length <= 180))
+  assert.ok(questions[0].optionExplanations.every(item => !item.explanation.includes('Long English')))
+  assert.match(questions[0].optionExplanations.find(item => !item.correct)!.explanation, /Cloud/)
+})
+
+test('unresolved cross references and oversized definitions are excluded from quiz choices', async () => {
+  let call = 0
+  const service = new VocabStudyService({ vocabulary: { findMany: async () => ++call === 1
+    ? [{ id: 'sample', term: 'API', definitionVi: 'Giao diện giữa các ứng dụng.', examples: [] }]
+    : [{ id: 'bad', term: 'Unknown', definitionVi: 'Xem từ khác.' }, { id: 'long', term: 'Long', definitionVi: 'Nội dung '.repeat(100) }, { id: 'valid', term: 'Cloud', definitionVi: 'Tài nguyên máy tính qua mạng.' }]
+  } } as any)
+  const { questions } = await service.generateQuiz('learner', ['sample'])
+  assert.equal(questions[0].options.length, 2)
+  assert.ok(questions[0].options.every(text => !text.startsWith('Xem')))
+})
+
+
+test('dashboard custom date range includes both dates and remains scoped to the learner', async () => {
+  let query: any
+  const service = new VocabStudyService({ vocabularyProgress: {
+    count: async () => 0,
+    findMany: async (args: any) => { query = args; return [{ lastReviewAt: new Date('2025-01-03T23:59:00Z') }] },
+  } } as any)
+  const result = await service.getDashboard('A', '2025-01-01', '2025-01-03')
+  assert.equal(query.where.learnerId, 'A')
+  assert.equal(query.where.lastReviewAt.gte.toISOString(), '2025-01-01T00:00:00.000Z')
+  assert.equal(query.where.lastReviewAt.lte.toISOString(), '2025-01-03T23:59:59.999Z')
+  assert.deepEqual(result.heatmap, [{ date: '2025-01-03', count: 1 }])
+})
+
+test('dashboard rejects invalid, incomplete and reversed custom date ranges before queries', async () => {
+  const service = new VocabStudyService({} as any)
+  for (const [from, to] of [['2025-02-30', '2025-03-01'], ['2025-01-04', '2025-01-03'], ['2025-01-01', undefined], ['2020-01-01', '2025-01-01']]) {
+    await assert.rejects(() => service.getDashboard('A', from, to))
+  }
+})

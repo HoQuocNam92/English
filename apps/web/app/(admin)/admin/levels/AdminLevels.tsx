@@ -1,4 +1,5 @@
 'use client';
+import { PaginatedList } from '@/shared/ui/PaginatedList';
 import { ListTools, matchesSearch } from '@/shared/ui/ListTools';
 import { showToast } from '@/shared/ui/AppFeedback';
 import { AppIcon } from '@/shared/ui/AppIcon';
@@ -405,7 +406,7 @@ export default function AdminLevels({ createOnly = false }: { createOnly?: boole
             </button>
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+          <PaginatedList className="grid grid-cols-1 md:grid-cols-2 gap-5">
             {levels.filter(lvl => matchesSearch(search,lvl.name,lvl.code,lvl.description) && (!filter || lvl.isActive === (filter === 'active'))).map((lvl) => {
               const meta = getLevelTheme(lvl);
 
@@ -473,7 +474,7 @@ export default function AdminLevels({ createOnly = false }: { createOnly?: boole
                 </div>
               );
             })}
-          </div>
+          </PaginatedList>
         )}
       </div>
 

@@ -1,4 +1,5 @@
 'use client';
+import { PaginatedList } from '@/shared/ui/PaginatedList';
 import { AppIcon } from '@/shared/ui/AppIcon';
 import { useRouter } from 'next/navigation';
 import { completeCreation, CreatePage, FormSurface } from '@/shared/ui/CreatePage';
@@ -231,7 +232,7 @@ export default function AdminRoles({ createKind }: { createKind?: 'role' | 'perm
   return (
     <div className="p-6">
       <div className="mb-6">
-        <h1 className="text-2xl font-bold text-on-surface mb-2">Ai được làm gì?</h1>
+        <h1 className="text-2xl font-bold text-on-surface mb-2">Phân Quyền</h1>
         <p className="text-sm text-on-surface-variant">Chọn nhóm người dùng và những công việc họ được phép thực hiện.</p>
       </div>
 
@@ -271,7 +272,7 @@ export default function AdminRoles({ createKind }: { createKind?: 'role' | 'perm
       {/* Roles grid */}
       {activeTab === 'roles' && <div className="mb-8">
         <div className="mb-4 flex flex-wrap items-center justify-between gap-3"><div><h2 className="text-lg font-bold text-on-surface">Chọn một nhóm để phân quyền</h2><p className="mt-1 text-sm text-on-surface-variant">Một người có thể có role chính và nhiều role nghiệp vụ bổ sung.</p></div><button type="button" onClick={openCreateRole} className="inline-flex h-10 items-center gap-2 rounded-xl bg-primary px-4 text-sm font-semibold !text-white"><AppIcon className=" text-[18px]">add</AppIcon>Thêm nhóm quyền</button></div>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <PaginatedList enabled={!loading} className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {loading ? (
             [1, 2, 3].map((i) => <SkeletonCard key={i} />)
           ) : (
@@ -284,7 +285,7 @@ export default function AdminRoles({ createKind }: { createKind?: 'role' | 'perm
               />
             ))
           )}
-        </div>
+        </PaginatedList>
       </div>}
 
       {/* Permissions table */}
@@ -299,7 +300,7 @@ export default function AdminRoles({ createKind }: { createKind?: 'role' | 'perm
             </div>
           </div>
           ) : (
-            <PermissionTree permissions={permissions.filter(item=>matchesSearch(search,item.code,item.name,item.resource) && (!filter || item.resource===filter))} renderMeta={(permission) => {
+            <PermissionTree paginate permissions={permissions.filter(item=>matchesSearch(search,item.code,item.name,item.resource) && (!filter || item.resource===filter))} renderMeta={(permission) => {
               const rolesWithPerm = roles.filter((role) => role.permissions?.some((item) => item.id === permission.id));
               return <div className="flex flex-wrap items-center justify-end gap-2"><div className="hidden flex-wrap justify-end gap-1.5 md:flex">{rolesWithPerm.map((role) => <span key={role.id} className="rounded-full border border-primary/20 bg-primary/5 px-2 py-1 text-[11px] font-semibold text-primary">{roleLabel(role.code, role.name)}</span>)}</div><ActionGroup><ActionButton action="edit" type="button" onClick={() => openEditPermission(permission as PermissionItem)} title="Sửa" />
 <ActionButton action="delete" type="button" onClick={() => void deletePermission(permission as PermissionItem)} title="Xóa" /></ActionGroup></div>;

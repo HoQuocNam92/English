@@ -1,4 +1,5 @@
 'use client';
+import { PaginatedList } from '@/shared/ui/PaginatedList';
 import { showToast } from '@/shared/ui/AppFeedback';
 import { AppIcon } from '@/shared/ui/AppIcon';
 
@@ -141,8 +142,9 @@ function LearnerProfileContent() {
         reminderEnabled,
         learningPathMode: 'smart',
       });
+      window.dispatchEvent(new CustomEvent('techenglish:reminder-settings', { detail: { reminderEnabled, reminderTime } }));
       const notificationReady = reminderEnabled ? await registerWebLearningNotifications().catch(() => false) : true;
-      if (!notificationReady) showToast('Mục tiêu đã lưu. Chưa bật được nhắc học; bạn có thể cho phép thông báo trong trình duyệt rồi thử lại.', 'warning', 'Đã lưu mục tiêu');
+      showToast(reminderEnabled ? (notificationReady ? 'Đã bật nhắc học trong web và thông báo trình duyệt.' : 'Đã lưu giờ nhắc học. Khi server tạo lời nhắc, web sẽ hiển thị lúc bạn mở trang học. Thông báo ngoài web chưa được bật.') : 'Đã cập nhật mục tiêu học tập.', 'success', 'Đã lưu mục tiêu');
     } catch (cause: any) {
       setError(cause?.message || 'Không thể cập nhật mục tiêu học tập.');
     } finally { setSavingGoals(false); }
@@ -179,7 +181,7 @@ function LearnerProfileContent() {
 
   return (
     <LearnerShell>
-      <div className="mx-auto flex max-w-5xl flex-col gap-6 pb-16">
+      <div className="flex w-full flex-col gap-6 pb-16"><Link href="/learn" className="mb-4 inline-flex items-center gap-2 rounded-lg py-2 text-sm font-semibold text-primary hover:underline"><span aria-hidden="true">←</span>Quay lại</Link>
         {/* Profile Header */}
         <section className="flex flex-col justify-between gap-4 rounded-2xl border border-outline-variant/40 bg-surface-container-lowest p-6 shadow-2xs md:flex-row md:items-center">
           <div className="flex items-center gap-4">
@@ -431,7 +433,7 @@ function LearnerProfileContent() {
             </div>
 
             {history.length ? (
-              <div className="space-y-4">
+              <PaginatedList className="space-y-4">
                 {(() => {
                   const lessonMap = new Map(lessons.map((l: any) => [l.id, l]));
                   return history.map((item, index) => {
@@ -515,7 +517,7 @@ function LearnerProfileContent() {
                     );
                   });
                 })()}
-              </div>
+              </PaginatedList>
             ) : (
               <div className="py-12 text-center">
                 <div className="w-12 h-12 mx-auto rounded-full bg-surface-container flex items-center justify-center text-on-surface-variant mb-3">

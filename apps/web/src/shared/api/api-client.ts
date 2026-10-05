@@ -129,7 +129,7 @@ async function request<T>(path: string, options: RequestInit = {}, canRetry = tr
   const data = res.status === 204 ? undefined : localizeLevelFields(await res.json() as T, /^\/levels(?:[/?]|$)/.test(path));
   let body: unknown;
   try { body = typeof options.body === 'string' ? JSON.parse(options.body) : undefined; } catch { body = undefined; }
-  const message = mutationSuccessMessage(path, options.method ?? 'GET', body);
+  const message = /^\/notifications\/[^/]+\/read$/.test(path) ? null : mutationSuccessMessage(path, options.method ?? 'GET', body);
   if (message && typeof window !== 'undefined') {
     window.dispatchEvent(new CustomEvent('techenglish:toast', { detail: { message, kind: 'success', title: message.startsWith('Đã lưu') ? 'Lưu thành công' : 'Thành công', automatic: true } }));
   }

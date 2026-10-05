@@ -166,6 +166,7 @@ model User {
   vocabProgress     VocabularyProgress[]
   savedQuestions    SavedQuestion[]
   pushSubscriptions PushSubscription[]
+  learningNotifications LearningNotification[]
   ownedLearnerGroups LearnerGroup[]       @relation("LearnerGroupOwner")
   learnerGroupLinks  LearnerGroupMember[] @relation("LearnerGroupMemberUser")
 
@@ -972,4 +973,20 @@ model PlacementAssessment {
   learner User @relation(fields: [learnerId], references: [id], onDelete: Cascade)
   @@index([learnerId, createdAt])
   @@map("placement_assessments")
+}
+
+/// Persistent reminders created by the server scheduler.
+model LearningNotification {
+  id        String    @id @default(uuid()) @db.Uuid
+  userId    String    @map("user_id") @db.Uuid
+  localDate String    @map("local_date") @db.VarChar(10)
+  title     String    @db.VarChar(150)
+  body      String    @db.Text
+  readAt    DateTime? @map("read_at") @db.Timestamptz(6)
+  createdAt DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, localDate])
+  @@index([userId, readAt, createdAt])
+  @@map("learning_notifications")
 }

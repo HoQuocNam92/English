@@ -60,7 +60,7 @@ export default function LearnerQuizResultPage({ params }: { params: Promise<{ id
 
   return (
     <LearnerShell>
-      <div className="flex flex-col gap-6 max-w-5xl mx-auto pb-12">
+      <div className="flex w-full flex-col gap-6 pb-12"><Link href={certificateId ? (topicId ? `/learn/certifications/${certificateId}/topics/${topicId}` : `/learn/certifications/${certificateId}`) : "/learn/certifications"} className="inline-flex w-fit py-2 text-sm font-semibold text-primary">← Quay lại</Link>
         {/* Top Score Banner */}
         <div className="p-8 rounded-2xl bg-surface-container-lowest border border-outline-variant/40 shadow-2xs flex flex-col md:flex-row items-center justify-between gap-6 text-center md:text-left">
           <div className="flex flex-col md:flex-row items-center gap-6">
