@@ -487,17 +487,7 @@ export default function FlashcardPracticePage({ params }: { params: Promise<{ id
         {/* ═════════════════════════════════════════════════════════════════════ */}
         <div className="h-[360px] sm:h-[400px] w-full [perspective:1200px]">
           <div
-            role="button"
-            tabIndex={0}
-            aria-label={isFlipped ? 'Xem mặt trước' : 'Lật thẻ để xem nghĩa'}
-            onClick={() => setIsFlipped(!isFlipped)}
-            onKeyDown={e => {
-              if (e.key === 'Enter' || e.key === ' ') {
-                e.preventDefault();
-                setIsFlipped(!isFlipped);
-              }
-            }}
-            className="relative h-full w-full cursor-pointer text-left [transform-style:preserve-3d] transition-transform duration-500 ease-out"
+            className="relative h-full w-full [transform-style:preserve-3d] transition-transform duration-500 ease-out"
             style={{ transform: isFlipped ? 'rotateY(180deg)' : 'rotateY(0deg)' }}
           >
             {/* FRONT SIDE */}
@@ -523,13 +513,13 @@ export default function FlashcardPracticePage({ params }: { params: Promise<{ id
               {/* Center Content */}
               <div className="flex flex-col items-center justify-center text-center space-y-3 my-auto">
                 <div className="flex items-center gap-3">
-                  <h2 className="text-3xl sm:text-5xl font-black text-slate-900 tracking-tight">
+                  <h2 data-learning-content className="text-3xl sm:text-5xl font-black text-slate-900 tracking-tight">
                     {currentWord.term}
                   </h2>
                   <button
                     type="button"
                     onClick={pronounce} disabled={speaking} aria-label={speaking ? 'Đang phát âm' : 'Nghe phát âm'}
-                    className="w-10 h-10 rounded-full bg-slate-100 text-slate-600 hover:bg-primary hover:text-white flex items-center justify-center transition-colors shadow-2xs"
+                    className="w-10 h-10 rounded-full bg-slate-100 text-slate-600 hover:bg-primary hover:text-white flex items-center justify-center transition-colors shadow-2xs cursor-pointer"
                   >
                     <AppIcon className=" text-xl">volume_up</AppIcon>
                   </button>
@@ -540,12 +530,16 @@ export default function FlashcardPracticePage({ params }: { params: Promise<{ id
                 </p>
               </div>
 
-              {/* Bottom Flip Hint & Icon */}
-              <div className="flex items-center justify-between text-slate-400 text-xs font-bold pt-2">
-                <span className="text-[11px] text-slate-400">Chạm thẻ để xem nghĩa</span>
-                <AppIcon className=" text-slate-400 text-xl hover:text-primary transition-colors">
-                  sync
-                </AppIcon>
+              {/* Bottom Flip Button */}
+              <div className="flex justify-center pt-2">
+                <button
+                  type="button"
+                  onClick={() => setIsFlipped(true)}
+                  className="inline-flex items-center gap-2 rounded-xl bg-primary px-5 py-2.5 text-xs font-bold text-white hover:bg-indigo-700 transition-colors cursor-pointer shadow-xs"
+                >
+                  <AppIcon className=" text-base">sync</AppIcon>
+                  Xem nghĩa
+                </button>
               </div>
             </div>
 
@@ -557,11 +551,11 @@ export default function FlashcardPracticePage({ params }: { params: Promise<{ id
               {/* Header */}
               <div className="flex items-center justify-between border-b border-slate-100 pb-3">
                 <div className="flex items-center gap-2">
-                  <h3 className="text-2xl font-black text-slate-900">{currentWord.term}</h3>
+                  <h3 data-learning-content className="text-2xl font-black text-slate-900">{currentWord.term}</h3>
                   <button
                     type="button"
                     onClick={pronounce} disabled={speaking} aria-label={speaking ? 'Đang phát âm' : 'Nghe phát âm'}
-                    className="w-7 h-7 rounded-full bg-slate-100 text-slate-600 hover:bg-primary hover:text-white flex items-center justify-center"
+                    className="w-7 h-7 rounded-full bg-slate-100 text-slate-600 hover:bg-primary hover:text-white flex items-center justify-center cursor-pointer transition-colors"
                   >
                     <AppIcon className=" text-base">volume_up</AppIcon>
                   </button>
@@ -577,11 +571,11 @@ export default function FlashcardPracticePage({ params }: { params: Promise<{ id
                   <div className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">
                     Định nghĩa:
                   </div>
-                  <div className="text-base font-bold text-slate-900 mt-1">
+                  <div data-learning-content className="text-base font-bold text-slate-900 mt-1">
                     {currentWord.definitionVi || 'Chưa có định nghĩa tiếng Việt'}
                   </div>
                   {currentWord.definitionEn && (
-                    <div className="text-xs text-slate-500 mt-0.5">
+                    <div data-learning-content className="text-xs text-slate-500 mt-0.5">
                       {currentWord.definitionEn}
                     </div>
                   )}
@@ -592,18 +586,24 @@ export default function FlashcardPracticePage({ params }: { params: Promise<{ id
                     <div className="font-bold text-primary text-xs">
                       Ví dụ
                     </div>
-                    <p className="text-sm font-normal leading-6">{currentWord.examples[0].sentenceEn.split(new RegExp(`(${currentWord.term.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, 'gi')).map((part: string, index: number) => part.toLowerCase() === currentWord.term.toLowerCase() ? <strong key={index} className="font-bold text-primary">{part}</strong> : <React.Fragment key={index}>{part}</React.Fragment>)}</p>
+                    <p data-learning-content className="text-sm font-normal leading-6">{currentWord.examples[0].sentenceEn.split(new RegExp(`(${currentWord.term.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, 'gi')).map((part: string, index: number) => part.toLowerCase() === currentWord.term.toLowerCase() ? <strong key={index} className="font-bold text-primary">{part}</strong> : <React.Fragment key={index}>{part}</React.Fragment>)}</p>
                     {currentWord.examples[0].translationVi && (
-                      <p className="text-slate-600 italic">{currentWord.examples[0].translationVi}</p>
+                      <p data-learning-content className="text-slate-600 italic">{currentWord.examples[0].translationVi}</p>
                     )}
                   </div>
                 )}
               </div>
 
-              {/* Bottom Flip Icon */}
-              <div className="flex items-center justify-between text-slate-400 text-xs font-bold pt-2 border-t border-slate-100">
-                <span className="text-[11px] text-slate-400">Chạm thẻ để lật lại</span>
-                <AppIcon className=" text-slate-400 text-xl">sync</AppIcon>
+              {/* Bottom Flip Back Button */}
+              <div className="flex justify-center pt-2 border-t border-slate-100">
+                <button
+                  type="button"
+                  onClick={() => setIsFlipped(false)}
+                  className="inline-flex items-center gap-2 rounded-xl border border-slate-300 bg-white px-5 py-2.5 text-xs font-bold text-slate-700 hover:bg-slate-50 transition-colors cursor-pointer"
+                >
+                  <AppIcon className=" text-base">sync</AppIcon>
+                  Lật lại
+                </button>
               </div>
             </div>
           </div>

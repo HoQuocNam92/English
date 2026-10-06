@@ -88,7 +88,7 @@ export default function LoginPage() {
         <div className="w-full max-w-[420px] flex flex-col py-8">
           <Link href="/" className="mb-6 inline-flex w-fit items-center gap-2 rounded-lg py-2 text-sm font-semibold text-primary hover:underline focus-visible:outline-2 focus-visible:outline-primary"><span aria-hidden="true">←</span>Quay lại trang chủ</Link>
           <div className="mb-8 text-left">
-            <h2 className="text-2xl lg:text-3xl font-bold text-on-surface mb-2 tracking-tight">Chào mừng trở lại</h2>
+            <h2 className="text-2xl lg:text-3xl font-bold text-on-surface mb-2 tracking-tight">Đăng nhập</h2>
           </div>
 
           <form className="flex flex-col gap-5" onSubmit={handleSubmit}>
@@ -180,7 +180,7 @@ export default function LoginPage() {
               type="submit"
               disabled={submitting || loading}
             >
-              <span className="!text-white">{submitting ? 'Đang xác thực...' : 'Đăng nhập'}</span>
+              <span className="!text-white">{submitting ? 'Đang đăng nhập...' : 'Đăng nhập'}</span>
               <AppIcon className=" text-[18px] !text-white group-hover:translate-x-1 transition-transform">
                 arrow_forward
               </AppIcon>
