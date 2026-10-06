@@ -1,6 +1,6 @@
 'use client';
+import { NumberInput } from '@/shared/ui/NumberInput';
 import { PaginatedList } from '@/shared/ui/PaginatedList';
-import { showToast } from '@/shared/ui/AppFeedback';
 import { AppIcon } from '@/shared/ui/AppIcon';
 
 import { LevelBadge } from '@/shared/ui/LevelBadge';
@@ -10,6 +10,7 @@ import { useSearchParams } from 'next/navigation';
 import { LearnerShell } from '@/shared/layout';
 import { apiClient } from '@/shared/api/api-client';
 import { useAuth } from '@/features/auth/presentation';
+import { WebPushSettings } from '@/shared/notifications/WebPushSettings';
 import { registerWebLearningNotifications } from '@/shared/notifications/firebase-client';
 
 type ProfileTab = 'info' | 'goals' | 'history';
@@ -28,6 +29,12 @@ function LearnerProfileContent() {
   const [error, setError] = useState('');
   const [form, setForm] = useState({ displayName: '', email: '', phoneNumber: '', bio: '' });
   const [password, setPassword] = useState({ currentPassword: '', newPassword: '', confirmPassword: '' });
+  const [passwordErrors, setPasswordErrors] = useState<{
+    currentPassword?: string;
+    newPassword?: string;
+    confirmPassword?: string;
+    general?: string;
+  }>({});
 
   // Mục tiêu & Trình độ
   const [levelCode, setLevelCode] = useState('beginner');
@@ -126,6 +133,7 @@ function LearnerProfileContent() {
     if (!learningGoal) return setError('Vui lòng chọn mục tiêu học chính.');
     if ((learningGoal === 'certification' || learningGoal === 'both') && !certificateCode) return setError('Vui lòng chọn một chứng chỉ mục tiêu.');
     if (selectedDomains.length === 0) return setError('Vui lòng chọn ít nhất một lĩnh vực IT.');
+    if (!Number.isInteger(dailyStudyTargetMinutes) || dailyStudyTargetMinutes < 5 || dailyStudyTargetMinutes > 180) return setError('Số phút học mỗi ngày phải từ 5 đến 180 phút. Gợi ý: 30 phút/ngày.');
     setSavingGoals(true); setError('');
     try {
       await apiClient.put('/learner-profiles/me/goals', {
@@ -143,8 +151,7 @@ function LearnerProfileContent() {
         learningPathMode: 'smart',
       });
       window.dispatchEvent(new CustomEvent('techenglish:reminder-settings', { detail: { reminderEnabled, reminderTime } }));
-      const notificationReady = reminderEnabled ? await registerWebLearningNotifications().catch(() => false) : true;
-      showToast(reminderEnabled ? (notificationReady ? 'Đã bật nhắc học trong web và thông báo trình duyệt.' : 'Đã lưu giờ nhắc học. Khi server tạo lời nhắc, web sẽ hiển thị lúc bạn mở trang học. Thông báo ngoài web chưa được bật.') : 'Đã cập nhật mục tiêu học tập.', 'success', 'Đã lưu mục tiêu');
+      if (reminderEnabled) await registerWebLearningNotifications().catch(() => false);
     } catch (cause: any) {
       setError(cause?.message || 'Không thể cập nhật mục tiêu học tập.');
     } finally { setSavingGoals(false); }
@@ -152,9 +159,31 @@ function LearnerProfileContent() {
 
   async function changePassword(event: React.FormEvent) {
     event.preventDefault();
-    setError('');
-    if (password.newPassword.length < 6) return setError('Mật khẩu mới phải có ít nhất 6 ký tự.');
-    if (password.newPassword !== password.confirmPassword) return setError('Xác nhận mật khẩu không khớp.');
+    const newErrors: { currentPassword?: string; newPassword?: string; confirmPassword?: string; general?: string } = {};
+
+    if (!password.currentPassword) {
+      newErrors.currentPassword = 'Vui lòng nhập mật khẩu hiện tại.';
+    }
+    if (!password.newPassword) {
+      newErrors.newPassword = 'Vui lòng nhập mật khẩu mới.';
+    } else if (password.newPassword.length < 6) {
+      newErrors.newPassword = 'Mật khẩu mới phải có ít nhất 6 ký tự.';
+    } else if (password.currentPassword && password.newPassword === password.currentPassword) {
+      newErrors.newPassword = 'Mật khẩu mới không được trùng với mật khẩu hiện tại.';
+    }
+
+    if (!password.confirmPassword) {
+      newErrors.confirmPassword = 'Vui lòng xác nhận mật khẩu mới.';
+    } else if (password.newPassword && password.newPassword !== password.confirmPassword) {
+      newErrors.confirmPassword = 'Xác nhận mật khẩu không khớp.';
+    }
+
+    if (Object.keys(newErrors).length > 0) {
+      setPasswordErrors(newErrors);
+      return;
+    }
+
+    setPasswordErrors({});
     setSavingPassword(true);
     try {
       await apiClient.post('/auth/change-password', {
@@ -162,9 +191,25 @@ function LearnerProfileContent() {
         newPassword: password.newPassword,
       });
       setPassword({ currentPassword: '', newPassword: '', confirmPassword: '' });
-
+      setPasswordErrors({});
     } catch (cause: any) {
-      setError(cause?.message || 'Không thể đổi mật khẩu.');
+      const msg = cause?.message || 'Không thể đổi mật khẩu.';
+      const lower = msg.toLowerCase();
+      if (
+        lower.includes('hiện tại') ||
+        lower.includes('current password') ||
+        lower.includes('mật khẩu không đúng') ||
+        lower.includes('mật khẩu không chính xác') ||
+        lower.includes('sai mật khẩu')
+      ) {
+        setPasswordErrors({ currentPassword: msg });
+      } else if (lower.includes('mật khẩu mới') || lower.includes('new password')) {
+        setPasswordErrors({ newPassword: msg });
+      } else if (lower.includes('xác nhận') || lower.includes('confirm')) {
+        setPasswordErrors({ confirmPassword: msg });
+      } else {
+        setPasswordErrors({ general: msg });
+      }
     } finally { setSavingPassword(false); }
   }
 
@@ -236,12 +281,47 @@ function LearnerProfileContent() {
               <label className="block text-xs font-semibold">Giới thiệu<textarea rows={3} value={form.bio} onChange={(e) => setForm({ ...form, bio: e.target.value })} className="mt-1 w-full rounded-xl border border-outline-variant/60 bg-surface-bright px-3.5 py-2.5" /></label>
               <div className="flex justify-end"><button disabled={savingInfo} className="rounded-xl bg-primary px-6 py-2.5 text-xs font-bold text-white disabled:opacity-50">{savingInfo ? 'Đang lưu...' : 'Lưu thay đổi'}</button></div>
             </form>
-            <form onSubmit={changePassword} className="space-y-4 rounded-2xl border border-outline-variant/40 bg-surface-container-lowest p-6">
+            <form onSubmit={changePassword} noValidate className="space-y-4 rounded-2xl border border-outline-variant/40 bg-surface-container-lowest p-6">
               <h2 className="font-bold text-on-surface">Đổi mật khẩu</h2>
+              {passwordErrors.general && (
+                <p className="rounded-xl border border-red-200 bg-red-50 p-3 text-xs font-semibold text-red-700">
+                  {passwordErrors.general}
+                </p>
+              )}
               <div className="grid gap-4 sm:grid-cols-3">
-                <PasswordField label="Mật khẩu hiện tại" value={password.currentPassword} onChange={(currentPassword) => setPassword({ ...password, currentPassword })} />
-                <PasswordField label="Mật khẩu mới" value={password.newPassword} onChange={(newPassword) => setPassword({ ...password, newPassword })} />
-                <PasswordField label="Xác nhận mật khẩu" value={password.confirmPassword} onChange={(confirmPassword) => setPassword({ ...password, confirmPassword })} />
+                <PasswordField
+                  label="Mật khẩu hiện tại"
+                  value={password.currentPassword}
+                  error={passwordErrors.currentPassword}
+                  onChange={(currentPassword) => {
+                    setPassword((prev) => ({ ...prev, currentPassword }));
+                    if (passwordErrors.currentPassword || passwordErrors.general) {
+                      setPasswordErrors((prev) => ({ ...prev, currentPassword: '', general: '' }));
+                    }
+                  }}
+                />
+                <PasswordField
+                  label="Mật khẩu mới"
+                  value={password.newPassword}
+                  error={passwordErrors.newPassword}
+                  onChange={(newPassword) => {
+                    setPassword((prev) => ({ ...prev, newPassword }));
+                    if (passwordErrors.newPassword || passwordErrors.general) {
+                      setPasswordErrors((prev) => ({ ...prev, newPassword: '', general: '' }));
+                    }
+                  }}
+                />
+                <PasswordField
+                  label="Xác nhận mật khẩu"
+                  value={password.confirmPassword}
+                  error={passwordErrors.confirmPassword}
+                  onChange={(confirmPassword) => {
+                    setPassword((prev) => ({ ...prev, confirmPassword }));
+                    if (passwordErrors.confirmPassword || passwordErrors.general) {
+                      setPasswordErrors((prev) => ({ ...prev, confirmPassword: '', general: '' }));
+                    }
+                  }}
+                />
               </div>
               <div className="flex justify-end"><button disabled={savingPassword} className="rounded-xl bg-primary px-6 py-2.5 text-xs font-bold text-white disabled:opacity-50">{savingPassword ? 'Đang cập nhật...' : 'Cập nhật mật khẩu'}</button></div>
             </form>
@@ -381,18 +461,18 @@ function LearnerProfileContent() {
               <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
                 <label className="rounded-xl border border-outline-variant/60 bg-surface-bright p-3 text-xs font-semibold text-on-surface-variant">
                   Từ vựng mỗi ngày
-                  <input type="number" min={1} max={200} value={dailyVocabularyTarget} onChange={(e) => setDailyVocabularyTarget(Number(e.target.value))} className="mt-2 w-full rounded-lg border border-outline-variant px-3 py-2 text-sm font-bold text-on-surface" />
+                  <NumberInput type="number" min={1} max={200} value={dailyVocabularyTarget} onChange={(e) => setDailyVocabularyTarget(e.target.valueAsNumber)} className="mt-2 w-full rounded-lg border border-outline-variant px-3 py-2 text-sm font-bold text-on-surface" />
                 </label>
                 <label className="rounded-xl border border-outline-variant/60 bg-surface-bright p-3 text-xs font-semibold text-on-surface-variant">
                   Bài Quiz mỗi tuần
-                  <input type="number" min={1} max={50} value={weeklyExamTarget} onChange={(e) => setWeeklyExamTarget(Number(e.target.value))} className="mt-2 w-full rounded-lg border border-outline-variant px-3 py-2 text-sm font-bold text-on-surface" />
+                  <NumberInput type="number" min={1} max={50} value={weeklyExamTarget} onChange={(e) => setWeeklyExamTarget(e.target.valueAsNumber)} className="mt-2 w-full rounded-lg border border-outline-variant px-3 py-2 text-sm font-bold text-on-surface" />
                 </label>
                 <label className="rounded-xl border border-outline-variant/60 bg-surface-bright p-3 text-xs font-semibold text-on-surface-variant">
                   Phút học mỗi ngày
-                  <input type="number" min={5} max={1440} value={dailyStudyTargetMinutes} onChange={(e) => setDailyStudyTargetMinutes(Number(e.target.value))} className="mt-2 w-full rounded-lg border border-outline-variant px-3 py-2 text-sm font-bold text-on-surface" />
+                  <NumberInput type="number" min={5} max={180} value={dailyStudyTargetMinutes} onChange={(e) => setDailyStudyTargetMinutes(e.target.valueAsNumber)} className="mt-2 w-full rounded-lg border border-outline-variant px-3 py-2 text-sm font-bold text-on-surface" />
                 </label>
               </div>
-              <p className="text-xs text-on-surface-variant">Tương ứng {weeklyExamTarget * 4} bài/tháng và {weeklyExamTarget * 52} bài/năm.</p>
+              <p className="text-xs text-on-surface-variant">Gợi ý học 30 phút/ngày; có thể chọn từ 5 đến 180 phút. Tương ứng {weeklyExamTarget * 4} bài/tháng và {weeklyExamTarget * 52} bài/năm.</p>
             </div>
 
             <div className="flex flex-col gap-3 rounded-xl border border-outline-variant/60 bg-surface-container-low p-4 sm:flex-row sm:items-center sm:justify-between">
@@ -402,6 +482,8 @@ function LearnerProfileContent() {
               </label>
               <input type="time" value={reminderTime} disabled={!reminderEnabled} onChange={(e) => setReminderTime(e.target.value)} className="rounded-lg border border-outline-variant bg-surface-bright px-3 py-2 text-sm font-bold disabled:opacity-50" />
             </div>
+
+            <WebPushSettings enabled={reminderEnabled && !loading} />
 
             <div className="flex justify-end pt-4 border-t border-outline-variant/40">
               <button
@@ -572,6 +654,38 @@ function Field({ label, value, onChange, disabled = false }: { label: string; va
   return <label className="text-xs font-semibold">{label}<input value={value} disabled={disabled} onChange={(e) => onChange?.(e.target.value)} className="mt-1 w-full rounded-xl border border-outline-variant/60 bg-surface-bright px-3.5 py-2.5 disabled:cursor-not-allowed disabled:opacity-60" /></label>;
 }
 
-function PasswordField({ label, value, onChange }: { label: string; value: string; onChange: (value: string) => void }) {
-  return <label className="text-xs font-semibold">{label}<input type="password" required value={value} onChange={(e) => onChange(e.target.value)} className="mt-1 w-full rounded-xl border border-outline-variant/60 bg-surface-bright px-3.5 py-2.5" /></label>;
+function PasswordField({
+  label,
+  value,
+  onChange,
+  error,
+}: {
+  label: string;
+  value: string;
+  onChange: (value: string) => void;
+  error?: string;
+}) {
+  return (
+    <div className="space-y-1">
+      <label className="block text-xs font-semibold text-on-surface">
+        {label}
+        <input
+          type="password"
+          value={value}
+          onChange={(e) => onChange(e.target.value)}
+          className={`mt-1 w-full rounded-xl border bg-surface-bright px-3.5 py-2.5 text-sm transition-colors focus:outline-none ${
+            error
+              ? 'border-red-500 bg-red-50/20 text-on-surface focus:border-red-500 focus:ring-2 focus:ring-red-200'
+              : 'border-outline-variant/60 focus:border-primary focus:ring-2 focus:ring-primary/20'
+          }`}
+        />
+      </label>
+      {error && (
+        <p className="flex items-center gap-1 text-xs font-medium text-red-600">
+          <AppIcon className="text-[14px]">error</AppIcon>
+          <span>{error}</span>
+        </p>
+      )}
+    </div>
+  );
 }

@@ -1,4 +1,5 @@
 'use client';
+import { NumberInput } from '@/shared/ui/NumberInput';
 
 import { Dropdown } from '@/shared/ui/Dropdown';
 import * as React from 'react';
@@ -51,7 +52,7 @@ export function Pagination({
   const [jumpValue, setJumpValue] = React.useState('');
 
   const handleJump = () => {
-    const target = parseInt(jumpValue, 10);
+    const target = /^\d+$/.test(jumpValue) ? Number(jumpValue) : NaN;
     if (!isNaN(target) && target >= 1 && target <= safeTotalPages) {
       onPageChange(target);
       setJumpValue('');
@@ -61,7 +62,7 @@ export function Pagination({
   return (
     <div
       className={cn(
-        'flex flex-col gap-3 border-t border-outline-variant/20 bg-surface-container-lowest px-5 py-4 sm:flex-row sm:items-center sm:justify-between',
+        'flex flex-col gap-3 border-t border-outline-variant/20 bg-surface-container-lowest px-5 py-4 max-w-full overflow-hidden sm:flex-row sm:items-center sm:justify-between',
         className
       )}
     >
@@ -131,7 +132,7 @@ export function Pagination({
         {showQuickJumper && safeTotalPages > 5 && (
           <div className="flex items-center gap-1.5 pl-2 border-l border-outline-variant/40 text-xs text-on-surface-variant">
             <span>Đến trang</span>
-            <input
+            <NumberInput
               type="number"
               min={1}
               max={safeTotalPages}

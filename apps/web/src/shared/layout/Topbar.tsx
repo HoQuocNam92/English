@@ -18,17 +18,34 @@ export function Topbar({ onToggleMobileMenu }: TopbarProps) {
   const [passwordForm, setPasswordForm] = React.useState({ currentPassword: '', newPassword: '', confirmPassword: '' });
   const [passwordMessage, setPasswordMessage] = React.useState('');
   const [passwordSaving, setPasswordSaving] = React.useState(false);
+  const [fieldErrors, setFieldErrors] = React.useState<Record<string, string>>({});
 
   const submitPassword = async (event: React.FormEvent) => {
     event.preventDefault();
-    if (passwordForm.newPassword.length < 6) {
-      setPasswordMessage('Mật khẩu mới phải có ít nhất 6 ký tự.');
+    const newErrors: Record<string, string> = {};
+    if (!passwordForm.currentPassword) {
+      newErrors.currentPassword = 'Vui lòng nhập mật khẩu hiện tại.';
+    }
+    if (!passwordForm.newPassword) {
+      newErrors.newPassword = 'Vui lòng nhập mật khẩu mới.';
+    } else if (passwordForm.newPassword.length < 6) {
+      newErrors.newPassword = 'Mật khẩu mới phải có ít nhất 6 ký tự.';
+    } else if (passwordForm.currentPassword && passwordForm.newPassword === passwordForm.currentPassword) {
+      newErrors.newPassword = 'Mật khẩu mới không được trùng với mật khẩu hiện tại.';
+    }
+
+    if (!passwordForm.confirmPassword) {
+      newErrors.confirmPassword = 'Vui lòng xác nhận mật khẩu mới.';
+    } else if (passwordForm.newPassword && passwordForm.newPassword !== passwordForm.confirmPassword) {
+      newErrors.confirmPassword = 'Xác nhận mật khẩu mới không khớp.';
+    }
+
+    if (Object.keys(newErrors).length > 0) {
+      setFieldErrors(newErrors);
       return;
     }
-    if (passwordForm.newPassword !== passwordForm.confirmPassword) {
-      setPasswordMessage('Xác nhận mật khẩu mới không khớp.');
-      return;
-    }
+
+    setFieldErrors({});
     setPasswordSaving(true);
     setPasswordMessage('');
     try {
@@ -38,8 +55,26 @@ export function Topbar({ onToggleMobileMenu }: TopbarProps) {
       });
       setPasswordMessage('');
       setPasswordForm({ currentPassword: '', newPassword: '', confirmPassword: '' });
+      setFieldErrors({});
+      setPasswordOpen(false);
     } catch (error) {
-      setPasswordMessage(error instanceof Error ? error.message : 'Không thể đổi mật khẩu.');
+      const msg = error instanceof Error ? error.message : 'Không thể đổi mật khẩu.';
+      const lower = msg.toLowerCase();
+      if (
+        lower.includes('hiện tại') ||
+        lower.includes('current password') ||
+        lower.includes('mật khẩu không đúng') ||
+        lower.includes('mật khẩu không chính xác') ||
+        lower.includes('sai mật khẩu')
+      ) {
+        setFieldErrors({ currentPassword: msg });
+      } else if (lower.includes('mật khẩu mới') || lower.includes('new password')) {
+        setFieldErrors({ newPassword: msg });
+      } else if (lower.includes('xác nhận') || lower.includes('confirm')) {
+        setFieldErrors({ confirmPassword: msg });
+      } else {
+        setPasswordMessage(msg);
+      }
     } finally {
       setPasswordSaving(false);
     }
@@ -112,14 +147,40 @@ export function Topbar({ onToggleMobileMenu }: TopbarProps) {
               <div><h2 id="change-password-title" className="text-xl font-bold text-on-surface">Đổi mật khẩu</h2><p className="mt-1 text-sm text-on-surface-variant">Cập nhật mật khẩu đăng nhập của tài khoản hiện tại.</p></div>
               <button type="button" aria-label="Đóng" onClick={() => setPasswordOpen(false)} className="rounded-lg p-2 text-on-surface-variant hover:bg-surface-container-low"><AppIcon className="">close</AppIcon></button>
             </div>
-            <form onSubmit={submitPassword} className="mt-5 space-y-4">
+            <form onSubmit={submitPassword} noValidate className="mt-5 space-y-4">
               {[
                 ['currentPassword', 'Mật khẩu hiện tại'],
                 ['newPassword', 'Mật khẩu mới'],
                 ['confirmPassword', 'Xác nhận mật khẩu mới'],
-              ].map(([name, label]) => (
-                <label key={name} className="block text-sm font-semibold text-on-surface">{label}<input type="password" required minLength={name === 'currentPassword' ? 1 : 8} value={passwordForm[name as keyof typeof passwordForm]} onChange={(event) => setPasswordForm((current) => ({ ...current, [name]: event.target.value }))} className="mt-1.5 h-11 w-full rounded-xl border border-outline-variant bg-white px-3 text-sm outline-none focus:border-primary focus:ring-2 focus:ring-primary/15" /></label>
-              ))}
+              ].map(([name, label]) => {
+                const err = fieldErrors[name];
+                return (
+                  <div key={name} className="space-y-1">
+                    <label className="block text-sm font-semibold text-on-surface">
+                      {label}
+                      <input
+                        type="password"
+                        value={passwordForm[name as keyof typeof passwordForm]}
+                        onChange={(event) => {
+                          setPasswordForm((current) => ({ ...current, [name]: event.target.value }));
+                          if (fieldErrors[name]) setFieldErrors((current) => ({ ...current, [name]: '' }));
+                        }}
+                        className={`mt-1.5 h-11 w-full rounded-xl border bg-white px-3 text-sm outline-none transition-colors ${
+                          err
+                            ? 'border-red-500 focus:border-red-500 focus:ring-2 focus:ring-red-200'
+                            : 'border-outline-variant focus:border-primary focus:ring-2 focus:ring-primary/15'
+                        }`}
+                      />
+                    </label>
+                    {err && (
+                      <p className="flex items-center gap-1 text-xs font-medium text-red-600">
+                        <AppIcon className="text-[14px]">error</AppIcon>
+                        <span>{err}</span>
+                      </p>
+                    )}
+                  </div>
+                );
+              })}
               {passwordMessage ? <p role="status" className={`rounded-xl px-3 py-2 text-sm ${passwordMessage.includes('thành công') ? 'bg-emerald-50 text-emerald-700' : 'bg-red-50 text-red-700'}`}>{passwordMessage}</p> : null}
               <div className="flex justify-end gap-2 pt-1"><button type="button" onClick={() => setPasswordOpen(false)} className="h-10 rounded-xl border border-outline-variant px-4 text-sm font-bold text-on-surface-variant hover:bg-surface-container-low">Hủy</button><button type="submit" disabled={passwordSaving} className="h-10 rounded-xl bg-primary px-4 text-sm font-bold text-white disabled:opacity-60">{passwordSaving ? 'Đang lưu...' : 'Cập nhật mật khẩu'}</button></div>
             </form>
