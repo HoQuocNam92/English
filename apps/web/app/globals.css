@@ -602,6 +602,43 @@ body {
 }
 .ui-button svg { flex-shrink: 0; }
 
+/* Universal hover & transition for all inline buttons that bypass the Button component */
+.admin-canvas :where(button, a[href]).bg-primary,
+.learner-canvas :where(button, a[href]).bg-primary {
+  transition: background-color 160ms ease, opacity 160ms ease, transform 160ms ease;
+}
+.admin-canvas :where(button, a[href]).bg-primary:not(:disabled):hover,
+.learner-canvas :where(button, a[href]).bg-primary:not(:disabled):hover {
+  background-color: color-mix(in srgb, var(--primary) 85%, black) !important;
+}
+
+/* Outline / secondary buttons */
+.admin-canvas :where(button).border-outline-variant:not(.bg-primary),
+.learner-canvas :where(button).border-outline-variant:not(.bg-primary) {
+  transition: background-color 160ms ease, border-color 160ms ease;
+}
+.admin-canvas :where(button).border-outline-variant:not(.bg-primary):not(:disabled):hover,
+.learner-canvas :where(button).border-outline-variant:not(.bg-primary):not(:disabled):hover {
+  background-color: var(--surface-container-low);
+}
+
+/* Outline border-primary buttons */
+.admin-canvas :where(button).border-primary:not(.bg-primary),
+.learner-canvas :where(button).border-primary:not(.bg-primary) {
+  transition: background-color 160ms ease;
+}
+.admin-canvas :where(button).border-primary:not(.bg-primary):not(:disabled):hover,
+.learner-canvas :where(button).border-primary:not(.bg-primary):not(:disabled):hover {
+  background-color: color-mix(in srgb, var(--primary) 8%, transparent);
+}
+
+/* Active press effect for all buttons */
+.admin-canvas :where(button):not(:disabled):active,
+.learner-canvas :where(button):not(:disabled):active {
+  transform: translateY(1px);
+}
+
+
 
 /* Admin references use one 32px canvas gutter. Pages that already provide their
    own full-page canvas opt out automatically, preventing the old double gutter. */

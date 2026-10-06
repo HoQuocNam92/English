@@ -97,9 +97,7 @@ export default function RegisterPage() {
             <h2 className="text-3xl xl:text-4xl font-extrabold text-on-surface mb-4 leading-tight">
               Tạo tài khoản Học viên mới
             </h2>
-            <p className="text-sm xl:text-base text-on-surface-variant max-w-[85%] leading-relaxed">
-              Trang bị từ vựng tiếng Anh chuyên ngành và luyện thi chứng chỉ CNTT theo lộ trình rõ ràng.
-            </p>
+
           </div>
 
         </div>
@@ -123,7 +121,6 @@ export default function RegisterPage() {
           <Link href="/" className="mb-6 inline-flex w-fit items-center gap-2 rounded-lg py-2 text-sm font-semibold text-primary hover:underline focus-visible:outline-2 focus-visible:outline-primary"><span aria-hidden="true">←</span>Quay lại trang chủ</Link>
           <div className="mb-6 text-left">
             <h2 className="text-2xl lg:text-3xl font-bold text-on-surface mb-2 tracking-tight">Đăng ký</h2>
-            <p className="text-sm text-on-surface-variant">Bắt đầu học miễn phí trong 30 giây</p>
           </div>
 
           <form className="flex flex-col gap-4" onSubmit={handleSubmit}>
