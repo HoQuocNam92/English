@@ -45,6 +45,7 @@ jobs:
       - run: pnpm typecheck
       - run: pnpm --filter web typecheck
       - run: pnpm --filter mobile typecheck
+      - run: pnpm --filter mobile test
       - run: pnpm --filter @techenglish/api test
       - run: pnpm --filter @techenglish/shared-kernel test
       - run: pnpm --filter @techenglish/api build

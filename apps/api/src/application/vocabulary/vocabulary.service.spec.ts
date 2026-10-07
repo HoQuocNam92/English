@@ -81,3 +81,13 @@ test('search and bulk filters include secondary domains without replacing text s
   await service.update('word', dto);
   assert.deepEqual(calls.update.data.partsOfSpeech, dto.partsOfSpeech);
  })
+
+test('lesson vocabulary listing only exposes published terms from published lessons and keeps search filters', async () => {
+  const { service, calls } = setup()
+  await service.findAll({ sourceLessonId: levelId, status: 'draft', search: 'deploy', domainCode: 'CLOUD', page: 2, limit: 20 })
+  assert.equal(calls.list.where.status, 'published')
+  assert.deepEqual(calls.list.where.lessons, { some: { lessonId: levelId, lesson: { status: 'published' } } })
+  assert.equal(calls.list.where.OR[0].term.contains, 'deploy')
+  assert.equal(calls.list.where.AND[0].OR[1].domains.some.domain.code, 'CLOUD')
+  assert.equal(calls.list.skip, 20)
+})

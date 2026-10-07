@@ -11,4 +11,15 @@ Learner flows aligned in this change:
 - Home: today/month/year agenda comes from the same `/progress/me/agenda` endpoint as web. Shared mobile route mapping converts web task links to native routes.
 - Exams: multiple-answer questions use the API’s `multiple_choice` type; short answers submit `textAnswer`; question context is displayed.
 
+Alignment and cleanup on 2026-10-07:
+
+- Removed the inactive web/mobile i18n providers, English UI dictionaries, locale setters, and unused lesson notebook props/styles. The UI remains Vietnamese; contextual English-to-Vietnamese lesson translation is still used.
+- Mobile home now displays pending learning reminders from `/notifications/pending`, retries while focused/active, and marks reminders read before closing or starting a lesson.
+- Web agenda/recommendation links map to native progress and lesson-vocabulary screens, preserving certificate/topic query context. Lesson vocabulary uses the paginated `/vocabulary?sourceLessonId=...` endpoint and only lists published words from published lessons.
+- Mobile translation, AI recommendations, agenda, and placement-plan requests allow 60 seconds. Ordinary requests retain the 15-second timeout.
+- Profile editing has a retry screen when initial data cannot be loaded and validates target ranges, phone and bio before saving. Invalid or empty numeric input no longer silently becomes a default. Password changes follow the backend's 6–72 character rule.
+- Removed unreferenced web list-filter/list-option helpers and unused mobile styles. CI now runs mobile regression tests for navigation, timeouts and target validation.
+
+Verified for this update: API build and unit tests, shared-package typechecks/tests, Prisma validation, web production build with `NEXT_PUBLIC_API_URL=http://localhost:8080/api/v1`, mobile typecheck/regression tests, and Android/iOS Expo exports. Exports are JavaScript/Hermes bundles, not installable APK/IPA files. Native OS notification delivery and physical-device interaction still need device testing.
+
 Validation: mobile TypeScript, Expo exports for Android and web, browser checks of Expo web at 360/390/768px with deterministic API fixtures, quiz retry/history and certificate gating, certificate search, and overflow checks on certification list/detail, lesson, home and login. Physical-device speech and native gestures require Android/iOS device testing; browser fixtures do not verify production data or native OS behavior.

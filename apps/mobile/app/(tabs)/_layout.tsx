@@ -2,13 +2,11 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Tabs } from 'expo-router';
 import { MaterialIcons } from '../../src/shared/ui/AppIcon';
 import { useTheme } from '../../src/shared/store/theme-context';
-import { useI18n } from '../../src/shared/store/i18n-context';
 import { iconColors } from '@techenglish/design-tokens';
 
 export default function TabsLayout() {
   const { colors } = useTheme();
   const insets = useSafeAreaInsets();
-  const { t } = useI18n();
 
   return (
     <Tabs
@@ -32,7 +30,7 @@ export default function TabsLayout() {
       <Tabs.Screen
         name="home"
         options={{
-          title: t.tabHome,
+          title: 'Trang chủ',
           tabBarIcon: ({ size }) => <MaterialIcons name="home" size={size} color={iconColors.home} />
         }}
       />
@@ -48,14 +46,14 @@ export default function TabsLayout() {
       <Tabs.Screen
         name="progress"
         options={{
-          title: t.tabProgress,
+          title: 'Tiến độ',
           tabBarIcon: ({ size }) => <MaterialIcons name="trending-up" size={size} color={iconColors.progress} />
         }}
       />
       <Tabs.Screen
         name="profile"
         options={{
-          title: t.tabProfile,
+          title: 'Cá nhân',
           tabBarIcon: ({ size }) => <MaterialIcons name="person" size={size} color={iconColors.profile} />
         }}
       />

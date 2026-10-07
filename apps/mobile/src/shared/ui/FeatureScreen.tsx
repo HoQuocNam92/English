@@ -26,15 +26,6 @@ export function EmptyState({ icon, title, detail }: { icon: keyof typeof Materia
   return <View style={s.center}><MaterialIcons name={icon} size={48} color={colors.outline} /><Text style={[s.emptyTitle, { color: colors.onSurface }]}>{title}</Text><Text style={[s.emptyText, { color: colors.onSurfaceVariant }]}>{detail}</Text></View>;
 }
 
-export const featureStyles = StyleSheet.create({
-  card: { borderWidth: 1, borderRadius: 14, padding: 16, marginBottom: 12 },
-  cardTitle: { fontSize: 16, fontWeight: '800', marginBottom: 6 },
-  muted: { fontSize: 13, lineHeight: 19 },
-  row: { flexDirection: 'row', alignItems: 'center', gap: 10 },
-  chip: { paddingHorizontal: 10, paddingVertical: 5, borderRadius: 99 },
-  button: { paddingHorizontal: 16, paddingVertical: 11, borderRadius: 10, alignItems: 'center' },
-});
-
 const s = StyleSheet.create({
   root: { flex: 1 }, header: { paddingTop: 48, paddingBottom: 13, paddingHorizontal: 14, borderBottomWidth: 1, flexDirection: 'row', alignItems: 'center', gap: 10 },
   back: { padding: 6 }, title: { fontSize: 20, fontWeight: '800' }, subtitle: { fontSize: 12, marginTop: 2 },

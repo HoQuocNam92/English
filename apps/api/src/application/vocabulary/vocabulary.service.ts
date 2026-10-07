@@ -30,6 +30,10 @@ export class VocabularyService {
     if (domainCode) where.AND = [{ OR: [{ domain: { code: domainCode } }, { domains: { some: { domain: { code: domainCode } } } }] }]
     if (levelCode) where.level = { code: levelCode }
     if (status) where.status = status
+    if (params.sourceLessonId) {
+      where.lessons = { some: { lessonId: params.sourceLessonId, lesson: { status: 'published' } } }
+      where.status = 'published'
+    }
     const [data, total] = await Promise.all([
       this.prisma.vocabulary.findMany({ where, skip, take: limit, include: { domain: true, domains: { include: { domain: true } }, level: true, examples: true }, orderBy: { createdAt: 'desc' } }),
       this.prisma.vocabulary.count({ where })
@@ -133,4 +137,3 @@ export class VocabularyService {
 
   async delete(id: string) { await this.findOne(id); await this.prisma.vocabulary.delete({ where: { id } }) }
 }
-

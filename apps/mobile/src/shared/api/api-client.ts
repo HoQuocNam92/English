@@ -1,5 +1,6 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { API_BASE_URL } from '../config/env';
+import { requestTimeoutMs } from './request-timeout';
 
 export const API_BASE = API_BASE_URL;
 
@@ -67,7 +68,7 @@ export async function apiRequest<T>(
   if (token) headers['Authorization'] = `Bearer ${token}`;
 
   const controller = new AbortController();
-  const timeout = setTimeout(() => controller.abort(), path.startsWith('/placement-test/') ? 60000 : 15000);
+  const timeout = setTimeout(() => controller.abort(), requestTimeoutMs(path));
 
   try {
     const res = await fetch(`${API_BASE}${path}`, {

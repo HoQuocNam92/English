@@ -19,14 +19,13 @@ export default function MobileChangePasswordScreen() {
   const [showConfirm, setShowConfirm] = useState(false);
 
   const rules = [
-    { label: 'Ít nhất 8 ký tự', ok: newPassword.length >= 8 },
-    { label: 'Có chữ hoa (A-Z)', ok: /[A-Z]/.test(newPassword) },
-    { label: 'Có chữ số (0-9)', ok: /[0-9]/.test(newPassword) },
-    { label: 'Có ký tự đặc biệt (!@#...)', ok: /[^A-Za-z0-9]/.test(newPassword) },
+    { label: 'Ít nhất 6 ký tự', ok: newPassword.length >= 6 },
+    { label: 'Không quá 72 ký tự', ok: newPassword.length <= 72 },
   ];
   const allRulesMet = rules.every(r => r.ok);
 
   const handleUpdate = async () => {
+    if (saving) return;
     if (!currentPassword) {
       Alert.alert('Lỗi', 'Vui lòng nhập mật khẩu hiện tại.');
       return;
@@ -48,7 +47,7 @@ export default function MobileChangePasswordScreen() {
         { text: 'OK', onPress: () => router.back() }
       ]);
     } catch (err: any) {
-      Alert.alert('Lỗi', err.message || 'Có lỗi xảy ra');
+      Alert.alert('Lỗi', /current password is incorrect/i.test(err.message ?? '') ? 'Mật khẩu hiện tại không chính xác.' : err.message || 'Có lỗi xảy ra');
     } finally {
       setSaving(false);
     }
@@ -139,9 +138,9 @@ export default function MobileChangePasswordScreen() {
 
       <View style={styles.bottomBar}>
         <TouchableOpacity
-          style={[styles.saveBtn, (!allRulesMet || saving) && styles.saveBtnDisabled]}
+          style={[styles.saveBtn, (!allRulesMet || !currentPassword || newPassword !== confirmPassword || saving) && styles.saveBtnDisabled]}
           onPress={handleUpdate}
-          disabled={saving || !allRulesMet}
+          disabled={saving || !allRulesMet || !currentPassword || newPassword !== confirmPassword}
         >
           {saving ? <ActivityIndicator color="#fff" /> : <Text style={styles.saveBtnText}>Cập nhật mật khẩu</Text>}
         </TouchableOpacity>

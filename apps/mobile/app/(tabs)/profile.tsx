@@ -322,11 +322,6 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '600',
   },
-  langBadge: {
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-    borderRadius: 12
-  },
   logoutContainer: {
     alignItems: 'center',
     marginTop: spacing.sm,

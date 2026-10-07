@@ -1,4 +1,5 @@
 import { LearningAgenda } from '../../src/features/learning/LearningAgenda';
+import { LearningReminder } from '../../src/shared/notifications/LearningReminder';
 import { mobileRoute } from '../../src/shared/navigation';
 import { Text, TouchableOpacity } from '../../src/shared/ui/primitives';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -130,6 +131,7 @@ export default function MobileHomeScreen() {
           </View>)}
         </View>
 
+        <LearningReminder />
         <LearningAgenda />
         {!journeyConfigured ? (
           <View style={styles.setupCard}>
@@ -474,5 +476,4 @@ const styles = StyleSheet.create({
     color: colors.primary,
   },
 });
-
 

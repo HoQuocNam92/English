@@ -7,7 +7,9 @@ import { MaterialIcons } from '../../src/shared/ui/AppIcon';
 import * as ImagePicker from 'expo-image-picker';
 import { colors, spacing } from '@techenglish/design-tokens';
 import { api } from '../../src/shared/api/api-client';
-import { validateDisplayName } from '../../src/shared/utils/validators';
+import { validateDisplayName, validatePhone } from '../../src/shared/utils/validators';
+import { validateLearningTargets } from '../../src/shared/utils/learning-targets';
+import { FeatureScreen } from '../../src/shared/ui/FeatureScreen';
 import { useAuth } from '../../src/shared/store/auth-context';
 import { scheduleLearningReminder } from '../../src/shared/notifications/learning-reminders';
 
@@ -39,8 +41,12 @@ export default function MobileEditProfileScreen() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState(false);
+  const [loadError, setLoadError] = useState('');
+  const [reloadKey, setReloadKey] = useState(0);
 
   useEffect(() => {
+    setLoading(true);
+    setLoadError('');
     Promise.allSettled([
       api.get('/users/me'),
       api.get('/learner-profiles/me'),
@@ -49,6 +55,8 @@ export default function MobileEditProfileScreen() {
       api.get('/certificates?activeOnly=true'),
       api.get('/career-goals'),
     ]).then(([meRes, profileRes, levelsRes, domainsRes, certsRes, careerGoalsRes]) => {
+      const failure = [meRes, profileRes, levelsRes, domainsRes, certsRes, careerGoalsRes].find(result => result.status === 'rejected');
+      if (failure?.status === 'rejected') throw failure.reason;
       if (meRes.status === 'fulfilled') {
         const data = meRes.value as any;
         setDisplayName(data.displayName || '');
@@ -75,8 +83,9 @@ export default function MobileEditProfileScreen() {
       if (domainsRes.status === 'fulfilled') setDomains(items(domainsRes.value));
       if (certsRes.status === 'fulfilled') setCertificates(items(certsRes.value));
       if (careerGoalsRes.status === 'fulfilled') setCareerGoals(items(careerGoalsRes.value));
-    }).finally(() => setLoading(false));
-  }, []);
+    }).catch((cause: unknown) => setLoadError(cause instanceof Error ? cause.message : 'Không thể tải hồ sơ. Vui lòng thử lại.'))
+      .finally(() => setLoading(false));
+  }, [reloadKey]);
 
   const handlePickImage = async () => {
     try {
@@ -117,24 +126,31 @@ export default function MobileEditProfileScreen() {
   };
 
   const handleSave = async () => {
+    if (saving || loading || loadError) return;
     const nameErr = validateDisplayName(displayName);
     if (nameErr) return Alert.alert('Lỗi', nameErr);
+    const phoneErr = validatePhone(phoneNumber);
+    if (phoneErr) return Alert.alert('Lỗi', phoneErr);
+    if (bio.length > 500) return Alert.alert('Lỗi', 'Giới thiệu tối đa 500 ký tự.');
+    const targetErr = validateLearningTargets(dailyVocabularyTarget, weeklyExamTarget, dailyStudyTargetMinutes);
+    if (targetErr) return Alert.alert('Lỗi', targetErr);
+    if (!levelCode) return Alert.alert('Thiếu thông tin', 'Vui lòng chọn trình độ tiếng Anh.');
     if (learningGoal !== 'vocabulary' && certificateCodes.length === 0) return Alert.alert('Thiếu thông tin', 'Vui lòng chọn một chứng chỉ mục tiêu.');
     if (domainCodes.length === 0) return Alert.alert('Thiếu thông tin', 'Vui lòng chọn ít nhất một lĩnh vực CNTT.');
 
     setSaving(true);
     try {
-      await api.patch('/users/me', { displayName, phoneNumber: phoneNumber.trim() || null, bio });
+      await api.patch('/users/me', { displayName: displayName.trim(), phoneNumber: phoneNumber.replace(/\s/g, '') || null, bio });
       await api.put('/learner-profiles/me/goals', {
         learningGoal,
         levelCode,
         domainCodes,
         certificateCodes: learningGoal !== 'vocabulary' ? certificateCodes.slice(0, 1) : [],
         careerGoalCodes,
-        weeklyStudyTargetMinutes: (Number(dailyStudyTargetMinutes) || 30) * 7,
-        dailyVocabularyTarget: Number(dailyVocabularyTarget) || 10,
-        weeklyExamTarget: Number(weeklyExamTarget) || 2,
-        dailyStudyTargetMinutes: Number(dailyStudyTargetMinutes) || 30,
+        weeklyStudyTargetMinutes: Number(dailyStudyTargetMinutes) * 7,
+        dailyVocabularyTarget: Number(dailyVocabularyTarget),
+        weeklyExamTarget: Number(weeklyExamTarget),
+        dailyStudyTargetMinutes: Number(dailyStudyTargetMinutes),
         reminderTime,
         reminderEnabled,
         learningPathMode: 'smart',
@@ -158,6 +174,8 @@ export default function MobileEditProfileScreen() {
       </View>
     );
   }
+
+  if (loadError) return <FeatureScreen title="Chỉnh sửa hồ sơ" error={loadError} onRetry={() => setReloadKey(value => value + 1)}>{null}</FeatureScreen>;
 
   const avatarLetter = displayName ? displayName.charAt(0).toUpperCase() : 'N';
 
@@ -483,4 +501,3 @@ const styles = StyleSheet.create({
     fontWeight: '600'
   }
 });
-

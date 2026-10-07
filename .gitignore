@@ -3,6 +3,7 @@ node_modules/
 design-reference/
 .next/
 dist/
+dist-ci/
 build/
 .expo/
 .env

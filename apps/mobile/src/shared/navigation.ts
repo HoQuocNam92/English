@@ -1,7 +1,11 @@
 export function mobileRoute(href: string) {
   const route = href.replace(/^\/learn(?=\/|\?|$)/, '');
   const topic = route.match(/^\/certifications\/([^/]+)\/topics\/([^/?]+)(.*)$/);
-  if (topic) return `/certifications/topics/${topic[2]}?certificateId=${topic[1]}`;
+  if (topic) {
+    const query = new URLSearchParams(topic[3].replace(/^\?/, ''));
+    query.set('certificateId', topic[1]);
+    return `/certifications/topics/${topic[2]}?${query}`;
+  }
   if (route.startsWith('/quiz/result/')) return route.replace('/quiz/result/', '/test-result/');
   if (route.startsWith('/flashcards/studying')) return route.replace('/flashcards/studying', '/flashcards/dashboard');
   if (route.startsWith('/flashcards/explore')) return route;
@@ -15,5 +19,13 @@ export function mobileRoute(href: string) {
     return `/flashcards${query.size ? `?${query}` : ''}`;
   }
   if (route === '/profile') return '/profile/edit';
+  if (route === '/progress') return '/(tabs)/progress';
+  if (route === '/practice') return '/(tabs)/practice';
+  const words = route.match(/^\/flashcards\/([^/?]+)(\?.*)?$/);
+  if (words) {
+    const query = new URLSearchParams(words[2]?.slice(1));
+    if (words[1] !== 'all') query.set('sourceLessonId', words[1]);
+    return `/flashcards/words${query.size ? `?${query}` : ''}`;
+  }
   return route || '/(tabs)/home';
 }

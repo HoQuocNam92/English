@@ -5,7 +5,6 @@ import React from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useAuth } from '@/features/auth/presentation';
-import { useI18n } from '../i18n';
 import { Footer } from './Footer';
 
 interface LearnerShellProps {
@@ -15,12 +14,11 @@ interface LearnerShellProps {
 export function LearnerShell({ children }: LearnerShellProps) {
   const pathname = usePathname();
   const { session } = useAuth();
-  const { t } = useI18n();
   const navLinks = [
-    { href: '/learn', label: t.nav.home, exactMatch: true, icon: 'home', color: 'icon-home' },
+    { href: '/learn', label: 'Trang chủ', exactMatch: true, icon: 'home', color: 'icon-home' },
     { href: '/learn/lessons', label: 'Bài học', exactMatch: false, icon: 'menu_book', color: 'icon-learning' },
-    { href: '/learn/certifications', label: t.nav.certifications, exactMatch: false, icon: 'workspace_premium', color: 'icon-certificate' },
-    { href: '/learn/progress', label: t.nav.progress, exactMatch: false, icon: 'monitoring', color: 'icon-progress' },
+    { href: '/learn/certifications', label: 'Chứng chỉ', exactMatch: false, icon: 'workspace_premium', color: 'icon-certificate' },
+    { href: '/learn/progress', label: 'Tiến độ', exactMatch: false, icon: 'monitoring', color: 'icon-progress' },
   ];
 
   const displayName = session?.user?.displayName ?? 'Người dùng';
@@ -77,7 +75,7 @@ export function LearnerShell({ children }: LearnerShellProps) {
                 className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-surface-container-low border border-outline-variant text-[12px] font-bold text-on-surface-variant hover:text-primary transition-colors"
               >
                 <AppIcon className=" icon-certificate" style={{ fontSize: '16px' }}>admin_panel_settings</AppIcon>
-                {t.nav.admin}
+                {'Quản trị'}
               </Link>
             )}
 

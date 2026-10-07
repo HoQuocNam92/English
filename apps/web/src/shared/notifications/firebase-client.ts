@@ -13,10 +13,10 @@ const config = {
   appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID,
 };
 
-export async function registerWebLearningNotifications() {
+export async function registerWebLearningNotifications({ requestPermission = true }: { requestPermission?: boolean } = {}) {
   if (typeof window === 'undefined' || !(await isSupported())) return false;
   if (!config.apiKey || !config.projectId || !config.messagingSenderId || !config.appId || !process.env.NEXT_PUBLIC_FIREBASE_VAPID_KEY) return false;
-  const permission = await Notification.requestPermission();
+  const permission = requestPermission ? await Notification.requestPermission() : Notification.permission;
   if (permission !== 'granted') return false;
   const registration = await navigator.serviceWorker.register('/firebase-messaging-sw.js');
   const app = getApps().length ? getApp() : initializeApp(config);

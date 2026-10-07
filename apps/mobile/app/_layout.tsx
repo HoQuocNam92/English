@@ -4,7 +4,6 @@ import { Stack } from 'expo-router';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { AuthProvider } from '../src/shared/store/auth-context';
 import { ThemeProvider } from '../src/shared/store/theme-context';
-import { I18nProvider } from '../src/shared/store/i18n-context';
 import Constants, { ExecutionEnvironment } from 'expo-constants';
 
 // expo-notifications push was removed from Expo Go in SDK 53+
@@ -24,8 +23,7 @@ export default function RootLayout() {
   return (
     <SafeAreaProvider>
       <ThemeProvider>
-        <I18nProvider>
-          <AuthProvider>
+        <AuthProvider>
             <TranslationProvider><Stack
               screenOptions={{
                 headerShown: false,
@@ -34,8 +32,7 @@ export default function RootLayout() {
                 }
               }}
             /></TranslationProvider>
-          </AuthProvider>
-        </I18nProvider>
+        </AuthProvider>
       </ThemeProvider>
     </SafeAreaProvider>
   );

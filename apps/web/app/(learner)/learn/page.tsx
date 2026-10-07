@@ -6,11 +6,9 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { LearnerShell } from '@/shared/layout';
 import { apiClient } from '@/shared/api/api-client';
-import { useI18n } from '@/shared/i18n';
 import { LoadingSpinner } from '@/shared/ui';
 
 export default function LearnerHomePage() {
-  const { t } = useI18n();
   const [data, setData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -66,7 +64,7 @@ export default function LearnerHomePage() {
             onClick={() => window.location.reload()}
             className="mt-4 px-4 py-2 bg-primary text-white rounded-lg text-[14px] font-semibold"
           >
-            {t.common.retry}
+            {'Thử lại'}
           </button>
         </div>
       </LearnerShell>
@@ -92,7 +90,7 @@ export default function LearnerHomePage() {
   }
   const cert = profile?.certGoals?.[0]?.certificate?.name ?? profile?.targetCertification?.name ?? profile?.targetCert ?? 'Chưa thiết lập';
   const examActivities = attempts.map((a: any) => {
-    const title = a.exam?.title ?? a.examTitle ?? t.practice.exams;
+    const title = a.exam?.title ?? a.examTitle ?? 'Bài kiểm tra';
     const scoreVal = a.score ?? a.correctCount;
     const scoreText = scoreVal !== undefined && scoreVal !== null ? `${scoreVal}/${a.totalQuestions ?? 100}` : '';
     const time = a.completedAt || a.submittedAt || a.startedAt;
@@ -116,18 +114,18 @@ export default function LearnerHomePage() {
       {/* ─── Hero Section ───────────────────────────────────────── */}
       <section className="mb-6">
         <h1 className="text-[30px] font-bold text-on-surface mb-2" style={{ lineHeight: '38px', letterSpacing: '-0.02em' }}>
-          {t.home.greeting.replace('bạn', '')} {displayName}, {t.home.greetingQuestion.charAt(0).toLowerCase() + t.home.greetingQuestion.slice(1)}
+          {'Chào '} {displayName}, {'hôm nay bạn muốn học gì?'}
         </h1>
         <p className="text-[14px] text-on-surface-variant mb-6">
-          {t.home.subtitle}
+          {'Tiếp tục hành trình chinh phục tiếng Anh IT của bạn.'}
         </p>
 
         {/* Stat Cards — 3 col */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           {[
-            { icon: '🎓', label: t.home.level, value: level, bg: 'bg-gradient-to-br from-indigo-100 to-violet-200' },
-            { icon: '💻', label: t.home.itField, value: domainNames.join(', ') || 'Chưa thiết lập', bg: 'bg-gradient-to-br from-sky-100 to-cyan-200' },
-            { icon: '🏆', label: t.home.certGoal, value: cert, bg: 'bg-gradient-to-br from-amber-100 to-orange-200' },
+            { icon: '🎓', label: 'Trình độ', value: level, bg: 'bg-gradient-to-br from-indigo-100 to-violet-200' },
+            { icon: '💻', label: 'Lĩnh vực IT', value: domainNames.join(', ') || 'Chưa thiết lập', bg: 'bg-gradient-to-br from-sky-100 to-cyan-200' },
+            { icon: '🏆', label: 'Mục tiêu chứng chỉ', value: cert, bg: 'bg-gradient-to-br from-amber-100 to-orange-200' },
           ].map((s) => (
             <div
 
@@ -139,7 +137,7 @@ export default function LearnerHomePage() {
               </div>
               <div className="min-w-0 flex-1">
                 <p className="text-[12px] font-bold text-on-surface-variant uppercase tracking-[0.05em]">{s.label}</p>
-                {s.label === t.home.itField && domainNames.length > 0 ? (
+                {s.label === 'Lĩnh vực IT' && domainNames.length > 0 ? (
                   <div className="mt-2">
                     <ul id="selected-it-domains" className="flex flex-wrap gap-1.5" aria-label="Lĩnh vực IT đã chọn">
                       {(showAllDomains ? domainNames : domainNames.slice(0, 1)).map((name) => (
@@ -153,7 +151,7 @@ export default function LearnerHomePage() {
                     )}
                   </div>
                 ) : (
-                  <p className="text-[20px] font-semibold text-on-surface" style={{ lineHeight: '28px' }}>{s.label === t.home.level ? <LevelBadge level={level} className="text-sm" /> : s.value}</p>
+                  <p className="text-[20px] font-semibold text-on-surface" style={{ lineHeight: '28px' }}>{s.label === 'Trình độ' ? <LevelBadge level={level} className="text-sm" /> : s.value}</p>
                 )}
               </div>
             </div>
@@ -176,7 +174,7 @@ export default function LearnerHomePage() {
               <div className="flex justify-between items-start mb-4">
                 <div>
                   <span className="inline-block px-2 py-1 bg-surface-container-low text-on-surface-variant text-[12px] font-bold rounded mb-2 border border-border-subtle uppercase tracking-[0.05em]">
-                    {journeyConfigured ? t.home.todayGoal : 'Thiết lập hành trình'}
+                    {journeyConfigured ? 'Mục tiêu hôm nay' : 'Thiết lập hành trình'}
                   </span>
                   <h2 className="text-[24px] font-bold text-on-surface" style={{ lineHeight: '32px', letterSpacing: '-0.01em' }}>
                     {journeyConfigured ? 'Mục tiêu học tập hôm nay' : 'Bạn chưa thiết lập lộ trình học tập'}
@@ -404,7 +402,7 @@ export default function LearnerHomePage() {
                   className="bg-surface-container border border-outline-variant rounded-lg p-2 flex items-center justify-between hover:shadow-[0_1px_3px_rgba(15,23,24,0.06)] transition-shadow"
                 >
                   <div>
-                    <h4 className="text-[14px] font-semibold text-on-surface">{a.exam?.title ?? a.examTitle ?? t.practice.exams}</h4>
+                    <h4 className="text-[14px] font-semibold text-on-surface">{a.exam?.title ?? a.examTitle ?? 'Bài kiểm tra'}</h4>
                     <p className="text-[12px] font-bold text-on-surface-variant uppercase tracking-[0.05em]">
                       {a.completedAt ? new Date(a.completedAt).toLocaleDateString('vi-VN') : ''}
                     </p>
