@@ -48,6 +48,37 @@ export class LessonsService {
     return { data, meta: { total, page, limit, totalPages: Math.ceil(total / limit) } }
   }
 
+  async bulkUpdateStatus(dto: Record<string, any>) {
+    const hasIds = Array.isArray(dto.ids) && dto.ids.length > 0
+    const filters = ['search', 'domainCode', 'levelCode', 'currentStatus', 'type', 'topic', 'certificateId']
+    const hasFilter = filters.some((key) => Boolean(dto[key]))
+    if (!hasIds && !hasFilter && dto.confirmAll !== true) throw new BadRequestException('Cần chọn bài học, dùng bộ lọc hoặc xác nhận cập nhật toàn bộ danh sách')
+    const where: any = hasIds ? { id: { in: dto.ids } } : {}
+    if (!hasIds) {
+      if (dto.search) where.OR = [
+        { title: { contains: String(dto.search), mode: 'insensitive' } },
+        { summary: { contains: String(dto.search), mode: 'insensitive' } },
+        { keyConcepts: { has: String(dto.search) } },
+        { domain: { name: { contains: String(dto.search), mode: 'insensitive' } } },
+        { domain: { code: { contains: String(dto.search), mode: 'insensitive' } } },
+        { certificates: { some: { certificate: { name: { contains: String(dto.search), mode: 'insensitive' } } } } },
+        { certificates: { some: { certificate: { code: { contains: String(dto.search), mode: 'insensitive' } } } } },
+        { vocabularies: { some: { vocabulary: { term: { contains: String(dto.search), mode: 'insensitive' } } } } },
+      ]
+      if (dto.domainCode) where.domain = { code: dto.domainCode }
+      if (dto.levelCode) where.level = { code: dto.levelCode }
+      if (dto.currentStatus) where.status = dto.currentStatus
+      if (dto.type) where.type = dto.type
+      if (dto.topic) where.certificationTopics = { some: { topicId: dto.topic } }
+      if (dto.certificateId) where.certificates = { some: { certificateId: dto.certificateId } }
+    }
+    const result = await this.prisma.lesson.updateMany({
+      where,
+      data: { status: dto.status, ...(dto.status === 'published' ? { publishedAt: new Date() } : {}) },
+    })
+    return { updatedCount: result.count, status: dto.status }
+  }
+
   async findOne(idOrSlug: string) {
     const lesson = await this.prisma.lesson.findFirst({
       where: { OR: [{ id: idOrSlug }, { slug: idOrSlug }] },

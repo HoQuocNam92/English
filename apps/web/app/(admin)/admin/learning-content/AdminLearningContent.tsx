@@ -7,7 +7,7 @@ import { ActionButton, ActionGroup } from '@/shared/ui/ActionButton';
 import { LevelBadge } from '@/shared/ui/LevelBadge';
 import { Dropdown } from '@/shared/ui/Dropdown';
 import * as React from 'react';
-import { confirmDialog, PageHeader, SearchInput, Pagination } from '@/shared/ui';
+import { BulkSelectionBar, confirmDialog, PageHeader, SearchInput, Pagination } from '@/shared/ui';
 import { apiClient, ApiClientError } from '@/shared/api/api-client';
 import type { VocabularyItem, PaginatedResponse } from '@/shared/api/api-client';
 
@@ -561,6 +561,7 @@ export default function AdminLearningContent({ createOnly = false }: { createOnl
       {/* Filters */}
       <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <SearchInput
+          className="sm:!w-auto sm:flex-1 sm:min-w-[320px] sm:!max-w-2xl"
           value={searchInput}
           onChange={setSearchInput}
           onSearch={(sanitized) => {
@@ -597,15 +598,11 @@ export default function AdminLearningContent({ createOnly = false }: { createOnl
       )}
 
       {!loading && items.length > 0 && (
-        <div className="mt-4 rounded-xl border border-outline-variant/50 bg-surface-container-lowest p-3 flex flex-wrap items-center gap-2">
-          <label className="mr-auto flex cursor-pointer items-center gap-2 text-sm font-semibold text-on-surface">
-            <input type="checkbox" className="h-4 w-4 accent-primary" checked={items.every((item) => selectedIds.has(item.id))} onChange={(e) => setSelectedIds((current) => { const next = new Set(current); items.forEach((item) => e.target.checked ? next.add(item.id) : next.delete(item.id)); return next; })} />
-            Chọn trang này {selectedIds.size > 0 && `(${selectedIds.size})`}
-          </label>
-          {selectedIds.size > 0 && <><button disabled={bulkBusy} onClick={() => void bulkUpdate('published', 'selected')} className="rounded-lg bg-emerald-600 px-3 py-2 text-xs font-bold text-white disabled:opacity-50">Xuất bản đã chọn</button><button disabled={bulkBusy} onClick={() => void bulkUpdate('draft', 'selected')} className="rounded-lg bg-amber-500 px-3 py-2 text-xs font-bold text-white disabled:opacity-50">Đưa về nháp</button></>}
+        <BulkSelectionBar pageCount={items.length} selectedCount={selectedIds.size} allPageSelected={items.every((item) => selectedIds.has(item.id))} onSelectPage={(selected) => setSelectedIds((current) => { const next = new Set(current); items.forEach((item) => selected ? next.add(item.id) : next.delete(item.id)); return next; })}>
+          {selectedIds.size > 0 && <><button disabled={bulkBusy} onClick={() => void bulkUpdate('published', 'selected')} className="rounded-lg bg-emerald-600 px-3 py-2 text-xs font-bold text-white disabled:opacity-50">Xuất bản đã chọn</button><button disabled={bulkBusy} onClick={() => void bulkUpdate('draft', 'selected')} className="rounded-lg bg-amber-500 px-3 py-2 text-xs font-bold text-white disabled:opacity-50">Chuyển về bản nháp đã chọn</button></>}
           <button disabled={bulkBusy || total === 0} onClick={() => void bulkUpdate('published', 'filtered')} className="rounded-lg border border-emerald-600 px-3 py-2 text-xs font-bold text-emerald-700 disabled:opacity-50">Xuất bản tất cả kết quả lọc</button>
-          <button disabled={bulkBusy || total === 0} onClick={() => void bulkUpdate('draft', 'filtered')} className="rounded-lg border border-amber-500 px-3 py-2 text-xs font-bold text-amber-700 disabled:opacity-50">Cho tất cả kết quả lọc về nháp</button>
-        </div>
+          <button disabled={bulkBusy || total === 0} onClick={() => void bulkUpdate('draft', 'filtered')} className="rounded-lg border border-amber-500 px-3 py-2 text-xs font-bold text-amber-700 disabled:opacity-50">Chuyển tất cả kết quả lọc về bản nháp</button>
+        </BulkSelectionBar>
       )}
 
       {error && (

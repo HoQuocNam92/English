@@ -5,6 +5,7 @@ import { AppIcon } from '@/shared/ui/AppIcon';
 import { Dropdown } from '@/shared/ui/Dropdown';
 import { filterLessons, type CatalogLesson, type LessonProfile } from '@/shared/lib/lesson-catalog';
 import { LevelBadge } from '@/shared/ui/LevelBadge';
+import { SearchInput } from '@/shared/ui/SearchInput';
 import { VocabularyRecommendations } from '@/shared/ui/VocabularyRecommendations';
 import { Suspense, useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
@@ -29,6 +30,7 @@ function LessonCatalog() {
   const activeTrack = lessonTrackByType(params.get('type') ?? '');
   const type = activeTrack?.type ?? '';
   const [query, setQuery] = useState('');
+  const [searchInput, setSearchInput] = useState('');
   const [domainCode, setDomainCode] = useState('');
   const [certificateId, setCertificateId] = useState('');
   const [vocabulary, setVocabulary] = useState('all');
@@ -76,16 +78,16 @@ function LessonCatalog() {
   const visible = useMemo(() => filterLessons(items, profile, { query, domainCode, certificateId, vocabulary, scope }), [items, profile, query, domainCode, certificateId, vocabulary, scope]);
 
   return <LearnerShell><div className="pb-12">
-    <header className="flex flex-wrap items-center justify-between gap-4">
+    <header className="grid items-end gap-4 md:grid-cols-[minmax(0,1fr)_minmax(20rem,36rem)]">
       <div><p className="text-xs font-bold uppercase tracking-widest text-primary">Không gian học tập</p><h1 className="mt-2 text-3xl font-black text-on-surface">Bài học chuyên ngành</h1><p className="mt-2 text-sm text-on-surface-variant">Học tiếng Anh qua thuật ngữ, tài liệu và tình huống thực tế trong IT.</p></div>
-      <label className="learner-header-search flex h-11 min-w-0 items-center gap-2 rounded-xl border border-outline-variant bg-white px-3 lg:w-72"><AppIcon className=" text-[20px] text-on-surface-variant">search</AppIcon><input value={query} onChange={event => setQuery(event.target.value)} placeholder="Tìm bài học, lĩnh vực, chứng chỉ, từ vựng..." aria-label="Tìm bài học chuyên ngành" className="h-full min-w-0 flex-1 border-0 bg-transparent text-sm outline-none" /></label>
+      <SearchInput className="!w-full !min-w-0 sm:!w-full sm:!min-w-0 sm:max-w-none" value={searchInput} onChange={setSearchInput} onSearch={setQuery} placeholder="Tìm bài học, lĩnh vực, chứng chỉ, từ vựng..." />
     </header>
 
 
     <nav className="mt-7 grid gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4" aria-label="Không gian học tập">
-      <Link href="/learn/lessons" aria-current={!type ? 'page' : undefined} className={`group rounded-2xl border p-4 transition cursor-pointer ${!type ? 'border-primary bg-primary !text-white' : 'border-outline-variant/60 bg-white text-on-surface hover:border-primary/40 hover:bg-primary/5'}`}><span className={`flex h-9 w-9 items-center justify-center rounded-xl ${!type ? 'bg-white/15' : 'bg-slate-100'}`}><AppIcon className=" text-[20px]">explore</AppIcon></span><p className="mt-4 text-[10px] font-black uppercase tracking-widest opacity-65">Khám phá</p><strong className="mt-1 block text-sm">Tất cả chuyên đề</strong></Link>
-      {lessonTracks.map(track => { const accent = accentClasses[track.accent]; const active = type === track.type; return <Link key={track.type} href={`/learn/lessons?type=${track.type}`} aria-current={active ? 'page' : undefined} className={`group relative overflow-hidden rounded-2xl border p-4 transition cursor-pointer ${active ? 'border-primary bg-primary !text-white' : 'border-outline-variant/60 bg-white text-on-surface hover:border-primary/40 hover:bg-primary/5'}`}><span className={`flex h-9 w-9 items-center justify-center rounded-xl ${active ? 'bg-white/15 !text-white' : accent.icon}`}><AppIcon className=" text-[20px]">{track.icon}</AppIcon></span><p className="mt-4 text-[10px] font-black uppercase tracking-widest opacity-60">{track.eyebrow}</p><strong className="mt-1 block text-sm leading-5">{track.label}</strong>{active && <span className="absolute right-3 top-3 h-2 w-2 rounded-full bg-current" />}</Link>; })}
-      <Link href="/learn/flashcards" className="group rounded-2xl border border-outline-variant/60 bg-white p-4 text-on-surface transition hover:border-primary/40 hover:bg-primary/5 cursor-pointer">
+      <Link href="/learn/lessons" aria-current={!type ? 'page' : undefined} className={`lesson-track-card block group rounded-2xl border p-4 transition cursor-pointer ${!type ? 'border-primary bg-primary !text-white' : 'border-outline-variant/60 bg-white text-on-surface hover:border-primary/40 hover:bg-primary/5'}`}><span className={`flex h-9 w-9 items-center justify-center rounded-xl ${!type ? 'bg-white/15' : 'bg-slate-100'}`}><AppIcon className=" text-[20px]">explore</AppIcon></span><p className="mt-4 text-[10px] font-black uppercase tracking-widest opacity-65">Khám phá</p><strong className="mt-1 block text-sm">Tất cả chuyên đề</strong></Link>
+      {lessonTracks.map(track => { const accent = accentClasses[track.accent]; const active = type === track.type; return <Link key={track.type} href={`/learn/lessons?type=${track.type}`} aria-current={active ? 'page' : undefined} className={`lesson-track-card block group relative overflow-hidden rounded-2xl border p-4 transition cursor-pointer ${active ? 'border-primary bg-primary !text-white' : 'border-outline-variant/60 bg-white text-on-surface hover:border-primary/40 hover:bg-primary/5'}`}><span className={`flex h-9 w-9 items-center justify-center rounded-xl ${active ? 'bg-white/15 !text-white' : accent.icon}`}><AppIcon className=" text-[20px]">{track.icon}</AppIcon></span><p className="mt-4 text-[10px] font-black uppercase tracking-widest opacity-60">{track.eyebrow}</p><strong className="mt-1 block text-sm leading-5">{track.label}</strong></Link>; })}
+      <Link href="/learn/flashcards" className="block group rounded-2xl border border-outline-variant/60 bg-white p-4 text-on-surface transition hover:border-primary/40 hover:bg-primary/5 cursor-pointer">
         <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-primary/10 text-primary"><AppIcon className="text-[20px]">sort_by_alpha</AppIcon></span>
         <p className="mt-4 text-[10px] font-black uppercase tracking-widest opacity-60">Ôn tập từ vựng CNTT</p>
         <strong className="mt-1 block text-sm leading-5">Luyện từ vựng</strong>
@@ -97,7 +99,7 @@ function LessonCatalog() {
       <Dropdown aria-label="Lọc lĩnh vực" value={domainCode} onChange={event => setDomainCode(event.target.value)}><option value="">Tất cả lĩnh vực</option>{domains.map(domain => <option key={domain.code} value={domain.code}>{domain.name}</option>)}</Dropdown>
       <Dropdown aria-label="Lọc chứng chỉ" value={certificateId} onChange={event => setCertificateId(event.target.value)}><option value="">Tất cả chứng chỉ</option>{certificates.map(certificate => <option key={certificate.id} value={certificate.id}>{certificate.name}</option>)}</Dropdown>
       <Dropdown aria-label="Lọc từ vựng" value={vocabulary} onChange={event => setVocabulary(event.target.value)}><option value="all">Tất cả nội dung từ vựng</option><option value="with">Có từ vựng liên kết</option><option value="without">Chưa có từ vựng liên kết</option>{vocabularyOptions.map(word => <option key={word.id} value={word.id}>{word.term}</option>)}</Dropdown>
-      <button type="button" className="text-left text-sm font-semibold text-primary" onClick={() => { setQuery(''); setDomainCode(''); setCertificateId(''); setVocabulary('all'); }}>Xóa bộ lọc</button>
+      <button type="button" className="text-left text-sm font-semibold text-primary" onClick={() => { setQuery(''); setSearchInput(''); setDomainCode(''); setCertificateId(''); setVocabulary('all'); }}>Xóa bộ lọc</button>
     </div>
     {!loading && scope === 'path' && <p className="mt-3 text-sm text-on-surface-variant">{hasPath ? 'Đề xuất theo lĩnh vực, chứng chỉ mục tiêu và trình độ trong hồ sơ của bạn.' : 'Bạn chưa chọn lộ trình. Cập nhật mục tiêu trong hồ sơ hoặc chọn Tất cả bài học để khám phá.'} <Link href="/learn/profile" className="font-semibold text-primary">Cập nhật lộ trình</Link></p>}
 

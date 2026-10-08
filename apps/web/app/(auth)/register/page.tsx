@@ -95,7 +95,7 @@ export default function RegisterPage() {
         <div className="relative z-10 flex flex-col h-full p-8 xl:p-12">
           <div className="mt-8 max-w-[90%] xl:mt-12">
             <h2 className="text-3xl xl:text-4xl font-extrabold text-on-surface mb-4 leading-tight">
-              Tạo tài khoản Học viên mới
+              Nền tảng học tiếng Anh chuyên ngành CNTT
             </h2>
 
           </div>
@@ -137,6 +137,7 @@ export default function RegisterPage() {
                   className="w-full h-11 pl-11 pr-4 rounded-lg border border-outline-variant bg-surface-container-lowest text-sm text-on-surface focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition-all placeholder:text-outline/70"
                   id="displayName"
                   name="displayName"
+                  autoComplete="name"
                   placeholder="Nguyễn Văn A"
                   type="text"
                   value={displayName}
@@ -159,7 +160,8 @@ export default function RegisterPage() {
                   className="w-full h-11 pl-11 pr-4 rounded-lg border border-outline-variant bg-surface-container-lowest text-sm text-on-surface focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition-all placeholder:text-outline/70"
                   id="email"
                   name="email"
-                  placeholder="learner@techenglish.pro"
+                  autoComplete="email"
+                  placeholder="email@example.com"
                   type="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
@@ -181,6 +183,7 @@ export default function RegisterPage() {
                   className="w-full h-11 pl-11 pr-11 rounded-lg border border-outline-variant bg-surface-container-lowest text-sm text-on-surface focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition-all placeholder:text-outline/70"
                   id="password"
                   name="password"
+                  autoComplete="new-password"
                   placeholder="••••••••"
                   type={showPassword ? 'text' : 'password'}
                   minLength={6}
@@ -191,6 +194,7 @@ export default function RegisterPage() {
                 <button
                   className="absolute right-1 top-0 !h-full w-10 !p-0 flex items-center justify-center text-outline hover:text-on-surface transition-colors cursor-pointer"
                   type="button"
+                  tabIndex={-1}
                   onClick={() => setShowPassword(!showPassword)}
                   aria-label={showPassword ? 'Ẩn mật khẩu' : 'Hiện mật khẩu'}
                 >
@@ -216,6 +220,7 @@ export default function RegisterPage() {
                   className="w-full h-11 pl-11 pr-11 rounded-lg border border-outline-variant bg-surface-container-lowest text-sm text-on-surface focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition-all placeholder:text-outline/70"
                   id="confirmPassword"
                   name="confirmPassword"
+                  autoComplete="new-password"
                   placeholder="••••••••"
                   type={showConfirmPassword ? 'text' : 'password'}
                   minLength={6}
@@ -226,6 +231,7 @@ export default function RegisterPage() {
                 <button
                   className="absolute right-1 top-0 !h-full w-10 !p-0 flex items-center justify-center text-outline hover:text-on-surface transition-colors cursor-pointer"
                   type="button"
+                  tabIndex={-1}
                   onClick={() => setShowConfirmPassword(!showConfirmPassword)}
                   aria-label={showConfirmPassword ? 'Ẩn mật khẩu' : 'Hiện mật khẩu'}
                 >
@@ -245,7 +251,7 @@ export default function RegisterPage() {
                 required
               />
               <label htmlFor="terms" className="text-[13px] text-on-surface-variant leading-tight">
-                Tôi đồng ý với <Link href="/terms" className="text-primary hover:underline font-semibold">Điều khoản dịch vụ</Link> và <Link href="/privacy" className="text-primary hover:underline font-semibold">Chính sách bảo mật</Link> của hệ thống
+                Tôi đồng ý với <Link href="/terms" tabIndex={-1} className="text-primary hover:underline font-semibold">Điều khoản dịch vụ</Link> và <Link href="/privacy" tabIndex={-1} className="text-primary hover:underline font-semibold">Chính sách bảo mật</Link> của hệ thống
               </label>
             </div>
 

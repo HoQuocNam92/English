@@ -70,6 +70,27 @@ export class ExamsService {
     return { data, meta: { total, page, limit, totalPages: Math.ceil(total / limit) } }
   }
 
+  async bulkUpdateStatus(dto: any) {
+    const hasIds = Array.isArray(dto.ids) && dto.ids.length > 0
+    const filters = ['search', 'domainCode', 'levelCode', 'currentStatus', 'kind', 'certificateId']
+    const hasFilter = filters.some((key) => Boolean(dto[key]))
+    if (!hasIds && !hasFilter && dto.confirmAll !== true) throw new BadRequestException('Cần chọn bài thi, dùng bộ lọc hoặc xác nhận cập nhật toàn bộ danh sách')
+    const where: any = hasIds ? { id: { in: dto.ids } } : { certificateId: { not: null } }
+    if (!hasIds) {
+      if (dto.search) where.title = { contains: dto.search, mode: 'insensitive' }
+      if (dto.domainCode) where.domain = { code: dto.domainCode }
+      if (dto.levelCode) where.level = { code: dto.levelCode }
+      if (dto.currentStatus) where.status = dto.currentStatus
+      if (dto.kind) where.kind = dto.kind
+      if (dto.certificateId) where.certificateId = dto.certificateId
+    }
+    const result = await this.prisma.exam.updateMany({
+      where,
+      data: { status: dto.status, ...(dto.status === 'published' ? { publishedAt: new Date() } : {}) },
+    })
+    return { updatedCount: result.count, status: dto.status }
+  }
+
   async findOne(id: string) {
     const e = await this.prisma.exam.findUnique({ where: { id }, include: { domain: true, level: true, certificate: true, questions: { include: { question: { include: { options: { orderBy: { order: 'asc' } } } } }, orderBy: { order: 'asc' } } } })
     if (!e) throw new NotFoundException('Không tìm thấy bài thi')

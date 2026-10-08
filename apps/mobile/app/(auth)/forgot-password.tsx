@@ -41,7 +41,7 @@ export default function MobileForgotPasswordScreen() {
           <Text style={styles.label}>Email tài khoản</Text>
           <View style={[styles.inputWrapper, emailError ? styles.inputError : null]}>
             <MaterialIcons name="mail-outline" size={20} color={colors.outline} style={styles.inputIcon} />
-            <TextInput style={styles.input} value={email} onChangeText={setEmail} keyboardType="email-address" autoCapitalize="none" placeholder="nhapemail@example.com" />
+            <TextInput style={styles.input} value={email} onChangeText={setEmail} keyboardType="email-address" autoCapitalize="none" autoComplete="email" placeholder="email@example.com" />
           </View>
           {!!emailError && <Text style={styles.errorTextSmall}>{emailError}</Text>}
         </View>}
@@ -167,4 +167,3 @@ const styles = StyleSheet.create({
     borderWidth: 1
   }
 });
-

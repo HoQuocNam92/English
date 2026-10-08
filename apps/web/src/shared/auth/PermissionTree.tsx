@@ -80,5 +80,6 @@ export function PermissionTree({ permissions, selectedIds, busyId, onToggle, onT
   renderMeta?: (permission: Permission) => React.ReactNode;
 }) {
   const tree = React.useMemo(() => buildTree(permissions), [permissions]);
+  if (permissions.length === 0) return <div className="rounded-2xl border border-dashed border-outline-variant bg-white p-8 text-center text-sm text-on-surface-variant">Không có quyền nào phù hợp với danh sách hiện tại.</div>;
   return <div className="rounded-2xl border border-outline-variant bg-white p-3 shadow-sm"><TreeBranch paginate={paginate} node={tree} depth={0} selectedIds={selectedIds} busyId={busyId} onToggle={onToggle} onToggleMany={onToggleMany} renderMeta={renderMeta} /></div>;
 }

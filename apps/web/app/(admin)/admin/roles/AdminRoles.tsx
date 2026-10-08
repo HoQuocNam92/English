@@ -227,14 +227,13 @@ export default function AdminRoles({ createKind }: { createKind?: 'role' | 'perm
           <div className="flex justify-end gap-3 border-t border-outline-variant/20 px-6 py-4"><button type="button" onClick={closeRole} className="h-10 rounded-xl px-4 text-sm font-semibold">Huỷ</button><button type="submit" disabled={savingRole} className="h-10 rounded-xl bg-primary px-5 text-sm font-semibold !text-white disabled:opacity-50">{savingRole ? 'Đang tạo...' : 'Tạo nhóm quyền'}</button></div>
         </form>
       </FormSurface>);
+  const visibleRoles = roles.filter(role => matchesSearch(search, role.name, role.code, role.description) && (!filter || ((role.userCount ?? 0) > 0) === (filter === 'assigned')));
+
   if (createKind) return <CreatePage backHref={createKind === 'permission' ? '/admin/roles?tab=permissions' : '/admin/roles'}>{createKind === 'permission' ? permissionFormView : roleFormView}</CreatePage>;
 
   return (
     <div className="p-6">
-      <div className="mb-6">
-        <h1 className="text-2xl font-bold text-on-surface mb-2">Phân Quyền</h1>
-        <p className="text-sm text-on-surface-variant">Chọn nhóm người dùng và những công việc họ được phép thực hiện.</p>
-      </div>
+      <PageHeader className="mb-6" title="Phân quyền" description="Chọn nhóm người dùng và những công việc họ được phép thực hiện." icon="admin_panel_settings" iconClassName="from-violet-500 to-indigo-500" />
 
       {error && (
         <div className="mb-6 p-4 rounded-xl bg-error-container text-on-error-container text-sm font-semibold">{error}</div>
@@ -276,7 +275,11 @@ export default function AdminRoles({ createKind }: { createKind?: 'role' | 'perm
           {loading ? (
             [1, 2, 3].map((i) => <SkeletonCard key={i} />)
           ) : (
-            roles.filter(role=>matchesSearch(search,role.name,role.code,role.description) && (!filter || ((role.userCount ?? 0)>0) === (filter==='assigned'))).map((role) => (
+            visibleRoles.length === 0 ? (
+              <div key="empty" className="col-span-full rounded-xl border border-dashed border-outline-variant bg-white p-8 text-center text-sm text-on-surface-variant">
+                {roles.length === 0 ? 'Chưa có nhóm quyền nào.' : 'Không có nhóm quyền phù hợp với bộ lọc.'}
+              </div>
+            ) : visibleRoles.map((role) => (
               <RoleCard
                 key={role.id}
                 role={role}

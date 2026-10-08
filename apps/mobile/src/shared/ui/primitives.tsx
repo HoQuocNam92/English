@@ -5,19 +5,21 @@ import { colors, radius, typography } from '@techenglish/design-tokens';
 
 // Shared typography and touch targets. Screen-specific layouts stay in style props.
 const TextDepth = React.createContext(false);
-export function Text({ style, children, ...props }: TextProps) {
+type AppTextProps = TextProps & { focusable?: boolean };
+export function Text({ style, children, focusable, ...props }: AppTextProps) {
   const translate = useTranslation();
   const nested = React.useContext(TextDepth);
   const resolved = StyleSheet.flatten(style);
   const text = plainText(children);
-  return <NativeText {...props} onLongPress={props.onLongPress ?? (props.selectable && text.trim() ? () => translate(text) : undefined)} style={[
+  const nativeProps = { ...props, ...(focusable === undefined ? {} : { focusable }) } as TextProps;
+  return <NativeText {...nativeProps} onLongPress={props.onLongPress ?? (props.selectable && text.trim() ? () => translate(text) : undefined)} style={[
     !nested && { fontFamily: typography.fontFamily, fontSize: typography.body.fontSize, lineHeight: typography.body.lineHeight, color: colors.text },
     resolved?.fontSize && !resolved.lineHeight ? { lineHeight: Math.ceil(resolved.fontSize * 1.4) } : undefined, style,
   ]}><TextDepth.Provider value={true}>{children}</TextDepth.Provider></NativeText>;
 }
-export function TextInput({ style, ...props }: TextInputProps) {
-  return <NativeInput placeholderTextColor={colors.outline} {...props} style={[{ fontFamily: typography.fontFamily, fontSize: 14, color: colors.text, minHeight: 44 }, style]} />;
-}
+export const TextInput = React.forwardRef<React.ElementRef<typeof NativeInput>, TextInputProps>(function TextInput({ style, ...props }, ref) {
+  return <NativeInput ref={ref} placeholderTextColor={colors.outline} {...props} style={[{ fontFamily: typography.fontFamily, fontSize: 14, color: colors.text, minHeight: 44 }, style]} />;
+});
 export function TouchableOpacity({ style, ...props }: TouchableOpacityProps) {
   return <NativeButton accessibilityRole="button" activeOpacity={0.8} {...props} style={[{ minHeight: 44, justifyContent: 'center' }, style]} />;
 }

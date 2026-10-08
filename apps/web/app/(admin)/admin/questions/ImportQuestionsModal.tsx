@@ -733,7 +733,7 @@ export function ImportQuestionsModal({
                 {/* Row 2: Detailed Filters */}
                 <div className="flex flex-col items-start gap-3 pt-1 lg:flex-row">
                   {/* Keyword Search */}
-                  <div className="relative w-full lg:w-72 lg:shrink-0">
+                  <div className="relative w-full min-w-0 lg:min-w-[320px] lg:flex-1">
                     <AppIcon className=" absolute left-2.5 top-1/2 -translate-y-1/2 text-[18px] text-slate-400">
                       search
                     </AppIcon>
@@ -756,7 +756,7 @@ export function ImportQuestionsModal({
                     )}
                   </div>
 
-                  <div className="flex w-full flex-wrap gap-2 lg:ml-auto lg:w-auto lg:justify-end">
+                  <div className="flex w-full min-w-0 flex-wrap gap-2 lg:ml-auto lg:w-auto lg:flex-1 lg:justify-end">
                   {/* File Source Filter (when > 1 file) */}
                   {files.length > 1 && (
                     <Dropdown

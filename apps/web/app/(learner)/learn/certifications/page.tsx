@@ -25,6 +25,9 @@ export default function CertificationsPage() {
       .finally(() => setLoading(false));
   }, []);
 
+  const filteredCertificates = certificates.filter(certificate => matchesSearch(search, certificate.name, certificate.code, certificate.provider)
+    && (!filter || (progress.some(item => item.certificateId === certificate.id && item.completionPercent > 0) === (filter === 'started'))));
+
   if (loading) return <LearnerShell><LoadingSpinner /></LearnerShell>;
 
   return <LearnerShell><div className="w-full">
@@ -32,7 +35,12 @@ export default function CertificationsPage() {
     {error && <p className="rounded-xl border border-error/30 bg-error-container p-4 text-sm text-error">{error}</p>}
     {!error && !certificates.length && <p className="rounded-xl border border-dashed p-8 text-center text-sm text-on-surface-variant">Chưa có chứng chỉ đang hoạt động.</p>}
     <ListTools search={search} onSearch={setSearch} filter={filter} onFilter={setFilter} options={[{value:'',label:'Tất cả tiến độ'},{value:'started',label:'Đã bắt đầu học'},{value:'new',label:'Chưa bắt đầu'}]} />
-    <PaginatedList className="grid grid-cols-1 gap-6 lg:grid-cols-2">{certificates.filter(certificate => matchesSearch(search,certificate.name,certificate.code,certificate.provider) && (!filter || (progress.some(item=>item.certificateId===certificate.id && item.completionPercent>0) === (filter==='started')))).map((certificate) => {
+    {certificates.length > 0 && filteredCertificates.length === 0 && <div className="mt-6 rounded-2xl border border-dashed border-outline-variant bg-surface-container-lowest p-10 text-center">
+      <p className="font-semibold text-on-surface">{filter === 'started' ? 'Chưa có chứng chỉ nào bạn đã bắt đầu học.' : filter === 'new' ? 'Bạn đã bắt đầu học tất cả chứng chỉ.' : 'Không có chứng chỉ phù hợp với bộ lọc.'}</p>
+      <p className="mt-1 text-sm text-on-surface-variant">Hãy đổi từ khóa hoặc chọn tiến độ khác.</p>
+      <button type="button" onClick={() => { setSearch(''); setFilter(''); }} className="mt-4 text-sm font-bold text-primary hover:underline">Xóa bộ lọc</button>
+    </div>}
+    {!!filteredCertificates.length && <PaginatedList className="grid grid-cols-1 gap-6 lg:grid-cols-2">{filteredCertificates.map((certificate) => {
       const itemProgress = progress.find((item) => item.certificateId === certificate.id);
       const percent = Math.round(itemProgress?.completionPercent ?? 0);
       const domains = (certificate.domains ?? []).map((item: any) => item.domain?.name).filter(Boolean);
@@ -43,6 +51,6 @@ export default function CertificationsPage() {
         <div className="mt-4 flex flex-wrap gap-2">{domains.map((name: string) => <span key={name} className="rounded-full bg-primary/10 px-2.5 py-1 text-xs font-semibold text-primary">{name}</span>)}</div>
         <div className="content-card-footer"><div className="content-card-actions border-t border-outline-variant pt-4"><Link href={`/learn/certifications/${certificate.id}`} className="ui-button ui-button-primary text-sm">{percent > 0 ? 'Tiếp tục ôn' : 'Xem lộ trình'}</Link></div></div>
       </article>;
-    })}</PaginatedList>
+    })}</PaginatedList>}
   </div></LearnerShell>;
 }

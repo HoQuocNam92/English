@@ -446,7 +446,7 @@ export default function TestBuilderPage() {
 
             <div className="flex flex-col items-start gap-3 sm:flex-row">
             {/* Search Input */}
-            <div className="relative w-full sm:w-56 sm:shrink-0">
+            <div className="relative w-full min-w-0 sm:min-w-[240px] sm:flex-1">
               <AppIcon className=" absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-[18px]">
                 search
               </AppIcon>
@@ -469,7 +469,7 @@ export default function TestBuilderPage() {
             </div>
 
             {/* Filter Dropdowns: Domain & Level */}
-            <div className="grid w-full min-w-0 gap-2.5 sm:ml-auto sm:grid-cols-2">
+            <div className="grid w-full min-w-0 gap-2.5 sm:ml-auto sm:w-auto sm:flex-[2] sm:grid-cols-2">
               <div>
                 <Dropdown
                   value={qFilterDomain}
@@ -656,4 +656,3 @@ export default function TestBuilderPage() {
     </FormPageLayout>
   );
 }
-

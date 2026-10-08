@@ -72,6 +72,9 @@ export default function MobileCertificationsScreen({ embedded = false }: { embed
     } as any);
   };
 
+  const filteredCertificates = certificates.filter(cert => `${cert.name} ${cert.code} ${cert.provider}`.toLocaleLowerCase('vi').includes(search.trim().toLocaleLowerCase('vi'))
+    && (!filter || ((cert.readinessPercent ?? 0) > 0) === (filter === 'started')));
+
   return (
     <View style={[styles.container, { backgroundColor: themeColors.background }]}>
       <StatusBar style="dark" />
@@ -113,9 +116,19 @@ export default function MobileCertificationsScreen({ embedded = false }: { embed
             <MaterialIcons name="workspace-premium" size={48} color={themeColors.onSurfaceVariant} />
             <Text style={[styles.emptyText, { color: themeColors.onSurfaceVariant }]}>Chưa có thông tin chứng chỉ nào.</Text>
           </View>
+        ) : filteredCertificates.length === 0 ? (
+          <View style={styles.centerContainer}>
+            <MaterialIcons name="filter-list-off" size={48} color={themeColors.onSurfaceVariant} />
+            <Text style={[styles.emptyText, { color: themeColors.onSurfaceVariant, textAlign: 'center' }]}>
+              {filter === 'started' ? 'Chưa có chứng chỉ nào bạn đã bắt đầu học.' : filter === 'new' ? 'Bạn đã bắt đầu học tất cả chứng chỉ.' : 'Không có chứng chỉ phù hợp với từ khóa.'}
+            </Text>
+            <TouchableOpacity style={styles.retryButton} onPress={() => { setSearch(''); setFilter(''); }}>
+              <Text style={styles.retryButtonText}>Xóa bộ lọc</Text>
+            </TouchableOpacity>
+          </View>
         ) : (
           <View style={styles.listContainer}>
-            {certificates.filter(cert => `${cert.name} ${cert.code} ${cert.provider}`.toLocaleLowerCase('vi').includes(search.trim().toLocaleLowerCase('vi')) && (!filter || ((cert.readinessPercent ?? 0) > 0) === (filter === 'started'))).map((cert) => {
+            {filteredCertificates.map((cert) => {
               const readiness = cert.readinessPercent ?? 0;
               const readinessColor = colors.primary;
 

@@ -67,7 +67,7 @@ export default function AdminProgressPage() {
 
       {/* Filters */}
       <div className="mt-6 flex flex-wrap items-end gap-4 rounded-2xl border border-outline-variant/50 bg-white p-4">
-        <div className="grid w-full min-w-0 gap-1 text-xs font-semibold text-on-surface-variant lg:w-80 lg:shrink-0"><span>Tìm học viên</span>
+        <div className="grid w-full min-w-0 gap-1 text-xs font-semibold text-on-surface-variant lg:min-w-[320px] lg:flex-1"><span>Tìm học viên</span>
         <SearchInput
           className="!w-full !max-w-none"
           value={searchInput}

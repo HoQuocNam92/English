@@ -48,6 +48,26 @@ export class QuestionsService {
     return { data, meta: { total, page, limit, totalPages: Math.ceil(total / limit) } }
   }
 
+  async bulkUpdateStatus(dto: any) {
+    const hasIds = Array.isArray(dto.ids) && dto.ids.length > 0
+    const filters = ['search', 'domainCode', 'levelCode', 'currentStatus', 'type', 'skill', 'topic', 'examId']
+    const hasFilter = filters.some((key) => Boolean(dto[key]))
+    if (!hasIds && !hasFilter && dto.confirmAll !== true) throw new BadRequestException('Cần chọn câu hỏi, dùng bộ lọc hoặc xác nhận cập nhật toàn bộ ngân hàng')
+    const where: any = hasIds ? { id: { in: dto.ids } } : {}
+    if (!hasIds) {
+      if (dto.search) where.OR = [{ prompt: { contains: dto.search, mode: 'insensitive' } }, { context: { contains: dto.search, mode: 'insensitive' } }]
+      if (dto.domainCode) where.domain = { code: dto.domainCode }
+      if (dto.levelCode) where.level = { code: dto.levelCode }
+      if (dto.currentStatus) where.status = dto.currentStatus
+      if (dto.type) where.type = dto.type
+      if (dto.skill) where.skill = dto.skill
+      if (dto.topic) where.topics = { has: String(dto.topic) }
+      if (dto.examId) where.examQuestions = { some: { examId: dto.examId } }
+    }
+    const result = await this.prisma.question.updateMany({ where, data: { status: dto.status } })
+    return { updatedCount: result.count, status: dto.status }
+  }
+
   async findOne(id: string) {
     const q = await this.prisma.question.findUnique({
       where: { id },

@@ -7,7 +7,7 @@ import { LevelBadge } from '@/shared/ui/LevelBadge';
 import { Dropdown } from '@/shared/ui/Dropdown';
 import * as React from 'react';
 import Link from 'next/link';
-import { confirmDialog, PageHeader, Pagination, SearchInput } from '@/shared/ui';
+import { BulkSelectionBar, confirmDialog, PageHeader, Pagination, SearchInput } from '@/shared/ui';
 import { apiClient, ApiClientError } from '@/shared/api/api-client';
 import type { ExamItem, QuestionItem, PaginatedResponse } from '@/shared/api/api-client';
 import { downloadQuestionExcelTemplate } from '@/features/questions/question-excel';
@@ -62,6 +62,8 @@ export default function AdminQuestionsPage() {
   const [successMessage, setSuccessMessage] = React.useState<string | null>(null);
   const [importModalOpen, setImportModalOpen] = React.useState(false);
   const [deletingId, setDeletingId] = React.useState<string | null>(null);
+  const [selectedIds, setSelectedIds] = React.useState<Set<string>>(new Set());
+  const [bulkBusy, setBulkBusy] = React.useState(false);
   const load = React.useCallback(async () => {
     setLoading(true);
     setError(null);
@@ -88,6 +90,7 @@ export default function AdminQuestionsPage() {
   }, [page, limit, search, status, type, skill, domainCode, examId, topic]);
 
   React.useEffect(() => { void load(); }, [load]);
+  React.useEffect(() => { setSelectedIds(new Set()); }, [page, limit, search, status, type, topic, skill, domainCode, examId]);
 
   React.useEffect(() => {
     void Promise.all([
@@ -101,15 +104,24 @@ export default function AdminQuestionsPage() {
     }).catch(() => undefined);
   }, []);
 
-  const [updatingId, setUpdatingId] = React.useState<string | null>(null);
-  const changeStatus = async (question: QuestionItem) => {
-    setUpdatingId(question.id);
+  const bulkUpdateStatus = async (targetStatus: 'draft' | 'published', scope: 'selected' | 'filtered') => {
+    if (scope === 'selected' && selectedIds.size === 0) return;
+    const count = scope === 'selected' ? selectedIds.size : total;
+    const action = targetStatus === 'published' ? 'xuất bản' : 'chuyển về bản nháp';
+    const affected = scope === 'selected' ? `${count} câu hỏi đã chọn` : `${count} kết quả đang lọc`;
+    if (!(await confirmDialog(`Bạn có chắc muốn ${action} ${affected}?`, { title: 'Xác nhận cập nhật hàng loạt', confirmLabel: action, tone: targetStatus === 'published' ? 'primary' : 'warning' }))) return;
+    setBulkBusy(true);
     setError(null);
     try {
-      await apiClient.patch(`/questions/${question.id}`, { status: question.status === 'published' ? 'draft' : 'published' });
+      const filters = { search: search || undefined, currentStatus: status || undefined, type: type || undefined, skill: skill || undefined, topic: topic || undefined, domainCode: domainCode || undefined, examId: examId || undefined };
+      const result = await apiClient.patch<{ updatedCount: number }>('/questions/bulk-status', scope === 'selected'
+        ? { ids: [...selectedIds], status: targetStatus }
+        : { ...filters, status: targetStatus, confirmAll: !Object.values(filters).some(Boolean) });
+      setSelectedIds(new Set());
+      setSuccessMessage(`Đã ${action} ${result.updatedCount} câu hỏi.`);
       await load();
     } catch (cause) { setError(cause instanceof ApiClientError ? cause.message : 'Không thể cập nhật trạng thái câu hỏi'); }
-    finally { setUpdatingId(null); }
+    finally { setBulkBusy(false); }
   };
 
   const handleDelete = async (question: QuestionItem) => {
@@ -173,9 +185,9 @@ export default function AdminQuestionsPage() {
             </span>
           ))}
         </div>
-        <div className="flex min-w-0 flex-col items-start gap-4 lg:flex-row">
+        <div className="grid min-w-0 gap-3">
         <SearchInput
-          className="min-w-0 lg:!w-80 lg:shrink-0"
+          className="sm:!w-full"
           value={searchInput}
           onChange={setSearchInput}
           onSearch={(sanitized) => {
@@ -185,7 +197,7 @@ export default function AdminQuestionsPage() {
           placeholder="Nội dung hoặc ngữ cảnh"
           maxLength={100}
         />
-        <div className="grid w-full min-w-0 gap-3 sm:grid-cols-2 xl:grid-cols-3 lg:ml-auto lg:max-w-3xl">
+        <div className="grid w-full min-w-0 gap-3 sm:grid-cols-2 xl:grid-cols-3">
         <Dropdown
           value={type}
           onChange={(e) => { setType(e.target.value); setPage(1); }}
@@ -258,6 +270,11 @@ export default function AdminQuestionsPage() {
       )}
 
       {/* Question list */}
+      <BulkSelectionBar pageCount={items.length} selectedCount={selectedIds.size} allPageSelected={items.length > 0 && items.every((item) => selectedIds.has(item.id))} onSelectPage={(selected) => setSelectedIds((current) => { const next = new Set(current); items.forEach((item) => selected ? next.add(item.id) : next.delete(item.id)); return next; })}>
+        {selectedIds.size > 0 && <><button disabled={bulkBusy} onClick={() => void bulkUpdateStatus('published', 'selected')} className="rounded-lg bg-emerald-600 px-3 py-2 text-xs font-bold text-white disabled:opacity-50">Xuất bản đã chọn</button><button disabled={bulkBusy} onClick={() => void bulkUpdateStatus('draft', 'selected')} className="rounded-lg bg-amber-500 px-3 py-2 text-xs font-bold text-white disabled:opacity-50">Chuyển về bản nháp đã chọn</button></>}
+        <button disabled={bulkBusy || total === 0} onClick={() => void bulkUpdateStatus('published', 'filtered')} className="rounded-lg border border-emerald-600 px-3 py-2 text-xs font-bold text-emerald-700 disabled:opacity-50">Xuất bản tất cả kết quả lọc</button>
+        <button disabled={bulkBusy || total === 0} onClick={() => void bulkUpdateStatus('draft', 'filtered')} className="rounded-lg border border-amber-500 px-3 py-2 text-xs font-bold text-amber-700 disabled:opacity-50">Chuyển tất cả kết quả lọc về bản nháp</button>
+      </BulkSelectionBar>
       <div className="mt-4 rounded-2xl bg-surface-container-lowest overflow-hidden shadow-[0_8px_28px_rgba(15,23,42,0.05)]">
         {loading ? (
           Array.from({ length: 5 }).map((_, i) => <SkeletonRow key={i} />)
@@ -267,25 +284,25 @@ export default function AdminQuestionsPage() {
             <p className="text-sm text-on-surface-variant">Không tìm thấy câu hỏi nào</p>
           </div>
         ) : (
-          <div className="overflow-x-auto"><table className="admin-list-table min-w-[1000px]"><thead><tr><th>Câu hỏi</th><th>Loại / kỹ năng</th><th>Lĩnh vực</th><th>Trình độ</th><th>Bộ đề</th><th>Trạng thái</th><th className="text-right">Thao tác</th></tr></thead><tbody>
+          <div className="overflow-x-auto"><table className="admin-list-table min-w-[1040px]"><thead><tr><th className="w-12">Chọn</th><th>Câu hỏi</th><th>Loại / kỹ năng</th><th>Lĩnh vực</th><th>Trình độ</th><th>Bộ đề</th><th>Trạng thái</th><th className="text-right">Thao tác</th></tr></thead><tbody>
             {items.map((q, idx) => {
               const qType = QUESTION_TYPES[q.type] ?? { label: q.type, icon: 'help', color: 'text-gray-500' };
               const isExpanded = expanded === q.id;
               return <React.Fragment key={q.id}>
                 <tr>
+                  <td><input type="checkbox" aria-label={`Chọn câu hỏi ${q.prompt}`} checked={selectedIds.has(q.id)} onChange={() => setSelectedIds((current) => { const next = new Set(current); if (next.has(q.id)) next.delete(q.id); else next.add(q.id); return next; })} className="h-4 w-4 accent-primary" /></td>
                   <td className="max-w-[360px]"><button type="button" aria-expanded={isExpanded} onClick={() => setExpanded(isExpanded ? null : q.id)} className="text-left text-sm font-semibold text-on-surface hover:text-primary"><span className="mr-2 text-xs text-on-surface-variant">{(page - 1) * limit + idx + 1}.</span>{q.prompt}</button></td>
                   <td><p>{qType.label}</p><p className="mt-1 text-xs text-on-surface-variant">{SKILLS[q.skill] ?? q.skill}</p></td>
                   <td>{q.domain?.name ?? '—'}</td><td><LevelBadge level={q.level} /></td>
                   <td>{q.examQuestions?.length ?? 0}</td>
                   <td><span className={`whitespace-nowrap rounded-full px-2 py-1 text-xs font-medium ${q.status === 'published' ? 'bg-emerald-50 text-emerald-700' : 'bg-amber-50 text-amber-700'}`}>{q.status === 'published' ? 'Đã xuất bản' : 'Bản nháp'}</span></td>
-                  <td><ActionGroup><ActionButton action="view" onClick={() => setExpanded(isExpanded ? null : q.id)} /><ActionButton action="edit" href={`/admin/questions/editor?id=${q.id}`} /><ActionButton action={q.status === 'published' ? 'draft' : 'publish'} loading={updatingId === q.id} onClick={() => void changeStatus(q)} /><ActionButton action="delete" loading={deletingId === q.id} onClick={() => void handleDelete(q)} /></ActionGroup></td>
+                  <td><ActionGroup><ActionButton action="view" onClick={() => setExpanded(isExpanded ? null : q.id)} /><ActionButton action="edit" href={`/admin/questions/editor?id=${q.id}`} /><ActionButton action="delete" loading={deletingId === q.id} onClick={() => void handleDelete(q)} /></ActionGroup></td>
                 </tr>
                   {/* Expanded content */}
                   {isExpanded && (
-                    <tr><td colSpan={7}><div className="space-y-4 p-4">
+                    <tr><td colSpan={8}><div className="space-y-4 p-4">
                       <ActionGroup>
                         <ActionButton action="edit" href={`/admin/questions/editor?id=${q.id}`} />
-                        <ActionButton action={q.status === 'published' ? 'draft' : 'publish'} loading={updatingId === q.id} disabled={updatingId === q.id} onClick={() => void changeStatus(q)} />
                         <ActionButton action="delete" type="button" disabled={deletingId === q.id} onClick={() => void handleDelete(q)} loading={deletingId === q.id} />
                       </ActionGroup>
                       <div className="grid gap-3 md:grid-cols-2">

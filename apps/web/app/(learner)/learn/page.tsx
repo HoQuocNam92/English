@@ -409,7 +409,7 @@ export default function LearnerHomePage() {
                   </div>
                   <div className="flex flex-col items-end">
                     <span className="text-[14px] font-semibold text-primary">{a.score ?? a.correctCount}/{a.totalQuestions ?? 100}</span>
-                    <Link href={`/learn/quiz/${a.examId ?? ''}`} className="text-[12px] font-bold text-primary hover:underline">Xem kết quả</Link>
+                    <Link href={`/learn/quiz/result/${a.id}`} className="text-[12px] font-bold text-primary hover:underline">Xem kết quả</Link>
                   </div>
                 </div>
               )) : <p className="rounded bg-surface-container p-3 text-xs text-on-surface-variant">Bạn chưa có kết quả bài kiểm tra.</p>}

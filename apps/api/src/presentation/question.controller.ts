@@ -5,7 +5,7 @@ import { JwtAuthGuard } from '../infrastructure/auth/jwt-auth.guard'
 import { PermissionsGuard } from '../infrastructure/auth/permissions.guard'
 import { RequirePermissions } from './decorators/require-permissions.decorator'
 import { CurrentUser, JwtPayload } from './decorators/current-user.decorator'
-import { CreateQuestionDto, UpdateQuestionDto, BulkCreateQuestionsDto } from './http-dto/content.dto'
+import { CreateQuestionDto, UpdateQuestionDto, BulkCreateQuestionsDto, BulkUpdateStatusDto } from './http-dto/content.dto'
 
 @ApiTags('Questions')
 @ApiBearerAuth()
@@ -26,6 +26,11 @@ export class QuestionsController {
   @RequirePermissions('questions:manage')
   @ApiOperation({ summary: 'Bulk create questions' })
   bulkCreate(@Body() dto: BulkCreateQuestionsDto) { return this.svc.bulkCreate(dto.questions) }
+
+  @Patch('bulk-status')
+  @RequirePermissions('questions:manage')
+  @ApiOperation({ summary: 'Bulk publish or move filtered questions back to draft' })
+  bulkUpdateStatus(@Body() dto: BulkUpdateStatusDto) { return this.svc.bulkUpdateStatus(dto) }
 
   @Post()
   @RequirePermissions('questions:manage')

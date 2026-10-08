@@ -69,23 +69,9 @@ export default function LandingPage() {
         </div>
       </section>
 
-      <section className="bg-white py-16 sm:py-20" aria-labelledby="practice-title">
+      <section className="bg-white py-16 sm:py-20">
         <div className="mx-auto max-w-6xl px-4 sm:px-6">
-          <div className="grid items-center gap-10 md:grid-cols-2">
-            <div>
-              <p className="text-xs font-black uppercase tracking-widest text-primary">Học trong ngữ cảnh</p>
-              <h2 id="practice-title" className="mt-3 text-2xl sm:text-3xl font-black tracking-tight">Từ một thuật ngữ đến một câu bạn có thể dùng</h2>
-              <p className="mt-4 text-sm leading-7 text-on-surface-variant">Hiểu từ vựng qua ví dụ kỹ thuật, ôn lại bằng flashcards và luyện tập trong bài học. Kết nối kiến thức tiếng Anh với những tình huống quen thuộc khi làm phần mềm.</p>
-            </div>
-            <article className="rounded-3xl border border-outline-variant/50 bg-white p-6 sm:p-8">
-              <p className="text-xs font-bold uppercase tracking-wider text-primary">Ví dụ từ vựng · Backend</p>
-              <h3 className="mt-4 text-3xl font-black">Endpoint</h3>
-              <p className="mt-2 text-sm text-on-surface-variant">Điểm cuối để truy cập một chức năng của API.</p>
-              <blockquote className="mt-5 border-l-2 border-primary pl-4 text-sm leading-7">“This endpoint returns a list of active users.”</blockquote>
-              <p className="mt-3 text-xs leading-6 text-on-surface-variant">Điểm cuối này trả về danh sách người dùng đang hoạt động.</p>
-            </article>
-          </div>
-          <div className="mt-16 border-t border-outline-variant/40 pt-12">
+          <div>
             <h2 className="text-2xl font-black">Một hành trình học rõ ràng</h2>
             <div className="mt-7 grid gap-6 md:grid-cols-3">
               {[

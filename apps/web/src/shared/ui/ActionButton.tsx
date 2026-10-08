@@ -12,7 +12,7 @@ const actions = {
   edit: { label: 'Chỉnh sửa', icon: 'edit', tone: 'text-primary hover:bg-primary/10' },
   publish: { label: 'Xuất bản', icon: 'publish', tone: 'text-emerald-700 hover:bg-emerald-50' },
   archive: { label: 'Lưu trữ', icon: 'archive', tone: 'text-amber-700 hover:bg-amber-50' },
-  draft: { label: 'Chuyển về nháp', icon: 'edit_note', tone: 'text-amber-700 hover:bg-amber-50' },
+  draft: { label: 'Chuyển về bản nháp', icon: 'edit_note', tone: 'text-amber-700 hover:bg-amber-50' },
   lock: { label: 'Khóa', icon: 'lock', tone: 'text-amber-700 hover:bg-amber-50' },
   unlock: { label: 'Mở khóa', icon: 'lock_open', tone: 'text-emerald-700 hover:bg-emerald-50' },
   remove: { label: 'Gỡ khỏi nhóm', icon: 'person_remove', tone: 'text-error hover:bg-error-container' },
@@ -44,9 +44,10 @@ export function ActionGroup({ className, children, ...props }: React.HTMLAttribu
     const menu = menuRef.current;
     if (!trigger || !menu) return;
     const rect = trigger.getBoundingClientRect();
+    const width = menu.getBoundingClientRect().width;
     const height = menu.getBoundingClientRect().height;
     setPosition({
-      left: Math.max(8, Math.min(rect.right - 192, window.innerWidth - 200)),
+      left: Math.max(8, Math.min(rect.right - width, window.innerWidth - width - 8)),
       top: Math.max(8, rect.bottom + height + 8 <= window.innerHeight ? rect.bottom + 6 : rect.top - height - 6),
     });
     (menu.querySelector<HTMLElement>('button:not(:disabled), a[href]') ?? menu).focus();
@@ -74,7 +75,7 @@ export function ActionGroup({ className, children, ...props }: React.HTMLAttribu
         <AppIcon aria-hidden="true" className="" style={{ fontSize: 18 }}>more_horiz</AppIcon>
       </button>
       {open && createPortal(<div ref={menuRef} id={menuId} role="menu" tabIndex={-1} aria-label="Thao tác" style={position}
-        className="fixed z-[100] w-48 max-h-[calc(100dvh-16px)] overflow-y-auto rounded-xl border border-outline-variant/50 bg-surface-container-lowest p-1 shadow-lg"
+        className="fixed z-[100] w-64 max-w-[calc(100vw_-_16px)] max-h-[calc(100dvh-16px)] overflow-y-auto overflow-x-hidden rounded-xl border border-outline-variant/50 bg-surface-container-lowest p-1 shadow-lg"
         onBlur={event => { if (!event.currentTarget.contains(event.relatedTarget as Node) && !triggerRef.current?.contains(event.relatedTarget as Node)) setOpen(false); }}
         onKeyDown={event => {
           if (event.key === 'Escape') { event.preventDefault(); closeWithFocus(); }
@@ -91,7 +92,7 @@ export function ActionGroup({ className, children, ...props }: React.HTMLAttribu
           return React.cloneElement(element, {
             showLabel: true,
             role: 'menuitem',
-            className: cn('w-full justify-start border-0 bg-transparent px-2.5 text-xs', element.props.className),
+            className: cn('w-full min-w-0 justify-start border-0 bg-transparent px-2.5 text-left text-xs whitespace-normal', element.props.className),
             onClick: event => { closeWithFocus(); element.props.onClick?.(event); },
           });
         })}
@@ -106,8 +107,8 @@ export function ActionButton({ action, href, loading = false, label, showLabel =
   const text = label ?? config.label;
   const blocked = disabled || loading;
   const classes = cn(
-    'inline-flex h-8 shrink-0 items-center justify-center gap-2 whitespace-nowrap rounded-lg text-xs font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50',
-    showLabel ? 'px-2.5' : 'w-8',
+    'inline-flex shrink-0 items-center justify-center gap-2 rounded-lg text-xs font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50',
+    showLabel ? 'h-auto min-h-8 whitespace-normal px-2.5 py-2' : 'h-8 w-8 whitespace-nowrap',
     config.tone,
     className,
   );

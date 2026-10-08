@@ -3,6 +3,7 @@ import { AppIcon } from '@/shared/ui/AppIcon';
 
 import Link from 'next/link';
 import { Eye, EyeOff } from 'lucide-react';
+import { BrandLogo } from '@/shared/layout/BrandLogo';
 import { useRouter } from 'next/navigation';
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/features/auth/presentation';
@@ -86,6 +87,7 @@ export default function LoginPage() {
       <section className="w-full lg:w-[55%] flex items-center justify-center bg-surface-container-lowest p-6 md:p-12 lg:p-16 relative">
         {/* Form Container */}
         <div className="w-full max-w-[420px] flex flex-col py-8">
+          <BrandLogo className="mb-8 lg:hidden" />
           <Link href="/" className="mb-6 inline-flex w-fit items-center gap-2 rounded-lg py-2 text-sm font-semibold text-primary hover:underline focus-visible:outline-2 focus-visible:outline-primary"><span aria-hidden="true">←</span>Quay lại trang chủ</Link>
           <div className="mb-8 text-left">
             <h2 className="text-2xl lg:text-3xl font-bold text-on-surface mb-2 tracking-tight">Đăng nhập</h2>
@@ -102,10 +104,10 @@ export default function LoginPage() {
                   mail
                 </AppIcon>
                 <input
-                  className="w-full h-12 pl-11 pr-4 rounded-lg border border-outline-variant bg-surface-container-lowest text-sm text-on-surface focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition-all placeholder:text-outline/70"
+                  className="w-full h-11 pl-11 pr-4 rounded-lg border border-outline-variant bg-surface-container-lowest text-sm text-on-surface focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition-all placeholder:text-outline/70"
                   id="email"
                   name="email"
-                  autoComplete="username"
+                  autoComplete="email"
                   placeholder="email@example.com"
                   type="email"
                   value={email}

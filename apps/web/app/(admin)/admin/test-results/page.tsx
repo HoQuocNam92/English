@@ -95,21 +95,14 @@ export default function AdminTestResultsPage() {
 
   return (
     <main className="flex-1 overflow-y-auto p-4 md:p-margin bg-surface">
-      <div className="mb-lg flex flex-col md:flex-row md:items-end justify-between gap-md">
-        <div>
-          <h2 className="font-headline-h1 text-headline-h1 text-on-surface mb-xs">Lịch sử làm bài thi</h2>
-          <p className="font-body-md text-body-md text-on-surface-variant flex items-center gap-xs">
-            <AppIcon className=" text-[16px]">history</AppIcon>
-            Kết quả thi của tất cả người học
-          </p>
-        </div>
-        <div className="flex gap-sm">
-          <button onClick={() => void exportExcel()} className="px-4 py-2.5 bg-surface-container-lowest border border-outline-variant rounded-lg font-interface-sb text-interface-sb text-on-surface flex items-center gap-2 hover:bg-surface-container-low transition-colors">
-            <AppIcon className=" text-[18px]">download</AppIcon>
-            Xuất Excel
-          </button>
-        </div>
-      </div>
+      <PageHeader
+        className="mb-lg"
+        title="Lịch sử làm bài thi"
+        description="Kết quả thi của tất cả người học"
+        icon="history"
+        iconClassName="from-blue-500 to-indigo-500"
+        action={<button type="button" onClick={() => void exportExcel()} className="inline-flex items-center gap-2 rounded-lg border border-outline-variant bg-surface-container-lowest px-4 py-2.5 font-interface-sb text-interface-sb text-on-surface transition-colors hover:bg-surface-container-low"><AppIcon className=" text-[18px]">download</AppIcon>Xuất Excel</button>}
+      />
 
       <div className="mb-xl flex flex-col gap-3 rounded-xl border border-outline-variant bg-surface-container-lowest p-md sm:flex-row sm:items-center sm:justify-between">
         <SearchInput value={searchInput} onChange={setSearchInput} onSearch={value => { setPage(1); setSearch(value); }} placeholder="Tìm kiếm theo email, tên bài thi…" />

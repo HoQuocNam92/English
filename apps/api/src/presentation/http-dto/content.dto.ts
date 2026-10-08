@@ -147,6 +147,60 @@ export class BulkUpdateVocabularyStatusDto {
   confirmAll?: boolean
 }
 
+export class BulkUpdateStatusDto {
+  @ApiProperty({ enum: ['draft', 'published'] })
+  @IsEnum(['draft', 'published'])
+  status: string
+
+  @ApiPropertyOptional({ type: [String] })
+  @IsOptional() @IsArray() @ArrayNotEmpty() @ArrayMaxSize(3000) @ArrayUnique() @IsUUID('4', { each: true })
+  ids?: string[]
+
+  @ApiPropertyOptional()
+  @IsOptional() @IsBoolean()
+  confirmAll?: boolean
+
+  @ApiPropertyOptional()
+  @IsOptional() @IsString() @MaxLength(100)
+  search?: string
+
+  @ApiPropertyOptional()
+  @IsOptional() @IsString() @MaxLength(50)
+  domainCode?: string
+
+  @ApiPropertyOptional()
+  @IsOptional() @IsString() @MaxLength(50)
+  levelCode?: string
+
+  @ApiPropertyOptional()
+  @IsOptional() @IsString() @MaxLength(50)
+  type?: string
+
+  @ApiPropertyOptional()
+  @IsOptional() @IsString() @MaxLength(50)
+  skill?: string
+
+  @ApiPropertyOptional()
+  @IsOptional() @IsString() @MaxLength(100)
+  topic?: string
+
+  @ApiPropertyOptional()
+  @IsOptional() @IsString() @MaxLength(100)
+  examId?: string
+
+  @ApiPropertyOptional()
+  @IsOptional() @IsString() @MaxLength(100)
+  certificateId?: string
+
+  @ApiPropertyOptional()
+  @IsOptional() @IsString() @MaxLength(50)
+  kind?: string
+
+  @ApiPropertyOptional({ enum: ['draft', 'published', 'archived'] })
+  @IsOptional() @IsEnum(['draft', 'published', 'archived'])
+  currentStatus?: string
+}
+
 // ─── Lessons ─────────────────────────────────────────────────────────────────
 
 const LESSON_TYPES = ['vocabulary', 'terminology', 'technical_reading', 'api_documentation', 'system_design', 'case_study', 'certification_review'] as const
@@ -798,4 +852,3 @@ export class TrackProgressDto {
   @ApiPropertyOptional() @IsOptional() @Min(0) @Max(100)
   averageScorePercent?: number
 }
-

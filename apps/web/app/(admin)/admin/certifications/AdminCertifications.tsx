@@ -4,10 +4,11 @@ import { AppIcon } from '@/shared/ui/AppIcon';
 import { useRouter } from 'next/navigation';
 import { completeCreation, CreatePage, FormSurface } from '@/shared/ui/CreatePage';
 import { ActionButton, ActionGroup } from '@/shared/ui/ActionButton';
+import { Dropdown } from '@/shared/ui/Dropdown';
 
 import * as React from 'react';
 import Link from 'next/link';
-import { confirmDialog, PageHeader, SearchInput } from '@/shared/ui';
+import { BulkSelectionBar, confirmDialog, PageHeader, SearchInput } from '@/shared/ui';
 import { apiClient, ApiClientError } from '@/shared/api/api-client';
 
 interface CertificateItem {
@@ -31,10 +32,17 @@ interface CertificateItem {
 export default function AdminCertifications({ createOnly = false }: { createOnly?: boolean }) {
   const router = useRouter();
   const [certs, setCerts] = React.useState<CertificateItem[]>([]);
-  const [filteredCerts, setFilteredCerts] = React.useState<CertificateItem[]>([]);
   const [searchInput, setSearchInput] = React.useState('');
+  const [search, setSearch] = React.useState('');
+  const [domainFilter, setDomainFilter] = React.useState('');
+  const [categoryFilter, setCategoryFilter] = React.useState('');
+  const [providerFilter, setProviderFilter] = React.useState('');
+  const [statusFilter, setStatusFilter] = React.useState('');
   const [loading, setLoading] = React.useState(true);
   const [error, setError] = React.useState<string | null>(null);
+  const [successMessage, setSuccessMessage] = React.useState<string | null>(null);
+  const [selectedIds, setSelectedIds] = React.useState<string[]>([]);
+  const [bulkBusy, setBulkBusy] = React.useState(false);
 
   React.useEffect(() => {
     async function load() {
@@ -44,7 +52,6 @@ export default function AdminCertifications({ createOnly = false }: { createOnly
         const res = await apiClient.get<{ data: CertificateItem[] }>('/certificates');
         const data = res.data ?? [];
         setCerts(data);
-        setFilteredCerts(data);
       } catch (e) {
         setError(e instanceof ApiClientError ? e.message : 'Không thể tải danh sách chứng chỉ');
       } finally {
@@ -54,32 +61,30 @@ export default function AdminCertifications({ createOnly = false }: { createOnly
     if (!createOnly) void load();
   }, [createOnly]);
 
-  const [updatingId, setUpdatingId] = React.useState<string | null>(null);
-  const changePublication = async (cert: CertificateItem) => {
-    setUpdatingId(cert.id);
-    setError(null);
-    try {
-      const saved = await apiClient.patch<CertificateItem>(`/certificates/${cert.id}`, { isActive: !cert.isActive });
-      handleSaved(saved);
-    } catch (cause) { setError(cause instanceof ApiClientError ? cause.message : 'Không thể cập nhật trạng thái chứng chỉ'); }
-    finally { setUpdatingId(null); }
-  };
-
-  const handleSearch = (sanitized: string) => {
-    if (!sanitized) {
-      setFilteredCerts(certs);
-      return;
-    }
-    const q = sanitized.toLowerCase();
-    setFilteredCerts(
-      certs.filter(
-        (c) =>
-          c.name.toLowerCase().includes(q) ||
-          c.code.toLowerCase().includes(q) ||
-          c.provider.toLowerCase().includes(q) ||
-          c.description.toLowerCase().includes(q)
-      )
-    );
+  const domains = React.useMemo(() => [...new Map(certs.flatMap(cert => cert.domains ?? []).map(item => [item.domain.code, item.domain])).values()].sort((a, b) => a.name.localeCompare(b.name, 'vi')), [certs]);
+  const categories = React.useMemo(() => [...new Set(certs.map(cert => cert.category?.trim()).filter((value): value is string => Boolean(value)))].sort((a, b) => a.localeCompare(b, 'vi')), [certs]);
+  const providers = React.useMemo(() => [...new Set(certs.map(cert => cert.provider?.trim()).filter((value): value is string => Boolean(value)))].sort((a, b) => a.localeCompare(b, 'vi')), [certs]);
+  const filteredCerts = React.useMemo(() => {
+    const q = search.trim().toLocaleLowerCase('vi');
+    return certs.filter(cert => {
+      const matchesQuery = !q || [cert.name, cert.code, cert.provider, cert.description, cert.category, ...(cert.domains ?? []).map(item => item.domain.name)]
+        .some(value => String(value ?? '').toLocaleLowerCase('vi').includes(q));
+      const matchesDomain = !domainFilter || cert.domains?.some(item => item.domain.code === domainFilter);
+      const matchesCategory = !categoryFilter || cert.category?.trim() === categoryFilter;
+      const matchesProvider = !providerFilter || cert.provider === providerFilter;
+      const matchesStatus = !statusFilter || cert.isActive === (statusFilter === 'active');
+      return matchesQuery && matchesDomain && matchesCategory && matchesProvider && matchesStatus;
+    });
+  }, [certs, search, domainFilter, categoryFilter, providerFilter, statusFilter]);
+  const hasFilters = Boolean(search || domainFilter || categoryFilter || providerFilter || statusFilter);
+  const clearFilters = () => {
+    setSearchInput('');
+    setSearch('');
+    setDomainFilter('');
+    setCategoryFilter('');
+    setProviderFilter('');
+    setStatusFilter('');
+    setSelectedIds([]);
   };
 
   // ── Modal state ──────────────────────────────────────────────
@@ -99,7 +104,6 @@ export default function AdminCertifications({ createOnly = false }: { createOnly
     try {
       await apiClient.delete(`/certificates/${cert.id}`);
       setCerts(current => current.filter(item => item.id !== cert.id));
-      setFilteredCerts(current => current.filter(item => item.id !== cert.id));
     } catch (cause) { setError(cause instanceof ApiClientError ? cause.message : 'Không thể xóa chứng chỉ'); }
   };
 
@@ -107,57 +111,69 @@ export default function AdminCertifications({ createOnly = false }: { createOnly
     setCerts((prev) => {
       const idx = prev.findIndex((c) => c.id === saved.id);
       const next = idx >= 0 ? prev.map((c) => (c.id === saved.id ? saved : c)) : [saved, ...prev];
-      // Re-apply current search filter
-      const q = searchInput.trim().toLowerCase();
-      if (q) {
-        setFilteredCerts(
-          next.filter(
-            (c) =>
-              c.name.toLowerCase().includes(q) ||
-              c.code.toLowerCase().includes(q) ||
-              c.provider.toLowerCase().includes(q) ||
-              c.description.toLowerCase().includes(q)
-          )
-        );
-      } else {
-        setFilteredCerts(next);
-      }
       return next;
     });
     setModalOpen(false);
+  };
+
+  const bulkChangePublication = async (isActive: boolean, allFiltered = false) => {
+    const ids = allFiltered ? filteredCerts.map(cert => cert.id) : selectedIds;
+    if (!ids.length) return;
+    const action = isActive ? 'xuất bản' : 'chuyển về bản nháp';
+    if (!(await confirmDialog(`Bạn có chắc muốn ${action} ${ids.length} chứng chỉ đã chọn?`, { title: `Xác nhận ${action}`, confirmLabel: action, tone: 'primary' }))) return;
+
+    setBulkBusy(true);
+    setError(null);
+    setSuccessMessage(null);
+    try {
+      const saved = await Promise.all(ids.map(id => apiClient.patch<CertificateItem>(`/certificates/${id}`, { isActive })));
+      const updated = new Map(saved.map(cert => [cert.id, cert]));
+      setCerts(current => current.map(cert => updated.get(cert.id) ?? cert));
+      setSelectedIds([]);
+      setSuccessMessage(`Đã ${action} ${saved.length} chứng chỉ.`);
+    } catch (cause) {
+      setError(cause instanceof ApiClientError ? cause.message : 'Không thể cập nhật trạng thái chứng chỉ');
+    } finally {
+      setBulkBusy(false);
+    }
   };
 
   if (createOnly) return <CreatePage backHref="/admin/certifications"><CertificateModal page open initial={null} onClose={() => router.push('/admin/certifications')} onSaved={() => completeCreation(router, '/admin/certifications', 'Đã thêm chứng chỉ.')} /></CreatePage>;
 
   return (
     <main className="flex-1 p-margin flex flex-col gap-xl">
-      <div className="flex flex-col md:flex-row md:items-end justify-between gap-md">
-        <div>
-          <h2 className="font-headline-h1 text-headline-h1 text-on-surface">Quản lý Chứng chỉ</h2>
-          <p className="font-body-md text-body-md text-on-surface-variant mt-xs">Quản lý và tổ chức nội dung học tập theo chứng chỉ IT.</p>
-        </div>
+      <PageHeader
+        title="Quản lý Chứng chỉ"
+        description="Quản lý và tổ chức nội dung học tập theo chứng chỉ IT."
+        icon="card_membership"
+        action={<button type="button" onClick={openCreate} className="inline-flex shrink-0 items-center gap-2 rounded-xl bg-primary px-4 py-2.5 text-sm font-semibold !text-white"><AppIcon className=" text-[19px]">add</AppIcon>Thêm chứng chỉ mới</button>}
+      />
+      {error && <div className="flex items-center gap-2 rounded-xl bg-error-container p-3 text-sm text-on-error-container"><AppIcon className=" text-[18px]">error</AppIcon><span>{error}</span></div>}
 
-        {error && (
-          <div className="p-3 rounded-xl bg-error-container text-on-error-container text-sm flex items-center gap-2">
-            <AppIcon className=" text-[18px]">error</AppIcon>
-            <span>{error}</span>
-          </div>
-        )}
-
-        <div className="flex flex-wrap items-center gap-sm mt-md md:mt-0">
-          <button
-            onClick={openCreate}
-            className="bg-primary text-on-primary font-interface-sb py-sm px-md rounded-lg hover:bg-primary-container transition-colors flex items-center gap-xs"
-          >
-            <AppIcon className=" text-[18px]">add</AppIcon>
-            Thêm chứng chỉ mới
-          </button>
-        </div>
+      <div className="grid gap-3 rounded-xl border border-outline-variant bg-white p-4 sm:grid-cols-2 xl:grid-cols-5">
+        <SearchInput className="sm:!w-full sm:col-span-2 xl:col-span-2" value={searchInput} onChange={setSearchInput} onSearch={value => { setSearch(value); setSelectedIds([]); }} placeholder="Tìm theo tên, mã, đơn vị cấp…" />
+        <Dropdown aria-label="Lọc lĩnh vực" value={domainFilter} onChange={event => { setDomainFilter(event.target.value); setSelectedIds([]); }} className="h-11 w-full min-w-0 rounded-xl border border-outline-variant bg-white px-3 text-sm"><option value="">Tất cả lĩnh vực</option>{domains.map(domain => <option key={domain.code} value={domain.code}>{domain.name}</option>)}</Dropdown>
+        <Dropdown aria-label="Lọc nhóm chứng chỉ" value={categoryFilter} onChange={event => { setCategoryFilter(event.target.value); setSelectedIds([]); }} className="h-11 w-full min-w-0 rounded-xl border border-outline-variant bg-white px-3 text-sm"><option value="">Tất cả nhóm chứng chỉ</option>{categories.map(category => <option key={category} value={category}>{category}</option>)}</Dropdown>
+        <Dropdown aria-label="Lọc đơn vị cấp" value={providerFilter} onChange={event => { setProviderFilter(event.target.value); setSelectedIds([]); }} className="h-11 w-full min-w-0 rounded-xl border border-outline-variant bg-white px-3 text-sm"><option value="">Tất cả đơn vị cấp</option>{providers.map(provider => <option key={provider} value={provider}>{provider}</option>)}</Dropdown>
+        <Dropdown aria-label="Lọc trạng thái" value={statusFilter} onChange={event => { setStatusFilter(event.target.value); setSelectedIds([]); }} className="h-11 w-full min-w-0 rounded-xl border border-outline-variant bg-white px-3 text-sm"><option value="">Tất cả trạng thái</option><option value="active">Đang hoạt động</option><option value="draft">Bản nháp</option></Dropdown>
+        {hasFilters && <button type="button" onClick={clearFilters} className="ui-button ui-button-outline h-11 sm:col-span-2 xl:col-span-5">Xóa lọc</button>}
       </div>
 
-      <div className="flex items-center gap-3">
-          <SearchInput value={searchInput} onChange={setSearchInput} onSearch={value => { handleSearch(value); }} placeholder="Tìm kiếm chứng chỉ…" />
-      </div>
+      {successMessage && <div role="status" className="rounded-xl border border-emerald-200 bg-emerald-50 p-3 text-sm text-emerald-800">{successMessage}</div>}
+      <BulkSelectionBar
+        pageCount={filteredCerts.length}
+        selectedCount={selectedIds.length}
+        allPageSelected={filteredCerts.length > 0 && filteredCerts.every(cert => selectedIds.includes(cert.id))}
+        onSelectPage={checked => setSelectedIds(checked ? filteredCerts.map(cert => cert.id) : [])}
+        selectionLabel="Chọn tất cả kết quả lọc"
+      >
+        {selectedIds.length > 0 && <>
+          <button type="button" disabled={bulkBusy} onClick={() => void bulkChangePublication(true)} className="rounded-lg bg-emerald-600 px-3 py-2 text-xs font-bold text-white disabled:opacity-50">Xuất bản đã chọn</button>
+          <button type="button" disabled={bulkBusy} onClick={() => void bulkChangePublication(false)} className="rounded-lg bg-amber-500 px-3 py-2 text-xs font-bold text-white disabled:opacity-50">Chuyển về bản nháp đã chọn</button>
+        </>}
+        <button type="button" disabled={bulkBusy || filteredCerts.length === 0} onClick={() => void bulkChangePublication(true, true)} className="rounded-lg border border-emerald-600 px-3 py-2 text-xs font-bold text-emerald-700 disabled:opacity-50">Xuất bản tất cả kết quả lọc</button>
+        <button type="button" disabled={bulkBusy || filteredCerts.length === 0} onClick={() => void bulkChangePublication(false, true)} className="rounded-lg border border-amber-500 px-3 py-2 text-xs font-bold text-amber-700 disabled:opacity-50">Chuyển tất cả kết quả lọc về bản nháp</button>
+      </BulkSelectionBar>
 
       <PaginatedList enabled={!loading} className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-2 gap-lg">
         {loading ? (
@@ -179,9 +195,12 @@ export default function AdminCertifications({ createOnly = false }: { createOnly
             const contentProgress = Math.round(readyParts / 2 * 100);
 
             return (
-              <div key={c.id} className="bg-surface-container-lowest rounded-xl border border-outline-variant p-lg hover:shadow-[0_1px_3px_rgba(15,23,24,0.06)] transition-all flex flex-col gap-md">
+              <div key={c.id} className="relative bg-surface-container-lowest rounded-xl border border-outline-variant p-lg hover:shadow-[0_1px_3px_rgba(15,23,24,0.06)] transition-all flex flex-col gap-md">
+                <label className="absolute left-4 top-4 flex items-center" aria-label={`Chọn chứng chỉ ${c.name}`}>
+                  <input type="checkbox" className="h-4 w-4 accent-primary" checked={selectedIds.includes(c.id)} onChange={event => setSelectedIds(current => event.target.checked ? [...new Set([...current, c.id])] : current.filter(id => id !== c.id))} />
+                </label>
                 <div className="flex flex-col gap-3 sm:flex-row sm:justify-between sm:items-start">
-                  <div className="flex flex-col gap-xs">
+                  <div className="flex flex-col gap-xs pl-6">
                     <span className={`inline-block font-label-caps text-label-caps px-sm py-xs rounded-full w-fit ${badgeClass}`}>
                       {domainName}
                     </span>
@@ -195,7 +214,6 @@ export default function AdminCertifications({ createOnly = false }: { createOnly
                   </div>
                   <ActionGroup>
                     <ActionButton action="edit" onClick={() => openEdit(c)} />
-                    <ActionButton action={c.isActive ? 'draft' : 'publish'} loading={updatingId === c.id} disabled={updatingId === c.id} onClick={() => void changePublication(c)} />
                     <ActionButton action="delete" onClick={() => void remove(c)} />
                   </ActionGroup>
                 </div>

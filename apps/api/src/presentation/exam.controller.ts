@@ -6,7 +6,7 @@ import { PermissionsGuard } from '../infrastructure/auth/permissions.guard'
 import { RequirePermissions } from './decorators/require-permissions.decorator'
 import { CurrentUser, JwtPayload } from './decorators/current-user.decorator'
 import { SubmitAttemptDto } from './http-dto/exam-attempt.dto'
-import { CreateExamDto, UpdateExamDto } from './http-dto/content.dto'
+import { CreateExamDto, UpdateExamDto, BulkUpdateStatusDto } from './http-dto/content.dto'
 
 @ApiTags('Exams')
 @ApiBearerAuth()
@@ -18,6 +18,11 @@ export class ExamsController {
   @Get()
   @ApiOperation({ summary: 'List exams' })
   findAll(@Query() q: any) { return this.svc.findAll(q) }
+
+  @Patch('bulk-status')
+  @RequirePermissions('exams:create')
+  @ApiOperation({ summary: 'Bulk publish or move filtered exams back to draft' })
+  bulkUpdateStatus(@Body() dto: BulkUpdateStatusDto) { return this.svc.bulkUpdateStatus(dto) }
 
   @Get('attempts/my')
   @ApiOperation({ summary: 'Get my exam attempts' })

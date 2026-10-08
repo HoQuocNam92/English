@@ -149,8 +149,8 @@ function ContentLinkManager({ manageType, certificateId, certificateName, option
   return <Modal open onClose={() => { if (!saving) onClose(); }} maxWidth="max-w-4xl"><div className="p-6">
     <div className="flex items-start justify-between gap-4"><div><h2 className="text-xl font-bold">Chọn {isExam ? 'bài thi' : 'câu hỏi'} có sẵn</h2><p className="mt-1 text-sm text-on-surface-variant">Đánh dấu nội dung muốn liên kết với {certificateName}.</p></div><button type="button" onClick={onClose} aria-label="Đóng"><AppIcon className="">close</AppIcon></button></div>
     <div className="mt-4 flex flex-col items-start gap-3 sm:flex-row">
-      <div className="relative w-full sm:w-64 sm:shrink-0"><AppIcon className=" absolute left-3 top-1/2 -translate-y-1/2 text-[18px] text-outline">search</AppIcon><input value={search} onChange={event => setSearch(event.target.value)} placeholder={`Tìm theo tên ${isExam ? 'bài thi' : 'câu hỏi'}, Domain hoặc cấp độ…`} className="h-10 w-full rounded-lg border border-outline-variant bg-white pl-9 pr-3 text-sm outline-none focus:border-primary" /></div>
-      <div className="grid w-full min-w-0 gap-2 sm:ml-auto sm:grid-cols-2">
+      <div className="relative w-full min-w-0 sm:min-w-[320px] sm:flex-1"><AppIcon className=" absolute left-3 top-1/2 -translate-y-1/2 text-[18px] text-outline">search</AppIcon><input value={search} onChange={event => setSearch(event.target.value)} placeholder={`Tìm theo tên ${isExam ? 'bài thi' : 'câu hỏi'}, Domain hoặc cấp độ…`} className="h-10 w-full rounded-lg border border-outline-variant bg-white pl-9 pr-3 text-sm outline-none focus:border-primary" /></div>
+      <div className="grid w-full min-w-0 gap-2 sm:ml-auto sm:w-auto sm:flex-1 sm:grid-cols-2">
       {isExam && kinds.length > 0 && <FilterSelect value={kind} onChange={setKind} label="Tất cả loại bài" options={kinds} renderLabel={value => examKindLabel[value] || value} />}
       {domains.length > 0 && <FilterSelect value={domain} onChange={setDomain} label="Tất cả Domain" options={domains} />}
       {levels.length > 0 && <FilterSelect value={level} onChange={setLevel} label="Tất cả cấp độ" options={levels} />}
@@ -201,4 +201,3 @@ function TopicContentManager({ topicManager, options, selectedIds, setSelectedId
     <div className="mt-5 flex items-center justify-between"><span className="text-sm text-on-surface-variant">Hiển thị {filtered.length} / {options.length}</span><div className="flex gap-3"><button onClick={onClose} className="rounded-xl border px-4 py-2.5 font-semibold">Hủy</button><button onClick={onSave} disabled={saving} className="rounded-xl bg-primary px-5 py-2.5 font-bold text-white disabled:opacity-50">{saving ? 'Đang lưu…' : `Lưu ${selectedIds.length} nội dung`}</button></div></div>
   </div></Modal>;
 }
-

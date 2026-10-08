@@ -1,5 +1,6 @@
 import { Text, TextInput, TouchableOpacity } from '../../src/shared/ui/primitives';
 import { useState, useEffect } from 'react';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { StyleSheet, View, ScrollView, ActivityIndicator, Alert, Platform } from 'react-native';
@@ -34,6 +35,7 @@ function GoogleIcon() {
 export default function MobileLoginScreen() {
   const router = useRouter();
   const { login, loginWithTokens } = useAuth();
+  const insets = useSafeAreaInsets();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
@@ -141,16 +143,21 @@ export default function MobileLoginScreen() {
   };
 
   return (
-    <ScrollView style={styles.container} contentContainerStyle={styles.contentContainer} keyboardShouldPersistTaps="handled">
+    <View style={styles.container}>
       <StatusBar style="dark" />
-      <TouchableOpacity onPress={() => router.canGoBack() ? router.back() : router.replace('/' as any)} style={{ flexDirection: 'row', alignItems: 'center', gap: 8, alignSelf: 'flex-start', marginBottom: 16 }}><MaterialIcons name="arrow-back" size={20} color={colors.primary} /><Text style={{ color: colors.primary }}>Quay lại</Text></TouchableOpacity>
-      <View style={styles.header}>
-        <View style={styles.iconCircle}>
-          <MaterialIcons name="school" size={32} color={colors.primary} />
-        </View>
-        <Text style={styles.title}>TechEnglish Pro</Text>
-        <Text style={styles.subtitle}>Đăng nhập để tiếp tục hành trình học tiếng Anh CNTT của bạn.</Text>
+      <View style={[styles.headerBar, { marginTop: insets.top }]}>
+        <TouchableOpacity style={styles.headerBackButton} onPress={() => router.canGoBack() ? router.back() : router.replace('/' as any)} disabled={isLoading}>
+          <MaterialIcons name="arrow-back" size={24} color={colors.primary} />
+        </TouchableOpacity>
+        <Text style={styles.headerTitle}>TechEnglish Pro</Text>
+        <View style={styles.headerSpacer} />
       </View>
+
+      <ScrollView contentContainerStyle={styles.contentContainer} keyboardShouldPersistTaps="handled">
+        <View style={styles.header}>
+          <Text style={styles.title}>Đăng nhập</Text>
+          <Text style={styles.subtitle}>Nền tảng học tiếng Anh chuyên ngành CNTT</Text>
+        </View>
 
       <View style={styles.card}>
         {loginError ? <Text style={styles.errorText}>{loginError}</Text> : null}
@@ -161,11 +168,13 @@ export default function MobileLoginScreen() {
             <MaterialIcons name="mail-outline" size={20} color={colors.outline} style={styles.inputIcon} />
             <TextInput
               style={styles.input}
-              placeholder="nhapemail@example.com"
+              placeholder="email@example.com"
               value={email}
               onChangeText={setEmail}
               autoCapitalize="none"
               keyboardType="email-address"
+              autoComplete="email"
+              returnKeyType="next"
               editable={!isLoading}
             />
           </View>
@@ -182,9 +191,11 @@ export default function MobileLoginScreen() {
               value={password}
               onChangeText={setPassword}
               secureTextEntry={!showPassword}
+              autoComplete="current-password"
+              returnKeyType="done"
               editable={!isLoading}
             />
-            <TouchableOpacity onPress={() => setShowPassword(!showPassword)} style={styles.eyeIcon} disabled={isLoading}>
+            <TouchableOpacity onPress={() => setShowPassword(!showPassword)} style={styles.eyeIcon} disabled={isLoading} focusable={false}>
               <MaterialIcons name={showPassword ? 'visibility-off' : 'visibility'} size={20} color={colors.outline} />
             </TouchableOpacity>
           </View>
@@ -229,12 +240,13 @@ export default function MobileLoginScreen() {
               disabled={isLoading || (Platform.OS === 'web' && !request)}
             >
               <GoogleIcon />
-              <Text style={styles.googleButtonText}>Đăng nhập với Google</Text>
+              <Text style={styles.googleButtonText}>Đăng nhập bằng Google</Text>
             </TouchableOpacity>
           </>
         ) : null}
       </View>
-    </ScrollView>
+      </ScrollView>
+    </View>
   );
 }
 
@@ -245,21 +257,35 @@ const styles = StyleSheet.create({
   },
   contentContainer: {
     padding: spacing.lg,
-    paddingTop: 60,
+    paddingTop: spacing.xl,
     paddingBottom: 40
+  },
+  headerBar: {
+    height: 64,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: spacing.lg,
+    backgroundColor: '#ffffff',
+    borderBottomWidth: 1,
+    borderBottomColor: '#e2e8f0',
+  },
+  headerBackButton: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  headerSpacer: { width: 40 },
+  headerTitle: {
+    fontSize: 20,
+    fontWeight: '700',
+    color: colors.primary,
   },
   header: {
     alignItems: 'center',
     marginBottom: spacing.xl
-  },
-  iconCircle: {
-    width: 64,
-    height: 64,
-    borderRadius: 20,
-    backgroundColor: '#EEF2FF',
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: spacing.sm
   },
   title: {
     fontSize: 24,
@@ -404,4 +430,3 @@ const styles = StyleSheet.create({
     color: '#334155'
   }
 });
-

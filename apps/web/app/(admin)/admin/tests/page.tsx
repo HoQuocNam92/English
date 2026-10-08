@@ -7,7 +7,7 @@ import { Dropdown } from '@/shared/ui/Dropdown';
 import * as React from 'react';
 import Link from 'next/link';
 import { StatusBadge } from '@/shared/ui/StatusBadge';
-import { confirmDialog, PageHeader, SearchInput, Pagination } from '@/shared/ui';
+import { BulkSelectionBar, confirmDialog, PageHeader, SearchInput, Pagination } from '@/shared/ui';
 import { apiClient, ApiClientError } from '@/shared/api/api-client';
 import type { ExamItem, PaginatedResponse } from '@/shared/api/api-client';
 
@@ -39,6 +39,9 @@ export default function AdminTestsPage() {
   const [loading, setLoading] = React.useState(true);
   const [error, setError] = React.useState<string | null>(null);
   const [limit, setLimit] = React.useState(30);
+  const [selectedIds, setSelectedIds] = React.useState<Set<string>>(new Set());
+  const [bulkBusy, setBulkBusy] = React.useState(false);
+  const [successMessage, setSuccessMessage] = React.useState('');
 
   const [filters, setFilters] = React.useState({ domainCode: '', levelCode: '', certificateId: '', kind: '' });
   const [options, setOptions] = React.useState<{ domains: any[]; levels: any[]; certificates: any[] }>({ domains: [], levels: [], certificates: [] });
@@ -67,24 +70,27 @@ export default function AdminTestsPage() {
   }, [page, limit, search, status, filters]);
 
   React.useEffect(() => { void load(); }, [load]);
+  React.useEffect(() => { setSelectedIds(new Set()); }, [page, limit, search, status, filters]);
 
-  const [updatingId, setUpdatingId] = React.useState<string | null>(null);
-
-  const updateStatus = async (id: string, newStatus: string) => {
-    setUpdatingId(id);
-    setError(null);
+  const bulkUpdateStatus = async (targetStatus: 'draft' | 'published', scope: 'selected' | 'filtered') => {
+    if (scope === 'selected' && selectedIds.size === 0) return;
+    const count = scope === 'selected' ? selectedIds.size : total;
+    const action = targetStatus === 'published' ? 'xuất bản' : 'chuyển về bản nháp';
+    const affected = scope === 'selected' ? `${count} bài thi đã chọn` : `${count} kết quả đang lọc`;
+    if (!(await confirmDialog(`Bạn có chắc muốn ${action} ${affected}?`, { title: 'Xác nhận cập nhật hàng loạt', confirmLabel: action, tone: targetStatus === 'published' ? 'primary' : 'warning' }))) return;
+    setBulkBusy(true); setError(null); setSuccessMessage('');
     try {
-      await apiClient.patch(`/exams/${id}`, { status: newStatus });
-      setItems((prev) =>
-        prev.map((exam) =>
-          exam.id === id ? { ...exam, status: newStatus } : exam
-        )
-      );
+      const currentStatus = status || undefined;
+      const filtersForUpdate = { ...filters, search: search || undefined, currentStatus };
+      const result = await apiClient.patch<{ updatedCount: number }>('/exams/bulk-status', scope === 'selected'
+        ? { ids: [...selectedIds], status: targetStatus }
+        : { ...filtersForUpdate, status: targetStatus, confirmAll: !Object.values(filtersForUpdate).some(Boolean) });
+      setSelectedIds(new Set());
+      setSuccessMessage(`Đã ${action} ${result.updatedCount} bài thi.`);
+      await load();
     } catch (e) {
-      setError(e instanceof ApiClientError ? e.message : 'Không thể cập nhật trạng thái bài thi');
-    } finally {
-      setUpdatingId(null);
-    }
+      setError(e instanceof ApiClientError ? e.message : 'Không thể cập nhật hàng loạt bài thi');
+    } finally { setBulkBusy(false); }
   };
 
   const removeExam = async (exam: ExamItem) => {
@@ -102,7 +108,7 @@ export default function AdminTestsPage() {
 
       {/* Filters */}
       <div className="mt-6 flex flex-col items-start gap-4 lg:flex-row rounded-2xl border border-outline-variant/50 bg-white p-4">
-        <div className="grid w-full gap-1 lg:w-80 lg:shrink-0">
+        <div className="grid w-full min-w-0 gap-1 lg:min-w-[320px] lg:flex-1">
           <span className="text-xs font-semibold">Tìm kiếm</span>
         <SearchInput
           className="sm:!w-full"
@@ -116,7 +122,7 @@ export default function AdminTestsPage() {
           maxLength={100}
         />
         </div>
-        <div className="grid w-full min-w-0 gap-3 sm:grid-cols-2 xl:grid-cols-3 lg:ml-auto lg:max-w-3xl">
+        <div className="grid w-full min-w-0 gap-3 sm:grid-cols-2 xl:grid-cols-3 lg:ml-auto lg:w-auto lg:flex-1 lg:max-w-3xl">
         <label className="grid gap-1 text-xs font-semibold">Trạng thái
         <Dropdown
           value={status}
@@ -138,6 +144,8 @@ export default function AdminTestsPage() {
         </p>
       )}
 
+      {successMessage && <div className="mt-4 rounded-xl bg-emerald-50 p-3 text-sm text-emerald-800">{successMessage}</div>}
+
       {error && (
         <div className="mt-4 p-3 rounded-xl bg-error-container text-on-error-container text-sm flex items-center gap-2">
           <AppIcon className=" text-[18px]">error</AppIcon>
@@ -146,6 +154,11 @@ export default function AdminTestsPage() {
       )}
 
       {/* Cards */}
+      <BulkSelectionBar pageCount={items.length} selectedCount={selectedIds.size} allPageSelected={items.length > 0 && items.every((item) => selectedIds.has(item.id))} onSelectPage={(selected) => setSelectedIds((current) => { const next = new Set(current); items.forEach((item) => selected ? next.add(item.id) : next.delete(item.id)); return next; })}>
+        {selectedIds.size > 0 && <><button disabled={bulkBusy} onClick={() => void bulkUpdateStatus('published', 'selected')} className="rounded-lg bg-emerald-600 px-3 py-2 text-xs font-bold text-white disabled:opacity-50">Xuất bản đã chọn</button><button disabled={bulkBusy} onClick={() => void bulkUpdateStatus('draft', 'selected')} className="rounded-lg bg-amber-500 px-3 py-2 text-xs font-bold text-white disabled:opacity-50">Chuyển về bản nháp đã chọn</button></>}
+        <button disabled={bulkBusy || total === 0} onClick={() => void bulkUpdateStatus('published', 'filtered')} className="rounded-lg border border-emerald-600 px-3 py-2 text-xs font-bold text-emerald-700 disabled:opacity-50">Xuất bản tất cả kết quả lọc</button>
+        <button disabled={bulkBusy || total === 0} onClick={() => void bulkUpdateStatus('draft', 'filtered')} className="rounded-lg border border-amber-500 px-3 py-2 text-xs font-bold text-amber-700 disabled:opacity-50">Chuyển tất cả kết quả lọc về bản nháp</button>
+      </BulkSelectionBar>
       <div className="mt-4 grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
         {loading ? (
           Array.from({ length: 6 }).map((_, i) => <SkeletonCard key={i} />)
@@ -159,6 +172,7 @@ export default function AdminTestsPage() {
             <div key={exam.id} className="rounded-2xl border border-outline-variant/50 bg-surface-container-lowest p-5 shadow-[0_8px_28px_rgba(15,23,42,0.035)] hover:shadow-md transition-shadow content-card">
               <div>
                 <div className="flex items-start justify-between gap-2 mb-2">
+                  <input type="checkbox" aria-label={`Chọn ${exam.title}`} checked={selectedIds.has(exam.id)} onChange={() => setSelectedIds((current) => { const next = new Set(current); if (next.has(exam.id)) next.delete(exam.id); else next.add(exam.id); return next; })} className="mt-1 h-4 w-4 shrink-0 accent-primary" />
                   <h3 className="font-bold text-on-surface text-base line-clamp-2 flex-1">{exam.title}</h3>
                   <StatusBadge status={exam.status} />
                 </div>
@@ -214,11 +228,7 @@ export default function AdminTestsPage() {
               </div>
               <ActionGroup className="content-card-footer">
                 <ActionButton action="edit" href={`/admin/tests/builder?id=${exam.id}`} />
-                {exam.status === 'draft' && <ActionButton action="publish" loading={updatingId === exam.id} onClick={() => void updateStatus(exam.id, 'published')} />}
-                {exam.status === 'published' && <ActionButton action="draft" loading={updatingId === exam.id} onClick={() => void updateStatus(exam.id, 'draft')} />}
-                {exam.status === 'archived' && <ActionButton action="publish" loading={updatingId === exam.id} onClick={() => void updateStatus(exam.id, 'published')} />}
-                {exam.status === 'archived' && <ActionButton action="draft" loading={updatingId === exam.id} onClick={() => void updateStatus(exam.id, 'draft')} />}
-                <ActionButton action="delete" disabled={updatingId === exam.id} onClick={() => void removeExam(exam)} />
+                <ActionButton action="delete" onClick={() => void removeExam(exam)} />
               </ActionGroup>
             </div>
           ))

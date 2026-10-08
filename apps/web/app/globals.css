@@ -598,7 +598,7 @@ body {
 
 /* Center action labels without overriding text-left cards, tabs or menu rows. */
 .admin-canvas :where(button.bg-primary, a.bg-primary):not(.text-left),
-.learner-canvas :where(button.bg-primary, a.bg-primary):not(.text-left) {
+.learner-canvas :where(button.bg-primary, a.bg-primary):not(.text-left):not(.lesson-track-card) {
   display: inline-flex;
   align-items: center;
   justify-content: center;

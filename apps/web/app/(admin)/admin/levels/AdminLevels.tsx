@@ -9,7 +9,7 @@ import { ActionButton, ActionGroup } from '@/shared/ui/ActionButton';
 
 import { getLevelTheme } from '@/shared/lib/level-theme';
 import * as React from 'react';
-import { PageHeader, Modal } from '@/shared/ui';
+import { BulkSelectionBar, confirmDialog, PageHeader, Modal } from '@/shared/ui';
 import { apiClient, ApiClientError } from '@/shared/api/api-client';
 
 interface LevelItem {
@@ -37,6 +37,8 @@ export default function AdminLevels({ createOnly = false }: { createOnly?: boole
   const [loading, setLoading] = React.useState(true);
   const [error, setError] = React.useState<string | null>(null);
   const [successMsg, setSuccessMsg] = React.useState<string | null>(null);
+  const [selectedIds, setSelectedIds] = React.useState<string[]>([]);
+  const [bulkBusy, setBulkBusy] = React.useState(false);
 
   // Modal states
   const [formModalOpen, setFormModalOpen] = React.useState(createOnly);
@@ -74,6 +76,7 @@ export default function AdminLevels({ createOnly = false }: { createOnly?: boole
   React.useEffect(() => {
     void load();
   }, [load]);
+  React.useEffect(() => { setSelectedIds([]); }, [search, filter]);
 
   const handleOpenCreate = () => router.push('/admin/levels/new');
 
@@ -178,6 +181,29 @@ export default function AdminLevels({ createOnly = false }: { createOnly?: boole
       setError(err instanceof ApiClientError ? err.message : 'Lỗi cập nhật trạng thái');
     } finally {
       setDeleting(false);
+    }
+  };
+
+  const visibleLevels = levels.filter(level => matchesSearch(search, level.name, level.code, level.description) && (!filter || level.isActive === (filter === 'active')));
+
+  const bulkChangeActivity = async (active: boolean, allFiltered = false) => {
+    const ids = allFiltered ? visibleLevels.map(level => level.id) : selectedIds;
+    if (!ids.length) return;
+    const action = active ? 'kích hoạt' : 'ngừng hoạt động';
+    if (!(await confirmDialog(`Bạn có chắc muốn ${action} ${ids.length} cấp độ đã chọn?`, { title: `Xác nhận ${action}`, confirmLabel: action, tone: active ? 'primary' : 'danger' }))) return;
+
+    setBulkBusy(true);
+    setError(null);
+    setSuccessMsg(null);
+    try {
+      await Promise.all(ids.map(id => apiClient.patch(`/levels/${id}`, { isActive: active })));
+      setLevels(current => current.map(level => ids.includes(level.id) ? { ...level, isActive: active } : level));
+      setSelectedIds([]);
+      setSuccessMsg(`Đã ${action} ${ids.length} cấp độ.`);
+    } catch (err) {
+      setError(err instanceof ApiClientError ? err.message : 'Không thể cập nhật trạng thái cấp độ');
+    } finally {
+      setBulkBusy(false);
     }
   };
 
@@ -375,6 +401,20 @@ export default function AdminLevels({ createOnly = false }: { createOnly?: boole
       {/* Level Cards Grid */}
       <div className="mt-8">
         <ListTools search={search} onSearch={setSearch} filter={filter} onFilter={setFilter} options={[{value:'',label:'Tất cả trạng thái'},{value:'active',label:'Đang hoạt động'},{value:'inactive',label:'Ngừng hoạt động'}]} />
+        <BulkSelectionBar
+          pageCount={visibleLevels.length}
+          selectedCount={selectedIds.length}
+          allPageSelected={visibleLevels.length > 0 && visibleLevels.every(level => selectedIds.includes(level.id))}
+          onSelectPage={checked => setSelectedIds(checked ? visibleLevels.map(level => level.id) : [])}
+          selectionLabel="Chọn tất cả kết quả lọc"
+        >
+          {selectedIds.length > 0 && <>
+            <button type="button" disabled={bulkBusy} onClick={() => void bulkChangeActivity(true)} className="rounded-lg bg-emerald-600 px-3 py-2 text-xs font-bold text-white disabled:opacity-50">Kích hoạt đã chọn</button>
+            <button type="button" disabled={bulkBusy} onClick={() => void bulkChangeActivity(false)} className="rounded-lg bg-amber-500 px-3 py-2 text-xs font-bold text-white disabled:opacity-50">Ngừng hoạt động đã chọn</button>
+          </>}
+          <button type="button" disabled={bulkBusy || visibleLevels.length === 0} onClick={() => void bulkChangeActivity(true, true)} className="rounded-lg border border-emerald-600 px-3 py-2 text-xs font-bold text-emerald-700 disabled:opacity-50">Kích hoạt tất cả kết quả lọc</button>
+          <button type="button" disabled={bulkBusy || visibleLevels.length === 0} onClick={() => void bulkChangeActivity(false, true)} className="rounded-lg border border-amber-500 px-3 py-2 text-xs font-bold text-amber-700 disabled:opacity-50">Ngừng hoạt động tất cả kết quả lọc</button>
+        </BulkSelectionBar>
         <h2 className="text-sm font-semibold text-on-surface mb-4">Danh sách cấp độ ({levels.length})</h2>
 
         {loading ? (
@@ -402,7 +442,7 @@ export default function AdminLevels({ createOnly = false }: { createOnly?: boole
           </div>
         ) : (
           <PaginatedList className="grid grid-cols-1 md:grid-cols-2 gap-5">
-            {levels.filter(lvl => matchesSearch(search,lvl.name,lvl.code,lvl.description) && (!filter || lvl.isActive === (filter === 'active'))).map((lvl) => {
+            {visibleLevels.length === 0 ? <div className="col-span-full rounded-2xl border border-dashed border-outline-variant bg-surface-container-lowest p-10 text-center text-sm text-on-surface-variant">Không có cấp độ phù hợp với bộ lọc.</div> : visibleLevels.map((lvl) => {
               const meta = getLevelTheme(lvl);
 
               return (
@@ -414,6 +454,9 @@ export default function AdminLevels({ createOnly = false }: { createOnly?: boole
                     {/* Header */}
                     <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between mb-3">
                       <div className="flex items-center gap-3">
+                        <label className="flex shrink-0 items-center" aria-label={`Chọn cấp độ ${lvl.name}`}>
+                          <input type="checkbox" className="h-4 w-4 accent-primary" checked={selectedIds.includes(lvl.id)} onChange={event => setSelectedIds(current => event.target.checked ? [...new Set([...current, lvl.id])] : current.filter(id => id !== lvl.id))} />
+                        </label>
                         <div className={`w-10 h-10 rounded-xl flex items-center justify-center border ${meta.bg}`}>
                           <AppIcon className=" text-[20px]">{meta.icon}</AppIcon>
                         </div>

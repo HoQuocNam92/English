@@ -101,7 +101,7 @@ export function SearchInput({
   const isNearLimit = charCount >= maxLength * 0.8;
 
   return (
-    <form onSubmit={handleSubmit} className={`admin-search-field flex w-full min-w-0 flex-col gap-1 sm:w-96 sm:max-w-full sm:flex-none ${className}`}>
+    <form onSubmit={handleSubmit} className={`admin-search-field flex w-full min-w-0 flex-col gap-1 sm:w-auto sm:min-w-[320px] sm:max-w-full sm:flex-1 ${className}`}>
       <div className="flex gap-2 items-center">
         <div className="relative flex-1">
           {/* Search Icon */}
@@ -172,4 +172,3 @@ export function SearchInput({
     </form>
   );
 }
-
