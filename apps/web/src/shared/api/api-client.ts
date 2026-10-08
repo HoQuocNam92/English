@@ -1,4 +1,5 @@
 import { mutationSuccessMessage } from './mutation-feedback';
+import { withoutEmptyQueryValues } from '../lib/request-query';
 import { localizeLevelFields } from '@/shared/lib/level-label';
 /**
  * Shared API client — tự động đính kèm JWT từ localStorage session.
@@ -96,6 +97,7 @@ export class ApiClientError extends Error {
 }
 
 async function request<T>(path: string, options: RequestInit = {}, canRetry = true): Promise<T> {
+  if (!options.method || options.method.toUpperCase() === 'GET') path = withoutEmptyQueryValues(path);
   const token = getAccessToken();
   const headers: Record<string, string> = {
     ...(!(options.body instanceof FormData) ? { "Content-Type": "application/json" } : {}),

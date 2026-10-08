@@ -284,18 +284,13 @@ export default function AdminLevels({ createOnly = false }: { createOnly?: boole
                 />
               </div>
 
-              <div className="flex items-center gap-3 pt-2">
-                <input
-                  type="checkbox"
-                  id="isActiveToggle"
-                  checked={isActive}
-                  onChange={(e) => setIsActive(e.target.checked)}
-                  className="h-4 w-4 rounded accent-primary cursor-pointer"
-                />
-                <label htmlFor="isActiveToggle" className="text-sm font-semibold text-on-surface cursor-pointer">
-                  Kích hoạt cấp độ này (Cho phép chọn khi tạo bài học/câu hỏi/bài thi)
-                </label>
-              </div>
+              <label className="block pt-2 text-sm font-semibold text-on-surface">Trạng thái
+                <select value={isActive ? 'active' : 'inactive'} onChange={e => setIsActive(e.target.value === 'active')} className="mt-2 w-full rounded-xl border border-outline-variant bg-white px-3.5 py-2">
+                  <option value="active">Đang hoạt động</option>
+                  <option value="inactive">Ngừng hoạt động</option>
+                </select>
+                <span className="mt-2 block text-xs font-normal text-on-surface-variant">Cấp độ ngừng hoạt động không thể được chọn khi tạo nội dung mới.</span>
+              </label>
             </div>
 
             <div className="flex justify-end gap-3 mt-6 pt-4 border-t border-outline-variant/30">

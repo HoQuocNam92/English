@@ -396,15 +396,15 @@ export default function AdminUsers({ createOnly = false }: { createOnly?: boolea
 
         {/* Data Table */}
         <div className="overflow-x-auto w-full">
-          <table className="w-full table-fixed text-left border-collapse">
+          <table className="w-full min-w-[1000px] table-fixed text-left border-collapse">
             <thead className="bg-white">
               <tr className="bg-white border-y border-outline-variant/50">
                 <th className="w-[23%] p-md font-interface-sb text-interface-sb text-on-surface-variant">Người dùng</th>
                 <th className="w-[23%] p-md font-interface-sb text-interface-sb text-on-surface-variant">Email</th>
                 <th className="w-[13%] p-md font-interface-sb text-interface-sb text-on-surface-variant">Vai trò</th>
-                <th className="w-[11%] p-md font-interface-sb text-interface-sb text-on-surface-variant">Trạng thái</th>
+                <th className="w-[15%] p-md font-interface-sb text-interface-sb text-on-surface-variant">Trạng thái</th>
                 <th className="w-[12%] p-md font-interface-sb text-interface-sb text-on-surface-variant">Ngày tạo</th>
-                <th className="w-[18%] p-md font-interface-sb text-interface-sb text-on-surface-variant text-right">Hành động</th>
+                <th className="w-[14%] p-md font-interface-sb text-interface-sb text-on-surface-variant text-right">Hành động</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-outline-variant">

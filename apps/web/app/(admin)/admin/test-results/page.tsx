@@ -1,4 +1,5 @@
 'use client';
+import { formatAttemptDuration } from '@/shared/lib/attempt-duration';
 import { showToast } from '@/shared/ui/AppFeedback';
 import { AppIcon } from '@/shared/ui/AppIcon';
 import { ActionButton, ActionGroup } from '@/shared/ui/ActionButton';
@@ -17,7 +18,7 @@ interface TestResultItem {
   scorePercent?: number;
   isPassed?: boolean;
   passed?: boolean;
-  timeSpentSeconds?: number;
+  timeSpentSeconds?: number | null;
   startedAt?: string;
   submittedAt?: string;
   completedAt?: string;
@@ -86,7 +87,7 @@ export default function AdminTestResultsPage() {
       const pages = await Promise.all(Array.from({ length: Math.max(0, first.meta.totalPages - 1) }, (_, index) => apiClient.get<PaginatedResponse<TestResultItem>>(`/test-results?page=${index + 2}&limit=100`)));
       const all = [first, ...pages].flatMap(item => item.data);
       const XLSX = await import('xlsx');
-      const rows = all.map(item => ({ 'Học viên': item.learner?.userDetail?.displayName ?? item.learner?.email ?? '', Email: item.learner?.email ?? '', 'Chủ đề/Bài thi': item.exam?.title ?? '', 'Lĩnh vực': item.exam?.domain?.name ?? '', 'Trình độ': item.exam?.level?.name ?? '', 'Điểm (%)': item.scorePercent ?? item.score ?? '', 'Kết quả': (item.passed ?? item.isPassed) ? 'Đạt' : 'Chưa đạt', 'Thời gian làm bài': item.timeSpentSeconds ? `${Math.round(item.timeSpentSeconds / 60)} phút` : '', 'Thời gian nộp': item.submittedAt ? new Date(item.submittedAt).toLocaleString('vi-VN') : '' }));
+      const rows = all.map(item => ({ 'Học viên': item.learner?.userDetail?.displayName ?? item.learner?.email ?? '', Email: item.learner?.email ?? '', 'Chủ đề/Bài thi': item.exam?.title ?? '', 'Lĩnh vực': item.exam?.domain?.name ?? '', 'Trình độ': item.exam?.level?.name ?? '', 'Điểm (%)': item.scorePercent ?? item.score ?? '', 'Kết quả': (item.passed ?? item.isPassed) ? 'Đạt' : 'Chưa đạt', 'Thời gian làm bài': formatAttemptDuration(item), 'Thời gian nộp': item.submittedAt ? new Date(item.submittedAt).toLocaleString('vi-VN') : '' }));
       const book = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(book, XLSX.utils.json_to_sheet(rows), 'Kết quả bài thi'); XLSX.writeFile(book, `ket-qua-bai-thi-${new Date().toISOString().slice(0,10)}.xlsx`);
       showToast('Đã tạo tệp Excel kết quả bài thi.', 'success');
     } catch (e) { setError(e instanceof ApiClientError ? e.message : 'Không thể xuất Excel'); }
@@ -205,13 +206,8 @@ export default function AdminTestResultsPage() {
                   const learnerName = r.learner?.userDetail?.displayName || r.learner?.email || 'Người học';
                   const isPassed = Boolean(r.isPassed ?? r.passed);
                   const score = Math.round(Number(r.score ?? r.scorePercent ?? 0));
-                  const timeSpent = typeof r.timeSpentSeconds === 'number' && !Number.isNaN(r.timeSpentSeconds)
-                    ? r.timeSpentSeconds
-                    : (r.submittedAt && r.startedAt ? Math.max(0, Math.round((new Date(r.submittedAt).getTime() - new Date(r.startedAt).getTime()) / 1000)) : 0);
-                  const mins = Math.floor(timeSpent / 60);
-                  const secs = timeSpent % 60;
-                  const timeFormatted = `${mins}m ${secs}s`;
-                  const submittedDate = r.completedAt || r.submittedAt || r.createdAt;
+                  const timeFormatted = formatAttemptDuration(r);
+                  const submittedDate = r.completedAt || r.submittedAt;
 
                   return (
                     <tr key={r.id} className="border-b border-outline-variant hover:bg-surface-container-low transition-colors">

@@ -1,8 +1,7 @@
 'use client';
-import { AppIcon } from '@/shared/ui/AppIcon';
+import { BackButton } from './BackButton';
 
 import type { ComponentProps, ReactNode } from 'react';
-import Link from 'next/link';
 import { Modal } from './Modal';
 import { showToast } from './AppFeedback';
 import { cn } from '@/shared/lib/cn';
@@ -15,10 +14,7 @@ export function FormPageLayout({ children, className }: { children: ReactNode; c
 /** Consistent layout for creating records outside the list view. */
 export function CreatePage({ backHref, children }: { backHref: string; children: ReactNode }) {
   return <FormPageLayout className="max-w-4xl space-y-5">
-    <Link href={backHref} className="inline-flex items-center gap-2 rounded-lg py-1 text-sm font-medium text-on-surface-variant hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary">
-      <AppIcon aria-hidden="true" className="" style={{ fontSize: 18 }}>arrow_back</AppIcon>
-      Quay lại
-    </Link>
+    <BackButton fallbackHref={backHref} />
     <section className="overflow-hidden rounded-2xl border border-outline-variant/50 bg-surface-container-lowest shadow-sm">{children}</section>
   </FormPageLayout>;
 }

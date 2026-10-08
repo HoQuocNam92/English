@@ -63,3 +63,12 @@ test('completed topic without a published quiz is not offered as a quiz task',as
  const result:any=await service.getAgenda('A')
  assert.equal(result.tasks.some((t:any)=>t.kind==='quiz'),false)
 })
+
+test('completed agenda includes separate review links for every lesson, including the selected topic lesson', async () => {
+ const {service}=fixture({progress:['l1','l2'].map(resourceId=>({resourceId,status:'completed',completionPercent:100,completedAt:now}))})
+ const result:any=await service.getAgenda('A')
+ const done=result.tasks.find((task:any)=>task.id==='lesson-today-done')
+ assert.deepEqual(done.completedLessons.map((item:any)=>item.id),['l1','l2'])
+ assert.ok(done.completedLessons[0].href.endsWith('?lessonId=l1'))
+ assert.ok(done.completedLessons[1].href.endsWith('?lessonId=l2'))
+})

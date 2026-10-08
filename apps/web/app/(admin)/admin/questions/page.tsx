@@ -182,7 +182,7 @@ export default function AdminQuestionsPage() {
             setPage(1);
             setSearch(sanitized);
           }}
-          placeholder="Tìm kiếm câu hỏi theo nội dung, từ khóa, tình huống..."
+          placeholder="Nội dung hoặc ngữ cảnh"
           maxLength={100}
         />
         <div className="grid w-full min-w-0 gap-3 sm:grid-cols-2 xl:grid-cols-3 lg:ml-auto lg:max-w-3xl">
@@ -313,7 +313,7 @@ export default function AdminQuestionsPage() {
                       {q.context && (
                         <div className="bg-surface-container rounded-xl p-3.5 border border-outline-variant/20">
                           <p className="text-xs font-semibold text-on-surface-variant mb-1">Ngữ cảnh bài tập:</p>
-                          <p className="text-sm text-on-surface font-mono whitespace-pre-wrap">{q.context}</p>
+                          <p className="text-sm leading-6 text-on-surface whitespace-pre-wrap">{q.context}</p>
                         </div>
                       )}
 

@@ -1,4 +1,5 @@
 'use client';
+import { BackButton } from '@/shared/ui/BackButton';
 import { NumberInput } from '@/shared/ui/NumberInput';
 import { PaginatedList } from '@/shared/ui/PaginatedList';
 import { AppIcon } from '@/shared/ui/AppIcon';
@@ -226,7 +227,7 @@ function LearnerProfileContent() {
 
   return (
     <LearnerShell>
-      <div className="flex w-full flex-col gap-6 pb-16"><Link href="/learn" className="mb-4 inline-flex items-center gap-2 rounded-lg py-2 text-sm font-semibold text-primary hover:underline"><span aria-hidden="true">←</span>Quay lại</Link>
+      <div className="flex w-full flex-col gap-6 pb-16"><BackButton fallbackHref="/learn" />
         {/* Profile Header */}
         <section className="flex flex-col justify-between gap-4 rounded-2xl border border-outline-variant/40 bg-surface-container-lowest p-6 shadow-2xs md:flex-row md:items-center">
           <div className="flex items-center gap-4">

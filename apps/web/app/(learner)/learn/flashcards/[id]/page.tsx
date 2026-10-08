@@ -1,4 +1,5 @@
 'use client';
+import { BackButton } from '@/shared/ui/BackButton';
 import { AppIcon } from '@/shared/ui/AppIcon';
 
 import { Dropdown } from '@/shared/ui/Dropdown';
@@ -148,13 +149,7 @@ export default function LessonVocabularyDetailPage({ params }: { params: Promise
       <div className="w-full py-6 space-y-6">
         {/* Breadcrumb Navigation */}
         <div>
-          <Link
-            href="/learn/flashcards"
-            className="text-xs font-bold text-slate-500 hover:text-primary flex items-center gap-1.5 transition-colors"
-          >
-            <AppIcon className=" text-sm">arrow_back</AppIcon>
-            Danh mục Flashcards
-          </Link>
+          <BackButton fallbackHref="/learn/flashcards" />
         </div>
 
         {/* Header Title */}

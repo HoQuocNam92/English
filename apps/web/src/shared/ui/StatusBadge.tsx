@@ -8,5 +8,5 @@ const states = {
 } as const;
 export function StatusBadge({ status }: { status: string }) {
   const state = states[status as keyof typeof states];
-  return <Badge tone={state?.[1] ?? 'neutral'}>{state?.[0] ?? 'Chưa xác định'}</Badge>;
+  return <Badge className="whitespace-nowrap" tone={state?.[1] ?? 'neutral'}>{state?.[0] ?? 'Chưa xác định'}</Badge>;
 }

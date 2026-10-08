@@ -8,7 +8,7 @@ export function vietnamPeriods(now = new Date()) {
   const utc = (y: number, m: number, d: number) => new Date(Date.UTC(y, m, d) - 7 * 60 * 60 * 1000)
   return { today: utc(year, month, day), tomorrow: utc(year, month, day + 1), month: utc(year, month, 1), nextMonth: utc(year, month + 1, 1), year: utc(year, 0, 1), nextYear: utc(year + 1, 0, 1), daysInMonth: new Date(Date.UTC(year, month + 1, 0)).getUTCDate(), daysInYear: (Date.UTC(year + 1, 0, 1) - Date.UTC(year, 0, 1)) / 86400000, label: `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}` }
 }
-type Task = { id: string; title: string; reason: string; href: string; action: string; status: 'todo' | 'done'; kind: 'lesson' | 'review' | 'vocabulary' | 'quiz'; minutes?: number }
+type Task = { id: string; title: string; reason: string; href: string; action: string; status: 'todo' | 'done'; kind: 'lesson' | 'review' | 'vocabulary' | 'quiz'; minutes?: number; completedLessons?: { id: string; title: string; href: string }[] }
 
 @Injectable()
 export class LearningAgendaService {
@@ -48,7 +48,7 @@ export class LearningAgendaService {
       const score = (l: typeof lessons[number]) => (byLesson.get(l.id)?.status === 'in_progress' ? 1000 : 0) + (weak.some(w => topicMatch(l, w)) ? 100 : 0) - Math.abs(l.level.order - profile.level.order) * 10 - (l.certificationTopics[0]?.topic.certificateDomain?.order ?? 0) - (l.certificationTopics[0]?.topic.order ?? 0) / 10
       return score(b) - score(a)
     })
-    const linkFor = (l: typeof lessons[number]) => { const topic = l.certificationTopics.find(t => certIds.includes(t.topic.certificateId))?.topic; return topic ? `/learn/certifications/${topic.certificateId}/topics/${topic.id}` : `/learn/lessons/${l.id}` }
+    const linkFor = (l: typeof lessons[number]) => { const topic = l.certificationTopics.find(t => certIds.includes(t.topic.certificateId))?.topic; return topic ? `/learn/certifications/${topic.certificateId}/topics/${topic.id}?lessonId=${encodeURIComponent(l.id)}` : `/learn/lessons/${l.id}` }
     const tasks: Task[] = []
     const completedToday = lessons.filter(l => completed(l.id) && during(byLesson.get(l.id)?.completedAt, period.today, period.tomorrow))
     const next = ordered.find(l => !completed(l.id))
@@ -56,7 +56,7 @@ export class LearningAgendaService {
     if (review) tasks.push({ id: `review-${review.l.id}`, title: `Ôn lại: ${review.l.title}`, reason: `Quiz gần nhất của phần này đạt ${Math.round(review.a.scorePercent!)}%. Ôn giải thích rồi luyện lại khi sẵn sàng.`, href: linkFor(review.l), action: 'Ôn kiến thức', kind: 'review', status: 'todo', minutes: review.l.estimatedMinutes })
     const typicalMinutes = lessons.length ? Math.max(5, Math.round(lessons.reduce((sum, l) => sum + l.estimatedMinutes, 0) / lessons.length)) : 15
     const lessonTargetToday = Math.min(lessons.length, Math.max(1, Math.floor(profile.dailyStudyTargetMinutes / typicalMinutes)))
-    if (completedToday.length) tasks.push({ id: 'lesson-today-done', title: `Đã hoàn thành ${completedToday.length} bài hôm nay`, reason: 'Tiến độ đã được ghi nhận. Bạn có thể nghỉ hoặc học thêm khi có thời gian.', href: linkFor(completedToday[0]), action: 'Xem lại bài', kind: 'lesson', status: 'done' })
+    if (completedToday.length) tasks.push({ id: 'lesson-today-done', title: `Đã hoàn thành ${completedToday.length} bài hôm nay`, reason: 'Tiến độ đã được ghi nhận. Bạn có thể nghỉ hoặc học thêm khi có thời gian.', href: linkFor(completedToday[0]), action: 'Xem lại bài', kind: 'lesson', status: 'done', completedLessons: completedToday.map(l => ({ id: l.id, title: l.title, href: linkFor(l) })) })
     if (next && completedToday.length < lessonTargetToday) tasks.push({ id: next.id, title: next.title, reason: byLesson.get(next.id)?.status === 'in_progress' ? 'Tiếp tục bài đang học dở trước khi bắt đầu bài mới.' : weak.some(w => topicMatch(next, w)) ? 'Ưu tiên chủ đề cần củng cố theo kết quả Quiz.' : 'Bài tiếp theo phù hợp với trình độ và mục tiêu đã chọn.', href: linkFor(next), action: byLesson.get(next.id)?.status === 'in_progress' ? 'Học tiếp' : 'Bắt đầu học', kind: 'lesson', status: 'todo', minutes: next.estimatedMinutes })
     if (hasVocab) {
       const due = vocab.filter(v => v.status !== 'mastered' && v.nextReviewAt && v.nextReviewAt <= now).length

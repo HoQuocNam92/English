@@ -23,7 +23,7 @@ export class QuestionsService {
     const { search, domainCode, levelCode, status, type, skill, examId, topic } = params || {}
     const skip = (page - 1) * limit
     const where: any = {}
-    if (search) where.prompt = { contains: search, mode: 'insensitive' }
+    if (search) where.OR = [{ prompt: { contains: search, mode: 'insensitive' } }, { context: { contains: search, mode: 'insensitive' } }]
     if (domainCode) where.domain = { code: domainCode }
     if (levelCode) where.level = { code: levelCode }
     if (status) where.status = status

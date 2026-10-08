@@ -1,5 +1,5 @@
 'use client';
-import Link from 'next/link';
+import { BackButton } from '@/shared/ui/BackButton';
 import { AppIcon } from '@/shared/ui/AppIcon';
 import { FormPageLayout } from '@/shared/ui/CreatePage';
 
@@ -225,7 +225,7 @@ export default function TestBuilderPage() {
   }
 
   return (
-    <FormPageLayout><Link href="/admin/tests" className="mb-4 inline-flex items-center gap-2 rounded-lg py-2 text-sm font-semibold text-primary hover:underline"><span aria-hidden="true">←</span>Quay lại</Link>
+    <FormPageLayout><BackButton fallbackHref="/admin/tests" />
       <PageHeader
         title={isEdit ? 'Chỉnh sửa bài thi' : 'Tạo bài thi mới'}
         description="Cấu hình thông tin và chọn câu hỏi cho bài thi"

@@ -1,8 +1,9 @@
 'use client';
+import { BackButton } from '@/shared/ui/BackButton';
 import { AppIcon } from '@/shared/ui/AppIcon';
 
 import { use, useEffect, useState } from 'react';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useSearchParams } from 'next/navigation';
 import { LearnerShell } from '@/shared/layout';
 import { apiClient } from '@/shared/api/api-client';
 import { lessonTrackByType } from '@/shared/lib/lesson-tracks';
@@ -10,7 +11,6 @@ import { LessonExperience, type Lesson } from './lesson-experiences';
 
 export default function LearnerLessonDetail({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
-  const router = useRouter();
   const searchParams = useSearchParams();
   const [lesson, setLesson] = useState<Lesson | null>(null);
   const [loading, setLoading] = useState(true);
@@ -47,9 +47,7 @@ export default function LearnerLessonDetail({ params }: { params: Promise<{ id: 
     <LearnerShell>
       <article className="w-full pb-16">
         <div className="flex flex-wrap items-center justify-between gap-3">
-          <button type="button" onClick={() => router.back()} className="inline-flex items-center gap-1 text-sm font-bold text-primary hover:underline cursor-pointer">
-            <AppIcon className=" text-[18px]">arrow_back</AppIcon>Quay lại {backLabel}
-          </button>
+          <BackButton fallbackHref={fallbackUrl}>Quay lại {backLabel}</BackButton>
           <button
             type="button"
             onClick={() => void finish()}

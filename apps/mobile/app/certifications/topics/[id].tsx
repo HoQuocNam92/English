@@ -1,4 +1,4 @@
-import { useCallback, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { useFocusEffect, useLocalSearchParams, useRouter } from 'expo-router';
 import { View } from 'react-native';
 import { Button, Text, Tabs, controlStyles } from '../../../src/shared/ui/primitives';
@@ -8,16 +8,17 @@ import { api } from '../../../src/shared/api/api-client';
 import { useTheme } from '../../../src/shared/store/theme-context';
 
 export default function CertificateTopic() {
-  const { id, certificateId } = useLocalSearchParams<{ id: string; certificateId: string }>();
+  const { id, certificateId, lessonId } = useLocalSearchParams<{ id: string; certificateId: string; lessonId?: string }>();
   const router = useRouter(); const { colors } = useTheme();
   const [topic, setTopic] = useState<any>(null); const [activeId, setActiveId] = useState('');
   const [loading, setLoading] = useState(true); const [saving, setSaving] = useState(false); const [error, setError] = useState(''); const lock = useRef(false);
   const load = useCallback(async () => {
     try { const result: any = await api.get(`/certification-study/topics/${id}`);
       if (certificateId && result.certificate.id !== certificateId) throw new Error('Chủ đề không thuộc chứng chỉ này.');
-      setTopic(result); setActiveId(previous => previous || result.lessons.find((lesson: any) => lesson.progress?.status !== 'completed')?.id || result.lessons[0]?.id || ''); setError('');
+      setTopic(result); setActiveId(previous => previous || result.lessons.find((item: any) => item.id === lessonId)?.id || result.lessons.find((lesson: any) => lesson.progress?.status !== 'completed')?.id || result.lessons[0]?.id || ''); setError('');
     } catch (cause: any) { setError(cause.message); } finally { setLoading(false); }
-  }, [id, certificateId]);
+  }, [id, certificateId, lessonId]);
+  useEffect(() => { setActiveId(''); }, [id, certificateId, lessonId]);
   useFocusEffect(useCallback(() => { void load(); }, [load]));
   const lesson = topic?.lessons.find((item: any) => item.id === activeId);
   const completed = topic?.lessons.filter((item: any) => item.progress?.status === 'completed').length ?? 0;

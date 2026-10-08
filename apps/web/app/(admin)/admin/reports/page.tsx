@@ -1,5 +1,6 @@
 'use client';
 import { showToast } from '@/shared/ui/AppFeedback';
+import { ActionButton, ActionGroup } from '@/shared/ui/ActionButton';
 import { AppIcon } from '@/shared/ui/AppIcon';
 
 import { Dropdown } from '@/shared/ui/Dropdown';
@@ -159,6 +160,20 @@ export default function AdminReportsPage() {
       showToast('Đã tạo tệp Excel báo cáo thống kê.', 'success');
   };
 
+  const exportChart = async (kind: 'activity' | 'domains' | 'certificates') => {
+    if (!analytics || loading || error || hasPendingFilters) return;
+    try {
+      const XLSX = await import('xlsx');
+      const rows = kind === 'activity' ? analytics.weeklyActivity.map(item => ({ 'Ngày': item.day, 'Lượt hoạt động': item.activityCount, 'Học viên hoạt động': item.activeUsers }))
+        : kind === 'domains' ? analytics.domainsDistribution.map(item => ({ 'Lĩnh vực': item.name, 'Bài học': item.lessons, 'Từ vựng': item.vocabularies, 'Câu hỏi': item.questions, 'Bài thi': item.exams, 'Tổng nội dung': item.totalItems }))
+        : analytics.certificatesDistribution.map(item => ({ 'Chứng chỉ': item.name, 'Điểm trung bình (%)': item.averageScore, 'Lượt thi': item.attempts, 'Tỷ lệ đạt (%)': item.passRate }));
+      const book = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(book, XLSX.utils.json_to_sheet(rows), 'Dữ liệu');
+      XLSX.writeFile(book, `bao-cao-${kind}-${appliedFilters.dateFrom}-${appliedFilters.dateTo}.xlsx`);
+      showToast('Đã xuất dữ liệu biểu đồ.', 'success');
+    } catch { showToast('Chưa xuất được dữ liệu. Vui lòng thử lại.', 'error'); }
+  };
+
   return (
     <main className="min-w-0 flex-1 bg-background p-4 sm:p-6 lg:p-margin">
       <div className="mx-auto flex w-full min-w-0 flex-col gap-xl">
@@ -243,9 +258,7 @@ export default function AdminReportsPage() {
           <div className="min-w-0 lg:col-span-2 bg-surface-container-lowest p-lg rounded-xl border border-outline-variant hover:shadow-[0_1px_3px_rgba(15,23,24,0.06)] transition-all flex flex-col overflow-hidden">
             <div className="flex items-center justify-between mb-lg">
               <h3 className="font-headline-h3 text-headline-h3 text-on-surface">Hoạt động học tập (tối đa 31 ngày cuối kỳ)</h3>
-              <button className="text-on-surface-variant hover:text-primary p-xs rounded hover:bg-surface-container-low transition-colors">
-                <AppIcon className="" data-icon="more_vert">more_vert</AppIcon>
-              </button>
+              <ActionGroup><ActionButton action="export" label="Xuất dữ liệu biểu đồ" disabled={!analytics || loading || hasPendingFilters || !!error} onClick={() => void exportChart('activity')} /></ActionGroup>
             </div>
             <ActivityChart data={analytics?.weeklyActivity ?? []} />
           </div>
@@ -253,9 +266,7 @@ export default function AdminReportsPage() {
           <div className="bg-surface-container-lowest p-lg rounded-xl border border-outline-variant hover:shadow-[0_1px_3px_rgba(15,23,24,0.06)] transition-all flex flex-col">
             <div className="flex items-center justify-between mb-lg">
               <h3 className="font-headline-h3 text-headline-h3 text-on-surface">Phân bố theo lĩnh vực</h3>
-              <button className="text-on-surface-variant hover:text-primary p-xs rounded hover:bg-surface-container-low transition-colors">
-                <AppIcon className="" data-icon="more_vert">more_vert</AppIcon>
-              </button>
+              <ActionGroup><ActionButton action="export" label="Xuất dữ liệu biểu đồ" disabled={!analytics || loading || hasPendingFilters || !!error} onClick={() => void exportChart('domains')} /></ActionGroup>
             </div>
             <div className="mt-md flex flex-col gap-sm">
               {(analytics?.domainsDistribution ?? []).map((dom, idx) => {
@@ -273,9 +284,7 @@ export default function AdminReportsPage() {
           <div className="lg:col-span-3 bg-surface-container-lowest p-lg rounded-xl border border-outline-variant hover:shadow-[0_1px_3px_rgba(15,23,24,0.06)] transition-all flex flex-col">
             <div className="flex items-center justify-between mb-lg">
               <h3 className="font-headline-h3 text-headline-h3 text-on-surface">Điểm trung bình theo chứng chỉ</h3>
-              <button className="text-on-surface-variant hover:text-primary p-xs rounded hover:bg-surface-container-low transition-colors">
-                <AppIcon className="" data-icon="more_vert">more_vert</AppIcon>
-              </button>
+              <ActionGroup><ActionButton action="export" label="Xuất dữ liệu biểu đồ" disabled={!analytics || loading || hasPendingFilters || !!error} onClick={() => void exportChart('certificates')} /></ActionGroup>
             </div>
             <div className="relative h-[300px] w-full min-w-0 overflow-x-auto overflow-y-hidden pb-2">
               <div className="flex h-full min-w-full items-end justify-between gap-6 px-2 pt-6" style={{ width: `${Math.max(100, (analytics?.certificatesDistribution.length ?? 0) * 108)}px` }}>

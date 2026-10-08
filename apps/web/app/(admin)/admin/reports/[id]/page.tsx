@@ -1,6 +1,6 @@
 'use client';
+import { BackButton } from '@/shared/ui/BackButton';
 import { PaginatedTable } from '@/shared/ui/PaginatedTable';
-import Link from 'next/link';
 
 import { useEffect, useState } from 'react'
 import { useParams } from 'next/navigation'
@@ -79,7 +79,7 @@ export default function ReportDetailPage() {
   }
 
   return (
-    <div className="p-6"><Link href="/admin/reports" className="mb-4 inline-flex items-center gap-2 rounded-lg py-2 text-sm font-semibold text-primary hover:underline"><span aria-hidden="true">←</span>Quay lại</Link>
+    <div className="p-6"><BackButton fallbackHref="/admin/reports" />
       <PageHeader 
         title={data.domain.name} 
         description={data.domain.description || 'Domain Performance Report'} 

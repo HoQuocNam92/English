@@ -318,7 +318,7 @@ export class TaxonomyService {
     const formattedAttempts = attempts.map((a: any) => {
       const timeSpentSeconds = a.submittedAt && a.startedAt
         ? Math.max(0, Math.round((new Date(a.submittedAt).getTime() - new Date(a.startedAt).getTime()) / 1000))
-        : 0
+        : null
       const isPassed = a.passed ?? ((a.scorePercent ?? 0) >= (a.exam?.passingScorePercent ?? 70))
       const score = Math.round(a.scorePercent ?? a.score ?? 0)
 
@@ -327,7 +327,7 @@ export class TaxonomyService {
         timeSpentSeconds,
         isPassed,
         score,
-        completedAt: a.submittedAt ?? a.createdAt,
+        completedAt: a.submittedAt,
       }
     })
 

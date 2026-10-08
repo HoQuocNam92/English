@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from 'react';
 import { usePathname } from 'next/navigation';
 import { Languages, X, RotateCcw, Volume2 } from 'lucide-react';
 import { apiClient } from '@/shared/api/api-client';
+import { isEnglishSelection } from '@/shared/lib/english-selection';
 
 type Result = { translation: string | null; definitionEn?: string; source: string; message?: string; partOfSpeech?: string; pronunciationIpa?: string; contextual?: boolean };
 type Selection = { text: string; context: string; x: number; y: number };
@@ -65,8 +66,11 @@ export function SelectionTranslator() {
       const node = selected.anchorNode?.parentElement;
       if (node?.closest('[data-selection-translation]')) return;
       if (node?.closest('input, textarea, [contenteditable="true"]')) { dismiss(); return; }
+      const learningContent = node?.closest('[data-learning-content]');
+      const endContent = selected.focusNode?.parentElement?.closest('[data-learning-content]');
+      if (!learningContent || learningContent !== endContent) { dismiss(); return; }
       const text = selected.toString().trim().replace(/\s+/g, ' ');
-      if (!text || !/[a-zA-Z]/.test(text)) { dismiss(); return; }
+      if (!isEnglishSelection(text)) { dismiss(); return; }
       const block = node?.closest('p, li, h1, h2, h3, h4, td, blockquote');
       const surrounding = (block?.textContent ?? text).replace(/\s+/g, ' ').trim();
       const offset = surrounding.indexOf(text);

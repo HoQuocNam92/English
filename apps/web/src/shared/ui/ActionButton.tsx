@@ -7,6 +7,7 @@ import { createPortal } from 'react-dom';
 import { cn } from '@/shared/lib/cn';
 
 const actions = {
+  export: { label: 'Xuất dữ liệu', icon: 'download', tone: 'text-primary hover:bg-primary/10' },
   view: { label: 'Xem chi tiết', icon: 'visibility', tone: 'text-on-surface-variant hover:bg-surface-container' },
   edit: { label: 'Chỉnh sửa', icon: 'edit', tone: 'text-primary hover:bg-primary/10' },
   publish: { label: 'Xuất bản', icon: 'publish', tone: 'text-emerald-700 hover:bg-emerald-50' },

@@ -20,7 +20,8 @@
     "db:seed:placement": "node --env-file=.env -r ts-node/register prisma/seed-placement.ts",
     "test:placement": "node -r ts-node/register src/application/placement/placement.service.spec.ts",
     "test:agenda": "node -r ts-node/register src/application/progress/learning-agenda.service.spec.ts",
-    "test:learning-ai": "node -r ts-node/register src/infrastructure/ai/apivn-learning-planner.spec.ts"
+    "test:learning-ai": "node -r ts-node/register src/infrastructure/ai/apivn-learning-planner.spec.ts",
+    "test:bug-regressions": "node --test -r ts-node/register src/application/question/bug-regressions.spec.ts"
   },
   "dependencies": {
     "@nestjs/axios": "^12.0.0",

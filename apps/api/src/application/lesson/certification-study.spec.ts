@@ -135,3 +135,15 @@ test('admin cannot attach lessons to a topic from another certificate', async ()
     await assert.rejects(() => service.translate('bank', 42))
   } finally { global.fetch = original }
  })
+
+test('contextual translation falls back to published dictionary when provider rejects credentials', async () => {
+ const originalFetch = global.fetch
+ global.fetch = (async () => ({ ok: false, status: 403 })) as any
+ try {
+  const service = translationService({findFirst: async () => ({definitionVi:'Kho mã nguồn',definitionEn:'Source repository'})}, {APIVN_API_KEY:'private-test-key'})
+  const result = await service.translate('Repository', 'Push your code to the repository.')
+  assert.equal(result.translation, 'Kho mã nguồn')
+  assert.equal(result.source, 'dictionary')
+  assert.equal(result.contextual, false)
+ } finally { global.fetch=originalFetch }
+})

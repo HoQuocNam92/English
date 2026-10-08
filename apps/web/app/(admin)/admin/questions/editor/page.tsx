@@ -1,5 +1,5 @@
 'use client';
-import Link from 'next/link';
+import { BackButton } from '@/shared/ui/BackButton';
 import { AppIcon } from '@/shared/ui/AppIcon';
 import { FormPageLayout } from '@/shared/ui/CreatePage';
 
@@ -179,7 +179,7 @@ export default function QuestionEditorPage() {
   }
 
   return (
-    <FormPageLayout><Link href="/admin/questions" className="mb-4 inline-flex items-center gap-2 rounded-lg py-2 text-sm font-semibold text-primary hover:underline"><span aria-hidden="true">←</span>Quay lại</Link>
+    <FormPageLayout><BackButton fallbackHref="/admin/questions" />
       <PageHeader
         title={isEdit ? 'Chỉnh sửa câu hỏi' : 'Soạn câu hỏi mới'}
         description="Tạo câu hỏi trắc nghiệm để đưa vào bài thi hoặc flashcard"

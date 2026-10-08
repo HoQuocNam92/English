@@ -71,8 +71,7 @@ export class SelectionTranslationService {
         ] }),
       })
       if (!response.ok) {
-        const message = response.status === 401 || response.status === 403 ? 'Chưa dịch được: APIVN từ chối API key. Kiểm tra APIVN_API_KEY và khởi động lại API.' : response.status === 429 ? 'Chưa dịch được: APIVN đang giới hạn lượt gọi hoặc tài khoản hết hạn mức.' : response.status === 400 || response.status === 404 ? 'Chưa dịch được: APIVN không chấp nhận model hoặc cấu hình yêu cầu. Kiểm tra APIVN_MODEL.' : 'Chưa dịch được: dịch vụ APIVN đang lỗi. Vui lòng thử lại.'
-        throw new ServiceUnavailableException(message)
+        throw new ServiceUnavailableException('Chưa dịch được đoạn này. Vui lòng thử lại sau.')
       }
       const data = await response.json() as any
       const translation = data.choices?.[0]?.message?.content
@@ -83,8 +82,9 @@ export class SelectionTranslationService {
       const field = (value: unknown, limit: number) => typeof value === 'string' ? value.trim().slice(0, limit) || undefined : undefined
       return { text, translation: details.translation.trim(), definitionEn: field(details.definitionEn, 1000), partOfSpeech: field(details.partOfSpeech, 100), pronunciationIpa: field(details.pronunciationIpa, 200), source: 'apivn', contextual: !!context }
     } catch (error) {
+      if (dictionary) return dictionary
       if (error instanceof ServiceUnavailableException) throw error
-      throw new ServiceUnavailableException(error instanceof Error && error.name === 'AbortError' ? 'APIVN phản hồi quá lâu. Vui lòng thử lại.' : 'Chưa dịch được đoạn này. Vui lòng thử lại.')
+      throw new ServiceUnavailableException(error instanceof Error && error.name === 'AbortError' ? 'Chưa dịch được: phản hồi quá lâu. Vui lòng thử lại.' : 'Chưa dịch được đoạn này. Vui lòng thử lại.')
     }
     finally { clearTimeout(timeout) }
   }

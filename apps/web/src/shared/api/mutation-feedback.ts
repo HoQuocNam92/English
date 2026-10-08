@@ -3,7 +3,7 @@ export function mutationSuccessMessage(path: string, method: string, body?: unkn
   const route = path.split('?')[0];
   if (method === 'GET') return null;
   if (route === '/users/me') return 'Đã lưu thông tin hồ sơ.';
-  if (/\/learner-profiles\/.+\/goals$/.test(route)) return 'Đã lưu mục tiêu và trình độ học tập.';
+  if (/\/learner-profiles\/.+\/goals$/.test(route)) return 'Đã lưu mục tiêu, trình độ và giờ nhắc học của bạn.';
   if (route === '/auth/change-password') return 'Đổi mật khẩu thành công.';
   if (route === '/auth/register') return 'Tạo tài khoản thành công.';
   if (route.endsWith('/complete-onboarding')) return 'Đã hoàn thành thiết lập lộ trình.';
