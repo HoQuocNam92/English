@@ -1,9 +1,11 @@
 // Keep legacy databases on their recorded history. New installs execute the
 // complete initial-schema SQL; no migrate resolve, db push or reset is used.
-const { Client } = require('../apps/api/node_modules/pg');
+const { createRequire } = require('node:module');
 const { spawnSync } = require('node:child_process');
 const { copyFileSync } = require('node:fs');
 const path = require('node:path');
+const requireApi = createRequire(path.resolve(__dirname, '../apps/api/package.json'));
+const { Client } = requireApi('pg');
 async function main() {
   const root = path.resolve(__dirname, '..');
   const client = new Client({ connectionString: process.env.DATABASE_URL });
@@ -24,7 +26,7 @@ async function main() {
   const schema = fresh ? 'docker/prisma/schema.prisma' : 'apps/api/prisma/schema.prisma';
   if (fresh) copyFileSync(path.join(root, 'apps/api/prisma/schema.prisma'), path.join(root, schema));
   console.log(fresh ? 'Using fresh-install migration history.' : 'Using existing migration history.');
-  const result = spawnSync(path.join(root, 'apps/api/node_modules/.bin/prisma'), ['migrate', 'deploy', '--schema', schema], {
+  const result = spawnSync(process.execPath, [requireApi.resolve('prisma/build/index.js'), 'migrate', 'deploy', '--schema', schema], {
     cwd: root, env: process.env, stdio: 'inherit',
   });
   if (result.error) throw result.error;
