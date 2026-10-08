@@ -1,21 +1,23 @@
 import { Text, TouchableOpacity } from '../src/shared/ui/primitives';
-import { useRouter } from 'expo-router';
+import { Redirect, useRouter } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
-import { StyleSheet, View } from 'react-native';
+import { ActivityIndicator, Image, StyleSheet, View } from 'react-native';
 import { MaterialIcons } from '../src/shared/ui/AppIcon';
 import { colors, spacing } from '@techenglish/design-tokens';
+import { useAuth } from '../src/shared/store/auth-context';
 
 export default function EntryScreen() {
   const router = useRouter();
+  const { isLoggedIn, isLoading } = useAuth();
+  if (isLoading) return <View style={[styles.container, { justifyContent: 'center', alignItems: 'center' }]}><ActivityIndicator color={colors.primary} /></View>;
+  if (isLoggedIn) return <Redirect href="/(tabs)/home" />;
 
   return (
     <View style={styles.container}>
       <StatusBar style="dark" />
       <View style={styles.logoContainer}>
-        <View style={styles.iconCircle}>
-          <MaterialIcons name="school" size={40} color={colors.primary} />
-        </View>
-        <Text style={styles.title}>TechEnglish Pro</Text>
+        <Image source={require('../assets/icon.png')} style={{ width: 96, height: 96, borderRadius: 24, marginBottom: spacing.md }} accessibilityLabel="Logo Tech English" />
+        <Text style={styles.title}>Tech English</Text>
         <Text style={styles.subtitle}>Tiếng Anh chuyên ngành Công nghệ thông tin</Text>
       </View>
 
@@ -25,6 +27,7 @@ export default function EntryScreen() {
           <MaterialIcons name="arrow-forward" size={20} color="#ffffff" />
         </TouchableOpacity>
 
+        <TouchableOpacity onPress={() => router.push('/(auth)/register' as any)} style={{ paddingVertical: 12 }}><Text style={{ textAlign: 'center', color: colors.primary, fontWeight: '700' }}>Chưa có tài khoản? Đăng ký ngay</Text></TouchableOpacity>
         <TouchableOpacity onPress={() => router.push('/privacy' as any)}><Text style={{ textAlign: 'center', color: colors.primary }}>Chính sách bảo mật</Text></TouchableOpacity>
         <TouchableOpacity onPress={() => router.push('/terms' as any)}><Text style={{ textAlign: 'center', color: colors.primary }}>Điều khoản sử dụng</Text></TouchableOpacity>
       </View>

@@ -37,7 +37,7 @@ export default function TabsLayout() {
       <Tabs.Screen
         name="learning"
         options={{
-          title: 'Bài học',
+          title: 'Học tập',
           tabBarIcon: ({ size, color }) => <MaterialIcons name="menu-book" size={size} color={iconColors.learning} />,
         }}
       />

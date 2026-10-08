@@ -39,18 +39,19 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     // Restore session
     (async () => {
-      const [token, userRaw] = await Promise.all([
-        AsyncStorage.getItem('access_token'),
-        AsyncStorage.getItem('user'),
-      ]);
-      if (token && userRaw) {
-        try {
+      try {
+        const [token, userRaw] = await Promise.all([
+          AsyncStorage.getItem('access_token'),
+          AsyncStorage.getItem('user'),
+        ]);
+        if (token && userRaw) {
           const user = JSON.parse(userRaw) as User;
+          if (!user || typeof user.id !== 'string' || typeof user.email !== 'string') throw new Error('Invalid stored session');
           setState({ user, accessToken: token, isLoggedIn: true, isLoading: false });
-        } catch {
+        } else {
           setState(s => ({ ...s, isLoading: false }));
         }
-      } else {
+      } catch {
         setState(s => ({ ...s, isLoading: false }));
       }
     })();

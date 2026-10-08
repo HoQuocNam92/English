@@ -1,8 +1,9 @@
 {
   "expo": {
-    "name": "TechEnglish Pro",
-    "slug": "techenglish-pro",
-    "scheme": "techenglish-pro",
+    "name": "Tech English",
+    "slug": "tech-english",
+    "icon": "./assets/icon.png",
+    "scheme": "techenglish",
     "version": "1.0.0",
     "orientation": "portrait",
     "userInterfaceStyle": "light",
@@ -16,7 +17,11 @@
     },
     "android": {
       "package": "com.techenglish.pro",
-      "googleServicesFile": "./google-services.json"
+      "googleServicesFile": "./google-services.json",
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#FFFFFF"
+      }
     },
     "assetBundlePatterns": [
       "**/*"

@@ -6,15 +6,15 @@ import { useRouter } from 'expo-router';
 import { useTheme } from '../store/theme-context';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-export function FeatureScreen({ title, subtitle, children, loading = false, error = '', onRetry }: {
-  title: string; subtitle?: string; children: ReactNode; loading?: boolean; error?: string; onRetry?: () => void;
+export function FeatureScreen({ title, subtitle, children, loading = false, error = '', onRetry, embedded = false }: {
+  title: string; subtitle?: string; children: ReactNode; loading?: boolean; error?: string; onRetry?: () => void; embedded?: boolean;
 }) {
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const { colors } = useTheme();
   return <View style={[s.root, { backgroundColor: colors.background }]}>
     <View style={[s.header, { paddingTop: insets.top + 12, backgroundColor: colors.surface, borderBottomColor: colors.outlineVariant }]}>
-      <TouchableOpacity onPress={() => router.canGoBack() ? router.back() : router.replace('/(tabs)/learning' as any)} style={s.back}><MaterialIcons name="arrow-back" size={24} color={colors.onSurface} /></TouchableOpacity>
+      {!embedded && <TouchableOpacity onPress={() => router.canGoBack() ? router.back() : router.replace('/(tabs)/learning' as any)} style={s.back}><MaterialIcons name="arrow-back" size={24} color={colors.onSurface} /></TouchableOpacity>}
       <View style={{ flex: 1 }}><Text style={[s.title, { color: colors.onSurface }]}>{title}</Text>{subtitle ? <Text style={[s.subtitle, { color: colors.onSurfaceVariant }]}>{subtitle}</Text> : null}</View>
     </View>
     {loading ? <View style={s.center}><ActivityIndicator size="large" color={colors.primary} /></View> : error ? <View style={s.center}><MaterialIcons name="error-outline" size={42} color={colors.error} /><Text style={[s.error, { color: colors.error }]}>{error}</Text>{onRetry ? <TouchableOpacity onPress={onRetry} style={[s.retry, { backgroundColor: colors.primary }]}><Text style={{ color: '#fff', fontWeight: '700' }}>Thử lại</Text></TouchableOpacity> : null}</View> : <ScrollView contentContainerStyle={[s.content, { paddingBottom: insets.bottom + 32 }]}>{children}</ScrollView>}

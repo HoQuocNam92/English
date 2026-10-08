@@ -19,3 +19,4 @@ allowBuilds:
   '@scarf/scarf': true
   '@firebase/util': true
   protobufjs: true
+nodeLinker: hoisted

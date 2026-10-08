@@ -1,8 +1,8 @@
 import { Text, TextInput, TouchableOpacity } from '../../src/shared/ui/primitives';
-import { useEffect, useRef, useState } from 'react';
+import { useRef, useState } from 'react';
 import { useRouter } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
-import { Alert, StyleSheet, View, ScrollView, ActivityIndicator, Platform } from 'react-native';
+import { Alert, StyleSheet, View, ScrollView, ActivityIndicator } from 'react-native';
 import { MaterialIcons } from '../../src/shared/ui/AppIcon';
 import Svg, { Path } from 'react-native-svg';
 import { colors, spacing } from '@techenglish/design-tokens';
@@ -10,14 +10,11 @@ import { api, ApiError } from '../../src/shared/api/api-client';
 import { validateEmail, validatePassword, validateDisplayName } from '../../src/shared/utils/validators';
 import { useAuth } from '../../src/shared/store/auth-context';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import * as WebBrowser from 'expo-web-browser';
-import * as Google from 'expo-auth-session/providers/google';
+import { GoogleAuthButton } from '../../src/shared/ui/GoogleAuthButton';
 import Constants from 'expo-constants';
 
-WebBrowser.maybeCompleteAuthSession();
 
 const GOOGLE_CLIENT_ID = process.env.EXPO_PUBLIC_GOOGLE_CLIENT_ID;
-const GOOGLE_ANDROID_CLIENT_ID = process.env.EXPO_PUBLIC_GOOGLE_ANDROID_CLIENT_ID;
 const GOOGLE_IOS_CLIENT_ID = process.env.EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID;
 const GOOGLE_WEB_CLIENT_ID = process.env.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID ?? GOOGLE_CLIENT_ID;
 
@@ -50,22 +47,6 @@ export default function MobileRegisterScreen() {
   const [registerError, setRegisterError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const confirmPasswordRef = useRef<any>(null);
-  const [request, response, promptAsync] = Google.useAuthRequest(
-    GOOGLE_WEB_CLIENT_ID
-      ? { clientId: GOOGLE_WEB_CLIENT_ID, androidClientId: GOOGLE_ANDROID_CLIENT_ID ?? GOOGLE_CLIENT_ID, iosClientId: GOOGLE_IOS_CLIENT_ID ?? GOOGLE_CLIENT_ID, webClientId: GOOGLE_WEB_CLIENT_ID, scopes: ['openid', 'profile', 'email'] }
-      : null as any
-  );
-
-  useEffect(() => {
-    if (response?.type === 'success') {
-      const idToken = response.authentication?.idToken ?? response.params.id_token;
-      if (idToken) void handleGoogleRegister(idToken);
-      else Alert.alert('Lỗi đăng ký Google', 'Google không trả về ID token. Vui lòng thử lại.');
-    } else if (response?.type === 'error') {
-      Alert.alert('Lỗi đăng ký Google', response.error?.message ?? 'Không thể xác thực với Google.');
-    }
-  }, [response]);
-
   const handleGoogleRegister = async (idToken: string) => {
     setIsLoading(true);
     try {
@@ -78,11 +59,6 @@ export default function MobileRegisterScreen() {
   };
 
   const startGoogleRegister = async () => {
-    if (Platform.OS === 'web') {
-      try { await promptAsync(); }
-      catch (err: any) { Alert.alert('Lỗi đăng ký Google', err.message ?? 'Không thể mở Google.'); }
-      return;
-    }
     if (Constants.appOwnership === 'expo') {
       Alert.alert('Cần bản cài ứng dụng', 'Đăng ký Google không hỗ trợ Expo Go. Hãy mở bản development build hoặc APK TechEnglish Pro.');
       return;
@@ -289,17 +265,17 @@ export default function MobileRegisterScreen() {
             </TouchableOpacity>
           </View>
 
-          {GOOGLE_WEB_CLIENT_ID ? <>
+          <>
             <View style={styles.dividerRow}>
               <View style={styles.dividerLine} />
               <Text style={styles.dividerText}>HOẶC</Text>
               <View style={styles.dividerLine} />
             </View>
-            <TouchableOpacity style={styles.googleButton} activeOpacity={0.8} onPress={startGoogleRegister} disabled={isLoading || (Platform.OS === 'web' && !request)}>
+            <GoogleAuthButton clientId={GOOGLE_WEB_CLIENT_ID} style={styles.googleButton} disabled={isLoading} onNativePress={startGoogleRegister} onIdToken={handleGoogleRegister} onError={message => Alert.alert('Lỗi đăng ký Google', message)}>
               <GoogleIcon />
               <Text style={styles.googleButtonText}>Đăng ký bằng Google</Text>
-            </TouchableOpacity>
-          </> : null}
+            </GoogleAuthButton>
+          </>
         </View>
       </ScrollView>
     </View>

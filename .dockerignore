@@ -18,3 +18,10 @@ backups
 *.pdf
 *.docx
 chapter3_verification_package
+**/*.apk
+**/*.aab
+**/*.keystore
+**/.gradle
+**/.cxx
+**/.kotlin
+**/local.properties

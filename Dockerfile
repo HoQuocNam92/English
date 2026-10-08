@@ -1,7 +1,7 @@
 # syntax=docker/dockerfile:1
 FROM node:24-bookworm-slim AS workspace
 RUN apt-get update && apt-get install -y --no-install-recommends openssl ca-certificates git && rm -rf /var/lib/apt/lists/*
-RUN corepack enable && corepack prepare pnpm@11.9.0 --activate
+RUN corepack enable && corepack prepare pnpm@12.8.1 --activate
 WORKDIR /app
 COPY . .
 RUN pnpm install --frozen-lockfile
@@ -25,7 +25,7 @@ RUN chown -R node:node /app/apps/web/.next
 WORKDIR /app/apps/web
 USER node
 EXPOSE 3000
-CMD ["node", "node_modules/next/dist/bin/next", "start", "-H", "0.0.0.0", "-p", "3000"]
+CMD ["node", "../../node_modules/next/dist/bin/next", "start", "-H", "0.0.0.0", "-p", "3000"]
 
 FROM workspace AS mobile
 ENV EXPO_NO_TELEMETRY=1
@@ -33,4 +33,4 @@ RUN mkdir -p /app/apps/mobile/.expo && chown -R node:node /app/apps/mobile
 WORKDIR /app/apps/mobile
 USER node
 EXPOSE 8081
-CMD ["node", "node_modules/expo/bin/cli", "start", "--lan", "--port", "8081"]
+CMD ["node", "../../node_modules/expo/bin/cli", "start", "--lan", "--port", "8081"]

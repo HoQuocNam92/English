@@ -16,3 +16,13 @@ GoogleService-Info.plist
 !.env.compose.example
 
 /docker/prisma/schema.prisma
+
+# Local build outputs, verification files, and private signing keys
+*.apk
+*.aab
+*.keystore
+!apps/mobile/android/app/debug.keystore
+*.log
+/.tmp-mobile-qa/
+/techenglish-*.xml
+/pnpm-workspace.yaml.bak
