@@ -28,8 +28,6 @@ export default function EntryScreen() {
         </TouchableOpacity>
 
         <TouchableOpacity onPress={() => router.push('/(auth)/register' as any)} style={{ paddingVertical: 12 }}><Text style={{ textAlign: 'center', color: colors.primary, fontWeight: '700' }}>Chưa có tài khoản? Đăng ký ngay</Text></TouchableOpacity>
-        <TouchableOpacity onPress={() => router.push('/privacy' as any)}><Text style={{ textAlign: 'center', color: colors.primary }}>Chính sách bảo mật</Text></TouchableOpacity>
-        <TouchableOpacity onPress={() => router.push('/terms' as any)}><Text style={{ textAlign: 'center', color: colors.primary }}>Điều khoản sử dụng</Text></TouchableOpacity>
       </View>
     </View>
   );

@@ -28,7 +28,16 @@ export const controlStyles = StyleSheet.create({
   card: { backgroundColor: colors.surfaceWhite, borderColor: colors.outlineVariant, borderWidth: 1, borderRadius: radius.card, padding: 16 },
   footer: { marginTop: 'auto', paddingTop: 16, flexDirection: 'row', justifyContent: 'flex-end', flexWrap: 'wrap', gap: 8 },
 });
-export function Button({ children, style, ...props }: TouchableOpacityProps) { return <TouchableOpacity {...props} style={[controlStyles.button, { backgroundColor: colors.primary }, props.disabled && { opacity: 0.5 }, style]}>{typeof children === 'string' ? <Text style={{ color: colors.onPrimary, fontWeight: '700', textAlign: 'center' }}>{children}</Text> : children}</TouchableOpacity>; }
+export function Button({ children, style, ...props }: TouchableOpacityProps) {
+  const items = React.Children.toArray(children);
+  const labelStyle = { color: colors.onPrimary, fontWeight: '700' as const, textAlign: 'center' as const };
+  const isText = (child: React.ReactNode) => typeof child === 'string' || typeof child === 'number';
+  // JSX labels with interpolations are arrays, and native buttons cannot render raw text.
+  const content = items.every(isText)
+    ? <Text style={labelStyle}>{children}</Text>
+    : React.Children.map(children, child => isText(child) ? <Text style={labelStyle}>{child}</Text> : child);
+  return <TouchableOpacity {...props} style={[controlStyles.button, { backgroundColor: colors.primary }, props.disabled && { opacity: 0.5 }, style]}>{content}</TouchableOpacity>;
+}
 export function Tabs({ items, value, onChange }: { items: { value: string; label: string }[]; value: string; onChange: (value: string) => void }) {
   return <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ padding: 4, gap: 4, backgroundColor: colors.surfaceWhite, borderRadius: radius.card }}>{items.map(item => <TouchableOpacity key={item.value} onPress={() => onChange(item.value)} accessibilityRole="tab" accessibilityState={{ selected: value === item.value }} style={[controlStyles.button, { backgroundColor: value === item.value ? colors.primaryLight : colors.surfaceWhite }]}><Text style={{ color: value === item.value ? colors.primary : colors.mutedText, fontWeight: '600' }}>{item.label}</Text></TouchableOpacity>)}</ScrollView>;
 }

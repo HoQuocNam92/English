@@ -170,10 +170,6 @@ export default function MobileLoginScreen() {
 
         </View>
 
-        <TouchableOpacity style={styles.forgotPassword} onPress={() => router.push('/(auth)/forgot-password' as any)} disabled={isLoading}>
-          <Text style={styles.forgotPasswordText}>Quên mật khẩu?</Text>
-        </TouchableOpacity>
-
         <TouchableOpacity style={styles.loginButton} activeOpacity={0.8} onPress={handleLogin} disabled={isLoading}>
           {isLoading ? (
             <ActivityIndicator color="#ffffff" size="small" />
@@ -300,14 +296,6 @@ const styles = StyleSheet.create({
   },
   eyeIcon: {
     padding: spacing.xs
-  },
-  forgotPassword: {
-    alignSelf: 'flex-end'
-  },
-  forgotPasswordText: {
-    fontSize: 12,
-    fontWeight: '600',
-    color: colors.primary
   },
   loginButton: {
     backgroundColor: colors.primary,

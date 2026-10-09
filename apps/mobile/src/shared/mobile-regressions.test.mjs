@@ -148,3 +148,31 @@ test('learning targets reject invalid input instead of silently replacing it wit
   assert.ok(validateLearningTargets('10', '2', '4'));
   assert.ok(validateLearningTargets('10', '2', '1441'));
 });
+
+test('native buttons wrap interpolated quiz labels and numbers in Text while preserving icons', () => {
+  const require = createRequire(import.meta.url);
+  const ts = require('typescript');
+  const React = require('react');
+  const source = readFileSync(new URL('./ui/primitives.tsx', import.meta.url), 'utf8');
+  const code = ts.transpileModule(source, { compilerOptions: { module: ts.ModuleKind.CommonJS, jsx: ts.JsxEmit.ReactJSX } }).outputText;
+  const mocks = {
+    './TranslationProvider': { useTranslation: () => () => {} },
+    'react-native': { Text: 'native-text', TextInput: 'input', TouchableOpacity: 'native-button', ScrollView: 'scroll', View: 'view', StyleSheet: { create: value => value } },
+    '@techenglish/design-tokens': { colors: { primary: 'blue', onPrimary: 'white' }, radius: {}, typography: {} },
+  };
+  const exports = {};
+  runInNewContext(code, { exports, require: name => name in mocks ? mocks[name] : require(name) });
+  const label = ['Làm Quiz · ', 'Cloud', ' · ', 10, ' câu'];
+  const onPress = () => {};
+  const button = exports.Button({ children: label, onPress, disabled: false });
+  assert.equal(button.props.onPress, onPress);
+  assert.equal(button.props.children.type, exports.Text);
+  assert.equal(button.props.children.props.children, label);
+  assert.equal(button.props.children.props.style.color, 'white');
+  assert.equal(exports.Button({ children: 0 }).props.children.type, exports.Text);
+  const icon = React.createElement('icon', { name: 'quiz' });
+  const mixed = exports.Button({ children: [icon, 'Quiz ', 10] }).props.children;
+  assert.equal(mixed[0].type, 'icon');
+  assert.equal(mixed[1].type, exports.Text);
+  assert.equal(mixed[2].type, exports.Text);
+});

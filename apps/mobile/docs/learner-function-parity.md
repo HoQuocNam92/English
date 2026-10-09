@@ -19,13 +19,13 @@ Phạm vi: học viên; không gồm admin/giảng viên. Đếm **57 luồng s�
 
 | ID | Chức năng | Web | Mobile | Triển khai |
 |---|---|---|---|---|
-| L01 | Đăng ký tài khoản | `/login, /register, /forgot-password, /reset-password` | `(auth), reset-password` | Có |
-| L02 | Đăng nhập email và mật khẩu | `/login, /register, /forgot-password, /reset-password` | `(auth), reset-password` | Có |
-| L03 | Đăng nhập Google | `/login, /register, /forgot-password, /reset-password` | `(auth), reset-password` | Có |
-| L04 | Gửi liên kết quên mật khẩu | `/login, /register, /forgot-password, /reset-password` | `(auth), reset-password` | Có |
-| L05 | Đặt lại mật khẩu bằng liên kết/token | `/login, /register, /forgot-password, /reset-password` | `(auth), reset-password` | Có |
-| L06 | Khôi phục phiên đăng nhập | `/login, /register, /forgot-password, /reset-password` | `(auth), reset-password` | Có |
-| L07 | Đăng xuất | `/login, /register, /forgot-password, /reset-password` | `(auth), reset-password` | Có |
+| L01 | Đăng ký tài khoản | `/login, /register, /forgot-password, /reset-password` | `(auth)` | Có |
+| L02 | Đăng nhập email và mật khẩu | `/login, /register, /forgot-password, /reset-password` | `(auth)` | Có |
+| L03 | Đăng nhập Google | `/login, /register, /forgot-password, /reset-password` | `(auth)` | Có |
+| L04 | Gửi liên kết quên mật khẩu | `/login, /register, /forgot-password, /reset-password` | Đã bỏ theo yêu cầu | Không triển khai trên mobile |
+| L05 | Đặt lại mật khẩu bằng liên kết/token | `/login, /register, /forgot-password, /reset-password` | Đã bỏ theo yêu cầu | Không triển khai trên mobile |
+| L06 | Khôi phục phiên đăng nhập | `/login, /register, /forgot-password, /reset-password` | `(auth)` | Có |
+| L07 | Đăng xuất | `/login, /register, /forgot-password, /reset-password` | `(auth)` | Có |
 | L08 | Chọn mục tiêu học tập | `/onboarding, /onboarding/placement-test, /learn, /learn/plan` | `(onboarding), placement-test, (tabs)/home, learning-plan` | Có |
 | L09 | Chọn lĩnh vực và trình độ | `/onboarding, /onboarding/placement-test, /learn, /learn/plan` | `(onboarding), placement-test, (tabs)/home, learning-plan` | Có |
 | L10 | Chọn chứng chỉ và nghề nghiệp mục tiêu | `/onboarding, /onboarding/placement-test, /learn, /learn/plan` | `(onboarding), placement-test, (tabs)/home, learning-plan` | Có |
@@ -80,7 +80,7 @@ Phạm vi: học viên; không gồm admin/giảng viên. Đếm **57 luồng s�
 ## Giới hạn kiểm chứng
 
 - Google OAuth, thiết bị phát âm, long-press và quyền thông báo cần kiểm thử Android/iOS thật. Kiểm tra Expo web không xác nhận hoạt động của hệ điều hành native.
-- Mobile nhận route `reset-password?token=…` và cho dán liên kết email. Email web chưa tự chuyển sang app: universal/app links cần cấu hình tên miền và ứng dụng khi phát hành.
+- Mobile đã bỏ luồng quên/đặt lại mật khẩu bằng liên kết email. Chính sách và điều khoản được mở từ Hồ sơ; màn hình chào chỉ còn đăng nhập và đăng ký.
 - Các route từ vựng cũ của web đã chuyển sang `/session` với `sourceLessonId`, `reviewOnly` và `onlyNew`. Dừng phiên trở về danh sách; trạng thái SRS đã lưu qua `/rate` được giữ lại. Không gọi các endpoint đã bị xóa.
 - Nội dung chính sách và logic lọc bài học dùng cùng nguồn trong `packages/shared-kernel/src`; style dùng design tokens và các control chung. Responsive giữ đủ thao tác nhưng bố cục thích ứng với màn hình, không áp vị trí trái/phải của desktop lên điện thoại.
 
