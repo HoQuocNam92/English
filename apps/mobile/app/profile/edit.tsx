@@ -1,3 +1,4 @@
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Text, TextInput, TouchableOpacity } from '../../src/shared/ui/primitives';
 import { useState, useEffect } from 'react';
 import { useRouter } from 'expo-router';
@@ -14,6 +15,7 @@ import { useAuth } from '../../src/shared/store/auth-context';
 import { scheduleLearningReminder } from '../../src/shared/notifications/learning-reminders';
 
 export default function MobileEditProfileScreen() {
+  const insets = useSafeAreaInsets();
   const router = useRouter();
   const { fetchUser } = useAuth();
   const [displayName, setDisplayName] = useState('');
@@ -227,7 +229,7 @@ export default function MobileEditProfileScreen() {
     <View style={styles.container}>
       <StatusBar style="dark" />
       {/* Header */}
-      <View style={styles.header}>
+      <View style={[styles.header, { paddingTop: insets.top + 12, height: undefined }]}>
         <TouchableOpacity style={styles.headerIconBtn} onPress={() => router.back()}>
           <MaterialIcons name="arrow-back" size={24} color="#464555" />
         </TouchableOpacity>
@@ -336,7 +338,7 @@ export default function MobileEditProfileScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f7f9fb'
+    backgroundColor: '#f7f8fc'
   },
   header: {
     height: 64,
@@ -418,19 +420,19 @@ const styles = StyleSheet.create({
     borderColor: '#c7c4d8',
     borderRadius: 8,
     paddingHorizontal: spacing.md,
-    height: 48,
+    minHeight: 52,
     fontSize: 14,
     color: '#191c1e',
     backgroundColor: '#ffffff'
   },
-  timePickerField: { height: 48, borderWidth: 1, borderColor: '#c7c4d8', borderRadius: 8, paddingHorizontal: spacing.md, backgroundColor: '#ffffff', flexDirection: 'row', alignItems: 'center', gap: spacing.sm },
+  timePickerField: { minHeight: 52, borderWidth: 1, borderColor: '#c7c4d8', borderRadius: 8, paddingHorizontal: spacing.md, backgroundColor: '#ffffff', flexDirection: 'row', alignItems: 'center', gap: spacing.sm },
   timePickerValue: { flex: 1, fontSize: 16, fontWeight: '700', color: '#191c1e' },
   modalBackdrop: { flex: 1, backgroundColor: 'rgba(15,23,42,0.45)', alignItems: 'center', justifyContent: 'center', padding: spacing.lg },
   timeModal: { width: '100%', maxWidth: 360, borderRadius: 20, backgroundColor: '#ffffff', padding: spacing.lg },
   timeModalHeader: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm },
   timeModalTitle: { fontSize: 18, fontWeight: '800', color: '#191c1e' },
   clockRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', marginVertical: spacing.lg },
-  clockUnit: { alignItems: 'center', backgroundColor: '#f4f2ff', borderRadius: 16, paddingHorizontal: spacing.md, paddingVertical: spacing.xs },
+  clockUnit: { alignItems: 'center', backgroundColor: '#f4f2ff', borderRadius: 20, paddingHorizontal: spacing.md, paddingVertical: spacing.xs },
   clockNumber: { fontSize: 36, fontWeight: '800', color: colors.primary, minWidth: 56, textAlign: 'center' },
   clockColon: { marginHorizontal: spacing.md, fontSize: 36, fontWeight: '800', color: '#191c1e' },
   modalActions: { flexDirection: 'row', justifyContent: 'flex-end', gap: spacing.sm },

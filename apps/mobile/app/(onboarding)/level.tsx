@@ -1,3 +1,4 @@
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Text, TouchableOpacity } from '../../src/shared/ui/primitives';
 import { useState } from 'react';
 import { useRouter } from 'expo-router';
@@ -42,6 +43,7 @@ const levels: LevelOption[] = [
 ];
 
 export default function OnboardingLevelScreen() {
+  const insets = useSafeAreaInsets();
   const router = useRouter();
   const [selectedLevel, setSelectedLevel] = useState('beginner');
 
@@ -56,7 +58,7 @@ export default function OnboardingLevelScreen() {
       <StatusBar style="dark" />
       
       {/* Top Bar Header */}
-      <View style={styles.headerBar}>
+      <View style={[styles.headerBar, { paddingTop: insets.top + 12 }]}>
         <TouchableOpacity style={styles.iconButton} onPress={() => router.back()}>
           <MaterialIcons name="arrow-back" size={24} color={colors.text} />
         </TouchableOpacity>
@@ -115,7 +117,7 @@ export default function OnboardingLevelScreen() {
       </ScrollView>
 
       {/* Bottom Action */}
-      <View style={styles.bottomBar}>
+      <View style={[styles.bottomBar, { paddingBottom: Math.max(16, insets.bottom + 12) }]}>
         <TouchableOpacity style={styles.nextButton} onPress={handleNext}>
           <Text style={styles.nextButtonText}>Tiếp tục</Text>
           <MaterialIcons name="arrow-forward" size={20} color="#ffffff" />
@@ -178,9 +180,9 @@ const styles = StyleSheet.create({
   optionCardSelected: { borderColor: colors.primary, backgroundColor: '#eef2ff', borderWidth: 2 },
   radioOuter: {
     width: 20, height: 20,
-    borderRadius: 10,
+    borderRadius: 14,
     borderWidth: 2,
-    borderColor: '#c7c4d8',
+    borderColor: '#e4e8f1',
     alignItems: 'center',
     justifyContent: 'center',
     marginTop: 2,
@@ -229,7 +231,7 @@ const styles = StyleSheet.create({
   nextButton: {
     backgroundColor: colors.primary,
     height: 48,
-    borderRadius: 10,
+    borderRadius: 14,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',

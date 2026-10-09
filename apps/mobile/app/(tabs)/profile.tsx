@@ -190,7 +190,7 @@ export default function MobileProfileScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f7f9fb'
+    backgroundColor: '#f7f8fc'
   },
   header: {
     height: 64,

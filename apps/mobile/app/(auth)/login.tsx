@@ -1,4 +1,4 @@
-import { Text, TextInput, TouchableOpacity } from '../../src/shared/ui/primitives';
+import { Button, Text, TextInput, TouchableOpacity } from '../../src/shared/ui/primitives';
 import { useState } from 'react';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
@@ -170,16 +170,7 @@ export default function MobileLoginScreen() {
 
         </View>
 
-        <TouchableOpacity style={styles.loginButton} activeOpacity={0.8} onPress={handleLogin} disabled={isLoading}>
-          {isLoading ? (
-            <ActivityIndicator color="#ffffff" size="small" />
-          ) : (
-            <>
-              <Text style={styles.loginButtonText}>Đăng nhập</Text>
-              <MaterialIcons name="arrow-forward" size={18} color="#ffffff" />
-            </>
-          )}
-        </TouchableOpacity>
+        <Button onPress={handleLogin} disabled={isLoading}>{isLoading ? 'Đang xử lý…' : 'Đăng nhập'}</Button>
 
         <View style={styles.footerRow}>
           <Text style={styles.footerText}>Chưa có tài khoản? </Text>
@@ -209,7 +200,7 @@ export default function MobileLoginScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f7f9fb'
+    backgroundColor: '#f7f8fc'
   },
   contentContainer: {
     padding: spacing.lg,
@@ -224,7 +215,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing.lg,
     backgroundColor: '#ffffff',
     borderBottomWidth: 1,
-    borderBottomColor: '#e2e8f0',
+    borderBottomColor: '#e4e8f1',
   },
   headerBackButton: {
     width: 40,
@@ -244,35 +235,35 @@ const styles = StyleSheet.create({
     marginBottom: spacing.xl
   },
   title: {
-    fontSize: 24,
+    fontSize: 28,
     fontWeight: '800',
-    color: colors.primary,
+    color: '#17213a',
     marginBottom: spacing.xs
   },
   subtitle: {
-    fontSize: 13,
+    fontSize: 14,
     color: colors.mutedText,
     textAlign: 'center',
     maxWidth: 280
   },
   card: {
     backgroundColor: '#ffffff',
-    borderRadius: 16,
+    borderRadius: 22,
     padding: spacing.lg,
     borderWidth: 1,
-    borderColor: '#e2e8f0',
+    borderColor: '#e4e8f1',
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.05,
+    shadowOpacity: 0,
     shadowRadius: 8,
-    elevation: 2,
+    elevation: 0,
     gap: spacing.md
   },
   inputGroup: {
     gap: spacing.xs
   },
   label: {
-    fontSize: 13,
+    fontSize: 14,
     fontWeight: '700',
     color: colors.text
   },
@@ -281,10 +272,10 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     borderWidth: 1,
     borderColor: '#cbd5e1',
-    borderRadius: 10,
+    borderRadius: 14,
     backgroundColor: '#ffffff',
     paddingHorizontal: spacing.sm,
-    height: 48
+    minHeight: 56
   },
   inputIcon: {
     marginRight: spacing.xs
@@ -299,8 +290,8 @@ const styles = StyleSheet.create({
   },
   loginButton: {
     backgroundColor: colors.primary,
-    height: 48,
-    borderRadius: 10,
+    minHeight: 56,
+    borderRadius: 14,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
@@ -322,11 +313,11 @@ const styles = StyleSheet.create({
     borderTopColor: '#f1f5f9'
   },
   footerText: {
-    fontSize: 13,
+    fontSize: 14,
     color: colors.mutedText
   },
   registerLink: {
-    fontSize: 13,
+    fontSize: 14,
     fontWeight: '700',
     color: colors.primary
   },
@@ -354,7 +345,7 @@ const styles = StyleSheet.create({
   dividerLine: {
     flex: 1,
     height: 1,
-    backgroundColor: '#e2e8f0'
+    backgroundColor: '#e4e8f1'
   },
   dividerText: {
     fontSize: 11,
@@ -362,15 +353,15 @@ const styles = StyleSheet.create({
     color: '#94a3b8'
   },
   googleButton: {
-    height: 48,
-    borderRadius: 10,
+    minHeight: 56,
+    borderRadius: 14,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
     gap: spacing.sm,
     backgroundColor: '#ffffff',
     borderWidth: 1.5,
-    borderColor: '#e2e8f0'
+    borderColor: '#e4e8f1'
   },
   googleButtonText: {
     fontSize: 14,

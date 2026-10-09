@@ -1,4 +1,4 @@
-import { Text, TextInput, TouchableOpacity } from '../../src/shared/ui/primitives';
+import { Button, Text, TextInput, TouchableOpacity } from '../../src/shared/ui/primitives';
 import { useRef, useState } from 'react';
 import { useRouter } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
@@ -247,16 +247,7 @@ export default function MobileRegisterScreen() {
           </View>
           {termsError ? <Text style={styles.errorTextSmall}>{termsError}</Text> : null}
 
-          <TouchableOpacity style={styles.registerButton} activeOpacity={0.8} onPress={handleRegister} disabled={isLoading}>
-            {isLoading ? (
-              <>
-                <ActivityIndicator color="#ffffff" size="small" />
-                <Text style={styles.registerButtonText}>Đang tạo tài khoản...</Text>
-              </>
-            ) : (
-              <Text style={styles.registerButtonText}>Đăng ký</Text>
-            )}
-          </TouchableOpacity>
+          <Button onPress={handleRegister} disabled={isLoading}>{isLoading ? 'Đang xử lý…' : 'Đăng ký'}</Button>
 
           <View style={styles.footerRow}>
             <Text style={styles.footerText}>Đã có tài khoản? </Text>
@@ -285,7 +276,7 @@ export default function MobileRegisterScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f7f9fb'
+    backgroundColor: '#f7f8fc'
   },
   headerBar: {
     height: 64,
@@ -295,7 +286,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing.lg,
     backgroundColor: '#ffffff',
     borderBottomWidth: 1,
-    borderBottomColor: '#e2e8f0',
+    borderBottomColor: '#e4e8f1',
   },
   headerBackButton: {
     width: 40,
@@ -322,7 +313,7 @@ const styles = StyleSheet.create({
     marginBottom: spacing.lg
   },
   title: {
-    fontSize: 24,
+    fontSize: 28,
     fontWeight: '700',
     color: colors.text,
     marginBottom: spacing.xs
@@ -334,15 +325,15 @@ const styles = StyleSheet.create({
   },
   card: {
     backgroundColor: '#ffffff',
-    borderRadius: 16,
+    borderRadius: 22,
     padding: spacing.lg,
     borderWidth: 1,
-    borderColor: '#e2e8f0',
+    borderColor: '#e4e8f1',
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.05,
+    shadowOpacity: 0,
     shadowRadius: 8,
-    elevation: 2,
+    elevation: 0,
     gap: spacing.md,
   },
   inputGroup: {
@@ -358,13 +349,13 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     borderWidth: 1,
     borderColor: '#cbd5e1',
-    borderRadius: 10,
+    borderRadius: 14,
     backgroundColor: '#ffffff',
     paddingHorizontal: spacing.sm,
-    height: 48,
+    minHeight: 56,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.05,
+    shadowOpacity: 0,
     shadowRadius: 2,
     elevation: 1
   },
@@ -382,8 +373,8 @@ const styles = StyleSheet.create({
   registerButton: {
     backgroundColor: colors.primary,
     gap: spacing.sm,
-    height: 48,
-    borderRadius: 10,
+    minHeight: 56,
+    borderRadius: 14,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
@@ -392,7 +383,7 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.1,
     shadowRadius: 2,
-    elevation: 2
+    elevation: 0
   },
   registerButtonText: {
     color: colors.onPrimary,
@@ -419,7 +410,7 @@ const styles = StyleSheet.create({
   },
   termsText: {
     flex: 1,
-    fontSize: 13,
+    fontSize: 14,
     lineHeight: 18,
     color: colors.mutedText,
   },
@@ -428,9 +419,9 @@ const styles = StyleSheet.create({
     fontWeight: '700',
   },
   dividerRow: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm },
-  dividerLine: { flex: 1, height: 1, backgroundColor: '#e2e8f0' },
+  dividerLine: { flex: 1, height: 1, backgroundColor: '#e4e8f1' },
   dividerText: { fontSize: 11, fontWeight: '700', color: '#94a3b8' },
-  googleButton: { height: 48, borderRadius: 10, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: spacing.sm, backgroundColor: '#ffffff', borderWidth: 1.5, borderColor: '#e2e8f0' },
+  googleButton: { minHeight: 56, borderRadius: 14, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: spacing.sm, backgroundColor: '#ffffff', borderWidth: 1.5, borderColor: '#e4e8f1' },
   googleButtonText: { fontSize: 14, fontWeight: '700', color: '#334155' },
   footerText: {
     fontSize: 14,

@@ -157,6 +157,7 @@ test('native buttons wrap interpolated quiz labels and numbers in Text while pre
   const code = ts.transpileModule(source, { compilerOptions: { module: ts.ModuleKind.CommonJS, jsx: ts.JsxEmit.ReactJSX } }).outputText;
   const mocks = {
     './TranslationProvider': { useTranslation: () => () => {} },
+    'react-native-paper': { Button: 'paper-button', TouchableRipple: 'paper-ripple', Chip: 'chip', Searchbar: 'searchbar' },
     'react-native': { Text: 'native-text', TextInput: 'input', TouchableOpacity: 'native-button', ScrollView: 'scroll', View: 'view', StyleSheet: { create: value => value } },
     '@techenglish/design-tokens': { colors: { primary: 'blue', onPrimary: 'white' }, radius: {}, typography: {} },
   };
@@ -165,11 +166,19 @@ test('native buttons wrap interpolated quiz labels and numbers in Text while pre
   const label = ['Làm Quiz · ', 'Cloud', ' · ', 10, ' câu'];
   const onPress = () => {};
   const button = exports.Button({ children: label, onPress, disabled: false });
+  assert.equal(button.type, 'paper-button');
+  assert.equal(button.props.contentStyle.minHeight, 52);
   assert.equal(button.props.onPress, onPress);
   assert.equal(button.props.children.type, exports.Text);
   assert.equal(button.props.children.props.children, label);
   assert.equal(button.props.children.props.style.color, 'white');
   assert.equal(exports.Button({ children: 0 }).props.children.type, exports.Text);
+  const longLabel = 'Làm Quiz · AWS Certified Developer: Associate · 20 câu';
+  const longButton = exports.Button({ children: longLabel, disabled: true });
+  assert.equal(longButton.type, 'paper-ripple');
+  assert.equal(longButton.props.children.props.children, longLabel);
+  assert.equal(longButton.props.children.props.numberOfLines, undefined);
+  assert.equal(longButton.props.accessibilityState.disabled, true);
   const icon = React.createElement('icon', { name: 'quiz' });
   const mixed = exports.Button({ children: [icon, 'Quiz ', 10] }).props.children;
   assert.equal(mixed[0].type, 'icon');

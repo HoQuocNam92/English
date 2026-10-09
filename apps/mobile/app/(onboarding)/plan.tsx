@@ -1,3 +1,4 @@
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Text, TextInput, TouchableOpacity } from '../../src/shared/ui/primitives';
 import { useState } from 'react';
 import { useRouter } from 'expo-router';
@@ -12,6 +13,7 @@ import { scheduleLearningReminder } from '../../src/shared/notifications/learnin
 const STORAGE_KEYS = ['onboarding_goal', 'onboarding_level', 'onboarding_domains', 'onboarding_certificate_code', 'onboarding_certificate_id'];
 
 export default function OnboardingPlanScreen() {
+  const insets = useSafeAreaInsets();
   const router = useRouter();
   const [dailyVocabularyTarget, setDailyVocabularyTarget] = useState('20');
   const [weeklyExamTarget, setWeeklyExamTarget] = useState('2');
@@ -68,7 +70,7 @@ export default function OnboardingPlanScreen() {
 
   return <View style={styles.container}>
     <StatusBar style="dark" />
-    <View style={styles.header}><TouchableOpacity onPress={() => router.back()}><MaterialIcons name="arrow-back" size={24} color="#191c1e" /></TouchableOpacity><Text style={styles.step}>Bước 4/4</Text><View style={{ width: 24 }} /></View>
+    <View style={[styles.header, { paddingTop: insets.top + 12 }]}><TouchableOpacity onPress={() => router.back()}><MaterialIcons name="arrow-back" size={24} color="#191c1e" /></TouchableOpacity><Text style={styles.step}>Bước 4/4</Text><View style={{ width: 24 }} /></View>
     <View style={styles.progress}><View style={styles.progressFill} /></View>
     <ScrollView contentContainerStyle={styles.content}>
       <Text style={styles.title}>Thiết lập kế hoạch học</Text>
@@ -83,7 +85,7 @@ export default function OnboardingPlanScreen() {
       {reminderEnabled && <View style={styles.timeWrap}><Text style={styles.label}>Giờ nhắc học (HH:mm)</Text><TextInput value={reminderTime} onChangeText={setReminderTime} style={styles.input} placeholder="20:00" /></View>}
       <View style={styles.zeroNote}><MaterialIcons name="verified" size={21} color={colors.primary} /><Text style={styles.zeroText}>Lưu mục tiêu không đánh dấu bài học, từ vựng hay bài thi là đã hoàn thành.</Text></View>
     </ScrollView>
-    <View style={styles.bottom}><TouchableOpacity disabled={submitting} style={[styles.button, submitting && { opacity: 0.6 }]} onPress={finish}>{submitting ? <ActivityIndicator color="#fff" /> : <><Text style={styles.buttonText}>Tạo lộ trình</Text><MaterialIcons name="check" size={20} color="#fff" /></>}</TouchableOpacity></View>
+    <View style={[styles.bottom, { paddingBottom: Math.max(16, insets.bottom + 12) }]}><TouchableOpacity disabled={submitting} style={[styles.button, submitting && { opacity: 0.6 }]} onPress={finish}>{submitting ? <ActivityIndicator color="#fff" /> : <><Text style={styles.buttonText}>Tạo lộ trình</Text><MaterialIcons name="check" size={20} color="#fff" /></>}</TouchableOpacity></View>
   </View>;
 }
 
@@ -92,10 +94,10 @@ function NumberInput({ label, value, onChangeText }: { label: string; value: str
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#f7f9fb' }, header: { paddingTop: 52, paddingHorizontal: spacing.lg, paddingBottom: spacing.md, backgroundColor: '#fff', flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }, step: { fontSize: 13, fontWeight: '700', color: '#777587' },
+  container: { flex: 1, backgroundColor: '#f7f8fc' }, header: { paddingTop: 52, paddingHorizontal: spacing.lg, paddingBottom: spacing.md, backgroundColor: '#fff', flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }, step: { fontSize: 13, fontWeight: '700', color: '#777587' },
   progress: { height: 4, backgroundColor: '#e6e8ea' }, progressFill: { width: '100%', height: 4, backgroundColor: colors.primary }, content: { padding: spacing.lg, paddingBottom: 130 }, title: { fontSize: 25, fontWeight: '800', color: '#191c1e', marginTop: 12 }, subtitle: { color: '#464555', marginTop: 8, marginBottom: 24, lineHeight: 20 },
-  card: { padding: spacing.md, borderWidth: 1, borderColor: '#c7c4d8', borderRadius: 14, backgroundColor: '#fff', gap: spacing.md }, field: { gap: 6 }, label: { fontSize: 12, fontWeight: '700', color: '#464555' }, input: { height: 46, borderWidth: 1, borderColor: '#c7c4d8', borderRadius: 10, paddingHorizontal: spacing.md, backgroundColor: '#fff', color: '#191c1e', fontSize: 15 },
-  option: { marginTop: spacing.md, padding: spacing.md, borderWidth: 1, borderColor: '#c7c4d8', borderRadius: 12, backgroundColor: '#fff', flexDirection: 'row', alignItems: 'flex-start', gap: spacing.sm }, optionCopy: { flex: 1 }, optionTitle: { fontSize: 14, fontWeight: '800', color: '#191c1e' }, optionText: { marginTop: 3, fontSize: 12, lineHeight: 17, color: '#464555' }, timeWrap: { marginTop: spacing.md, gap: 6 },
+  card: { padding: spacing.md, borderWidth: 1, borderColor: '#e4e8f1', borderRadius: 20, backgroundColor: '#fff', gap: spacing.md }, field: { gap: 6 }, label: { fontSize: 12, fontWeight: '700', color: '#464555' }, input: { height: 46, borderWidth: 1, borderColor: '#e4e8f1', borderRadius: 14, paddingHorizontal: spacing.md, backgroundColor: '#fff', color: '#191c1e', fontSize: 15 },
+  option: { marginTop: spacing.md, padding: spacing.md, borderWidth: 1, borderColor: '#e4e8f1', borderRadius: 12, backgroundColor: '#fff', flexDirection: 'row', alignItems: 'flex-start', gap: spacing.sm }, optionCopy: { flex: 1 }, optionTitle: { fontSize: 14, fontWeight: '800', color: '#191c1e' }, optionText: { marginTop: 3, fontSize: 12, lineHeight: 17, color: '#464555' }, timeWrap: { marginTop: spacing.md, gap: 6 },
   zeroNote: { marginTop: spacing.lg, padding: spacing.md, borderRadius: 12, backgroundColor: '#f0efff', flexDirection: 'row', alignItems: 'center', gap: spacing.sm }, zeroText: { flex: 1, fontSize: 12, lineHeight: 18, color: '#464555' },
-  bottom: { position: 'absolute', bottom: 0, left: 0, right: 0, padding: spacing.md, paddingBottom: 32, backgroundColor: '#fff', borderTopWidth: 1, borderTopColor: '#e6e8ea' }, button: { height: 50, backgroundColor: colors.primary, borderRadius: 10, flexDirection: 'row', gap: 8, alignItems: 'center', justifyContent: 'center' }, buttonText: { color: '#fff', fontSize: 15, fontWeight: '700' },
+  bottom: { position: 'absolute', bottom: 0, left: 0, right: 0, padding: spacing.md, paddingBottom: 32, backgroundColor: '#fff', borderTopWidth: 1, borderTopColor: '#e6e8ea' }, button: { height: 50, backgroundColor: colors.primary, borderRadius: 14, flexDirection: 'row', gap: 8, alignItems: 'center', justifyContent: 'center' }, buttonText: { color: '#fff', fontSize: 15, fontWeight: '700' },
 });

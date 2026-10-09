@@ -1,4 +1,6 @@
+import { MobileUIProvider } from '../src/shared/ui/paper-theme';
 import { TranslationProvider } from '../src/shared/ui/TranslationProvider';
+import { Feather, MaterialIcons, MaterialCommunityIcons } from '@expo/vector-icons';
 import { useFonts } from 'expo-font';
 import { Stack } from 'expo-router';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
@@ -18,20 +20,20 @@ if (!isExpoGo) {
 }
 
 export default function RootLayout() {
-  const [fontsLoaded, fontError] = useFonts({ Inter: require('../assets/fonts/Inter.ttf') });
+  const [fontsLoaded, fontError] = useFonts({ Inter: require('../assets/fonts/Inter.ttf'), ...Feather.font, ...MaterialIcons.font, ...MaterialCommunityIcons.font });
   if (!fontsLoaded && !fontError) return null;
   return (
     <SafeAreaProvider>
       <ThemeProvider>
         <AuthProvider>
-            <TranslationProvider><Stack
+            <TranslationProvider><MobileUIProvider><Stack
               screenOptions={{
                 headerShown: false,
                 contentStyle: {
                   backgroundColor: '#f7f9fb'
                 }
               }}
-            /></TranslationProvider>
+            /></MobileUIProvider></TranslationProvider>
         </AuthProvider>
       </ThemeProvider>
     </SafeAreaProvider>

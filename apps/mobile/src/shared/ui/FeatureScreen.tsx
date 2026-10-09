@@ -1,9 +1,9 @@
-import { Text, TouchableOpacity } from './primitives';
+import { Text, Button } from './primitives';
 import { ReactNode } from 'react';
-import { ActivityIndicator, ScrollView, StyleSheet, View } from 'react-native';
+import { ScrollView, StyleSheet, View, KeyboardAvoidingView, Platform } from 'react-native';
+import { ActivityIndicator, IconButton, Surface } from 'react-native-paper';
 import { MaterialIcons } from './AppIcon';
 import { useRouter } from 'expo-router';
-import { useTheme } from '../store/theme-context';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 export function FeatureScreen({ title, subtitle, children, loading = false, error = '', onRetry, embedded = false }: {
@@ -11,24 +11,21 @@ export function FeatureScreen({ title, subtitle, children, loading = false, erro
 }) {
   const router = useRouter();
   const insets = useSafeAreaInsets();
-  const { colors } = useTheme();
-  return <View style={[s.root, { backgroundColor: colors.background }]}>
-    <View style={[s.header, { paddingTop: insets.top + 12, backgroundColor: colors.surface, borderBottomColor: colors.outlineVariant }]}>
-      {!embedded && <TouchableOpacity onPress={() => router.canGoBack() ? router.back() : router.replace('/(tabs)/learning' as any)} style={s.back}><MaterialIcons name="arrow-back" size={24} color={colors.onSurface} /></TouchableOpacity>}
-      <View style={{ flex: 1 }}><Text style={[s.title, { color: colors.onSurface }]}>{title}</Text>{subtitle ? <Text style={[s.subtitle, { color: colors.onSurfaceVariant }]}>{subtitle}</Text> : null}</View>
-    </View>
-    {loading ? <View style={s.center}><ActivityIndicator size="large" color={colors.primary} /></View> : error ? <View style={s.center}><MaterialIcons name="error-outline" size={42} color={colors.error} /><Text style={[s.error, { color: colors.error }]}>{error}</Text>{onRetry ? <TouchableOpacity onPress={onRetry} style={[s.retry, { backgroundColor: colors.primary }]}><Text style={{ color: '#fff', fontWeight: '700' }}>Thử lại</Text></TouchableOpacity> : null}</View> : <ScrollView contentContainerStyle={[s.content, { paddingBottom: insets.bottom + 32 }]}>{children}</ScrollView>}
-  </View>;
+  return <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={s.root}>
+    <Surface elevation={0} style={[s.header, { paddingTop: insets.top + 8 }]}>
+      {!embedded && <IconButton icon="arrow-left" accessibilityLabel="Quay lại" size={24} onPress={() => router.canGoBack() ? router.back() : router.replace('/(tabs)/learning' as any)} style={s.back} />}
+      <View style={{ flex: 1, minWidth: 0 }}><Text accessibilityRole="header" style={[s.title, embedded && { fontSize: 28 }]}>{title}</Text>{subtitle ? <Text style={s.subtitle}>{subtitle}</Text> : null}</View>
+    </Surface>
+    {loading ? <View style={s.center}><ActivityIndicator size="large" /><Text style={s.emptyText}>Đang tải nội dung…</Text></View> : error ? <View style={s.center}><MaterialIcons name="error-outline" size={42} color="#ba1a1a" /><Text accessibilityRole="alert" style={s.error}>{error}</Text>{onRetry ? <Button onPress={onRetry}>Thử lại</Button> : null}</View> : <ScrollView keyboardShouldPersistTaps="handled" showsVerticalScrollIndicator={false} contentContainerStyle={[s.content, { paddingBottom: insets.bottom + 32 }]}>{children}</ScrollView>}
+  </KeyboardAvoidingView>;
 }
 
 export function EmptyState({ icon, title, detail }: { icon: keyof typeof MaterialIcons.glyphMap; title: string; detail: string }) {
-  const { colors } = useTheme();
-  return <View style={s.center}><MaterialIcons name={icon} size={48} color={colors.outline} /><Text style={[s.emptyTitle, { color: colors.onSurface }]}>{title}</Text><Text style={[s.emptyText, { color: colors.onSurfaceVariant }]}>{detail}</Text></View>;
+  return <View style={s.empty}><View style={s.emptyIcon}><MaterialIcons name={icon} size={32} color="#6054c8" /></View><Text style={s.emptyTitle}>{title}</Text><Text style={s.emptyText}>{detail}</Text></View>;
 }
-
 const s = StyleSheet.create({
-  root: { flex: 1 }, header: { paddingTop: 48, paddingBottom: 13, paddingHorizontal: 14, borderBottomWidth: 1, flexDirection: 'row', alignItems: 'center', gap: 10 },
-  back: { padding: 6 }, title: { fontSize: 20, fontWeight: '800' }, subtitle: { fontSize: 12, marginTop: 2 },
-  content: { padding: 16, paddingBottom: 50 }, center: { flex: 1, minHeight: 360, justifyContent: 'center', alignItems: 'center', padding: 28, gap: 12 },
-  error: { textAlign: 'center' }, retry: { paddingHorizontal: 18, paddingVertical: 10, borderRadius: 9 }, emptyTitle: { fontSize: 17, fontWeight: '800', textAlign: 'center' }, emptyText: { textAlign: 'center', lineHeight: 20 },
+  root: { flex: 1, backgroundColor: '#f7f8fc' }, header: { paddingBottom: 16, paddingHorizontal: 20, flexDirection: 'row', alignItems: 'center', gap: 8, backgroundColor: '#f7f8fc' },
+  back: { margin: 0, marginLeft: -8 }, title: { fontSize: 22, fontWeight: '700', color: '#17213a' }, subtitle: { fontSize: 14, color: '#59657c', marginTop: 4 },
+  content: { padding: 20, paddingTop: 4 }, center: { flex: 1, minHeight: 300, justifyContent: 'center', alignItems: 'center', padding: 28, gap: 16 },
+  error: { color: '#ba1a1a', textAlign: 'center' }, empty: { alignItems: 'center', paddingHorizontal: 20, paddingVertical: 40, gap: 12 }, emptyIcon: { padding: 20, borderRadius: 24, backgroundColor: '#eeecff' }, emptyTitle: { fontSize: 18, fontWeight: '700', textAlign: 'center', color: '#17213a' }, emptyText: { color: '#59657c', textAlign: 'center', fontSize: 15 },
 });

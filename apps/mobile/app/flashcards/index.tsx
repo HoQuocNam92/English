@@ -1,3 +1,4 @@
+import { ScrollView } from 'react-native';
 import { Button } from '../../src/shared/ui/primitives';
 import { FilterSelect } from '../../src/shared/ui/FilterSelect';
 import { Text, TextInput, TouchableOpacity } from '../../src/shared/ui/primitives';
@@ -397,7 +398,7 @@ export default function FlashcardsScreen() {
           <TouchableOpacity activeOpacity={0.95} onPress={doFlip} style={styles.cardFlipArea}>
             {/* Front */}
             <Animated.View style={[styles.flipCard, { backgroundColor: colors.surface, borderColor: colors.outlineVariant, transform: [{ perspective: 1000 }, { rotateY: frontInterpolate }] }]}>
-            <Text style={[styles.termText, { color: colors.onSurface }]} numberOfLines={4} adjustsFontSizeToFit minimumFontScale={0.35}>{currentWord.term}</Text>
+            <Text style={[styles.termText, { color: colors.onSurface }]} numberOfLines={4} adjustsFontSizeToFit minimumFontScale={0.75}>{currentWord.term}</Text>
             {currentWord.pronunciationIpa ? (
               <Text style={[styles.ipaText, { color: colors.onSurfaceVariant }]}>{currentWord.pronunciationIpa}</Text>
             ) : null}
@@ -411,16 +412,18 @@ export default function FlashcardsScreen() {
 
             {/* Back */}
             <Animated.View style={[styles.flipCard, styles.flipCardBack, { backgroundColor: colors.surface, borderColor: colors.outlineVariant, transform: [{ perspective: 1000 }, { rotateY: backInterpolate }] }]}>
-            <Text style={[styles.defVi, { color: colors.onSurface }]} numberOfLines={5} adjustsFontSizeToFit minimumFontScale={0.4}>{currentWord.definitionVi}</Text>
-            <Text selectable style={[styles.defEn, { color: colors.onSurfaceVariant }]} numberOfLines={5} adjustsFontSizeToFit minimumFontScale={0.7}>{currentWord.definitionEn}</Text>
+            <ScrollView style={{ width: '100%', flex: 1 }} contentContainerStyle={{ flexGrow: 1, justifyContent: 'center' }} nestedScrollEnabled>
+            <Text style={[styles.defVi, { color: colors.onSurface }]}>{currentWord.definitionVi}</Text>
+            <Text selectable style={[styles.defEn, { color: colors.onSurfaceVariant }]}>{currentWord.definitionEn}</Text>
             {currentWord.examples?.[0] ? (
               <View style={[styles.exampleBox, { backgroundColor: colors.surfaceVariant }]}><Text style={{ fontSize: 12, fontWeight: '700', color: colors.primary }}>Ví dụ</Text>
-                <Text selectable style={[styles.exampleText, { color: colors.primary }]} numberOfLines={3}><HighlightedExample sentence={currentWord.examples[0].sentenceEn} term={currentWord.term} /></Text>
+                <Text selectable style={[styles.exampleText, { color: colors.primary }]}><HighlightedExample sentence={currentWord.examples[0].sentenceEn} term={currentWord.term} /></Text>
                 {currentWord.examples[0].translationVi ? (
-                  <Text style={[styles.exampleTranslation, { color: colors.onSurfaceVariant }]} numberOfLines={2}>{currentWord.examples[0].translationVi}</Text>
+                  <Text style={[styles.exampleTranslation, { color: colors.onSurfaceVariant }]}>{currentWord.examples[0].translationVi}</Text>
                 ) : null}
               </View>
             ) : null}
+            </ScrollView>
             </Animated.View>
           </TouchableOpacity>
         </View>

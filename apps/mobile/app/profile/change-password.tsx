@@ -1,3 +1,4 @@
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Text, TextInput, TouchableOpacity } from '../../src/shared/ui/primitives';
 import { useState } from 'react';
 import { useRouter } from 'expo-router';
@@ -9,6 +10,7 @@ import { api } from '../../src/shared/api/api-client';
 import { validatePassword } from '../../src/shared/utils/validators';
 
 export default function MobileChangePasswordScreen() {
+  const insets = useSafeAreaInsets();
   const router = useRouter();
   const [currentPassword, setCurrentPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
@@ -56,7 +58,7 @@ export default function MobileChangePasswordScreen() {
   return (
     <View style={styles.container}>
       <StatusBar style="dark" />
-      <View style={styles.header}>
+      <View style={[styles.header, { paddingTop: insets.top + 12, height: undefined }]}>
         <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
           <MaterialIcons name="arrow-back" size={24} color={colors.text} />
         </TouchableOpacity>
@@ -152,7 +154,7 @@ export default function MobileChangePasswordScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f7f9fb'
+    backgroundColor: '#f7f8fc'
   },
   header: {
     flexDirection: 'row',
@@ -183,7 +185,7 @@ const styles = StyleSheet.create({
   },
   formCard: {
     backgroundColor: '#ffffff',
-    borderRadius: 16,
+    borderRadius: 20,
     padding: spacing.lg,
     borderWidth: 1,
     borderColor: '#e2e8f0',
@@ -244,7 +246,7 @@ const styles = StyleSheet.create({
   },
   rulesBox: {
     marginTop: 8,
-    backgroundColor: '#f7f9fb',
+    backgroundColor: '#f7f8fc',
     borderRadius: 10,
     padding: 10,
     gap: 6

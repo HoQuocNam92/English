@@ -1,3 +1,4 @@
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Text, TouchableOpacity } from '../../src/shared/ui/primitives';
 import { useEffect, useState } from 'react';
 import { useRouter } from 'expo-router';
@@ -20,6 +21,7 @@ const iconForDomain = (code: string): keyof typeof MaterialIcons.glyphMap => ({
 }[code] as keyof typeof MaterialIcons.glyphMap) || 'terminal';
 
 export default function OnboardingFieldScreen() {
+  const insets = useSafeAreaInsets();
   const router = useRouter();
   const [selectedFields, setSelectedFields] = useState<string[]>([]);
   const [fields, setFields] = useState<FieldOption[]>([]);
@@ -49,7 +51,7 @@ export default function OnboardingFieldScreen() {
       <StatusBar style="dark" />
       
       {/* Top Header */}
-      <View style={styles.headerBar}>
+      <View style={[styles.headerBar, { paddingTop: insets.top + 12 }]}>
         <View style={styles.headerTop}>
           <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
             <MaterialIcons name="arrow-back" size={24} color={colors.text} />
@@ -90,7 +92,7 @@ export default function OnboardingFieldScreen() {
       </ScrollView>
 
       {/* Bottom Action Area */}
-      <View style={styles.bottomBar}>
+      <View style={[styles.bottomBar, { paddingBottom: Math.max(16, insets.bottom + 12) }]}>
         <TouchableOpacity
           style={[styles.nextButton, selectedFields.length === 0 && styles.nextButtonDisabled]}
           onPress={handleNext}
@@ -145,7 +147,7 @@ const styles = StyleSheet.create({
   scrollContent: { padding: spacing.lg, paddingTop: spacing.md, paddingBottom: 100 },
   title: { fontSize: 30, fontWeight: '700', color: '#191c1e', marginBottom: spacing.xs, letterSpacing: -0.5 },
   subtitle: { fontSize: 14, color: '#464555', marginBottom: spacing.xl, lineHeight: 20 },
-  errorText: { color: '#b42318', backgroundColor: '#fff0f0', padding: spacing.md, borderRadius: 10, marginBottom: spacing.md },
+  errorText: { color: '#b42318', backgroundColor: '#fff0f0', padding: spacing.md, borderRadius: 14, marginBottom: spacing.md },
   
   gridContainer: {
     flexDirection: 'row',
@@ -159,7 +161,7 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     padding: spacing.md,
     borderWidth: 1,
-    borderColor: '#c7c4d8',
+    borderColor: '#e4e8f1',
     alignItems: 'flex-start',
     minHeight: 120
   },
@@ -199,7 +201,7 @@ const styles = StyleSheet.create({
   nextButton: { 
     backgroundColor: colors.primary, 
     height: 48, 
-    borderRadius: 10, 
+    borderRadius: 14,
     alignItems: 'center', 
     justifyContent: 'center',
     shadowColor: '#000',

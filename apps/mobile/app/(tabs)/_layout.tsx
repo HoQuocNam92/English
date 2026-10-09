@@ -2,7 +2,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Tabs } from 'expo-router';
 import { MaterialIcons } from '../../src/shared/ui/AppIcon';
 import { useTheme } from '../../src/shared/store/theme-context';
-import { iconColors } from '@techenglish/design-tokens';
+import { View } from 'react-native';
 
 export default function TabsLayout() {
   const { colors } = useTheme();
@@ -17,12 +17,12 @@ export default function TabsLayout() {
         tabBarStyle: {
           backgroundColor: colors.surfaceContainerLowest,
           borderTopColor: colors.border,
-          height: 60 + insets.bottom,
+          height: 72 + insets.bottom,
           paddingBottom: Math.max(8, insets.bottom),
-          paddingTop: 6
+          paddingTop: 8
         },
         tabBarLabelStyle: {
-          fontSize: 11,
+          fontSize: 12,
           fontWeight: '600'
         }
       }}
@@ -31,30 +31,30 @@ export default function TabsLayout() {
         name="home"
         options={{
           title: 'Trang chủ',
-          tabBarIcon: ({ size }) => <MaterialIcons name="home" size={size} color={iconColors.home} />
+          tabBarIcon: ({ focused, color }) => <View style={{ width: 56, height: 32, alignItems: "center", justifyContent: "center", borderRadius: 16, backgroundColor: focused ? "#eeecff" : "transparent" }}><MaterialIcons name="home" size={23} color={color} /></View>
         }}
       />
       <Tabs.Screen
         name="learning"
         options={{
           title: 'Học tập',
-          tabBarIcon: ({ size, color }) => <MaterialIcons name="menu-book" size={size} color={iconColors.learning} />,
+          tabBarIcon: ({ focused, color }) => <View style={{ width: 56, height: 32, alignItems: "center", justifyContent: "center", borderRadius: 16, backgroundColor: focused ? "#eeecff" : "transparent" }}><MaterialIcons name="menu-book" size={23} color={color} /></View>,
         }}
       />
       <Tabs.Screen name="practice" options={{ href: null }} />
-      <Tabs.Screen name="certificates" options={{ title: "Chứng chỉ", tabBarIcon: ({ size }) => <MaterialIcons name="workspace-premium" size={size} color={iconColors.certificate} /> }} />
+      <Tabs.Screen name="certificates" options={{ title: "Chứng chỉ", tabBarIcon: ({ focused, color }) => <View style={{ width: 56, height: 32, alignItems: "center", justifyContent: "center", borderRadius: 16, backgroundColor: focused ? "#eeecff" : "transparent" }}><MaterialIcons name="workspace-premium" size={23} color={color} /></View> }} />
       <Tabs.Screen
         name="progress"
         options={{
           title: 'Tiến độ',
-          tabBarIcon: ({ size }) => <MaterialIcons name="trending-up" size={size} color={iconColors.progress} />
+          tabBarIcon: ({ focused, color }) => <View style={{ width: 56, height: 32, alignItems: "center", justifyContent: "center", borderRadius: 16, backgroundColor: focused ? "#eeecff" : "transparent" }}><MaterialIcons name="trending-up" size={23} color={color} /></View>
         }}
       />
       <Tabs.Screen
         name="profile"
         options={{
           title: 'Cá nhân',
-          tabBarIcon: ({ size }) => <MaterialIcons name="person" size={size} color={iconColors.profile} />
+          tabBarIcon: ({ focused, color }) => <View style={{ width: 56, height: 32, alignItems: "center", justifyContent: "center", borderRadius: 16, backgroundColor: focused ? "#eeecff" : "transparent" }}><MaterialIcons name="person" size={23} color={color} /></View>
         }}
       />
     </Tabs>

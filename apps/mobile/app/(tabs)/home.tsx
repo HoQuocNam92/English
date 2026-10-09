@@ -120,15 +120,13 @@ export default function MobileHomeScreen() {
 
       <ScrollView contentContainerStyle={styles.contentContainer} showsVerticalScrollIndicator={false}>
 
-        <View style={{ gap: spacing.sm }}>
+        <View style={styles.profileSummary}>
+          <View style={styles.summaryHeader}><Text style={styles.summaryTitle}>Hồ sơ học tập</Text><TouchableOpacity accessibilityLabel="Chỉnh sửa mục tiêu học tập" onPress={() => router.push('/profile/edit')}><MaterialIcons name="edit" size={20} color={colors.primary} /></TouchableOpacity></View>
           {[
-            ['Trình độ tiếng Anh', profileData?.level?.name],
-            ['Lĩnh vực CNTT', profileData?.domains?.map((item: any) => item.domain?.name).filter(Boolean).join(', ')],
-            ['Chứng chỉ mục tiêu', profileData?.certGoals?.map((item: any) => item.certificate?.name).filter(Boolean).join(', ')],
-          ].map(([label, value]) => <View key={label} style={styles.dailyGoalCard}>
-            <Text style={styles.recommendationReason}>{label}</Text>
-            <Text style={styles.recommendationTitle}>{value || 'Chưa thiết lập'}</Text>
-          </View>)}
+            { label: 'Trình độ', value: profileData?.level?.name, icon: 'school' },
+            { label: 'Lĩnh vực', value: profileData?.domains?.map((item: any) => item.domain?.name).filter(Boolean).join(', '), icon: 'language' },
+            { label: 'Mục tiêu', value: profileData?.certGoals?.map((item: any) => item.certificate?.name).filter(Boolean).join(', '), icon: 'workspace-premium' },
+          ].map(item => <View key={item.label} style={styles.summaryRow}><MaterialIcons name={item.icon as keyof typeof MaterialIcons.glyphMap} size={20} color="#6054c8" /><View style={{ flex: 1 }}><Text style={styles.summaryLabel}>{item.label}</Text><Text style={styles.summaryValue}>{item.value || 'Chưa thiết lập'}</Text></View></View>)}
         </View>
 
         <LearningReminder />
@@ -246,9 +244,11 @@ export default function MobileHomeScreen() {
 }
 
 const styles = StyleSheet.create({
+  profileSummary: { backgroundColor: '#ffffff', borderWidth: 1, borderColor: '#e4e8f1', borderRadius: 22, paddingHorizontal: 20, paddingBottom: 20, gap: 14 },
+  summaryHeader: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 12 }, summaryTitle: { fontSize: 19, fontWeight: '700', color: '#17213a' }, summaryRow: { flexDirection: 'row', gap: 12, alignItems: 'center' }, summaryLabel: { fontSize: 13, color: '#59657c' }, summaryValue: { fontSize: 15, fontWeight: '600', color: '#17213a', marginTop: 2 },
   container: {
     flex: 1,
-    backgroundColor: '#f7f9fb'
+    backgroundColor: '#f7f8fc'
   },
   headerContainer: {
     flexDirection: 'row',
@@ -260,10 +260,10 @@ const styles = StyleSheet.create({
     backgroundColor: '#ffffff',
     borderBottomWidth: 1,
     borderBottomColor: '#e0e3e5',
-    elevation: 2,
+    elevation: 0,
     shadowColor: '#0f1718',
     shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.06,
+    shadowOpacity: 0,
     shadowRadius: 3,
   },
   headerLeft: {
@@ -293,7 +293,7 @@ const styles = StyleSheet.create({
     color: '#191c1e',
   },
   greetingSubtitle: {
-    fontSize: 12,
+    fontSize: 14,
     color: '#464555',
     marginTop: 2,
   },
@@ -312,10 +312,10 @@ const styles = StyleSheet.create({
     shadowRadius: 6,
     elevation: 4,
   },
-  setupCard: { backgroundColor: '#ffffff', borderWidth: 1, borderColor: '#ddd6fe', borderRadius: 16, padding: spacing.lg, alignItems: 'center' },
+  setupCard: { backgroundColor: '#ffffff', borderWidth: 1, borderColor: '#ddd6fe', borderRadius: 20, padding: spacing.lg, alignItems: 'center' },
   setupIcon: { width: 52, height: 52, borderRadius: 26, backgroundColor: '#ede9fe', alignItems: 'center', justifyContent: 'center', marginBottom: spacing.sm },
   setupTitle: { fontSize: 18, fontWeight: '800', color: '#191c1e', textAlign: 'center' },
-  setupDescription: { marginTop: 8, fontSize: 13, lineHeight: 19, color: '#5f5d6d', textAlign: 'center' },
+  setupDescription: { marginTop: 8, fontSize: 14, lineHeight: 19, color: '#5f5d6d', textAlign: 'center' },
   setupButton: { marginTop: spacing.md, minHeight: 44, paddingHorizontal: spacing.md, borderRadius: 10, backgroundColor: colors.primary, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8 },
   setupButtonText: { color: '#ffffff', fontSize: 14, fontWeight: '700' },
   heroCardHeader: {
@@ -341,7 +341,7 @@ const styles = StyleSheet.create({
     letterSpacing: 0.5,
   },
   heroTimeText: {
-    fontSize: 12,
+    fontSize: 14,
     fontWeight: '500',
     color: 'rgba(255,255,255,0.9)',
   },
@@ -352,7 +352,7 @@ const styles = StyleSheet.create({
     marginBottom: 4,
   },
   heroSubtitle: {
-    fontSize: 13,
+    fontSize: 14,
     color: 'rgba(255,255,255,0.8)',
     marginBottom: spacing.sm,
   },
@@ -366,11 +366,11 @@ const styles = StyleSheet.create({
     marginBottom: 4,
   },
   heroProgressLabelText: {
-    fontSize: 12,
+    fontSize: 14,
     color: 'rgba(255,255,255,0.8)',
   },
   heroProgressValueText: {
-    fontSize: 12,
+    fontSize: 14,
     fontWeight: '600',
     color: '#ffffff',
   },
@@ -397,7 +397,7 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.05,
     shadowRadius: 2,
-    elevation: 2,
+    elevation: 0,
   },
   heroButtonText: {
     fontSize: 14,
@@ -412,9 +412,9 @@ const styles = StyleSheet.create({
     padding: spacing.md,
     shadowColor: '#0f1718',
     shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.06,
+    shadowOpacity: 0,
     shadowRadius: 3,
-    elevation: 2,
+    elevation: 0,
   },
   dailyGoalHeader: {
     flexDirection: 'row',
@@ -423,12 +423,12 @@ const styles = StyleSheet.create({
     marginBottom: spacing.sm,
   },
   dailyGoalBadgeText: {
-    fontSize: 12,
+    fontSize: 14,
     fontWeight: '600',
     color: colors.primary,
   },
   dailyGoalDesc: {
-    fontSize: 12,
+    fontSize: 14,
     color: '#464555',
     flex: 1,
   },
