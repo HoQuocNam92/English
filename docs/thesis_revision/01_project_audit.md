@@ -7,13 +7,13 @@ Báo cáo này được lập bằng cách đối chiếu trực tiếp source c
 Thứ tự căn cứ được sử dụng khi mô tả hệ thống như sau:
 
 1. apps/api/prisma/schema.prisma để xác định mô hình dữ liệu ứng dụng hiện hành
-2. database_schema.sql để kiểm tra tên bảng, cột, kiểu dữ liệu và ràng buộc vật lý đã tổng hợp
+2. docs/thesis/database_schema.sql để kiểm tra tên bảng, cột, kiểu dữ liệu và ràng buộc vật lý đã tổng hợp
 3. apps/api/prisma/migrations để kiểm tra khả năng tái tạo database bằng migration
 4. Backend controller và service để xác định nghiệp vụ đã có xử lý
 5. Web và Mobile để xác định chức năng đã có giao diện và mức độ kết nối API
 6. Bản khóa luận mới nhất để xác định nội dung và sơ đồ đang cần sửa
 
-Các file database_schema_report.md và chapter3_verification_report.md chỉ được dùng làm đầu mối kiểm tra. Các con số trong hai file này không được dùng thay cho phép đếm độc lập.
+Các file docs/thesis/database_schema_report.md và docs/thesis/chapter3_verification_report.md chỉ được dùng làm đầu mối kiểm tra. Các con số trong hai file này không được dùng thay cho phép đếm độc lập.
 
 ## 2. Kiến trúc và công nghệ
 
@@ -77,7 +77,7 @@ NotificationController, PlannerController, MockInterviewController, WritingContr
 | Unique constraint hoặc unique index ngoài PK | 23 | Gồm unique đơn và unique tổ hợp |
 | CHECK constraint | 0 | Không có CHECK trong DDL hiện hành |
 
-Bảng _prisma_migrations không được khai báo trong schema.prisma và không xuất hiện trong database_schema.sql nên không được tính vào 53 bảng trên. Nếu database thực tế được quản lý bằng Prisma Migrate thì bảng kỹ thuật này thường được tạo trong database. Khi đó tổng số bảng vật lý có thể là 54. Vì không có backup hoặc kết nối database, sự tồn tại của _prisma_migrations trong môi trường đang chạy là CẦN XÁC NHẬN.
+Bảng _prisma_migrations không được khai báo trong schema.prisma và không xuất hiện trong docs/thesis/database_schema.sql nên không được tính vào 53 bảng trên. Nếu database thực tế được quản lý bằng Prisma Migrate thì bảng kỹ thuật này thường được tạo trong database. Khi đó tổng số bảng vật lý có thể là 54. Vì không có backup hoặc kết nối database, sự tồn tại của _prisma_migrations trong môi trường đang chạy là CẦN XÁC NHẬN.
 
 ### 4.2. Danh sách 11 khóa chính tổ hợp
 

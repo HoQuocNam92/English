@@ -7,7 +7,7 @@ Sơ đồ lớp mức phân tích và ERD phải được vẽ thành hai loại
 - Sơ đồ lớp mức phân tích dùng tên lớp số ít theo PascalCase và chỉ giữ thuộc tính có ý nghĩa nghiệp vụ
 - Không đưa khóa ngoại, kiểu dữ liệu PostgreSQL, chỉ mục, token, cache hoặc bảng nối thuần túy vào sơ đồ phân tích
 - Không tạo method cho các lớp phân tích
-- ERD dùng đúng tên bảng, tên cột, khóa chính và khóa ngoại từ `database_schema.sql`
+- ERD dùng đúng tên bảng, tên cột, khóa chính và khóa ngoại từ `docs/thesis/database_schema.sql`
 - Không tự nối quan hệ chỉ vì hai bảng có tên trường giống nhau
 - Mỗi sơ đồ cần có tiêu đề, chú thích PK, FK và giải thích ký hiệu bội số
 

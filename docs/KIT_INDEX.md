@@ -13,7 +13,7 @@ Không dùng:
 - `apps/...`
 
 ## Architecture
-- Clean Architecture
+- Clean Architecture cho backend; web/mobile theo màn hình và tính năng
 - PostgreSQL
 - Prisma
 

@@ -11,15 +11,16 @@
 - Reusable UI nằm ở `shared/ui`.
 - Feature-specific UI nằm trong feature.
 
-## Clean flow
-```text
-Screen
-→ presentation hook/view-model
-→ application use case/action
-→ repository/API port
-→ infrastructure API adapter
-→ NestJS API
-```
+## Tổ chức mã nguồn
+Không áp dụng phân tầng Clean Architecture cho mobile.
+- `app/`: màn hình và điều hướng Expo Router.
+- `src/features/`: component riêng cho tính năng đang có.
+- `src/shared/api/`: gọi backend.
+- `src/shared/storage/`: lưu token và dữ liệu local.
+- `src/shared/ui/`: component dùng chung.
+Chỉ tạo thư mục khi có mã nguồn thực tế, không thêm `.gitkeep` cho tính năng dự kiến.
+
+Luồng: màn hình/component → API client dùng chung → NestJS API.
 
 ## UI reference
 Các mobile screen trong Stitch là source of truth.

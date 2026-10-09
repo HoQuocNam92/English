@@ -1,117 +1,35 @@
-# 08 — Project Structure
-
-## Root structure
+# 08 — Cấu trúc dự án
 
 ```text
 English/
-├─ .claude/
-│  ├─ agents/
-│  ├─ commands/
-│  ├─ rules/
-│  └─ settings.json
-├─ docs/
-├─ design-reference/
-│  └─ stitch_techenglish_pro/
 ├─ apps/
-│  ├─ api/
-│  ├─ web/
-│  └─ mobile/
-├─ packages/
-│  ├─ contracts/
-│  ├─ design-tokens/
-│  └─ shared-kernel/
-├─ CLAUDE.md
-├─ KIT_INDEX.md
-└─ README_START_HERE.md
+│  ├─ api/          # NestJS, Clean Architecture
+│  ├─ web/          # Next.js
+│  └─ mobile/       # Expo / React Native
+├─ packages/        # contracts, design-tokens, shared-kernel
+├─ docs/            # Tài liệu; hồ sơ luận văn trong thesis/
+├─ docker/          # Hỗ trợ triển khai
+├─ scripts/         # Tiện ích; script chuyển đổi cũ trong legacy/
+├─ README.md
+├─ package.json
+├─ pnpm-lock.yaml
+└─ pnpm-workspace.yaml
 ```
 
-Không dùng folder bọc ngoài kiểu:
-- `apps/` và `packages/`
-- `apps/`
+## Backend
+`apps/api/src/` phân tầng `application/`, `infrastructure/`, `presentation/` cùng `modules/`.
+Domain được tách khi có nghiệp vụ thực tế. Prisma schema, migration và seed nằm trong `apps/api/prisma/`.
 
----
+## Web và mobile
+Tổ chức theo màn hình, tính năng và thành phần dùng chung, không bắt buộc phân tầng Clean Architecture.
+Web/mobile gọi API backend, không truy cập Prisma/PostgreSQL trực tiếp.
 
-## `apps/api` — NestJS + PostgreSQL + Prisma + Clean Architecture
+Mobile dùng `app/` cho màn hình/điều hướng Expo Router, `src/features/` cho
+component tính năng và `src/shared/` cho API, storage, UI cùng tiện ích chung.
+Chỉ giữ thư mục có mã nguồn thực tế.
 
-```text
-apps/api/
-├─ prisma/
-│  ├─ schema.prisma
-│  ├─ migrations/
-│  └─ seed.ts
-└─ src/
-   ├─ modules/
-   │  ├─ auth/
-   │  │  ├─ domain/
-   │  │  ├─ application/
-   │  │  ├─ infrastructure/
-   │  │  └─ presentation/
-   │  ├─ users/
-   │  ├─ learner-profiles/
-   │  ├─ learning-content/
-   │  ├─ lessons/
-   │  ├─ questions/
-   │  ├─ exams/
-   │  ├─ progress/
-   │  ├─ reports/
-   │  └─ recommendations/
-   ├─ shared/
-   │  ├─ domain/
-   │  ├─ application/
-   │  ├─ infrastructure/
-   │  └─ presentation/
-   ├─ config/
-   ├─ app.module.ts
-   └─ main.ts
-```
+## File local và tài liệu
+- `docs/thesis/`: tài liệu gốc, SQL đối chiếu và gói kiểm chứng Chương 3.
+- `scripts/legacy/`: script chuyển đổi giao diện cũ, không thuộc luồng chạy ứng dụng.
 
----
-
-## `apps/web` — Next.js
-
-```text
-apps/web/
-├─ app/
-├─ src/
-│  ├─ features/
-│  ├─ shared/
-│  └─ core/
-└─ public/
-```
-
-Next.js chỉ gọi NestJS API, không truy cập PostgreSQL/Prisma trực tiếp.
-
----
-
-## `apps/mobile` — React Native
-
-```text
-apps/mobile/
-└─ src/
-   ├─ features/
-   ├─ navigation/
-   ├─ shared/
-   └─ core/
-```
-
-React Native chỉ gọi NestJS API.
-
----
-
-## `packages`
-
-### `packages/contracts`
-Shared API contracts / pure TypeScript types phù hợp để chia sẻ.
-
-### `packages/design-tokens`
-Shared design tokens giữa Web và Mobile.
-
-### `packages/shared-kernel`
-Chỉ chứa pure TypeScript thực sự dùng chung và độc lập framework.
-
-Không đưa:
-- Prisma model;
-- NestJS decorator;
-- Next.js component;
-- React Native component
-vào shared-kernel.
+Các file cấu hình Docker, TypeScript và pnpm ở gốc phục vụ build/chạy dự án.

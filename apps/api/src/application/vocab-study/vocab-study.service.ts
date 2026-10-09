@@ -141,13 +141,19 @@ export class VocabStudyService {
     // Get some random words for multiple choice distractors
     const allVocabs = await this.prisma.vocabulary.findMany({
       where: { status: 'published', id: { notIn: vocabIds }, vocabProgress: { some: { learnerId, lastRating: { not: null } } } },
-      select: { id: true, term: true, definitionVi: true },
+      select: { id: true, term: true, definitionVi: true, tags: true },
       take: 50,
     })
 
     const ready = vocabs.map(v => ({ ...v, meaning: quizMeaning(v) })).filter(v => v.meaning)
     const pool = [...allVocabs, ...vocabs].map(v => ({ ...v, meaning: quizMeaning(v) })).filter(v => v.meaning)
     const questions = ready.flatMap(v => {
+      const example = v.examples[0]
+      const explanation = [
+        `“${v.term}”: ${v.definitionVi}`,
+        example ? `Ví dụ: ${example.sentenceEn}` : null,
+        example?.translationVi ? `Nghĩa của ví dụ: ${example.translationVi}` : null,
+      ].filter(Boolean).join('\n\n')
       const distractors = pool.filter(d => d.id !== v.id && d.meaning !== v.meaning)
         .sort(() => Math.random() - 0.5)
         .filter((d, index, list) => list.findIndex(item => item.meaning === d.meaning) === index).slice(0, 3)
@@ -157,10 +163,10 @@ export class VocabStudyService {
         prompt: `Nghĩa của "${v.term}" là gì?`,
         options: [v.meaning!, ...distractors.map(d => d.meaning!)].sort(() => Math.random() - 0.5),
         answer: v.meaning!,
-        explanation: `“${v.term}” có nghĩa là: ${v.meaning}`,
+        explanation,
         optionExplanations: [
-          { option: v.meaning!, correct: true, explanation: `“${v.term}” có nghĩa là: ${v.meaning}` },
-          ...distractors.map(d => ({ option: d.meaning!, correct: false, explanation: `Bạn chọn nghĩa của “${d.term}”, không phải “${v.term}”.` })),
+          { option: v.meaning!, correct: true, explanation },
+          ...distractors.map(d => ({ option: d.meaning!, correct: false, explanation: `Phương án bạn chọn mô tả “${d.term}”: ${d.definitionVi}\n\nCâu hỏi yêu cầu nghĩa của “${v.term}”. ${explanation}` })),
         ],
       }]
     })

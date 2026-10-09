@@ -14,7 +14,8 @@ export const roleLabel = (code: string, fallback?: string) => ({
   admin: 'Quản trị viên', teacher: 'Giảng viên', learner: 'Học viên',
 }[code] ?? fallback ?? code);
 
-export const resourceLabel = (resource: string) => RESOURCE_LABELS[resource] ?? resource;
+const sentenceCase = (text: string) => text.charAt(0).toLocaleUpperCase('vi') + text.slice(1);
+export const resourceLabel = (resource: string) => sentenceCase(RESOURCE_LABELS[resource] ?? resource);
 export const actionLabel = (action: string) => ACTION_LABELS[action] ?? action;
 
 export function permissionLabel(permission: { code?: string; resource?: string; action?: string; name?: string } | string) {
@@ -23,8 +24,11 @@ export function permissionLabel(permission: { code?: string; resource?: string; 
   const resource = typeof permission === 'string' ? codeResource : permission.resource ?? codeResource;
   const action = typeof permission === 'string' ? codeAction : permission.action ?? codeAction;
   if (!resource || !action) return typeof permission === 'string' ? permission : permission.name ?? code;
-  return `${actionLabel(action)} ${resourceLabel(resource)}`;
+  return `${actionLabel(action)} ${RESOURCE_LABELS[resource] ?? resource}`;
 }
 
-export const PERMISSION_RESOURCES = Object.entries(RESOURCE_LABELS);
+export const PERMISSION_RESOURCES = Object.entries(RESOURCE_LABELS).map(([value, label]) => [
+  value,
+  sentenceCase(label),
+]);
 export const PERMISSION_ACTIONS = Object.entries(ACTION_LABELS);

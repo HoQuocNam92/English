@@ -2,7 +2,7 @@
 
 ## 3.1. GIỚI THIỆU
 
-Chương này trình bày thiết kế cơ sở dữ liệu của hệ thống học tiếng Anh chuyên ngành Công nghệ thông tin. Nội dung được xây dựng từ `apps/api/prisma/schema.prisma` và đối chiếu với `database_schema.sql`, các migration cùng source code backend hiện tại. Thiết kế sử dụng PostgreSQL và được ánh xạ trong ứng dụng thông qua Prisma ORM.
+Chương này trình bày thiết kế cơ sở dữ liệu của hệ thống học tiếng Anh chuyên ngành Công nghệ thông tin. Nội dung được xây dựng từ `apps/api/prisma/schema.prisma` và đối chiếu với `docs/thesis/database_schema.sql`, các migration cùng source code backend hiện tại. Thiết kế sử dụng PostgreSQL và được ánh xạ trong ứng dụng thông qua Prisma ORM.
 
 Cơ sở dữ liệu được tổ chức theo các nhóm chức năng nhằm tách biệt dữ liệu tài khoản, nội dung học, khảo thí, tiến độ và các chức năng hỗ trợ. Do số lượng bảng tương đối lớn, chương sử dụng một sơ đồ tổng quan nhóm dữ liệu và các ERD chi tiết. Cách trình bày này giúp giữ khả năng đọc mà không làm mất các quan hệ vật lý cần thiết.
 

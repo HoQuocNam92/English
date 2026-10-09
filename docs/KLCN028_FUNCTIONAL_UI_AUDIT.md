@@ -1,6 +1,6 @@
 # Biên bản rà soát chức năng và giao diện KLCN028
 
-Nguồn đối chiếu: `KLCN028_Huong ung dung_HuynhThiCamDung.docx`.
+Nguồn đối chiếu: `docs/thesis/KLCN028_Huong ung dung_HuynhThiCamDung.docx`.
 
 ## 1. Phạm vi đã kiểm tra
 

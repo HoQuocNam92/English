@@ -286,7 +286,7 @@ export default function RegisterPage() {
 
             <div className="relative flex items-center justify-center my-0.5">
               <div className="border-t border-outline-variant/40 w-full" />
-              <span className="bg-surface-container-lowest px-3 text-[11px] text-outline font-semibold absolute uppercase">hoặc</span>
+              <span className="bg-surface-container-lowest px-3 text-[11px] text-outline font-semibold absolute uppercase">Hoặc</span>
             </div>
 
             <button

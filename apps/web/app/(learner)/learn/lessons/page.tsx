@@ -79,7 +79,7 @@ function LessonCatalog() {
 
   return <LearnerShell><div className="pb-12">
     <header className="grid items-end gap-4 md:grid-cols-[minmax(0,1fr)_minmax(20rem,36rem)]">
-      <div><p className="text-xs font-bold uppercase tracking-widest text-primary">Không gian học tập</p><h1 className="mt-2 text-3xl font-black text-on-surface">Bài học chuyên ngành</h1><p className="mt-2 text-sm text-on-surface-variant">Học tiếng Anh qua thuật ngữ, tài liệu và tình huống thực tế trong IT.</p></div>
+      <div><h1 className="text-3xl font-black text-on-surface">Bài học chuyên ngành</h1><p className="mt-2 text-sm text-on-surface-variant">Học tiếng Anh qua thuật ngữ, tài liệu và tình huống thực tế trong IT.</p></div>
       <SearchInput className="!w-full !min-w-0 sm:!w-full sm:!min-w-0 sm:max-w-none" value={searchInput} onChange={setSearchInput} onSearch={setQuery} placeholder="Tìm bài học, lĩnh vực, chứng chỉ, từ vựng..." />
     </header>
 

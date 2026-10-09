@@ -1,6 +1,6 @@
 # Bắt đầu với TechEnglish Pro
 
-Xem [README.md](README.md) để cài đặt, cấu hình môi trường, migration, chạy và build backend/frontend.
+Xem [README.md](../README.md) để cài đặt, cấu hình môi trường, migration, chạy và build backend/frontend.
 
 - `apps/api`: backend NestJS, Prisma và PostgreSQL.
 - `apps/web`: Next.js dành cho học viên, giảng viên và quản trị viên.

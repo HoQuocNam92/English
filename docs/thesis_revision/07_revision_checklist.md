@@ -2,7 +2,7 @@
 
 ## A. Xác nhận nguồn dữ liệu
 
-- [ ] Ghi nhận `apps/api/prisma/schema.prisma` và `database_schema.sql` là nguồn chuẩn cho Chương 3
+- [ ] Ghi nhận `apps/api/prisma/schema.prisma` và `docs/thesis/database_schema.sql` là nguồn chuẩn cho Chương 3
 - [ ] Không dùng các con số 37 bảng hoặc 75 bảng từ tài liệu cũ làm số liệu hiện tại
 - [ ] Xác nhận với nhóm cách cơ sở dữ liệu triển khai được tạo từ Prisma Migrate, `prisma db push` hay file DDL
 - [ ] Xác nhận cơ sở dữ liệu chạy thực tế có bảng `_prisma_migrations` hay không

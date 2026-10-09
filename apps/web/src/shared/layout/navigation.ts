@@ -40,7 +40,7 @@ export const adminNavigation: NavigationGroup[] = [
   {
     group: 'Nội dung',
     items: [
-      { label: 'Nội dung học tập', href: '/admin/learning-content', icon: 'menu_book' },
+      { label: 'Nội dung học tập', href: '/admin/learning-content', icon: 'library_books' },
       { label: 'Tất cả bài học', href: '/admin/lessons', icon: 'auto_stories', children: [
         { label: 'Thuật ngữ CNTT', href: '/admin/lessons?type=terminology', icon: 'translate', level: 1 },
         { label: 'Đọc hiểu kỹ thuật', href: '/admin/lessons?type=technical_reading', icon: 'article', level: 1 },
@@ -63,14 +63,14 @@ export const adminNavigation: NavigationGroup[] = [
         { label: 'Phân nhóm học viên', href: '/admin/learner-groups', icon: 'groups', level: 1 },
       ] },
       { label: 'Kết quả bài thi', href: '/admin/test-results', icon: 'fact_check' },
-      { label: 'Tiến độ học tập', href: '/admin/progress', icon: 'insights' },
+      { label: 'Tiến độ học tập', href: '/admin/progress', icon: 'trending_up' },
     ],
   },
   {
     group: 'Báo cáo',
     adminOnly: true,
     items: [
-      { label: 'Báo cáo thống kê', href: '/admin/reports', icon: 'analytics' },
+      { label: 'Báo cáo thống kê', href: '/admin/reports', icon: 'leaderboard' },
     ],
   },
 ];
@@ -95,7 +95,7 @@ export const combinedNavigation: NavigationGroup[] = [
   {
     group: 'Nội dung',
     items: [
-      { label: 'Nội dung học tập', href: '/admin/learning-content', icon: 'menu_book' },
+      { label: 'Nội dung học tập', href: '/admin/learning-content', icon: 'library_books' },
       { label: 'Tất cả bài học', href: '/admin/lessons', icon: 'auto_stories', children: [
         { label: 'Thuật ngữ CNTT', href: '/admin/lessons?type=terminology', icon: 'translate', level: 1 },
         { label: 'Đọc hiểu kỹ thuật', href: '/admin/lessons?type=technical_reading', icon: 'article', level: 1 },
@@ -118,14 +118,14 @@ export const combinedNavigation: NavigationGroup[] = [
         { label: 'Phân nhóm học viên', href: '/admin/learner-groups', icon: 'groups', level: 1 },
       ] },
       { label: 'Kết quả bài thi', href: '/admin/test-results', icon: 'fact_check' },
-      { label: 'Tiến độ học tập', href: '/admin/progress', icon: 'insights' },
+      { label: 'Tiến độ học tập', href: '/admin/progress', icon: 'trending_up' },
     ],
   },
   {
     group: 'Báo cáo',
     adminOnly: true,
     items: [
-      { label: 'Báo cáo thống kê', href: '/admin/reports', icon: 'analytics', adminOnly: true },
+      { label: 'Báo cáo thống kê', href: '/admin/reports', icon: 'leaderboard', adminOnly: true },
     ],
   },
 ];
@@ -133,7 +133,7 @@ export const combinedNavigation: NavigationGroup[] = [
 export const teacherNavigation: NavigationGroup[] = [
   { group: 'Tổng quan', items: [{ label: 'Tổng quan', href: '/admin/dashboard', icon: 'dashboard' }] },
   { group: 'Giảng dạy', items: [
-    { label: 'Nội dung học tập', href: '/admin/learning-content', icon: 'menu_book' },
+    { label: 'Nội dung học tập', href: '/admin/learning-content', icon: 'library_books' },
     { label: 'Quản lý bài học', href: '/admin/lessons', icon: 'auto_stories' },
     { label: 'Ngân hàng câu hỏi', href: '/admin/questions', icon: 'help' },
     { label: 'Bài kiểm tra chứng chỉ', href: '/admin/tests', icon: 'quiz' },
@@ -141,7 +141,7 @@ export const teacherNavigation: NavigationGroup[] = [
   { group: 'Học viên phụ trách', items: [
     { label: 'Kết quả bài thi', href: '/admin/test-results', icon: 'fact_check' },
     { label: 'Phân nhóm học viên', href: '/admin/learner-groups', icon: 'groups' },
-    { label: 'Tiến độ học tập', href: '/admin/progress', icon: 'insights' },
+    { label: 'Tiến độ học tập', href: '/admin/progress', icon: 'trending_up' },
   ] },
 ];
 

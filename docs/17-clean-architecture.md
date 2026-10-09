@@ -1,11 +1,14 @@
-# 17 — Clean Architecture
+# 17 — Clean Architecture cho backend
+
+Chỉ áp dụng phân tầng Domain / Application / Infrastructure / Presentation cho `apps/api`.
+Web và mobile tổ chức theo màn hình, tính năng và thành phần dùng chung; không tạo các tầng rỗng.
 
 ## Dependency Rule
 
 ```text
                     ┌─────────────────────────────┐
                     │ Presentation / Frameworks   │
-                    │ Nest / Next / React Native  │
+                    │ NestJS backend              │
                     └──────────────┬──────────────┘
                                    │
                     ┌──────────────▼──────────────┐

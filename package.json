@@ -3,6 +3,9 @@
   "private": true,
   "packageManager": "pnpm@12.8.1",
   "scripts": {
+    "dev": "pnpm --parallel --filter @techenglish/api --filter web run dev",
+    "dev:api": "pnpm --filter @techenglish/api dev",
+    "dev:web": "pnpm --filter web dev",
     "typecheck": "pnpm run typecheck:packages",
     "typecheck:packages": "pnpm -r --filter \"@techenglish/*\" run typecheck"
   },

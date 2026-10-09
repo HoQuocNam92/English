@@ -25,3 +25,6 @@ chapter3_verification_package
 **/.cxx
 **/.kotlin
 **/local.properties
+
+artifacts
+docs/thesis

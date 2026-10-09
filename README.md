@@ -102,6 +102,11 @@ pnpm --filter @techenglish/api dev
 pnpm --filter web dev
 ```
 
+Hoặc chạy cả backend và frontend từ thư mục gốc bằng `pnpm dev`.
+Chạy riêng từng phần bằng `pnpm dev:api` và `pnpm dev:web`.
+Nếu backend báo `EADDRINUSE` ở cổng 8080, kiểm tra terminal backend đã chạy
+trước đó; dùng tiến trình đó hoặc dừng bằng Ctrl+C trước khi chạy lại.
+
 Trang giới thiệu: http://localhost:3000/landing. Đăng nhập: http://localhost:3000/login.
 
 Mobile tùy chọn:
@@ -200,3 +205,9 @@ CI trên `main` chạy kiểm tra và build trước khi xuất bản container.
 Hồ Quốc Nam — Đại học Công nghiệp TP.HCM (IUH).
 
 Private — All rights reserved.
+
+## File xuất ra và tài liệu bổ sung
+
+APK và kết quả kiểm tra local không thuộc mã nguồn dự án.
+Hồ sơ luận văn và gói kiểm chứng nằm trong `docs/thesis/`.
+Xem [cấu trúc dự án](docs/08-project-structure.md). Clean Architecture chỉ áp dụng cho backend.

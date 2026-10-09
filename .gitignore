@@ -1,4 +1,5 @@
 node_modules/
+/artifacts/
 .pnpm-store/
 design-reference/
 .next/
@@ -26,3 +27,9 @@ GoogleService-Info.plist
 /.tmp-mobile-qa/
 /techenglish-*.xml
 /pnpm-workspace.yaml.bak
+
+# Local review scratch files and generated data backups
+/.tmp-*/
+*.tsbuildinfo
+/docs/data-audit/backups/
+/docs/data-audit/content-snapshot.json

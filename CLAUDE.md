@@ -5,7 +5,7 @@ Dự án sử dụng:
 - Backend API: **NestJS + TypeScript**
 - Web Admin/Teacher: **Next.js + TypeScript**
 - Mobile Learner: **React Native + TypeScript**
-- Architecture: **Clean Architecture**
+- Architecture backend: **Clean Architecture**
 - Database: **PostgreSQL**
 - ORM: **Prisma**
 - UI source of truth: `design-reference/stitch_techenglish_pro/`
@@ -21,7 +21,9 @@ Không tự đổi framework, database hoặc ORM.
 5. Stitch UI trong `design-reference/`
 6. Code hiện tại
 
-## 3. Clean Architecture
+## 3. Clean Architecture — chỉ backend
+
+Web/mobile tổ chức theo màn hình và tính năng thực tế, không tạo các thư mục domain/application/infrastructure/presentation rỗng.
 Dependency đi vào trong:
 
 `Presentation → Application → Domain`

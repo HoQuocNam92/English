@@ -184,3 +184,17 @@ test('dashboard rejects invalid, incomplete and reversed custom date ranges befo
     await assert.rejects(() => service.getDashboard('A', from, to))
   }
 })
+
+test('reviewed database meanings override legacy quiz text and explain the selected distractor with an example', async () => {
+  let calls = 0
+  const service = new VocabStudyService({ vocabulary: { findMany: async () => ++calls === 1
+    ? [{ id: 'cache-reviewed', term: 'cache engine version', definitionVi: 'Phiên bản phần mềm bộ nhớ đệm. Dùng để kiểm tra tính tương thích.', tags: ['reviewed-meaning'], examples: [{ sentenceEn: 'Check the cache engine version before upgrading the client.', translationVi: 'Kiểm tra phiên bản trước khi nâng cấp thư viện khách.' }] }]
+    : [{ id: 'other', term: 'orchestration', definitionVi: 'Điều phối tự động các dịch vụ.', tags: ['reviewed-meaning'] }] } } as any)
+  const { questions } = await service.generateQuiz('learner', ['cache-reviewed'])
+  assert.equal(questions[0].answer, 'Phiên bản phần mềm bộ nhớ đệm.')
+  const wrong = questions[0].optionExplanations.find(item => !item.correct)!
+  assert.match(wrong.explanation, /Điều phối tự động/)
+  assert.match(wrong.explanation, /Dùng để kiểm tra tính tương thích/)
+  assert.match(wrong.explanation, /Check the cache engine version/)
+  assert.match(wrong.explanation, /Kiểm tra phiên bản/)
+})

@@ -121,7 +121,7 @@ export default function VocabularyQuizPage({ params }: { params: Promise<{ id: s
             <div className={`mx-auto w-32 h-32 rounded-full border-4 flex flex-col items-center justify-center ${pct >= 80 ? 'border-green-400' : pct >= 50 ? 'border-amber-400' : 'border-red-400'}`}>
               <span className="text-3xl"><IconText>{pct >= 80 ? '🎉' : pct >= 50 ? '💪' : '📚'}</IconText></span>
               <span className="text-2xl font-black text-slate-900">{correctCount}/{total}</span>
-              <span className="text-xs text-slate-500">câu đúng</span>
+              <span className="text-xs text-slate-500">Câu đúng</span>
             </div>
             <h1 className="text-2xl font-black text-slate-900">
               {pct >= 80 ? 'Xuất sắc!' : pct >= 50 ? 'Khá tốt!' : 'Cần ôn thêm!'}
@@ -240,7 +240,7 @@ export default function VocabularyQuizPage({ params }: { params: Promise<{ id: s
             </div>
           )}
 
-          {showResult && <details key={quizIdx} className="rounded-xl border border-slate-200 text-sm"><summary className="cursor-pointer px-4 py-3 font-semibold text-primary">Xem chi tiết</summary><div className="border-t border-slate-100 px-4 py-3 leading-6 text-slate-700"><p className="font-semibold text-emerald-700">Đáp án đúng: {currentQ.answer}</p><p className="mt-2">{currentQ.optionExplanations?.find(item => item.option === (isCorrectAnswer ? currentQ.answer : selectedOption))?.explanation ?? 'Lựa chọn cần khớp với nghĩa của từ trong câu hỏi.'}</p></div></details>}
+          {showResult && <details key={quizIdx} className="rounded-xl border border-slate-200 text-sm"><summary className="cursor-pointer px-4 py-3 font-semibold text-primary">Xem chi tiết</summary><div className="border-t border-slate-100 px-4 py-3 leading-6 text-slate-700"><p className="font-semibold text-emerald-700">Đáp án đúng: {currentQ.answer}</p><p className="mt-2 whitespace-pre-line">{currentQ.optionExplanations?.find(item => item.option === (isCorrectAnswer ? currentQ.answer : selectedOption))?.explanation ?? 'Lựa chọn cần khớp với nghĩa của từ trong câu hỏi.'}</p></div></details>}
 
         </div>
 
