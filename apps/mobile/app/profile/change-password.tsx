@@ -108,7 +108,7 @@ export default function MobileChangePasswordScreen() {
                   <MaterialIcons
                     name={r.ok ? 'check-circle' : 'radio-button-unchecked'}
                     size={14}
-                    color={r.ok ? '#16a34a' : '#94a3b8'}
+                    color={r.ok ? '#15803d' : '#64748b'}
                   />
                   <Text style={[styles.ruleText, r.ok && styles.ruleTextOk]}>{r.label}</Text>
                 </View>
@@ -258,10 +258,10 @@ const styles = StyleSheet.create({
   },
   ruleText: {
     fontSize: 12,
-    color: '#94a3b8'
+    color: '#64748b'
   },
   ruleTextOk: {
-    color: '#16a34a'
+    color: '#15803d'
   },
   errorText: {
     fontSize: 12,

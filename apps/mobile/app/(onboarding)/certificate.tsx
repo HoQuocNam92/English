@@ -50,7 +50,7 @@ export default function OnboardingCertificateScreen() {
         return <TouchableOpacity key={item.id} style={[styles.card, active && styles.cardActive]} onPress={() => setSelected(item)} activeOpacity={0.8}>
           <View style={[styles.icon, active && styles.iconActive]}><MaterialIcons name="workspace-premium" size={24} color={active ? '#fff' : colors.primary} /></View>
           <View style={styles.copy}><Text style={styles.cardTitle}>{item.name}</Text><Text style={styles.cardMeta}>{item.provider} · {item.code}</Text><Text numberOfLines={2} style={styles.cardDescription}>{item.description}</Text></View>
-          <MaterialIcons name={active ? 'check-circle' : 'radio-button-unchecked'} size={22} color={active ? colors.primary : '#e4e8f1'} />
+          <MaterialIcons name={active ? 'check-circle' : 'radio-button-unchecked'} size={22} color={active ? colors.primary : colors.outline} />
         </TouchableOpacity>;
       })}
     </ScrollView>

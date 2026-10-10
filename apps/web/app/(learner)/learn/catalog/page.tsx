@@ -71,7 +71,7 @@ export default function LearningCatalogPage() {
               <Link
                 key={module.id}
                 href={module.href}
-                className={`group block bg-surface-container-lowest rounded-lg border border-outline-variant p-6 hover:shadow-[0_1px_3px_rgba(15,23,24,0.06)] transition-all duration-300 relative overflow-hidden ${module.borderLeftClass}`}
+                className={`group flex h-full flex-col bg-surface-container-lowest rounded-lg border border-outline-variant p-6 hover:shadow-[0_1px_3px_rgba(15,23,24,0.06)] transition-all duration-300 relative overflow-hidden ${module.borderLeftClass}`}
               >
                 <div
                   className={`absolute top-0 right-0 w-32 h-32 ${module.bgClass} rounded-bl-full -z-10 ${module.bgOpacity} group-hover:scale-110 transition-transform duration-500`}
@@ -87,7 +87,7 @@ export default function LearningCatalogPage() {
                 <p className="text-[14px] text-on-surface-variant mb-4">
                   {module.description}
                 </p>
-                <div className={`flex items-center ${module.textClass} text-[14px] font-semibold`}>
+                <div className={`mt-auto pt-2 flex items-center ${module.textClass} text-[14px] font-semibold`}>
                   <span>Khám phá chuyên đề</span>
                   <AppIcon className=" ml-1 group-hover:translate-x-1 transition-transform duration-300 text-[18px]">
                     arrow_forward

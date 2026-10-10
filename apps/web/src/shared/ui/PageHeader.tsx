@@ -28,11 +28,11 @@ export function PageHeader({ eyebrow, title, description, action, icon, iconClas
   const [resolvedIcon, resolvedColor] = resolveHeaderIcon(title);
   return (
     <header className={cn('flex flex-wrap items-start justify-between gap-4', className)} {...props}>
-      <div className="flex max-w-3xl items-start gap-4">
+      <div className="flex min-w-0 max-w-3xl flex-1 items-start gap-3 sm:gap-4">
         <AppIcon className={cn(' !flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br text-center text-[25px] !leading-none !text-white shadow-sm', iconClassName ?? resolvedColor)}>{icon ?? resolvedIcon}</AppIcon>
-        <div className="grid gap-1">
+        <div className="grid min-w-0 gap-1">
           {eyebrow ? <span className="text-sm font-semibold text-primary">{eyebrow}</span> : null}
-          <h1 className="m-0 text-3xl font-bold leading-[38px] text-foreground">{title}</h1>
+          <h1 className="m-0 break-words text-2xl font-bold leading-8 sm:text-3xl sm:leading-[38px] text-foreground">{title}</h1>
           {description ? <p className="m-0 text-sm leading-5 text-muted-foreground">{description}</p> : null}
         </div>
       </div>

@@ -21,7 +21,7 @@ export function VocabularyRecommendations() {
   return <section className="mt-7" aria-label="Từ vựng theo lộ trình">
     <h2 className="text-xl font-black text-on-surface">Từ vựng theo lộ trình của bạn</h2>
     <p className="mt-2 text-sm text-on-surface-variant">Chọn bộ từ đúng trình độ và lĩnh vực trong mục tiêu học tập. Phiên học mới chỉ lấy những từ bạn chưa học.</p>
-    {loading ? <p role="status" className="mt-4 text-sm">Đang tải đề xuất...</p> : error ? <p role="alert" className="mt-4 text-sm text-rose-600">{error}</p> : groups.length ? <div className="mt-4 grid gap-4 md:grid-cols-2">{groups.map(group => <article key={group.domain.code} className="rounded-2xl border border-primary/20 bg-white p-5">
+    {loading ? <p role="status" className="mt-4 text-sm">Đang tải đề xuất...</p> : error ? <p role="alert" className="mt-4 text-sm text-rose-700">{error}</p> : groups.length ? <div className="mt-4 grid gap-4 md:grid-cols-2">{groups.map(group => <article key={group.domain.code} className="rounded-2xl border border-primary/20 bg-white p-5">
       <div className="flex items-center gap-2"><LevelBadge level={group.level} /><span className="text-xs text-on-surface-variant">{group.total} từ · {group.remaining} từ chưa học</span></div>
       <h3 className="mt-3 font-bold">{group.domain.name}</h3>
       <div className="mt-3 flex flex-wrap gap-2">{group.samples.map(word => <span key={word.id} className="rounded-lg bg-primary/5 px-2.5 py-1 text-sm text-primary">{word.term}</span>)}</div>

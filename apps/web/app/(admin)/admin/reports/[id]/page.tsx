@@ -80,33 +80,33 @@ export default function ReportDetailPage() {
 
   return (
     <div className="p-6"><BackButton fallbackHref="/admin/reports" />
-      <PageHeader 
-        title={data.domain.name} 
-        description={data.domain.description || 'Domain Performance Report'} 
+      <PageHeader
+        title={data.domain.name}
+        description={data.domain.description || 'Báo cáo kết quả theo lĩnh vực'}
       />
 
       <div className="mt-6 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
         <div className="bg-white overflow-hidden shadow rounded-lg">
           <div className="p-5">
-            <dt className="text-sm font-medium text-gray-500 truncate">Total Learners</dt>
+            <dt className="text-sm font-medium text-gray-500">Tổng học viên</dt>
             <dd className="mt-1 text-3xl font-semibold text-gray-900">{data.stats.totalLearners}</dd>
           </div>
         </div>
         <div className="bg-white overflow-hidden shadow rounded-lg">
           <div className="p-5">
-            <dt className="text-sm font-medium text-gray-500 truncate">Average Score</dt>
+            <dt className="text-sm font-medium text-gray-500">Điểm trung bình</dt>
             <dd className="mt-1 text-3xl font-semibold text-gray-900">{data.stats.avgScore}</dd>
           </div>
         </div>
         <div className="bg-white overflow-hidden shadow rounded-lg">
           <div className="p-5">
-            <dt className="text-sm font-medium text-gray-500 truncate">Pass Rate</dt>
+            <dt className="text-sm font-medium text-gray-500">Tỷ lệ đạt</dt>
             <dd className="mt-1 text-3xl font-semibold text-gray-900">{data.stats.passRate}%</dd>
           </div>
         </div>
         <div className="bg-white overflow-hidden shadow rounded-lg">
           <div className="p-5">
-            <dt className="text-sm font-medium text-gray-500 truncate">Top Certification Goal</dt>
+            <dt className="text-sm font-medium text-gray-500">Mục tiêu chứng chỉ phổ biến</dt>
             <dd className="mt-1 text-3xl font-semibold text-gray-900">
               {data.stats.topCertGoal ? `${data.stats.topCertGoal.name} (${data.stats.topCertGoal.percent}%)` : 'N/A'}
             </dd>
@@ -145,7 +145,7 @@ export default function ReportDetailPage() {
                   {data.learners.length === 0 ? (
                     <tr>
                       <td colSpan={6} className="px-6 py-4 text-center text-sm text-gray-500">
-                        No learners found.
+                        Chưa có học viên trong lĩnh vực này.
                       </td>
                     </tr>
                   ) : (
@@ -170,7 +170,7 @@ export default function ReportDetailPage() {
                           </span>
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                          {learner.certGoal || 'None'}
+                          {learner.certGoal || 'Chưa thiết lập'}
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                           {learner.avgCompletion}%
@@ -179,7 +179,7 @@ export default function ReportDetailPage() {
                           {learner.passedExams} / {learner.examCount}
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                          {new Date(learner.lastActive).toLocaleDateString('vi-VN')}
+                          {learner.lastActive ? new Date(learner.lastActive).toLocaleDateString('vi-VN') : 'Chưa ghi nhận'}
                         </td>
                       </tr>
                     ))

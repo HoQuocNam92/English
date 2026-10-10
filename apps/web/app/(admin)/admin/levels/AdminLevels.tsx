@@ -409,8 +409,8 @@ export default function AdminLevels({ createOnly = false }: { createOnly?: boole
           selectionLabel="Chọn tất cả kết quả lọc"
         >
           {selectedIds.length > 0 && <>
-            <button type="button" disabled={bulkBusy} onClick={() => void bulkChangeActivity(true)} className="rounded-lg bg-emerald-600 px-3 py-2 text-xs font-bold text-white disabled:opacity-50">Kích hoạt đã chọn</button>
-            <button type="button" disabled={bulkBusy} onClick={() => void bulkChangeActivity(false)} className="rounded-lg bg-amber-500 px-3 py-2 text-xs font-bold text-white disabled:opacity-50">Ngừng hoạt động đã chọn</button>
+            <button type="button" disabled={bulkBusy} onClick={() => void bulkChangeActivity(true)} className="rounded-lg bg-emerald-700 px-3 py-2 text-xs font-bold text-white disabled:opacity-50">Kích hoạt đã chọn</button>
+            <button type="button" disabled={bulkBusy} onClick={() => void bulkChangeActivity(false)} className="rounded-lg bg-amber-700 px-3 py-2 text-xs font-bold text-white disabled:opacity-50">Ngừng hoạt động đã chọn</button>
           </>}
           <button type="button" disabled={bulkBusy || visibleLevels.length === 0} onClick={() => void bulkChangeActivity(true, true)} className="rounded-lg border border-emerald-600 px-3 py-2 text-xs font-bold text-emerald-700 disabled:opacity-50">Kích hoạt tất cả kết quả lọc</button>
           <button type="button" disabled={bulkBusy || visibleLevels.length === 0} onClick={() => void bulkChangeActivity(false, true)} className="rounded-lg border border-amber-500 px-3 py-2 text-xs font-bold text-amber-700 disabled:opacity-50">Ngừng hoạt động tất cả kết quả lọc</button>
@@ -479,7 +479,7 @@ export default function AdminLevels({ createOnly = false }: { createOnly?: boole
                             Hoạt động
                           </span>
                         ) : (
-                          <span className="inline-flex items-center gap-1 text-xs text-gray-500 bg-gray-100 px-2 py-0.5 rounded-full font-medium">
+                          <span className="inline-flex items-center gap-1 text-xs text-gray-700 bg-gray-100 px-2 py-0.5 rounded-full font-medium">
                             Ngừng
                           </span>
                         )}

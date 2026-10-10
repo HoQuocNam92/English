@@ -42,7 +42,7 @@ function RoleCard({
             </div>
             <div>
               <h3 className="text-base font-bold text-on-surface">{roleLabel(role.code, role.name)}</h3>
-              <p className="text-xs text-on-surface-variant">Nhóm người dùng</p>
+              <p className="text-xs text-on-surface-variant">Vai trò người dùng</p>
             </div>
           </div>
           {role.isSystem && (
@@ -69,8 +69,8 @@ function RoleCard({
         </div>
 
         <ActionGroup className="mt-2">
-          <ActionButton action="view" label={isExpanded ? 'Thu gọn quyền' : 'Xem nhóm này được làm gì'} onClick={onExpand} />
-          <ActionButton action="edit" label="Chọn người và quyền được làm" href={`/admin/roles/${role.id}`} />
+          <ActionButton action="view" label={isExpanded ? 'Thu gọn quyền' : 'Xem quyền của vai trò'} onClick={onExpand} />
+          <ActionButton action="edit" label="Quản lý người dùng và quyền hạn" href={`/admin/roles/${role.id}`} />
         </ActionGroup>
       </div>
 
@@ -143,9 +143,9 @@ export default function AdminRoles({ createKind }: { createKind?: 'role' | 'perm
         description: roleForm.description.trim() || undefined,
       });
       setRoles((current) => [...current, { ...saved, permissions: saved.permissions ?? [], userCount: saved.userCount ?? 0 }]);
-      if (createKind) completeCreation(router, '/admin/roles', 'Đã thêm nhóm quyền.'); else closeRole();
+      if (createKind) completeCreation(router, '/admin/roles', 'Đã thêm vai trò.'); else closeRole();
       setRoleForm({ name: '', code: '', description: '' });
-    } catch (e) { setRoleError(e instanceof ApiClientError ? e.message : 'Không thể tạo nhóm quyền'); }
+    } catch (e) { setRoleError(e instanceof ApiClientError ? e.message : 'Không thể tạo vai trò'); }
     finally { setSavingRole(false); }
   };
 
@@ -202,7 +202,7 @@ export default function AdminRoles({ createKind }: { createKind?: 'role' | 'perm
 
   const permissionFormView = (<FormSurface page={Boolean(createKind)} open={permissionModal} onClose={closePermission} maxWidth="max-w-lg">
         <form onSubmit={savePermission}>
-          <div className="flex items-center justify-between border-b border-outline-variant/20 px-6 py-5"><div><h2 className="text-xl font-bold">{editingPermission ? 'Sửa việc được phép làm' : 'Thêm việc được phép làm'}</h2><p className="mt-1 text-xs text-on-surface-variant">Chọn đối tượng và hành động bằng ngôn ngữ dễ hiểu.</p></div><button type="button" onClick={closePermission}><AppIcon className="">close</AppIcon></button></div>
+          <div className="flex items-center justify-between border-b border-outline-variant/20 px-6 py-5"><div><h2 className="text-xl font-bold">{editingPermission ? 'Chỉnh sửa quyền hạn' : 'Thêm quyền hạn'}</h2><p className="mt-1 text-xs text-on-surface-variant">Chọn đối tượng và hành động bằng ngôn ngữ dễ hiểu.</p></div><button type="button" onClick={closePermission}><AppIcon className="">close</AppIcon></button></div>
           <div className="grid gap-4 p-6 sm:grid-cols-2">
             <label className="text-sm font-semibold">Áp dụng cho<Dropdown required value={permissionForm.resource} onChange={e => setPermissionForm({...permissionForm, resource:e.target.value})} className="mt-2 h-11 w-full rounded-xl border border-outline-variant/50 bg-white px-3"><option value="">Chọn đối tượng</option>{PERMISSION_RESOURCES.map(([value, label]) => <option key={value} value={value}>{label}</option>)}</Dropdown></label>
             <label className="text-sm font-semibold">Được làm gì?<Dropdown value={permissionForm.action} onChange={e => setPermissionForm({...permissionForm, action:e.target.value})} className="mt-2 h-11 w-full rounded-xl border border-outline-variant/50 bg-white px-3">{PERMISSION_ACTIONS.map(([value, label]) => <option key={value} value={value}>{label}</option>)}</Dropdown></label>
@@ -216,15 +216,15 @@ export default function AdminRoles({ createKind }: { createKind?: 'role' | 'perm
       </FormSurface>);
   const roleFormView = (<FormSurface page={Boolean(createKind)} open={roleModal} onClose={closeRole} maxWidth="max-w-lg">
         <form onSubmit={saveRole}>
-          <div className="flex items-center justify-between border-b border-outline-variant/20 px-6 py-5"><div><h2 className="text-xl font-bold">Thêm nhóm quyền</h2><p className="mt-1 text-xs text-on-surface-variant">Tạo role nghiệp vụ, sau đó chọn người dùng và các quyền được làm.</p></div><button type="button" onClick={closeRole}><AppIcon className="">close</AppIcon></button></div>
+          <div className="flex items-center justify-between border-b border-outline-variant/20 px-6 py-5"><div><h2 className="text-xl font-bold">Thêm vai trò</h2><p className="mt-1 text-xs text-on-surface-variant">Tạo vai trò nghiệp vụ, sau đó chọn người dùng và quyền truy cập.</p></div><button type="button" onClick={closeRole}><AppIcon className="">close</AppIcon></button></div>
           <div className="grid gap-4 p-6">
-            <label className="text-sm font-semibold">Tên nhóm quyền<input required minLength={2} maxLength={100} value={roleForm.name} onChange={e => { const name = e.target.value; setRoleForm(current => ({ ...current, name, code: roleCodeFromName(name) })); }} className="mt-2 h-11 w-full rounded-xl border border-outline-variant/50 px-3" placeholder="Ví dụ: Người duyệt nội dung" /></label>
+            <label className="text-sm font-semibold">Tên vai trò<input required minLength={2} maxLength={100} value={roleForm.name} onChange={e => { const name = e.target.value; setRoleForm(current => ({ ...current, name, code: roleCodeFromName(name) })); }} className="mt-2 h-11 w-full rounded-xl border border-outline-variant/50 px-3" placeholder="Ví dụ: Người duyệt nội dung" /></label>
             <label className="text-sm font-semibold">Mã role<input required pattern="[a-z0-9_]+" minLength={2} maxLength={50} value={roleForm.code} onChange={e => setRoleForm({...roleForm, code: roleCodeFromName(e.target.value)})} className="mt-2 h-11 w-full rounded-xl border border-outline-variant/50 px-3 font-mono" placeholder="content_reviewer" /><span className="mt-1 block text-xs font-normal text-on-surface-variant">Chỉ dùng chữ thường, số và dấu gạch dưới; mã không đổi sau khi tạo.</span></label>
             <label className="text-sm font-semibold">Mô tả nhiệm vụ<textarea required minLength={5} maxLength={500} value={roleForm.description} onChange={e => setRoleForm({...roleForm, description:e.target.value})} className="mt-2 min-h-24 w-full rounded-xl border border-outline-variant/50 p-3" placeholder="Mô tả phạm vi trách nhiệm của nhóm..." /></label>
-            <div className="rounded-lg bg-primary/5 p-3 text-sm text-primary">Role mới chưa có quyền và người dùng. Sau khi tạo, chọn <strong>“Chọn người và quyền được làm”</strong> để cấu hình.</div>
+            <div className="rounded-lg bg-primary/5 p-3 text-sm text-primary">Role mới chưa có quyền và người dùng. Sau khi tạo, chọn <strong>“Quản lý người dùng và quyền hạn”</strong> để cấu hình.</div>
             {roleError && <div className="rounded-lg bg-error-container p-3 text-sm text-on-error-container">{roleError}</div>}
           </div>
-          <div className="flex justify-end gap-3 border-t border-outline-variant/20 px-6 py-4"><button type="button" onClick={closeRole} className="h-10 rounded-xl px-4 text-sm font-semibold">Huỷ</button><button type="submit" disabled={savingRole} className="h-10 rounded-xl bg-primary px-5 text-sm font-semibold !text-white disabled:opacity-50">{savingRole ? 'Đang tạo...' : 'Tạo nhóm quyền'}</button></div>
+          <div className="flex justify-end gap-3 border-t border-outline-variant/20 px-6 py-4"><button type="button" onClick={closeRole} className="h-10 rounded-xl px-4 text-sm font-semibold">Huỷ</button><button type="submit" disabled={savingRole} className="h-10 rounded-xl bg-primary px-5 text-sm font-semibold !text-white disabled:opacity-50">{savingRole ? 'Đang tạo...' : 'Tạo vai trò'}</button></div>
         </form>
       </FormSurface>);
   const visibleRoles = roles.filter(role => matchesSearch(search, role.name, role.code, role.description) && (!filter || ((role.userCount ?? 0) > 0) === (filter === 'assigned')));
@@ -233,24 +233,24 @@ export default function AdminRoles({ createKind }: { createKind?: 'role' | 'perm
 
   return (
     <div className="p-6">
-      <PageHeader className="mb-6" title="Phân quyền" description="Chọn nhóm người dùng và những công việc họ được phép thực hiện." icon="admin_panel_settings" iconClassName="from-violet-500 to-indigo-500" />
+      <PageHeader className="mb-6" title="Quản lý vai trò & Phân quyền" description="Quản lý vai trò người dùng và quyền truy cập hệ thống." icon="admin_panel_settings" iconClassName="from-violet-500 to-indigo-500" />
 
       {error && (
         <div className="mb-6 p-4 rounded-xl bg-error-container text-on-error-container text-sm font-semibold">{error}</div>
       )}
 
       <div className="ui-tabs mb-7">
-        <button type="button" onClick={() => setActiveTab('roles')} className="ui-tab" aria-pressed={activeTab === 'roles'}>Nhóm người dùng</button>
-        <button type="button" onClick={() => setActiveTab('permissions')} className="ui-tab" aria-pressed={activeTab === 'permissions'}>Các việc được phép làm</button>
+        <button type="button" onClick={() => setActiveTab('roles')} className="ui-tab" aria-pressed={activeTab === 'roles'}>Vai trò người dùng</button>
+        <button type="button" onClick={() => setActiveTab('permissions')} className="ui-tab" aria-pressed={activeTab === 'permissions'}>Danh mục quyền hạn</button>
       </div>
 
-      <ListTools search={search} onSearch={setSearch} filter={filter} onFilter={setFilter} options={activeTab === 'roles' ? [{value:'',label:'Tất cả nhóm'},{value:'assigned',label:'Đã có người dùng'},{value:'empty',label:'Chưa có người dùng'}] : [{value:'',label:'Tất cả tài nguyên'},...Array.from(new Set(permissions.map(item=>item.resource))).map(resource=>({value:resource,label:resourceLabel(resource)}))]} />
+      <ListTools search={search} onSearch={setSearch} filter={filter} onFilter={setFilter} options={activeTab === 'roles' ? [{value:'',label:'Tất cả vai trò'},{value:'assigned',label:'Đã có người dùng'},{value:'empty',label:'Chưa có người dùng'}] : [{value:'',label:'Tất cả tài nguyên'},...Array.from(new Set(permissions.map(item=>item.resource))).map(resource=>({value:resource,label:resourceLabel(resource)}))]} />
       {/* Summary stats */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 mb-8">
         {[
-          { label: 'Nhóm người dùng', value: loading ? '—' : String(roles.length), icon: 'shield_person', color: 'text-primary' },
-          { label: 'Công việc có thể cấp', value: loading ? '—' : String(permissions.length), icon: 'lock', color: 'text-secondary' },
-          { label: 'Người đã được phân nhóm', value: loading ? '—' : String(totalAssigned), icon: 'people', color: 'text-tertiary' },
+          { label: 'Vai trò người dùng', value: loading ? '—' : String(roles.length), icon: 'shield_person', color: 'text-primary' },
+          { label: 'Quyền hạn', value: loading ? '—' : String(permissions.length), icon: 'lock', color: 'text-secondary' },
+          { label: 'Người dùng đã được gán vai trò', value: loading ? '—' : String(totalAssigned), icon: 'people', color: 'text-tertiary' },
         ].map((s) => (
           <div key={s.label} className="h-[120px] bg-white border border-outline-variant rounded-xl shadow-sm p-6 flex flex-col justify-between">
             <div className="flex items-center justify-between">
@@ -270,14 +270,14 @@ export default function AdminRoles({ createKind }: { createKind?: 'role' | 'perm
 
       {/* Roles grid */}
       {activeTab === 'roles' && <div className="mb-8">
-        <div className="mb-4 flex flex-wrap items-center justify-between gap-3"><div><h2 className="text-lg font-bold text-on-surface">Chọn một nhóm để phân quyền</h2><p className="mt-1 text-sm text-on-surface-variant">Một người có thể có role chính và nhiều role nghiệp vụ bổ sung.</p></div><button type="button" onClick={openCreateRole} className="inline-flex h-10 items-center gap-2 rounded-xl bg-primary px-4 text-sm font-semibold !text-white"><AppIcon className=" text-[18px]">add</AppIcon>Thêm nhóm quyền</button></div>
+        <div className="mb-4 flex flex-wrap items-center justify-between gap-3"><div><h2 className="text-lg font-bold text-on-surface">Chọn vai trò để phân quyền</h2><p className="mt-1 text-sm text-on-surface-variant">Một người dùng có thể được gán vai trò chính và các vai trò nghiệp vụ bổ sung.</p></div><button type="button" onClick={openCreateRole} className="inline-flex h-10 items-center gap-2 rounded-xl bg-primary px-4 text-sm font-semibold !text-white"><AppIcon className=" text-[18px]">add</AppIcon>Thêm vai trò</button></div>
         <PaginatedList enabled={!loading} className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {loading ? (
             [1, 2, 3].map((i) => <SkeletonCard key={i} />)
           ) : (
             visibleRoles.length === 0 ? (
               <div key="empty" className="col-span-full rounded-xl border border-dashed border-outline-variant bg-white p-8 text-center text-sm text-on-surface-variant">
-                {roles.length === 0 ? 'Chưa có nhóm quyền nào.' : 'Không có nhóm quyền phù hợp với bộ lọc.'}
+                {roles.length === 0 ? 'Chưa có vai trò nào.' : 'Không có vai trò phù hợp với bộ lọc.'}
               </div>
             ) : visibleRoles.map((role) => (
               <RoleCard

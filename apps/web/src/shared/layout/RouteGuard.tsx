@@ -4,6 +4,7 @@ import { AppIcon } from '@/shared/ui/AppIcon';
 import * as React from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/features/auth/presentation';
+import { roleHome } from '@/shared/lib/role-home';
 
 interface RouteGuardProps {
   children: React.ReactNode;
@@ -29,7 +30,7 @@ export function RouteGuard({ children, allowedRoles = [], redirectTo }: RouteGua
     // Wrong role → redirect to own dashboard
     const userRoles = session.user.roles ?? (session.user.role ? [session.user.role] : []);
     if (allowedRoles.length > 0 && !allowedRoles.some((role) => userRoles.includes(role))) {
-      const fallback = redirectTo ?? '/admin/dashboard';
+      const fallback = redirectTo ?? roleHome(userRoles);
       router.replace(fallback);
     }
   }, [session, loading, allowedRoles, redirectTo, router]);

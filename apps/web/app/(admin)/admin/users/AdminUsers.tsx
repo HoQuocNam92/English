@@ -160,7 +160,7 @@ function CreateUserModal({ onClose, onCreated, page = false }: CreateUserModalPr
           {/* Email */}
           <div>
             <label className="block text-xs font-medium text-on-surface-variant mb-1">
-              Email <span className="text-red-500">*</span>
+              Email <span className="text-red-700">*</span>
             </label>
             <input
               type="email"
@@ -169,13 +169,13 @@ function CreateUserModal({ onClose, onCreated, page = false }: CreateUserModalPr
               className={inputCls(!!errors.email)}
               {...field('email')}
             />
-            {errors.email && <p className="mt-1 text-xs text-red-500">{errors.email}</p>}
+            {errors.email && <p className="mt-1 text-xs text-red-700">{errors.email}</p>}
           </div>
 
           {/* Display Name */}
           <div>
             <label className="block text-xs font-medium text-on-surface-variant mb-1">
-              Tên hiển thị <span className="text-red-500">*</span>
+              Tên hiển thị <span className="text-red-700">*</span>
             </label>
             <input
               type="text"
@@ -184,13 +184,13 @@ function CreateUserModal({ onClose, onCreated, page = false }: CreateUserModalPr
               className={inputCls(!!errors.displayName)}
               {...field('displayName')}
             />
-            {errors.displayName && <p className="mt-1 text-xs text-red-500">{errors.displayName}</p>}
+            {errors.displayName && <p className="mt-1 text-xs text-red-700">{errors.displayName}</p>}
           </div>
 
           {/* Password */}
           <div>
             <label className="block text-xs font-medium text-on-surface-variant mb-1">
-              Mật khẩu <span className="text-red-500">*</span>
+              Mật khẩu <span className="text-red-700">*</span>
             </label>
             <input
               type="password"
@@ -199,13 +199,13 @@ function CreateUserModal({ onClose, onCreated, page = false }: CreateUserModalPr
               className={inputCls(!!errors.password)}
               {...field('password')}
             />
-            {errors.password && <p className="mt-1 text-xs text-red-500">{errors.password}</p>}
+            {errors.password && <p className="mt-1 text-xs text-red-700">{errors.password}</p>}
           </div>
 
           {/* Role */}
           <div>
             <label className="block text-xs font-medium text-on-surface-variant mb-1">
-              Vai trò <span className="text-red-500">*</span>
+              Vai trò <span className="text-red-700">*</span>
             </label>
             <Dropdown
               className={`admin-select ${inputCls(!!errors.role)}`}
@@ -215,7 +215,7 @@ function CreateUserModal({ onClose, onCreated, page = false }: CreateUserModalPr
                 <option key={r.value} value={r.value}>{r.label}</option>
               ))}
             </Dropdown>
-            {errors.role && <p className="mt-1 text-xs text-red-500">{errors.role}</p>}
+            {errors.role && <p className="mt-1 text-xs text-red-700">{errors.role}</p>}
           </div>
 
           {/* Submit error */}

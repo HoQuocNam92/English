@@ -92,7 +92,7 @@ export default function RegisterPage() {
     <main className="flex min-h-screen w-full bg-background text-on-surface antialiased overflow-hidden">
       {/* Left Section (45% Visual/Brand) */}
       <section className="hidden lg:flex w-[45%] flex-col relative bg-surface-container-low border-r border-outline-variant/30 overflow-hidden">
-        <div className="relative z-10 flex flex-col h-full p-8 xl:p-12">
+        <div className="flex flex-col shrink-0 p-8 xl:p-12">
           <div className="mt-8 max-w-[90%] xl:mt-12">
             <h2 className="text-3xl xl:text-4xl font-extrabold text-on-surface mb-4 leading-tight">
               Nền tảng học tiếng Anh chuyên ngành CNTT
@@ -103,7 +103,7 @@ export default function RegisterPage() {
         </div>
 
         {/* Illustration Area */}
-        <div className="absolute right-0 bottom-0 w-[85%] h-[60%] bg-primary-fixed-dim/20 rounded-tl-[80px] overflow-hidden flex items-end justify-end shadow-[-10px_-10px_30px_rgba(53,37,205,0.03)] border-t border-l border-white/50">
+        <div className="mt-auto self-end w-[85%] min-h-[320px] flex-1 bg-primary-fixed-dim/20 rounded-tl-[80px] overflow-hidden flex items-end justify-end shadow-[-10px_-10px_30px_rgba(53,37,205,0.03)] border-t border-l border-white/50">
           <div
             className="w-full h-full bg-cover bg-center opacity-85"
             style={{

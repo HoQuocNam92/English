@@ -22,3 +22,13 @@ test('attempt duration derives timestamps and distinguishes missing data from a 
   assert.equal(formatAttemptDuration({ timeSpentSeconds: 0.2 }), 'Dưới 1 giây');
   assert.equal(formatAttemptDuration({ timeSpentSeconds: 61 }), '1 phút 1 giây');
 });
+
+
+test('role redirects leave restricted admin routes for the learner home', async () => {
+  const { roleHome } = await import('./role-home.ts');
+  assert.equal(roleHome(['learner']), '/learn');
+  assert.equal(roleHome(['admin']), '/admin/dashboard');
+  assert.equal(roleHome(['teacher']), '/admin/dashboard');
+  assert.equal(roleHome(['teacher', 'learner']), '/admin/dashboard');
+  assert.equal(roleHome([]), '/learn');
+});

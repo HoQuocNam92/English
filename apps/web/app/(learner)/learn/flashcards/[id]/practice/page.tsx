@@ -378,7 +378,7 @@ export default function FlashcardPracticePage({ params }: { params: Promise<{ id
           <div className="grid grid-cols-3 gap-3 text-center">
             <div className="bg-white border border-slate-200 rounded-2xl p-4">
               <div className="text-2xl font-black text-slate-900">{totalRated}</div>
-              <div className="text-[11px] font-bold text-slate-400 mt-0.5">Tổng lượt ôn</div>
+              <div className="text-[11px] font-bold text-slate-600 mt-0.5">Tổng lượt ôn</div>
             </div>
             <div className="bg-white border border-slate-200 rounded-2xl p-4">
               <div className="text-2xl font-black text-emerald-600">{masteredCount}</div>
@@ -560,7 +560,7 @@ export default function FlashcardPracticePage({ params }: { params: Promise<{ id
                     <AppIcon className=" text-base">volume_up</AppIcon>
                   </button>
                 </div>
-                <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">
+                <span className="text-xs font-bold text-slate-600 uppercase tracking-wider">
                   Mặt sau
                 </span>
               </div>
@@ -568,7 +568,7 @@ export default function FlashcardPracticePage({ params }: { params: Promise<{ id
               {/* Content Body */}
               <div className="space-y-4 my-auto py-2">
                 <div>
-                  <div className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">
+                  <div className="text-[11px] font-bold text-slate-600 uppercase tracking-wider">
                     Định nghĩa:
                   </div>
                   <div data-learning-content className="text-base font-bold text-slate-900 mt-1">
@@ -660,7 +660,7 @@ export default function FlashcardPracticePage({ params }: { params: Promise<{ id
               onClick={() => handleRate('mastered')}
               className="flex flex-col items-center justify-center p-2.5 rounded-xl hover:bg-slate-100 text-slate-600 transition-colors group text-center"
             >
-              <AppIcon className=" text-2xl text-slate-400 group-hover:scale-110 group-hover:text-primary transition-transform">
+              <AppIcon className=" text-2xl text-slate-600 group-hover:scale-110 group-hover:text-primary transition-transform">
                 fast_forward
               </AppIcon>
               <span className="text-[11px] font-bold leading-tight mt-1 text-slate-600 line-clamp-2">
@@ -706,7 +706,7 @@ export default function FlashcardPracticePage({ params }: { params: Promise<{ id
               </h3>
               <div className="flex-1 overflow-y-auto space-y-2 text-xs divide-y divide-slate-100">
                 {skippedWords.length === 0 ? (
-                  <p className="text-slate-400 py-4 text-center">Chưa có từ nào bị bỏ qua trong phiên này.</p>
+                  <p className="text-slate-600 py-4 text-center">Chưa có từ nào bị bỏ qua trong phiên này.</p>
                 ) : (
                   skippedWords.map((w, idx) => (
                     <div key={idx} className="pt-2 flex justify-between items-center">

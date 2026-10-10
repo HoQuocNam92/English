@@ -186,7 +186,7 @@ export default function VocabularyQuizPage({ params }: { params: Promise<{ id: s
         </div>
 
         <div className="bg-white border border-slate-200 rounded-2xl p-8 space-y-6 shadow-sm">
-          <p className="text-xs font-bold uppercase tracking-wider text-slate-400">
+          <p className="text-xs font-bold uppercase tracking-wider text-slate-600">
             {currentQ.type === 'fill_blank' ? 'Điền từ vào chỗ trống' : 'Chọn nghĩa đúng của từ'}
           </p>
           <p className="text-xl font-black text-slate-900 leading-relaxed">{currentQ.prompt}</p>

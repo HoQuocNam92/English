@@ -168,8 +168,8 @@ export default function AdminCertifications({ createOnly = false }: { createOnly
         selectionLabel="Chọn tất cả kết quả lọc"
       >
         {selectedIds.length > 0 && <>
-          <button type="button" disabled={bulkBusy} onClick={() => void bulkChangePublication(true)} className="rounded-lg bg-emerald-600 px-3 py-2 text-xs font-bold text-white disabled:opacity-50">Xuất bản đã chọn</button>
-          <button type="button" disabled={bulkBusy} onClick={() => void bulkChangePublication(false)} className="rounded-lg bg-amber-500 px-3 py-2 text-xs font-bold text-white disabled:opacity-50">Chuyển về bản nháp đã chọn</button>
+          <button type="button" disabled={bulkBusy} onClick={() => void bulkChangePublication(true)} className="rounded-lg bg-emerald-700 px-3 py-2 text-xs font-bold text-white disabled:opacity-50">Xuất bản đã chọn</button>
+          <button type="button" disabled={bulkBusy} onClick={() => void bulkChangePublication(false)} className="rounded-lg bg-amber-700 px-3 py-2 text-xs font-bold text-white disabled:opacity-50">Chuyển về bản nháp đã chọn</button>
         </>}
         <button type="button" disabled={bulkBusy || filteredCerts.length === 0} onClick={() => void bulkChangePublication(true, true)} className="rounded-lg border border-emerald-600 px-3 py-2 text-xs font-bold text-emerald-700 disabled:opacity-50">Xuất bản tất cả kết quả lọc</button>
         <button type="button" disabled={bulkBusy || filteredCerts.length === 0} onClick={() => void bulkChangePublication(false, true)} className="rounded-lg border border-amber-500 px-3 py-2 text-xs font-bold text-amber-700 disabled:opacity-50">Chuyển tất cả kết quả lọc về bản nháp</button>

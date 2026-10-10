@@ -711,11 +711,9 @@ body {
   background-color: color-mix(in srgb, var(--primary) 3%, var(--surface-container-lowest));
 }
 
-/* Unified admin surfaces: content cards are white and separated by elevation,
-   not by the heavy grey outlines from the raw reference export. */
+/* Preserve card borders while adding a subtle elevation to admin surfaces. */
 .admin-canvas div.rounded-xl.border,
 .admin-canvas div.rounded-2xl.border {
-  border-color: transparent;
   box-shadow: 0 8px 28px rgba(15, 23, 42, 0.045);
 }
 

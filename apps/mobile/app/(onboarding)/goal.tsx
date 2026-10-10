@@ -43,7 +43,7 @@ export default function OnboardingGoalScreen() {
         return <TouchableOpacity key={item.id} style={[styles.card, active && styles.cardActive]} onPress={() => setSelected(item.id)} activeOpacity={0.8}>
           <View style={[styles.icon, active && styles.iconActive]}><MaterialIcons name={item.icon} size={26} color={active ? '#fff' : colors.primary} /></View>
           <View style={styles.copy}><Text style={styles.cardTitle}>{item.title}</Text><Text style={styles.cardDescription}>{item.description}</Text></View>
-          <MaterialIcons name={active ? 'check-circle' : 'radio-button-unchecked'} size={22} color={active ? colors.primary : '#e4e8f1'} />
+          <MaterialIcons name={active ? 'check-circle' : 'radio-button-unchecked'} size={22} color={active ? colors.primary : colors.outline} />
         </TouchableOpacity>;
       })}
       <View style={styles.zeroNote}><MaterialIcons name="restart-alt" size={20} color={colors.primary} /><Text style={styles.zeroText}>Tài khoản mới luôn bắt đầu với tiến trình 0%.</Text></View>

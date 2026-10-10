@@ -230,7 +230,7 @@ export default function LessonVocabularyDetailPage({ params }: { params: Promise
           <div className="flex items-center gap-2">
             <span>List có {displayWords.length} từ</span>
             {totalPages > 1 && (
-              <span className="text-slate-400 font-normal">
+              <span className="text-slate-600 font-normal">
                 (Đang hiển thị {startIndex + 1} - {Math.min(startIndex + pageSize, displayWords.length)})
               </span>
             )}
@@ -273,7 +273,7 @@ export default function LessonVocabularyDetailPage({ params }: { params: Promise
                       </span>
                     )}
                     {word.pronunciationIpa && (
-                      <span className="text-xs font-medium text-slate-400">
+                      <span className="text-xs font-medium text-slate-600">
                         /{word.pronunciationIpa}/
                       </span>
                     )}
@@ -295,7 +295,7 @@ export default function LessonVocabularyDetailPage({ params }: { params: Promise
 
                   {/* Definition */}
                   <div>
-                    <div className="text-xs font-bold uppercase tracking-wider text-slate-400">
+                    <div className="text-xs font-bold uppercase tracking-wider text-slate-600">
                       Định nghĩa:
                     </div>
                     <div className="text-sm font-semibold text-slate-800 mt-0.5">
@@ -306,7 +306,7 @@ export default function LessonVocabularyDetailPage({ params }: { params: Promise
                   {/* Examples */}
                   {word.examples && word.examples.length > 0 && (
                     <div className="space-y-1 pt-1">
-                      <div className="text-xs font-bold uppercase tracking-wider text-slate-400">
+                      <div className="text-xs font-bold uppercase tracking-wider text-slate-600">
                         Ví dụ:
                       </div>
                       <div className="text-xs text-slate-700 pl-2 border-l-2 border-indigo-200 space-y-0.5">
@@ -363,7 +363,7 @@ export default function LessonVocabularyDetailPage({ params }: { params: Promise
                 {getPageNumbers().map((p, idx) => {
                   if (p === '...') {
                     return (
-                      <span key={`dots-${idx}`} className="w-8 h-8 flex items-center justify-center text-xs font-bold text-slate-400">
+                      <span key={`dots-${idx}`} className="w-8 h-8 flex items-center justify-center text-xs font-bold text-slate-600">
                         ...
                       </span>
                     );

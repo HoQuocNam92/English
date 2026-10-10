@@ -167,7 +167,7 @@ interface UnansweredQuestion {
             <button
               onClick={handleRequestSubmit}
               disabled={submitting}
-              className="px-5 py-2 bg-primary hover:bg-indigo-700 !text-white font-bold text-xs rounded-xl transition-all shadow-sm disabled:opacity-50 cursor-pointer"
+              className="min-h-11 px-5 py-2 bg-primary hover:bg-indigo-700 !text-white font-bold text-xs rounded-xl transition-all shadow-sm disabled:opacity-50 cursor-pointer"
             >
               {submitting ? 'Đang nộp...' : 'Nộp bài thi'}
             </button>
@@ -251,7 +251,7 @@ interface UnansweredQuestion {
                 <button
                   disabled={currentIdx === 0}
                   onClick={() => setCurrentIdx(currentIdx - 1)}
-                  className="px-4 py-2 border border-outline-variant rounded-xl text-xs font-semibold text-on-surface hover:bg-surface-container disabled:opacity-40 transition-colors flex items-center gap-1 cursor-pointer disabled:cursor-not-allowed"
+                  className="min-h-11 px-4 py-2 border border-outline-variant rounded-xl text-xs font-semibold text-on-surface hover:bg-surface-container disabled:opacity-40 transition-colors flex items-center gap-1 cursor-pointer disabled:cursor-not-allowed"
                 >
                   <AppIcon className=" text-[16px]">arrow_back</AppIcon>
                   <span>Câu trước</span>
@@ -260,7 +260,7 @@ interface UnansweredQuestion {
                 {currentIdx < total - 1 ? (
                   <button
                     onClick={() => setCurrentIdx(currentIdx + 1)}
-                    className="px-5 py-2 bg-primary hover:bg-indigo-700 !text-white font-bold text-xs rounded-xl transition-all flex items-center gap-1 shadow-2xs cursor-pointer"
+                    className="min-h-11 px-5 py-2 bg-primary hover:bg-indigo-700 !text-white font-bold text-xs rounded-xl transition-all flex items-center gap-1 shadow-2xs cursor-pointer"
                   >
                     <span className="!text-white">Câu tiếp theo</span>
                     <AppIcon className=" text-[16px] !text-white">arrow_forward</AppIcon>
@@ -269,7 +269,7 @@ interface UnansweredQuestion {
                   <button
                     onClick={handleRequestSubmit}
                     disabled={submitting}
-                    className="px-6 py-2 bg-green-600 hover:bg-green-700 !text-white font-bold text-xs rounded-xl transition-all flex items-center gap-1 shadow-sm disabled:opacity-50 cursor-pointer"
+                    className="min-h-11 px-6 py-2 bg-green-600 hover:bg-green-700 !text-white font-bold text-xs rounded-xl transition-all flex items-center gap-1 shadow-sm disabled:opacity-50 cursor-pointer"
                   >
                     <span className="!text-white">Hoàn thành & Nộp bài</span>
                     <AppIcon className=" text-[16px] !text-white">check</AppIcon>
@@ -283,7 +283,7 @@ interface UnansweredQuestion {
           <div className="lg:col-span-4 space-y-6">
             <div className="p-6 rounded-2xl bg-surface-container-lowest border border-outline-variant/40 shadow-2xs space-y-4">
               <h3 className="text-sm font-bold text-on-surface">Danh sách câu hỏi</h3>
-              <div className="grid grid-cols-5 gap-2">
+              <div className="grid grid-cols-[repeat(auto-fit,minmax(44px,1fr))] gap-2">
                 {questions.map((item: any, idx: number) => {
                   const qId = item.question?.id || item.id;
                   const isAnswered = (answers[qId] || []).length > 0;
@@ -292,8 +292,11 @@ interface UnansweredQuestion {
                   return (
                     <button
                       key={qId || idx}
+                      type="button"
                       onClick={() => setCurrentIdx(idx)}
-                      className={`h-9 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                      aria-label={`Câu ${idx + 1}${isAnswered ? ", đã trả lời" : ", chưa trả lời"}`}
+                      aria-current={isCurrent ? "step" : undefined}
+                      className={`min-h-11 min-w-11 rounded-lg text-xs font-bold transition-all cursor-pointer ${
                         isCurrent
                           ? 'ring-2 ring-primary bg-primary text-white'
                           : isAnswered

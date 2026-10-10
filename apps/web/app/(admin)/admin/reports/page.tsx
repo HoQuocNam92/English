@@ -208,7 +208,7 @@ export default function AdminReportsPage() {
             </div>
             <div>
               <div className="font-headline-h1 text-headline-h1 text-on-surface">{loading ? '...' : analytics?.overview.totalUsers.toLocaleString()}</div>
-              <div className="flex items-center gap-xs mt-xs text-[#16a34a] font-body-sm text-body-sm">
+              <div className="flex items-center gap-xs mt-xs text-green-700 font-body-sm text-body-sm">
                 <AppIcon className=" text-[14px]" data-icon="trending_up">trending_up</AppIcon>
                 <span>Dữ liệu tài khoản hiện tại</span>
               </div>
@@ -222,7 +222,7 @@ export default function AdminReportsPage() {
             </div>
             <div>
               <div className="font-headline-h1 text-headline-h1 text-on-surface">{loading ? '...' : analytics?.overview.activeUsers.toLocaleString()}</div>
-              <div className="flex items-center gap-xs mt-xs text-[#16a34a] font-body-sm text-body-sm">
+              <div className="flex items-center gap-xs mt-xs text-green-700 font-body-sm text-body-sm">
                 <AppIcon className=" text-[14px]" data-icon="trending_up">trending_up</AppIcon>
                 <span>Dữ liệu hoạt động hiện tại</span>
               </div>

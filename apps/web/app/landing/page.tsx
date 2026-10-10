@@ -3,7 +3,9 @@ import { AppIcon } from '@/shared/ui/AppIcon';
 
 import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import { useAuth } from '@/features/auth/presentation';
+import { roleHome } from '@/shared/lib/role-home';
 import { PublicHeader } from '@/shared/layout/PublicHeader';
 import { Footer } from '@/shared/layout/Footer';
 
@@ -14,12 +16,8 @@ export default function LandingPage() {
   // Nếu đã đăng nhập → chuyển thẳng vào dashboard tương ứng
   useEffect(() => {
     if (!loading && session) {
-      const role = session.user.role;
-      if (role === 'admin' || role === 'teacher') {
-        router.replace('/admin/dashboard');
-      } else {
-        router.replace('/learn');
-      }
+      const roles = session.user.roles ?? (session.user.role ? [session.user.role] : []);
+      router.replace(roleHome(roles));
     }
   }, [session, loading, router]);
 
@@ -39,12 +37,24 @@ export default function LandingPage() {
       {/* ─── Navbar ───────────────────────────────────────────────── */}
       <PublicHeader />
 
+      <section className="bg-primary/5 py-16 sm:py-24">
+        <div className="mx-auto max-w-6xl px-4 sm:px-6">
+          <p className="text-xs font-bold uppercase tracking-wider text-primary">TechEnglish Pro</p>
+          <h1 className="mt-4 max-w-3xl text-4xl font-black leading-tight tracking-tight sm:text-5xl">Học tiếng Anh cho công việc công nghệ của bạn</h1>
+          <p className="mt-6 max-w-2xl text-base leading-7 text-on-surface-variant">Rèn từ vựng chuyên ngành, đọc tài liệu kỹ thuật và luyện tập tình huống thực tế theo trình độ và mục tiêu học tập.</p>
+          <div className="mt-8 flex flex-wrap gap-3">
+            <Link href="/register" className="inline-flex min-h-11 items-center justify-center rounded-xl bg-primary px-6 py-3 text-sm font-bold text-white hover:bg-indigo-700">Bắt đầu học</Link>
+            <Link href="#about" className="inline-flex min-h-11 items-center justify-center rounded-xl border border-outline-variant bg-white px-6 py-3 text-sm font-bold text-primary hover:bg-surface-container-low">Tìm hiểu lộ trình</Link>
+          </div>
+        </div>
+      </section>
+
       {/* ─── About ───────────────────────────────────────────────── */}
       <section id="about" className="bg-white py-20 scroll-mt-16">
         <div className="mx-auto grid items-center gap-10 px-4 sm:px-6 md:grid-cols-2" style={{ maxWidth: '1152px' }}>
           <div>
             <p className="text-xs font-black uppercase tracking-[0.16em] text-primary">Về chúng tôi</p>
-            <h1 className="mt-3 text-3xl font-black tracking-tight text-on-surface">Tiếng Anh thực tế dành riêng cho người làm công nghệ</h1>
+            <h2 className="mt-3 text-3xl font-black tracking-tight text-on-surface">Tiếng Anh thực tế dành riêng cho người làm công nghệ</h2>
             <p className="mt-5 text-sm leading-7 text-on-surface-variant">
               TechEnglish Pro giúp sinh viên và kỹ sư công nghệ học tiếng Anh ngay trong ngữ cảnh họ sử dụng mỗi ngày: tài liệu kỹ thuật, thuật ngữ chuyên ngành, tình huống công việc và chứng chỉ quốc tế.
             </p>

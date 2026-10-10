@@ -162,7 +162,7 @@ export default function MobileLoginScreen() {
               returnKeyType="done"
               editable={!isLoading}
             />
-            <TouchableOpacity onPress={() => setShowPassword(!showPassword)} style={styles.eyeIcon} disabled={isLoading} focusable={false}>
+            <TouchableOpacity onPress={() => setShowPassword(!showPassword)} style={styles.eyeIcon} disabled={isLoading} accessibilityLabel={showPassword ? 'Ẩn mật khẩu' : 'Hiện mật khẩu'}>
               <MaterialIcons name={showPassword ? 'visibility-off' : 'visibility'} size={20} color={colors.outline} />
             </TouchableOpacity>
           </View>
@@ -282,10 +282,14 @@ const styles = StyleSheet.create({
   },
   input: {
     flex: 1,
+    minWidth: 0,
     fontSize: 14,
     color: colors.text
   },
   eyeIcon: {
+    minWidth: 44,
+    flexShrink: 0,
+    alignItems: 'center',
     padding: spacing.xs
   },
   loginButton: {
@@ -350,7 +354,7 @@ const styles = StyleSheet.create({
   dividerText: {
     fontSize: 11,
     fontWeight: '700',
-    color: '#94a3b8'
+    color: colors.mutedText
   },
   googleButton: {
     minHeight: 56,

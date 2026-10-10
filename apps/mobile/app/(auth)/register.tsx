@@ -202,7 +202,7 @@ export default function MobileRegisterScreen() {
                 onSubmitEditing={() => confirmPasswordRef.current?.focus()}
                 editable={!isLoading}
               />
-              <TouchableOpacity onPress={() => setShowPassword(!showPassword)} style={styles.eyeIcon} disabled={isLoading} focusable={false}>
+              <TouchableOpacity onPress={() => setShowPassword(!showPassword)} style={styles.eyeIcon} disabled={isLoading} accessibilityLabel={showPassword ? 'Ẩn mật khẩu' : 'Hiện mật khẩu'}>
                 <MaterialIcons name={showPassword ? 'visibility-off' : 'visibility'} size={20} color={colors.outline} />
               </TouchableOpacity>
             </View>
@@ -225,7 +225,7 @@ export default function MobileRegisterScreen() {
                 returnKeyType="done"
                 editable={!isLoading}
               />
-              <TouchableOpacity onPress={() => setShowConfirmPassword(!showConfirmPassword)} style={styles.eyeIcon} disabled={isLoading} focusable={false}>
+              <TouchableOpacity onPress={() => setShowConfirmPassword(!showConfirmPassword)} style={styles.eyeIcon} disabled={isLoading} accessibilityLabel={showConfirmPassword ? 'Ẩn xác nhận mật khẩu' : 'Hiện xác nhận mật khẩu'}>
                 <MaterialIcons name={showConfirmPassword ? 'visibility-off' : 'visibility'} size={20} color={colors.outline} />
               </TouchableOpacity>
             </View>
@@ -364,10 +364,14 @@ const styles = StyleSheet.create({
   },
   input: {
     flex: 1,
+    minWidth: 0,
     fontSize: 14,
     color: colors.text
   },
   eyeIcon: {
+    minWidth: 44,
+    flexShrink: 0,
+    alignItems: 'center',
     padding: spacing.xs
   },
   registerButton: {
@@ -420,7 +424,7 @@ const styles = StyleSheet.create({
   },
   dividerRow: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm },
   dividerLine: { flex: 1, height: 1, backgroundColor: '#e4e8f1' },
-  dividerText: { fontSize: 11, fontWeight: '700', color: '#94a3b8' },
+  dividerText: { fontSize: 11, fontWeight: '700', color: colors.mutedText },
   googleButton: { minHeight: 56, borderRadius: 14, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: spacing.sm, backgroundColor: '#ffffff', borderWidth: 1.5, borderColor: '#e4e8f1' },
   googleButtonText: { fontSize: 14, fontWeight: '700', color: '#334155' },
   footerText: {

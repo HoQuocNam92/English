@@ -21,7 +21,7 @@ export function Text({ style, children, focusable, ...props }: AppTextProps) {
   ]}><TextDepth.Provider value={true}>{children}</TextDepth.Provider></NativeText>;
 }
 export const TextInput = React.forwardRef<React.ElementRef<typeof NativeInput>, TextInputProps>(function TextInput({ style, ...props }, ref) {
-  return <NativeInput ref={ref} placeholderTextColor={colors.outline} {...props} style={[{ fontFamily: typography.fontFamily, fontSize: 15, color: colors.text, minHeight: 48 }, style]} />;
+  return <NativeInput ref={ref} placeholderTextColor={colors.outline} {...props} style={[{ fontFamily: typography.fontFamily, fontSize: 15, color: colors.text, minWidth: 0, minHeight: 48 }, style]} />;
 });
 export function TouchableOpacity({ style, ...props }: TouchableOpacityProps) {
   return <NativeButton accessibilityRole="button" activeOpacity={0.8} {...props} style={[{ minHeight: 48, justifyContent: 'center' }, style]} />;

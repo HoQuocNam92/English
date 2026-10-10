@@ -326,7 +326,7 @@ export default function FlashcardsDashboard({ activeTab }: { activeTab: TabType 
                     </Link>
                   ) : (
                     <div>
-                      <div className="text-3xl lg:text-4xl font-black text-slate-400">
+                      <div className="text-3xl lg:text-4xl font-black text-slate-600">
                         0
                       </div>
                       <div className="text-xs font-bold text-slate-500 mt-1">Cần ôn tập</div>
@@ -337,7 +337,7 @@ export default function FlashcardsDashboard({ activeTab }: { activeTab: TabType 
 
               {/* Activity Heatmap */}
               <div className="pt-4 border-t border-slate-100">
-                <div className="flex flex-wrap justify-between items-center gap-3 text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-1">
+                <div className="flex flex-wrap justify-between items-center gap-3 text-[11px] font-bold text-slate-600 uppercase tracking-wider mb-1">
                   <div className="flex flex-wrap items-center gap-3"><span>Hoạt động ôn tập</span><Dropdown aria-label="Khoảng thời gian hoạt động ôn tập" value={String(activityDays)} onChange={event => setActivityDays(Number(event.target.value))} className="rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs font-semibold normal-case tracking-normal text-slate-700"><option value="7">7 ngày gần đây</option><option value="30">30 ngày gần đây</option><option value="56">8 tuần gần đây</option><option value="0">Tùy chọn ngày</option></Dropdown></div>
                   <div className="flex items-center gap-1.5 lowercase">
                     <span>Ít</span>
@@ -365,7 +365,7 @@ export default function FlashcardsDashboard({ activeTab }: { activeTab: TabType 
                   </Dropdown>
                 </div>
               </div>
-              {historyLoading ? <LoadingSpinner /> : historyError ? <p role="alert" className="p-5 text-sm text-rose-600">{historyError}</p> : historyWords.length ? <div className="divide-y divide-slate-100">{historyWords.map(item => <div key={item.id} className="flex items-center justify-between gap-4 py-3"><div className="min-w-0"><p className="truncate text-sm font-bold text-slate-900">{item.vocabulary?.term}</p><p className="truncate text-xs text-slate-500">{item.vocabulary?.definitionVi}</p></div><div className="shrink-0 text-right"><span className={`rounded-full px-2 py-1 text-[10px] font-bold uppercase ${item.lastRating === 'easy' ? 'bg-green-100 text-green-800' : item.lastRating === 'medium' ? 'bg-amber-100 text-amber-800' : item.lastRating === 'hard' ? 'bg-rose-100 text-rose-800' : item.lastRating === 'mastered' ? 'bg-emerald-100 text-emerald-800' : 'bg-blue-100 text-blue-800'}`}>{item.lastRating === 'easy' ? 'Dễ' : item.lastRating === 'medium' ? 'Trung bình' : item.lastRating === 'hard' ? 'Khó' : item.lastRating === 'mastered' ? 'Đã biết' : 'Đã học'}</span><p className="mt-1 text-[10px] text-slate-400">{item.lastReviewAt ? new Date(item.lastReviewAt).toLocaleDateString('vi-VN') : ''}</p></div></div>)}</div> : <p className="rounded-xl bg-slate-50 p-5 text-center text-xs text-slate-500">Không có từ phù hợp với bộ lọc.</p>}
+              {historyLoading ? <LoadingSpinner /> : historyError ? <p role="alert" className="p-5 text-sm text-rose-600">{historyError}</p> : historyWords.length ? <div className="divide-y divide-slate-100">{historyWords.map(item => <div key={item.id} className="flex items-center justify-between gap-4 py-3"><div className="min-w-0"><p className="truncate text-sm font-bold text-slate-900">{item.vocabulary?.term}</p><p className="truncate text-xs text-slate-500">{item.vocabulary?.definitionVi}</p></div><div className="shrink-0 text-right"><span className={`rounded-full px-2 py-1 text-[10px] font-bold uppercase ${item.lastRating === 'easy' ? 'bg-green-100 text-green-800' : item.lastRating === 'medium' ? 'bg-amber-100 text-amber-800' : item.lastRating === 'hard' ? 'bg-rose-100 text-rose-800' : item.lastRating === 'mastered' ? 'bg-emerald-100 text-emerald-800' : 'bg-blue-100 text-blue-800'}`}>{item.lastRating === 'easy' ? 'Dễ' : item.lastRating === 'medium' ? 'Trung bình' : item.lastRating === 'hard' ? 'Khó' : item.lastRating === 'mastered' ? 'Đã biết' : 'Đã học'}</span><p className="mt-1 text-[10px] text-slate-600">{item.lastReviewAt ? new Date(item.lastReviewAt).toLocaleDateString('vi-VN') : ''}</p></div></div>)}</div> : <p className="rounded-xl bg-slate-50 p-5 text-center text-xs text-slate-500">Không có từ phù hợp với bộ lọc.</p>}
               {!historyLoading && !historyError && <Pagination {...historyMeta} onPageChange={setHistoryPage} onLimitChange={limit => { setHistoryLimit(limit); setHistoryPage(1); }} className="mt-4 px-0" />}
             </div>
 
@@ -400,7 +400,7 @@ export default function FlashcardsDashboard({ activeTab }: { activeTab: TabType 
 
                         <div className="flex items-center gap-3 text-xs text-slate-500">
                           <span className="flex items-center gap-1">
-                            <AppIcon className=" text-sm text-slate-400">style</AppIcon>
+                            <AppIcon className=" text-sm text-slate-600">style</AppIcon>
                             {item.totalWords} từ
                           </span>
                           <span>·</span>
@@ -464,7 +464,7 @@ export default function FlashcardsDashboard({ activeTab }: { activeTab: TabType 
             {/* Filter bar */}
             <div className="grid w-full gap-3 rounded-2xl border border-slate-200 bg-white p-4 md:grid-cols-[minmax(240px,1fr)_200px_200px_auto]">
               <div className="relative">
-                <AppIcon className=" absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-lg">
+                <AppIcon className=" absolute left-3 top-1/2 -translate-y-1/2 text-slate-600 text-lg">
                   search
                 </AppIcon>
                 <input

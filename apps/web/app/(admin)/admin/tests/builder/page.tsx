@@ -277,7 +277,7 @@ export default function TestBuilderPage() {
             </div>
 
             {/* Domain & Level */}
-            <div className="grid grid-cols-2 gap-3.5">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
               <div>
                 <label className="block text-sm font-semibold text-slate-900 mb-1.5">
                   Lĩnh vực <span className="text-error">*</span>
@@ -328,7 +328,7 @@ export default function TestBuilderPage() {
             </div>
 
             {/* Duration & Pass score */}
-            <div className="grid grid-cols-2 gap-3.5">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
               <div>
                 <label className="block text-sm font-semibold text-slate-900 mb-1.5">
                   Thời gian (phút) <span className="text-error">*</span>
@@ -358,7 +358,7 @@ export default function TestBuilderPage() {
             </div>
 
             {/* Max attempts & Topics */}
-            <div className="grid grid-cols-2 gap-3.5">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
               <div>
                 <label className="block text-sm font-semibold text-slate-900 mb-1.5">Số lần thi tối đa</label>
                 <input

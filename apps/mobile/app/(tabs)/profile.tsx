@@ -141,7 +141,7 @@ export default function MobileProfileScreen() {
           ].map(([icon, label, route], index, list) => (
             <TouchableOpacity key={route} style={[styles.menuListItem, { borderBottomColor: colors.outlineVariant, borderBottomWidth: index === list.length - 1 ? 0 : 1 }]} onPress={() => router.push(route as any)}>
               <View style={styles.menuListLeft}><MaterialIcons name={icon as any} size={22} color={colors.primary} /><Text style={[styles.menuListText, { color: colors.onSurface }]}>{label}</Text></View>
-              <MaterialIcons name="chevron-right" size={24} color={colors.outlineVariant} />
+              <MaterialIcons name="chevron-right" size={24} color={colors.outline} />
             </TouchableOpacity>
           ))}
         </View>
@@ -155,7 +155,7 @@ export default function MobileProfileScreen() {
               <MaterialIcons name="person" size={22} color={colors.onSurfaceVariant} />
               <Text style={[styles.menuListText, { color: colors.onSurface }]}>Chỉnh sửa hồ sơ</Text>
             </View>
-            <MaterialIcons name="chevron-right" size={24} color={colors.outlineVariant} />
+            <MaterialIcons name="chevron-right" size={24} color={colors.outline} />
           </TouchableOpacity>
 
           <TouchableOpacity
@@ -166,7 +166,7 @@ export default function MobileProfileScreen() {
               <MaterialIcons name="lock-reset" size={22} color={colors.onSurfaceVariant} />
               <Text style={[styles.menuListText, { color: colors.onSurface }]}>Đổi mật khẩu</Text>
             </View>
-            <MaterialIcons name="chevron-right" size={24} color={colors.outlineVariant} />
+            <MaterialIcons name="chevron-right" size={24} color={colors.outline} />
           </TouchableOpacity>
         </View>
 
