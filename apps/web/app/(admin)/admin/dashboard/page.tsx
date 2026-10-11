@@ -154,19 +154,19 @@ export default function AdminDashboardPage() {
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-md mb-xl">
         <div className="stat-card bg-surface-container-lowest p-md flex flex-col justify-between h-[120px] rounded-lg border border-outline-variant hover:shadow-[0_1px_3px_rgba(15,23,24,0.06)] hover:-translate-y-0.5 transition-all">
           <div className="flex justify-between items-start">
-            <span className="font-body-sm text-body-sm text-on-surface-variant">Tổng người học</span>
+            <span className="font-body-sm text-body-sm text-on-surface-variant">Tổng người dùng</span>
             <AppIcon className=" text-outline text-[20px]">group</AppIcon>
           </div>
           <div>
             <div className="font-headline-h2 text-headline-h2 text-on-surface flex items-baseline gap-sm">
-              {loading ? '...' : (stats?.totalUsers ?? 0).toLocaleString('vi-VN')}
+              {loading ? '...' : (stats?.totalUsers ?? 0).toLocaleString('vi-VN')} <span className="font-body-sm text-body-sm text-on-surface-variant font-normal">người</span>
             </div>
           </div>
         </div>
 
         <div className="stat-card bg-surface-container-lowest p-md flex flex-col justify-between h-[120px] rounded-lg border border-outline-variant hover:shadow-[0_1px_3px_rgba(15,23,24,0.06)] hover:-translate-y-0.5 transition-all">
           <div className="flex justify-between items-start">
-            <span className="font-body-sm text-body-sm text-on-surface-variant">Nội dung học</span>
+            <span className="font-body-sm text-body-sm text-on-surface-variant">Tổng từ vựng</span>
             <AppIcon className=" text-outline text-[20px]">library_books</AppIcon>
           </div>
           <div>
@@ -195,7 +195,7 @@ export default function AdminDashboardPage() {
           </div>
           <div>
             <div className="font-headline-h2 text-headline-h2 text-on-surface flex items-baseline gap-sm">
-              {loading ? '...' : (stats?.activeUsers ?? 0).toLocaleString('vi-VN')}
+              {loading ? '...' : (stats?.activeUsers ?? 0).toLocaleString('vi-VN')} <span className="font-body-sm text-body-sm text-on-surface-variant font-normal">tài khoản</span>
             </div>
           </div>
         </div>
