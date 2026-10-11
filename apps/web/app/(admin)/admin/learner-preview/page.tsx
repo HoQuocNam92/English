@@ -7,7 +7,7 @@ const features = [
   ['menu_book', 'Học tiếng Anh CNTT', 'Từ vựng, thuật ngữ, đọc hiểu kỹ thuật, tài liệu API và System Design.'],
   ['work', 'Tình huống thực tế', 'Case study theo công việc và chuyên ngành CNTT quan tâm.'],
   ['quiz', 'Luyện tập và kiểm tra', 'Vocabulary, Reading, Technical Understanding và Scenario-based.'],
-  ['workspace_premium', 'Luyện chứng chỉ', 'Học theo Domain, Topic, quiz và đề thi mô phỏng.'],
+  ['workspace_premium', 'Luyện chứng chỉ', 'Học theo Chủ đề, Tiểu chủ đề, quiz và đề thi mô phỏng.'],
   ['monitoring', 'Theo dõi tiến độ', 'Mức độ hoàn thành, lịch sử bài thi và điểm theo chủ đề.'],
   ['person', 'Hồ sơ và mục tiêu', 'Trình độ, chuyên ngành, nghề nghiệp, chứng chỉ và kế hoạch học.'],
   ['auto_awesome', 'Gợi ý cá nhân hóa', 'Đề xuất nội dung dựa trên hồ sơ, mục tiêu và kết quả học tập.'],

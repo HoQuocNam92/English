@@ -182,7 +182,7 @@ export default function MobileTestResultScreen() {
           </View>
         </View>
 
-        {[['Kết quả theo Domain', result.performanceByDomain], ['Kết quả theo Topic', result.performanceByTopic]].map(([title, items]: any) => items?.length ? (
+        {[['Kết quả theo Chủ đề', result.performanceByDomain], ['Kết quả theo Tiểu chủ đề', result.performanceByTopic]].map(([title, items]: any) => items?.length ? (
           <View key={title} style={styles.detailsCard}>
             <View style={styles.detailsHeader}><Text style={styles.detailsTitle}>{title}</Text></View>
             {items.map((item: any) => <View key={item.key} style={styles.detailRow}><MaterialIcons name={item.scorePercent < 70 ? 'warning' : 'check-circle'} size={20} color={item.scorePercent < 70 ? '#ba1a1a' : '#16a34a'} /><View style={styles.detailContent}><Text style={styles.detailLabel}>{item.name}</Text><Text style={[styles.detailValue, { color: item.scorePercent < 70 ? '#ba1a1a' : '#16a34a' }]}>{item.scorePercent}%</Text></View></View>)}

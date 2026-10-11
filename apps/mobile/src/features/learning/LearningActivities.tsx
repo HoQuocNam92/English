@@ -28,7 +28,7 @@ export function LearningActivities() {
   useFocusEffect(useCallback(() => { void load(); }, [load]));
   const links: { title: string; description: string; icon: keyof typeof MaterialIcons.glyphMap; route: string }[] = [
     { title: 'Luyện từ vựng', description: `${data?.vocabCount ?? '…'} từ · Khám phá theo chuyên ngành và trình độ`, icon: 'style', route: '/flashcards/dashboard' },
-    { title: 'Luyện thi chứng chỉ', description: `${data?.certificates ?? '…'} chứng chỉ · Domain, Topic và thi thử`, icon: 'workspace-premium', route: '/certifications' },
+    { title: 'Luyện thi chứng chỉ', description: `${data?.certificates ?? '…'} chứng chỉ · Chủ đề, Tiểu chủ đề và thi thử`, icon: 'workspace-premium', route: '/certifications' },
   ];
   return <View style={[s.root, { backgroundColor: colors.background }]}>
     <View style={s.header}><Text style={[s.title, { color: colors.onSurface }]}>Luyện tập</Text><Text style={{ color: colors.onSurfaceVariant }}>Chọn nội dung để tiếp tục học hôm nay.</Text></View>

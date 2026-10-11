@@ -94,7 +94,7 @@ export default function LearnerQuizResultPage({ params }: { params: Promise<{ id
 
         {(attempt.performanceByDomain?.length > 0 || attempt.performanceByTopic?.length > 0) && (
           <div className="grid gap-4 md:grid-cols-2">
-            {[['Kết quả theo Domain', attempt.performanceByDomain], ['Kết quả theo Topic', attempt.performanceByTopic]].map(([title, items]: any) => (
+            {[['Kết quả theo Chủ đề', attempt.performanceByDomain], ['Kết quả theo Tiểu chủ đề', attempt.performanceByTopic]].map(([title, items]: any) => (
               <section key={title} className="rounded-2xl border border-outline-variant/40 bg-surface-container-lowest p-6">
                 <h3 className="font-bold text-on-surface">{title}</h3>
                 <div className="mt-4 space-y-3">{items.map((item: any) => <div key={item.key}><div className="flex justify-between gap-3 text-xs"><span className="font-semibold">{item.name}</span><span className={item.scorePercent < 70 ? 'font-bold text-red-600' : 'font-bold text-green-700'}>{item.scorePercent}%</span></div><div className="mt-1 h-2 overflow-hidden rounded-full bg-surface-container-high"><div className={item.scorePercent < 70 ? 'h-full bg-red-500' : 'h-full bg-green-600'} style={{ width: `${item.scorePercent}%` }}/></div></div>)}</div>

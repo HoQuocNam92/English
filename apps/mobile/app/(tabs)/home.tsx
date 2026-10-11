@@ -232,7 +232,7 @@ export default function MobileHomeScreen() {
           <MaterialIcons name="workspace-premium" size={28} color={colors.primary} />
           <View style={{ flex: 1 }}>
             <Text style={styles.recommendationTitle}>{firstCertificate ? 'Khám phá chứng chỉ' : 'Chọn chứng chỉ mục tiêu'}</Text>
-            <Text style={styles.recommendationReason}>Học theo Domain, Topic và luyện thi thử.</Text>
+            <Text style={styles.recommendationReason}>Học theo Chủ đề, Tiểu chủ đề và luyện thi thử.</Text>
           </View>
           <MaterialIcons name="chevron-right" size={24} color={colors.primary} />
         </TouchableOpacity>

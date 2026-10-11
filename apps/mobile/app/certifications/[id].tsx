@@ -166,7 +166,7 @@ function LearnContent({ colors, expandedDomains, onToggle, onOpenQuiz, domains, 
                 <View style={[styles.domainNumber, { backgroundColor: colors.primaryContainer }]}><Text style={[styles.domainNumberText, { color: colors.primary }]}>{domain.number}</Text></View>
                 <View style={styles.domainMeta}>
                   <View style={styles.domainTitleRow}>
-                    <Text style={[styles.domainTitle, { color: colors.onSurface }]} numberOfLines={2}>Domain {domain.number} — {domain.name}</Text>
+                    <Text style={[styles.domainTitle, { color: colors.onSurface }]} numberOfLines={2}>Chủ đề {domain.number} — {domain.name}</Text>
                     <Text style={[styles.domainPercent, { color: colors.primary }]}>{domain.progress}%</Text>
                   </View>
                   <View style={styles.miniProgressRow}>
@@ -199,7 +199,7 @@ function LearnContent({ colors, expandedDomains, onToggle, onOpenQuiz, domains, 
             </View>
           );
         })}
-        {!domains.length && <Text style={[styles.sectionDescription, { color: colors.onSurfaceVariant }]}>Chứng chỉ chưa được cấu hình Domain.</Text>}
+        {!domains.length && <Text style={[styles.sectionDescription, { color: colors.onSurfaceVariant }]}>Chứng chỉ chưa được cấu hình Chủ đề.</Text>}
       </View>
       <View style={[styles.practiceCard, { backgroundColor: colors.card, borderColor: colors.border, marginTop: 16 }]}>
         <View style={styles.practiceText}><Text style={[styles.practiceTitle, { color: colors.onSurface }]}>Kết quả thực tế</Text><Text style={[styles.practiceDetail, { color: colors.onSurfaceVariant }]}>{certProgress?.examAttempts ?? 0} lượt thi · Điểm TB {certProgress?.avgScore == null ? '—' : `${certProgress.avgScore}%`}</Text></View>

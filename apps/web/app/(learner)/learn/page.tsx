@@ -382,7 +382,7 @@ export default function LearnerHomePage() {
           </div> : <div className="rounded-xl border border-dashed border-outline-variant bg-surface-container-low p-6 text-center">
             <span className="mb-2 block text-4xl" aria-hidden="true"><IconText>{"🏆"}</IconText></span>
             <h3 className="text-base font-bold text-on-surface">Chọn chứng chỉ mục tiêu</h3>
-            <p className="mt-1 text-xs text-on-surface-variant"><IconText>{"Chọn chứng chỉ để học theo lộ trình Domain → Topic → Lesson và luyện đề."}</IconText></p>
+            <p className="mt-1 text-xs text-on-surface-variant"><IconText>{"Chọn chứng chỉ để học theo lộ trình Chủ đề → Tiểu chủ đề → Lesson và luyện đề."}</IconText></p>
             <Link href="/learn/certifications" className="mt-4 inline-flex items-center gap-1 rounded-lg border border-primary px-4 py-2 text-sm font-bold text-primary">Xem chứng chỉ<span className="text-base" aria-hidden="true"><IconText>{"➡️"}</IconText></span></Link>
           </div>}
         </section>

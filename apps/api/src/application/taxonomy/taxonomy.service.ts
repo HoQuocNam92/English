@@ -763,7 +763,7 @@ export class TaxonomyService {
       where: { certificateId_domainId: { certificateId, domainId: dto.domainId } },
       select: { certificateId: true },
     })
-    if (!certificateDomain) throw new BadRequestException('Hãy thêm Domain vào chứng chỉ trước khi tạo Topic')
+    if (!certificateDomain) throw new BadRequestException('Hãy thêm Chủ đề vào chứng chỉ trước khi tạo Tiểu chủ đề')
     const count = await this.prisma.certificationTopic.count({ where: { certificateId, domainId: dto.domainId } })
     await this.prisma.certificationTopic.create({
       data: {
@@ -780,7 +780,7 @@ export class TaxonomyService {
 
   async updateCertificationTopicLinks(topicId: string, dto: { vocabularies?: string[]; questions?: string[]; lessons?: string[] }) {
     const topic = await this.prisma.certificationTopic.findUnique({ where: { id: topicId }, select: { id: true, certificateId: true } })
-    if (!topic) throw new NotFoundException('Topic không tồn tại')
+    if (!topic) throw new NotFoundException('Tiểu chủ đề không tồn tại')
     if (dto.lessons !== undefined) {
       if (!Array.isArray(dto.lessons) || dto.lessons.length > 100 || dto.lessons.some(id => typeof id !== 'string')) throw new BadRequestException('Danh sách bài học không hợp lệ.')
       const valid = await this.prisma.lesson.count({ where: { id: { in: [...new Set(dto.lessons)] }, type: 'certification_review', certificates: { some: { certificateId: topic.certificateId } } } })
