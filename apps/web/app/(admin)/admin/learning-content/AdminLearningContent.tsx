@@ -520,17 +520,15 @@ export default function AdminLearningContent({ createOnly = false }: { createOnl
     return next;
   });
 
-  const bulkUpdate = async (targetStatus: 'draft' | 'published', scope: 'selected' | 'filtered') => {
-    const selectedCount = selectedIds.size;
-    if (scope === 'selected' && selectedCount === 0) return;
-    const affected = scope === 'selected' ? `${selectedCount} từ đã chọn` : `${total} kết quả đang lọc`;
+  const bulkUpdate = async (targetStatus: 'draft' | 'published') => {
+    const ids = [...selectedIds];
+    if (bulkBusy || ids.length === 0) return;
+    const affected = `${ids.length} từ đã chọn`;
     const action = targetStatus === 'published' ? 'xuất bản' : 'chuyển về bản nháp';
     if (!(await confirmDialog(`Bạn có chắc muốn ${action} ${affected}?`, { title: 'Xác nhận cập nhật hàng loạt', confirmLabel: action, tone: targetStatus === 'published' ? 'primary' : 'warning' }))) return;
     setBulkBusy(true); setError(null);
     try {
-      await apiClient.patch('/vocabulary/bulk-status', scope === 'selected'
-        ? { ids: [...selectedIds], status: targetStatus }
-        : { domainCode: domainCode || undefined, currentStatus: status || undefined, search: search || undefined, status: targetStatus, confirmAll: !domainCode && !status && !search });
+      await apiClient.patch('/vocabulary/bulk-status', { ids, status: targetStatus });
       setSelectedIds(new Set());
       await load();
     } catch (e) {
@@ -600,10 +598,9 @@ export default function AdminLearningContent({ createOnly = false }: { createOnl
 
       {!loading && items.length > 0 && (
         <BulkSelectionBar pageCount={items.length} selectedCount={selectedIds.size} allPageSelected={items.every((item) => selectedIds.has(item.id))} onSelectPage={(selected) => setSelectedIds((current) => { const next = new Set(current); items.forEach((item) => selected ? next.add(item.id) : next.delete(item.id)); return next; })}>
-          {selectedIds.size > 0 && <><button disabled={bulkBusy} onClick={() => void bulkUpdate('published', 'selected')} className="rounded-lg bg-emerald-700 px-3 py-2 text-xs font-bold text-white disabled:opacity-50">Xuất bản đã chọn</button><button disabled={bulkBusy} onClick={() => void bulkUpdate('draft', 'selected')} className="rounded-lg bg-amber-700 px-3 py-2 text-xs font-bold text-white disabled:opacity-50">Chuyển về bản nháp đã chọn</button></>}
-          <button disabled={bulkBusy || total === 0} onClick={() => void bulkUpdate('published', 'filtered')} className="rounded-lg border border-emerald-600 px-3 py-2 text-xs font-bold text-emerald-700 disabled:opacity-50">Xuất bản tất cả kết quả lọc</button>
-          <button disabled={bulkBusy || total === 0} onClick={() => void bulkUpdate('draft', 'filtered')} className="rounded-lg border border-amber-500 px-3 py-2 text-xs font-bold text-amber-700 disabled:opacity-50">Chuyển tất cả kết quả lọc về bản nháp</button>
-        </BulkSelectionBar>
+        <button type="button" disabled={bulkBusy || loading || selectedIds.size === 0} onClick={() => void bulkUpdate('published')} className="rounded-lg border border-emerald-600 bg-white px-3 py-2 text-xs font-bold text-emerald-700 disabled:opacity-50">Xuất bản</button>
+        <button type="button" disabled={bulkBusy || loading || selectedIds.size === 0} onClick={() => void bulkUpdate('draft')} className="rounded-lg border border-amber-500 bg-white px-3 py-2 text-xs font-bold text-amber-700 disabled:opacity-50">Chuyển về bản nháp</button>
+      </BulkSelectionBar>
       )}
 
       {error && (

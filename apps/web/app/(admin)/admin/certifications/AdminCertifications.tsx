@@ -116,9 +116,9 @@ export default function AdminCertifications({ createOnly = false }: { createOnly
     setModalOpen(false);
   };
 
-  const bulkChangePublication = async (isActive: boolean, allFiltered = false) => {
-    const ids = allFiltered ? filteredCerts.map(cert => cert.id) : selectedIds;
-    if (!ids.length) return;
+  const bulkChangePublication = async (isActive: boolean) => {
+    const ids = [...selectedIds];
+    if (bulkBusy || !ids.length) return;
     const action = isActive ? 'xuất bản' : 'chuyển về bản nháp';
     if (!(await confirmDialog(`Bạn có chắc muốn ${action} ${ids.length} chứng chỉ đã chọn?`, { title: `Xác nhận ${action}`, confirmLabel: action, tone: 'primary' }))) return;
 
@@ -167,12 +167,8 @@ export default function AdminCertifications({ createOnly = false }: { createOnly
         onSelectPage={checked => setSelectedIds(checked ? filteredCerts.map(cert => cert.id) : [])}
         selectionLabel="Chọn tất cả kết quả lọc"
       >
-        {selectedIds.length > 0 && <>
-          <button type="button" disabled={bulkBusy} onClick={() => void bulkChangePublication(true)} className="rounded-lg bg-emerald-700 px-3 py-2 text-xs font-bold text-white disabled:opacity-50">Xuất bản đã chọn</button>
-          <button type="button" disabled={bulkBusy} onClick={() => void bulkChangePublication(false)} className="rounded-lg bg-amber-700 px-3 py-2 text-xs font-bold text-white disabled:opacity-50">Chuyển về bản nháp đã chọn</button>
-        </>}
-        <button type="button" disabled={bulkBusy || filteredCerts.length === 0} onClick={() => void bulkChangePublication(true, true)} className="rounded-lg border border-emerald-600 px-3 py-2 text-xs font-bold text-emerald-700 disabled:opacity-50">Xuất bản tất cả kết quả lọc</button>
-        <button type="button" disabled={bulkBusy || filteredCerts.length === 0} onClick={() => void bulkChangePublication(false, true)} className="rounded-lg border border-amber-500 px-3 py-2 text-xs font-bold text-amber-700 disabled:opacity-50">Chuyển tất cả kết quả lọc về bản nháp</button>
+        <button type="button" disabled={bulkBusy || loading || selectedIds.length === 0} onClick={() => void bulkChangePublication(true)} className="rounded-lg border border-emerald-600 bg-white px-3 py-2 text-xs font-bold text-emerald-700 disabled:opacity-50">Xuất bản</button>
+        <button type="button" disabled={bulkBusy || loading || selectedIds.length === 0} onClick={() => void bulkChangePublication(false)} className="rounded-lg border border-amber-500 bg-white px-3 py-2 text-xs font-bold text-amber-700 disabled:opacity-50">Chuyển về bản nháp</button>
       </BulkSelectionBar>
 
       <PaginatedList enabled={!loading} className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-2 gap-lg">
