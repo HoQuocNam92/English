@@ -1,4 +1,5 @@
 'use client';
+import { RequiredMark } from '@/shared/ui/RequiredMark';
 import { BackButton } from '@/shared/ui/BackButton';
 import { NumberInput } from '@/shared/ui/NumberInput';
 import { PaginatedList } from '@/shared/ui/PaginatedList';
@@ -338,7 +339,7 @@ function LearnerProfileContent() {
             </div>
 
             <div className="space-y-3">
-              <label className="block text-sm font-bold text-on-surface">1. Mục tiêu học chính</label>
+              <label className="block text-sm font-bold text-on-surface">1. Mục tiêu học chính<RequiredMark /></label>
               <div className="grid gap-3 sm:grid-cols-3">
                 {[
                   { value: 'vocabulary', icon: 'translate', iconClass: 'icon-learning', title: 'Luyện từ vựng CNTT', description: 'Học từ vựng theo chuyên ngành.' },
@@ -388,7 +389,7 @@ function LearnerProfileContent() {
             </div>
 
             {learningGoal && <div className="space-y-3">
-              <label className="block text-sm font-bold text-on-surface">3. Chuyên ngành IT</label>
+              <label className="block text-sm font-bold text-on-surface">3. Chuyên ngành IT<RequiredMark /></label>
               <div className="flex flex-wrap gap-2">
                 {(domains.length > 0 ? domains : [
                   { code: 'CLOUD', name: 'Cloud Computing' },
@@ -422,7 +423,7 @@ function LearnerProfileContent() {
             </div>}
 
             {(learningGoal === 'certification' || learningGoal === 'both') && <div className="space-y-3">
-              <label className="block text-sm font-bold text-on-surface">4. Chứng chỉ mục tiêu</label>
+              <label className="block text-sm font-bold text-on-surface">4. Chứng chỉ mục tiêu<RequiredMark /></label>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 {certificates.map((cert: any) => {
                   const isSelected = certificateCode === cert.code;
@@ -469,8 +470,8 @@ function LearnerProfileContent() {
                   <NumberInput type="number" min={1} max={50} value={weeklyExamTarget} onChange={(e) => setWeeklyExamTarget(e.target.valueAsNumber)} className="mt-2 w-full rounded-lg border border-outline-variant px-3 py-2 text-sm font-bold text-on-surface" />
                 </label>
                 <label className="rounded-xl border border-outline-variant/60 bg-surface-bright p-3 text-xs font-semibold text-on-surface-variant">
-                  Phút học mỗi ngày
-                  <NumberInput type="number" min={5} max={180} value={dailyStudyTargetMinutes} onChange={(e) => setDailyStudyTargetMinutes(e.target.valueAsNumber)} className="mt-2 w-full rounded-lg border border-outline-variant px-3 py-2 text-sm font-bold text-on-surface" />
+                  Phút học mỗi ngày<RequiredMark />
+                  <NumberInput required type="number" min={5} max={180} value={dailyStudyTargetMinutes} onChange={(e) => setDailyStudyTargetMinutes(e.target.valueAsNumber)} className="mt-2 w-full rounded-lg border border-outline-variant px-3 py-2 text-sm font-bold text-on-surface" />
                 </label>
               </div>
               <p className="text-xs text-on-surface-variant">Gợi ý học 30 phút/ngày; có thể chọn từ 5 đến 180 phút. Tương ứng {weeklyExamTarget * 4} bài/tháng và {weeklyExamTarget * 52} bài/năm.</p>
@@ -669,8 +670,8 @@ function PasswordField({
   return (
     <div className="space-y-1">
       <label className="block text-xs font-semibold text-on-surface">
-        {label}
-        <input
+        {label}<RequiredMark />
+        <input required
           type="password"
           value={value}
           onChange={(e) => onChange(e.target.value)}

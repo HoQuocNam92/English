@@ -1,4 +1,5 @@
 'use client';
+import { RequiredMark } from '@/shared/ui/RequiredMark';
 import { AppIcon } from '@/shared/ui/AppIcon';
 
 import Link from 'next/link';
@@ -158,8 +159,8 @@ export function Topbar({ onToggleMobileMenu }: TopbarProps) {
                   <div key={name} className="space-y-1">
                     <label className="block text-sm font-semibold text-on-surface">
                       {label}
-                      <input
-                        type="password"
+                      <RequiredMark /><input
+                        required type="password"
                         value={passwordForm[name as keyof typeof passwordForm]}
                         onChange={(event) => {
                           setPasswordForm((current) => ({ ...current, [name]: event.target.value }));

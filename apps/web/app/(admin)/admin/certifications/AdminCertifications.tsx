@@ -1,4 +1,5 @@
 'use client';
+import { RequiredMark } from '@/shared/ui/RequiredMark';
 import { ClearFiltersButton } from '@/shared/ui/ClearFiltersButton';
 import { Pagination } from '@/shared/ui/Pagination';
 import { useSelectionPage } from '@/shared/lib/use-selection-page';
@@ -277,9 +278,9 @@ function CertificateModal({ open, initial, onClose, onSaved, page = false }: { p
   return <FormSurface page={page} open={open} onClose={onClose} maxWidth="max-w-2xl"><form onSubmit={save}>
     <div className="flex items-start justify-between border-b border-outline-variant/50 px-6 py-5"><div><h2 className="text-xl font-bold">{initial ? 'Chỉnh sửa chứng chỉ' : 'Thêm chứng chỉ mới'}</h2><p className="mt-1 text-xs text-on-surface-variant">Thông tin chứng chỉ công nghệ và đơn vị cấp.</p></div><button type="button" onClick={onClose} className="rounded-lg p-2 hover:bg-surface-container-low"><AppIcon className="">close</AppIcon></button></div>
     <div className="grid grid-cols-1 gap-5 p-6 sm:grid-cols-2">
-      <label className="text-sm font-semibold">Mã chứng chỉ *<input className={`${cls} uppercase`} value={form.code} onChange={e => setForm({...form, code:e.target.value})} placeholder="AWS-CLF-C02" /></label>
-      <label className="text-sm font-semibold">Đơn vị cấp *<input className={cls} value={form.provider} onChange={e => setForm({...form, provider:e.target.value})} placeholder="Amazon Web Services" /></label>
-      <label className="text-sm font-semibold sm:col-span-2">Tên chứng chỉ *<input className={cls} value={form.name} onChange={e => setForm({...form, name:e.target.value})} placeholder="AWS Certified Cloud Practitioner" /></label>
+      <label className="text-sm font-semibold">Mã chứng chỉ<RequiredMark /><input className={`${cls} uppercase`} required value={form.code} onChange={e => setForm({...form, code:e.target.value})} placeholder="AWS-CLF-C02" /></label>
+      <label className="text-sm font-semibold">Đơn vị cấp<RequiredMark /><input className={cls} required value={form.provider} onChange={e => setForm({...form, provider:e.target.value})} placeholder="Amazon Web Services" /></label>
+      <label className="text-sm font-semibold sm:col-span-2">Tên chứng chỉ<RequiredMark /><input className={cls} required value={form.name} onChange={e => setForm({...form, name:e.target.value})} placeholder="AWS Certified Cloud Practitioner" /></label>
       <label className="text-sm font-semibold sm:col-span-2">Nhóm chứng chỉ<input className={cls} value={form.category} onChange={e => setForm({...form, category:e.target.value})} placeholder="Cloud / Security / Network" /></label>
       <label className="text-sm font-semibold">Thời gian thi (phút)<input type="number" min="1" className={cls} value={form.examDurationMinutes} onChange={e => setForm({...form, examDurationMinutes:e.target.value})} placeholder="90" /></label>
       <label className="text-sm font-semibold">Số câu trong đề thật<input type="number" min="1" className={cls} value={form.examQuestionCount} onChange={e => setForm({...form, examQuestionCount:e.target.value})} placeholder="65" /></label>

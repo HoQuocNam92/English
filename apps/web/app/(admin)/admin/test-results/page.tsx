@@ -113,7 +113,7 @@ export default function AdminTestResultsPage() {
               onChange={(e) => { setStatus(e.target.value); setPage(1); }}
               className="py-sm px-3 rounded-lg border border-outline-variant text-sm bg-surface"
             >
-              <option value="">Tất cả</option>
+              <option value="">Tất cả kết quả</option>
               <option value="passed">Đạt</option>
               <option value="failed">Không đạt</option>
             </Dropdown>

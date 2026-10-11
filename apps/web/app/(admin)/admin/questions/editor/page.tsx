@@ -1,4 +1,5 @@
 'use client';
+import { RequiredMark } from '@/shared/ui/RequiredMark';
 import { BackButton } from '@/shared/ui/BackButton';
 import { AppIcon } from '@/shared/ui/AppIcon';
 import { FormPageLayout } from '@/shared/ui/CreatePage';
@@ -196,7 +197,7 @@ export default function QuestionEditorPage() {
         {/* Type */}
         <div className="grid gap-4 md:grid-cols-2">
           <div>
-          <label className="block text-sm font-semibold text-on-surface mb-1">Loại câu hỏi</label>
+          <label className="block text-sm font-semibold text-on-surface mb-1">Loại câu hỏi<RequiredMark /></label>
           <Dropdown
             value={type}
             onChange={e => setType(e.target.value)}
@@ -210,7 +211,7 @@ export default function QuestionEditorPage() {
           </Dropdown>
           </div>
           <div>
-            <label className="block text-sm font-semibold text-on-surface mb-1">Kỹ năng đánh giá</label>
+            <label className="block text-sm font-semibold text-on-surface mb-1">Kỹ năng đánh giá<RequiredMark /></label>
             <Dropdown value={skill} onChange={e => setSkill(e.target.value)} className="w-full rounded-xl border border-outline-variant px-4 py-2.5 text-sm text-on-surface bg-surface-container-low focus:outline-none focus:border-primary">
               <option value="vocabulary">Vocabulary</option>
               <option value="reading">Reading</option>
@@ -259,7 +260,7 @@ export default function QuestionEditorPage() {
               onChange={e => setDomainId(e.target.value)}
               className="w-full rounded-xl border border-outline-variant px-4 py-2.5 text-sm text-on-surface bg-surface-container-low focus:outline-none focus:border-primary"
             >
-              <option value="">-- Chọn chuyên ngành --</option>
+              <option value="">Chọn chuyên ngành</option>
               {domains.map(d => <option key={d.id} value={d.id}>{d.name}</option>)}
             </Dropdown>
             <FieldError msg={errors.domainId} />
@@ -271,7 +272,7 @@ export default function QuestionEditorPage() {
               onChange={e => setLevelId(e.target.value)}
               className="w-full rounded-xl border border-outline-variant px-4 py-2.5 text-sm text-on-surface bg-surface-container-low focus:outline-none focus:border-primary"
             >
-              <option value="">-- Chọn cấp độ --</option>
+              <option value="">Chọn cấp độ</option>
               {levels.map(l => <option key={l.id} value={l.id}>{l.name}</option>)}
             </Dropdown>
             <FieldError msg={errors.levelId} />
@@ -281,7 +282,7 @@ export default function QuestionEditorPage() {
         {/* Points & Topics */}
         <div className="grid grid-cols-2 gap-4">
           <div>
-            <label className="block text-sm font-semibold text-on-surface mb-1">Điểm</label>
+            <label className="block text-sm font-semibold text-on-surface mb-1">Điểm<RequiredMark /></label>
             <input
               type="number"
               value={points}
@@ -294,7 +295,7 @@ export default function QuestionEditorPage() {
             <FieldError msg={errors.points} />
           </div>
           <div>
-            <label className="block text-sm font-semibold text-on-surface mb-1">Topics (phân cách bằng dấu phẩy)</label>
+            <label className="block text-sm font-semibold text-on-surface mb-1">Chủ đề (phân cách bằng dấu phẩy)</label>
             <input
               type="text"
               value={topics}

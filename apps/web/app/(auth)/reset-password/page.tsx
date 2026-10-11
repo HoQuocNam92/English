@@ -1,4 +1,5 @@
 'use client';
+import { RequiredMark } from '@/shared/ui/RequiredMark';
 import { showToast } from '@/shared/ui/AppFeedback';
 import { IconText, AppIcon } from '@/shared/ui/AppIcon';
 
@@ -125,7 +126,7 @@ function ResetPasswordForm() {
                 <div>
                   <label className="block text-sm font-semibold text-on-surface mb-1.5" htmlFor="newPassword">
                     Mật khẩu mới
-                  </label>
+                  <RequiredMark /></label>
                   <div className="relative">
                     <AppIcon className="absolute left-3.5 top-1/2 -translate-y-1/2 text-outline  text-[20px]">
                       lock
@@ -159,7 +160,7 @@ function ResetPasswordForm() {
                 <div>
                   <label className="block text-sm font-semibold text-on-surface mb-1.5" htmlFor="confirmPassword">
                     Xác nhận mật khẩu mới
-                  </label>
+                  <RequiredMark /></label>
                   <div className="relative">
                     <AppIcon className="absolute left-3.5 top-1/2 -translate-y-1/2 text-outline  text-[20px]">
                       lock_reset

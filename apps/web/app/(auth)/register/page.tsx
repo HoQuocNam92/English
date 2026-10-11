@@ -1,4 +1,5 @@
 'use client';
+import { RequiredMark } from '@/shared/ui/RequiredMark';
 import { AppIcon } from '@/shared/ui/AppIcon';
 
 import Link from 'next/link';
@@ -128,7 +129,7 @@ export default function RegisterPage() {
             <div className="flex flex-col gap-1.5">
               <label className="text-sm font-semibold text-on-surface" htmlFor="displayName">
                 Họ và tên
-              </label>
+              <RequiredMark /></label>
               <div className="relative">
                 <AppIcon className="absolute left-3.5 top-1/2 -translate-y-1/2 text-outline  text-[20px]">
                   person
@@ -151,7 +152,7 @@ export default function RegisterPage() {
             <div className="flex flex-col gap-1.5">
               <label className="text-sm font-semibold text-on-surface" htmlFor="email">
                 Email
-              </label>
+              <RequiredMark /></label>
               <div className="relative">
                 <AppIcon className="absolute left-3.5 top-1/2 -translate-y-1/2 text-outline  text-[20px]">
                   mail
@@ -174,7 +175,7 @@ export default function RegisterPage() {
             <div className="flex flex-col gap-1.5">
               <label className="text-sm font-semibold text-on-surface" htmlFor="password">
                 Mật khẩu
-              </label>
+              <RequiredMark /></label>
               <div className="relative">
                 <AppIcon className="absolute left-3.5 top-1/2 -translate-y-1/2 text-outline  text-[20px]">
                   lock
@@ -211,7 +212,7 @@ export default function RegisterPage() {
             <div className="flex flex-col gap-1.5">
               <label className="text-sm font-semibold text-on-surface" htmlFor="confirmPassword">
                 Xác nhận mật khẩu
-              </label>
+              <RequiredMark /></label>
               <div className="relative">
                 <AppIcon className="absolute left-3.5 top-1/2 -translate-y-1/2 text-outline  text-[20px]">
                   lock_reset
@@ -251,7 +252,7 @@ export default function RegisterPage() {
                 required
               />
               <label htmlFor="terms" className="text-[13px] text-on-surface-variant leading-tight">
-                Tôi đồng ý với <Link href="/terms" tabIndex={-1} className="text-primary hover:underline font-semibold">Điều khoản dịch vụ</Link> và <Link href="/privacy" tabIndex={-1} className="text-primary hover:underline font-semibold">Chính sách bảo mật</Link> của hệ thống
+                Tôi đồng ý với <Link href="/terms" tabIndex={-1} className="text-primary hover:underline font-semibold">Điều khoản dịch vụ</Link> và <Link href="/privacy" tabIndex={-1} className="text-primary hover:underline font-semibold">Chính sách bảo mật</Link> của hệ thống<RequiredMark />
               </label>
             </div>
 

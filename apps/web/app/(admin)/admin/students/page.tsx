@@ -108,7 +108,7 @@ export default function AdminStudentsPage() {
           onChange={(e) => { setStatus(e.target.value); setPage(1); }}
           className="rounded-lg border border-outline-variant bg-surface-bright py-sm pl-sm pr-xl font-body-md text-on-surface focus:border-primary focus:ring-1 focus:ring-primary focus:outline-none min-w-[150px]"
         >
-          <option value="">Trạng thái (Tất cả)</option>
+          <option value="">Tất cả trạng thái</option>
           <option value="active">Đang học</option>
           <option value="suspended">Tạm khoá</option>
           <option value="inactive">Chưa kích hoạt</option>

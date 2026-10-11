@@ -22,7 +22,7 @@ const STATUSES = [
 
 const PARTS_OF_SPEECH_OPTIONS = [
   { value: 'technical term', label: 'Thuật ngữ chuyên ngành' },
-  { value: '', label: '— Chọn từ loại —' },
+  { value: '', label: 'Chọn từ loại' },
   { value: 'noun', label: 'Danh từ (noun)' },
   { value: 'verb', label: 'Động từ (verb)' },
   { value: 'adjective', label: 'Tính từ (adjective)' },
@@ -304,7 +304,7 @@ function VocabularyModal({ mode, initial, domains, levels, onClose, onSuccess, p
                 onChange={set('levelId')}
                 className={`admin-select ${inputCls} ${errors.levelId ? inputErrCls : ''}`}
               >
-                <option value="">— Chọn cấp độ —</option>
+                <option value="">Chọn cấp độ</option>
                 {levels.map((l) => <option key={l.id} value={l.id}>{l.name}</option>)}
               </Dropdown>
             </Field>

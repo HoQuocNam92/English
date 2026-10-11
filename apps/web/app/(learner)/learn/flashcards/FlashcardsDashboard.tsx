@@ -359,7 +359,7 @@ export default function FlashcardsDashboard({ activeTab }: { activeTab: TabType 
                 <div><h2 className="text-base font-bold text-slate-800">Từ đã học / đã biết</h2><p className="text-xs text-slate-500">Mặc định các từ này không xuất hiện trong phiên học từ mới.</p></div>
                 <div className="flex flex-wrap gap-2">
                   <Dropdown value={historyPeriod} onChange={event => { setHistoryPeriod(event.target.value as any); setHistoryPage(1); }} className="rounded-lg border border-slate-200 px-3 py-2 text-xs font-bold">
-                    <option value="day">Hôm nay</option><option value="month">Tháng này</option><option value="year">Năm nay</option><option value="all">Tất cả</option>
+                    <option value="day">Hôm nay</option><option value="month">Tháng này</option><option value="year">Năm nay</option><option value="all">Tất cả thời gian</option>
                   </Dropdown>
                   <Dropdown value={historyRating} onChange={event => { setHistoryRating(event.target.value); setHistoryPage(1); }} className="rounded-lg border border-slate-200 px-3 py-2 text-xs font-bold">
                     <option value="all">Mọi độ khó</option><option value="easy">Dễ</option><option value="medium">Trung bình</option><option value="hard">Khó</option><option value="mastered">Đã biết</option>

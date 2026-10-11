@@ -1,4 +1,5 @@
 'use client';
+import { RequiredMark } from '@/shared/ui/RequiredMark';
 import { AppIcon } from '@/shared/ui/AppIcon';
 
 import Link from 'next/link';
@@ -98,7 +99,7 @@ export default function LoginPage() {
             <div className="flex flex-col gap-1.5">
               <label className="text-sm font-semibold text-on-surface" htmlFor="email">
                 Email
-              </label>
+              <RequiredMark /></label>
               <div className="relative">
                 <AppIcon className="absolute left-3.5 top-1/2 -translate-y-1/2 text-outline  text-[20px]">
                   mail
@@ -121,7 +122,7 @@ export default function LoginPage() {
             <div className="flex flex-col gap-1.5">
               <label className="text-sm font-semibold text-on-surface" htmlFor="password">
                 Mật khẩu
-              </label>
+              <RequiredMark /></label>
               <div className="relative">
                 <AppIcon className="absolute left-3.5 top-1/2 -translate-y-1/2 text-outline  text-[20px]">
                   lock

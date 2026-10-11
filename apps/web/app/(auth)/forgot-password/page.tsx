@@ -1,4 +1,5 @@
 'use client';
+import { RequiredMark } from '@/shared/ui/RequiredMark';
 import { showToast } from '@/shared/ui/AppFeedback';
 import { AppIcon } from '@/shared/ui/AppIcon';
 
@@ -84,7 +85,7 @@ export default function ForgotPasswordPage() {
                 <div>
                   <label className="block text-sm font-semibold text-on-surface mb-1.5" htmlFor="email">
                     Email
-                  </label>
+                  <RequiredMark /></label>
                   <div className="relative">
                     <AppIcon className="absolute left-3.5 top-1/2 -translate-y-1/2 text-outline  text-[20px]">
                       mail

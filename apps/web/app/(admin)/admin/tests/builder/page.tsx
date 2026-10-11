@@ -1,4 +1,5 @@
 'use client';
+import { RequiredMark } from '@/shared/ui/RequiredMark';
 import { loadAllPages } from '@/shared/lib/load-all-pages';
 import { ClearFiltersButton } from '@/shared/ui/ClearFiltersButton';
 import { BackButton } from '@/shared/ui/BackButton';
@@ -322,7 +323,7 @@ export default function TestBuilderPage() {
                   onChange={e => setDomainId(e.target.value)}
                   className="w-full rounded-xl border border-slate-300 bg-white px-3.5 py-2.5 text-sm font-medium text-slate-900 shadow-2xs focus:outline-none focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all cursor-pointer"
                 >
-                  <option value="">-- Chọn chuyên ngành --</option>
+                  <option value="">Chọn chuyên ngành</option>
                   {domains.map(d => <option key={d.id} value={d.id}>{d.name}</option>)}
                 </Dropdown>
                 <FieldError msg={errors.domainId} />
@@ -336,7 +337,7 @@ export default function TestBuilderPage() {
                   onChange={e => setLevelId(e.target.value)}
                   className="w-full rounded-xl border border-slate-300 bg-white px-3.5 py-2.5 text-sm font-medium text-slate-900 shadow-2xs focus:outline-none focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all cursor-pointer"
                 >
-                  <option value="">-- Chọn cấp độ --</option>
+                  <option value="">Chọn cấp độ</option>
                   {levels.map(l => <option key={l.id} value={l.id}>{l.name}</option>)}
                 </Dropdown>
                 <FieldError msg={errors.levelId} />
@@ -357,7 +358,7 @@ export default function TestBuilderPage() {
                 onChange={e => setCertificateId(e.target.value)}
                 className="w-full rounded-xl border border-slate-300 bg-white px-3.5 py-2.5 text-sm font-medium text-slate-900 shadow-2xs focus:outline-none focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all cursor-pointer"
               >
-                <option value="">-- Chọn chứng chỉ --</option>
+                <option value="">Chọn chứng chỉ</option>
                 {certificates.map(cert => <option key={cert.id} value={cert.id}>{cert.name}</option>)}
               </Dropdown>
               <FieldError msg={errors.certificateId} />
@@ -474,7 +475,7 @@ export default function TestBuilderPage() {
             <div className="flex items-center justify-between pb-4 border-b border-slate-100">
               <div className="flex items-center gap-2.5">
                 <AppIcon className=" text-primary text-[22px]">quiz</AppIcon>
-                <h3 className="text-base font-bold text-slate-900">Chọn câu hỏi</h3>
+                <h3 className="text-base font-bold text-slate-900">Chọn câu hỏi<RequiredMark /></h3>
               </div>
               <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-bold bg-primary/10 text-primary">
                 Đã chọn: {selectedQuestionIds.length} câu

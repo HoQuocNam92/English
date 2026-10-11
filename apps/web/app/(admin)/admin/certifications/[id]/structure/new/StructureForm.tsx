@@ -1,4 +1,5 @@
 'use client';
+import { RequiredMark } from '@/shared/ui/RequiredMark';
 
 import * as React from 'react';
 import { useRouter } from 'next/navigation';
@@ -63,12 +64,12 @@ export default function StructureForm({ certificateId, mode, initialDomainId }: 
     <h1 className="text-xl font-bold">{mode === 'domain' ? 'Thêm chuyên ngành vào chứng chỉ' : 'Thêm chủ đề vào chuyên ngành'}</h1>
     {loading && <p role="status" className="text-sm text-on-surface-variant">Đang tải chuyên ngành...</p>}
     {error && <p role="alert" className="rounded-xl bg-error-container p-3 text-sm text-on-error-container">{error}</p>}
-    <label className="block text-sm font-medium">Chuyên ngành *<Dropdown required disabled={loading || saving} value={form.domainId} onChange={event => setForm(current => ({ ...current, domainId: event.target.value }))} className={inputClass}>
+    <label className="block text-sm font-medium">Chuyên ngành<RequiredMark /><Dropdown required disabled={loading || saving} value={form.domainId} onChange={event => setForm(current => ({ ...current, domainId: event.target.value }))} className={inputClass}>
       <option value="">Chọn chuyên ngành</option>{domains.map(domain => <option key={domain.id} value={domain.id}>{domain.name}</option>)}
     </Dropdown></label>
     {mode === 'domain' ? <label className="block text-sm font-medium">Trọng số trong đề thi (%)<input type="number" min="0" max="100" step="0.1" value={form.weightPercent} onChange={event => setForm(current => ({ ...current, weightPercent: event.target.value }))} className={inputClass} /></label> : <>
-      <label className="block text-sm font-medium">Mã chủ đề *<input required value={form.code} onChange={event => setForm(current => ({ ...current, code: event.target.value }))} className={inputClass} placeholder="D1-T1" /></label>
-      <label className="block text-sm font-medium">Tên chủ đề *<input required value={form.name} onChange={event => setForm(current => ({ ...current, name: event.target.value }))} className={inputClass} /></label>
+      <label className="block text-sm font-medium">Mã chủ đề<RequiredMark /><input required value={form.code} onChange={event => setForm(current => ({ ...current, code: event.target.value }))} className={inputClass} placeholder="D1-T1" /></label>
+      <label className="block text-sm font-medium">Tên chủ đề<RequiredMark /><input required value={form.name} onChange={event => setForm(current => ({ ...current, name: event.target.value }))} className={inputClass} /></label>
       <label className="block text-sm font-medium">Mô tả<textarea value={form.description} onChange={event => setForm(current => ({ ...current, description: event.target.value }))} className="mt-2 min-h-24 w-full rounded-xl border border-outline-variant p-3" /></label>
     </>}
     {!loading && !domains.length && <p className="text-sm text-on-surface-variant">{mode === 'topic' ? 'Chứng chỉ chưa có chuyên ngành. Hãy thêm chuyên ngành trước.' : 'Không còn chuyên ngành để thêm vào chứng chỉ.'}</p>}

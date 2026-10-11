@@ -1,3 +1,4 @@
+import { RequiredMark } from '@/shared/ui/RequiredMark';
 import { Dropdown } from '@/shared/ui/Dropdown';
 import * as React from 'react';
 import { cn } from '@/shared/lib/cn';
@@ -20,7 +21,7 @@ export const Select = React.forwardRef<HTMLSelectElement, SelectProps>(function 
   const controlId = id ?? generatedId;
   return (
     <label htmlFor={controlId} className="grid gap-1">
-      {label ? <span className="text-sm font-semibold text-foreground">{label}</span> : null}
+      {label ? <span className="text-sm font-semibold text-foreground">{label}{props.required && !label.includes('*') && <RequiredMark />}</span> : null}
       <span className="relative block">
       <Dropdown
         ref={ref}

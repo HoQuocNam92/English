@@ -1,4 +1,5 @@
 'use client';
+import { RequiredMark } from '@/shared/ui/RequiredMark';
 import { PaginatedTable } from '@/shared/ui/PaginatedTable';
 import { AppIcon } from '@/shared/ui/AppIcon';
 import { useRouter } from 'next/navigation';
@@ -44,8 +45,8 @@ export default function CareerGoals({ createOnly = false }: { createOnly?: boole
 
   const goalForm = (<form onSubmit={save} className="space-y-5 p-6">
       <h1 className="text-xl font-bold">{form.id ? 'Chỉnh sửa mục tiêu nghề nghiệp' : 'Thêm mục tiêu nghề nghiệp'}</h1>
-      <label className="block text-sm font-medium">Mã mục tiêu *<input required value={form.code} onChange={e => setForm(current => ({ ...current, code: e.target.value }))} placeholder="CLOUD" className="mt-2 h-11 w-full rounded-xl border border-outline-variant px-3 uppercase" /></label>
-      <label className="block text-sm font-medium">Tên mục tiêu nghề nghiệp *<input required value={form.name} onChange={e => setForm(current => ({ ...current, name: e.target.value }))} className="mt-2 h-11 w-full rounded-xl border border-outline-variant px-3" /></label>
+      <label className="block text-sm font-medium">Mã mục tiêu<RequiredMark /><input required value={form.code} onChange={e => setForm(current => ({ ...current, code: e.target.value }))} placeholder="CLOUD" className="mt-2 h-11 w-full rounded-xl border border-outline-variant px-3 uppercase" /></label>
+      <label className="block text-sm font-medium">Tên mục tiêu nghề nghiệp<RequiredMark /><input required value={form.name} onChange={e => setForm(current => ({ ...current, name: e.target.value }))} className="mt-2 h-11 w-full rounded-xl border border-outline-variant px-3" /></label>
       <label className="block text-sm font-medium">Mô tả<textarea value={form.description} onChange={e => setForm(current => ({ ...current, description: e.target.value }))} className="mt-2 min-h-24 w-full rounded-xl border border-outline-variant p-3" /></label>
       {error && <p role="alert" className="rounded-xl bg-error-container p-3 text-sm text-on-error-container">{error}</p>}
       <div className="flex justify-end gap-3 border-t border-outline-variant/40 pt-4"><button type="button" disabled={saving} onClick={() => createOnly ? router.push('/admin/career-goals') : setForm({ id: '', code: '', name: '', description: '' })} className="h-10 rounded-xl border border-outline-variant px-4 text-sm font-medium">Hủy</button><button disabled={saving} className="h-10 rounded-xl bg-primary px-5 text-sm font-semibold text-white disabled:opacity-60">{saving ? 'Đang lưu...' : form.id ? 'Lưu thay đổi' : 'Thêm mục tiêu'}</button></div>

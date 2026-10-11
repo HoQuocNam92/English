@@ -1,4 +1,5 @@
 'use client';
+import { RequiredMark } from '@/shared/ui/RequiredMark';
 import { PaginatedList } from '@/shared/ui/PaginatedList';
 import { ListTools, matchesSearch } from '@/shared/ui/ListTools';
 import { AppIcon } from '@/shared/ui/AppIcon';
@@ -37,7 +38,7 @@ export default function LearnerGroups({ createOnly = false }: { createOnly?: boo
  const visibleGroups=groups.filter(group=>matchesSearch(search,group.name,group.careerGoal?.name) && (!filter || group.careerGoalId===filter || group.careerGoal?.id===filter));
  const groupForm = (<form onSubmit={create} className="space-y-5 p-6">
    <h1 className="text-xl font-bold">Thêm nhóm học viên</h1>
-   <label className="block text-sm font-medium">Tên nhóm học viên *<input required value={name} onChange={e=>setName(e.target.value)} className="mt-2 h-11 w-full rounded-xl border border-outline-variant px-3"/></label>
+   <label className="block text-sm font-medium">Tên nhóm học viên<RequiredMark /><input required value={name} onChange={e=>setName(e.target.value)} className="mt-2 h-11 w-full rounded-xl border border-outline-variant px-3"/></label>
    <label className="block text-sm font-medium">Mục tiêu nghề nghiệp<Dropdown value={goalId} onChange={e=>setGoalId(e.target.value)} className="mt-2 h-11 w-full rounded-xl border border-outline-variant px-3"><option value="">Chọn mục tiêu nghề nghiệp</option>{goals.map(x=><option key={x.id} value={x.id}>{x.name}</option>)}</Dropdown></label>
    {error&&<p role="alert" className="rounded-xl bg-error-container p-3 text-sm text-on-error-container">{error}</p>}
    <div className="flex justify-end gap-3 border-t border-outline-variant/40 pt-4"><button type="button" disabled={saving} onClick={()=>router.push('/admin/learner-groups')} className="h-10 rounded-xl border border-outline-variant px-4 text-sm font-medium">Hủy</button><button disabled={saving || loading} className="h-10 rounded-xl bg-primary px-5 text-sm font-semibold text-white disabled:opacity-50">{saving ? 'Đang lưu...' : 'Tạo nhóm'}</button></div>

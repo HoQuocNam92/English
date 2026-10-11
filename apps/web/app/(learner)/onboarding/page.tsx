@@ -1,4 +1,5 @@
 'use client';
+import { RequiredMark } from '@/shared/ui/RequiredMark';
 import { AppIcon, IconText } from '@/shared/ui/AppIcon';
 
 import { BarChart3, Network, Cloud, Shield, Database, Code2, RefreshCw, GraduationCap, TrendingUp, Award, Diamond, Languages, Route, ClipboardList, SlidersHorizontal, CircleCheck, type LucideIcon } from 'lucide-react';
@@ -123,13 +124,13 @@ export default function OnboardingPage() {
         </div>
         <div className="mb-10 flex gap-2">{Array.from({ length: totalSteps }).map((_, index) => <div key={index} className={`h-2 flex-1 rounded-full ${index + 1 <= step ? 'bg-primary' : 'bg-surface-container-highest'}`} />)}</div>
 
-        {step === 1 && <section><Header title="Bạn học để làm gì?" subtitle="Chọn mục tiêu phù hợp nhất. Bạn vẫn có thể thay đổi sau trong hồ sơ." /><div className="grid gap-4 md:grid-cols-3">{GOALS.map(item => <ChoiceCard key={item.id} selected={goal === item.id} icon={item.icon} title={item.title} description={item.description} onClick={() => { setGoal(item.id); setTargetCertificateCode(''); setDomainCodes([]); }} />)}</div></section>}
+        {step === 1 && <section><Header title={<>Bạn học để làm gì?<RequiredMark /></>} subtitle="Chọn mục tiêu phù hợp nhất. Bạn vẫn có thể thay đổi sau trong hồ sơ." /><div className="grid gap-4 md:grid-cols-3">{GOALS.map(item => <ChoiceCard key={item.id} selected={goal === item.id} icon={item.icon} title={item.title} description={item.description} onClick={() => { setGoal(item.id); setTargetCertificateCode(''); setDomainCodes([]); }} />)}</div></section>}
 
         {step === 2 && <section>
           <Header title={goal === 'vocabulary' ? 'Chọn chuyên ngành CNTT' : goal === 'certification' ? 'Chọn chứng chỉ mục tiêu' : 'Chọn nội dung và chứng chỉ'} subtitle="Hệ thống sẽ dùng lựa chọn này để cá nhân hóa từ vựng, bài học và câu hỏi luyện tập." />
           {loadingOptions ? <p className="py-12 text-center text-sm text-on-surface-variant">Đang tải dữ liệu...</p> : <div className="space-y-7">
-            <div><h2 className="mb-3 text-sm font-bold text-on-surface">Chuyên ngành IT</h2><div className="grid gap-3 md:grid-cols-2">{domains.map(item => <ChoiceCard key={item.id} selected={domainCodes.includes(item.code)} icon={item.icon || 'code'} title={item.name} description={item.description} onClick={() => toggleDomain(item.code)} />)}</div></div>
-            {(goal === 'certification' || goal === 'both') && <div><h2 className="mb-3 text-sm font-bold text-on-surface">Chứng chỉ mục tiêu</h2><div className="grid gap-3 md:grid-cols-2">{certificates.map(item => <ChoiceCard key={item.id} selected={targetCertificateCode === item.code} icon="workspace_premium" title={item.name} description={`${item.provider} · ${item.code}`} onClick={() => setTargetCertificateCode(item.code)} />)}</div></div>}
+            <div><h2 className="mb-3 text-sm font-bold text-on-surface">Chuyên ngành IT<RequiredMark /></h2><div className="grid gap-3 md:grid-cols-2">{domains.map(item => <ChoiceCard key={item.id} selected={domainCodes.includes(item.code)} icon={item.icon || 'code'} title={item.name} description={item.description} onClick={() => toggleDomain(item.code)} />)}</div></div>
+            {(goal === 'certification' || goal === 'both') && <div><h2 className="mb-3 text-sm font-bold text-on-surface">Chứng chỉ mục tiêu<RequiredMark /></h2><div className="grid gap-3 md:grid-cols-2">{certificates.map(item => <ChoiceCard key={item.id} selected={targetCertificateCode === item.code} icon="workspace_premium" title={item.name} description={`${item.provider} · ${item.code}`} onClick={() => setTargetCertificateCode(item.code)} />)}</div></div>}
             {(domains.length === 0 || (goal !== 'vocabulary' && certificates.length === 0)) && <p className="rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-800">Chưa có đủ nội dung đang hoạt động để lựa chọn.</p>}
           </div>}
         </section>}
@@ -148,7 +149,7 @@ export default function OnboardingPage() {
   );
 }
 
-function Header({ title, subtitle }: { title: string; subtitle: string }) { return <div className="mb-8 text-center"><h1 className="text-2xl font-bold text-on-surface md:text-3xl">{title}</h1><p className="mx-auto mt-2 max-w-xl text-sm text-on-surface-variant">{subtitle}</p></div>; }
+function Header({ title, subtitle }: { title: React.ReactNode; subtitle: string }) { return <div className="mb-8 text-center"><h1 className="text-2xl font-bold text-on-surface md:text-3xl">{title}</h1><p className="mx-auto mt-2 max-w-xl text-sm text-on-surface-variant">{subtitle}</p></div>; }
 const CHOICE_ICONS: Record<string, LucideIcon> = {
   cloud: Cloud,
   shield: Shield,
