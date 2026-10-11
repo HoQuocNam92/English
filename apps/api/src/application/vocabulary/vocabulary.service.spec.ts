@@ -40,7 +40,7 @@ test('create accepts multiple classifications and rejects invalid or empty domai
   assert.deepEqual(calls.create.data.partsOfSpeech, ['noun', 'verb'])
   assert.equal(calls.create.data.domainId, domainIds[0])
   assert.equal(calls.create.data.partOfSpeech, 'noun')
-  await assert.rejects(service.create({ ...createDto, domainIds: [levelId] }), /Lĩnh vực không tồn tại/)
+  await assert.rejects(service.create({ ...createDto, domainIds: [levelId] }), /Chuyên ngành không tồn tại/)
 })
 
 test('edit replaces domains, allows clearing parts of speech, and preserves classifications on unrelated patches', async () => {

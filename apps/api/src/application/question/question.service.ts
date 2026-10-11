@@ -76,7 +76,7 @@ export class QuestionsService {
     this.validateAnswerDefinition(dto)
     const domain = await this.prisma.domain.findUnique({ where: { id: dto.domainId } })
     const level = await this.prisma.level.findUnique({ where: { id: dto.levelId } })
-    if (!domain || !level) throw new NotFoundException('Lĩnh vực hoặc cấp độ không tồn tại')
+    if (!domain || !level) throw new NotFoundException('Chuyên ngành hoặc cấp độ không tồn tại')
     return this.prisma.question.create({
       data: {
         type: dto.type, skill: dto.skill, prompt: dto.prompt, context: dto.context,

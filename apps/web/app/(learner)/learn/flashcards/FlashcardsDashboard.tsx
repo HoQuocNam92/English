@@ -472,7 +472,7 @@ export default function FlashcardsDashboard({ activeTab }: { activeTab: TabType 
                   type="search"
                   value={search}
                   onChange={e => setSearch(e.target.value)}
-                  placeholder="Tìm theo lĩnh vực hoặc trình độ..."
+                  placeholder="Tìm theo chuyên ngành hoặc trình độ..."
                   className="h-10 w-full rounded-xl border border-slate-200 bg-slate-50 pl-9 pr-4 text-xs font-semibold outline-none focus:border-primary focus:bg-white"
                 />
               </div>
@@ -481,7 +481,7 @@ export default function FlashcardsDashboard({ activeTab }: { activeTab: TabType 
                 onChange={e => setDomain(e.target.value)}
                 className="h-10 rounded-xl border border-slate-200 bg-slate-50 px-3 text-xs font-semibold outline-none focus:border-primary focus:bg-white"
               >
-                <option value="">Tất cả lĩnh vực</option>
+                <option value="">Tất cả chuyên ngành</option>
                 {domains.map((item: any) => (
                   <option key={item.code} value={item.code}>
                     {item.name}

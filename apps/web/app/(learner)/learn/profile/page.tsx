@@ -133,7 +133,7 @@ function LearnerProfileContent() {
     event.preventDefault();
     if (!learningGoal) return setError('Vui lòng chọn mục tiêu học chính.');
     if ((learningGoal === 'certification' || learningGoal === 'both') && !certificateCode) return setError('Vui lòng chọn một chứng chỉ mục tiêu.');
-    if (selectedDomains.length === 0) return setError('Vui lòng chọn ít nhất một lĩnh vực IT.');
+    if (selectedDomains.length === 0) return setError('Vui lòng chọn ít nhất một chuyên ngành IT.');
     if (!Number.isInteger(dailyStudyTargetMinutes) || dailyStudyTargetMinutes < 5 || dailyStudyTargetMinutes > 180) return setError('Số phút học mỗi ngày phải từ 5 đến 180 phút. Gợi ý: 30 phút/ngày.');
     setSavingGoals(true); setError('');
     try {
@@ -341,7 +341,7 @@ function LearnerProfileContent() {
               <label className="block text-sm font-bold text-on-surface">1. Mục tiêu học chính</label>
               <div className="grid gap-3 sm:grid-cols-3">
                 {[
-                  { value: 'vocabulary', icon: 'translate', iconClass: 'icon-learning', title: 'Luyện từ vựng CNTT', description: 'Học từ vựng theo lĩnh vực chuyên ngành.' },
+                  { value: 'vocabulary', icon: 'translate', iconClass: 'icon-learning', title: 'Luyện từ vựng CNTT', description: 'Học từ vựng theo chuyên ngành chuyên ngành.' },
                   { value: 'certification', icon: 'workspace_premium', iconClass: 'icon-certificate', title: 'Luyện chứng chỉ', description: 'Học theo Domain, Topic và Quiz của chứng chỉ.' },
                   { value: 'both', icon: 'route', iconClass: 'icon-progress', title: 'Cả hai', description: 'Kết hợp từ vựng CNTT và chứng chỉ mục tiêu.' },
                 ].map((goal) => {
@@ -388,7 +388,7 @@ function LearnerProfileContent() {
             </div>
 
             {learningGoal && <div className="space-y-3">
-              <label className="block text-sm font-bold text-on-surface">3. Lĩnh vực IT</label>
+              <label className="block text-sm font-bold text-on-surface">3. Chuyên ngành IT</label>
               <div className="flex flex-wrap gap-2">
                 {(domains.length > 0 ? domains : [
                   { code: 'CLOUD', name: 'Cloud Computing' },

@@ -65,7 +65,7 @@ export default function LessonList({ embedded = false }: { embedded?: boolean })
     <Portal><Dialog visible={filtersOpen} onDismiss={() => setFiltersOpen(false)} style={s.dialog}>
       <Dialog.Title>Lọc bài học</Dialog.Title>
       <Dialog.ScrollArea style={{ maxHeight: windowHeight * 0.5, paddingHorizontal: 0 }}><ScrollView keyboardShouldPersistTaps="handled" contentContainerStyle={s.filterFields}>
-        <FilterSelect label="Lĩnh vực" value={domainCode} onChange={setDomainCode} items={[{ value: '', label: 'Tất cả lĩnh vực' }, ...domains.map(domain => ({ value: domain.code, label: domain.name }))]} />
+        <FilterSelect label="Chuyên ngành" value={domainCode} onChange={setDomainCode} items={[{ value: '', label: 'Tất cả chuyên ngành' }, ...domains.map(domain => ({ value: domain.code, label: domain.name }))]} />
         <FilterSelect label="Chứng chỉ" value={certificateId} onChange={setCertificateId} items={[{ value: '', label: 'Tất cả chứng chỉ' }, ...certificates.map(cert => ({ value: cert.id, label: cert.name }))]} />
         <FilterSelect label="Từ vựng" value={vocabulary} onChange={setVocabulary} items={[{ value: 'all', label: 'Tất cả từ vựng' }, { value: 'with', label: 'Có từ vựng' }, { value: 'without', label: 'Không có từ vựng' }, ...words.map(word => ({ value: word.id, label: word.term }))]} />
       </ScrollView></Dialog.ScrollArea>

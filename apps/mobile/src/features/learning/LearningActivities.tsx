@@ -27,7 +27,7 @@ export function LearningActivities() {
   }, []);
   useFocusEffect(useCallback(() => { void load(); }, [load]));
   const links: { title: string; description: string; icon: keyof typeof MaterialIcons.glyphMap; route: string }[] = [
-    { title: 'Luyện từ vựng', description: `${data?.vocabCount ?? '…'} từ · Khám phá theo lĩnh vực và trình độ`, icon: 'style', route: '/flashcards/dashboard' },
+    { title: 'Luyện từ vựng', description: `${data?.vocabCount ?? '…'} từ · Khám phá theo chuyên ngành và trình độ`, icon: 'style', route: '/flashcards/dashboard' },
     { title: 'Luyện thi chứng chỉ', description: `${data?.certificates ?? '…'} chứng chỉ · Domain, Topic và thi thử`, icon: 'workspace-premium', route: '/certifications' },
   ];
   return <View style={[s.root, { backgroundColor: colors.background }]}>

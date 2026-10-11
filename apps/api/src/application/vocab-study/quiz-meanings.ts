@@ -6732,7 +6732,7 @@ export const quizMeanings: Record<string, { term: string; meaning: string; sourc
   },
   "26ed62ff-6b18-4d57-82b2-f4e47c219947": {
     "term": "natural language processing (NLP)",
-    "meaning": "Một lĩnh vực AI cho phép máy móc hiểu và phản hồi ngôn ngữ của con người.",
+    "meaning": "Một chuyên ngành AI cho phép máy móc hiểu và phản hồi ngôn ngữ của con người.",
     "source": "short-definition"
   },
   "8ca87bee-d433-43dd-99ef-a2290737ac48": {
@@ -10612,7 +10612,7 @@ export const quizMeanings: Record<string, { term: string; meaning: string; sourc
   },
   "87e400c5-8864-430e-ab42-63303f2553ca": {
     "term": "topics",
-    "meaning": "Một cách để khám phá các kho lưu trữ trong một lĩnh vực chủ đề cụ thể, tìm các dự án để đóng góp và khám phá các giải pháp mới cho một vấn đề cụ thể trên GitHub.",
+    "meaning": "Một cách để khám phá các kho lưu trữ trong một chuyên ngành chủ đề cụ thể, tìm các dự án để đóng góp và khám phá các giải pháp mới cho một vấn đề cụ thể trên GitHub.",
     "source": "short-definition"
   },
   "f0252c0a-193a-4bdb-87da-39ee9dbd98b3": {

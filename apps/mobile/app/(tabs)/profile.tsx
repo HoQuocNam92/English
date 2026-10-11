@@ -110,7 +110,7 @@ export default function MobileProfileScreen() {
               <MaterialIcons name="terminal" size={20} color="#5c00ca" />
             </View>
             <View style={styles.bentoContent}>
-              <Text style={[styles.bentoLabel, { color: colors.onSurfaceVariant }]}>LĨNH VỰC CNTT</Text>
+              <Text style={[styles.bentoLabel, { color: colors.onSurfaceVariant }]}>CHUYÊN NGÀNH CNTT</Text>
               <Text style={[styles.bentoValue, { color: colors.onSurface }]}>{mainDomain}</Text>
             </View>
           </View>

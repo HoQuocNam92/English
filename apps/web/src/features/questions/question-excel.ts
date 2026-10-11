@@ -138,7 +138,7 @@ export function downloadQuestionExcelTemplate() {
     [''],
     ['1. Cột có dấu (*) là bắt buộc.'],
     ['2. Loại câu hỏi: nhập "single_choice" (1 đáp án) hoặc "multiple_choice" (nhiều đáp án).'],
-    ['3. Chuyên ngành / Lĩnh vực: Có thể nhập mã code hoặc tên đầy đủ:'],
+    ['3. Chuyên ngành: Có thể nhập mã code hoặc tên đầy đủ:'],
     ['   - CLOUD: Cloud Computing'],
     ['   - CYBERSEC: Cybersecurity'],
     ['   - NETWORKING: Networking'],
@@ -268,7 +268,7 @@ export async function parseQuestionsFromExcel(
     // 3. Domain
     const domainMatch = domainLookup.get(domainRaw) || (availableDomains.length > 0 ? { id: availableDomains[0].id, code: availableDomains[0].code || 'CLOUD', name: availableDomains[0].name || 'IT' } : undefined);
     if (!domainRaw && !domainMatch) {
-      errors.push('Chuyên ngành / Lĩnh vực không được để trống');
+      errors.push('Chuyên ngành không được để trống');
     }
 
     // 4. Level

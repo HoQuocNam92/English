@@ -124,7 +124,7 @@ export default function MobileHomeScreen() {
           <View style={styles.summaryHeader}><Text style={styles.summaryTitle}>Hồ sơ học tập</Text><TouchableOpacity accessibilityLabel="Chỉnh sửa mục tiêu học tập" onPress={() => router.push('/profile/edit')}><MaterialIcons name="edit" size={20} color={colors.primary} /></TouchableOpacity></View>
           {[
             { label: 'Trình độ', value: profileData?.level?.name, icon: 'school' },
-            { label: 'Lĩnh vực', value: profileData?.domains?.map((item: any) => item.domain?.name).filter(Boolean).join(', '), icon: 'language' },
+            { label: 'Chuyên ngành', value: profileData?.domains?.map((item: any) => item.domain?.name).filter(Boolean).join(', '), icon: 'language' },
             { label: 'Mục tiêu', value: profileData?.certGoals?.map((item: any) => item.certificate?.name).filter(Boolean).join(', '), icon: 'workspace-premium' },
           ].map(item => <View key={item.label} style={styles.summaryRow}><MaterialIcons name={item.icon as keyof typeof MaterialIcons.glyphMap} size={20} color="#6054c8" /><View style={{ flex: 1 }}><Text style={styles.summaryLabel}>{item.label}</Text><Text style={styles.summaryValue}>{item.value || 'Chưa thiết lập'}</Text></View></View>)}
         </View>
@@ -135,7 +135,7 @@ export default function MobileHomeScreen() {
           <View style={styles.setupCard}>
             <View style={styles.setupIcon}><MaterialIcons name="route" size={26} color={colors.primary} /></View>
             <Text style={styles.setupTitle}>Bạn chưa thiết lập lộ trình học tập</Text>
-            <Text style={styles.setupDescription}>Thiết lập trình độ, lĩnh vực CNTT và mục tiêu học để cá nhân hóa lộ trình.</Text>
+            <Text style={styles.setupDescription}>Thiết lập trình độ, chuyên ngành CNTT và mục tiêu học để cá nhân hóa lộ trình.</Text>
             <TouchableOpacity style={styles.setupButton} onPress={() => router.push('/profile/edit' as any)}>
               <Text style={styles.setupButtonText}>Thiết lập lộ trình</Text>
               <MaterialIcons name="arrow-forward" size={18} color="#ffffff" />

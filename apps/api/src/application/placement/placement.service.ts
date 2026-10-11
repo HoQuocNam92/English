@@ -43,7 +43,7 @@ export class PlacementService {
     const domainIds = profile?.domains.map(d => d.domainId) ?? []
     const pool = await this.prisma.question.findMany({ where: { status: 'published', type: { in: ['single_choice', 'multiple_choice'] }, topics: { has: 'placement' }, domain: { isActive: true }, level: { isActive: true, code: { in: LEVELS } }, ...(domainIds.length ? { domainId: { in: domainIds } } : {}) }, include: { options: { orderBy: { order: 'asc' } }, level: true, domain: true } })
     const chosen = balancedQuestions(pool)
-    if (chosen.length < 10) throw new BadRequestException('Chưa đủ 10 câu kiểm tra cho lĩnh vực đã chọn. Hãy bổ sung câu hỏi placement trong trang quản trị.')
+    if (chosen.length < 10) throw new BadRequestException('Chưa đủ 10 câu kiểm tra cho chuyên ngành đã chọn. Hãy bổ sung câu hỏi placement trong trang quản trị.')
     const snapshot = chosen.map(q => ({ id: q.id, prompt: q.prompt, context: q.context, explanation: q.explanation, level: { code: q.level.code, name: q.level.name }, domain: { code: q.domain.code, name: q.domain.name }, options: q.options.map((o: any) => ({ id: o.id, key: o.key, text: o.text, isCorrect: o.isCorrect })) }))
     const session = await this.prisma.placementAssessment.create({ data: { learnerId, questions: snapshot, expiresAt: new Date(Date.now() + 2 * 60 * 60 * 1000) } })
     return { assessmentId: session.id, expiresAt: session.expiresAt, data: snapshot.map(({ explanation, options, ...q }) => ({ ...q, options: options.map(({ isCorrect, ...o }: any) => o) })) }

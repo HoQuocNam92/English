@@ -94,7 +94,7 @@ export class ExamsService {
     if (!dto.certificateId) throw new BadRequestException('Quiz hoặc đề thi phải thuộc một chứng chỉ')
     const domain = await this.prisma.domain.findUnique({ where: { id: dto.domainId } })
     const level = await this.prisma.level.findUnique({ where: { id: dto.levelId } })
-    if (!domain||!level) throw new NotFoundException('Lĩnh vực hoặc cấp độ không tồn tại')
+    if (!domain||!level) throw new NotFoundException('Chuyên ngành hoặc cấp độ không tồn tại')
     return this.prisma.exam.create({ data: { title: dto.title, description: dto.description ?? '', kind: dto.kind ?? 'practice', domainId: domain.id, levelId: level.id, certificateId: dto.certificateId, topics: dto.topics??[], durationMinutes: dto.durationMinutes, passingScorePercent: dto.passingScorePercent??70, maxAttempts: dto.maxAttempts??1, shuffleQuestions: dto.shuffleQuestions??false, availableFrom: dto.availableFrom ? new Date(dto.availableFrom) : null, availableUntil: dto.availableUntil ? new Date(dto.availableUntil) : null, status: dto.status??'draft', publishedAt: dto.status === 'published' ? new Date() : null, createdById, questions: dto.questions?.length ? { create: dto.questions.map((question: any) => ({ questionId: question.questionId, order: question.order, weight: question.weight ?? 1 })) } : undefined } })
   }
 

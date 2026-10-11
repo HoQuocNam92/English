@@ -114,7 +114,7 @@ export default function AdminStudentsPage() {
           <option value="inactive">Chưa kích hoạt</option>
         </Dropdown>
         <Dropdown value={domainId} onChange={(e) => { setDomainId(e.target.value); setPage(1); }} className="rounded-lg border border-outline-variant bg-surface-bright py-sm pl-sm pr-xl font-body-md text-on-surface focus:border-primary focus:ring-1 focus:ring-primary focus:outline-none min-w-[170px]">
-          <option value="">Tất cả lĩnh vực</option>
+          <option value="">Tất cả chuyên ngành</option>
           {domains.map(item => <option key={item.id} value={item.id}>{item.name}</option>)}
         </Dropdown>
         <Dropdown value={certificateId} onChange={(e) => { setCertificateId(e.target.value); setPage(1); }} className="rounded-lg border border-outline-variant bg-surface-bright py-sm pl-sm pr-xl font-body-md text-on-surface focus:border-primary focus:ring-1 focus:ring-primary focus:outline-none min-w-[210px]">
@@ -132,7 +132,7 @@ export default function AdminStudentsPage() {
               <tr className="bg-white border-b border-outline-variant text-on-surface-variant font-label-caps text-label-caps uppercase">
                 <th className="p-md font-bold">Học viên</th>
                 <th className="p-md font-bold">Trạng thái / Cấp độ</th>
-                <th className="p-md font-bold">Lĩnh vực CNTT</th>
+                <th className="p-md font-bold">Chuyên ngành CNTT</th>
                 <th className="p-md font-bold">Mục tiêu chứng chỉ</th>
                 <th className="p-md font-bold">Ngày đăng ký</th>
                 <th className="p-md font-bold text-center">Thao tác</th>

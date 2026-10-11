@@ -124,7 +124,7 @@ export default function LearnerHomePage() {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           {[
             { icon: '🎓', label: 'Trình độ', value: level, bg: 'bg-gradient-to-br from-indigo-100 to-violet-200' },
-            { icon: '💻', label: 'Lĩnh vực IT', value: domainNames.join(', ') || 'Chưa thiết lập', bg: 'bg-gradient-to-br from-sky-100 to-cyan-200' },
+            { icon: '💻', label: 'Chuyên ngành IT', value: domainNames.join(', ') || 'Chưa thiết lập', bg: 'bg-gradient-to-br from-sky-100 to-cyan-200' },
             { icon: '🏆', label: 'Mục tiêu chứng chỉ', value: cert, bg: 'bg-gradient-to-br from-amber-100 to-orange-200' },
           ].map((s) => (
             <div
@@ -137,16 +137,16 @@ export default function LearnerHomePage() {
               </div>
               <div className="min-w-0 flex-1">
                 <p className="text-[12px] font-bold text-on-surface-variant uppercase tracking-[0.05em]">{s.label}</p>
-                {s.label === 'Lĩnh vực IT' && domainNames.length > 0 ? (
+                {s.label === 'Chuyên ngành IT' && domainNames.length > 0 ? (
                   <div className="mt-2">
-                    <ul id="selected-it-domains" className="flex flex-wrap gap-1.5" aria-label="Lĩnh vực IT đã chọn">
+                    <ul id="selected-it-domains" className="flex flex-wrap gap-1.5" aria-label="Chuyên ngành IT đã chọn">
                       {(showAllDomains ? domainNames : domainNames.slice(0, 1)).map((name) => (
                         <li key={name} title={name} className="max-w-full truncate rounded-lg bg-primary/10 px-2.5 py-1 text-sm font-medium text-primary">{name}</li>
                       ))}
                     </ul>
                     {domainNames.length > 1 && (
                       <button type="button" aria-expanded={showAllDomains} aria-controls="selected-it-domains" onClick={() => setShowAllDomains((shown) => !shown)} className="mt-1.5 rounded px-1 py-1 text-xs font-semibold text-primary hover:underline focus-visible:outline-2 focus-visible:outline-primary">
-                        {showAllDomains ? 'Thu gọn' : `+${domainNames.length - 1} lĩnh vực`}
+                        {showAllDomains ? 'Thu gọn' : `+${domainNames.length - 1} chuyên ngành`}
                       </button>
                     )}
                   </div>
@@ -185,7 +185,7 @@ export default function LearnerHomePage() {
               <p className="text-[14px] text-on-surface-variant mb-4">
                 {journeyConfigured
                   ? `Hôm nay: ${journey.targets.vocabularyPerDay} từ vựng, ${journey.targets.minutesPerDay} phút học. Mục tiêu bài thi: ${journey.targets.examsPerWeek}/tuần, ${journey.targets.examsPerMonth}/tháng và ${journey.targets.examsPerYear}/năm.`
-                  : 'Hãy thiết lập trình độ, lĩnh vực CNTT và chứng chỉ mục tiêu trong hồ sơ để TechEnglish Pro cá nhân hoá nội dung học tập tối ưu cho bạn.'}
+                  : 'Hãy thiết lập trình độ, chuyên ngành CNTT và chứng chỉ mục tiêu trong hồ sơ để TechEnglish Pro cá nhân hoá nội dung học tập tối ưu cho bạn.'}
               </p>
             </div>
 

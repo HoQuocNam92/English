@@ -73,13 +73,13 @@ export default function VocabularyDashboardScreen() {
       <Button onPress={() => router.push('/flashcards?mode=quiz' as any)}>Kiểm tra từ đã học</Button>
       <Button onPress={() => router.push('/flashcards/explore' as any)}>Khám phá từ vựng</Button></>}
       {exploring && <><Text style={[s.heading, { color: colors.onSurface }]}>Khám phá từ vựng</Text>
-      <TextInput accessibilityLabel="Tìm lĩnh vực hoặc trình độ" placeholder="Tìm lĩnh vực hoặc trình độ…" placeholderTextColor={colors.outline} value={search} onChangeText={setSearch} style={[s.search, { color: colors.onSurface, borderColor: colors.outlineVariant, backgroundColor: colors.surfaceContainerLowest }]} />
-      {chips('Lĩnh vực', domains, domain, setDomain)}
+      <TextInput accessibilityLabel="Tìm chuyên ngành hoặc trình độ" placeholder="Tìm chuyên ngành hoặc trình độ…" placeholderTextColor={colors.outline} value={search} onChangeText={setSearch} style={[s.search, { color: colors.onSurface, borderColor: colors.outlineVariant, backgroundColor: colors.surfaceContainerLowest }]} />
+      {chips('Chuyên ngành', domains, domain, setDomain)}
       {chips('Trình độ', levels, level, setLevel)}
       <Button onPress={() => { setSearch(''); setDomain(''); setLevel(''); }}>Xóa bộ lọc</Button>
       <Text style={{ color: colors.onSurfaceVariant }}>{filtered.length} nhóm từ vựng</Text>
       {filtered.map(group => <TouchableOpacity key={group.id} accessibilityRole="button" onPress={() => router.push({ pathname: '/flashcards/words', params: { domainCode: group.domain.code, levelCode: group.level.code } } as any)} style={[s.group, { borderColor: colors.outlineVariant, backgroundColor: colors.surfaceContainerLowest }]}><View style={{ flex: 1 }}><Text style={[s.label, { color: colors.onSurface }]}>{group.domain.name}</Text><Text style={[s.groupMeta, { color: colors.onSurfaceVariant }]}>{group.level.name} · {group.count} từ</Text></View><MaterialIcons name="chevron-right" size={24} color={colors.primary} /></TouchableOpacity>)}
-      {!filtered.length && <EmptyState icon="search-off" title="Không có nhóm từ phù hợp" detail="Thử đổi lĩnh vực, trình độ hoặc từ khóa tìm kiếm." />}</>}
+      {!filtered.length && <EmptyState icon="search-off" title="Không có nhóm từ phù hợp" detail="Thử đổi chuyên ngành, trình độ hoặc từ khóa tìm kiếm." />}</>}
     </View>
   </FeatureScreen>;
 }

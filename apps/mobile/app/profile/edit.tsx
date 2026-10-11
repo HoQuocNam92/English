@@ -138,7 +138,7 @@ export default function MobileEditProfileScreen() {
     if (targetErr) return Alert.alert('Lỗi', targetErr);
     if (!levelCode) return Alert.alert('Thiếu thông tin', 'Vui lòng chọn trình độ tiếng Anh.');
     if (learningGoal !== 'vocabulary' && certificateCodes.length === 0) return Alert.alert('Thiếu thông tin', 'Vui lòng chọn một chứng chỉ mục tiêu.');
-    if (domainCodes.length === 0) return Alert.alert('Thiếu thông tin', 'Vui lòng chọn ít nhất một lĩnh vực CNTT.');
+    if (domainCodes.length === 0) return Alert.alert('Thiếu thông tin', 'Vui lòng chọn ít nhất một chuyên ngành CNTT.');
 
     setSaving(true);
     try {
@@ -290,7 +290,7 @@ export default function MobileEditProfileScreen() {
               <TouchableOpacity style={[styles.modeCard, learningGoal === 'vocabulary' && styles.modeCardActive]} onPress={() => setLearningGoal('vocabulary')}>
                 <MaterialIcons name="translate" size={22} color={colors.primary} />
                 <Text style={styles.modeTitle}>Luyện từ vựng</Text>
-                <Text style={styles.modeDescription}>Từ vựng theo lĩnh vực CNTT.</Text>
+                <Text style={styles.modeDescription}>Từ vựng theo chuyên ngành CNTT.</Text>
               </TouchableOpacity>
             </View>
           </View>
@@ -298,7 +298,7 @@ export default function MobileEditProfileScreen() {
             <Text style={styles.modeTitle}>Kết hợp từ vựng và chứng chỉ</Text>
             <Text style={styles.modeDescription}>Học từ vựng CNTT cùng lộ trình chứng chỉ.</Text>
           </TouchableOpacity>
-          {renderChoiceGroup('2. Lĩnh vực CNTT', domains, domainCodes, code => toggleCode(code, domainCodes, setDomainCodes))}
+          {renderChoiceGroup('2. Chuyên ngành CNTT', domains, domainCodes, code => toggleCode(code, domainCodes, setDomainCodes))}
           {learningGoal !== 'vocabulary' && renderChoiceGroup('Chứng chỉ mục tiêu', certificates, certificateCodes, code => setCertificateCodes(current => current.includes(code) ? [] : [code]), true)}
           {renderChoiceGroup('3. Trình độ tiếng Anh', levels, levelCode ? [levelCode] : [], setLevelCode, true)}
           {renderChoiceGroup('4. Mục tiêu nghề nghiệp', careerGoals, careerGoalCodes, code => toggleCode(code, careerGoalCodes, setCareerGoalCodes))}

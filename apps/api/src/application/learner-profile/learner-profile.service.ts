@@ -47,7 +47,7 @@ export class LearnerProfilesService {
         : Promise.resolve([]),
     ])
     if (selectedDomains.length !== requestedDomainCodes.length) {
-      throw new BadRequestException('Có lĩnh vực không tồn tại hoặc đã ngừng hoạt động')
+      throw new BadRequestException('Có chuyên ngành không tồn tại hoặc đã ngừng hoạt động')
     }
     if (selectedCertificates.length !== requestedCertificateCodes.length) {
       throw new BadRequestException('Có chứng chỉ không tồn tại hoặc đã ngừng hoạt động')
@@ -248,7 +248,7 @@ export class LearnerProfilesService {
     if (!profile) throw new NotFoundException('Không tìm thấy hồ sơ học viên')
     const domainIds = profile.domains.map(item => item.domainId)
     const certificateIds = profile.certGoals.map(item => item.certificateId)
-    if (!domainIds.length && !certificateIds.length) return { available: false, message: 'Vui lòng chọn lĩnh vực hoặc chứng chỉ trước khi làm bài kiểm tra đầu vào.' }
+    if (!domainIds.length && !certificateIds.length) return { available: false, message: 'Vui lòng chọn chuyên ngành hoặc chứng chỉ trước khi làm bài kiểm tra đầu vào.' }
     const exam = await this.prisma.exam.findFirst({
       where: { status: 'published', OR: [
         ...(domainIds.length ? [{ domainId: { in: domainIds } }] : []),

@@ -82,7 +82,7 @@ export default function ReportDetailPage() {
     <div className="p-6"><BackButton fallbackHref="/admin/reports" />
       <PageHeader
         title={data.domain.name}
-        description={data.domain.description || 'Báo cáo kết quả theo lĩnh vực'}
+        description={data.domain.description || 'Báo cáo kết quả theo chuyên ngành'}
       />
 
       <div className="mt-6 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
@@ -145,7 +145,7 @@ export default function ReportDetailPage() {
                   {data.learners.length === 0 ? (
                     <tr>
                       <td colSpan={6} className="px-6 py-4 text-center text-sm text-gray-500">
-                        Chưa có học viên trong lĩnh vực này.
+                        Chưa có học viên trong chuyên ngành này.
                       </td>
                     </tr>
                   ) : (

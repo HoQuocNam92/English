@@ -1,4 +1,5 @@
 'use client';
+import { loadAllPages } from '@/shared/lib/load-all-pages';
 import { ClearFiltersButton } from '@/shared/ui/ClearFiltersButton';
 import { BackButton } from '@/shared/ui/BackButton';
 import { AppIcon } from '@/shared/ui/AppIcon';
@@ -61,7 +62,7 @@ export default function TestBuilderPage() {
           apiClient.get<any>('/domains'),
           apiClient.get<any>('/levels'),
           apiClient.get<any>('/certificates'),
-          apiClient.get<any>('/questions?limit=100'),
+          loadAllPages<QuestionItem>(page => apiClient.get(`/questions?page=${page}&limit=100`)),
         ]);
         setDomains(domainsRes?.data ?? domainsRes ?? []);
         setLevels(levelsRes?.data ?? levelsRes ?? []);
@@ -101,7 +102,7 @@ export default function TestBuilderPage() {
   const validate = (): boolean => {
     const errs: Record<string, string> = {};
     if (!title.trim()) errs.title = 'Tiêu đề không được để trống';
-    if (!domainId) errs.domainId = 'Vui lòng chọn lĩnh vực';
+    if (!domainId) errs.domainId = 'Vui lòng chọn chuyên ngành';
     if (!levelId) errs.levelId = 'Vui lòng chọn cấp độ';
     if (!certificateId) errs.certificateId = 'Quiz hoặc đề thi phải thuộc một chứng chỉ';
     if (!durationMinutes || isNaN(Number(durationMinutes)) || Number(durationMinutes) < 1 || Number(durationMinutes) > 300) {
@@ -281,14 +282,14 @@ export default function TestBuilderPage() {
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
               <div>
                 <label className="block text-sm font-semibold text-slate-900 mb-1.5">
-                  Lĩnh vực <span className="text-error">*</span>
+                  Chuyên ngành <span className="text-error">*</span>
                 </label>
                 <Dropdown
                   value={domainId}
                   onChange={e => setDomainId(e.target.value)}
                   className="w-full rounded-xl border border-slate-300 bg-white px-3.5 py-2.5 text-sm font-medium text-slate-900 shadow-2xs focus:outline-none focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all cursor-pointer"
                 >
-                  <option value="">-- Chọn lĩnh vực --</option>
+                  <option value="">-- Chọn chuyên ngành --</option>
                   {domains.map(d => <option key={d.id} value={d.id}>{d.name}</option>)}
                 </Dropdown>
                 <FieldError msg={errors.domainId} />
@@ -473,13 +474,13 @@ export default function TestBuilderPage() {
 
             {/* Filter Dropdowns: Domain & Level */}
             <div className="grid w-full min-w-0 gap-3 sm:grid-cols-2">
-              <label className="grid min-w-0 gap-1 text-xs font-semibold text-on-surface-variant">Lĩnh vực
-                <Dropdown aria-label="Lọc câu hỏi theo lĩnh vực"
+              <label className="grid min-w-0 gap-1 text-xs font-semibold text-on-surface-variant">Chuyên ngành
+                <Dropdown aria-label="Lọc câu hỏi theo chuyên ngành"
                   value={qFilterDomain}
                   onChange={e => setQFilterDomain(e.target.value)}
                   className="h-11 w-full min-w-0 rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm text-slate-700 shadow-2xs focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/10 transition-all cursor-pointer"
                 >
-                  <option value="">Tất cả lĩnh vực</option>
+                  <option value="">Tất cả chuyên ngành</option>
                   {domains.map(d => <option key={d.id} value={d.id}>{d.name}</option>)}
                 </Dropdown>
               </label>
@@ -561,7 +562,7 @@ export default function TestBuilderPage() {
                   </div>
                   <p className="text-sm font-semibold text-slate-700">Không tìm thấy câu hỏi phù hợp</p>
                   <p className="text-xs text-slate-400 mt-1 max-w-xs">
-                    Thử thay đổi từ khóa tìm kiếm hoặc đặt lại các bộ lọc lĩnh vực, cấp độ.
+                    Thử thay đổi từ khóa tìm kiếm hoặc đặt lại các bộ lọc chuyên ngành, cấp độ.
                   </p>
                   {(qSearch || qFilterDomain || qFilterLevel || qFilterSkill || qOnlySelected) && (
                     <ClearFiltersButton className="mt-3.5" onClick={handleResetFilters} />

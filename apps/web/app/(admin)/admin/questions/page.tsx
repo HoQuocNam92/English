@@ -1,4 +1,5 @@
 'use client';
+import { loadAllPages } from '@/shared/lib/load-all-pages';
 import { ClearFiltersButton } from '@/shared/ui/ClearFiltersButton';
 import { showToast } from '@/shared/ui/AppFeedback';
 import { AppIcon, IconText } from '@/shared/ui/AppIcon';
@@ -97,11 +98,11 @@ export default function AdminQuestionsPage() {
     void Promise.all([
       apiClient.get<{ data: FilterOption[] } | FilterOption[]>('/domains'),
       apiClient.get<{ data: FilterOption[] } | FilterOption[]>('/levels'),
-      apiClient.get<PaginatedResponse<ExamItem>>('/exams?page=1&limit=100'),
+      loadAllPages<ExamItem>(page => apiClient.get<PaginatedResponse<ExamItem>>(`/exams?page=${page}&limit=100`)),
     ]).then(([domainResult, levelResult, examResult]) => {
       setDomains(Array.isArray(domainResult) ? domainResult : domainResult.data);
       setLevels(Array.isArray(levelResult) ? levelResult : levelResult.data);
-      setExams(examResult.data);
+      setExams(examResult);
     }).catch(() => undefined);
   }, []);
 
@@ -283,7 +284,7 @@ export default function AdminQuestionsPage() {
             <p className="text-sm text-on-surface-variant">Không tìm thấy câu hỏi nào</p>
           </div>
         ) : (
-          <div className="overflow-x-auto"><table className="admin-list-table min-w-[1040px]"><thead><tr><th className="w-12">Chọn</th><th>Câu hỏi</th><th>Loại / kỹ năng</th><th>Lĩnh vực</th><th>Trình độ</th><th>Bộ đề</th><th>Trạng thái</th><th className="text-right">Thao tác</th></tr></thead><tbody>
+          <div className="overflow-x-auto"><table className="admin-list-table min-w-[1040px]"><thead><tr><th className="w-12">Chọn</th><th>Câu hỏi</th><th>Loại / kỹ năng</th><th>Chuyên ngành</th><th>Trình độ</th><th>Bộ đề</th><th>Trạng thái</th><th className="text-right">Thao tác</th></tr></thead><tbody>
             {items.map((q, idx) => {
               const qType = QUESTION_TYPES[q.type] ?? { label: q.type, icon: 'help', color: 'text-gray-500' };
               const isExpanded = expanded === q.id;

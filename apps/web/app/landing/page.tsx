@@ -59,7 +59,7 @@ export default function LandingPage() {
               TechEnglish Pro giúp sinh viên và kỹ sư công nghệ học tiếng Anh ngay trong ngữ cảnh họ sử dụng mỗi ngày: tài liệu kỹ thuật, thuật ngữ chuyên ngành, tình huống công việc và chứng chỉ quốc tế.
             </p>
             <p className="mt-3 text-sm leading-7 text-on-surface-variant">
-              Nội dung được tổ chức theo trình độ và lĩnh vực IT, kết hợp theo dõi tiến độ để mỗi người có một hành trình học rõ ràng, thực tế và phù hợp với mục tiêu nghề nghiệp.
+              Nội dung được tổ chức theo trình độ và chuyên ngành IT, kết hợp theo dõi tiến độ để mỗi người có một hành trình học rõ ràng, thực tế và phù hợp với mục tiêu nghề nghiệp.
             </p>
           </div>
           <div className="grid grid-cols-1 min-[360px]:grid-cols-2 gap-4">

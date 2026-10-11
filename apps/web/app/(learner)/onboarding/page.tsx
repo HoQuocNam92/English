@@ -56,7 +56,7 @@ export default function OnboardingPage() {
         setCertificates(certificateResponse?.data ?? []);
         setDomains(domainResponse?.data ?? []);
       })
-      .catch(() => setErrorMessage('Không thể tải danh sách chứng chỉ và lĩnh vực. Vui lòng thử lại.'))
+      .catch(() => setErrorMessage('Không thể tải danh sách chứng chỉ và chuyên ngành. Vui lòng thử lại.'))
       .finally(() => setLoadingOptions(false));
   }, []);
 
@@ -126,9 +126,9 @@ export default function OnboardingPage() {
         {step === 1 && <section><Header title="Bạn học để làm gì?" subtitle="Chọn mục tiêu phù hợp nhất. Bạn vẫn có thể thay đổi sau trong hồ sơ." /><div className="grid gap-4 md:grid-cols-3">{GOALS.map(item => <ChoiceCard key={item.id} selected={goal === item.id} icon={item.icon} title={item.title} description={item.description} onClick={() => { setGoal(item.id); setTargetCertificateCode(''); setDomainCodes([]); }} />)}</div></section>}
 
         {step === 2 && <section>
-          <Header title={goal === 'vocabulary' ? 'Chọn lĩnh vực CNTT' : goal === 'certification' ? 'Chọn chứng chỉ mục tiêu' : 'Chọn nội dung và chứng chỉ'} subtitle="Hệ thống sẽ dùng lựa chọn này để cá nhân hóa từ vựng, bài học và câu hỏi luyện tập." />
+          <Header title={goal === 'vocabulary' ? 'Chọn chuyên ngành CNTT' : goal === 'certification' ? 'Chọn chứng chỉ mục tiêu' : 'Chọn nội dung và chứng chỉ'} subtitle="Hệ thống sẽ dùng lựa chọn này để cá nhân hóa từ vựng, bài học và câu hỏi luyện tập." />
           {loadingOptions ? <p className="py-12 text-center text-sm text-on-surface-variant">Đang tải dữ liệu...</p> : <div className="space-y-7">
-            <div><h2 className="mb-3 text-sm font-bold text-on-surface">Lĩnh vực IT</h2><div className="grid gap-3 md:grid-cols-2">{domains.map(item => <ChoiceCard key={item.id} selected={domainCodes.includes(item.code)} icon={item.icon || 'code'} title={item.name} description={item.description} onClick={() => toggleDomain(item.code)} />)}</div></div>
+            <div><h2 className="mb-3 text-sm font-bold text-on-surface">Chuyên ngành IT</h2><div className="grid gap-3 md:grid-cols-2">{domains.map(item => <ChoiceCard key={item.id} selected={domainCodes.includes(item.code)} icon={item.icon || 'code'} title={item.name} description={item.description} onClick={() => toggleDomain(item.code)} />)}</div></div>
             {(goal === 'certification' || goal === 'both') && <div><h2 className="mb-3 text-sm font-bold text-on-surface">Chứng chỉ mục tiêu</h2><div className="grid gap-3 md:grid-cols-2">{certificates.map(item => <ChoiceCard key={item.id} selected={targetCertificateCode === item.code} icon="workspace_premium" title={item.name} description={`${item.provider} · ${item.code}`} onClick={() => setTargetCertificateCode(item.code)} />)}</div></div>}
             {(domains.length === 0 || (goal !== 'vocabulary' && certificates.length === 0)) && <p className="rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-800">Chưa có đủ nội dung đang hoạt động để lựa chọn.</p>}
           </div>}

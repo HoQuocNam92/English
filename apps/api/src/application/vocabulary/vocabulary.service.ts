@@ -7,16 +7,16 @@ export class VocabularyService {
 
   private async resolveDomainIds(dto: any): Promise<string[]> {
     if (dto.domainIds !== undefined) {
-      if (!Array.isArray(dto.domainIds) || !dto.domainIds.length) throw new BadRequestException('Vui lòng chọn ít nhất một lĩnh vực')
+      if (!Array.isArray(dto.domainIds) || !dto.domainIds.length) throw new BadRequestException('Vui lòng chọn ít nhất một chuyên ngành')
       const ids = [...new Set<string>(dto.domainIds)]
       const domains = await this.prisma.domain.findMany({ where: { id: { in: ids } }, select: { id: true } })
-      if (domains.length !== ids.length) throw new NotFoundException('Lĩnh vực không tồn tại')
+      if (domains.length !== ids.length) throw new NotFoundException('Chuyên ngành không tồn tại')
       return ids
     }
     const domain = dto.domainId
       ? await this.prisma.domain.findUnique({ where: { id: dto.domainId } })
       : dto.domainCode ? await this.prisma.domain.findUnique({ where: { code: dto.domainCode } }) : null
-    if (!domain) throw new NotFoundException('Lĩnh vực không tồn tại')
+    if (!domain) throw new NotFoundException('Chuyên ngành không tồn tại')
     return [domain.id]
   }
 
@@ -55,7 +55,7 @@ export class VocabularyService {
       : dto.levelCode
       ? await this.prisma.level.findUnique({ where: { code: dto.levelCode } })
       : null
-    if (!level) throw new NotFoundException('Lĩnh vực hoặc cấp độ không tồn tại')
+    if (!level) throw new NotFoundException('Chuyên ngành hoặc cấp độ không tồn tại')
     return this.prisma.vocabulary.create({
       data: {
         term: dto.term,

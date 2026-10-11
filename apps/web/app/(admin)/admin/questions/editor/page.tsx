@@ -110,7 +110,7 @@ export default function QuestionEditorPage() {
     if (!prompt.trim()) errs.prompt = 'Nội dung câu hỏi không được để trống';
     else if (prompt.trim().length < 10) errs.prompt = 'Nội dung câu hỏi phải có ít nhất 10 ký tự';
     else if (prompt.trim().length > 1000) errs.prompt = 'Câu hỏi tối đa 1000 ký tự';
-    if (!domainId) errs.domainId = 'Vui lòng chọn lĩnh vực';
+    if (!domainId) errs.domainId = 'Vui lòng chọn chuyên ngành';
     if (!levelId) errs.levelId = 'Vui lòng chọn cấp độ';
     if (type === 'short_answer') {
       if (!acceptedAnswers.split('\n').some(answer => answer.trim())) errs.acceptedAnswers = 'Phải nhập ít nhất một câu trả lời được chấp nhận';
@@ -253,13 +253,13 @@ export default function QuestionEditorPage() {
         {/* Domain & Level */}
         <div className="grid grid-cols-2 gap-4">
           <div>
-            <label className="block text-sm font-semibold text-on-surface mb-1">Lĩnh vực <span className="text-error">*</span></label>
+            <label className="block text-sm font-semibold text-on-surface mb-1">Chuyên ngành <span className="text-error">*</span></label>
             <Dropdown
               value={domainId}
               onChange={e => setDomainId(e.target.value)}
               className="w-full rounded-xl border border-outline-variant px-4 py-2.5 text-sm text-on-surface bg-surface-container-low focus:outline-none focus:border-primary"
             >
-              <option value="">-- Chọn lĩnh vực --</option>
+              <option value="">-- Chọn chuyên ngành --</option>
               {domains.map(d => <option key={d.id} value={d.id}>{d.name}</option>)}
             </Dropdown>
             <FieldError msg={errors.domainId} />

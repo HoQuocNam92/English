@@ -81,7 +81,7 @@ function LessonCatalog() {
   return <LearnerShell><div className="pb-12">
     <header className="grid items-end gap-4 md:grid-cols-[minmax(0,1fr)_minmax(20rem,36rem)]">
       <div><h1 className="text-3xl font-black text-on-surface">Bài học chuyên ngành</h1><p className="mt-2 text-sm text-on-surface-variant">Học tiếng Anh qua thuật ngữ, tài liệu và tình huống thực tế trong IT.</p></div>
-      <SearchInput className="!w-full !min-w-0 sm:!w-full sm:!min-w-0 sm:max-w-none" value={searchInput} onChange={setSearchInput} onSearch={setQuery} placeholder="Tìm bài học, lĩnh vực, chứng chỉ, từ vựng..." />
+      <SearchInput className="!w-full !min-w-0 sm:!w-full sm:!min-w-0 sm:max-w-none" value={searchInput} onChange={setSearchInput} onSearch={setQuery} placeholder="Tìm bài học, chuyên ngành, chứng chỉ, từ vựng..." />
     </header>
 
 
@@ -97,12 +97,12 @@ function LessonCatalog() {
 
     <div className="mt-6 grid gap-3 rounded-2xl border border-outline-variant/50 bg-white p-4 sm:grid-cols-2 lg:grid-cols-4">
       <Dropdown aria-label="Phạm vi bài học" value={scope} onChange={event => setScope(event.target.value)}><option value="path">Theo lộ trình của tôi</option><option value="all">Tất cả bài học</option></Dropdown>
-      <Dropdown aria-label="Lọc lĩnh vực" value={domainCode} onChange={event => setDomainCode(event.target.value)}><option value="">Tất cả lĩnh vực</option>{domains.map(domain => <option key={domain.code} value={domain.code}>{domain.name}</option>)}</Dropdown>
+      <Dropdown aria-label="Lọc chuyên ngành" value={domainCode} onChange={event => setDomainCode(event.target.value)}><option value="">Tất cả chuyên ngành</option>{domains.map(domain => <option key={domain.code} value={domain.code}>{domain.name}</option>)}</Dropdown>
       <Dropdown aria-label="Lọc chứng chỉ" value={certificateId} onChange={event => setCertificateId(event.target.value)}><option value="">Tất cả chứng chỉ</option>{certificates.map(certificate => <option key={certificate.id} value={certificate.id}>{certificate.name}</option>)}</Dropdown>
       <Dropdown aria-label="Lọc từ vựng" value={vocabulary} onChange={event => setVocabulary(event.target.value)}><option value="all">Tất cả nội dung từ vựng</option><option value="with">Có từ vựng liên kết</option><option value="without">Chưa có từ vựng liên kết</option>{vocabularyOptions.map(word => <option key={word.id} value={word.id}>{word.term}</option>)}</Dropdown>
       <ClearFiltersButton onClick={() => { setQuery(''); setSearchInput(''); setDomainCode(''); setCertificateId(''); setVocabulary('all'); }} />
     </div>
-    {!loading && scope === 'path' && <p className="mt-3 text-sm text-on-surface-variant">{hasPath ? 'Đề xuất theo lĩnh vực, chứng chỉ mục tiêu và trình độ trong hồ sơ của bạn.' : 'Bạn chưa chọn lộ trình. Cập nhật mục tiêu trong hồ sơ hoặc chọn Tất cả bài học để khám phá.'} <Link href="/learn/profile" className="font-semibold text-primary">Cập nhật lộ trình</Link></p>}
+    {!loading && scope === 'path' && <p className="mt-3 text-sm text-on-surface-variant">{hasPath ? 'Đề xuất theo chuyên ngành, chứng chỉ mục tiêu và trình độ trong hồ sơ của bạn.' : 'Bạn chưa chọn lộ trình. Cập nhật mục tiêu trong hồ sơ hoặc chọn Tất cả bài học để khám phá.'} <Link href="/learn/profile" className="font-semibold text-primary">Cập nhật lộ trình</Link></p>}
 
     {!type && <VocabularyRecommendations />}
 

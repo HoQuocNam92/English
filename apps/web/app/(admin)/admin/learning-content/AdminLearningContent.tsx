@@ -86,7 +86,7 @@ function validateForm(form: FormState): FormErrors {
   if (!form.term.trim())         errors.term         = 'Vui lòng nhập từ / thuật ngữ';
   if (!form.definitionEn.trim()) errors.definitionEn = 'Vui lòng nhập định nghĩa tiếng Anh';
   if (!form.definitionVi.trim()) errors.definitionVi = 'Vui lòng nhập định nghĩa tiếng Việt';
-  if (!form.domainIds.length)    errors.domainIds     = 'Vui lòng chọn lĩnh vực';
+  if (!form.domainIds.length)    errors.domainIds     = 'Vui lòng chọn chuyên ngành';
   if (!form.levelId)             errors.levelId      = 'Vui lòng chọn cấp độ';
   return errors;
 }
@@ -287,7 +287,7 @@ function VocabularyModal({ mode, initial, domains, levels, onClose, onSuccess, p
           </Field>
 
           <div className="grid gap-3 sm:grid-cols-2">
-            <Field label="Lĩnh vực" required error={errors.domainIds}>
+            <Field label="Chuyên ngành" required error={errors.domainIds}>
               <div className={`max-h-44 space-y-1 overflow-y-auto rounded-xl border bg-surface-container-low/40 p-2 ${errors.domainIds ? 'border-error' : 'border-outline-variant'}`}>
                 {domains.map((domain) => (
                   <label key={domain.id} className="flex cursor-pointer items-center gap-2 rounded-lg bg-white px-3 py-2 text-sm font-medium text-on-surface hover:bg-primary/5">
@@ -577,7 +577,7 @@ export default function AdminLearningContent({ createOnly = false }: { createOnl
           onChange={(e) => { setDomainCode(e.target.value); setPage(1); }}
           className="rounded-xl border border-outline-variant/60 bg-surface-container-lowest px-3 py-2 text-sm text-on-surface focus:outline-none"
         >
-          <option value="">Tất cả lĩnh vực</option>
+          <option value="">Tất cả chuyên ngành</option>
           {domains.map((domain) => <option key={domain.id} value={domain.code}>{domain.name}</option>)}
         </Dropdown>
         <Dropdown

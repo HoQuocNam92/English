@@ -154,7 +154,7 @@ export default function AdminReportsPage() {
     const XLSX = await import('xlsx');
     const book = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(book, XLSX.utils.json_to_sheet([{ 'Tổng học viên': analytics.overview.totalUsers, 'Học viên hoạt động': analytics.overview.activeUsers, 'Tổng bài học': analytics.overview.totalLessons, 'Tổng từ vựng': analytics.overview.totalVocab, 'Tổng bài thi': analytics.overview.totalExams, 'Tỷ lệ đạt (%)': analytics.overview.passRate, 'Điểm trung bình': analytics.overview.averageScore }]), 'Tổng quan');
-    XLSX.utils.book_append_sheet(book, XLSX.utils.json_to_sheet(analytics.domainsDistribution.map(item => ({ 'Lĩnh vực CNTT': item.name, 'Bài học': item.lessons, 'Từ vựng': item.vocabularies, 'Câu hỏi': item.questions, 'Bài thi': item.exams, 'Tổng nội dung': item.totalItems }))), 'Theo lĩnh vực');
+    XLSX.utils.book_append_sheet(book, XLSX.utils.json_to_sheet(analytics.domainsDistribution.map(item => ({ 'Chuyên ngành CNTT': item.name, 'Bài học': item.lessons, 'Từ vựng': item.vocabularies, 'Câu hỏi': item.questions, 'Bài thi': item.exams, 'Tổng nội dung': item.totalItems }))), 'Theo chuyên ngành');
     XLSX.utils.book_append_sheet(book, XLSX.utils.json_to_sheet(analytics.levelsDistribution.map(item => ({ 'Trình độ': item.name, 'Bài học': item.lessons, 'Từ vựng': item.vocabularies, 'Câu hỏi': item.questions, 'Bài thi': item.exams }))), 'Theo trình độ');
     XLSX.utils.book_append_sheet(book, XLSX.utils.json_to_sheet(analytics.certificatesDistribution.map(item => ({ 'Chứng chỉ': item.name, 'Mã': item.code, 'Người đặt mục tiêu': item.goalLearners, 'Người đã thi': item.learnersAttempted, 'Lượt thi': item.attempts, 'Điểm trung bình': item.averageScore, 'Tỷ lệ đạt (%)': item.passRate }))), 'Theo chứng chỉ');
     XLSX.utils.book_append_sheet(book, XLSX.utils.json_to_sheet(analytics.weeklyActivity.map(item => ({ 'Ngày': item.day, 'Lượt hoạt động': item.activityCount, 'Người học hoạt động': item.activeUsers }))), 'Tiến độ hoạt động');
@@ -167,7 +167,7 @@ export default function AdminReportsPage() {
     try {
       const XLSX = await import('xlsx');
       const rows = kind === 'activity' ? analytics.weeklyActivity.map(item => ({ 'Ngày': item.day, 'Lượt hoạt động': item.activityCount, 'Học viên hoạt động': item.activeUsers }))
-        : kind === 'domains' ? analytics.domainsDistribution.map(item => ({ 'Lĩnh vực': item.name, 'Bài học': item.lessons, 'Từ vựng': item.vocabularies, 'Câu hỏi': item.questions, 'Bài thi': item.exams, 'Tổng nội dung': item.totalItems }))
+        : kind === 'domains' ? analytics.domainsDistribution.map(item => ({ 'Chuyên ngành': item.name, 'Bài học': item.lessons, 'Từ vựng': item.vocabularies, 'Câu hỏi': item.questions, 'Bài thi': item.exams, 'Tổng nội dung': item.totalItems }))
         : analytics.certificatesDistribution.map(item => ({ 'Chứng chỉ': item.name, 'Điểm trung bình (%)': item.averageScore, 'Lượt thi': item.attempts, 'Tỷ lệ đạt (%)': item.passRate }));
       const book = XLSX.utils.book_new();
       XLSX.utils.book_append_sheet(book, XLSX.utils.json_to_sheet(rows), 'Dữ liệu');
@@ -187,7 +187,7 @@ export default function AdminReportsPage() {
           />
           <section aria-label="Bộ lọc báo cáo" className="grid w-full min-w-0 gap-4 rounded-2xl border border-outline-variant/50 bg-white p-4 sm:grid-cols-2 xl:grid-cols-3">
             <label className="grid gap-1 text-sm font-semibold">Khoảng thời gian<Dropdown aria-label="Khoảng thời gian" value={period} onChange={e => changePeriod(e.target.value)} className="h-11 min-w-0 rounded-xl border border-outline-variant px-3"><option value="month">Tháng này</option><option value="last_month">Tháng trước</option><option value="last_7_days">7 ngày gần nhất</option><option value="year">Năm nay</option><option value="custom">Tùy chọn ngày</option></Dropdown></label>
-            <label className="grid gap-1 text-sm font-semibold">Lĩnh vực<Dropdown aria-label="Lĩnh vực" value={domainCode} onChange={e => setDomainCode(e.target.value)} className="h-11 min-w-0 rounded-xl border border-outline-variant px-3"><option value="">Tất cả lĩnh vực</option>{domains.map(d => <option key={d.id} value={d.code}>{d.name}</option>)}</Dropdown></label>
+            <label className="grid gap-1 text-sm font-semibold">Chuyên ngành<Dropdown aria-label="Chuyên ngành" value={domainCode} onChange={e => setDomainCode(e.target.value)} className="h-11 min-w-0 rounded-xl border border-outline-variant px-3"><option value="">Tất cả chuyên ngành</option>{domains.map(d => <option key={d.id} value={d.code}>{d.name}</option>)}</Dropdown></label>
             <label className="grid gap-1 text-sm font-semibold">Chứng chỉ<Dropdown aria-label="Chứng chỉ" value={certificateId} onChange={e => setCertificateId(e.target.value)} className="h-11 min-w-0 rounded-xl border border-outline-variant px-3"><option value="">Tất cả chứng chỉ</option>{certificates.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}</Dropdown></label>
             <label className="grid gap-1 text-sm font-semibold">Từ ngày<input aria-label="Từ ngày" type="date" value={dateFrom} max={dateTo} onChange={e => { setDateFrom(e.target.value); setPeriod('custom'); }} className="h-11 min-w-0 w-full rounded-xl border border-outline-variant px-3" /></label>
             <label className="grid gap-1 text-sm font-semibold">Đến ngày<input aria-label="Đến ngày" type="date" value={dateTo} min={dateFrom} onChange={e => { setDateTo(e.target.value); setPeriod('custom'); }} className="h-11 min-w-0 w-full rounded-xl border border-outline-variant px-3" /></label>
@@ -268,7 +268,7 @@ export default function AdminReportsPage() {
 
           <div className="bg-surface-container-lowest p-lg rounded-xl border border-outline-variant hover:shadow-[0_1px_3px_rgba(15,23,24,0.06)] transition-all flex flex-col">
             <div className="flex items-center justify-between mb-lg">
-              <h3 className="font-headline-h3 text-headline-h3 text-on-surface">Phân bố theo lĩnh vực</h3>
+              <h3 className="font-headline-h3 text-headline-h3 text-on-surface">Phân bố theo chuyên ngành</h3>
               <ActionGroup><ActionButton action="export" label="Xuất dữ liệu biểu đồ" disabled={!analytics || loading || hasPendingFilters || !!error} onClick={() => void exportChart('domains')} /></ActionGroup>
             </div>
             <div className="mt-md flex flex-col gap-sm">

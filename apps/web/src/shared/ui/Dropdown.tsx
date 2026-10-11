@@ -2,7 +2,8 @@
 
 import * as React from 'react';
 import { createPortal } from 'react-dom';
-import { Check, ChevronDown } from 'lucide-react';
+import { Check, ChevronDown, Search } from 'lucide-react';
+import { filterDropdownItems } from '@/shared/lib/dropdown-search';
 import { cn } from '@/shared/lib/cn';
 import { LevelBadge } from '@/shared/ui/LevelBadge';
 import { isKnownLevel } from '@/shared/lib/level-theme';
@@ -16,6 +17,8 @@ export const Dropdown = React.forwardRef<HTMLSelectElement, React.SelectHTMLAttr
     const triggerRef = React.useRef<HTMLButtonElement>(null);
     const menuRef = React.useRef<HTMLDivElement>(null);
     const menuId = React.useId();
+    const searchRef = React.useRef<HTMLInputElement>(null);
+    const [query, setQuery] = React.useState('');
     const [items, setItems] = React.useState<Item[]>([]);
     const [selected, setSelected] = React.useState('');
     const [open, setOpen] = React.useState(false);
@@ -32,7 +35,9 @@ export const Dropdown = React.forwardRef<HTMLSelectElement, React.SelectHTMLAttr
       setSelected(select.value);
     });
 
-    const close = React.useCallback(() => setOpen(false), []);
+    const visibleItems = React.useMemo(() => filterDropdownItems(items, query), [items, query]);
+    const close = React.useCallback(() => { setOpen(false); setQuery(''); }, []);
+    React.useEffect(() => { if (open) searchRef.current?.focus({ preventScroll: true }); }, [open]);
     React.useEffect(() => {
       if (!open) return;
       const place = () => {
@@ -42,8 +47,8 @@ export const Dropdown = React.forwardRef<HTMLSelectElement, React.SelectHTMLAttr
         const above = rect.top - 16;
         const upwards = below < 180 && above > below;
         const maxHeight = Math.min(280, Math.max(80, upwards ? above : below));
-        const height = Math.min(maxHeight, items.length * 42 + 16);
-        const width = Math.min(Math.max(rect.width, 180), window.innerWidth - 24);
+        const height = Math.min(maxHeight, visibleItems.length * 42 + 72);
+        const width = Math.min(Math.max(rect.width, 260), window.innerWidth - 24);
         setPosition({ left: Math.max(12, Math.min(rect.left, window.innerWidth - width - 12)), top: upwards ? rect.top - height - 8 : rect.bottom + 8, width, maxHeight });
       };
       place();
@@ -59,13 +64,14 @@ export const Dropdown = React.forwardRef<HTMLSelectElement, React.SelectHTMLAttr
         window.removeEventListener('resize', close);
         window.removeEventListener('scroll', scroll, true);
       };
-    }, [open, items.length, close]);
+    }, [open, visibleItems.length, close]);
     React.useEffect(() => {
       if (open) menuRef.current?.querySelector(`[data-index="${active}"]`)?.scrollIntoView({ block: 'nearest' });
     }, [active, open]);
     React.useEffect(() => { if (disabled) close(); }, [disabled, close]);
 
     const show = () => {
+      setQuery('');
       setActive(items.findIndex(item => item.value === selected && !item.disabled));
       setOpen(true);
     };
@@ -79,22 +85,24 @@ export const Dropdown = React.forwardRef<HTMLSelectElement, React.SelectHTMLAttr
       close();
       triggerRef.current?.focus();
     };
-    const keyDown = (event: React.KeyboardEvent<HTMLButtonElement>) => {
-      if (['ArrowDown', 'ArrowUp', 'Home', 'End'].includes(event.key)) {
+    const keyDown = (event: React.KeyboardEvent<HTMLButtonElement | HTMLInputElement>) => {
+      const inSearch = event.currentTarget === searchRef.current;
+      if (['ArrowDown', 'ArrowUp'].includes(event.key) || (!inSearch && ['Home', 'End'].includes(event.key))) {
         event.preventDefault();
         if (!open) show();
-        const enabled = items.map((item, index) => item.disabled ? -1 : index).filter(index => index >= 0);
+        const enabled = (open ? visibleItems : filterDropdownItems(items, '')).filter(({ item }) => !item.disabled).map(({ index }) => index);
         const current = enabled.indexOf(active);
         const next = event.key === 'Home' ? 0 : event.key === 'End' ? enabled.length - 1 : event.key === 'ArrowDown' ? Math.min(current + 1, enabled.length - 1) : Math.max(current - 1, 0);
         setActive(enabled[next] ?? -1);
-      } else if (event.key === 'Enter' || event.key === ' ') {
+      } else if (event.key === 'Enter' || (!inSearch && event.key === ' ')) {
         event.preventDefault();
         if (open) choose(active); else show();
       } else if (event.key === 'Escape') {
         event.preventDefault();
         close();
-      } else if (event.key === 'Tab') close();
-      else if (event.key.length === 1 && !event.ctrlKey && !event.metaKey && !event.altKey) {
+        triggerRef.current?.focus();
+      } else if (event.key === 'Tab' && !inSearch) close();
+      else if (!inSearch && event.key.length === 1 && !event.ctrlKey && !event.metaKey && !event.altKey) {
         const now = Date.now();
         search.current = { text: (now - search.current.time < 700 ? search.current.text : '') + event.key.toLocaleLowerCase(), time: now };
         const match = items.findIndex(item => !item.disabled && item.label.toLocaleLowerCase().startsWith(search.current.text));
@@ -117,12 +125,30 @@ export const Dropdown = React.forwardRef<HTMLSelectElement, React.SelectHTMLAttr
         <span className="dropdown-value">{selectedItem && isKnownLevel(selectedItem.label) ? <LevelBadge level={selectedItem.label} /> : selectedItem?.label ?? '\u00a0'}</span>
         <ChevronDown aria-hidden="true" className={cn('dropdown-chevron', open && 'rotate-180')} />
       </button>
-      {open && createPortal(<div ref={menuRef} id={menuId} role="listbox" aria-label={props['aria-label']} className="dropdown-menu" style={position} onMouseDown={event => event.preventDefault()}>
-        {items.map((item, index) => <div key={index} id={`${menuId}-${index}`} role="option" aria-selected={item.value === selected} aria-disabled={item.disabled} data-index={index}
-          className={cn('dropdown-option', item.value === selected && 'dropdown-option-selected', active === index && 'dropdown-option-active', item.disabled && 'dropdown-option-disabled')}
-          onPointerMove={() => { if (!item.disabled) setActive(index); }} onClick={() => choose(index)}>
-          <span>{isKnownLevel(item.label) ? <LevelBadge level={item.label} /> : item.label}</span>{item.value === selected && <Check aria-hidden="true" className="size-4 shrink-0" />}
-        </div>)}
+      {open && createPortal(<div ref={menuRef} className="dropdown-menu" style={position}
+        onMouseDown={event => { if ((event.target as HTMLElement).closest('[role="option"]')) event.preventDefault(); }}
+        onBlur={event => { if (!menuRef.current?.contains(event.relatedTarget as Node) && event.relatedTarget !== triggerRef.current) close(); }}>
+        <div className="dropdown-search">
+          <Search aria-hidden="true" className="size-4 shrink-0 text-outline" />
+          <input ref={searchRef} type="search" role="combobox" value={query}
+            aria-label={`Tìm trong ${props['aria-label'] || 'danh sách'}`} aria-expanded={open}
+            aria-controls={menuId} aria-autocomplete="list"
+            aria-activedescendant={active >= 0 ? `${menuId}-${active}` : undefined}
+            placeholder="Tìm trong danh sách..." autoComplete="off"
+            onChange={event => {
+              const value = event.target.value;
+              setQuery(value);
+              setActive(filterDropdownItems(items, value).find(({ item }) => !item.disabled)?.index ?? -1);
+            }} onKeyDown={keyDown} />
+        </div>
+        <div id={menuId} role="listbox" aria-label={props['aria-label']}>
+          {visibleItems.map(({ item, index }) => <div key={index} id={`${menuId}-${index}`} role="option" aria-selected={item.value === selected} aria-disabled={item.disabled} data-index={index}
+            className={cn('dropdown-option', item.value === selected && 'dropdown-option-selected', active === index && 'dropdown-option-active', item.disabled && 'dropdown-option-disabled')}
+            onPointerMove={() => { if (!item.disabled) setActive(index); }} onClick={() => choose(index)}>
+            <span>{isKnownLevel(item.label) ? <LevelBadge level={item.label} /> : item.label}</span>{item.value === selected && <Check aria-hidden="true" className="size-4 shrink-0" />}
+          </div>)}
+          {visibleItems.length === 0 && <p role="status" className="px-3 py-4 text-sm text-on-surface-variant">Không tìm thấy kết quả.</p>}
+        </div>
       </div>, document.body)}
     </>;
   }

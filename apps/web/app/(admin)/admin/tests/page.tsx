@@ -12,7 +12,7 @@ import { BulkSelectionBar, confirmDialog, PageHeader, SearchInput, Pagination } 
 import { apiClient, ApiClientError } from '@/shared/api/api-client';
 import type { ExamItem, PaginatedResponse } from '@/shared/api/api-client';
 
-const EXAM_KINDS: Record<string, string> = { practice: 'Luyện tập chủ đề', domain_test: 'Kiểm tra lĩnh vực', mock_exam: 'Thi thử chứng chỉ', scenario_assessment: 'Tình huống thực tế' };
+const EXAM_KINDS: Record<string, string> = { practice: 'Luyện tập chủ đề', domain_test: 'Kiểm tra chuyên ngành', mock_exam: 'Thi thử chứng chỉ', scenario_assessment: 'Tình huống thực tế' };
 
 const STATUSES = [
   { value: '', label: 'Tất cả trạng thái' },
@@ -100,7 +100,7 @@ export default function AdminTestsPage() {
   return (
     <div>
       <div className="flex items-start justify-between gap-4">
-        <PageHeader title="Bài kiểm tra chứng chỉ" description="Luyện tập chủ đề, kiểm tra lĩnh vực và thi thử theo chứng chỉ" />
+        <PageHeader title="Bài kiểm tra chứng chỉ" description="Luyện tập chủ đề, kiểm tra chuyên ngành và thi thử theo chứng chỉ" />
         <Link href="/admin/tests/builder" className="inline-flex shrink-0 items-center gap-2 rounded-xl bg-primary px-4 py-2.5 text-sm font-semibold !text-white shadow-sm"><AppIcon className=" text-[19px]">add</AppIcon>Tạo bài kiểm tra</Link>
       </div>
 
@@ -130,7 +130,7 @@ export default function AdminTestsPage() {
           {STATUSES.map((s) => <option key={s.value} value={s.value}>{s.label}</option>)}
         </Dropdown>
         </label>
-        {([['domainCode', 'Lĩnh vực', options.domains], ['levelCode', 'Trình độ', options.levels], ['certificateId', 'Chứng chỉ', options.certificates]] as const).map(([key,label,list]) => <label key={key} className="grid min-w-0 flex-1 basis-48 gap-1 text-xs font-semibold">{label}<Dropdown aria-label={label} value={filters[key]} onChange={e => { setFilters(f => ({ ...f, [key]: e.target.value })); setPage(1); }} className="h-11 min-w-0 rounded-xl border border-outline-variant px-3 text-sm"><option value="">Tất cả</option>{list.map(x => <option key={x.id} value={key === 'certificateId' ? x.id : x.code}>{x.name}</option>)}</Dropdown></label>)}
+        {([['domainCode', 'Chuyên ngành', options.domains], ['levelCode', 'Trình độ', options.levels], ['certificateId', 'Chứng chỉ', options.certificates]] as const).map(([key,label,list]) => <label key={key} className="grid min-w-0 flex-1 basis-48 gap-1 text-xs font-semibold">{label}<Dropdown aria-label={label} value={filters[key]} onChange={e => { setFilters(f => ({ ...f, [key]: e.target.value })); setPage(1); }} className="h-11 min-w-0 rounded-xl border border-outline-variant px-3 text-sm"><option value="">Tất cả</option>{list.map(x => <option key={x.id} value={key === 'certificateId' ? x.id : x.code}>{x.name}</option>)}</Dropdown></label>)}
         <label className="grid gap-1 text-xs font-semibold">Loại bài kiểm tra<Dropdown aria-label="Loại bài kiểm tra" value={filters.kind} onChange={e => { setFilters(f => ({ ...f, kind: e.target.value })); setPage(1); }} className="h-11 rounded-xl border border-outline-variant px-3 text-sm"><option value="">Tất cả</option>{Object.entries(EXAM_KINDS).map(([v,l]) => <option key={v} value={v}>{l}</option>)}</Dropdown></label>
         <ClearFiltersButton onClick={() => { setFilters({ domainCode: '', levelCode: '', certificateId: '', kind: '' }); setStatus(''); setSearch(''); setSearchInput(''); setPage(1); }} />
         </div>
@@ -191,7 +191,7 @@ export default function AdminTestsPage() {
                   </div>
                   {exam.domain && (
                     <div className="bg-surface-container rounded-xl p-2.5">
-                      <p className="text-on-surface-variant mb-0.5 text-[11px]">Lĩnh vực</p>
+                      <p className="text-on-surface-variant mb-0.5 text-[11px]">Chuyên ngành</p>
                       <p className="font-semibold text-on-surface truncate">{exam.domain.name}</p>
                     </div>
                   )}

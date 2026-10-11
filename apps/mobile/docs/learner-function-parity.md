@@ -27,7 +27,7 @@ Phạm vi: học viên; không gồm admin/giảng viên. Đếm **57 luồng s�
 | L06 | Khôi phục phiên đăng nhập | `/login, /register, /forgot-password, /reset-password` | `(auth)` | Có |
 | L07 | Đăng xuất | `/login, /register, /forgot-password, /reset-password` | `(auth)` | Có |
 | L08 | Chọn mục tiêu học tập | `/onboarding, /onboarding/placement-test, /learn, /learn/plan` | `(onboarding), placement-test, (tabs)/home, learning-plan` | Có |
-| L09 | Chọn lĩnh vực và trình độ | `/onboarding, /onboarding/placement-test, /learn, /learn/plan` | `(onboarding), placement-test, (tabs)/home, learning-plan` | Có |
+| L09 | Chọn chuyên ngành và trình độ | `/onboarding, /onboarding/placement-test, /learn, /learn/plan` | `(onboarding), placement-test, (tabs)/home, learning-plan` | Có |
 | L10 | Chọn chứng chỉ và nghề nghiệp mục tiêu | `/onboarding, /onboarding/placement-test, /learn, /learn/plan` | `(onboarding), placement-test, (tabs)/home, learning-plan` | Có |
 | L11 | Thiết lập chỉ tiêu học ngày/tuần và giờ nhắc | `/onboarding, /onboarding/placement-test, /learn, /learn/plan` | `(onboarding), placement-test, (tabs)/home, learning-plan` | Có |
 | L12 | Đánh giá trình độ đầu vào và xem lời giải | `/onboarding, /onboarding/placement-test, /learn, /learn/plan` | `(onboarding), placement-test, (tabs)/home, learning-plan` | Có |
@@ -35,7 +35,7 @@ Phạm vi: học viên; không gồm admin/giảng viên. Đếm **57 luồng s�
 | L14 | Tối ưu lộ trình bằng AI | `/onboarding, /onboarding/placement-test, /learn, /learn/plan` | `(onboarding), placement-test, (tabs)/home, learning-plan` | Có |
 | L15 | Lịch học hôm nay/tháng/năm và mở nhiệm vụ | `/onboarding, /onboarding/placement-test, /learn, /learn/plan` | `(onboarding), placement-test, (tabs)/home, learning-plan` | Có |
 | L16 | Danh mục chuyên đề và tìm kiếm | `/learn/catalog, /learn/lessons, /learn/lessons/[id]` | `catalog, lessons/index, lessons/[id]` | Có |
-| L17 | Tìm bài học; lọc lộ trình/lĩnh vực/chứng chỉ/từ vựng; xóa bộ lọc | `/learn/catalog, /learn/lessons, /learn/lessons/[id]` | `catalog, lessons/index, lessons/[id]` | Có |
+| L17 | Tìm bài học; lọc lộ trình/chuyên ngành/chứng chỉ/từ vựng; xóa bộ lọc | `/learn/catalog, /learn/lessons, /learn/lessons/[id]` | `catalog, lessons/index, lessons/[id]` | Có |
 | L18 | Học thuật ngữ chuyên ngành | `/learn/catalog, /learn/lessons, /learn/lessons/[id]` | `catalog, lessons/index, lessons/[id]` | Có |
 | L19 | Học đọc hiểu kỹ thuật | `/learn/catalog, /learn/lessons, /learn/lessons/[id]` | `catalog, lessons/index, lessons/[id]` | Có |
 | L20 | Học tài liệu API | `/learn/catalog, /learn/lessons, /learn/lessons/[id]` | `catalog, lessons/index, lessons/[id]` | Có |
@@ -45,7 +45,7 @@ Phạm vi: học viên; không gồm admin/giảng viên. Đếm **57 luồng s�
 | L24 | Tự trả lời rồi đối chiếu gợi ý trong bài | `/learn/catalog, /learn/lessons, /learn/lessons/[id]` | `catalog, lessons/index, lessons/[id]` | Có |
 | L25 | Dịch văn bản theo ngữ cảnh và phát âm | `/learn/catalog, /learn/lessons, /learn/lessons/[id]` | `catalog, lessons/index, lessons/[id]` | Có |
 | L26 | Thống kê đã học/đã nhớ/đến hạn và lịch hoạt động | `/learn/flashcards, /learn/flashcards/explore, /learn/flashcards/[id]/practice, /learn/flashcards/[id]/quiz` | `flashcards/dashboard, explore, words, index, history` | Có |
-| L27 | Khám phá nhóm từ: tìm kiếm, lĩnh vực, trình độ, xóa bộ lọc | `/learn/flashcards, /learn/flashcards/explore, /learn/flashcards/[id]/practice, /learn/flashcards/[id]/quiz` | `flashcards/dashboard, explore, words, index, history` | Có |
+| L27 | Khám phá nhóm từ: tìm kiếm, chuyên ngành, trình độ, xóa bộ lọc | `/learn/flashcards, /learn/flashcards/explore, /learn/flashcards/[id]/practice, /learn/flashcards/[id]/quiz` | `flashcards/dashboard, explore, words, index, history` | Có |
 | L28 | Xem danh sách từ, tìm kiếm và phân trang | `/learn/flashcards, /learn/flashcards/explore, /learn/flashcards/[id]/practice, /learn/flashcards/[id]/quiz` | `flashcards/dashboard, explore, words, index, history` | Có |
 | L29 | Lật flashcard xem nghĩa Anh/Việt và IPA | `/learn/flashcards, /learn/flashcards/explore, /learn/flashcards/[id]/practice, /learn/flashcards/[id]/quiz` | `flashcards/dashboard, explore, words, index, history` | Có |
 | L30 | Phát âm từ vựng | `/learn/flashcards, /learn/flashcards/explore, /learn/flashcards/[id]/practice, /learn/flashcards/[id]/quiz` | `flashcards/dashboard, explore, words, index, history` | Có |

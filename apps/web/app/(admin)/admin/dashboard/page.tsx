@@ -203,8 +203,8 @@ export default function AdminDashboardPage() {
 
       <div className="grid grid-cols-12 gap-6 mb-xl">
         <div className="stat-card bg-surface-container-lowest p-lg col-span-12 lg:col-span-4 min-h-[360px] flex flex-col rounded-lg border border-outline-variant hover:shadow-[0_1px_3px_rgba(15,23,24,0.06)] hover:-translate-y-0.5 transition-all">
-          <h3 className="font-headline-h3 text-headline-h3 text-on-surface mb-xl">Phân bố học liệu theo lĩnh vực CNTT</h3>
-          <p className="mb-4 text-xs text-on-surface-variant">Tổng bài học, từ vựng, câu hỏi và đề thi trong từng lĩnh vực.</p>
+          <h3 className="font-headline-h3 text-headline-h3 text-on-surface mb-xl">Phân bố học liệu theo chuyên ngành CNTT</h3>
+          <p className="mb-4 text-xs text-on-surface-variant">Tổng bài học, từ vựng, câu hỏi và đề thi trong từng chuyên ngành.</p>
           <div className="max-h-[360px] space-y-4 overflow-y-auto pr-2">
             {loading ? <p className="text-sm text-on-surface-variant">Đang tải số liệu...</p> : !(analytics?.domainsDistribution ?? []).some(dom => dom.totalItems > 0) ? <p className="text-sm text-on-surface-variant">Chưa có học liệu.</p> : [...(analytics?.domainsDistribution ?? [])].sort((a, b) => b.totalItems - a.totalItems).map(dom => {
               const percentage = dom.totalItems / totalDomainItems * 100;

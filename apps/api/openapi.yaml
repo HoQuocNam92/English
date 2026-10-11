@@ -32,7 +32,7 @@ tags:
   - name: Learner Profiles
     description: Hồ sơ, sở thích và mục tiêu của học viên.
   - name: Domains
-    description: Lĩnh vực CNTT.
+    description: Chuyên ngành CNTT.
   - name: Levels
     description: Cấp độ học.
   - name: Certificates
@@ -391,7 +391,7 @@ paths:
   /domains:
     get:
       tags: [Domains]
-      summary: Danh sách lĩnh vực CNTT
+      summary: Danh sách chuyên ngành CNTT
       operationId: listDomains
       security: []
       parameters:
@@ -401,7 +401,7 @@ paths:
         - $ref: '#/components/parameters/ActiveOnly'
       responses:
         '200':
-          description: Danh sách lĩnh vực.
+          description: Danh sách chuyên ngành.
           content:
             application/json:
               schema:
@@ -410,13 +410,13 @@ paths:
           $ref: '#/components/responses/ValidationError'
     post:
       tags: [Domains]
-      summary: Tạo lĩnh vực CNTT
+      summary: Tạo chuyên ngành CNTT
       operationId: createDomain
       requestBody:
         $ref: '#/components/requestBodies/DomainWriteBody'
       responses:
         '201':
-          description: Lĩnh vực đã tạo.
+          description: Chuyên ngành đã tạo.
           content:
             application/json:
               schema:
@@ -431,12 +431,12 @@ paths:
       - $ref: '#/components/parameters/DomainId'
     get:
       tags: [Domains]
-      summary: Chi tiết lĩnh vực CNTT
+      summary: Chi tiết chuyên ngành CNTT
       operationId: getDomain
       security: []
       responses:
         '200':
-          description: Chi tiết lĩnh vực.
+          description: Chi tiết chuyên ngành.
           content:
             application/json:
               schema:
@@ -445,13 +445,13 @@ paths:
           $ref: '#/components/responses/NotFound'
     patch:
       tags: [Domains]
-      summary: Cập nhật lĩnh vực CNTT
+      summary: Cập nhật chuyên ngành CNTT
       operationId: updateDomain
       requestBody:
         $ref: '#/components/requestBodies/DomainWriteBody'
       responses:
         '200':
-          description: Lĩnh vực sau cập nhật.
+          description: Chuyên ngành sau cập nhật.
           content:
             application/json:
               schema:
@@ -462,11 +462,11 @@ paths:
           $ref: '#/components/responses/NotFound'
     delete:
       tags: [Domains]
-      summary: Ngừng sử dụng lĩnh vực CNTT
+      summary: Ngừng sử dụng chuyên ngành CNTT
       operationId: archiveDomain
       responses:
         '204':
-          description: Lĩnh vực đã được lưu trữ.
+          description: Chuyên ngành đã được lưu trữ.
         '403':
           $ref: '#/components/responses/Forbidden'
         '404':

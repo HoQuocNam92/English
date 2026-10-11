@@ -309,7 +309,7 @@ model PasswordResetToken {
 // MASTER DATA — Domains, Levels, Certificates
 // =============================================================================
 
-/// Lĩnh vực CNTT (Cloud Computing, DevOps, Security, …).
+/// Chuyên ngành CNTT (Cloud Computing, DevOps, Security, …).
 model Domain {
   id          String   @id @default(uuid()) @db.Uuid
   code        String   @unique @db.VarChar(30)
@@ -434,7 +434,7 @@ model CertificationTopic {
 // LEARNER PROFILE & GOALS
 // =============================================================================
 
-/// Hồ sơ học viên: trình độ, lĩnh vực, mục tiêu nghề nghiệp & chứng chỉ.
+/// Hồ sơ học viên: trình độ, chuyên ngành, mục tiêu nghề nghiệp & chứng chỉ.
 /// bio ở đây là bio học tập riêng, khác với user_details.bio (bio chung).
 model LearnerProfile {
   id                       String   @id @default(uuid()) @db.Uuid

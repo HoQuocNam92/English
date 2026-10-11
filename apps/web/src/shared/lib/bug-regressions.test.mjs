@@ -32,3 +32,28 @@ test('role redirects leave restricted admin routes for the learner home', async 
   assert.equal(roleHome(['teacher', 'learner']), '/admin/dashboard');
   assert.equal(roleHome([]), '/learn');
 });
+
+test('dropdown search finds labels anywhere, ignoring Vietnamese accents and word order', async () => {
+  const { filterDropdownItems } = await import('./dropdown-search.ts');
+  const items = [{ label: 'Tất cả bộ đề' }, ...Array.from({ length: 1000 }, (_, i) => ({ label: `Bộ đề AWS số ${i + 1}` }))];
+  assert.deepEqual(filterDropdownItems(items, '1000 aws').map(result => result.index), [1000]);
+  assert.deepEqual(filterDropdownItems([{ label: 'Điện toán đám mây' }, { label: 'Bảo mật' }], 'dien toan').map(result => result.index), [0]);
+  assert.equal(filterDropdownItems(items, 'không tồn tại').length, 0);
+  assert.equal(filterDropdownItems(items, '   ').length, 1001);
+});
+
+test('selection menus load records beyond the first hundred without dropping filters', async () => {
+  const { loadAllPages } = await import('./load-all-pages.ts');
+  const requested = [];
+  const records = await loadAllPages(async page => {
+    requested.push(page);
+    return { data: Array.from({ length: 100 }, (_, index) => ({ id: (page - 1) * 100 + index + 1 })), meta: { totalPages: 10 } };
+  });
+  assert.deepEqual(requested, [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]);
+  assert.equal(records.length, 1000);
+  assert.equal(records[999].id, 1000);
+  await assert.rejects(() => loadAllPages(async page => {
+    if (page === 2) throw new Error('Network failure');
+    return { data: [{ id: 1 }], meta: { totalPages: 2 } };
+  }), /Network failure/);
+});

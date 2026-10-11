@@ -569,7 +569,7 @@ export class TaxonomyService {
 
   async getDomainReport(domainId: string) {
     const domain = await this.prisma.domain.findUnique({ where: { id: domainId } })
-    if (!domain) throw new NotFoundException('Lĩnh vực không tồn tại')
+    if (!domain) throw new NotFoundException('Chuyên ngành không tồn tại')
 
     // Learners who selected this domain
     const learners = await this.prisma.user.findMany({
@@ -749,7 +749,7 @@ export class TaxonomyService {
       this.prisma.certificateDomain.count({ where: { certificateId } }),
     ])
     if (!certificate) throw new NotFoundException('Chứng chỉ không tồn tại')
-    if (!domain) throw new NotFoundException('Lĩnh vực không tồn tại')
+    if (!domain) throw new NotFoundException('Chuyên ngành không tồn tại')
     await this.prisma.certificateDomain.upsert({
       where: { certificateId_domainId: { certificateId, domainId: dto.domainId } },
       update: { weightPercent: Number(dto.weightPercent ?? 0), order: Number(dto.order ?? count + 1) },

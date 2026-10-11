@@ -780,9 +780,9 @@ export function ImportQuestionsModal({
                     value={filterDomain}
                     onChange={(e) => setFilterDomain(e.target.value)}
                     className="rounded-xl border border-slate-300 bg-white px-3 py-1.5 text-xs font-medium text-slate-900 focus:border-primary focus:ring-2 focus:ring-primary/20 focus:outline-none max-w-[150px] truncate"
-                    title="Lọc theo lĩnh vực / chuyên ngành"
+                    title="Lọc theo chuyên ngành"
                   >
-                    <option value="all">Tất cả lĩnh vực</option>
+                    <option value="all">Tất cả chuyên ngành</option>
                     {availableDomains.map((d) => (
                       <option key={d.id} value={d.code || d.id}>
                         {d.name || d.code || d.id}
@@ -855,7 +855,7 @@ export function ImportQuestionsModal({
                           Nội dung câu hỏi
                         </th>
                         <th className="px-3 py-2.5 font-semibold w-36">
-                          Lĩnh vực & Cấp độ
+                          Chuyên ngành & Cấp độ
                         </th>
                         <th className="px-3 py-2.5 font-semibold min-w-[180px]">Đáp án</th>
                         <th className="px-3 py-2.5 font-semibold min-w-[160px]">

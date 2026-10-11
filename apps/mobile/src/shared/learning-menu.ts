@@ -1,8 +1,8 @@
 export const learningMenu = [
   { title: 'Học và luyện tập', items: [
-    { label: 'Bài học', detail: 'Tìm bài, lọc lĩnh vực và học theo lộ trình.', icon: 'menu-book', href: '/lessons' },
+    { label: 'Bài học', detail: 'Tìm bài, lọc chuyên ngành và học theo lộ trình.', icon: 'menu-book', href: '/lessons' },
     { label: 'Từ vựng', detail: 'Từ mới, ôn tập đến hạn và thống kê đã học.', icon: 'style', href: '/flashcards/dashboard' },
-    { label: 'Khám phá từ vựng', detail: 'Tìm nhóm từ theo lĩnh vực và trình độ.', icon: 'search', href: '/flashcards/explore' },
+    { label: 'Khám phá từ vựng', detail: 'Tìm nhóm từ theo chuyên ngành và trình độ.', icon: 'search', href: '/flashcards/explore' },
     { label: 'Luyện thi chứng chỉ', detail: 'Học kiến thức và làm bài kiểm tra theo chủ đề.', icon: 'workspace-premium', href: '/certifications' },
   ] },
   { title: 'Chuyên đề tiếng Anh CNTT', items: [
@@ -16,7 +16,7 @@ export const learningMenu = [
   { title: 'Lộ trình và mục tiêu', items: [
     { label: 'Lộ trình học của tôi', detail: 'Xem kế hoạch đã lưu hoặc tạo lộ trình mới.', icon: 'route', href: '/learning-plan' },
     { label: 'Kiểm tra trình độ', detail: 'Đánh giá đầu vào và nhận kế hoạch phù hợp.', icon: 'quiz', href: '/placement-test' },
-    { label: 'Mục tiêu và nhắc học', detail: 'Chọn lĩnh vực, chứng chỉ và chỉ tiêu mỗi ngày.', icon: 'schedule', href: '/profile/edit' },
+    { label: 'Mục tiêu và nhắc học', detail: 'Chọn chuyên ngành, chứng chỉ và chỉ tiêu mỗi ngày.', icon: 'schedule', href: '/profile/edit' },
   ] },
   { title: 'Tiến độ và lịch sử', items: [
     { label: 'Tiến độ học tập', detail: 'Theo dõi kết quả, thành tích và các lần thi.', icon: 'trending-up', href: '/(tabs)/progress' },

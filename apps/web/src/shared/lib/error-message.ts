@@ -2,7 +2,7 @@ const VIETNAMESE_MARKS = /[àáạảãâầấậẩẫăằắặẳẵèéẹ
 
 const fieldLabels: Record<string, string> = {
   email: 'Email', password: 'Mật khẩu', newPassword: 'Mật khẩu mới', displayName: 'Tên hiển thị',
-  title: 'Tiêu đề', name: 'Tên', code: 'Mã', domainId: 'Lĩnh vực', levelId: 'Cấp độ',
+  title: 'Tiêu đề', name: 'Tên', code: 'Mã', domainId: 'Chuyên ngành', levelId: 'Cấp độ',
   role: 'Vai trò', status: 'Trạng thái', file: 'Tệp', otp: 'Mã OTP',
 };
 
@@ -39,7 +39,7 @@ const translations: Array<[RegExp, string]> = [
   [/attempt not found/i, 'Không tìm thấy lượt làm bài hoặc bạn không có quyền xem.'],
   [/role not found/i, 'Không tìm thấy nhóm quyền được yêu cầu.'],
   [/permission not found/i, 'Không tìm thấy quyền được yêu cầu.'],
-  [/domain or level not found/i, 'Lĩnh vực hoặc cấp độ đã chọn không tồn tại.'],
+  [/domain or level not found/i, 'Chuyên ngành hoặc cấp độ đã chọn không tồn tại.'],
   [/email already in use/i, 'Email này đã được sử dụng bởi một tài khoản khác.'],
   [/role (.+) already exists/i, 'Mã nhóm quyền này đã tồn tại. Vui lòng chọn mã khác.'],
   [/permission (.+) already exists/i, 'Mã quyền này đã tồn tại. Vui lòng chọn mã khác.'],
