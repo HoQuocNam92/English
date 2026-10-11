@@ -1,4 +1,5 @@
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common'
+import { activityDays } from './activity-days'
 import { PrismaService } from '../../infrastructure/database/prisma.service'
 
 @Injectable()
@@ -404,8 +405,8 @@ export class TaxonomyService {
   }
 
   async getDashboardAnalytics(params: { dateFrom?: string; dateTo?: string; domainCode?: string; certificateId?: string } = {}) {
-    const dateFrom = params.dateFrom ? new Date(`${params.dateFrom}T00:00:00.000`) : undefined
-    const dateTo = params.dateTo ? new Date(`${params.dateTo}T23:59:59.999`) : undefined
+    const dateFrom = params.dateFrom ? new Date(`${params.dateFrom}T00:00:00.000+07:00`) : undefined
+    const dateTo = params.dateTo ? new Date(`${params.dateTo}T23:59:59.999+07:00`) : undefined
     if (dateFrom && Number.isNaN(dateFrom.getTime())) throw new BadRequestException('Ngày bắt đầu không hợp lệ')
     if (dateTo && Number.isNaN(dateTo.getTime())) throw new BadRequestException('Ngày kết thúc không hợp lệ')
     if (dateFrom && dateTo && dateFrom > dateTo) throw new BadRequestException('Ngày bắt đầu phải trước hoặc bằng ngày kết thúc')
@@ -501,18 +502,8 @@ export class TaxonomyService {
       }
     })
 
-    const days = ['CN', 'T2', 'T3', 'T4', 'T5', 'T6', 'T7'];
-    const today = dateTo ?? new Date();
-    const activityStart = dateFrom ?? new Date(new Date(today).setDate(today.getDate() - 6));
-    const rangeDays = Math.min(31, Math.max(1, Math.floor((today.getTime() - activityStart.getTime()) / 86400000) + 1));
     const weeklyActivity = [];
-
-    for (let i = rangeDays - 1; i >= 0; i--) {
-      const date = new Date(today);
-      date.setDate(today.getDate() - i);
-      const startOfDay = new Date(date.setHours(0,0,0,0));
-      const endOfDay = new Date(date.setHours(23,59,59,999));
-
+    for (const { day, startOfDay, endOfDay } of activityDays(params.dateFrom, params.dateTo)) {
       const activity = await this.prisma.learningProgress.findMany({
         where: {
           updatedAt: { gte: startOfDay, lte: endOfDay },
@@ -523,7 +514,7 @@ export class TaxonomyService {
       const activeUsers = new Set(activity.map(item => item.learnerId)).size;
 
       weeklyActivity.push({
-        day: rangeDays > 7 ? `${String(startOfDay.getDate()).padStart(2, '0')}/${String(startOfDay.getMonth() + 1).padStart(2, '0')}` : days[new Date(startOfDay).getDay()],
+        day,
         activityCount: activity.length,
         activeUsers
       });

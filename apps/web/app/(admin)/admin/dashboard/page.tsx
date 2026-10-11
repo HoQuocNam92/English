@@ -1,4 +1,5 @@
 'use client';
+import { dashboardDateRange } from '@/shared/lib/dashboard-date-range';
 import { AppIcon } from '@/shared/ui/AppIcon';
 
 import { Dropdown } from '@/shared/ui/Dropdown';
@@ -91,7 +92,7 @@ export default function AdminDashboardPage() {
           isAdmin ? apiClient.get<PaginatedResponse<UserItem>>('/users?limit=5') : Promise.resolve({ data: [], meta: { total: 0 } }),
           apiClient.get<PaginatedResponse<ExamItem>>('/exams?limit=1'),
           apiClient.get<PaginatedResponse<unknown>>('/vocabulary?limit=1'),
-          isAdmin ? apiClient.get<AnalyticsData>(`/analytics/dashboard?dateFrom=${period === 'month' ? new Date().toISOString().slice(0, 8) + '01' : new Date(Date.now() - 6 * 86400000).toISOString().slice(0, 10)}&dateTo=${new Date().toISOString().slice(0, 10)}`).catch(() => null) : Promise.resolve(null),
+          isAdmin ? apiClient.get<AnalyticsData>(`/analytics/dashboard?${new URLSearchParams(dashboardDateRange(period))}`).catch(() => null) : Promise.resolve(null),
           isAdmin ? apiClient.get<any>('/users?limit=1&status=active') : Promise.resolve({ meta: { total: 0 } }),
         ]);
 

@@ -57,3 +57,11 @@ test('selection menus load records beyond the first hundred without dropping fil
     return { data: [{ id: 1 }], meta: { totalPages: 2 } };
   }), /Network failure/);
 });
+
+
+test('dashboard date filters use the Vietnam calendar at midnight and month rollover', async () => {
+  const { dashboardDateRange } = await import('./dashboard-date-range.ts');
+  const now = new Date('2026-09-30T18:00:00Z');
+  assert.deepEqual(dashboardDateRange('month', now), { dateFrom: '2026-10-01', dateTo: '2026-10-01' });
+  assert.deepEqual(dashboardDateRange('week', now), { dateFrom: '2026-09-25', dateTo: '2026-10-01' });
+});
