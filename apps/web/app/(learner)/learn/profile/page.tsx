@@ -341,8 +341,8 @@ function LearnerProfileContent() {
               <label className="block text-sm font-bold text-on-surface">1. Mục tiêu học chính</label>
               <div className="grid gap-3 sm:grid-cols-3">
                 {[
-                  { value: 'vocabulary', icon: 'translate', iconClass: 'icon-learning', title: 'Luyện từ vựng CNTT', description: 'Học từ vựng theo chuyên ngành chuyên ngành.' },
-                  { value: 'certification', icon: 'workspace_premium', iconClass: 'icon-certificate', title: 'Luyện chứng chỉ', description: 'Học theo Chủ đề, Tiểu chủ đề và Quiz của chứng chỉ.' },
+                  { value: 'vocabulary', icon: 'translate', iconClass: 'icon-learning', title: 'Luyện từ vựng CNTT', description: 'Học từ vựng theo chuyên ngành.' },
+                  { value: 'certification', icon: 'workspace_premium', iconClass: 'icon-certificate', title: 'Luyện chứng chỉ', description: 'Học theo Chuyên ngành, Chủ đề và Quiz của chứng chỉ.' },
                   { value: 'both', icon: 'route', iconClass: 'icon-progress', title: 'Cả hai', description: 'Kết hợp từ vựng CNTT và chứng chỉ mục tiêu.' },
                 ].map((goal) => {
                   const selected = learningGoal === goal.value;

@@ -55,6 +55,10 @@ export default function TestBuilderPage() {
   const [globalError, setGlobalError] = React.useState('');
 
   React.useEffect(() => {
+    setQFilterDomain(domainId);
+  }, [domainId]);
+
+  React.useEffect(() => {
     const init = async () => {
       setLoading(true);
       try {
@@ -209,7 +213,7 @@ export default function TestBuilderPage() {
 
   const handleResetFilters = () => {
     setQSearch('');
-    setQFilterDomain('');
+    setQFilterDomain(domainId);
     setQFilterLevel('');
     setQFilterSkill('');
     setQOnlySelected(false);
@@ -314,7 +318,7 @@ export default function TestBuilderPage() {
             <div>
               <label className="block text-sm font-semibold text-slate-900 mb-1.5">Loại bài kiểm tra</label>
               <Dropdown value={kind} onChange={e => setKind(e.target.value)} className="w-full rounded-xl border border-slate-300 bg-white px-3.5 py-2.5 text-sm font-medium text-slate-900 shadow-2xs focus:outline-none focus:border-primary">
-                <option value="practice">Luyện tập theo chủ đề</option><option value="domain_test">Kiểm tra Chủ đề</option><option value="mock_exam">Thi thử chứng chỉ</option><option value="scenario_assessment">Bài tập tình huống thực tế</option>
+                <option value="practice">Luyện tập theo chủ đề</option><option value="domain_test">Kiểm tra chuyên ngành</option><option value="mock_exam">Thi thử chứng chỉ</option><option value="scenario_assessment">Bài tập tình huống thực tế</option>
               </Dropdown>
             </div>
             <div>

@@ -285,7 +285,7 @@ export default function MobileEditProfileScreen() {
               <TouchableOpacity style={[styles.modeCard, learningGoal === 'certification' && styles.modeCardActive]} onPress={() => setLearningGoal('certification')}>
                 <MaterialIcons name="workspace-premium" size={22} color={colors.primary} />
                 <Text style={styles.modeTitle}>Luyện chứng chỉ</Text>
-                <Text style={styles.modeDescription}>Chủ đề, Tiểu chủ đề và Quiz theo chứng chỉ.</Text>
+                <Text style={styles.modeDescription}>Chuyên ngành, Chủ đề và Quiz theo chứng chỉ.</Text>
               </TouchableOpacity>
               <TouchableOpacity style={[styles.modeCard, learningGoal === 'vocabulary' && styles.modeCardActive]} onPress={() => setLearningGoal('vocabulary')}>
                 <MaterialIcons name="translate" size={22} color={colors.primary} />

@@ -11,8 +11,8 @@ import { colors, spacing } from '@techenglish/design-tokens';
 type Goal = 'certification' | 'vocabulary';
 
 const OPTIONS: Array<{ id: Goal; title: string; description: string; icon: keyof typeof MaterialIcons.glyphMap }> = [
-  { id: 'certification', title: 'Luyện chứng chỉ CNTT', description: 'Học theo Chủ đề, Tiểu chủ đề, từ vựng và Quiz của chứng chỉ.', icon: 'workspace-premium' },
-  { id: 'vocabulary', title: 'Luyện từ vựng CNTT', description: 'Tập trung từ vựng theo chuyên ngành chuyên ngành.', icon: 'translate' },
+  { id: 'certification', title: 'Luyện chứng chỉ CNTT', description: 'Học theo Chuyên ngành, Chủ đề, từ vựng và Quiz của chứng chỉ.', icon: 'workspace-premium' },
+  { id: 'vocabulary', title: 'Luyện từ vựng CNTT', description: 'Tập trung từ vựng theo chuyên ngành.', icon: 'translate' },
 ];
 
 export default function OnboardingGoalScreen() {

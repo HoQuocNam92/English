@@ -317,13 +317,13 @@ export default function AdminQuestionsPage() {
                           </div>
                         </div>
                         <div className="rounded-xl bg-secondary/5 p-3.5">
-                          <p className="mb-2 text-xs font-semibold text-on-surface-variant">Tiểu chủ đề chứng chỉ</p>
+                          <p className="mb-2 text-xs font-semibold text-on-surface-variant">Chủ đề chứng chỉ</p>
                           <div className="flex flex-wrap gap-2">
                             {q.certificationTopics?.length ? q.certificationTopics.map(({ topic }: any) => (
                               <span key={topic.id} className="rounded-full bg-surface-container-lowest px-2.5 py-1 text-xs font-medium text-secondary">
                                 {topic.certificateDomain?.certificate?.name} · {topic.name}
                               </span>
-                            )) : <span className="text-sm text-on-surface-variant">Chưa gắn Tiểu chủ đề</span>}
+                            )) : <span className="text-sm text-on-surface-variant">Chưa gắn Chủ đề</span>}
                           </div>
                         </div>
                       </div>

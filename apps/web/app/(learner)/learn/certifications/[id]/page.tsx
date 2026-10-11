@@ -95,7 +95,7 @@ function LearnTab({ topicProgress, certificateId, domains, exams, progress, expa
           return <article key={domain.id} className="overflow-hidden rounded-xl border border-outline-variant bg-surface-container-lowest shadow-sm">
             <button onClick={() => setExpanded((current: string[]) => current.includes(domain.id) ? current.filter((id) => id !== domain.id) : [...current, domain.id])} className="flex w-full items-center gap-4 p-5 text-left hover:bg-surface-container-low">
               <div className="grid h-10 w-10 shrink-0 place-items-center rounded-lg bg-primary-light text-sm font-bold text-primary">{domain.number}</div>
-              <div className="min-w-0 flex-1"><div className="flex items-center justify-between gap-2"><h3 className="font-bold">Chủ đề {domain.number} — {domain.name}</h3><span className="text-sm font-bold text-primary">{domain.totalQuestions} câu hỏi</span></div><span className="mt-2 block text-xs text-on-surface-variant">{domain.weightPercent}% bài thi</span></div>
+              <div className="min-w-0 flex-1"><div className="flex items-center justify-between gap-2"><h3 className="font-bold">Chuyên ngành {domain.number} — {domain.name}</h3><span className="text-sm font-bold text-primary">{domain.totalQuestions} câu hỏi</span></div><span className="mt-2 block text-xs text-on-surface-variant">{domain.weightPercent}% bài thi</span></div>
               {isOpen ? <ChevronDown size={20} /> : <ChevronRight size={20} />}
             </button>
             {isOpen && <div className="border-t border-outline-variant px-5 py-2">{domain.topics.length ? domain.topics.map((topic: any) => {
@@ -109,10 +109,10 @@ function LearnTab({ topicProgress, certificateId, domains, exams, progress, expa
 
                 </div>
               </div>;
-            }) : <p className="py-5 text-sm text-on-surface-variant">Chủ đề này chưa được cấu hình nội dung.</p>}</div>}
+            }) : <p className="py-5 text-sm text-on-surface-variant">Chuyên ngành này chưa được cấu hình nội dung.</p>}</div>}
           </article>;
         })}
-        {!domains.length && <p className="rounded-xl border border-dashed p-6 text-sm text-on-surface-variant">Chứng chỉ chưa được cấu hình Chủ đề.</p>}
+        {!domains.length && <p className="rounded-xl border border-dashed p-6 text-sm text-on-surface-variant">Chứng chỉ chưa được cấu hình chuyên ngành.</p>}
       </div>
     </section>
     <aside className="space-y-4"><div className="rounded-xl border border-outline-variant bg-surface-container-lowest p-5"><h3 className="font-bold">Kết quả thực tế</h3><div className="mt-4 grid grid-cols-3 gap-2 text-center">{[[String(completedCount ?? 0), 'Bài học'], [String(attempts?.length ?? 0), 'Lượt thi'], [certProgress?.avgScore == null ? '—' : `${certProgress.avgScore}%`, 'Điểm TB']].map(([value, label]) => <div key={label} className="rounded-lg bg-surface-container-low p-3"><strong className="block text-lg text-primary">{value}</strong><span className="text-xs text-on-surface-variant">{label}</span></div>)}</div></div></aside>
