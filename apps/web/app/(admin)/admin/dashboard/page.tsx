@@ -137,12 +137,12 @@ export default function AdminDashboardPage() {
 
   return (
     <main className="flex-1 overflow-y-auto p-gutter lg:px-xl xl:px-margin bg-background">
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-end mb-xl gap-md">
-        <div>
-          <h2 className="font-headline-h1 text-headline-h1 text-on-surface mb-xs">Tổng quan quản trị viên</h2>
-          <p className="font-body-md text-body-md text-on-surface-variant">Hãy xem tình hình học tập hôm nay.</p>
-        </div>
-      </div>
+      <PageHeader
+        className="mb-xl"
+        title="Tổng quan quản trị viên"
+        description="Hãy xem tình hình học tập hôm nay."
+        icon="dashboard"
+      />
 
       {error && (
         <div className="mb-xl p-3 rounded-xl bg-error-container text-on-error-container text-sm flex items-center gap-2">
