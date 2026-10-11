@@ -383,18 +383,20 @@ export default function AdminLevels({ createOnly = false }: { createOnly?: boole
       )}
 
       {/* Summary stats */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-md">
         {[
-          { label: 'Tổng cấp độ', value: loading ? '—' : String(levels.length), icon: 'stairs', color: 'text-primary' },
-          { label: 'Tổng từ vựng', value: loading ? '—' : String(levels.reduce((s, l) => s + (l._count?.vocabularies ?? 0), 0)), icon: 'translate', color: 'text-tertiary' },
-          { label: 'Ngân hàng câu hỏi', value: loading ? '—' : String(levels.reduce((s, l) => s + (l._count?.questions ?? 0), 0)), icon: 'quiz', color: 'text-error' },
+          { label: 'Tổng cấp độ', value: loading ? '—' : levels.length.toLocaleString('vi-VN'), icon: 'stairs', unit: 'cấp độ' },
+          { label: 'Tổng từ vựng', value: loading ? '—' : levels.reduce((s, l) => s + (l._count?.vocabularies ?? 0), 0).toLocaleString('vi-VN'), icon: 'library_books', unit: 'từ vựng' },
+          { label: 'Ngân hàng câu hỏi', value: loading ? '—' : levels.reduce((s, l) => s + (l._count?.questions ?? 0), 0).toLocaleString('vi-VN'), icon: 'quiz', unit: 'câu hỏi' },
         ].map((stat) => (
-          <div key={stat.label} className="rounded-2xl bg-surface-container-lowest p-5 border border-outline-variant/40 shadow-[0_8px_28px_rgba(15,23,42,0.03)]">
-            <div className="flex items-center justify-between mb-3">
-              <p className="text-xs font-medium text-on-surface-variant">{stat.label}</p>
-              <AppIcon className={` text-[22px] ${stat.color}`}>{stat.icon}</AppIcon>
+          <div key={stat.label} className="stat-card bg-surface-container-lowest p-md flex flex-col justify-between h-[120px] rounded-lg border border-outline-variant hover:shadow-[0_1px_3px_rgba(15,23,24,0.06)] hover:-translate-y-0.5 transition-all">
+            <div className="flex justify-between items-start gap-sm">
+              <span className="font-body-sm text-body-sm text-on-surface-variant">{stat.label}</span>
+              <AppIcon className="text-outline text-[20px] shrink-0">{stat.icon}</AppIcon>
             </div>
-            <p className="text-2xl font-bold text-on-surface">{stat.value}</p>
+            <div className="font-headline-h2 text-headline-h2 text-on-surface flex items-baseline gap-sm">
+              {stat.value} <span className="font-body-sm text-body-sm text-on-surface-variant font-normal">{stat.unit}</span>
+            </div>
           </div>
         ))}
       </div>
