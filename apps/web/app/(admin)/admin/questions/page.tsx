@@ -159,7 +159,7 @@ export default function AdminQuestionsPage() {
               setSuccessMessage(null);
               setImportModalOpen(true);
             }}
-            className="inline-flex shrink-0 items-center gap-2 rounded-xl border border-primary/20 bg-primary/10 px-3.5 py-2.5 text-sm font-semibold text-primary shadow-sm transition-colors hover:bg-primary/15"
+            className="inline-flex shrink-0 items-center gap-2 rounded-xl border border-primary/20 bg-white px-3.5 py-2.5 text-sm font-semibold text-primary shadow-sm transition-colors hover:bg-violet-50"
           >
             <AppIcon className=" text-[19px]">upload_file</AppIcon>
             Nhập từ Excel
