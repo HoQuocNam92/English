@@ -9,7 +9,8 @@ import { LevelBadge } from '@/shared/ui/LevelBadge';
 import { Dropdown } from '@/shared/ui/Dropdown';
 import * as React from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { PageHeader } from '@/shared/ui';
+import Link from 'next/link';
+import { PageHeader, showToast } from '@/shared/ui';
 import { apiClient, ApiClientError } from '@/shared/api/api-client';
 import type { QuestionItem } from '@/shared/api/api-client';
 
@@ -52,6 +53,7 @@ export default function TestBuilderPage() {
   const [errors, setErrors] = React.useState<Record<string, string>>({});
   const [loading, setLoading] = React.useState(false);
   const [saving, setSaving] = React.useState(false);
+  const [savedExam, setSavedExam] = React.useState<{ title: string; certificateId: string; certificateName: string; published: boolean; topicPractice: boolean } | null>(null);
   const [globalError, setGlobalError] = React.useState('');
 
   React.useEffect(() => {
@@ -151,7 +153,7 @@ export default function TestBuilderPage() {
       } else {
         await apiClient.post('/exams', payload);
       }
-      router.push('/admin/tests');
+      setSavedExam({ title: title.trim(), certificateId, certificateName: certificates.find(item => item.id === certificateId)?.name || 'Chứng chỉ đã chọn', published: targetStatus === 'published', topicPractice: kind === 'practice' && Boolean(topics.trim()) });
     } catch (e) {
       setGlobalError(e instanceof ApiClientError ? e.message : 'Lỗi khi lưu bài thi');
     } finally {
@@ -218,6 +220,33 @@ export default function TestBuilderPage() {
     setQFilterSkill('');
     setQOnlySelected(false);
   };
+
+  if (savedExam) {
+    return <FormPageLayout className="max-w-3xl">
+      <PageHeader title={savedExam.published ? 'Đã xuất bản bài kiểm tra' : 'Đã lưu bản nháp'} description={savedExam.title} />
+      <section role="status" className="mt-6 space-y-4 rounded-2xl border border-outline-variant bg-white p-6">
+        <p className="font-semibold">{savedExam.published ? 'Bài kiểm tra đã xuất hiện trong danh sách bài kiểm tra của chứng chỉ.' : 'Học viên chưa thấy bài này. Để mở cho học viên, vào danh sách bài kiểm tra, tích chọn bài rồi bấm “Xuất bản”.'}</p>
+        <div className="rounded-xl bg-primary/5 p-4 text-sm leading-7">
+          <p className="font-bold">Học viên tìm bài ở đâu?</p>
+          <p>Chứng chỉ → {savedExam.certificateName} → Bài kiểm tra → {savedExam.title} → Bắt đầu.</p>
+        </div>
+        {savedExam.topicPractice && <p className="text-sm text-on-surface-variant">Bài luyện tập đã gắn chủ đề: học viên cần hoàn thành bài học kiến thức của chủ đề trước khi làm bài.</p>}
+        <div className="flex flex-wrap gap-3">
+          <button type="button" className="ui-button ui-button-primary" onClick={async () => {
+            try {
+              await navigator.clipboard.writeText(`${window.location.origin}/learn/certifications/${savedExam.certificateId}?tab=exams`);
+              showToast('Đã sao chép đường dẫn. Học viên đăng nhập rồi mở đường dẫn này để xem bài kiểm tra.', 'success');
+            } catch { showToast('Không thể sao chép tự động. Bạn có thể chọn và sao chép đường dẫn bên dưới.', 'error'); }
+          }}>Sao chép đường dẫn cho học viên</button>
+          <Link className="ui-button ui-button-outline" href="/admin/tests">Về danh sách quản trị</Link>
+        </div>
+        <label className="block text-sm font-semibold">Đường dẫn chứng chỉ dành cho học viên
+          <input readOnly aria-label="Đường dẫn chứng chỉ dành cho học viên" onFocus={event => event.target.select()} value={`${window.location.origin}/learn/certifications/${savedExam.certificateId}?tab=exams`} className="mt-2 h-11 w-full rounded-xl border border-outline-variant px-3 text-sm font-normal" />
+        </label>
+        <p className="text-xs text-on-surface-variant">Mở đường dẫn bằng tài khoản học viên. Bài còn ở bản nháp sẽ chưa xuất hiện.</p>
+      </section>
+    </FormPageLayout>;
+  }
 
   if (loading) {
     return (
@@ -322,15 +351,17 @@ export default function TestBuilderPage() {
               </Dropdown>
             </div>
             <div>
-              <label className="block text-sm font-semibold text-slate-900 mb-1.5">Chứng chỉ liên quan</label>
+              <label className="block text-sm font-semibold text-slate-900 mb-1.5">Chứng chỉ liên quan <span className="text-error">*</span></label>
               <Dropdown
                 value={certificateId}
                 onChange={e => setCertificateId(e.target.value)}
                 className="w-full rounded-xl border border-slate-300 bg-white px-3.5 py-2.5 text-sm font-medium text-slate-900 shadow-2xs focus:outline-none focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all cursor-pointer"
               >
-                <option value="">Không gắn chứng chỉ</option>
+                <option value="">-- Chọn chứng chỉ --</option>
                 {certificates.map(cert => <option key={cert.id} value={cert.id}>{cert.name}</option>)}
               </Dropdown>
+              <FieldError msg={errors.certificateId} />
+              <p className="mt-2 text-xs leading-5 text-on-surface-variant">Sau khi xuất bản, học viên vào Chứng chỉ → {certificates.find(item => item.id === certificateId)?.name || 'chứng chỉ đã chọn'} → Bài kiểm tra để tìm và làm bài. Bản nháp chỉ hiển thị trong trang quản trị.</p>
             </div>
 
             {/* Duration & Pass score */}

@@ -22,6 +22,7 @@ export default function CertificationDetailPage() {
   const [error, setError] = useState('');
 
   useEffect(() => {
+    if (new URLSearchParams(window.location.search).get('tab') === 'exams') setActiveTab('exams');
     async function load() {
       try {
         const [certificateResult, progressResult, studyResult] = await Promise.all([
