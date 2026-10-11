@@ -399,9 +399,11 @@ export default function AdminLevels({ createOnly = false }: { createOnly?: boole
         ))}
       </div>
 
+      <ListTools search={search} onSearch={setSearch} filter={filter} onFilter={setFilter} options={[{value:'',label:'Tất cả trạng thái'},{value:'active',label:'Đang hoạt động'},{value:'inactive',label:'Ngừng hoạt động'}]} />
+
       {/* Level Cards Grid */}
-      <div className="mt-8">
-        <ListTools search={search} onSearch={setSearch} filter={filter} onFilter={setFilter} options={[{value:'',label:'Tất cả trạng thái'},{value:'active',label:'Đang hoạt động'},{value:'inactive',label:'Ngừng hoạt động'}]} />
+      <section className="space-y-4" aria-labelledby="levels-list-title">
+        <h2 id="levels-list-title" className="text-lg font-semibold text-on-surface">Danh sách cấp độ ({visibleLevels.length})</h2>
         <BulkSelectionBar
           pageCount={visibleLevels.length}
           selectedCount={selectedIds.length}
@@ -416,7 +418,6 @@ export default function AdminLevels({ createOnly = false }: { createOnly?: boole
           <button type="button" disabled={bulkBusy || visibleLevels.length === 0} onClick={() => void bulkChangeActivity(true, true)} className="rounded-lg border border-emerald-600 px-3 py-2 text-xs font-bold text-emerald-700 disabled:opacity-50">Kích hoạt tất cả kết quả lọc</button>
           <button type="button" disabled={bulkBusy || visibleLevels.length === 0} onClick={() => void bulkChangeActivity(false, true)} className="rounded-lg border border-amber-500 px-3 py-2 text-xs font-bold text-amber-700 disabled:opacity-50">Ngừng hoạt động tất cả kết quả lọc</button>
         </BulkSelectionBar>
-        <h2 className="text-sm font-semibold text-on-surface mb-4">Danh sách cấp độ ({levels.length})</h2>
 
         {loading ? (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -515,7 +516,7 @@ export default function AdminLevels({ createOnly = false }: { createOnly?: boole
             })}
           </PaginatedList>
         )}
-      </div>
+      </section>
 
       {/* CREATE / EDIT MODAL */}
       {formModalOpen && levelForm}

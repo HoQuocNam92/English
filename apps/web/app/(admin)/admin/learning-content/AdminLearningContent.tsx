@@ -562,7 +562,7 @@ export default function AdminLearningContent({ createOnly = false }: { createOnl
       {/* Filters */}
       <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <SearchInput
-          className="sm:!w-auto sm:flex-1 sm:min-w-[320px] sm:!max-w-2xl"
+          className="sm:!min-w-0"
           value={searchInput}
           onChange={setSearchInput}
           onSearch={(sanitized) => {
