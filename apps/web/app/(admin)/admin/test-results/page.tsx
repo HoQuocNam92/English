@@ -1,4 +1,5 @@
 'use client';
+import { ClearFiltersButton } from '@/shared/ui/ClearFiltersButton';
 import { formatAttemptDuration } from '@/shared/lib/attempt-duration';
 import { showToast } from '@/shared/ui/AppFeedback';
 import { AppIcon } from '@/shared/ui/AppIcon';
@@ -116,6 +117,7 @@ export default function AdminTestResultsPage() {
               <option value="passed">Đạt</option>
               <option value="failed">Không đạt</option>
             </Dropdown>
+          <ClearFiltersButton onClick={() => { setSearchInput(''); setSearch(''); setStatus(''); setPage(1); }} />
         </div>
       </div>
 

@@ -1,4 +1,5 @@
 'use client';
+import { ClearFiltersButton } from '@/shared/ui/ClearFiltersButton';
 import { AppIcon } from '@/shared/ui/AppIcon';
 import { useRouter } from 'next/navigation';
 import { completeCreation, CreatePage } from '@/shared/ui/CreatePage';
@@ -586,6 +587,7 @@ export default function AdminLearningContent({ createOnly = false }: { createOnl
         >
           {STATUSES.map((s) => <option key={s.value} value={s.value}>{s.label}</option>)}
         </Dropdown>
+        <ClearFiltersButton onClick={() => { setSearchInput(''); setSearch(''); setDomainCode(''); setStatus(''); setPage(1); setSelectedIds(new Set()); }} />
         </div>
       </div>
 

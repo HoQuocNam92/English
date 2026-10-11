@@ -1,4 +1,5 @@
 'use client';
+import { ClearFiltersButton } from '@/shared/ui/ClearFiltersButton';
 import { showToast } from '@/shared/ui/AppFeedback';
 import { ActionButton, ActionGroup } from '@/shared/ui/ActionButton';
 import { AppIcon } from '@/shared/ui/AppIcon';
@@ -190,7 +191,7 @@ export default function AdminReportsPage() {
             <label className="grid gap-1 text-sm font-semibold">Chứng chỉ<Dropdown aria-label="Chứng chỉ" value={certificateId} onChange={e => setCertificateId(e.target.value)} className="h-11 min-w-0 rounded-xl border border-outline-variant px-3"><option value="">Tất cả chứng chỉ</option>{certificates.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}</Dropdown></label>
             <label className="grid gap-1 text-sm font-semibold">Từ ngày<input aria-label="Từ ngày" type="date" value={dateFrom} max={dateTo} onChange={e => { setDateFrom(e.target.value); setPeriod('custom'); }} className="h-11 min-w-0 w-full rounded-xl border border-outline-variant px-3" /></label>
             <label className="grid gap-1 text-sm font-semibold">Đến ngày<input aria-label="Đến ngày" type="date" value={dateTo} min={dateFrom} onChange={e => { setDateTo(e.target.value); setPeriod('custom'); }} className="h-11 min-w-0 w-full rounded-xl border border-outline-variant px-3" /></label>
-            <div className="flex flex-wrap items-end gap-2"><button onClick={applyFilters} disabled={loading} className="h-11 rounded-xl bg-primary px-4 text-sm font-semibold !text-white disabled:opacity-50">Áp dụng</button><button onClick={resetFilters} className="h-11 rounded-xl border border-outline-variant px-4 text-sm">Đặt lại</button><button onClick={() => void exportExcel()} disabled={!analytics || loading || hasPendingFilters || !!error} className="h-11 rounded-xl border border-outline-variant px-4 text-sm disabled:opacity-50">Xuất Excel</button></div>
+            <div className="flex flex-wrap items-end gap-2"><button onClick={applyFilters} disabled={loading} className="h-11 rounded-xl bg-primary px-4 text-sm font-semibold !text-white disabled:opacity-50">Áp dụng</button><ClearFiltersButton onClick={resetFilters} /><button onClick={() => void exportExcel()} disabled={!analytics || loading || hasPendingFilters || !!error} className="h-11 rounded-xl border border-outline-variant px-4 text-sm disabled:opacity-50">Xuất Excel</button></div>
             <p className="text-sm text-on-surface-variant sm:col-span-2 xl:col-span-3">{hasPendingFilters ? 'Bộ lọc đã thay đổi. Nhấn Áp dụng để cập nhật dữ liệu.' : `Đang hiển thị: ${appliedFilters.dateFrom} đến ${appliedFilters.dateTo}`}</p>
           </section>
         </div>

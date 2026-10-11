@@ -33,6 +33,8 @@ export function SearchInput({
   const [error, setError] = React.useState<string | null>(null);
   const [isFocused, setIsFocused] = React.useState(false);
 
+  React.useEffect(() => { if (value === '') setError(null); }, [value]);
+
   // Realtime validate khi value thay đổi
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const raw = e.target.value;

@@ -1,4 +1,5 @@
 'use client';
+import { ClearFiltersButton } from '@/shared/ui/ClearFiltersButton';
 import { PaginatedList } from '@/shared/ui/PaginatedList';
 import { VocabularyRecommendations } from '@/shared/ui/VocabularyRecommendations';
 import { Pagination } from '@/shared/ui/Pagination';
@@ -499,17 +500,11 @@ export default function FlashcardsDashboard({ activeTab }: { activeTab: TabType 
                   </option>
                 ))}
               </Dropdown>
-              <button
-                type="button"
-                onClick={() => {
+              <ClearFiltersButton onClick={() => {
                   setSearch('');
                   setDomain('');
                   setLevel('');
-                }}
-                className="h-10 px-4 text-xs font-bold text-slate-600 hover:text-primary transition-colors"
-              >
-                Xóa lọc
-              </button>
+                }} />
             </div>
 
             {/* Grid lessons */}

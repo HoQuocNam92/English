@@ -1,4 +1,5 @@
 'use client';
+import { ClearFiltersButton } from '@/shared/ui/ClearFiltersButton';
 import { PaginatedList } from '@/shared/ui/PaginatedList';
 
 import { useEffect, useState } from 'react';
@@ -38,7 +39,7 @@ export default function CertificationsPage() {
     {certificates.length > 0 && filteredCertificates.length === 0 && <div className="mt-6 rounded-2xl border border-dashed border-outline-variant bg-surface-container-lowest p-10 text-center">
       <p className="font-semibold text-on-surface">{filter === 'started' ? 'Chưa có chứng chỉ nào bạn đã bắt đầu học.' : filter === 'new' ? 'Bạn đã bắt đầu học tất cả chứng chỉ.' : 'Không có chứng chỉ phù hợp với bộ lọc.'}</p>
       <p className="mt-1 text-sm text-on-surface-variant">Hãy đổi từ khóa hoặc chọn tiến độ khác.</p>
-      <button type="button" onClick={() => { setSearch(''); setFilter(''); }} className="mt-4 text-sm font-bold text-primary hover:underline">Xóa bộ lọc</button>
+      <ClearFiltersButton className="mt-4" onClick={() => { setSearch(''); setFilter(''); }} />
     </div>}
     {!!filteredCertificates.length && <PaginatedList className="grid grid-cols-1 gap-6 lg:grid-cols-2">{filteredCertificates.map((certificate) => {
       const itemProgress = progress.find((item) => item.certificateId === certificate.id);

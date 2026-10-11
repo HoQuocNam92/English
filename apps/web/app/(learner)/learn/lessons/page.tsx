@@ -1,4 +1,5 @@
 'use client';
+import { ClearFiltersButton } from '@/shared/ui/ClearFiltersButton';
 import { PaginatedList } from '@/shared/ui/PaginatedList';
 import { AppIcon } from '@/shared/ui/AppIcon';
 
@@ -99,7 +100,7 @@ function LessonCatalog() {
       <Dropdown aria-label="Lọc lĩnh vực" value={domainCode} onChange={event => setDomainCode(event.target.value)}><option value="">Tất cả lĩnh vực</option>{domains.map(domain => <option key={domain.code} value={domain.code}>{domain.name}</option>)}</Dropdown>
       <Dropdown aria-label="Lọc chứng chỉ" value={certificateId} onChange={event => setCertificateId(event.target.value)}><option value="">Tất cả chứng chỉ</option>{certificates.map(certificate => <option key={certificate.id} value={certificate.id}>{certificate.name}</option>)}</Dropdown>
       <Dropdown aria-label="Lọc từ vựng" value={vocabulary} onChange={event => setVocabulary(event.target.value)}><option value="all">Tất cả nội dung từ vựng</option><option value="with">Có từ vựng liên kết</option><option value="without">Chưa có từ vựng liên kết</option>{vocabularyOptions.map(word => <option key={word.id} value={word.id}>{word.term}</option>)}</Dropdown>
-      <button type="button" className="text-left text-sm font-semibold text-primary" onClick={() => { setQuery(''); setSearchInput(''); setDomainCode(''); setCertificateId(''); setVocabulary('all'); }}>Xóa bộ lọc</button>
+      <ClearFiltersButton onClick={() => { setQuery(''); setSearchInput(''); setDomainCode(''); setCertificateId(''); setVocabulary('all'); }} />
     </div>
     {!loading && scope === 'path' && <p className="mt-3 text-sm text-on-surface-variant">{hasPath ? 'Đề xuất theo lĩnh vực, chứng chỉ mục tiêu và trình độ trong hồ sơ của bạn.' : 'Bạn chưa chọn lộ trình. Cập nhật mục tiêu trong hồ sơ hoặc chọn Tất cả bài học để khám phá.'} <Link href="/learn/profile" className="font-semibold text-primary">Cập nhật lộ trình</Link></p>}
 

@@ -1,4 +1,5 @@
 'use client';
+import { ClearFiltersButton } from '@/shared/ui/ClearFiltersButton';
 import { showToast } from '@/shared/ui/AppFeedback';
 import { AppIcon, IconText } from '@/shared/ui/AppIcon';
 import { ActionButton, ActionGroup } from '@/shared/ui/ActionButton';
@@ -234,6 +235,7 @@ export default function AdminQuestionsPage() {
         >
           {STATUSES.map((s) => <option key={s.value} value={s.value}>{s.label}</option>)}
         </Dropdown>
+        <ClearFiltersButton className="justify-self-start" onClick={() => { setSearchInput(''); setSearch(''); setType(''); setTopic(''); setSkill(''); setDomainCode(''); setExamId(''); setStatus(''); setPage(1); setSelectedIds(new Set()); }} />
         </div>
         </div>
       </div>

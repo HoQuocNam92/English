@@ -1,4 +1,5 @@
 'use client';
+import { ClearFiltersButton } from '@/shared/ui/ClearFiltersButton';
 import { showToast } from '@/shared/ui/AppFeedback';
 import { AppIcon, IconText } from '@/shared/ui/AppIcon';
 
@@ -816,20 +817,7 @@ export function ImportQuestionsModal({
                     <option value="multiple_choice">Nhiều đáp án</option>
                   </Dropdown>
 
-                  {/* Reset Filters Button */}
-                  {hasActiveFilters && (
-                    <button
-                      type="button"
-                      onClick={handleResetFilters}
-                      className="inline-flex items-center gap-1 rounded-xl border border-slate-200 bg-slate-100 px-2.5 py-1.5 text-xs font-semibold text-slate-600 hover:bg-slate-200 transition-colors"
-                      title="Đặt lại toàn bộ bộ lọc"
-                    >
-                      <AppIcon className=" text-[14px]">
-                        filter_alt_off
-                      </AppIcon>
-                      Đặt lại
-                    </button>
-                  )}
+                  <ClearFiltersButton onClick={handleResetFilters} />
                   </div>
                 </div>
               </div>

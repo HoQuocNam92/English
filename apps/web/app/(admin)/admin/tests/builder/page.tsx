@@ -1,4 +1,5 @@
 'use client';
+import { ClearFiltersButton } from '@/shared/ui/ClearFiltersButton';
 import { BackButton } from '@/shared/ui/BackButton';
 import { AppIcon } from '@/shared/ui/AppIcon';
 import { FormPageLayout } from '@/shared/ui/CreatePage';
@@ -225,7 +226,7 @@ export default function TestBuilderPage() {
   }
 
   return (
-    <FormPageLayout><BackButton fallbackHref="/admin/tests" />
+    <FormPageLayout className="max-w-7xl"><BackButton fallbackHref="/admin/tests" />
       <PageHeader
         title={isEdit ? 'Chỉnh sửa bài thi' : 'Tạo bài thi mới'}
         description="Cấu hình thông tin và chọn câu hỏi cho bài thi"
@@ -239,7 +240,7 @@ export default function TestBuilderPage() {
           </div>
         )}
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 xl:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)] gap-6">
           {/* Left: Exam info */}
           <div className="rounded-2xl border border-slate-200/80 bg-white p-6 lg:p-7 shadow-sm space-y-5">
             <div className="flex items-center gap-2.5 pb-4 border-b border-slate-100">
@@ -444,9 +445,9 @@ export default function TestBuilderPage() {
               </span>
             </div>
 
-            <div className="flex flex-col items-start gap-3 sm:flex-row">
+            <div className="flex min-w-0 flex-col gap-3">
             {/* Search Input */}
-            <div className="relative w-full min-w-0 sm:min-w-[240px] sm:flex-1">
+            <div className="relative w-full min-w-0">
               <AppIcon className=" absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-[18px]">
                 search
               </AppIcon>
@@ -454,12 +455,14 @@ export default function TestBuilderPage() {
                 type="text"
                 value={qSearch}
                 onChange={e => setQSearch(e.target.value)}
+                aria-label="Tìm kiếm nội dung câu hỏi"
                 placeholder="Tìm kiếm nội dung câu hỏi..."
                 className="w-full rounded-xl border border-slate-300 bg-white pl-10 pr-9 py-2.5 text-sm font-medium text-slate-900 placeholder:text-slate-400 shadow-2xs focus:outline-none focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all"
               />
               {qSearch && (
                 <button
                   type="button"
+                  aria-label="Xóa từ khóa tìm kiếm câu hỏi"
                   onClick={() => setQSearch('')}
                   className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 p-0.5 rounded-full"
                 >
@@ -469,32 +472,33 @@ export default function TestBuilderPage() {
             </div>
 
             {/* Filter Dropdowns: Domain & Level */}
-            <div className="grid w-full min-w-0 gap-2.5 sm:ml-auto sm:w-auto sm:flex-[2] sm:grid-cols-2">
-              <div>
-                <Dropdown
+            <div className="grid w-full min-w-0 gap-3 sm:grid-cols-2">
+              <label className="grid min-w-0 gap-1 text-xs font-semibold text-on-surface-variant">Lĩnh vực
+                <Dropdown aria-label="Lọc câu hỏi theo lĩnh vực"
                   value={qFilterDomain}
                   onChange={e => setQFilterDomain(e.target.value)}
-                  className="w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-xs font-semibold text-slate-700 shadow-2xs focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/10 transition-all cursor-pointer"
+                  className="h-11 w-full min-w-0 rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm text-slate-700 shadow-2xs focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/10 transition-all cursor-pointer"
                 >
                   <option value="">Tất cả lĩnh vực</option>
                   {domains.map(d => <option key={d.id} value={d.id}>{d.name}</option>)}
                 </Dropdown>
-              </div>
-              <div>
-                <Dropdown value={qFilterSkill} onChange={e => setQFilterSkill(e.target.value)} className="w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-xs font-semibold text-slate-700 shadow-2xs focus:outline-none focus:border-primary">
+              </label>
+              <label className="grid min-w-0 gap-1 text-xs font-semibold text-on-surface-variant">Kỹ năng
+                <Dropdown aria-label="Lọc câu hỏi theo kỹ năng" value={qFilterSkill} onChange={e => setQFilterSkill(e.target.value)} className="h-11 w-full min-w-0 rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm text-slate-700 shadow-2xs focus:outline-none focus:border-primary">
                   <option value="">Tất cả kỹ năng</option><option value="vocabulary">Vocabulary</option><option value="reading">Reading</option><option value="technical_understanding">Technical Understanding</option><option value="scenario_based">Scenario-based</option>
                 </Dropdown>
-              </div>
-              <div>
-                <Dropdown
+              </label>
+              <label className="grid min-w-0 gap-1 text-xs font-semibold text-on-surface-variant">Cấp độ
+                <Dropdown aria-label="Lọc câu hỏi theo cấp độ"
                   value={qFilterLevel}
                   onChange={e => setQFilterLevel(e.target.value)}
-                  className="w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-xs font-semibold text-slate-700 shadow-2xs focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/10 transition-all cursor-pointer"
+                  className="h-11 w-full min-w-0 rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm text-slate-700 shadow-2xs focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/10 transition-all cursor-pointer"
                 >
                   <option value="">Tất cả cấp độ</option>
                   {levels.map(l => <option key={l.id} value={l.id}>{l.name}</option>)}
                 </Dropdown>
-              </div>
+              </label>
+              <ClearFiltersButton className="justify-self-start" onClick={handleResetFilters} />
             </div>
 
             </div>
@@ -560,13 +564,7 @@ export default function TestBuilderPage() {
                     Thử thay đổi từ khóa tìm kiếm hoặc đặt lại các bộ lọc lĩnh vực, cấp độ.
                   </p>
                   {(qSearch || qFilterDomain || qFilterLevel || qFilterSkill || qOnlySelected) && (
-                    <button
-                      type="button"
-                      onClick={handleResetFilters}
-                      className="mt-3.5 px-3 py-1.5 rounded-lg bg-primary/10 text-primary text-xs font-bold hover:bg-primary/20 transition-colors"
-                    >
-                      Đặt lại bộ lọc
-                    </button>
+                    <ClearFiltersButton className="mt-3.5" onClick={handleResetFilters} />
                   )}
                 </div>
               ) : (

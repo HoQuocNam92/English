@@ -1,4 +1,5 @@
 'use client';
+import { ClearFiltersButton } from '@/shared/ui/ClearFiltersButton';
 import { AppIcon } from '@/shared/ui/AppIcon';
 import { ActionButton, ActionGroup } from '@/shared/ui/ActionButton';
 
@@ -120,6 +121,7 @@ export default function AdminStudentsPage() {
           <option value="">Tất cả mục tiêu chứng chỉ</option>
           {certificates.map(item => <option key={item.id} value={item.id}>{item.code} - {item.name}</option>)}
         </Dropdown>
+        <ClearFiltersButton onClick={() => { setSearchInput(''); setSearch(''); setStatus(''); setDomainId(''); setCertificateId(''); setPage(1); }} />
         </div>
       </div>
 

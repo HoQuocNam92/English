@@ -1,4 +1,5 @@
 'use client';
+import { ClearFiltersButton } from '@/shared/ui/ClearFiltersButton';
 import { AppIcon } from '@/shared/ui/AppIcon';
 import { ActionButton, ActionGroup } from '@/shared/ui/ActionButton';
 
@@ -131,7 +132,7 @@ export default function AdminTestsPage() {
         </label>
         {([['domainCode', 'Lĩnh vực', options.domains], ['levelCode', 'Trình độ', options.levels], ['certificateId', 'Chứng chỉ', options.certificates]] as const).map(([key,label,list]) => <label key={key} className="grid min-w-0 flex-1 basis-48 gap-1 text-xs font-semibold">{label}<Dropdown aria-label={label} value={filters[key]} onChange={e => { setFilters(f => ({ ...f, [key]: e.target.value })); setPage(1); }} className="h-11 min-w-0 rounded-xl border border-outline-variant px-3 text-sm"><option value="">Tất cả</option>{list.map(x => <option key={x.id} value={key === 'certificateId' ? x.id : x.code}>{x.name}</option>)}</Dropdown></label>)}
         <label className="grid gap-1 text-xs font-semibold">Loại bài kiểm tra<Dropdown aria-label="Loại bài kiểm tra" value={filters.kind} onChange={e => { setFilters(f => ({ ...f, kind: e.target.value })); setPage(1); }} className="h-11 rounded-xl border border-outline-variant px-3 text-sm"><option value="">Tất cả</option>{Object.entries(EXAM_KINDS).map(([v,l]) => <option key={v} value={v}>{l}</option>)}</Dropdown></label>
-        <button onClick={() => { setFilters({ domainCode: '', levelCode: '', certificateId: '', kind: '' }); setStatus(''); setSearch(''); setSearchInput(''); setPage(1); }} className="ui-button ui-button-outline h-11 self-start sm:mt-5 rounded-xl border border-outline-variant px-4 text-sm">Xóa bộ lọc</button>
+        <ClearFiltersButton onClick={() => { setFilters({ domainCode: '', levelCode: '', certificateId: '', kind: '' }); setStatus(''); setSearch(''); setSearchInput(''); setPage(1); }} />
         </div>
       </div>
 

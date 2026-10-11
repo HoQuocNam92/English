@@ -1,4 +1,5 @@
 'use client';
+import { ClearFiltersButton } from '@/shared/ui/ClearFiltersButton';
 import { showToast } from '@/shared/ui/AppFeedback';
 import { AppIcon } from '@/shared/ui/AppIcon';
 import { useRouter } from 'next/navigation';
@@ -391,6 +392,7 @@ export default function AdminUsers({ createOnly = false }: { createOnly?: boolea
             >
               {STATUS_OPTS.map((s) => <option key={s.value} value={s.value}>{s.label}</option>)}
             </Dropdown>
+            <ClearFiltersButton onClick={() => { setSearchInput(''); setSearch(''); setRoleFilter(''); setStatusFilter(''); setPage(1); }} />
           </div>
         </div>
 

@@ -1,4 +1,5 @@
 'use client';
+import { ClearFiltersButton } from '@/shared/ui/ClearFiltersButton';
 import { Pagination } from '@/shared/ui/Pagination';
 import { useSelectionPage } from '@/shared/lib/use-selection-page';
 import { AppIcon } from '@/shared/ui/AppIcon';
@@ -77,7 +78,6 @@ export default function AdminCertifications({ createOnly = false }: { createOnly
       return matchesQuery && matchesDomain && matchesCategory && matchesProvider && matchesStatus;
     });
   }, [certs, search, domainFilter, categoryFilter, providerFilter, statusFilter]);
-  const hasFilters = Boolean(search || domainFilter || categoryFilter || providerFilter || statusFilter);
   const clearFilters = () => {
     setSearchInput('');
     setSearch('');
@@ -160,7 +160,7 @@ export default function AdminCertifications({ createOnly = false }: { createOnly
         <Dropdown aria-label="Lọc nhóm chứng chỉ" value={categoryFilter} onChange={event => { setCategoryFilter(event.target.value); setSelectedIds([]); }} className="h-11 w-full min-w-0 rounded-xl border border-outline-variant bg-white px-3 text-sm"><option value="">Tất cả nhóm chứng chỉ</option>{categories.map(category => <option key={category} value={category}>{category}</option>)}</Dropdown>
         <Dropdown aria-label="Lọc đơn vị cấp" value={providerFilter} onChange={event => { setProviderFilter(event.target.value); setSelectedIds([]); }} className="h-11 w-full min-w-0 rounded-xl border border-outline-variant bg-white px-3 text-sm"><option value="">Tất cả đơn vị cấp</option>{providers.map(provider => <option key={provider} value={provider}>{provider}</option>)}</Dropdown>
         <Dropdown aria-label="Lọc trạng thái" value={statusFilter} onChange={event => { setStatusFilter(event.target.value); setSelectedIds([]); }} className="h-11 w-full min-w-0 rounded-xl border border-outline-variant bg-white px-3 text-sm"><option value="">Tất cả trạng thái</option><option value="active">Đang hoạt động</option><option value="draft">Bản nháp</option></Dropdown>
-        {hasFilters && <button type="button" onClick={clearFilters} className="ui-button ui-button-outline h-11 sm:col-span-2 xl:col-span-5">Xóa lọc</button>}
+        <ClearFiltersButton className="justify-self-start" onClick={clearFilters} />
       </div>
 
       {successMessage && <div role="status" className="rounded-xl border border-emerald-200 bg-emerald-50 p-3 text-sm text-emerald-800">{successMessage}</div>}

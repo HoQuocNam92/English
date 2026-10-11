@@ -1,4 +1,5 @@
 'use client';
+import { ClearFiltersButton } from '@/shared/ui/ClearFiltersButton';
 import { AppIcon } from '@/shared/ui/AppIcon';
 import { confirmDialog } from '@/shared/ui/AppFeedback';
 import { ActionButton, ActionGroup } from '@/shared/ui/ActionButton';
@@ -79,6 +80,7 @@ export default function LessonsPage() {
       <div className="flex flex-wrap gap-3 sm:ml-auto">
       <Dropdown value={type} onChange={e => { setType(e.target.value); setPage(1); }} className="rounded-xl border border-outline-variant bg-surface-container-lowest px-3 text-sm"><option value="">Tất cả loại bài học</option>{Object.entries(TYPES).map(([value, label]) => <option key={value} value={value}>{label}</option>)}</Dropdown>
       <Dropdown value={status} onChange={e => { setStatus(e.target.value); setPage(1); }} className="rounded-xl border border-outline-variant bg-surface-container-lowest px-3 text-sm"><option value="">Tất cả trạng thái</option>{Object.entries(STATUS).map(([value, label]) => <option key={value} value={value}>{label}</option>)}</Dropdown>
+      <ClearFiltersButton onClick={() => { setSearchInput(''); setSearch(''); setType(''); setStatus(''); setPage(1); setSelectedIds(new Set()); }} />
       </div>
     </div>
     {error && <div className="mt-4 rounded-xl bg-error-container p-3 text-sm text-on-error-container">{error}</div>}
