@@ -246,22 +246,22 @@ export default function AdminRoles({ createKind }: { createKind?: 'role' | 'perm
 
       <ListTools search={search} onSearch={setSearch} filter={filter} onFilter={setFilter} options={activeTab === 'roles' ? [{value:'',label:'Tất cả vai trò'},{value:'assigned',label:'Đã có người dùng'},{value:'empty',label:'Chưa có người dùng'}] : [{value:'',label:'Tất cả tài nguyên'},...Array.from(new Set(permissions.map(item=>item.resource))).map(resource=>({value:resource,label:resourceLabel(resource)}))]} />
       {/* Summary stats */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 mb-8">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-md mb-xl">
         {[
-          { label: 'Vai trò người dùng', value: loading ? '—' : String(roles.length), icon: 'shield_person', color: 'text-primary' },
-          { label: 'Quyền hạn', value: loading ? '—' : String(permissions.length), icon: 'lock', color: 'text-secondary' },
-          { label: 'Người dùng đã được gán vai trò', value: loading ? '—' : String(totalAssigned), icon: 'people', color: 'text-tertiary' },
+          { label: 'Vai trò người dùng', value: loading ? '—' : String(roles.length), icon: 'shield_person' },
+          { label: 'Quyền hạn', value: loading ? '—' : String(permissions.length), icon: 'lock' },
+          { label: 'Người dùng đã được gán vai trò', value: loading ? '—' : String(totalAssigned), icon: 'people' },
         ].map((s) => (
-          <div key={s.label} className="h-[120px] bg-white border border-outline-variant rounded-xl shadow-sm p-6 flex flex-col justify-between">
-            <div className="flex items-center justify-between">
-              <AppIcon className={` text-[28px] ${s.color}`}>{s.icon}</AppIcon>
+          <div key={s.label} className="stat-card bg-surface-container-lowest p-md flex flex-col justify-between h-[120px] rounded-lg border border-outline-variant hover:shadow-[0_1px_3px_rgba(15,23,24,0.06)] hover:-translate-y-0.5 transition-all">
+            <div className="flex justify-between items-start gap-sm">
+              <span className="font-body-sm text-body-sm text-on-surface-variant">{s.label}</span>
+              <AppIcon className="text-outline text-[20px] shrink-0">{s.icon}</AppIcon>
             </div>
             <div>
-              <p className="text-sm font-semibold text-on-surface-variant mb-1">{s.label}</p>
               {loading ? (
-                <div className="h-8 w-16 rounded bg-surface-container-low animate-pulse" />
+                <div className="h-5 w-16 rounded bg-surface-container-low animate-pulse" />
               ) : (
-                <p className="text-3xl font-bold text-on-surface leading-none">{s.value}</p>
+                <p className="font-headline-h2 text-headline-h2 text-on-surface">{s.value}</p>
               )}
             </div>
           </div>
