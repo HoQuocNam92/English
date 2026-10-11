@@ -1,7 +1,6 @@
 const fs = require('fs');
 const path = require('path');
-const base = require('./app.json').expo;
-module.exports = () => ({
+module.exports = ({ config: base }) => ({
   ...base,
   ...(process.env.EXPO_OWNER ? { owner: process.env.EXPO_OWNER } : {}),
   plugins: [

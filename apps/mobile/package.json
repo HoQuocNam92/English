@@ -20,17 +20,17 @@
     "@react-native-async-storage/async-storage": "^2.1.2",
     "@react-native-google-signin/google-signin": "^16.1.5",
     "@techenglish/design-tokens": "workspace:*",
-    "expo": "~57.0.24",
-    "expo-auth-session": "~57.0.12",
+    "expo": "~57.0.27",
+    "expo-auth-session": "~57.0.14",
     "expo-build-properties": "~57.0.21",
-    "expo-constants": "~57.0.19",
+    "expo-constants": "~57.0.21",
     "expo-dev-client": "^57.0.19",
     "expo-device": "^57.0.2",
     "expo-font": "~57.0.4",
     "expo-image-picker": "~57.0.19",
-    "expo-linking": "~57.0.10",
-    "expo-notifications": "^57.0.20",
-    "expo-router": "~57.0.22",
+    "expo-linking": "~57.0.12",
+    "expo-notifications": "~57.0.22",
+    "expo-router": "~57.0.25",
     "expo-speech": "~57.0.3",
     "expo-status-bar": "~57.0.1",
     "expo-web-browser": "~57.0.3",
@@ -46,5 +46,12 @@
   "devDependencies": {
     "@types/react": "~19.2.18",
     "typescript": "~6.0.3"
+  },
+  "expo": {
+    "doctor": {
+      "appConfigFieldsNotSyncedCheck": {
+        "enabled": false
+      }
+    }
   }
 }
