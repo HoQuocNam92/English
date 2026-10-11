@@ -1,3 +1,4 @@
+import { RequiredMark } from '../../src/shared/ui/RequiredMark';
 import { Button, Text, TextInput, TouchableOpacity } from '../../src/shared/ui/primitives';
 import { useState } from 'react';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -130,7 +131,7 @@ export default function MobileLoginScreen() {
         {loginError ? <Text style={styles.errorText}>{loginError}</Text> : null}
 
         <View style={styles.inputGroup}>
-          <Text style={styles.label}>Email</Text>
+          <Text style={styles.label}>Email<RequiredMark /></Text>
           <View style={[styles.inputWrapper, emailError ? styles.inputError : null]}>
             <MaterialIcons name="mail-outline" size={20} color={colors.outline} style={styles.inputIcon} />
             <TextInput
@@ -149,7 +150,7 @@ export default function MobileLoginScreen() {
         </View>
 
         <View style={styles.inputGroup}>
-          <Text style={styles.label}>Mật khẩu</Text>
+          <Text style={styles.label}>Mật khẩu<RequiredMark /></Text>
           <View style={[styles.inputWrapper, passwordError ? styles.inputError : null]}>
             <MaterialIcons name="lock-outline" size={20} color={colors.outline} style={styles.inputIcon} />
             <TextInput

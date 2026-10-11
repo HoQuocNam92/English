@@ -1,3 +1,4 @@
+import { RequiredMark } from '../../src/shared/ui/RequiredMark';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Text, TextInput, TouchableOpacity } from '../../src/shared/ui/primitives';
 import { useState, useEffect } from 'react';
@@ -203,9 +204,10 @@ export default function MobileEditProfileScreen() {
     selected: string[],
     onPress: (code: string) => void,
     single = false,
+    required = false,
   ) => (
     <View style={styles.inputGroup}>
-      <Text style={styles.label}>{label}</Text>
+      <Text style={styles.label}>{label}{required && <RequiredMark />}</Text>
       <View style={styles.choiceWrap}>
         {options.map(option => {
           const active = selected.includes(option.code);
@@ -259,7 +261,7 @@ export default function MobileEditProfileScreen() {
         {/* Form Fields */}
         <View style={styles.formContainer}>
           <View style={styles.inputGroup}>
-            <Text style={styles.label}>Họ và tên</Text>
+            <Text style={styles.label}>Họ và tên<RequiredMark /></Text>
             <TextInput
               style={styles.input}
               value={displayName}
@@ -280,7 +282,7 @@ export default function MobileEditProfileScreen() {
           </View>
 
           <View style={styles.inputGroup}>
-            <Text style={styles.label}>1. Mục tiêu học chính</Text>
+            <Text style={styles.label}>1. Mục tiêu học chính<RequiredMark /></Text>
             <View style={styles.modeRow}>
               <TouchableOpacity style={[styles.modeCard, learningGoal === 'certification' && styles.modeCardActive]} onPress={() => setLearningGoal('certification')}>
                 <MaterialIcons name="workspace-premium" size={22} color={colors.primary} />
@@ -298,18 +300,18 @@ export default function MobileEditProfileScreen() {
             <Text style={styles.modeTitle}>Kết hợp từ vựng và chứng chỉ</Text>
             <Text style={styles.modeDescription}>Học từ vựng CNTT cùng lộ trình chứng chỉ.</Text>
           </TouchableOpacity>
-          {renderChoiceGroup('2. Chuyên ngành CNTT', domains, domainCodes, code => toggleCode(code, domainCodes, setDomainCodes))}
-          {learningGoal !== 'vocabulary' && renderChoiceGroup('Chứng chỉ mục tiêu', certificates, certificateCodes, code => setCertificateCodes(current => current.includes(code) ? [] : [code]), true)}
-          {renderChoiceGroup('3. Trình độ tiếng Anh', levels, levelCode ? [levelCode] : [], setLevelCode, true)}
+          {renderChoiceGroup('2. Chuyên ngành CNTT', domains, domainCodes, code => toggleCode(code, domainCodes, setDomainCodes), false, true)}
+          {learningGoal !== 'vocabulary' && renderChoiceGroup('Chứng chỉ mục tiêu', certificates, certificateCodes, code => setCertificateCodes(current => current.includes(code) ? [] : [code]), true, true)}
+          {renderChoiceGroup('3. Trình độ tiếng Anh', levels, levelCode ? [levelCode] : [], setLevelCode, true, true)}
           {renderChoiceGroup('4. Mục tiêu nghề nghiệp', careerGoals, careerGoalCodes, code => toggleCode(code, careerGoalCodes, setCareerGoalCodes))}
           <Text style={styles.label}>5. Kế hoạch học</Text>
           <View style={styles.targetRow}>
-            <View style={[styles.inputGroup, styles.targetItem]}><Text style={styles.label}>Từ/ngày</Text><TextInput style={styles.input} value={dailyVocabularyTarget} onChangeText={setDailyVocabularyTarget} keyboardType="number-pad" /></View>
-            <View style={[styles.inputGroup, styles.targetItem]}><Text style={styles.label}>Quiz/tuần</Text><TextInput style={styles.input} value={weeklyExamTarget} onChangeText={setWeeklyExamTarget} keyboardType="number-pad" /></View>
-            <View style={[styles.inputGroup, styles.targetItem]}><Text style={styles.label}>Phút/ngày</Text><TextInput style={styles.input} value={dailyStudyTargetMinutes} onChangeText={setDailyStudyTargetMinutes} keyboardType="number-pad" /></View>
+            <View style={[styles.inputGroup, styles.targetItem]}><Text style={styles.label}>Từ/ngày<RequiredMark /></Text><TextInput style={styles.input} value={dailyVocabularyTarget} onChangeText={setDailyVocabularyTarget} keyboardType="number-pad" /></View>
+            <View style={[styles.inputGroup, styles.targetItem]}><Text style={styles.label}>Quiz/tuần<RequiredMark /></Text><TextInput style={styles.input} value={weeklyExamTarget} onChangeText={setWeeklyExamTarget} keyboardType="number-pad" /></View>
+            <View style={[styles.inputGroup, styles.targetItem]}><Text style={styles.label}>Phút/ngày<RequiredMark /></Text><TextInput style={styles.input} value={dailyStudyTargetMinutes} onChangeText={setDailyStudyTargetMinutes} keyboardType="number-pad" /></View>
           </View>
           <View style={styles.targetRow}><Text style={styles.label}>Nhắc học hằng ngày</Text><Switch accessibilityLabel="Nhắc học hằng ngày" value={reminderEnabled} onValueChange={setReminderEnabled} /></View>
-          {reminderEnabled && <View style={styles.inputGroup}><Text style={styles.label}>Giờ nhắc học hằng ngày</Text><TouchableOpacity style={styles.timePickerField} onPress={openTimePicker}><MaterialIcons name="schedule" size={22} color={colors.primary} /><Text style={styles.timePickerValue}>{reminderTime}</Text><MaterialIcons name="keyboard-arrow-down" size={22} color="#777587" /></TouchableOpacity></View>}
+          {reminderEnabled && <View style={styles.inputGroup}><Text style={styles.label}>Giờ nhắc học hằng ngày<RequiredMark /></Text><TouchableOpacity style={styles.timePickerField} onPress={openTimePicker}><MaterialIcons name="schedule" size={22} color={colors.primary} /><Text style={styles.timePickerValue}>{reminderTime}</Text><MaterialIcons name="keyboard-arrow-down" size={22} color="#777587" /></TouchableOpacity></View>}
         </View>
       </ScrollView>
 

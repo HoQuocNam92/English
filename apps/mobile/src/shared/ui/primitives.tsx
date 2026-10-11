@@ -1,3 +1,4 @@
+import { ClearFiltersButton } from './ClearFiltersButton';
 import { useTranslation } from './TranslationProvider';
 import React from 'react';
 import { Button as PaperButton, Chip, Searchbar, TouchableRipple } from 'react-native-paper';
@@ -63,5 +64,5 @@ export function Badge({ children, tone = 'primary' }: { children: React.ReactNod
   return <View style={{ alignSelf: 'flex-start', borderRadius: radius.pill, paddingHorizontal: 10, paddingVertical: 4, backgroundColor: palette[0] }}><Text style={{ color: palette[1], fontSize: 12, lineHeight: 18, fontWeight: '600' }}>{children}</Text></View>;
 }
 export function ListTools({ search, onSearch, placeholder, filters, value, onFilter }: { search: string; onSearch: (value: string) => void; placeholder: string; filters: { value: string; label: string }[]; value: string; onFilter: (value: string) => void }) {
-  return <View style={{ gap: 12, marginBottom: 20 }}><Searchbar accessibilityLabel={placeholder} placeholder={placeholder} value={search} onChangeText={onSearch} style={{ backgroundColor: '#ffffff', borderRadius: 16, borderWidth: 1, borderColor: '#e4e8f1' }} inputStyle={{ fontSize: 15, minHeight: 52 }} /><Tabs items={filters} value={value} onChange={onFilter} /></View>;
+  return <View style={{ gap: 12, marginBottom: 20 }}><Searchbar accessibilityLabel={placeholder} placeholder={placeholder} value={search} onChangeText={onSearch} style={{ backgroundColor: '#ffffff', borderRadius: 16, borderWidth: 1, borderColor: '#e4e8f1' }} inputStyle={{ fontSize: 15, minHeight: 52 }} />{filters.length > 0 && <Tabs items={filters} value={value} onChange={onFilter} />}<ClearFiltersButton onPress={() => { onSearch(''); onFilter(filters[0]?.value ?? ''); }} /></View>;
 }

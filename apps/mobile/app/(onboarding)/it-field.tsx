@@ -1,3 +1,4 @@
+import { RequiredMark } from '../../src/shared/ui/RequiredMark';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Text, TouchableOpacity } from '../../src/shared/ui/primitives';
 import { useEffect, useState } from 'react';
@@ -65,7 +66,7 @@ export default function OnboardingFieldScreen() {
       </View>
 
       <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
-        <Text style={styles.title}>Chuyên ngành bạn quan tâm?</Text>
+        <Text style={styles.title}>Chuyên ngành bạn quan tâm?<RequiredMark /></Text>
         <Text style={styles.subtitle}>Chọn chuyên ngành CNTT bạn muốn tập trung học tiếng Anh.</Text>
 
         {loading && <ActivityIndicator color={colors.primary} size="large" />}

@@ -1,3 +1,4 @@
+import { RequiredMark } from '../../src/shared/ui/RequiredMark';
 import { Button, Text, TextInput, TouchableOpacity } from '../../src/shared/ui/primitives';
 import { useRef, useState } from 'react';
 import { useRouter } from 'expo-router';
@@ -152,7 +153,7 @@ export default function MobileRegisterScreen() {
           {registerError ? <Text style={styles.errorText}>{registerError}</Text> : null}
 
           <View style={styles.inputGroup}>
-            <Text style={styles.label}>Họ và tên</Text>
+            <Text style={styles.label}>Họ và tên<RequiredMark /></Text>
             <View style={[styles.inputWrapper, nameError ? styles.inputError : null]}>
               <MaterialIcons name="person-outline" size={20} color={colors.outline} style={styles.inputIcon} />
               <TextInput
@@ -169,7 +170,7 @@ export default function MobileRegisterScreen() {
           </View>
 
           <View style={styles.inputGroup}>
-            <Text style={styles.label}>Email</Text>
+            <Text style={styles.label}>Email<RequiredMark /></Text>
             <View style={[styles.inputWrapper, emailError ? styles.inputError : null]}>
               <MaterialIcons name="mail-outline" size={20} color={colors.outline} style={styles.inputIcon} />
               <TextInput
@@ -188,7 +189,7 @@ export default function MobileRegisterScreen() {
           </View>
 
           <View style={styles.inputGroup}>
-            <Text style={styles.label}>Mật khẩu</Text>
+            <Text style={styles.label}>Mật khẩu<RequiredMark /></Text>
             <View style={[styles.inputWrapper, passwordError ? styles.inputError : null]}>
               <MaterialIcons name="lock-outline" size={20} color={colors.outline} style={styles.inputIcon} />
               <TextInput
@@ -211,7 +212,7 @@ export default function MobileRegisterScreen() {
           </View>
 
           <View style={styles.inputGroup}>
-            <Text style={styles.label}>Xác nhận mật khẩu</Text>
+            <Text style={styles.label}>Xác nhận mật khẩu<RequiredMark /></Text>
             <View style={[styles.inputWrapper, confirmError ? styles.inputError : null]}>
               <MaterialIcons name="lock-outline" size={20} color={colors.outline} style={styles.inputIcon} />
               <TextInput
@@ -243,7 +244,7 @@ export default function MobileRegisterScreen() {
             >
               <MaterialIcons name={agreeTerms ? 'check-box' : 'check-box-outline-blank'} size={20} color={agreeTerms ? colors.primary : colors.outline} />
             </TouchableOpacity>
-            <Text style={styles.termsText}>Tôi đồng ý với <Text focusable={false} onPress={() => router.push('/terms' as any)} style={styles.termsLink}>Điều khoản dịch vụ</Text> và <Text focusable={false} onPress={() => router.push('/privacy' as any)} style={styles.termsLink}>Chính sách bảo mật</Text> của hệ thống</Text>
+            <Text style={styles.termsText}>Tôi đồng ý với <Text focusable={false} onPress={() => router.push('/terms' as any)} style={styles.termsLink}>Điều khoản dịch vụ</Text> và <Text focusable={false} onPress={() => router.push('/privacy' as any)} style={styles.termsLink}>Chính sách bảo mật</Text> của hệ thống<RequiredMark /></Text>
           </View>
           {termsError ? <Text style={styles.errorTextSmall}>{termsError}</Text> : null}
 

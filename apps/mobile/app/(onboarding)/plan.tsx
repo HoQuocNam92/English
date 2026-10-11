@@ -1,3 +1,5 @@
+import { validateLearningTargets } from '../../src/shared/utils/learning-targets';
+import { RequiredMark } from '../../src/shared/ui/RequiredMark';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Text, TextInput, TouchableOpacity } from '../../src/shared/ui/primitives';
 import { useState } from 'react';
@@ -24,6 +26,9 @@ export default function OnboardingPlanScreen() {
   const [submitting, setSubmitting] = useState(false);
 
   const finish = async () => {
+    const error = validateLearningTargets(dailyVocabularyTarget, weeklyExamTarget, dailyStudyTargetMinutes);
+    if (error) { Alert.alert('Kiểm tra kế hoạch học', error); return; }
+    if (reminderEnabled && !/^([01]\d|2[0-3]):[0-5]\d$/.test(reminderTime)) { Alert.alert('Kiểm tra giờ nhắc học', 'Nhập giờ hợp lệ theo định dạng HH:mm.'); return; }
     setSubmitting(true);
     try {
       const values = await AsyncStorage.multiGet(STORAGE_KEYS);
@@ -82,7 +87,7 @@ export default function OnboardingPlanScreen() {
       </View>
       <TouchableOpacity style={styles.option} onPress={() => setTakePlacementTest(value => !value)}><MaterialIcons name={takePlacementTest ? 'check-box' : 'check-box-outline-blank'} size={23} color={colors.primary} /><View style={styles.optionCopy}><Text style={styles.optionTitle}>Làm bài kiểm tra đầu vào</Text><Text style={styles.optionText}>Nếu chưa có đề phù hợp, app sẽ đưa bạn vào lộ trình đã chọn.</Text></View></TouchableOpacity>
       <TouchableOpacity style={styles.option} onPress={() => setReminderEnabled(value => !value)}><MaterialIcons name={reminderEnabled ? 'check-box' : 'check-box-outline-blank'} size={23} color={colors.primary} /><View style={styles.optionCopy}><Text style={styles.optionTitle}>Nhắc học mỗi ngày</Text><Text style={styles.optionText}>Bật thông báo nhắc học trên thiết bị.</Text></View></TouchableOpacity>
-      {reminderEnabled && <View style={styles.timeWrap}><Text style={styles.label}>Giờ nhắc học (HH:mm)</Text><TextInput value={reminderTime} onChangeText={setReminderTime} style={styles.input} placeholder="20:00" /></View>}
+      {reminderEnabled && <View style={styles.timeWrap}><Text style={styles.label}>Giờ nhắc học (HH:mm)<RequiredMark /></Text><TextInput value={reminderTime} onChangeText={setReminderTime} style={styles.input} placeholder="20:00" /></View>}
       <View style={styles.zeroNote}><MaterialIcons name="verified" size={21} color={colors.primary} /><Text style={styles.zeroText}>Lưu mục tiêu không đánh dấu bài học, từ vựng hay bài thi là đã hoàn thành.</Text></View>
     </ScrollView>
     <View style={[styles.bottom, { paddingBottom: Math.max(16, insets.bottom + 12) }]}><TouchableOpacity disabled={submitting} style={[styles.button, submitting && { opacity: 0.6 }]} onPress={finish}>{submitting ? <ActivityIndicator color="#fff" /> : <><Text style={styles.buttonText}>Tạo lộ trình</Text><MaterialIcons name="check" size={20} color="#fff" /></>}</TouchableOpacity></View>
@@ -90,7 +95,7 @@ export default function OnboardingPlanScreen() {
 }
 
 function NumberInput({ label, value, onChangeText }: { label: string; value: string; onChangeText: (value: string) => void }) {
-  return <View style={styles.field}><Text style={styles.label}>{label}</Text><TextInput value={value} onChangeText={onChangeText} keyboardType="number-pad" style={styles.input} /></View>;
+  return <View style={styles.field}><Text style={styles.label}>{label}<RequiredMark /></Text><TextInput value={value} onChangeText={onChangeText} keyboardType="number-pad" style={styles.input} /></View>;
 }
 
 const styles = StyleSheet.create({

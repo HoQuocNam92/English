@@ -1,3 +1,4 @@
+import { RequiredMark } from '../../src/shared/ui/RequiredMark';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Text, TextInput, TouchableOpacity } from '../../src/shared/ui/primitives';
 import { useState } from 'react';
@@ -70,7 +71,7 @@ export default function MobileChangePasswordScreen() {
         <View style={styles.formCard}>
           {/* Mật khẩu hiện tại */}
           <View style={styles.inputGroup}>
-            <Text style={styles.label}>Mật khẩu hiện tại</Text>
+            <Text style={styles.label}>Mật khẩu hiện tại<RequiredMark /></Text>
             <View style={styles.inputRow}>
               <TextInput
                 style={styles.input}
@@ -87,7 +88,7 @@ export default function MobileChangePasswordScreen() {
 
           {/* Mật khẩu mới */}
           <View style={styles.inputGroup}>
-            <Text style={styles.label}>Mật khẩu mới</Text>
+            <Text style={styles.label}>Mật khẩu mới<RequiredMark /></Text>
             <View style={styles.inputRow}>
               <TextInput
                 style={styles.input}
@@ -118,7 +119,7 @@ export default function MobileChangePasswordScreen() {
 
           {/* Xác nhận mật khẩu */}
           <View style={styles.inputGroup}>
-            <Text style={styles.label}>Xác nhận mật khẩu mới</Text>
+            <Text style={styles.label}>Xác nhận mật khẩu mới<RequiredMark /></Text>
             <View style={styles.inputRow}>
               <TextInput
                 style={styles.input}

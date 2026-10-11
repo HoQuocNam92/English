@@ -90,7 +90,7 @@ export default function MobileCertificationsScreen({ embedded = false }: { embed
           </Card.Content>
         </Card>;
       })}
-      {!filteredCertificates.length && <View style={styles.state}><EmptyState icon="workspace-premium" title="Chưa có chứng chỉ phù hợp" detail="Thử đổi từ khóa hoặc xóa bộ lọc để xem các lộ trình khác." /><Button mode="outlined" onPress={() => { setSearch(''); setFilter(''); }}>Xóa bộ lọc</Button></View>}
+      {!filteredCertificates.length && <View style={styles.state}><EmptyState icon="workspace-premium" title="Chưa có chứng chỉ phù hợp" detail="Thử đổi từ khóa hoặc xóa bộ lọc để xem các lộ trình khác." /></View>}
     </View>}
   </FeatureScreen>;
 }

@@ -1,3 +1,4 @@
+import { matchesFilterOption } from './utils/filter-options.ts';
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { mobileRoute } from './navigation.ts';
@@ -156,6 +157,7 @@ test('native buttons wrap interpolated quiz labels and numbers in Text while pre
   const source = readFileSync(new URL('./ui/primitives.tsx', import.meta.url), 'utf8');
   const code = ts.transpileModule(source, { compilerOptions: { module: ts.ModuleKind.CommonJS, jsx: ts.JsxEmit.ReactJSX } }).outputText;
   const mocks = {
+    './ClearFiltersButton': { ClearFiltersButton: 'clear-filters' },
     './TranslationProvider': { useTranslation: () => () => {} },
     'react-native-paper': { Button: 'paper-button', TouchableRipple: 'paper-ripple', Chip: 'chip', Searchbar: 'searchbar' },
     'react-native': { Text: 'native-text', TextInput: 'input', TouchableOpacity: 'native-button', ScrollView: 'scroll', View: 'view', StyleSheet: { create: value => value } },
@@ -184,4 +186,17 @@ test('native buttons wrap interpolated quiz labels and numbers in Text while pre
   assert.equal(mixed[0].type, 'icon');
   assert.equal(mixed[1].type, exports.Text);
   assert.equal(mixed[2].type, exports.Text);
+  let search = 'AWS'; let status = 'completed';
+  const tools = exports.ListTools({ search, onSearch: value => { search = value; }, placeholder: 'Tìm', filters: [{ value: 'all', label: 'Tất cả' }], value: status, onFilter: value => { status = value; } });
+  tools.props.children.at(-1).props.onPress();
+  assert.equal(search, '');
+  assert.equal(status, 'all');
+});
+
+test('filter choices support accents, mixed case and multiple words across large lists', () => {
+  const choices = Array.from({ length: 1000 }, (_, index) => `Bộ đề Chuyên ngành ${index}`);
+  assert.deepEqual(choices.filter(label => matchesFilterOption(label, 'CHUYEN bo 999')), ['Bộ đề Chuyên ngành 999']);
+  assert.equal(matchesFilterOption('Chứng chỉ Đám mây', 'dam CHỨNG'), true);
+  assert.equal(matchesFilterOption('Chứng chỉ Đám mây', 'bảo mật'), false);
+  assert.equal(matchesFilterOption('Bất kỳ', '  '), true);
 });

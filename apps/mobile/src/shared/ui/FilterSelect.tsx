@@ -1,3 +1,4 @@
+import { matchesFilterOption } from '../utils/filter-options';
 import { useState } from 'react';
 import { FlatList, StyleSheet, View, useWindowDimensions } from 'react-native';
 import { Dialog, Portal, RadioButton, Searchbar, TouchableRipple, Icon } from 'react-native-paper';
@@ -9,7 +10,7 @@ export function FilterSelect({ label, value, items, onChange }: { label: string;
   const { height } = useWindowDimensions();
   const selected = items.find(item => item.value === value)?.label || 'Tất cả';
   const close = () => { setOpen(false); setQuery(''); };
-  const visible = items.filter(item => item.label.toLocaleLowerCase('vi').includes(query.trim().toLocaleLowerCase('vi')));
+  const visible = items.filter(item => matchesFilterOption(item.label, query));
   return <>
     <TouchableRipple accessibilityRole="button" accessibilityLabel={`${label}: ${selected}`} accessibilityState={{ expanded: open }} onPress={() => setOpen(true)} style={s.trigger} borderless>
       <View style={{ gap: 6 }}>
@@ -19,7 +20,7 @@ export function FilterSelect({ label, value, items, onChange }: { label: string;
     </TouchableRipple>
     <Portal><Dialog visible={open} onDismiss={close} style={{ backgroundColor: '#ffffff', borderRadius: 24 }}>
       <Dialog.Title>{label}</Dialog.Title>
-      {items.length > 8 && <View style={{ paddingHorizontal: 20, paddingBottom: 12 }}><Searchbar accessibilityLabel={`Tìm ${label.toLocaleLowerCase('vi')}`} placeholder="Tìm lựa chọn…" value={query} onChangeText={setQuery} inputStyle={{ minHeight: 48, fontSize: 15 }} style={{ backgroundColor: '#f0f2f8' }} /></View>}
+      <View style={{ paddingHorizontal: 20, paddingBottom: 12 }}><Searchbar accessibilityLabel={`Tìm ${label.toLocaleLowerCase('vi')}`} placeholder="Tìm lựa chọn…" value={query} onChangeText={setQuery} inputStyle={{ minHeight: 48, fontSize: 15 }} style={{ backgroundColor: '#f0f2f8' }} /></View>
       <Dialog.ScrollArea style={{ maxHeight: height * 0.5, paddingHorizontal: 4 }}>
         <RadioButton.Group value={value} onValueChange={next => { onChange(next); close(); }}>
           <FlatList data={visible} keyExtractor={item => item.value} keyboardShouldPersistTaps="handled" renderItem={({ item }) => <RadioButton.Item value={item.value} label={item.label} labelStyle={{ fontSize: 15, lineHeight: 22 }} labelMaxFontSizeMultiplier={2} position="trailing" style={{ paddingVertical: 8 }} />} ListEmptyComponent={<Text style={{ padding: 20 }}>Không có lựa chọn phù hợp.</Text>} />

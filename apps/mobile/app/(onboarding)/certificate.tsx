@@ -1,3 +1,4 @@
+import { RequiredMark } from '../../src/shared/ui/RequiredMark';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Text, TouchableOpacity } from '../../src/shared/ui/primitives';
 import { useEffect, useState } from 'react';
@@ -40,7 +41,7 @@ export default function OnboardingCertificateScreen() {
     <View style={[styles.header, { paddingTop: insets.top + 12 }]}><TouchableOpacity onPress={() => router.back()}><MaterialIcons name="arrow-back" size={24} color="#191c1e" /></TouchableOpacity><Text style={styles.step}>Bước 2/4</Text><View style={{ width: 24 }} /></View>
     <View style={styles.progress}><View style={[styles.progressFill, { width: '50%' }]} /></View>
     <ScrollView contentContainerStyle={styles.content}>
-      <Text style={styles.title}>Chọn chứng chỉ mục tiêu</Text>
+      <Text style={styles.title}>Chọn chứng chỉ mục tiêu<RequiredMark /></Text>
       <Text style={styles.subtitle}>Danh sách được lấy trực tiếp từ chứng chỉ đang hoạt động trong hệ thống.</Text>
       {loading && <ActivityIndicator color={colors.primary} size="large" />}
       {loadError ? <Text style={styles.error}>{loadError}</Text> : null}

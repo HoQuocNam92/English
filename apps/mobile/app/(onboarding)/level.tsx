@@ -1,3 +1,4 @@
+import { RequiredMark } from '../../src/shared/ui/RequiredMark';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Text, TouchableOpacity } from '../../src/shared/ui/primitives';
 import { useState } from 'react';
@@ -81,7 +82,7 @@ export default function OnboardingLevelScreen() {
           </View>
         </View>
 
-        <Text style={styles.title}>Trình độ tiếng Anh của bạn?</Text>
+        <Text style={styles.title}>Trình độ tiếng Anh của bạn?<RequiredMark /></Text>
         <Text style={styles.subtitle}>Chọn mức độ phù hợp nhất để TechEnglish cá nhân hóa lộ trình học tiếng Anh CNTT.</Text>
 
         <View style={styles.optionsList}>
