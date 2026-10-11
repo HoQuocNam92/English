@@ -2,6 +2,7 @@
 import { showToast } from '@/shared/ui/AppFeedback';
 import { ActionButton, ActionGroup } from '@/shared/ui/ActionButton';
 import { AppIcon } from '@/shared/ui/AppIcon';
+import { PageHeader } from '@/shared/ui/PageHeader';
 
 import { Dropdown } from '@/shared/ui/Dropdown';
 import * as React from 'react';
@@ -178,10 +179,11 @@ export default function AdminReportsPage() {
     <main className="min-w-0 flex-1 bg-background p-4 sm:p-6 lg:p-margin">
       <div className="mx-auto flex w-full min-w-0 flex-col gap-xl">
         <div className="flex min-w-0 flex-col gap-5">
-          <div>
-            <h2 className="font-headline-h1 text-headline-h1 text-on-surface">Báo cáo Tổng quan</h2>
-            <p className="font-body-md text-body-md text-on-surface-variant mt-sm">Hiệu suất học tập và tương tác của hệ thống.</p>
-          </div>
+          <PageHeader
+            title="Báo cáo Tổng quan"
+            description="Hiệu suất học tập và tương tác của hệ thống."
+            icon="leaderboard"
+          />
           <section aria-label="Bộ lọc báo cáo" className="grid w-full min-w-0 gap-4 rounded-2xl border border-outline-variant/50 bg-white p-4 sm:grid-cols-2 xl:grid-cols-3">
             <label className="grid gap-1 text-sm font-semibold">Khoảng thời gian<Dropdown aria-label="Khoảng thời gian" value={period} onChange={e => changePeriod(e.target.value)} className="h-11 min-w-0 rounded-xl border border-outline-variant px-3"><option value="month">Tháng này</option><option value="last_month">Tháng trước</option><option value="last_7_days">7 ngày gần nhất</option><option value="year">Năm nay</option><option value="custom">Tùy chọn ngày</option></Dropdown></label>
             <label className="grid gap-1 text-sm font-semibold">Lĩnh vực<Dropdown aria-label="Lĩnh vực" value={domainCode} onChange={e => setDomainCode(e.target.value)} className="h-11 min-w-0 rounded-xl border border-outline-variant px-3"><option value="">Tất cả lĩnh vực</option>{domains.map(d => <option key={d.id} value={d.code}>{d.name}</option>)}</Dropdown></label>

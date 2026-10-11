@@ -83,7 +83,7 @@ export default function AdminStudentsPage() {
         className="mb-xl"
         title={certificateGoalsView ? 'Mục tiêu chứng chỉ của học viên' : 'Danh sách học viên'}
         description={certificateGoalsView ? 'Theo dõi và lọc học viên theo chứng chỉ nghề nghiệp đang hướng tới.' : 'Quản lý và theo dõi lộ trình học tập của sinh viên.'}
-        icon={certificateGoalsView ? 'workspace_premium' : 'school'}
+        icon={certificateGoalsView ? 'verified' : 'badge'}
         iconClassName={certificateGoalsView ? 'from-violet-500 to-fuchsia-600' : 'from-cyan-500 to-blue-600'}
       />
 

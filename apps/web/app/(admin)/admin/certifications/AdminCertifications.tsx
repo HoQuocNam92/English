@@ -145,7 +145,7 @@ export default function AdminCertifications({ createOnly = false }: { createOnly
       <PageHeader
         title="Quản lý Chứng chỉ"
         description="Quản lý và tổ chức nội dung học tập theo chứng chỉ IT."
-        icon="card_membership"
+        icon="workspace_premium"
         action={<button type="button" onClick={openCreate} className="inline-flex shrink-0 items-center gap-2 rounded-xl bg-primary px-4 py-2.5 text-sm font-semibold !text-white"><AppIcon className=" text-[19px]">add</AppIcon>Thêm chứng chỉ mới</button>}
       />
       {error && <div className="flex items-center gap-2 rounded-xl bg-error-container p-3 text-sm text-on-error-container"><AppIcon className=" text-[18px]">error</AppIcon><span>{error}</span></div>}

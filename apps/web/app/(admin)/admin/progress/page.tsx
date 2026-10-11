@@ -63,7 +63,7 @@ export default function AdminProgressPage() {
 
   return (
     <div>
-      <PageHeader title="Tiến độ học tập toàn hệ thống" description="Báo cáo tiến độ hoàn thành bài học, tỷ lệ đạt bài thi và năng lực học viên" />
+      <PageHeader title="Tiến độ học tập toàn hệ thống" icon="trending_up" description="Báo cáo tiến độ hoàn thành bài học, tỷ lệ đạt bài thi và năng lực học viên" />
 
       {/* Filters */}
       <div className="mt-6 flex flex-wrap items-end gap-4 rounded-2xl border border-outline-variant/50 bg-white p-4">
