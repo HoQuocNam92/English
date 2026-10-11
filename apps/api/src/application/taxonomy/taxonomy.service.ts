@@ -695,7 +695,7 @@ export class TaxonomyService {
               orderBy: { order: 'asc' },
               include: {
                 vocabularies: { include: { vocabulary: true } },
-                questions: { include: { question: true } },
+                questions: { include: { question: { include: { domain: true, level: true } } } },
                 lessons: { include: { lesson: { select: { id: true, title: true, status: true, estimatedMinutes: true } } } },
                 _count: { select: { vocabularies: true, questions: true, lessons: true } },
               },
