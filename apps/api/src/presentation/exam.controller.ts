@@ -21,7 +21,7 @@ export class ExamsController {
 
   @Patch('bulk-status')
   @RequirePermissions('exams:create')
-  @ApiOperation({ summary: 'Bulk publish or move filtered exams back to draft' })
+  @ApiOperation({ summary: 'Bulk publish or move selected exams back to draft' })
   bulkUpdateStatus(@Body() dto: BulkUpdateStatusDto) { return this.svc.bulkUpdateStatus(dto) }
 
   @Get('attempts/my')

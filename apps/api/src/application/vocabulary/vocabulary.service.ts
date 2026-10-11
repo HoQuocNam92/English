@@ -118,19 +118,10 @@ export class VocabularyService {
   }
 
   async bulkUpdateStatus(dto: any) {
-    const hasIds = Array.isArray(dto.ids) && dto.ids.length > 0
-    const hasFilter = Boolean(dto.domainCode || dto.currentStatus || dto.search)
-    if (!hasIds && !hasFilter && dto.confirmAll !== true) {
-      throw new BadRequestException('Cần chọn từ vựng, dùng bộ lọc hoặc xác nhận cập nhật toàn bộ kho')
+    if (!Array.isArray(dto.ids) || dto.ids.length === 0 || dto.ids.some((id: unknown) => typeof id !== 'string' || !id.trim())) {
+      throw new BadRequestException('Cần chọn ít nhất một mục để cập nhật trạng thái')
     }
-    const where: any = hasIds ? { id: { in: dto.ids } } : {}
-    if (!hasIds && dto.domainCode) where.AND = [{ OR: [{ domain: { code: dto.domainCode } }, { domains: { some: { domain: { code: dto.domainCode } } } }] }]
-    if (!hasIds && dto.currentStatus) where.status = dto.currentStatus
-    if (!hasIds && dto.search) where.OR = [
-      { term: { contains: dto.search, mode: 'insensitive' } },
-      { definitionEn: { contains: dto.search, mode: 'insensitive' } },
-      { definitionVi: { contains: dto.search, mode: 'insensitive' } },
-    ]
+    const where = { id: { in: [...new Set<string>(dto.ids)] } }
     const result = await this.prisma.vocabulary.updateMany({ where, data: { status: dto.status } })
     return { updatedCount: result.count, status: dto.status }
   }

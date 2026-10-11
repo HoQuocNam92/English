@@ -29,7 +29,7 @@ export class QuestionsController {
 
   @Patch('bulk-status')
   @RequirePermissions('questions:manage')
-  @ApiOperation({ summary: 'Bulk publish or move filtered questions back to draft' })
+  @ApiOperation({ summary: 'Bulk publish or move selected questions back to draft' })
   bulkUpdateStatus(@Body() dto: BulkUpdateStatusDto) { return this.svc.bulkUpdateStatus(dto) }
 
   @Post()

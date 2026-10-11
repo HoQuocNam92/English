@@ -64,14 +64,13 @@ test('legacy single-domain clients still save valid classifications', async () =
   assert.deepEqual(calls.create.data.domains.create, [{ domainId: domainIds[0] }])
 })
 
-test('search and bulk filters include secondary domains without replacing text search', async () => {
+test('search includes secondary domains and bulk updates require selected identifiers', async () => {
   const { service, calls } = setup()
   await service.findAll({ search: 'deploy', domainCode: 'CLOUD' })
   assert.ok(calls.list.where.OR.length)
   assert.equal(calls.list.where.AND[0].OR[1].domains.some.domain.code, 'CLOUD')
-  await service.bulkUpdateStatus({ search: 'deploy', domainCode: 'CLOUD', status: 'published' })
-  assert.ok(calls.bulk.where.OR.length)
-  assert.deepEqual(calls.bulk.where.AND, calls.list.where.AND)
+  await assert.rejects(() => service.bulkUpdateStatus({ search: 'deploy', domainCode: 'CLOUD', status: 'published' }))
+  assert.equal(calls.bulk, undefined)
 })
 
  test('editing legacy technical terms accepts the existing classification alongside selected types', async () => {

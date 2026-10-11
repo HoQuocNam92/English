@@ -1,5 +1,6 @@
 'use client';
-import { PaginatedList } from '@/shared/ui/PaginatedList';
+import { Pagination } from '@/shared/ui/Pagination';
+import { useSelectionPage } from '@/shared/lib/use-selection-page';
 import { AppIcon } from '@/shared/ui/AppIcon';
 import { useRouter } from 'next/navigation';
 import { completeCreation, CreatePage, FormSurface } from '@/shared/ui/CreatePage';
@@ -116,6 +117,9 @@ export default function AdminCertifications({ createOnly = false }: { createOnly
     setModalOpen(false);
   };
 
+  const selectionPage = useSelectionPage(filteredCerts);
+  React.useEffect(() => { setSelectedIds([]); }, [selectionPage.page, selectionPage.limit]);
+
   const bulkChangePublication = async (isActive: boolean) => {
     const ids = [...selectedIds];
     if (bulkBusy || !ids.length) return;
@@ -161,23 +165,23 @@ export default function AdminCertifications({ createOnly = false }: { createOnly
 
       {successMessage && <div role="status" className="rounded-xl border border-emerald-200 bg-emerald-50 p-3 text-sm text-emerald-800">{successMessage}</div>}
       <BulkSelectionBar
-        pageCount={filteredCerts.length}
+        pageCount={selectionPage.items.length}
         selectedCount={selectedIds.length}
-        allPageSelected={filteredCerts.length > 0 && filteredCerts.every(cert => selectedIds.includes(cert.id))}
-        onSelectPage={checked => setSelectedIds(checked ? filteredCerts.map(cert => cert.id) : [])}
-        selectionLabel="Chọn tất cả kết quả lọc"
+        allPageSelected={selectionPage.items.length > 0 && selectionPage.items.every(cert => selectedIds.includes(cert.id))}
+        onSelectPage={checked => setSelectedIds(checked ? selectionPage.items.map(cert => cert.id) : [])}
+        selectionLabel="Chọn trang này"
       >
         <button type="button" disabled={bulkBusy || loading || selectedIds.length === 0} onClick={() => void bulkChangePublication(true)} className="rounded-lg border border-emerald-600 bg-white px-3 py-2 text-xs font-bold text-emerald-700 disabled:opacity-50">Xuất bản</button>
         <button type="button" disabled={bulkBusy || loading || selectedIds.length === 0} onClick={() => void bulkChangePublication(false)} className="rounded-lg border border-amber-500 bg-white px-3 py-2 text-xs font-bold text-amber-700 disabled:opacity-50">Chuyển về bản nháp</button>
       </BulkSelectionBar>
 
-      <PaginatedList enabled={!loading} className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-2 gap-lg">
+      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-2 gap-lg">
         {loading ? (
           <div className="col-span-full py-8 text-center text-on-surface-variant">Đang tải...</div>
         ) : filteredCerts.length === 0 ? (
           <div className="col-span-full py-8 text-center text-on-surface-variant">Không tìm thấy chứng chỉ nào.</div>
         ) : (
-          filteredCerts.map((c, idx) => {
+          selectionPage.items.map((c, idx) => {
             const domainName = c.domains?.[0]?.domain?.name || 'General IT';
             const badgeClasses = [
               'bg-secondary-fixed text-on-secondary-fixed',
@@ -242,7 +246,8 @@ export default function AdminCertifications({ createOnly = false }: { createOnly
             );
           })
         )}
-      </PaginatedList>
+      </div>
+      {!loading && selectionPage.totalPages > 1 && <Pagination className="mt-4" page={selectionPage.page} limit={selectionPage.limit} total={filteredCerts.length} totalPages={selectionPage.totalPages} onPageChange={selectionPage.setPage} onLimitChange={selectionPage.setLimit} />}
       <CertificateModal open={modalOpen} initial={editTarget} onClose={() => setModalOpen(false)} onSaved={handleSaved} />
     </main>
   );

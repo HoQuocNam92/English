@@ -1,5 +1,6 @@
 'use client';
-import { PaginatedList } from '@/shared/ui/PaginatedList';
+import { Pagination } from '@/shared/ui/Pagination';
+import { useSelectionPage } from '@/shared/lib/use-selection-page';
 import { ListTools, matchesSearch } from '@/shared/ui/ListTools';
 import { showToast } from '@/shared/ui/AppFeedback';
 import { AppIcon } from '@/shared/ui/AppIcon';
@@ -186,9 +187,12 @@ export default function AdminLevels({ createOnly = false }: { createOnly?: boole
 
   const visibleLevels = levels.filter(level => matchesSearch(search, level.name, level.code, level.description) && (!filter || level.isActive === (filter === 'active')));
 
-  const bulkChangeActivity = async (active: boolean, allFiltered = false) => {
-    const ids = allFiltered ? visibleLevels.map(level => level.id) : selectedIds;
-    if (!ids.length) return;
+  const selectionPage = useSelectionPage(visibleLevels);
+  React.useEffect(() => { setSelectedIds([]); }, [selectionPage.page, selectionPage.limit]);
+
+  const bulkChangeActivity = async (active: boolean) => {
+    const ids = [...selectedIds];
+    if (bulkBusy || !ids.length) return;
     const action = active ? 'kích hoạt' : 'ngừng hoạt động';
     if (!(await confirmDialog(`Bạn có chắc muốn ${action} ${ids.length} cấp độ đã chọn?`, { title: `Xác nhận ${action}`, confirmLabel: action, tone: active ? 'primary' : 'danger' }))) return;
 
@@ -407,18 +411,14 @@ export default function AdminLevels({ createOnly = false }: { createOnly?: boole
       <section className="space-y-4" aria-labelledby="levels-list-title">
         <h2 id="levels-list-title" className="text-lg font-semibold text-on-surface">Danh sách cấp độ ({visibleLevels.length})</h2>
         <BulkSelectionBar
-          pageCount={visibleLevels.length}
+          pageCount={selectionPage.items.length}
           selectedCount={selectedIds.length}
-          allPageSelected={visibleLevels.length > 0 && visibleLevels.every(level => selectedIds.includes(level.id))}
-          onSelectPage={checked => setSelectedIds(checked ? visibleLevels.map(level => level.id) : [])}
-          selectionLabel="Chọn tất cả kết quả lọc"
+          allPageSelected={selectionPage.items.length > 0 && selectionPage.items.every(level => selectedIds.includes(level.id))}
+          onSelectPage={checked => setSelectedIds(checked ? selectionPage.items.map(level => level.id) : [])}
+          selectionLabel="Chọn trang này"
         >
-          {selectedIds.length > 0 && <>
-            <button type="button" disabled={bulkBusy} onClick={() => void bulkChangeActivity(true)} className="rounded-lg bg-emerald-700 px-3 py-2 text-xs font-bold text-white disabled:opacity-50">Kích hoạt đã chọn</button>
-            <button type="button" disabled={bulkBusy} onClick={() => void bulkChangeActivity(false)} className="rounded-lg bg-amber-700 px-3 py-2 text-xs font-bold text-white disabled:opacity-50">Ngừng hoạt động đã chọn</button>
-          </>}
-          <button type="button" disabled={bulkBusy || visibleLevels.length === 0} onClick={() => void bulkChangeActivity(true, true)} className="rounded-lg border border-emerald-600 px-3 py-2 text-xs font-bold text-emerald-700 disabled:opacity-50">Kích hoạt tất cả kết quả lọc</button>
-          <button type="button" disabled={bulkBusy || visibleLevels.length === 0} onClick={() => void bulkChangeActivity(false, true)} className="rounded-lg border border-amber-500 px-3 py-2 text-xs font-bold text-amber-700 disabled:opacity-50">Ngừng hoạt động tất cả kết quả lọc</button>
+          <button type="button" disabled={bulkBusy || loading || selectedIds.length === 0} onClick={() => void bulkChangeActivity(true)} className="rounded-lg border border-emerald-600 bg-white px-3 py-2 text-xs font-bold text-emerald-700 disabled:opacity-50">Kích hoạt</button>
+          <button type="button" disabled={bulkBusy || loading || selectedIds.length === 0} onClick={() => void bulkChangeActivity(false)} className="rounded-lg border border-amber-500 bg-white px-3 py-2 text-xs font-bold text-amber-700 disabled:opacity-50">Ngừng hoạt động</button>
         </BulkSelectionBar>
 
         {loading ? (
@@ -445,8 +445,8 @@ export default function AdminLevels({ createOnly = false }: { createOnly?: boole
             </button>
           </div>
         ) : (
-          <PaginatedList className="grid grid-cols-1 md:grid-cols-2 gap-5">
-            {visibleLevels.length === 0 ? <div className="col-span-full rounded-2xl border border-dashed border-outline-variant bg-surface-container-lowest p-10 text-center text-sm text-on-surface-variant">Không có cấp độ phù hợp với bộ lọc.</div> : visibleLevels.map((lvl) => {
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+            {visibleLevels.length === 0 ? <div className="col-span-full rounded-2xl border border-dashed border-outline-variant bg-surface-container-lowest p-10 text-center text-sm text-on-surface-variant">Không có cấp độ phù hợp với bộ lọc.</div> : selectionPage.items.map((lvl) => {
               const meta = getLevelTheme(lvl);
 
               return (
@@ -516,8 +516,9 @@ export default function AdminLevels({ createOnly = false }: { createOnly?: boole
                 </div>
               );
             })}
-          </PaginatedList>
+          </div>
         )}
+        {!loading && selectionPage.totalPages > 1 && <Pagination className="mt-4" page={selectionPage.page} limit={selectionPage.limit} total={visibleLevels.length} totalPages={selectionPage.totalPages} onPageChange={selectionPage.setPage} onLimitChange={selectionPage.setLimit} />}
       </section>
 
       {/* CREATE / EDIT MODAL */}

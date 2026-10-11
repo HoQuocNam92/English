@@ -36,7 +36,7 @@ export class VocabularyController {
   @ApiBearerAuth()
   @UseGuards(JwtAuthGuard, PermissionsGuard)
   @RequirePermissions('vocabulary:manage')
-  @ApiOperation({ summary: 'Bulk publish or move filtered vocabulary back to draft' })
+  @ApiOperation({ summary: 'Bulk publish or move selected vocabulary back to draft' })
   bulkUpdateStatus(@Body() dto: BulkUpdateVocabularyStatusDto) {
     return this.svc.bulkUpdateStatus(dto);
   }

@@ -16,7 +16,7 @@ export class LessonsController {
   findAll(@Query() query: Record<string, unknown>) { return this.lessons.findAll(query) }
 
   @Patch('bulk-status') @ApiBearerAuth() @UseGuards(JwtAuthGuard, PermissionsGuard) @RequirePermissions('lessons:update')
-  @ApiOperation({ summary: 'Bulk publish or move filtered lessons back to draft' })
+  @ApiOperation({ summary: 'Bulk publish or move selected lessons back to draft' })
   bulkUpdateStatus(@Body() dto: BulkUpdateStatusDto) { return this.lessons.bulkUpdateStatus(dto) }
 
   @Get(':id') @ApiOperation({ summary: 'Chi tiết bài học' })
