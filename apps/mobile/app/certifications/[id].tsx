@@ -33,7 +33,7 @@ interface Domain {
 
 const TABS: { id: Tab; label: string; icon: keyof typeof MaterialIcons.glyphMap }[] = [
   { id: 'learn', label: 'Học', icon: 'menu-book' },
-  { id: 'exam', label: 'Thi thử', icon: 'assignment' },
+  { id: 'exam', label: 'Bài kiểm tra', icon: 'assignment' },
 ];
 
 export default function CertificationDetailScreen() {
@@ -211,14 +211,15 @@ function LearnContent({ colors, expandedDomains, onToggle, onOpenQuiz, domains, 
 
 
 function ExamContent({ colors, exams, attempts, router }: any) {
-  const mockExams = exams.filter((exam: any) => exam.kind === 'mock_exam');
+  const publishedExams = exams.filter((exam: any) => exam.status === 'published');
+  const kindLabels: Record<string, string> = { practice: 'Luyện tập chủ đề', domain_test: 'Kiểm tra chuyên ngành', mock_exam: 'Thi thử chứng chỉ', scenario_assessment: 'Tình huống thực tế' };
   return (
     <View>
-      <Text style={[styles.eyebrow, { color: colors.primary }]}>MOCK EXAMS</Text>
-      <Text style={[styles.sectionTitle, { color: colors.onSurface }]}>Mô phỏng kỳ thi thật</Text>
-      <Text style={[styles.sectionDescription, { color: colors.onSurfaceVariant }]}>Không gợi ý, không dịch và không hiển thị từ vựng trong khi thi.</Text>
+      <Text style={[styles.eyebrow, { color: colors.primary }]}>BÀI KIỂM TRA</Text>
+      <Text style={[styles.sectionTitle, { color: colors.onSurface }]}>Luyện tập và kiểm tra kiến thức</Text>
+      <Text style={[styles.sectionDescription, { color: colors.onSurfaceVariant }]}>Các bài đã xuất bản của chứng chỉ, gồm luyện tập chủ đề, kiểm tra chuyên ngành và thi thử.</Text>
       <View style={styles.examList}>
-        {mockExams.map((exam: any) => {
+        {publishedExams.map((exam: any) => {
           const attempt = attempts.find((item: any) => item.examId === exam.id);
           return (
           <View key={exam.id} style={[styles.examCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
@@ -227,6 +228,7 @@ function ExamContent({ colors, exams, attempts, router }: any) {
             </View>
             <View style={styles.examInfo}>
               <Text style={[styles.examTitle, { color: colors.onSurface }]}>{exam.title}</Text>
+              <Text style={[styles.examMeta, { color: colors.primary }]}>{kindLabels[exam.kind] || 'Bài kiểm tra'}</Text>
               <Text style={[styles.examMeta, { color: colors.onSurfaceVariant }]}>{exam._count?.questions ?? 0} câu hỏi · {exam.durationMinutes} phút</Text>
               {attempt && <Text style={[styles.examScore, { color: colors.primary }]}>Điểm: {Math.round(attempt.scorePercent ?? 0)}%</Text>}
             </View>
@@ -235,7 +237,7 @@ function ExamContent({ colors, exams, attempts, router }: any) {
             </TouchableOpacity>
           </View>
         );})}
-        {!mockExams.length && <Text style={[styles.sectionDescription, { color: colors.onSurfaceVariant }]}>Chưa có đề thi thử.</Text>}
+        {!publishedExams.length && <Text style={[styles.sectionDescription, { color: colors.onSurfaceVariant }]}>Chưa có bài kiểm tra nào được xuất bản cho chứng chỉ này.</Text>}
       </View>
     </View>
   );

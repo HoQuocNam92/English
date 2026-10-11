@@ -64,7 +64,7 @@ export default function LearnerQuizTakingPage({ params }: { params: Promise<{ id
 
     try {
       await apiClient.post(`/exams/attempts/${attemptId}/submit`, { answers: formattedAnswers });
-      router.push(`/learn/quiz/result/${attemptId}${certificateId && topicId ? `?certificateId=${certificateId}&topicId=${topicId}` : ''}`);
+      router.push(`/learn/quiz/result/${attemptId}${certificateId ? `?certificateId=${encodeURIComponent(certificateId)}${topicId ? `&topicId=${encodeURIComponent(topicId)}` : ''}` : ''}`);
     } catch (err: any) {
       showToast(err?.message || 'Không thể nộp bài thi. Vui lòng thử lại.', 'error');
       setSubmitting(false);

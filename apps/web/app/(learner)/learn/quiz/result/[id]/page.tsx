@@ -84,7 +84,7 @@ export default function LearnerQuizResultPage({ params }: { params: Promise<{ id
 
           <div className="flex flex-col sm:flex-row gap-3 w-full md:w-auto">
             <Link
-              href={certificateId && topicId ? `/learn/certifications/${certificateId}/topics/${topicId}` : "/learn/certifications"}
+              href={certificateId ? (topicId ? `/learn/certifications/${certificateId}/topics/${topicId}` : `/learn/certifications/${certificateId}`) : "/learn/certifications"}
               className="px-5 py-2.5 bg-primary hover:bg-indigo-700 !text-white font-bold text-xs rounded-xl transition-colors shadow-2xs text-center"
             >
               <span className="!text-white">{certificateId && topicId ? 'Ôn lại kiến thức' : 'Làm đề thi khác'}</span>
