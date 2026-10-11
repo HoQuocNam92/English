@@ -203,10 +203,11 @@ CI trên `main` chạy kiểm tra và build trước khi xuất bản container.
 ### Frontend trên Vercel
 
 Đặt **Root Directory** của project Vercel là `apps/web` và cho phép truy cập mã nguồn bên ngoài thư mục này để dùng các package trong workspace.
-File `apps/web/vercel.json` cố định lệnh cài đặt và build bằng pnpm `12.8.1`, cùng phiên bản trong `package.json`.
-Các lệnh gọi pnpm qua `npx` để tránh lỗi bootstrap `the installed pnpm wrapper is missing` trong `package-manager-store` của môi trường build Vercel.
+File `apps/web/vercel.json` cố định lệnh cài đặt bằng pnpm `12.8.1`, cùng phiên bản trong `package.json`.
+Lệnh cài đặt gọi pnpm qua `npx` để tránh lỗi bootstrap `the installed pnpm wrapper is missing` trong `package-manager-store` của môi trường build Vercel.
+Lệnh build gọi trực tiếp Next.js trong `node_modules` ở gốc workspace (dự án dùng `nodeLinker: hoisted`), tránh launcher `next` từ cache cũ trỏ vào đường dẫn `.pnpm` không còn tồn tại.
 Không hạ xuống pnpm 9/10: lockfile của pnpm 12 chứa nhiều YAML document mà các phiên bản này không đọc được.
-Khi nâng phiên bản pnpm, cập nhật cả `packageManager` và hai lệnh trong file cấu hình Vercel.
+Khi nâng phiên bản pnpm, cập nhật cả `packageManager` và lệnh cài đặt trong file cấu hình Vercel.
 Đặt `NEXT_PUBLIC_API_URL` trong môi trường Vercel trước khi deploy.
 
 ## Tác giả và giấy phép
