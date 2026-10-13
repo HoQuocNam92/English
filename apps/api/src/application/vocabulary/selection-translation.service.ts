@@ -26,7 +26,7 @@ export class SelectionTranslationService {
       if (this.speechCache.size >= 30) this.speechCache.delete(this.speechCache.keys().next().value!)
       this.speechCache.set(text, audio)
       return { audio, mimeType: 'audio/wav' }
-    } catch { throw new ServiceUnavailableException('Chưa tạo được phát âm. Máy chủ cần Python 3 và thư viện eSpeak NG.') }
+    } catch { throw new ServiceUnavailableException('Chưa phát được âm thanh. Vui lòng thử lại sau.') }
   }
 
   async translate(input: unknown, contextInput?: unknown): Promise<Translation> {

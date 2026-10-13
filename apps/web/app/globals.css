@@ -1054,3 +1054,14 @@ select.admin-select {
 button, input, select, textarea { font-family: inherit; }
 .ui-tabs { min-width: 0; }
 .ui-tab svg { flex-shrink: 0; }
+
+/* Keep validation borders visible over the shared control defaults and focus styles. */
+.admin-canvas :is(input, textarea, select)[aria-invalid='true'],
+.ui-control[aria-invalid='true'],
+.dropdown-trigger[aria-invalid='true'] {
+  border-color: var(--error, #dc2626) !important;
+}
+.admin-canvas :is(input, textarea, select)[aria-invalid='true']:focus,
+.ui-control[aria-invalid='true']:focus {
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--error, #dc2626) 14%, transparent) !important;
+}

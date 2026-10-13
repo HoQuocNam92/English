@@ -1,4 +1,5 @@
 'use client';
+import { usePronunciation } from '@/shared/lib/use-pronunciation';
 import { BackButton } from '@/shared/ui/BackButton';
 import { AppIcon } from '@/shared/ui/AppIcon';
 
@@ -78,20 +79,11 @@ export default function LessonVocabularyDetailPage({ params }: { params: Promise
     if (lessonId) loadLessonVocabs();
   }, [lessonId, loadLessonVocabs]);
 
-  // Pronounce word
+  const { speechError, play } = usePronunciation();
+  useEffect(() => { if (speechError) showToast(speechError, 'error'); }, [speechError]);
   const pronounce = (e: React.MouseEvent, word: any) => {
     e.stopPropagation();
-    if (word.audioUrl) {
-      void new Audio(word.audioUrl).play();
-      return;
-    }
-    if ('speechSynthesis' in window) {
-      window.speechSynthesis.cancel();
-      const u = new SpeechSynthesisUtterance(word.term);
-      u.lang = 'en-US';
-      u.rate = 0.85;
-      window.speechSynthesis.speak(u);
-    }
+    void play(word.term, word.audioUrl);
   };
 
   // Stop studying list

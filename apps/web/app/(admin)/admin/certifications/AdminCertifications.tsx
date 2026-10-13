@@ -1,5 +1,5 @@
 'use client';
-import { RequiredMark } from '@/shared/ui/RequiredMark';
+import { Input } from '@/shared/ui/Input';
 import { ClearFiltersButton } from '@/shared/ui/ClearFiltersButton';
 import { Pagination } from '@/shared/ui/Pagination';
 import { useSelectionPage } from '@/shared/lib/use-selection-page';
@@ -259,13 +259,24 @@ function CertificateModal({ open, initial, onClose, onSaved, page = false }: { p
   const [form, setForm] = React.useState(blank);
   const [saving, setSaving] = React.useState(false);
   const [error, setError] = React.useState('');
+  const [fieldErrors, setFieldErrors] = React.useState<Record<string, string>>({});
   React.useEffect(() => {
     setForm(initial ? { code: initial.code, name: initial.name, provider: initial.provider, description: initial.description, category: initial.category ?? '', examDurationMinutes: initial.examDurationMinutes?.toString() ?? '', examQuestionCount: initial.examQuestionCount?.toString() ?? '', passingScaledScore: initial.passingScaledScore?.toString() ?? '', examUrl: initial.examUrl ?? '', isActive: initial.isActive } : blank);
     setError('');
+    setFieldErrors({});
   }, [initial, open]);
   const save = async (event: React.FormEvent) => {
     event.preventDefault();
-    if (!form.code.trim() || !form.name.trim() || !form.provider.trim()) { setError('Vui lòng nhập đầy đủ mã, tên và đơn vị cấp.'); return; }
+    const errors: Record<string, string> = {};
+    for (const [key, label] of [['code', 'mã chứng chỉ'], ['provider', 'đơn vị cấp'], ['name', 'tên chứng chỉ']] as const) {
+      if (!form[key].trim()) errors[key] = `Vui lòng nhập ${label}`;
+    }
+    for (const key of ['examDurationMinutes', 'examQuestionCount', 'passingScaledScore'] as const) {
+      const min = key === 'passingScaledScore' ? 0 : 1;
+      if (form[key] && (!Number.isInteger(Number(form[key])) || Number(form[key]) < min)) errors[key] = `Vui lòng nhập số nguyên từ ${min} trở lên`;
+    }
+    setFieldErrors(errors);
+    if (Object.keys(errors).length) return;
     setSaving(true); setError('');
     try {
       const payload = { ...form, code: form.code.trim().toUpperCase(), category: form.category || null, examDurationMinutes: form.examDurationMinutes ? Number(form.examDurationMinutes) : null, examQuestionCount: form.examQuestionCount ? Number(form.examQuestionCount) : null, passingScaledScore: form.passingScaledScore ? Number(form.passingScaledScore) : null, examUrl: form.examUrl || null };
@@ -275,16 +286,16 @@ function CertificateModal({ open, initial, onClose, onSaved, page = false }: { p
     finally { setSaving(false); }
   };
   const cls = 'mt-2 h-11 w-full rounded-xl border border-outline-variant/70 bg-white px-3.5 text-sm outline-none focus:border-primary focus:ring-4 focus:ring-primary/10';
-  return <FormSurface page={page} open={open} onClose={onClose} maxWidth="max-w-2xl"><form onSubmit={save}>
+  return <FormSurface page={page} open={open} onClose={onClose} maxWidth="max-w-2xl"><form noValidate onSubmit={save}>
     <div className="flex items-start justify-between border-b border-outline-variant/50 px-6 py-5"><div><h2 className="text-xl font-bold">{initial ? 'Chỉnh sửa chứng chỉ' : 'Thêm chứng chỉ mới'}</h2><p className="mt-1 text-xs text-on-surface-variant">Thông tin chứng chỉ công nghệ và đơn vị cấp.</p></div><button type="button" onClick={onClose} className="rounded-lg p-2 hover:bg-surface-container-low"><AppIcon className="">close</AppIcon></button></div>
     <div className="grid grid-cols-1 gap-5 p-6 sm:grid-cols-2">
-      <label className="text-sm font-semibold">Mã chứng chỉ<RequiredMark /><input className={`${cls} uppercase`} required value={form.code} onChange={e => setForm({...form, code:e.target.value})} placeholder="AWS-CLF-C02" /></label>
-      <label className="text-sm font-semibold">Đơn vị cấp<RequiredMark /><input className={cls} required value={form.provider} onChange={e => setForm({...form, provider:e.target.value})} placeholder="Amazon Web Services" /></label>
-      <label className="text-sm font-semibold sm:col-span-2">Tên chứng chỉ<RequiredMark /><input className={cls} required value={form.name} onChange={e => setForm({...form, name:e.target.value})} placeholder="AWS Certified Cloud Practitioner" /></label>
+      <Input label="Mã chứng chỉ" required value={form.code} error={fieldErrors.code} onChange={e => { setForm({...form, code:e.target.value}); setFieldErrors(old => ({...old, code: ''})); }} placeholder="AWS-CLF-C02" />
+      <Input label="Đơn vị cấp" required value={form.provider} error={fieldErrors.provider} onChange={e => { setForm({...form, provider:e.target.value}); setFieldErrors(old => ({...old, provider: ''})); }} placeholder="Amazon Web Services" />
+      <Input label="Tên chứng chỉ" required containerClassName="sm:col-span-2" value={form.name} error={fieldErrors.name} onChange={e => { setForm({...form, name:e.target.value}); setFieldErrors(old => ({...old, name: ''})); }} placeholder="AWS Certified Cloud Practitioner" />
       <label className="text-sm font-semibold sm:col-span-2">Nhóm chứng chỉ<input className={cls} value={form.category} onChange={e => setForm({...form, category:e.target.value})} placeholder="Cloud / Security / Network" /></label>
-      <label className="text-sm font-semibold">Thời gian thi (phút)<input type="number" min="1" className={cls} value={form.examDurationMinutes} onChange={e => setForm({...form, examDurationMinutes:e.target.value})} placeholder="90" /></label>
-      <label className="text-sm font-semibold">Số câu trong đề thật<input type="number" min="1" className={cls} value={form.examQuestionCount} onChange={e => setForm({...form, examQuestionCount:e.target.value})} placeholder="65" /></label>
-      <label className="text-sm font-semibold sm:col-span-2">Điểm chuẩn quy đổi<input type="number" min="0" className={cls} value={form.passingScaledScore} onChange={e => setForm({...form, passingScaledScore:e.target.value})} placeholder="700" /></label>
+      <Input label="Thời gian thi (phút)" type="number" min="1" step="1" value={form.examDurationMinutes} error={fieldErrors.examDurationMinutes} onChange={e => { setForm({...form, examDurationMinutes:e.target.value}); setFieldErrors(old => ({...old, examDurationMinutes: ''})); }} placeholder="90" />
+      <Input label="Số câu trong đề thật" type="number" min="1" step="1" value={form.examQuestionCount} error={fieldErrors.examQuestionCount} onChange={e => { setForm({...form, examQuestionCount:e.target.value}); setFieldErrors(old => ({...old, examQuestionCount: ''})); }} placeholder="65" />
+      <Input label="Điểm chuẩn quy đổi" containerClassName="sm:col-span-2" type="number" min="0" step="1" value={form.passingScaledScore} error={fieldErrors.passingScaledScore} onChange={e => { setForm({...form, passingScaledScore:e.target.value}); setFieldErrors(old => ({...old, passingScaledScore: ''})); }} placeholder="700" />
       <label className="text-sm font-semibold sm:col-span-2">Liên kết kỳ thi<input className={cls} value={form.examUrl} onChange={e => setForm({...form, examUrl:e.target.value})} placeholder="https://..." /></label>
       <label className="text-sm font-semibold sm:col-span-2">Mô tả<textarea className="mt-2 min-h-24 w-full rounded-xl border border-outline-variant/70 bg-white p-3 text-sm outline-none focus:border-primary focus:ring-4 focus:ring-primary/10" value={form.description} onChange={e => setForm({...form, description:e.target.value})} /></label>
       <label className="flex items-center gap-2 text-sm font-medium sm:col-span-2"><input type="checkbox" className="accent-primary" checked={form.isActive} onChange={e => setForm({...form, isActive:e.target.checked})} />Hiển thị trong hệ thống</label>

@@ -1,4 +1,5 @@
 'use client';
+import { Input } from '@/shared/ui/Input';
 import { SummaryStat } from '@/shared/ui/SummaryStat';
 import { Pagination } from '@/shared/ui/Pagination';
 import { useSelectionPage } from '@/shared/lib/use-selection-page';
@@ -54,6 +55,7 @@ export default function AdminLevels({ createOnly = false }: { createOnly?: boole
   const [description, setDescription] = React.useState('');
   const [isActive, setIsActive] = React.useState(true);
   const [formError, setFormError] = React.useState<string | null>(null);
+  const [fieldErrors, setFieldErrors] = React.useState<Record<string, string>>({});
   const [saving, setSaving] = React.useState(false);
 
   // Delete modal state
@@ -91,6 +93,7 @@ export default function AdminLevels({ createOnly = false }: { createOnly?: boole
     setDescription(lvl.description || '');
     setIsActive(lvl.isActive);
     setFormError(null);
+    setFieldErrors({});
     setFormModalOpen(true);
   };
 
@@ -101,19 +104,13 @@ export default function AdminLevels({ createOnly = false }: { createOnly?: boole
     const trimmedCode = code.trim().toLowerCase();
     const trimmedName = name.trim();
 
-    if (!trimmedCode) {
-      setFormError('Vui lòng nhập mã cấp độ');
-      return;
-    }
-    if (!trimmedName) {
-      setFormError('Vui lòng nhập tên cấp độ');
-      return;
-    }
     const orderNum = Number(order);
-    if (isNaN(orderNum) || orderNum <= 0) {
-      setFormError('Thứ tự phải là số nguyên dương (ví dụ: 1, 2, 3)');
-      return;
-    }
+    const errors: Record<string, string> = {};
+    if (!trimmedCode) errors.code = 'Vui lòng nhập mã cấp độ';
+    if (!trimmedName) errors.name = 'Vui lòng nhập tên cấp độ';
+    if (!Number.isInteger(orderNum) || orderNum <= 0) errors.order = 'Thứ tự phải là số nguyên dương';
+    setFieldErrors(errors);
+    if (Object.keys(errors).length) return;
 
     setSaving(true);
     try {
@@ -224,12 +221,9 @@ export default function AdminLevels({ createOnly = false }: { createOnly?: boole
   };
 
   const levelForm = (<FormSurface page={createOnly} open onClose={() => { if (!saving) closeForm(); }} maxWidth="max-w-lg">
-          <form onSubmit={handleSaveLevel} className="p-6">
+          <form noValidate onSubmit={handleSaveLevel} className="p-6">
             <div className="flex items-center justify-between pb-4 border-b border-outline-variant/40">
               <div className="flex items-center gap-2">
-                <AppIcon className=" text-primary text-[24px]">
-                  {isEditMode ? 'edit_square' : 'add_circle'}
-                </AppIcon>
                 <h3 className="text-lg font-bold text-on-surface">
                   {isEditMode ? 'Chỉnh sửa cấp độ học tập' : 'Thêm cấp độ học tập mới'}
                 </h3>
@@ -252,55 +246,14 @@ export default function AdminLevels({ createOnly = false }: { createOnly?: boole
             )}
 
             <div className="space-y-4 mt-4">
-              <div>
-                <label className="block text-xs font-bold text-on-surface mb-1">
-                  Mã cấp độ (Code) <span className="text-error">*</span>
-                </label>
-                <input
-                  type="text"
-                  value={code}
-                  onChange={(e) => setCode(e.target.value.toLowerCase().replace(/\s+/g, '_'))}
-                  placeholder="Ví dụ: pre_intermediate, expert, master"
-                  className="w-full px-3.5 py-2 rounded-xl border border-outline-variant bg-surface-container-lowest text-sm font-mono focus:outline-hidden focus:border-primary"
-                  required
-                />
-                <p className="text-[11px] text-on-surface-variant mt-1">
-                  Dùng chữ thường, không dấu, ngăn cách bằng dấu gạch dưới.
-                </p>
-              </div>
-
-              <div>
-                <label className="block text-xs font-bold text-on-surface mb-1">
-                  Tên hiển thị <span className="text-error">*</span>
-                </label>
-                <input
-                  type="text"
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  placeholder="Ví dụ: Tiền trung cấp"
-                  className="w-full px-3.5 py-2 rounded-xl border border-outline-variant bg-surface-container-lowest text-sm focus:outline-hidden focus:border-primary"
-                  required
-                />
-              </div>
-
-              <div>
-                <label className="block text-xs font-bold text-on-surface mb-1">
-                  Bậc thứ tự (Order) <span className="text-error">*</span>
-                </label>
-                <input
-                  type="number"
-                  min="1"
-                  step="1"
-                  value={order}
-                  onChange={(e) => setOrder(e.target.value)}
-                  placeholder="1, 2, 3..."
-                  className="w-full px-3.5 py-2 rounded-xl border border-outline-variant bg-surface-container-lowest text-sm focus:outline-hidden focus:border-primary"
-                  required
-                />
-                <p className="text-[11px] text-on-surface-variant mt-1">
-                  Thứ tự sắp xếp từ thấp đến cao trong lộ trình học tập.
-                </p>
-              </div>
+              <Input label="Mã cấp độ (Code)" required value={code} error={fieldErrors.code}
+                onChange={e => { setCode(e.target.value.toLowerCase().replace(/\s+/g, '_')); setFieldErrors(old => ({ ...old, code: '' })); }}
+                placeholder="Ví dụ: pre_intermediate, expert, master" hint="Dùng chữ thường, không dấu, ngăn cách bằng dấu gạch dưới." />
+              <Input label="Tên hiển thị" required value={name} error={fieldErrors.name}
+                onChange={e => { setName(e.target.value); setFieldErrors(old => ({ ...old, name: '' })); }} placeholder="Ví dụ: Tiền trung cấp" />
+              <Input label="Bậc thứ tự (Order)" required type="number" min="1" step="1" value={order} error={fieldErrors.order}
+                onChange={e => { setOrder(e.target.value); setFieldErrors(old => ({ ...old, order: '' })); }}
+                hint="Thứ tự sắp xếp từ thấp đến cao trong lộ trình học tập." />
 
               <div>
                 <label className="block text-xs font-bold text-on-surface mb-1">

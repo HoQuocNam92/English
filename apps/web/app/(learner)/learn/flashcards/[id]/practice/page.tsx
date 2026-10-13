@@ -1,4 +1,5 @@
 'use client';
+import { usePronunciation } from '@/shared/lib/use-pronunciation';
 import { AppIcon, IconText } from '@/shared/ui/AppIcon';
 
 import * as React from 'react';
@@ -147,36 +148,17 @@ export default function FlashcardPracticePage({ params }: { params: Promise<{ id
 
   const currentWord = words[currentIdx];
 
-  const audioPlayer = React.useRef<HTMLAudioElement | null>(null);
-  const audioRequest = React.useRef(0);
-  const [speaking, setSpeaking] = useState(false);
-  const playPronunciation = useCallback(async () => {
-    if (!currentWord) return;
-    const request = ++audioRequest.current;
-    audioPlayer.current?.pause();
-    setSpeaking(true);
-    try {
-      let source = currentWord.audioUrl;
-      if (!source) {
-        const data = await apiClient.post<{ audio: string; mimeType: string }>('/translation/pronunciation', { text: currentWord.term });
-        source = `data:${data.mimeType};base64,${data.audio}`;
-      }
-      if (request !== audioRequest.current) return;
-      const player = new Audio(source);
-      audioPlayer.current = player;
-      player.onended = () => { if (request === audioRequest.current) setSpeaking(false); };
-      player.onerror = () => { if (request === audioRequest.current) { setSpeaking(false); showToast('Không phát được âm thanh. Hãy thử lại.', 'error'); } };
-      await player.play();
-    } catch {
-      if (request === audioRequest.current) { setSpeaking(false); showToast('Chưa phát được âm thanh. Hãy bấm nút nghe để thử lại.', 'error'); }
-    }
-  }, [currentWord]);
+  const { speaking, speechError, play, stop } = usePronunciation();
+  const playPronunciation = useCallback(() => {
+    if (currentWord) void play(currentWord.term, currentWord.audioUrl);
+  }, [currentWord, play]);
 
   useEffect(() => {
-    setSpeaking(false);
-    if (currentWord && autoPronounce && !isFinished && !quizMode) void playPronunciation();
-    return () => { audioRequest.current++; audioPlayer.current?.pause(); };
-  }, [currentWord, autoPronounce, isFinished, quizMode, playPronunciation]);
+    stop();
+    if (currentWord && autoPronounce && !isFinished && !quizMode) playPronunciation();
+    return stop;
+  }, [currentWord, autoPronounce, isFinished, quizMode, playPronunciation, stop]);
+  useEffect(() => { if (speechError) showToast(speechError, 'error'); }, [speechError]);
 
   const pronounce = (e: React.MouseEvent) => {
     e.stopPropagation();

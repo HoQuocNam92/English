@@ -9,6 +9,6 @@ export function formatAttemptDuration(attempt: AttemptTiming): string {
     : typeof recorded === 'number' && Number.isFinite(recorded) && recorded >= 0 ? recorded : null;
   if (seconds === null) return 'Chưa ghi nhận';
   if (seconds < 1) return 'Dưới 1 giây';
-  const rounded = Math.ceil(seconds);
+  const rounded = Math.floor(seconds);
   return `${Math.floor(rounded / 60)} phút ${rounded % 60} giây`;
 }

@@ -55,6 +55,8 @@ export default function AdminStudentDetailPage({
 
         if (progRes.status === 'fulfilled') {
           setProgressData(progRes.value?.data ?? progRes.value);
+        } else {
+          setError('Không thể tải tiến độ học viên. Vui lòng thử lại.');
         }
       })
       .finally(() => {
@@ -225,7 +227,7 @@ export default function AdminStudentDetailPage({
                     >
                       <h4 className="font-semibold text-sm text-on-surface mb-1">{cp.certificateName}</h4>
                       <p className="text-on-surface-variant text-xs mb-3">
-                        Đã hoàn thành: {cp.completedLessons}/{cp.totalLessons} bài học
+                        {cp.totalLessons > 0 ? `Đã học xong: ${cp.completedLessons}/${cp.totalLessons} bài ôn chứng chỉ` : 'Chưa có bài ôn chứng chỉ được xuất bản'}
                       </p>
                       <div className="flex justify-between items-end mb-1">
                         <span className="text-lg font-bold text-primary">{cp.completionPercent}%</span>
@@ -255,7 +257,7 @@ export default function AdminStudentDetailPage({
               {/* Radial Progress */}
               <div className="bg-surface-container-lowest rounded-xl border border-outline-variant p-lg shadow-xs flex flex-col items-center justify-center">
                 <h3 className="font-interface-sb text-interface-sb text-on-surface w-full text-left mb-3">
-                  Tổng quan tiến độ
+                  Tiến độ bài đã bắt đầu
                 </h3>
                 <div className="relative w-28 h-28">
                   <svg className="w-full h-full transform -rotate-90" viewBox="0 0 36 36">
@@ -283,6 +285,8 @@ export default function AdminStudentDetailPage({
                     <span className="text-[9px] text-on-surface-variant font-label-caps mt-1">HOÀN THÀNH</span>
                   </div>
                 </div>
+                <p className="mt-3 text-center text-xs text-on-surface-variant">{completedLessons}/{summary?.startedLessons ?? 0} bài đã hoàn thành · {summary?.studiedWords ?? 0} từ đã học</p>
+                <p className="mt-1 text-center text-xs text-on-surface-variant">Tỷ lệ trung bình của các bài đã bắt đầu học.</p>
               </div>
 
               {/* Lesson Counter */}

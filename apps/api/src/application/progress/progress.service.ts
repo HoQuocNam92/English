@@ -22,7 +22,7 @@ export class ProgressService {
         take: 10,
       }),
       this.prisma.vocabularyProgress.findMany({
-        where: { learnerId },
+        where: { learnerId, lastRating: { not: null }, lastReviewAt: { not: null } },
         select: { createdAt: true, lastReviewAt: true },
       }),
       this.prisma.examAttempt.findMany({
@@ -58,9 +58,13 @@ export class ProgressService {
     })
 
     const scoredAttempts = recentAttempts.filter((item) => item.scorePercent !== null)
+    const lessonProgress = progress.filter(item => item.resourceType === 'lesson' && (item.status !== 'not_started' || item.completionPercent > 0))
     const summary = {
-      overallCompletionPercent: progress.length
-        ? Math.round(progress.reduce((sum, item) => sum + item.completionPercent, 0) / progress.length)
+      completedLessons: lessonProgress.filter(item => item.status === 'completed' || item.completionPercent >= 100).length,
+      startedLessons: lessonProgress.length,
+      studiedWords: vocabularyActivity.length,
+      overallCompletionPercent: lessonProgress.length
+        ? Math.round(lessonProgress.reduce((sum, item) => sum + (item.status === 'completed' ? 100 : item.completionPercent), 0) / lessonProgress.length)
         : 0,
       totalAttempts: recentAttempts.length,
       averageScorePercent: scoredAttempts.length ? scoredAttempts.reduce((sum, item) => sum + (item.scorePercent ?? 0), 0) / scoredAttempts.length : null,
@@ -82,7 +86,19 @@ export class ProgressService {
         const avgScore = certAttempts.length > 0
           ? Math.round(certAttempts.reduce((sum, a) => sum + Number(a.scorePercent ?? 0), 0) / certAttempts.length)
           : null
+        const certificateLessons = await this.prisma.lesson.findMany({
+          where: { status: 'published', type: 'certification_review', OR: [
+            { certificates: { some: { certificateId: cg.certificateId } } },
+            { certificationTopics: { some: { topic: { certificateId: cg.certificateId } } } },
+          ] },
+          select: { id: true },
+        })
+        const ids = new Set(certificateLessons.map(lesson => lesson.id))
+        const completedLessons = lessonProgress.filter(item => ids.has(item.resourceId) && (item.status === 'completed' || item.completionPercent >= 100)).length
         return {
+          totalLessons: ids.size,
+          completedLessons,
+          completionPercent: ids.size ? Math.round(completedLessons / ids.size * 100) : 0,
           certificateId: cg.certificateId,
           certificateCode: cg.certificate.code,
           certificateName: cg.certificate.name,
@@ -165,22 +181,7 @@ export class ProgressService {
   }
 
   async getLearnerProgress(learnerId: string) {
-    try {
-      return await this.getMyProgress(learnerId)
-    } catch {
-      return {
-        progress: [],
-        summary: {
-          overallCompletionPercent: 0,
-          totalAttempts: 0,
-          averageScorePercent: null,
-          weakTopics: [],
-          calculatedAt: new Date(),
-        },
-        recentAttempts: [],
-        certProgress: [],
-      }
-    }
+    return this.getMyProgress(learnerId)
   }
 
   private async assertLearner(userId: string) {

@@ -20,6 +20,8 @@ test('attempt duration derives timestamps and distinguishes missing data from a 
   assert.equal(formatAttemptDuration({}), 'Chưa ghi nhận');
   assert.equal(formatAttemptDuration({ startedAt: 'invalid', submittedAt: 'invalid' }), 'Chưa ghi nhận');
   assert.equal(formatAttemptDuration({ timeSpentSeconds: 0.2 }), 'Dưới 1 giây');
+  assert.equal(formatAttemptDuration({ timeSpentSeconds: 59.9 }), '0 phút 59 giây');
+  assert.equal(formatAttemptDuration({ startedAt: '2026-10-07T01:00:00Z', submittedAt: '2026-10-07T01:00:59.999Z' }), '0 phút 59 giây');
   assert.equal(formatAttemptDuration({ timeSpentSeconds: 61 }), '1 phút 1 giây');
 });
 

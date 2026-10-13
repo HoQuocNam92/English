@@ -12,7 +12,7 @@ function fixture(goal: 'vocabulary' | 'certification' | 'both' | null, overrides
     vocabularyProgress: { findMany: async () => overrides.vocabularyActivity ?? [] },
     domain: { findMany: async () => [] },
     certificate: { findMany: async () => [] },
-    lesson: { findMany: async () => [] },
+    lesson: { findMany: async (args: any) => { overrides.queries?.push(args); return args.where?.OR ? (overrides.certificateLessons ?? []) : [] } },
   }
   return new ProgressService(prisma as any)
 }
@@ -56,4 +56,49 @@ test('quiz attempts unlock quiz milestone at goal threshold', async () => {
   const dates = [{ startedAt: new Date('2026-01-01') }, { startedAt: new Date('2026-01-02') }]
   const result = await fixture('certification', { quizActivity: dates }).getMyProgress('learner')
   assert.equal(result.milestones.find(item => item.id === 'complete_quizzes')?.unlocked, true)
+})
+
+
+test('summary counts completed lessons and studied words without mixing certificate progress', async () => {
+  const result = await fixture('both', { progress: [
+    { resourceType: 'lesson', resourceId: 'l1', status: 'completed', completionPercent: 100 },
+    { resourceType: 'lesson', resourceId: 'l2', status: 'in_progress', completionPercent: 50 },
+    { resourceType: 'lesson', resourceId: 'l3', status: 'not_started', completionPercent: 0 },
+    { resourceType: 'certificate', resourceId: 'cert-1', status: 'completed', completionPercent: 100 },
+  ], vocabularyActivity: [{}, {}, {}] }).getLearnerProgress('learner')
+  assert.equal(result.summary.completedLessons, 1)
+  assert.equal(result.summary.startedLessons, 2)
+  assert.equal(result.summary.studiedWords, 3)
+  assert.equal(result.summary.overallCompletionPercent, 75)
+})
+
+test('certificate without lessons or attempts starts at zero', async () => {
+  const result = await fixture('certification').getMyProgress('learner')
+  assert.equal(result.summary.completedLessons, 0)
+  assert.equal(result.summary.overallCompletionPercent, 0)
+  assert.equal(result.certProgress[0].completedLessons, 0)
+  assert.equal(result.certProgress[0].totalLessons, 0)
+  assert.equal(result.certProgress[0].completionPercent, 0)
+  assert.equal(result.certProgress[0].avgScore, null)
+})
+
+test('certificate completion uses only published review lessons linked to that certificate', async () => {
+  const queries: any[] = []
+  const result = await fixture('certification', { queries, certificateLessons: [{ id: 'review-1' }, { id: 'review-2' }], progress: [
+    { resourceType: 'lesson', resourceId: 'review-1', status: 'completed', completionPercent: 100 },
+    { resourceType: 'lesson', resourceId: 'unrelated', status: 'completed', completionPercent: 100 },
+  ] }).getMyProgress('learner')
+  assert.equal(result.certProgress[0].completedLessons, 1)
+  assert.equal(result.certProgress[0].totalLessons, 2)
+  assert.equal(result.certProgress[0].completionPercent, 50)
+  const query = queries.find(item => item.where.OR)
+  assert.equal(query.where.status, 'published')
+  assert.equal(query.where.type, 'certification_review')
+  assert.equal(query.where.OR[0].certificates.some.certificateId, 'cert-1')
+  assert.equal(query.where.OR[1].certificationTopics.some.topic.certificateId, 'cert-1')
+})
+
+test('admin progress propagates storage failures instead of returning fabricated zeros', async () => {
+  const service = new ProgressService({ user: { findFirst: async () => { throw new Error('database offline') } } } as any)
+  await assert.rejects(() => service.getLearnerProgress('learner'), /database offline/)
 })

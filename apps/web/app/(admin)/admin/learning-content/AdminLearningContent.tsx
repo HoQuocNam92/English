@@ -118,14 +118,14 @@ function Field({ label, required, error, children }: FieldProps) {
         {label}{required && <span className="text-error ml-0.5">*</span>}
       </label>
       {children}
-      {error && <p className="text-xs text-error">{error}</p>}
+      {error && <p role="alert" className="text-xs text-error">{error}</p>}
     </div>
   );
 }
 
 const inputCls =
   'rounded-xl border border-outline-variant/60 bg-surface-container-low px-3 py-2 text-sm text-on-surface focus:outline-none focus:border-primary transition-colors';
-const inputErrCls = 'border-error focus:border-error';
+const inputErrCls = '!border-error focus:!border-error focus:!ring-red-200';
 
 // ─── Vocabulary Modal (Create / Edit) ────────────────────────────────────────
 
@@ -262,6 +262,7 @@ function VocabularyModal({ mode, initial, domains, levels, onClose, onSuccess, p
               value={form.term}
               onChange={set('term')}
               placeholder="VD: algorithm"
+              aria-invalid={Boolean(errors.term)}
               className={`${inputCls} ${errors.term ? inputErrCls : ''}`}
             />
           </Field>
@@ -303,6 +304,7 @@ function VocabularyModal({ mode, initial, domains, levels, onClose, onSuccess, p
               <Dropdown
                 value={form.levelId}
                 onChange={set('levelId')}
+                aria-invalid={Boolean(errors.levelId)}
                 className={`admin-select ${inputCls} ${errors.levelId ? inputErrCls : ''}`}
               >
                 <option value="">Chọn cấp độ</option>
@@ -317,6 +319,7 @@ function VocabularyModal({ mode, initial, domains, levels, onClose, onSuccess, p
               value={form.definitionEn}
               onChange={set('definitionEn')}
               placeholder="English definition..."
+              aria-invalid={Boolean(errors.definitionEn)}
               className={`${inputCls} resize-none ${errors.definitionEn ? inputErrCls : ''}`}
             />
           </Field>
@@ -327,6 +330,7 @@ function VocabularyModal({ mode, initial, domains, levels, onClose, onSuccess, p
               value={form.definitionVi}
               onChange={set('definitionVi')}
               placeholder="Định nghĩa tiếng Việt..."
+              aria-invalid={Boolean(errors.definitionVi)}
               className={`${inputCls} resize-none ${errors.definitionVi ? inputErrCls : ''}`}
             />
           </Field>

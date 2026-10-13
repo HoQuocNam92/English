@@ -8,6 +8,8 @@ RUN pnpm install --frozen-lockfile
 RUN pnpm --filter @techenglish/api db:generate
 
 FROM workspace AS api
+RUN apt-get update && apt-get install -y --no-install-recommends python3 libespeak-ng1 espeak-ng-data && rm -rf /var/lib/apt/lists/*
+RUN python3 apps/api/scripts/pronounce.py "availability zone" > /tmp/pronunciation.wav && test -s /tmp/pronunciation.wav && rm /tmp/pronunciation.wav
 RUN pnpm --filter @techenglish/api build
 RUN cp apps/api/prisma/schema.prisma docker/prisma/schema.prisma && chown -R node:node docker/prisma
 ENV NODE_ENV=production HOST=0.0.0.0 PORT=8080

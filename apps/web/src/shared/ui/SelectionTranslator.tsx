@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from 'react';
 import { usePathname } from 'next/navigation';
 import { Languages, X, RotateCcw, Volume2 } from 'lucide-react';
 import { apiClient } from '@/shared/api/api-client';
+import { usePronunciation } from '@/shared/lib/use-pronunciation';
 import { isEnglishSelection } from '@/shared/lib/english-selection';
 
 type Result = { translation: string | null; definitionEn?: string; source: string; message?: string; partOfSpeech?: string; pronunciationIpa?: string; contextual?: boolean };
@@ -15,19 +16,15 @@ export function SelectionTranslator() {
   const [result, setResult] = useState<Result | null>(null);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
-  const [speaking, setSpeaking] = useState(false);
-  const [speechError, setSpeechError] = useState('');
-  const player = useRef<HTMLAudioElement | null>(null);
-  const speechRequest = useRef(0);
+  const { speaking, speechError, play, stop: stopSpeech } = usePronunciation();
   const request = useRef(0);
   const popup = useRef<HTMLDivElement>(null);
   const cache = useRef(new Map<string, Result>());
 
-  const stopSpeech = () => { speechRequest.current++; player.current?.pause(); player.current = null; setSpeaking(false); };
   const dismiss = () => { stopSpeech(); request.current++; setSelection(null); setLoading(false); };
   const translate = async (picked: Selection) => {
     const version = ++request.current;
-    stopSpeech(); setSpeechError('');
+    stopSpeech();
     setSelection(picked); setResult(null); setError(''); setLoading(true);
     try {
       const key = JSON.stringify([picked.text.toLocaleLowerCase('en'), picked.context]);
@@ -39,23 +36,7 @@ export function SelectionTranslator() {
     finally { if (version === request.current) setLoading(false); }
   };
 
-  const pronounce = async () => {
-    if (!selection || speaking) return;
-    const version = ++speechRequest.current;
-    setSpeaking(true); setSpeechError('');
-    try {
-      const data = await apiClient.post<{ audio: string; mimeType: string }>('/translation/pronunciation', { text: selection.text });
-      if (version !== speechRequest.current) return;
-      const audio = new Audio(`data:${data.mimeType};base64,${data.audio}`);
-      player.current = audio;
-      audio.onended = () => { if (version === speechRequest.current) setSpeaking(false); };
-      audio.onerror = () => { if (version === speechRequest.current) { setSpeaking(false); setSpeechError('Không phát được âm thanh. Vui lòng thử lại.'); } };
-      await audio.play();
-    } catch (cause: any) {
-      if (version === speechRequest.current) { setSpeaking(false); setSpeechError(cause?.name === 'NotAllowedError' ? 'Trình duyệt đang chặn âm thanh. Cho phép âm thanh cho trang này rồi thử lại.' : cause?.message ?? 'Chưa phát được. Vui lòng thử lại.'); }
-    }
-  };
-  useEffect(() => () => { speechRequest.current++; player.current?.pause(); }, []);
+  const pronounce = () => { if (selection && !speaking) void play(selection.text); };
 
   useEffect(() => { dismiss(); }, [pathname]);
   useEffect(() => {

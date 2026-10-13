@@ -371,8 +371,8 @@ export class ExamsService {
     const correctCount = snapshot.filter((q: any) => q.isUserCorrect === true).length
     const incorrectCount = Math.max(0, totalQuestions - correctCount)
     const timeSpentSeconds = attempt.submittedAt && attempt.startedAt
-      ? Math.max(0, Math.round((new Date(attempt.submittedAt).getTime() - new Date(attempt.startedAt).getTime()) / 1000))
-      : 0
+      ? Math.max(0, (new Date(attempt.submittedAt).getTime() - new Date(attempt.startedAt).getTime()) / 1000)
+      : null
 
     const domainIds = [...new Set(snapshot.map((question: any) => question.domainId).filter(Boolean))] as string[]
     const topicCodes = [...new Set(snapshot.flatMap((question: any) => Array.isArray(question.topics) ? question.topics : []).filter(Boolean))] as string[]

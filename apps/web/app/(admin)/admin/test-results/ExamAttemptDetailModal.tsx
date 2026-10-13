@@ -1,4 +1,5 @@
 'use client';
+import { formatAttemptDuration } from '@/shared/lib/attempt-duration';
 import { AppIcon } from '@/shared/ui/AppIcon';
 
 import { LevelBadge } from '@/shared/ui/LevelBadge';
@@ -63,19 +64,7 @@ export function ExamAttemptDetailModal({ attemptId, onClose }: ExamAttemptDetail
   const scorePercent = Math.round(Number.isFinite(rawScore) ? rawScore : 0);
   const isPassed = Boolean(attempt?.isPassed ?? attempt?.passed);
 
-  const durationSec =
-    attempt?.timeSpentSeconds ??
-    (attempt?.submittedAt && attempt?.startedAt
-      ? Math.max(
-          0,
-          Math.round(
-            (new Date(attempt.submittedAt).getTime() - new Date(attempt.startedAt).getTime()) / 1000
-          )
-        )
-      : 0);
-  const mins = Math.floor(durationSec / 60);
-  const secs = durationSec % 60;
-  const timeFormatted = `${mins}m ${secs}s`;
+  const timeFormatted = formatAttemptDuration(attempt ?? {});
 
   const submittedDate = attempt?.submittedAt || attempt?.completedAt || attempt?.createdAt;
   const dateFormatted = submittedDate ? new Date(submittedDate).toLocaleString('vi-VN') : '—';
