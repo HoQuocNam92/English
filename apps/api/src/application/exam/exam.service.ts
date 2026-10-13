@@ -120,7 +120,12 @@ export class ExamsService {
     if (dto.certificateId !== undefined) data.certificate = dto.certificateId ? { connect: { id: dto.certificateId } } : { disconnect: true }
     if (dto.status==='published') data.publishedAt=new Date()
     return this.prisma.$transaction(async (tx) => {
-      await this.assertQuestionScope(dto.questions ?? existing.questions, dto.domainId ?? existing.domainId, dto.levelId ?? existing.levelId, tx)
+      // Preserve historical question links when editing metadata. New questions and
+      // taxonomy changes must satisfy the current scope rules.
+      const scopeChanged = (dto.domainId !== undefined && dto.domainId !== existing.domainId) || (dto.levelId !== undefined && dto.levelId !== existing.levelId)
+      const retainedIds = new Set(existing.questions.map(question => question.questionId))
+      const questionsToValidate = scopeChanged ? dto.questions ?? existing.questions : dto.questions?.filter((question: any) => !retainedIds.has(question.questionId))
+      await this.assertQuestionScope(questionsToValidate, dto.domainId ?? existing.domainId, dto.levelId ?? existing.levelId, tx)
       if (dto.questions !== undefined) {
         await tx.examQuestion.deleteMany({ where: { examId: id } })
         if (dto.questions.length) {
@@ -133,6 +138,46 @@ export class ExamsService {
 
   async delete(id: string) { await this.findOne(id); await this.prisma.exam.delete({ where: { id } }) }
   async publish(id: string) { await this.findOne(id); return this.prisma.exam.update({ where: { id }, data: { status: 'published', publishedAt: new Date() } }) }
+
+  private async practiceRequirement(exam: any, learnerId: string, db: Pick<PrismaService, 'certificationTopic' | 'lesson' | 'learningProgress'> = this.prisma) {
+    if (exam.kind !== 'practice' || !exam.certificateId) return { ready: true, reason: '', lessonIds: [] as string[] }
+    let lessonIds: string[]
+    if (exam.topics.length) {
+      const topics = await db.certificationTopic.findMany({
+        where: { certificateId: exam.certificateId, code: { in: exam.topics } },
+        select: { code: true, lessons: { where: { lesson: { status: 'published', type: 'certification_review' } }, select: { lessonId: true } } },
+      })
+      if (new Set(topics.map(topic => topic.code)).size !== new Set(exam.topics).size || topics.some(topic => !topic.lessons.length)) {
+        return { ready: false, reason: 'Chủ đề chưa có bài học kiến thức được xuất bản. Vui lòng chờ quản trị viên bổ sung.', lessonIds: [] as string[] }
+      }
+      lessonIds = [...new Set(topics.flatMap(topic => topic.lessons.map(link => link.lessonId)))]
+    } else {
+      const lessons = await db.lesson.findMany({ where: { status: 'published', type: 'certification_review', OR: [
+        { certificates: { some: { certificateId: exam.certificateId } } },
+        { certificationTopics: { some: { topic: { certificateId: exam.certificateId } } } },
+      ] }, select: { id: true } })
+      lessonIds = lessons.map(lesson => lesson.id)
+      if (!lessonIds.length) return { ready: false, reason: 'Chứng chỉ chưa có bài học kiến thức được xuất bản. Vui lòng chờ quản trị viên bổ sung.', lessonIds }
+    }
+    const completed = await db.learningProgress.count({ where: { learnerId, resourceType: 'lesson', resourceId: { in: lessonIds }, OR: [{ status: 'completed' }, { completionPercent: { gte: 100 } }] } })
+    return { ready: completed === lessonIds.length, reason: completed === lessonIds.length ? '' : 'Hãy hoàn thành bài học kiến thức của chủ đề trước khi làm Quiz.', lessonIds }
+  }
+
+  async getEligibility(examId: string, learnerId: string) {
+    const exam = await this.prisma.exam.findUnique({ where: { id: examId }, include: { _count: { select: { questions: true } } } })
+    if (!exam || exam.status !== 'published') throw new NotFoundException('Không tìm thấy bài thi đã xuất bản')
+    const now = new Date()
+    const [attempts, requirement] = await Promise.all([
+      this.prisma.examAttempt.findMany({ where: { examId, learnerId }, select: { id: true, status: true, expiresAt: true, scorePercent: true }, orderBy: { startedAt: 'desc' } }),
+      this.practiceRequirement(exam, learnerId),
+    ])
+    const usedAttempts = attempts.filter(attempt => ['submitted', 'graded', 'expired'].includes(attempt.status) || (attempt.status === 'in_progress' && attempt.expiresAt && attempt.expiresAt <= now)).length
+    const activeAttempt = attempts.find(attempt => attempt.status === 'in_progress' && (!attempt.expiresAt || attempt.expiresAt > now))
+    const latestAttempt = attempts.find(attempt => ['submitted', 'graded'].includes(attempt.status)) ?? null
+    const remainingAttempts = Math.max(0, exam.maxAttempts - usedAttempts)
+    const reason = exam.availableFrom && exam.availableFrom > now ? 'Bài thi chưa đến thời gian mở' : exam.availableUntil && exam.availableUntil < now ? 'Bài thi đã hết thời gian mở' : !exam._count.questions ? 'Bài thi chưa có câu hỏi' : requirement.reason || (!activeAttempt && !remainingAttempts ? `Bạn đã sử dụng hết ${exam.maxAttempts} lượt làm bài` : '')
+    return { canStart: !reason, reason, usedAttempts, remainingAttempts, maxAttempts: exam.maxAttempts, activeAttemptId: activeAttempt?.id ?? null, latestAttempt, requiredLessonIds: requirement.lessonIds }
+  }
 
   async startAttempt(examId: string, learnerId: string) {
     for (let retry = 0; retry < 3; retry += 1) {
@@ -157,17 +202,8 @@ export class ExamsService {
       if (exam.availableFrom && exam.availableFrom > now) throw new BadRequestException('Bài thi chưa đến thời gian mở')
       if (exam.availableUntil && exam.availableUntil < now) throw new BadRequestException('Bài thi đã hết thời gian mở')
       if (!exam.questions.length) throw new BadRequestException('Bài thi chưa có câu hỏi')
-      if (exam.kind === 'practice' && exam.certificateId && exam.topics.length) {
-        const topics = await tx.certificationTopic.findMany({
-          where: { certificateId: exam.certificateId, code: { in: exam.topics } },
-          select: { lessons: { where: { lesson: { status: 'published', type: 'certification_review' } }, select: { lessonId: true } } },
-        })
-        if (topics.length) {
-          const lessonIds = [...new Set(topics.flatMap(topic => topic.lessons.map(link => link.lessonId)))]
-          const completed = await tx.learningProgress.count({ where: { learnerId, resourceType: 'lesson', resourceId: { in: lessonIds }, status: 'completed' } })
-          if (topics.some(topic => !topic.lessons.length) || completed !== lessonIds.length) throw new BadRequestException('Hãy hoàn thành bài học kiến thức của chủ đề trước khi làm Quiz.')
-        }
-      }
+      const requirement = await this.practiceRequirement(exam, learnerId, tx)
+      if (!requirement.ready) throw new BadRequestException(requirement.reason)
 
 
       await tx.examAttempt.updateMany({ where: { examId, learnerId, status: 'in_progress', expiresAt: { lte: now } }, data: { status: 'expired' } })

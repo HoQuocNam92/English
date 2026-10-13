@@ -56,6 +56,11 @@ export class ExamsController {
     return this.svc.startAttempt(id, u.sub)
   }
 
+  @Get(':id/eligibility')
+  getEligibility(@Param('id') id: string, @CurrentUser() u: JwtPayload) {
+    return this.svc.getEligibility(id, u.sub)
+  }
+
   @Post('attempts/:attemptId/submit')
   @ApiOperation({ summary: 'Submit exam attempt' })
   submitAttempt(

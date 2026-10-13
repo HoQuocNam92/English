@@ -66,7 +66,6 @@ export default function MobileQuizScreen() {
         const durationMins = data.examSnapshot?.durationMinutes || data.exam?.durationMinutes || 15;
         setTimeLeft(data.expiresAt ? Math.max(0, Math.ceil((new Date(data.expiresAt).getTime() - Date.now()) / 1000)) : durationMins * 60);
       } catch (error: any) {
-        console.error('Start exam failed:', error);
         Alert.alert('Lỗi', error.message || 'Không thể bắt đầu bài kiểm tra.');
         router.back();
       } finally {

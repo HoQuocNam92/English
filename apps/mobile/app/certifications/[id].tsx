@@ -44,22 +44,29 @@ export default function CertificationDetailScreen() {
   const [tab, setTab] = useState<Tab>('learn');
   const [expandedDomains, setExpandedDomains] = useState<number[]>([]);
   const [certificateData, setCertificateData] = useState<any>(null);
+  const [examStates, setExamStates] = useState<Record<string, any>>({});
   const [studyProgress, setStudyProgress] = useState<any>(null);
   const [progressData, setProgressData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
   useFocusEffect(useCallback(() => {
+    let cancelled = false;
+    setLoading(true); setError('');
     Promise.all([api.get<any>(`/certificates/${params.id}`), api.get<any>('/progress/me'), api.get<any>(`/certification-study/certificates/${params.id}/progress`)])
-      .then(([certificateResult, progressResult, studyResult]) => {
+      .then(async ([certificateResult, progressResult, studyResult]) => {
         const cert = (certificateResult as any)?.data ?? certificateResult;
+        const states = await Promise.all((cert?.exams ?? []).filter((exam: any) => exam.status === 'published').map(async (exam: any) => [exam.id, await api.get<any>(`/exams/${exam.id}/eligibility`)]));
+        if (cancelled) return;
+        setExamStates(Object.fromEntries(states));
         setCertificateData(cert);
         setProgressData(progressResult);
         setStudyProgress(studyResult);
         setExpandedDomains((cert?.domains ?? []).slice(0, 2).map((_: any, index: number) => index + 1));
       })
-      .catch((cause) => setError(cause?.message || 'Không thể tải dữ liệu chứng chỉ'))
-      .finally(() => setLoading(false));
+      .catch((cause) => { if (!cancelled) setError(cause?.message || 'Không thể tải dữ liệu chứng chỉ'); })
+      .finally(() => { if (!cancelled) setLoading(false); });
+    return () => { cancelled = true; };
   }, [params.id]));
 
   const domains: Domain[] = useMemo(() => (certificateData?.domains ?? []).map((item: any, index: number) => {
@@ -110,7 +117,7 @@ export default function CertificationDetailScreen() {
       <ScrollView stickyHeaderIndices={[1]} showsVerticalScrollIndicator={false} contentContainerStyle={styles.scrollContent}>
         <View style={[styles.hero, { backgroundColor: colors.surfaceContainerLowest, borderBottomColor: colors.border }]}>
           <View style={styles.identityRow}>
-            <View style={styles.awsLogo}><Text style={styles.awsLogoText}>aws</Text></View>
+            <View style={[styles.awsLogo, { backgroundColor: /^aws(?:$|[-\s])/i.test(certificate.code) || /^aws$|amazon web services/i.test(certificate.provider) ? '#ff9900' : colors.primaryContainer }]}>{/^aws(?:$|[-\s])/i.test(certificate.code) || /^aws$|amazon web services/i.test(certificate.provider) ? <Text style={styles.awsLogoText}>aws</Text> : <MaterialIcons name="school" size={28} color={colors.primary} />}</View>
             <View style={styles.identityText}>
               <View style={styles.badgeRow}>
                 <View style={[styles.badge, { backgroundColor: colors.primaryContainer }]}><Text style={[styles.badgeText, { color: colors.primary }]}>{certificate.progress > 0 ? 'ĐANG ÔN LUYỆN' : 'CHƯA BẮT ĐẦU'}</Text></View>
@@ -143,7 +150,7 @@ export default function CertificationDetailScreen() {
               certProgress={certProgress}
             />
           )}
-          {tab === 'exam' && <ExamContent colors={colors} exams={certificateData.exams ?? []} attempts={attempts} router={router} />}
+          {tab === 'exam' && <ExamContent colors={colors} exams={certificateData.exams ?? []} examStates={examStates} router={router} onLearn={() => setTab('learn')} />}
         </View>
       </ScrollView>
     </View>
@@ -210,7 +217,7 @@ function LearnContent({ colors, expandedDomains, onToggle, onOpenQuiz, domains, 
 
 
 
-function ExamContent({ colors, exams, attempts, router }: any) {
+function ExamContent({ colors, exams, examStates, router, onLearn }: any) {
   const publishedExams = exams.filter((exam: any) => exam.status === 'published');
   const kindLabels: Record<string, string> = { practice: 'Luyện tập chủ đề', domain_test: 'Kiểm tra chuyên ngành', mock_exam: 'Thi thử chứng chỉ', scenario_assessment: 'Tình huống thực tế' };
   return (
@@ -220,7 +227,10 @@ function ExamContent({ colors, exams, attempts, router }: any) {
       <Text style={[styles.sectionDescription, { color: colors.onSurfaceVariant }]}>Các bài đã xuất bản của chứng chỉ, gồm luyện tập chủ đề, kiểm tra chuyên ngành và thi thử.</Text>
       <View style={styles.examList}>
         {publishedExams.map((exam: any) => {
-          const attempt = attempts.find((item: any) => item.examId === exam.id);
+          const state = examStates[exam.id];
+          const attempt = state?.latestAttempt;
+          const canStart = Boolean(state?.canStart);
+          const actionLabel = state?.activeAttemptId ? 'Tiếp tục' : state?.usedAttempts ? 'Làm lại' : 'Bắt đầu';
           return (
           <View key={exam.id} style={[styles.examCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
             <View style={[styles.examIcon, { backgroundColor: attempt ? colors.primary : colors.surfaceContainerLow }]}>
@@ -230,11 +240,18 @@ function ExamContent({ colors, exams, attempts, router }: any) {
               <Text style={[styles.examTitle, { color: colors.onSurface }]}>{exam.title}</Text>
               <Text style={[styles.examMeta, { color: colors.primary }]}>{kindLabels[exam.kind] || 'Bài kiểm tra'}</Text>
               <Text style={[styles.examMeta, { color: colors.onSurfaceVariant }]}>{exam._count?.questions ?? 0} câu hỏi · {exam.durationMinutes} phút</Text>
+              <Text style={[styles.examMeta, { color: colors.onSurfaceVariant }]}>Đã dùng {state?.usedAttempts ?? 0}/{state?.maxAttempts ?? exam.maxAttempts} lượt · Còn {state?.remainingAttempts ?? 0} lượt</Text>
+              {state?.reason && <Text style={[styles.examMeta, { color: colors.onSurfaceVariant }]}>{state.reason}</Text>}
+              {exam.kind !== 'practice' && <Text style={[styles.examMeta, { color: colors.onSurfaceVariant }]}>Có thể kiểm tra độc lập, không yêu cầu hoàn thành bài học.</Text>}
               {attempt && <Text style={[styles.examScore, { color: colors.primary }]}>Điểm: {Math.round(attempt.scorePercent ?? 0)}%</Text>}
             </View>
-            <TouchableOpacity onPress={() => router.push(attempt ? `/test-result/${attempt.id}` : `/quiz/${exam.id}`)} style={[styles.examButton, { backgroundColor: attempt ? colors.surfaceContainerLow : colors.primary, borderColor: colors.primary }]}>
-              <Text style={[styles.examButtonText, { color: attempt ? colors.primary : '#fff' }]}>{attempt ? 'Xem lại' : 'Bắt đầu'}</Text>
-            </TouchableOpacity>
+            <View style={{ gap: 8 }}>
+              <TouchableOpacity disabled={!canStart} accessibilityState={{ disabled: !canStart }} onPress={() => router.push(`/quiz/${exam.id}`)} style={[styles.examButton, { backgroundColor: colors.primary, borderColor: colors.primary, opacity: canStart ? 1 : 0.45 }]}>
+                <Text style={[styles.examButtonText, { color: '#fff' }]}>{canStart ? actionLabel : state?.remainingAttempts === 0 ? 'Hết lượt' : 'Chưa mở'}</Text>
+              </TouchableOpacity>
+              {attempt && <TouchableOpacity onPress={() => router.push(`/test-result/${attempt.id}`)} style={[styles.examButton, { borderColor: colors.primary }]}><Text style={[styles.examButtonText, { color: colors.primary }]}>Xem lại</Text></TouchableOpacity>}
+              {!canStart && state?.requiredLessonIds?.length > 0 && <TouchableOpacity onPress={onLearn}><Text style={{ color: colors.primary, textAlign: 'center' }}>Học trước</Text></TouchableOpacity>}
+            </View>
           </View>
         );})}
         {!publishedExams.length && <Text style={[styles.sectionDescription, { color: colors.onSurfaceVariant }]}>Chưa có bài kiểm tra nào được xuất bản cho chứng chỉ này.</Text>}

@@ -121,9 +121,19 @@ export class VocabStudyService {
       if (lesson?.status !== 'published') throw new BadRequestException('Bài học không khả dụng.')
     }
     return { words: await this.prisma.vocabulary.findMany({
-      where: { status: 'published', ...(sourceLessonId ? { lessons: { some: { lessonId: sourceLessonId } } } : {}), vocabProgress: { some: { learnerId, lastRating: { in: ['easy', 'medium', 'hard'] }, lastReviewAt: { not: null } } } },
+      where: { status: 'published', ...(sourceLessonId ? { lessons: { some: { lessonId: sourceLessonId } } } : {}), vocabProgress: { some: { learnerId, lastRating: { in: ['easy', 'medium', 'hard', 'mastered'] }, lastReviewAt: { not: null } } } },
       select: { id: true }, take: 20, orderBy: { term: 'asc' },
     }) }
+  }
+
+  async getStudiedCard(learnerId: string, vocabularyId: string) {
+    if (typeof vocabularyId !== 'string' || !vocabularyId.trim()) throw new BadRequestException('Vui lòng chọn từ vựng đã học.')
+    const word = await this.prisma.vocabulary.findFirst({
+      where: { id: vocabularyId, status: 'published', vocabProgress: { some: { learnerId, lastReviewAt: { not: null }, OR: [{ lastRating: { not: null } }, { correctCount: { gt: 0 } }, { wrongCount: { gt: 0 } }] } } },
+      include: { examples: { orderBy: { order: 'asc' }, take: 3 }, domain: true, level: true },
+    })
+    if (!word) throw new BadRequestException('Từ vựng chưa được học hoặc không còn khả dụng.')
+    return { word }
   }
 
   // Generate quiz from given vocabulary IDs
@@ -132,7 +142,7 @@ export class VocabStudyService {
       throw new BadRequestException('Vui lòng chọn từ vựng để tạo bài kiểm tra.')
     }
     const vocabs = await this.prisma.vocabulary.findMany({
-      where: { id: { in: [...new Set(vocabIds)] }, status: 'published', vocabProgress: { some: { learnerId, lastRating: { in: ['easy', 'medium', 'hard'] }, lastReviewAt: { not: null } } } },
+      where: { id: { in: [...new Set(vocabIds)] }, status: 'published', vocabProgress: { some: { learnerId, lastRating: { in: ['easy', 'medium', 'hard', 'mastered'] }, lastReviewAt: { not: null } } } },
       include: { examples: { orderBy: { order: 'asc' }, take: 3 } },
     })
 
@@ -180,7 +190,7 @@ export class VocabStudyService {
     const existing = await this.prisma.vocabularyProgress.findUnique({
       where: { learnerId_vocabularyId: { learnerId, vocabularyId } },
     })
-    if (!existing?.lastRating || existing.lastRating === 'mastered') throw new BadRequestException('Hãy học từ trước khi trả lời Quiz.')
+    if (!existing?.lastRating || !existing.lastReviewAt) throw new BadRequestException('Hãy học từ trước khi trả lời Quiz.')
 
     const now = new Date()
 
@@ -214,6 +224,7 @@ export class VocabStudyService {
         correctCount: isCorrect ? { increment: 1 } : existing.correctCount,
         wrongCount: isCorrect ? existing.wrongCount : { increment: 1 },
         status: newStatus,
+        ...(existing.lastRating === 'mastered' && !isCorrect ? { lastRating: 'hard' } : {}),
         lastReviewAt: now,
         nextReviewAt: nextReview,
       },

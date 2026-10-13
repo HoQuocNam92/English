@@ -94,7 +94,7 @@ test('quiz only accepts the current learner published and rated words', async ()
   assert.equal(result.questions.length, 5)
   assert.deepEqual(new Set(result.questions.map(q => q.vocabularyId)), new Set(ids))
   assert.equal(queries[0].where.status, 'published')
-  assert.deepEqual(queries[0].where.vocabProgress.some, { learnerId: 'user-A', lastRating: { in: ['easy', 'medium', 'hard'] }, lastReviewAt: { not: null } })
+  assert.deepEqual(queries[0].where.vocabProgress.some, { learnerId: 'user-A', lastRating: { in: ['easy', 'medium', 'hard', 'mastered'] }, lastReviewAt: { not: null } })
 })
 
 test('unseen or another learner words reject quiz before loading distractors', async () => {
@@ -197,4 +197,33 @@ test('reviewed database meanings override legacy quiz text and explain the selec
   assert.match(wrong.explanation, /Dùng để kiểm tra tính tương thích/)
   assert.match(wrong.explanation, /Check the cache engine version/)
   assert.match(wrong.explanation, /Kiểm tra phiên bản/)
+})
+
+test('quiz includes mastered words and accepts answers, restoring review after a wrong answer', async () => {
+  let update: any
+  const service = new VocabStudyService({
+    vocabulary: { findMany: async ({ where }: any) => {
+      assert.ok(where.vocabProgress.some.lastRating.in.includes('mastered'))
+      return [{ id: 'known', term: 'API', definitionVi: 'Giao diện', examples: [] }]
+    } },
+    vocabularyProgress: {
+      findUnique: async () => ({ lastRating: 'mastered', lastReviewAt: new Date(), correctCount: 5, wrongCount: 0, status: 'mastered' }),
+      update: async (args: any) => { update = args; return args.data },
+    },
+  } as any)
+  assert.deepEqual((await service.getQuizWords('learner')).words.map(word => word.id), ['known'])
+  await service.submitAnswer('learner', 'known', false)
+  assert.equal(update.data.lastRating, 'hard'); assert.equal(update.data.status, 'learning')
+  await service.submitAnswer('learner', 'known', true); assert.equal(update.data.status, 'mastered')
+})
+test('studied card reads only the current learner published words without writing progress', async () => {
+  let query: any
+  const service = new VocabStudyService({ vocabulary: { findFirst: async (args: any) => {
+    query = args
+    return args.where.vocabProgress.some.learnerId === 'learner' ? { id: 'known', term: 'API', examples: [] } : null
+  } } } as any)
+  assert.equal((await service.getStudiedCard('learner', 'known')).word.id, 'known')
+  assert.equal(query.where.status, 'published'); assert.equal(query.where.id, 'known')
+  assert.deepEqual(query.where.vocabProgress.some.lastReviewAt, { not: null })
+  await assert.rejects(() => service.getStudiedCard('other', 'known'))
 })

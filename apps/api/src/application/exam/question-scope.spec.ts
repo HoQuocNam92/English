@@ -50,3 +50,18 @@ test('changing only exam taxonomy validates retained questions; title-only edits
   await service.update('exam', { title: 'Renamed' })
   assert.equal(writes(), 1)
 })
+
+test('legacy mixed-scope questions survive metadata edits but incompatible additions fail', async () => {
+  let writes = 0
+  const db: any = {
+    exam: { findUnique: async () => ({ domainId: 'cloud', levelId: 'basic', questions: [{ questionId: 'q1' }] }), update: async () => { writes++ } },
+    question: { count: async () => 0 },
+    examQuestion: { deleteMany: async () => {}, createMany: async () => {} },
+    $transaction: async (run: any) => run(db),
+  }
+  const service = new ExamsService(db)
+  await service.update('exam', { title: 'Edited', questions: [{ questionId: 'q1' }] }); assert.equal(writes, 1)
+  await assert.rejects(() => service.update('exam', { questions: [{ questionId: 'q1' }, { questionId: 'q2' }] }), /chuyên ngành, cấp độ/)
+  await assert.rejects(() => service.update('exam', { levelId: 'intermediate' }), /chuyên ngành, cấp độ/)
+  assert.equal(writes, 1)
+})

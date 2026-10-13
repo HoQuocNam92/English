@@ -46,6 +46,11 @@ export class VocabStudyController {
     return this.svc.getQuizWords(req.user.sub, sourceLessonId)
   }
 
+  @Get('studied-card')
+  getStudiedCard(@Request() req: any, @Query('vocabularyId') vocabularyId: string) {
+    return this.svc.getStudiedCard(req.user.sub, vocabularyId)
+  }
+
   @Get('review-session')
   @ApiOperation({ summary: 'Get SRS review session (words due for review)' })
   getReviewSession(@Request() req: any) {

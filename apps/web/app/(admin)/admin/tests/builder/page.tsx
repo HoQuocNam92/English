@@ -34,6 +34,7 @@ export default function TestBuilderPage() {
   const [certificates, setCertificates] = React.useState<SelectOption[]>([]);
   const [availableQuestions, setAvailableQuestions] = React.useState<QuestionItem[]>([]);
   const [selectedQuestionIds, setSelectedQuestionIds] = React.useState<string[]>([]);
+  const [originalScope, setOriginalScope] = React.useState<{ domainId: string; levelId: string; questionIds: string[] } | null>(null);
 
   const [title, setTitle] = React.useState('');
   const [description, setDescription] = React.useState('');
@@ -98,6 +99,8 @@ export default function TestBuilderPage() {
           setStatus(exam.status === 'published' ? 'published' : 'draft');
           setKind(exam.kind ?? 'practice');
           setSelectedQuestionIds((exam.questions ?? []).map((q: any) => q.questionId ?? q.question?.id));
+          setOriginalScope({ domainId: exam.domainId, levelId: exam.levelId, questionIds: (exam.questions ?? []).map((q: any) => q.questionId ?? q.question?.id) });
+          setAvailableQuestions(current => Array.from(new Map([...current, ...(exam.questions ?? []).map((q: any) => q.question).filter(Boolean)].map(q => [q.id, q])).values()));
         }
       } catch (e) {
         setGlobalError(e instanceof ApiClientError ? e.message : 'Không thể tải dữ liệu');
@@ -118,6 +121,9 @@ export default function TestBuilderPage() {
     const question = availableQuestions.find(item => item.id === id);
     return !question || !matchesExamScope(question, domains.find(item => item.id === domainId), levels.find(item => item.id === levelId));
   });
+  const retainedLegacyIds = originalScope?.domainId === domainId && originalScope?.levelId === levelId
+    ? incompatibleSelectedIds.filter(id => originalScope.questionIds.includes(id) && availableQuestions.some(q => q.id === id)) : [];
+  const invalidSelectedIds = incompatibleSelectedIds.filter(id => !retainedLegacyIds.includes(id));
 
   const validate = (): boolean => {
     const errs: Record<string, string> = {};
@@ -135,7 +141,7 @@ export default function TestBuilderPage() {
       errs.maxAttempts = 'Số lần thi phải ≥ 1';
     }
     if (selectedQuestionIds.length === 0) errs.questions = 'Bài thi phải có ít nhất 1 câu hỏi';
-    if (incompatibleSelectedIds.length) errs.questions = 'Các câu hỏi phải thuộc chuyên ngành và cấp độ của bài thi. Vui lòng bỏ câu hỏi không phù hợp.';
+    if (invalidSelectedIds.length) errs.questions = 'Các câu hỏi mới phải thuộc chuyên ngành và cấp độ của bài thi. Vui lòng bỏ câu hỏi không phù hợp.';
     setErrors(errs);
     return Object.keys(errs).length === 0;
   };
@@ -179,14 +185,14 @@ export default function TestBuilderPage() {
   // Filter questions matching search, domain, and level criteria
   const matchingQuestions = React.useMemo(() => {
     return availableQuestions.filter(q => {
-      if (!matchesExamScope(q, domains.find(d => d.id === domainId), levels.find(l => l.id === levelId))) return false;
+      if (!retainedLegacyIds.includes(q.id) && !matchesExamScope(q, domains.find(d => d.id === domainId), levels.find(l => l.id === levelId))) return false;
       if (qSearch.trim() && !q.prompt.toLowerCase().includes(qSearch.trim().toLowerCase())) {
         return false;
       }
       if (qFilterSkill && q.skill !== qFilterSkill) return false;
       return true;
     });
-  }, [availableQuestions, domainId, levelId, qFilterSkill, qSearch, domains, levels]);
+  }, [availableQuestions, domainId, levelId, qFilterSkill, qSearch, domains, levels, selectedQuestionIds, originalScope]);
 
   // Count of selected questions within the current filter criteria
   const matchingSelectedCount = React.useMemo(() => {
@@ -504,8 +510,8 @@ export default function TestBuilderPage() {
             </div>
 
             <p className="text-sm text-on-surface-variant">Chuyên ngành và cấp độ được đồng bộ với thông tin bài thi. Xóa lọc chỉ xóa từ khóa và kỹ năng.</p>
-            {incompatibleSelectedIds.length > 0 && <div role="alert" className="rounded-xl bg-error-container p-3 text-sm text-on-error-container">
-              <p>{incompatibleSelectedIds.length} câu hỏi đã chọn không thuộc chuyên ngành, cấp độ hiện tại hoặc không còn tồn tại.</p>
+            {incompatibleSelectedIds.length > 0 && <div role={invalidSelectedIds.length ? 'alert' : 'status'} className="rounded-xl bg-surface-container p-3 text-sm text-on-surface-variant">
+              <p>{invalidSelectedIds.length > 0 ? `${invalidSelectedIds.length} câu hỏi không phù hợp hoặc không còn tồn tại.` : `${retainedLegacyIds.length} câu hỏi đã lưu trước đây thuộc chuyên ngành hoặc cấp độ khác. Bạn có thể giữ nguyên khi sửa thông tin bài thi hoặc chủ động bỏ chúng.`}</p>
               <button type="button" className="mt-2 font-semibold underline" onClick={() => setSelectedQuestionIds(current => current.filter(id => !incompatibleSelectedIds.includes(id)))}>Bỏ các câu hỏi không phù hợp</button>
             </div>}
             {/* Filter Dropdowns: Domain & Level */}

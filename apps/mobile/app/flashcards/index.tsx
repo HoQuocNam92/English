@@ -48,9 +48,10 @@ type Phase = 'learn' | 'quiz' | 'summary';
 export default function FlashcardsScreen() {
   const { colors } = useTheme();
   const router = useRouter();
-  const params = useLocalSearchParams<{ lessonId?: string; sourceLessonId?: string; topicId?: string; domainCode?: string; levelCode?: string; mode?: string }>();
+  const params = useLocalSearchParams<{ lessonId?: string; sourceLessonId?: string; topicId?: string; domainCode?: string; levelCode?: string; mode?: string; vocabularyId?: string }>();
 
   const isReview = params.mode === 'review';
+  const isPreview = params.mode === 'preview';
   const [phase, setPhase] = useState<Phase>('learn');
   const [words, setWords] = useState<VocabWord[]>([]);
   const [loading, setLoading] = useState(true);
@@ -111,6 +112,10 @@ export default function FlashcardsScreen() {
     setLoading(true);
     setError('');
     try {
+      if (isPreview && params.vocabularyId) {
+        const result = await api.get<{ word: VocabWord }>(`/vocab-study/studied-card?vocabularyId=${encodeURIComponent(params.vocabularyId)}`);
+        setWords([result.word]); setMasteredSet(new Set()); setPendingWrongIds([]); setBatchStart(0); setBatchIdx(0); setFlipped(false); flipAnim.setValue(0); setPhase('learn'); return;
+      }
       if (params.mode === 'quiz') {
         const source = params.sourceLessonId || params.lessonId;
         const eligible = await api.get<any>(`/vocab-study/quiz-words${source ? `?sourceLessonId=${encodeURIComponent(source)}` : ''}`);
@@ -154,7 +159,7 @@ export default function FlashcardsScreen() {
     } finally {
       setLoading(false);
     }
-  }, [params.lessonId, params.sourceLessonId, params.topicId, params.mode, params.domainCode, params.levelCode, isReview, onlyNew]);
+  }, [params.lessonId, params.sourceLessonId, params.topicId, params.mode, params.domainCode, params.levelCode, params.vocabularyId, isPreview, isReview, onlyNew]);
 
   useEffect(() => { loadSession(); }, [loadSession]);
 
@@ -387,8 +392,8 @@ export default function FlashcardsScreen() {
 
     return (
       <View style={styles.phaseContainer}>
-        <View style={{flexDirection:'row',flexWrap:'wrap',gap:8}}><FilterSelect label="Phát âm tự động" value={String(autoPronounce)} onChange={value => setAutoPronounce(value === 'true')} items={[{value:'false',label:'Tắt'},{value:'true',label:'Bật'}]}/><Button onPress={() => setShowKnown(value => !value)}>Các từ đã biết ({Object.values(ratings).filter(rating => rating === 'mastered').length})</Button></View>{showKnown && <View>{words.filter(word => ratings[word.id] === 'mastered').map(word => <Text key={word.id}>{word.term}</Text>)}{!Object.values(ratings).includes('mastered') && <Text>Chưa có từ nào được đánh dấu đã biết trong phiên.</Text>}</View>}
-        <View style={styles.sessionToolbar}><Text style={[styles.dailyText, { color: colors.onSurfaceVariant }]}>{isReview ? `${totalWords} từ đến hạn ôn` : `Hôm nay: ${sessionMeta?.studiedToday ?? 0}/${sessionMeta?.maxDailyNewWords ?? '—'} từ mới`}</Text><TouchableOpacity onPress={() => router.push('/flashcards/history' as any)}><Text style={[styles.historyLink, { color: colors.primary }]}>Từ đã học</Text></TouchableOpacity></View>
+        <View style={{flexDirection:'row',flexWrap:'wrap',gap:8}}><FilterSelect label="Phát âm tự động" value={String(autoPronounce)} onChange={value => setAutoPronounce(value === 'true')} items={[{value:'false',label:'Tắt'},{value:'true',label:'Bật'}]}/><Button disabled={isPreview} onPress={() => setShowKnown(value => !value)}>Các từ đã biết ({Object.values(ratings).filter(rating => rating === 'mastered').length})</Button></View>{showKnown && <View>{words.filter(word => ratings[word.id] === 'mastered').map(word => <Text key={word.id}>{word.term}</Text>)}{!Object.values(ratings).includes('mastered') && <Text>Chưa có từ nào được đánh dấu đã biết trong phiên.</Text>}</View>}
+        <View style={styles.sessionToolbar}><Text style={[styles.dailyText, { color: colors.onSurfaceVariant }]}>{isPreview ? 'Xem lại flashcard đã học' : isReview ? `${totalWords} từ đến hạn ôn` : `Hôm nay: ${sessionMeta?.studiedToday ?? 0}/${sessionMeta?.maxDailyNewWords ?? '—'} từ mới`}</Text><TouchableOpacity onPress={() => router.push('/flashcards/history' as any)}><Text style={[styles.historyLink, { color: colors.primary }]}>Từ đã học</Text></TouchableOpacity></View>
         {dailyLimitNotice && <View style={styles.dailyNotice}><MaterialIcons name="check-circle" size={14} color="#a16207" /><Text style={styles.dailyNoticeText}>Đã đủ mục tiêu hôm nay · đang học thêm</Text></View>}
 
         <View style={styles.speakerRow}><TouchableOpacity onPress={() => void speak(currentWord.term)} style={[styles.speakerBtn, { backgroundColor: colors.surface }]} accessibilityRole="button" accessibilityLabel={`Phát âm ${currentWord.term}`}><MaterialIcons name="volume-up" size={28} color={colors.primary} /></TouchableOpacity></View>
@@ -428,7 +433,7 @@ export default function FlashcardsScreen() {
           </TouchableOpacity>
         </View>
 
-        <View style={[styles.ratingBar, { backgroundColor: colors.surface, borderColor: colors.outlineVariant }]}>
+        {!isPreview && <View style={[styles.ratingBar, { backgroundColor: colors.surface, borderColor: colors.outlineVariant }]}>
           {([
             ['easy', 'sentiment-satisfied', 'Dễ', '#059669'],
             ['medium', 'sentiment-neutral', 'Trung bình', '#d97706'],
@@ -440,7 +445,8 @@ export default function FlashcardsScreen() {
               <Text style={[styles.ratingText, { color }]}>{label}</Text>
             </TouchableOpacity>
           ))}
-        </View>
+        </View>}
+        {isPreview && <Button onPress={() => router.back()}>Quay lại từ đã học</Button>}
 
       </View>
     );
@@ -641,7 +647,7 @@ export default function FlashcardsScreen() {
 
   return (
     <FeatureScreen title={phaseTitle} subtitle={phaseSubtitle} loading={loading} error={error} onRetry={loadSession}>
-      {phase === 'learn' && !isReview && <TouchableOpacity onPress={() => setOnlyNew(value => !value)} accessibilityRole="checkbox" accessibilityState={{ checked: onlyNew }} style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}><MaterialIcons name={onlyNew ? 'check-box' : 'check-box-outline-blank'} size={22} color={colors.primary} /><Text>Chỉ ôn từ mới</Text></TouchableOpacity>}
+      {phase === 'learn' && !isReview && !isPreview && <TouchableOpacity onPress={() => setOnlyNew(value => !value)} accessibilityRole="checkbox" accessibilityState={{ checked: onlyNew }} style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}><MaterialIcons name={onlyNew ? 'check-box' : 'check-box-outline-blank'} size={22} color={colors.primary} /><Text>Chỉ ôn từ mới</Text></TouchableOpacity>}
       {phase === 'learn' && renderLearnPhase()}
       {phase === 'quiz' && renderQuizPhase()}
       {phase === 'summary' && renderSummaryPhase()}
