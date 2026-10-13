@@ -182,7 +182,7 @@ export default function AdminReportsPage() {
       <div className="mx-auto flex w-full min-w-0 flex-col gap-xl">
         <div className="flex min-w-0 flex-col gap-5">
           <PageHeader
-            title="Báo cáo Tổng quan"
+            title="Báo cáo thống kê"
             description="Hiệu suất học tập và tương tác của hệ thống."
             icon="leaderboard"
           />

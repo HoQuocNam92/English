@@ -100,7 +100,7 @@ export default function AdminTestResultsPage() {
     <main className="flex-1 overflow-y-auto p-4 md:p-margin bg-surface">
       <PageHeader
         className="mb-lg"
-        title="Lịch sử làm bài thi"
+        title="Kết quả bài thi"
         description="Kết quả thi của tất cả người học"
         icon="fact_check"
         iconClassName="from-blue-500 to-indigo-500"

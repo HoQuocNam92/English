@@ -545,7 +545,7 @@ export default function AdminLearningContent({ createOnly = false }: { createOnl
       {/* Page header + Add button */}
       <div className="flex items-start justify-between gap-4">
         <PageHeader
-          title="Kho nội dung từ vựng"
+          title="Nội dung học tập"
           icon="library_books"
           description="Quản trị toàn bộ kho từ vựng và thuật ngữ chuyên ngành IT"
         />

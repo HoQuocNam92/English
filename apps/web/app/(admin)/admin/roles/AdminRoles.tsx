@@ -235,7 +235,7 @@ export default function AdminRoles({ createKind }: { createKind?: 'role' | 'perm
 
   return (
     <div className="p-6">
-      <PageHeader className="mb-6" title="Quản lý vai trò & Phân quyền" description="Quản lý vai trò người dùng và quyền truy cập hệ thống." icon="admin_panel_settings" iconClassName="from-violet-500 to-indigo-500" />
+      <PageHeader className="mb-6" title="Phân quyền" description="Quản lý vai trò người dùng và quyền truy cập hệ thống." icon="admin_panel_settings" iconClassName="from-violet-500 to-indigo-500" />
 
       {error && (
         <div className="mb-6 p-4 rounded-xl bg-error-container text-on-error-container text-sm font-semibold">{error}</div>
