@@ -17,6 +17,15 @@ export class ExamsService {
     }
   }
 
+  private async assertQuestionScope(questions: { questionId: string }[] | undefined, domainId: string, levelId: string, db: Pick<PrismaService, 'question'> = this.prisma) {
+    if (!questions?.length) return
+    const ids = questions.map(question => question.questionId)
+    const compatible = await db.question.count({ where: { id: { in: ids }, domainId, levelId } })
+    if (compatible !== ids.length) {
+      throw new BadRequestException('Các câu hỏi phải tồn tại và thuộc chuyên ngành, cấp độ của bài thi')
+    }
+  }
+
   private toLearnerAttempt(attempt: any) {
     const questions = Array.isArray(attempt.questionsSnapshot) ? attempt.questionsSnapshot : []
     return {
@@ -95,6 +104,7 @@ export class ExamsService {
     const domain = await this.prisma.domain.findUnique({ where: { id: dto.domainId } })
     const level = await this.prisma.level.findUnique({ where: { id: dto.levelId } })
     if (!domain||!level) throw new NotFoundException('Chuyên ngành hoặc cấp độ không tồn tại')
+    await this.assertQuestionScope(dto.questions, domain.id, level.id)
     return this.prisma.exam.create({ data: { title: dto.title, description: dto.description ?? '', kind: dto.kind ?? 'practice', domainId: domain.id, levelId: level.id, certificateId: dto.certificateId, topics: dto.topics??[], durationMinutes: dto.durationMinutes, passingScorePercent: dto.passingScorePercent??70, maxAttempts: dto.maxAttempts??1, shuffleQuestions: dto.shuffleQuestions??false, availableFrom: dto.availableFrom ? new Date(dto.availableFrom) : null, availableUntil: dto.availableUntil ? new Date(dto.availableUntil) : null, status: dto.status??'draft', publishedAt: dto.status === 'published' ? new Date() : null, createdById, questions: dto.questions?.length ? { create: dto.questions.map((question: any) => ({ questionId: question.questionId, order: question.order, weight: question.weight ?? 1 })) } : undefined } })
   }
 
@@ -110,6 +120,7 @@ export class ExamsService {
     if (dto.certificateId !== undefined) data.certificate = dto.certificateId ? { connect: { id: dto.certificateId } } : { disconnect: true }
     if (dto.status==='published') data.publishedAt=new Date()
     return this.prisma.$transaction(async (tx) => {
+      await this.assertQuestionScope(dto.questions ?? existing.questions, dto.domainId ?? existing.domainId, dto.levelId ?? existing.levelId, tx)
       if (dto.questions !== undefined) {
         await tx.examQuestion.deleteMany({ where: { examId: id } })
         if (dto.questions.length) {

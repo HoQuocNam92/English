@@ -1,4 +1,5 @@
 'use client';
+import { matchesExamScope } from '@/shared/lib/exam-question-scope';
 import { RequiredMark } from '@/shared/ui/RequiredMark';
 import { loadAllPages } from '@/shared/lib/load-all-pages';
 import { ClearFiltersButton } from '@/shared/ui/ClearFiltersButton';
@@ -47,8 +48,6 @@ export default function TestBuilderPage() {
   const [kind, setKind] = React.useState('practice');
 
   const [qSearch, setQSearch] = React.useState('');
-  const [qFilterDomain, setQFilterDomain] = React.useState('');
-  const [qFilterLevel, setQFilterLevel] = React.useState('');
   const [qFilterSkill, setQFilterSkill] = React.useState('');
   const [qOnlySelected, setQOnlySelected] = React.useState(false);
   const [errors, setErrors] = React.useState<Record<string, string>>({});
@@ -57,9 +56,18 @@ export default function TestBuilderPage() {
   const [savedExam, setSavedExam] = React.useState<{ title: string; certificateId: string; certificateName: string; published: boolean; topicPractice: boolean } | null>(null);
   const [globalError, setGlobalError] = React.useState('');
 
-  React.useEffect(() => {
-    setQFilterDomain(domainId);
-  }, [domainId]);
+  const changeScope = (nextDomainId: string, nextLevelId: string) => {
+    const nextDomain = domains.find(item => item.id === nextDomainId);
+    const nextLevel = levels.find(item => item.id === nextLevelId);
+    const compatibleIds = new Set(availableQuestions.filter(question => matchesExamScope(question, nextDomain, nextLevel)).map(question => question.id));
+    const retained = selectedQuestionIds.filter(id => compatibleIds.has(id));
+    if (retained.length !== selectedQuestionIds.length) {
+      showToast(`Đã bỏ ${selectedQuestionIds.length - retained.length} câu hỏi không thuộc chuyên ngành hoặc cấp độ vừa chọn.`, 'info');
+    }
+    setSelectedQuestionIds(retained);
+    setDomainId(nextDomainId);
+    setLevelId(nextLevelId);
+  };
 
   React.useEffect(() => {
     const init = async () => {
@@ -89,7 +97,7 @@ export default function TestBuilderPage() {
           setTopics((exam.topics ?? []).join(', '));
           setStatus(exam.status === 'published' ? 'published' : 'draft');
           setKind(exam.kind ?? 'practice');
-          setSelectedQuestionIds((exam.questions ?? []).map((q: any) => q.id ?? q.questionId));
+          setSelectedQuestionIds((exam.questions ?? []).map((q: any) => q.questionId ?? q.question?.id));
         }
       } catch (e) {
         setGlobalError(e instanceof ApiClientError ? e.message : 'Không thể tải dữ liệu');
@@ -105,6 +113,11 @@ export default function TestBuilderPage() {
       prev.includes(id) ? prev.filter(q => q !== id) : [...prev, id]
     );
   };
+
+  const incompatibleSelectedIds = selectedQuestionIds.filter(id => {
+    const question = availableQuestions.find(item => item.id === id);
+    return !question || !matchesExamScope(question, domains.find(item => item.id === domainId), levels.find(item => item.id === levelId));
+  });
 
   const validate = (): boolean => {
     const errs: Record<string, string> = {};
@@ -122,6 +135,7 @@ export default function TestBuilderPage() {
       errs.maxAttempts = 'Số lần thi phải ≥ 1';
     }
     if (selectedQuestionIds.length === 0) errs.questions = 'Bài thi phải có ít nhất 1 câu hỏi';
+    if (incompatibleSelectedIds.length) errs.questions = 'Các câu hỏi phải thuộc chuyên ngành và cấp độ của bài thi. Vui lòng bỏ câu hỏi không phù hợp.';
     setErrors(errs);
     return Object.keys(errs).length === 0;
   };
@@ -165,31 +179,14 @@ export default function TestBuilderPage() {
   // Filter questions matching search, domain, and level criteria
   const matchingQuestions = React.useMemo(() => {
     return availableQuestions.filter(q => {
-      if (qFilterDomain) {
-        const domainObj = domains.find(d => d.id === qFilterDomain);
-        const matchDomain =
-          (q as any).domainId === qFilterDomain ||
-          (q.domain as any)?.id === qFilterDomain ||
-          (domainObj && q.domain?.code === domainObj.code) ||
-          (domainObj && q.domain?.name === domainObj.name);
-        if (!matchDomain) return false;
-      }
-      if (qFilterLevel) {
-        const levelObj = levels.find(l => l.id === qFilterLevel);
-        const matchLevel =
-          (q as any).levelId === qFilterLevel ||
-          (q.level as any)?.id === qFilterLevel ||
-          (levelObj && q.level?.code === levelObj.code) ||
-          (levelObj && q.level?.name === levelObj.name);
-        if (!matchLevel) return false;
-      }
+      if (!matchesExamScope(q, domains.find(d => d.id === domainId), levels.find(l => l.id === levelId))) return false;
       if (qSearch.trim() && !q.prompt.toLowerCase().includes(qSearch.trim().toLowerCase())) {
         return false;
       }
       if (qFilterSkill && q.skill !== qFilterSkill) return false;
       return true;
     });
-  }, [availableQuestions, qFilterDomain, qFilterLevel, qFilterSkill, qSearch, domains, levels]);
+  }, [availableQuestions, domainId, levelId, qFilterSkill, qSearch, domains, levels]);
 
   // Count of selected questions within the current filter criteria
   const matchingSelectedCount = React.useMemo(() => {
@@ -216,8 +213,6 @@ export default function TestBuilderPage() {
 
   const handleResetFilters = () => {
     setQSearch('');
-    setQFilterDomain(domainId);
-    setQFilterLevel('');
     setQFilterSkill('');
     setQOnlySelected(false);
   };
@@ -320,7 +315,7 @@ export default function TestBuilderPage() {
                 </label>
                 <Dropdown
                   value={domainId}
-                  onChange={e => setDomainId(e.target.value)}
+                  onChange={e => changeScope(e.target.value, levelId)}
                   className="w-full rounded-xl border border-slate-300 bg-white px-3.5 py-2.5 text-sm font-medium text-slate-900 shadow-2xs focus:outline-none focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all cursor-pointer"
                 >
                   <option value="">Chọn chuyên ngành</option>
@@ -334,7 +329,7 @@ export default function TestBuilderPage() {
                 </label>
                 <Dropdown
                   value={levelId}
-                  onChange={e => setLevelId(e.target.value)}
+                  onChange={e => changeScope(domainId, e.target.value)}
                   className="w-full rounded-xl border border-slate-300 bg-white px-3.5 py-2.5 text-sm font-medium text-slate-900 shadow-2xs focus:outline-none focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all cursor-pointer"
                 >
                   <option value="">Chọn cấp độ</option>
@@ -508,15 +503,20 @@ export default function TestBuilderPage() {
               )}
             </div>
 
+            <p className="text-sm text-on-surface-variant">Chuyên ngành và cấp độ được đồng bộ với thông tin bài thi. Xóa lọc chỉ xóa từ khóa và kỹ năng.</p>
+            {incompatibleSelectedIds.length > 0 && <div role="alert" className="rounded-xl bg-error-container p-3 text-sm text-on-error-container">
+              <p>{incompatibleSelectedIds.length} câu hỏi đã chọn không thuộc chuyên ngành, cấp độ hiện tại hoặc không còn tồn tại.</p>
+              <button type="button" className="mt-2 font-semibold underline" onClick={() => setSelectedQuestionIds(current => current.filter(id => !incompatibleSelectedIds.includes(id)))}>Bỏ các câu hỏi không phù hợp</button>
+            </div>}
             {/* Filter Dropdowns: Domain & Level */}
             <div className="grid w-full min-w-0 gap-3 sm:grid-cols-2">
               <label className="grid min-w-0 gap-1 text-xs font-semibold text-on-surface-variant">Chuyên ngành
                 <Dropdown aria-label="Lọc câu hỏi theo chuyên ngành"
-                  value={qFilterDomain}
-                  onChange={e => setQFilterDomain(e.target.value)}
+                  value={domainId}
+                  onChange={e => changeScope(e.target.value, levelId)}
                   className="h-11 w-full min-w-0 rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm text-slate-700 shadow-2xs focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/10 transition-all cursor-pointer"
                 >
-                  <option value="">Tất cả chuyên ngành</option>
+                  <option value="">Chọn chuyên ngành</option>
                   {domains.map(d => <option key={d.id} value={d.id}>{d.name}</option>)}
                 </Dropdown>
               </label>
@@ -527,11 +527,11 @@ export default function TestBuilderPage() {
               </label>
               <label className="grid min-w-0 gap-1 text-xs font-semibold text-on-surface-variant">Cấp độ
                 <Dropdown aria-label="Lọc câu hỏi theo cấp độ"
-                  value={qFilterLevel}
-                  onChange={e => setQFilterLevel(e.target.value)}
+                  value={levelId}
+                  onChange={e => changeScope(domainId, e.target.value)}
                   className="h-11 w-full min-w-0 rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm text-slate-700 shadow-2xs focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/10 transition-all cursor-pointer"
                 >
-                  <option value="">Tất cả cấp độ</option>
+                  <option value="">Chọn cấp độ</option>
                   {levels.map(l => <option key={l.id} value={l.id}>{l.name}</option>)}
                 </Dropdown>
               </label>
@@ -598,9 +598,9 @@ export default function TestBuilderPage() {
                   </div>
                   <p className="text-sm font-semibold text-slate-700">Không tìm thấy câu hỏi phù hợp</p>
                   <p className="text-xs text-slate-400 mt-1 max-w-xs">
-                    Thử thay đổi từ khóa tìm kiếm hoặc đặt lại các bộ lọc chuyên ngành, cấp độ.
+                    Thử thay đổi từ khóa, kỹ năng hoặc chuyên ngành và cấp độ của bài thi.
                   </p>
-                  {(qSearch || qFilterDomain || qFilterLevel || qFilterSkill || qOnlySelected) && (
+                  {(qSearch || qFilterSkill || qOnlySelected) && (
                     <ClearFiltersButton className="mt-3.5" onClick={handleResetFilters} />
                   )}
                 </div>

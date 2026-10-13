@@ -1,4 +1,5 @@
 'use client';
+import { SummaryStat } from '@/shared/ui/SummaryStat';
 import { dashboardDateRange } from '@/shared/lib/dashboard-date-range';
 import { AppIcon } from '@/shared/ui/AppIcon';
 
@@ -153,53 +154,10 @@ export default function AdminDashboardPage() {
       )}
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-md mb-xl">
-        <div className="stat-card bg-surface-container-lowest p-md flex flex-col justify-between h-[120px] rounded-lg border border-outline-variant hover:shadow-[0_1px_3px_rgba(15,23,24,0.06)] hover:-translate-y-0.5 transition-all">
-          <div className="flex justify-between items-start">
-            <span className="font-body-sm text-body-sm text-on-surface-variant">Tổng người dùng</span>
-            <AppIcon className=" text-outline text-[20px]">group</AppIcon>
-          </div>
-          <div>
-            <div className="font-headline-h2 text-headline-h2 text-on-surface flex items-baseline gap-sm">
-              {loading ? '...' : (stats?.totalUsers ?? 0).toLocaleString('vi-VN')} <span className="font-body-sm text-body-sm text-on-surface-variant font-normal">người</span>
-            </div>
-          </div>
-        </div>
-
-        <div className="stat-card bg-surface-container-lowest p-md flex flex-col justify-between h-[120px] rounded-lg border border-outline-variant hover:shadow-[0_1px_3px_rgba(15,23,24,0.06)] hover:-translate-y-0.5 transition-all">
-          <div className="flex justify-between items-start">
-            <span className="font-body-sm text-body-sm text-on-surface-variant">Tổng từ vựng</span>
-            <AppIcon className=" text-outline text-[20px]">library_books</AppIcon>
-          </div>
-          <div>
-            <div className="font-headline-h2 text-headline-h2 text-on-surface flex items-baseline gap-sm">
-              {loading ? '...' : (stats?.totalVocab ?? 0).toLocaleString('vi-VN')} <span className="font-body-sm text-body-sm text-on-surface-variant font-normal">từ vựng</span>
-            </div>
-          </div>
-        </div>
-
-        <div className="stat-card bg-surface-container-lowest p-md flex flex-col justify-between h-[120px] rounded-lg border border-outline-variant hover:shadow-[0_1px_3px_rgba(15,23,24,0.06)] hover:-translate-y-0.5 transition-all">
-          <div className="flex justify-between items-start">
-            <span className="font-body-sm text-body-sm text-on-surface-variant">Đề thi chứng chỉ</span>
-            <AppIcon className=" text-outline text-[20px]">assignment</AppIcon>
-          </div>
-          <div>
-            <div className="font-headline-h2 text-headline-h2 text-on-surface flex items-baseline gap-sm">
-              {loading ? '...' : (stats?.totalExams ?? 0).toLocaleString('vi-VN')} <span className="font-body-sm text-body-sm text-on-surface-variant font-normal">đề thi</span>
-            </div>
-          </div>
-        </div>
-
-        <div className="stat-card bg-surface-container-lowest p-md flex flex-col justify-between h-[120px] rounded-lg border border-outline-variant hover:shadow-[0_1px_3px_rgba(15,23,24,0.06)] hover:-translate-y-0.5 transition-all">
-          <div className="flex justify-between items-start">
-            <span className="font-body-sm text-body-sm text-on-surface-variant">Tài khoản hoạt động</span>
-            <AppIcon className=" text-outline text-[20px]">group</AppIcon>
-          </div>
-          <div>
-            <div className="font-headline-h2 text-headline-h2 text-on-surface flex items-baseline gap-sm">
-              {loading ? '...' : (stats?.activeUsers ?? 0).toLocaleString('vi-VN')} <span className="font-body-sm text-body-sm text-on-surface-variant font-normal">tài khoản</span>
-            </div>
-          </div>
-        </div>
+        <SummaryStat label="Tổng người dùng" value={loading ? '…' : (stats?.totalUsers ?? 0).toLocaleString('vi-VN')} unit="người" icon="group" />
+        <SummaryStat label="Tổng từ vựng" value={loading ? '…' : (stats?.totalVocab ?? 0).toLocaleString('vi-VN')} unit="từ vựng" icon="library_books" />
+        <SummaryStat label="Đề thi chứng chỉ" value={loading ? '…' : (stats?.totalExams ?? 0).toLocaleString('vi-VN')} unit="đề thi" icon="assignment" />
+        <SummaryStat label="Tài khoản hoạt động" value={loading ? '…' : (stats?.activeUsers ?? 0).toLocaleString('vi-VN')} unit="người" icon="group" />
       </div>
 
       <div className="grid grid-cols-12 gap-6 mb-xl">

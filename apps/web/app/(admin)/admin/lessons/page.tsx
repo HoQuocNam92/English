@@ -1,4 +1,5 @@
 'use client';
+import { FilterPanel } from '@/shared/ui/FilterPanel';
 import { ClearFiltersButton } from '@/shared/ui/ClearFiltersButton';
 import { AppIcon } from '@/shared/ui/AppIcon';
 import { confirmDialog } from '@/shared/ui/AppFeedback';
@@ -75,14 +76,14 @@ export default function LessonsPage() {
 
   return <div>
     <div className="flex items-start justify-between gap-4"><PageHeader icon={category?.icon} iconClassName={category?.iconClassName} title={pageTitle} description={category?.description ?? 'Quản lý các loại nội dung học tập'} /><Link href={`/admin/lessons/editor${type ? `?type=${type}` : ''}`} className="inline-flex items-center gap-2 rounded-xl bg-primary px-4 py-2.5 text-sm font-semibold !text-white"><AppIcon className=" text-[19px]">add</AppIcon>Thêm {itemName}</Link></div>
-    <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+    <FilterPanel className="mt-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
       <SearchInput value={searchInput} onChange={setSearchInput} onSearch={value => { setSearch(value); setPage(1); }} placeholder="Tìm theo tiêu đề, tóm tắt..." />
       <div className="flex flex-wrap gap-3 sm:ml-auto">
       <Dropdown value={type} onChange={e => { setType(e.target.value); setPage(1); }} className="rounded-xl border border-outline-variant bg-surface-container-lowest px-3 text-sm"><option value="">Tất cả loại bài học</option>{Object.entries(TYPES).map(([value, label]) => <option key={value} value={value}>{label}</option>)}</Dropdown>
       <Dropdown value={status} onChange={e => { setStatus(e.target.value); setPage(1); }} className="rounded-xl border border-outline-variant bg-surface-container-lowest px-3 text-sm"><option value="">Tất cả trạng thái</option>{Object.entries(STATUS).map(([value, label]) => <option key={value} value={value}>{label}</option>)}</Dropdown>
       <ClearFiltersButton onClick={() => { setSearchInput(''); setSearch(''); setType(''); setStatus(''); setPage(1); setSelectedIds(new Set()); }} />
       </div>
-    </div>
+    </FilterPanel>
     {error && <div className="mt-4 rounded-xl bg-error-container p-3 text-sm text-on-error-container">{error}</div>}
     {successMessage && <div className="mt-4 rounded-xl bg-emerald-50 p-3 text-sm text-emerald-800">{successMessage}</div>}
     <BulkSelectionBar pageCount={items.length} selectedCount={selectedIds.size} allPageSelected={items.length > 0 && items.every((item) => selectedIds.has(item.id))} onSelectPage={(selected) => setSelectedIds((current) => { const next = new Set(current); items.forEach((item) => selected ? next.add(item.id) : next.delete(item.id)); return next; })}>

@@ -65,3 +65,15 @@ test('dashboard date filters use the Vietnam calendar at midnight and month roll
   assert.deepEqual(dashboardDateRange('month', now), { dateFrom: '2026-10-01', dateTo: '2026-10-01' });
   assert.deepEqual(dashboardDateRange('week', now), { dateFrom: '2026-09-25', dateTo: '2026-10-01' });
 });
+
+test('exam question scope distinguishes similar domains and rejects mismatched levels', async () => {
+  const { matchesExamScope } = await import('./exam-question-scope.ts');
+  const cloud = { id: 'cloud', code: 'cloud' };
+  const intermediate = { id: 'intermediate', code: 'B1' };
+  assert.equal(matchesExamScope({ domainId: 'cloud', levelId: 'intermediate' }, cloud, intermediate), true);
+  assert.equal(matchesExamScope({ domainId: 'cloud-services', domain: { code: 'cloud' }, levelId: 'intermediate' }, cloud, intermediate), false);
+  assert.equal(matchesExamScope({ domainId: 'cloud', levelId: 'basic' }, cloud, intermediate), false);
+  assert.equal(matchesExamScope({ domain: { id: 'cloud-services', code: 'cloud' }, level: { code: 'B1' } }, cloud, intermediate), false);
+  assert.equal(matchesExamScope({ domain: { code: 'cloud' }, level: { code: 'B1' } }, cloud, intermediate), true);
+  assert.equal(matchesExamScope({}, cloud, intermediate), false);
+});

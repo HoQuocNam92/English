@@ -1,4 +1,5 @@
 'use client';
+import { FilterPanel } from '@/shared/ui/FilterPanel';
 import { ClearFiltersButton } from '@/shared/ui/ClearFiltersButton';
 import { AppIcon } from '@/shared/ui/AppIcon';
 import { ActionButton, ActionGroup } from '@/shared/ui/ActionButton';
@@ -105,8 +106,8 @@ export default function AdminTestsPage() {
       </div>
 
       {/* Filters */}
-      <div className="mt-6 flex flex-col items-start gap-4 lg:flex-row rounded-2xl border border-outline-variant/50 bg-white p-4">
-        <div className="grid w-full min-w-0 gap-1 lg:min-w-[320px] lg:flex-1">
+      <FilterPanel className="mt-6 grid min-w-0 gap-4">
+        <div className="grid w-full min-w-0 gap-1">
           <span className="text-xs font-semibold">Tìm kiếm</span>
         <SearchInput
           className="sm:!w-full"
@@ -120,7 +121,7 @@ export default function AdminTestsPage() {
           maxLength={100}
         />
         </div>
-        <div className="grid w-full min-w-0 gap-3 sm:grid-cols-2 xl:grid-cols-3 lg:ml-auto lg:w-auto lg:flex-1 lg:max-w-3xl">
+        <div className="grid w-full min-w-0 items-end gap-3 sm:grid-cols-2 xl:grid-cols-3">
         <label className="grid gap-1 text-xs font-semibold">Trạng thái
         <Dropdown
           value={status}
@@ -132,9 +133,9 @@ export default function AdminTestsPage() {
         </label>
         {([['domainCode', 'Chuyên ngành', options.domains], ['levelCode', 'Trình độ', options.levels], ['certificateId', 'Chứng chỉ', options.certificates]] as const).map(([key,label,list]) => <label key={key} className="grid min-w-0 flex-1 basis-48 gap-1 text-xs font-semibold">{label}<Dropdown aria-label={label} value={filters[key]} onChange={e => { setFilters(f => ({ ...f, [key]: e.target.value })); setPage(1); }} className="h-11 min-w-0 rounded-xl border border-outline-variant px-3 text-sm"><option value="">Tất cả {label.toLocaleLowerCase('vi-VN')}</option>{list.map(x => <option key={x.id} value={key === 'certificateId' ? x.id : x.code}>{x.name}</option>)}</Dropdown></label>)}
         <label className="grid gap-1 text-xs font-semibold">Loại bài kiểm tra<Dropdown aria-label="Loại bài kiểm tra" value={filters.kind} onChange={e => { setFilters(f => ({ ...f, kind: e.target.value })); setPage(1); }} className="h-11 rounded-xl border border-outline-variant px-3 text-sm"><option value="">Tất cả loại bài kiểm tra</option>{Object.entries(EXAM_KINDS).map(([v,l]) => <option key={v} value={v}>{l}</option>)}</Dropdown></label>
-        <ClearFiltersButton onClick={() => { setFilters({ domainCode: '', levelCode: '', certificateId: '', kind: '' }); setStatus(''); setSearch(''); setSearchInput(''); setPage(1); }} />
+        <ClearFiltersButton className="justify-self-start" onClick={() => { setFilters({ domainCode: '', levelCode: '', certificateId: '', kind: '' }); setStatus(''); setSearch(''); setSearchInput(''); setPage(1); }} />
         </div>
-      </div>
+      </FilterPanel>
 
       {!loading && (
         <p className="mt-3 text-xs text-on-surface-variant">

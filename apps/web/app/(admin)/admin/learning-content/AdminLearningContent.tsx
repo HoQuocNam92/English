@@ -1,4 +1,5 @@
 'use client';
+import { FilterPanel } from '@/shared/ui/FilterPanel';
 import { ClearFiltersButton } from '@/shared/ui/ClearFiltersButton';
 import { AppIcon } from '@/shared/ui/AppIcon';
 import { useRouter } from 'next/navigation';
@@ -559,7 +560,7 @@ export default function AdminLearningContent({ createOnly = false }: { createOnl
       </div>
 
       {/* Filters */}
-      <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+      <FilterPanel className="mt-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <SearchInput
           className="sm:!min-w-0"
           value={searchInput}
@@ -589,7 +590,7 @@ export default function AdminLearningContent({ createOnly = false }: { createOnl
         </Dropdown>
         <ClearFiltersButton onClick={() => { setSearchInput(''); setSearch(''); setDomainCode(''); setStatus(''); setPage(1); setSelectedIds(new Set()); }} />
         </div>
-      </div>
+      </FilterPanel>
 
       {/* Summary */}
       {!loading && (

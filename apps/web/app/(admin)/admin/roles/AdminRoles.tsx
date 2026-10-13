@@ -1,4 +1,5 @@
 'use client';
+import { SummaryStat } from '@/shared/ui/SummaryStat';
 import { RequiredMark } from '@/shared/ui/RequiredMark';
 import { PaginatedList } from '@/shared/ui/PaginatedList';
 import { AppIcon } from '@/shared/ui/AppIcon';
@@ -249,24 +250,10 @@ export default function AdminRoles({ createKind }: { createKind?: 'role' | 'perm
       {/* Summary stats */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-md mb-xl">
         {[
-          { label: 'Vai trò người dùng', value: loading ? '—' : String(roles.length), icon: 'shield_person' },
-          { label: 'Quyền hạn', value: loading ? '—' : String(permissions.length), icon: 'lock' },
-          { label: 'Người dùng đã được gán vai trò', value: loading ? '—' : String(totalAssigned), icon: 'people' },
-        ].map((s) => (
-          <div key={s.label} className="stat-card bg-surface-container-lowest p-md flex flex-col justify-between h-[120px] rounded-lg border border-outline-variant hover:shadow-[0_1px_3px_rgba(15,23,24,0.06)] hover:-translate-y-0.5 transition-all">
-            <div className="flex justify-between items-start gap-sm">
-              <span className="font-body-sm text-body-sm text-on-surface-variant">{s.label}</span>
-              <AppIcon className="text-outline text-[20px] shrink-0">{s.icon}</AppIcon>
-            </div>
-            <div>
-              {loading ? (
-                <div className="h-5 w-16 rounded bg-surface-container-low animate-pulse" />
-              ) : (
-                <p className="font-headline-h2 text-headline-h2 text-on-surface">{s.value}</p>
-              )}
-            </div>
-          </div>
-        ))}
+          { label: 'Vai trò người dùng', value: loading ? '—' : roles.length.toLocaleString('vi-VN'), icon: 'shield_person', unit: 'vai trò' },
+          { label: 'Quyền hạn', value: loading ? '—' : permissions.length.toLocaleString('vi-VN'), icon: 'lock', unit: 'quyền' },
+          { label: 'Lượt gán vai trò', value: loading ? '—' : totalAssigned.toLocaleString('vi-VN'), icon: 'people', unit: 'lượt gán' },
+        ].map((stat) => <SummaryStat key={stat.label} {...stat} />)}
       </div>
 
       {/* Roles grid */}

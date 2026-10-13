@@ -1,4 +1,6 @@
 'use client';
+import { FilterPanel } from '@/shared/ui/FilterPanel';
+import { SummaryStat } from '@/shared/ui/SummaryStat';
 import { ClearFiltersButton } from '@/shared/ui/ClearFiltersButton';
 import { formatAttemptDuration } from '@/shared/lib/attempt-duration';
 import { showToast } from '@/shared/ui/AppFeedback';
@@ -105,7 +107,7 @@ export default function AdminTestResultsPage() {
         action={<button type="button" onClick={() => void exportExcel()} className="inline-flex items-center gap-2 rounded-lg border border-outline-variant bg-surface-container-lowest px-4 py-2.5 font-interface-sb text-interface-sb text-on-surface transition-colors hover:bg-surface-container-low"><AppIcon className=" text-[18px]">download</AppIcon>Xuất Excel</button>}
       />
 
-      <div className="mb-xl flex flex-col gap-3 rounded-xl border border-outline-variant bg-surface-container-lowest p-md sm:flex-row sm:items-center sm:justify-between">
+      <FilterPanel className="mb-xl flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <SearchInput value={searchInput} onChange={setSearchInput} onSearch={value => { setPage(1); setSearch(value); }} placeholder="Tìm kiếm theo email, tên bài thi…" />
         <div className="flex flex-wrap gap-3 sm:ml-auto">
           <Dropdown
@@ -119,7 +121,7 @@ export default function AdminTestResultsPage() {
             </Dropdown>
           <ClearFiltersButton onClick={() => { setSearchInput(''); setSearch(''); setStatus(''); setPage(1); }} />
         </div>
-      </div>
+      </FilterPanel>
 
       {error && (
         <div className="mb-xl p-3 rounded-xl bg-error-container text-on-error-container text-sm flex items-center gap-2">
@@ -129,52 +131,9 @@ export default function AdminTestResultsPage() {
       )}
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-md mb-xl">
-        <div className="bg-surface-container-lowest rounded-xl p-md border border-outline-variant hover:shadow-[0_1px_3px_rgba(15,23,24,0.06)] transition-all">
-          <div className="flex justify-between items-start mb-sm">
-            <p className="font-label-caps text-label-caps text-on-surface-variant uppercase">Điểm trung bình</p>
-            <div className="p-sm bg-secondary-fixed rounded-full text-on-secondary-fixed-variant">
-              <AppIcon className=" text-[20px]">leaderboard</AppIcon>
-            </div>
-          </div>
-          <div className="flex items-end gap-sm">
-            <h3 className="font-headline-h2 text-headline-h2 text-on-surface">{(averageScore / 10).toFixed(1)}</h3>
-            <span className="font-body-sm text-body-sm text-on-surface-variant pb-1">/ 10</span>
-          </div>
-          <div className="mt-xs flex items-center gap-xs text-secondary">
-            <AppIcon className=" text-[14px]">trending_up</AppIcon>
-            <span className="font-body-sm text-body-sm">Tính từ dữ liệu đang lọc</span>
-          </div>
-        </div>
-
-        <div className="bg-surface-container-lowest rounded-xl p-md border border-outline-variant hover:shadow-[0_1px_3px_rgba(15,23,24,0.06)] transition-all">
-          <div className="flex justify-between items-start mb-sm">
-            <p className="font-label-caps text-label-caps text-on-surface-variant uppercase">Lượt làm bài</p>
-            <div className="p-sm bg-tertiary-fixed rounded-full text-on-tertiary-fixed-variant">
-              <AppIcon className=" text-[20px]">group</AppIcon>
-            </div>
-          </div>
-          <div className="flex items-end gap-sm">
-            <h3 className="font-headline-h2 text-headline-h2 text-on-surface">{total.toLocaleString()}</h3>
-          </div>
-          <div className="mt-xs text-on-surface-variant text-sm">
-            Lượt nộp bài trên toàn hệ thống
-          </div>
-        </div>
-
-        <div className="bg-surface-container-lowest rounded-xl p-md border border-outline-variant hover:shadow-[0_1px_3px_rgba(15,23,24,0.06)] transition-all">
-          <div className="flex justify-between items-start mb-sm">
-            <p className="font-label-caps text-label-caps text-on-surface-variant uppercase">Tỷ lệ đạt</p>
-            <div className="p-sm bg-primary-fixed rounded-full text-on-primary-fixed-variant">
-              <AppIcon className=" text-[20px]">check_circle</AppIcon>
-            </div>
-          </div>
-          <div className="flex items-end gap-sm">
-            <h3 className="font-headline-h2 text-headline-h2 text-on-surface">{passRate}%</h3>
-          </div>
-          <div className="mt-xs flex items-center gap-xs text-on-surface-variant">
-            <span className="font-body-sm text-body-sm">Trung bình hệ thống</span>
-          </div>
-        </div>
+        <SummaryStat label="Điểm trung bình" value={(averageScore / 10).toFixed(1)} unit="/ 10 điểm" icon="leaderboard" description="Tính từ dữ liệu đang lọc" />
+        <SummaryStat label="Lượt làm bài" value={total.toLocaleString('vi-VN')} unit="lượt nộp" icon="group" description="Tổng lượt nộp bài theo bộ lọc" />
+        <SummaryStat label="Tỷ lệ đạt" value={passRate} unit="%" icon="check_circle" description="Tính từ dữ liệu đang lọc" />
       </div>
 
       <div className="bg-surface-container-lowest rounded-xl border border-outline-variant overflow-hidden">

@@ -1,4 +1,5 @@
 'use client';
+import { SummaryStat } from '@/shared/ui/SummaryStat';
 import { Pagination } from '@/shared/ui/Pagination';
 import { useSelectionPage } from '@/shared/lib/use-selection-page';
 import { ListTools, matchesSearch } from '@/shared/ui/ListTools';
@@ -392,17 +393,7 @@ export default function AdminLevels({ createOnly = false }: { createOnly?: boole
           { label: 'Tổng cấp độ', value: loading ? '—' : levels.length.toLocaleString('vi-VN'), icon: 'stairs', unit: 'cấp độ' },
           { label: 'Tổng từ vựng', value: loading ? '—' : levels.reduce((s, l) => s + (l._count?.vocabularies ?? 0), 0).toLocaleString('vi-VN'), icon: 'library_books', unit: 'từ vựng' },
           { label: 'Ngân hàng câu hỏi', value: loading ? '—' : levels.reduce((s, l) => s + (l._count?.questions ?? 0), 0).toLocaleString('vi-VN'), icon: 'quiz', unit: 'câu hỏi' },
-        ].map((stat) => (
-          <div key={stat.label} className="stat-card bg-surface-container-lowest p-md flex flex-col justify-between h-[120px] rounded-lg border border-outline-variant hover:shadow-[0_1px_3px_rgba(15,23,24,0.06)] hover:-translate-y-0.5 transition-all">
-            <div className="flex justify-between items-start gap-sm">
-              <span className="font-body-sm text-body-sm text-on-surface-variant">{stat.label}</span>
-              <AppIcon className="text-outline text-[20px] shrink-0">{stat.icon}</AppIcon>
-            </div>
-            <div className="font-headline-h2 text-headline-h2 text-on-surface flex items-baseline gap-sm">
-              {stat.value} <span className="font-body-sm text-body-sm text-on-surface-variant font-normal">{stat.unit}</span>
-            </div>
-          </div>
-        ))}
+        ].map((stat) => <SummaryStat key={stat.label} {...stat} />)}
       </div>
 
       <ListTools search={search} onSearch={setSearch} filter={filter} onFilter={setFilter} options={[{value:'',label:'Tất cả trạng thái'},{value:'active',label:'Đang hoạt động'},{value:'inactive',label:'Ngừng hoạt động'}]} />

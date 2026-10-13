@@ -196,6 +196,8 @@ export interface VocabularyItem {
 // Questions
 export interface QuestionItem {
   id: string;
+  domainId?: string | null;
+  levelId?: string | null;
   type: string;
   skill: string;
   prompt: string;
@@ -205,8 +207,8 @@ export interface QuestionItem {
   status: string;
   topics: string[];
   createdAt: string;
-  domain: { code: string; name: string } | null;
-  level: { code: string; name: string } | null;
+  domain: { id?: string; code: string; name: string } | null;
+  level: { id?: string; code: string; name: string } | null;
   options: Array<{
     id: string;
     key: string;

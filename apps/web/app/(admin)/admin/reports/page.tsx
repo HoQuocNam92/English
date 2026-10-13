@@ -1,4 +1,5 @@
 'use client';
+import { SummaryStat } from '@/shared/ui/SummaryStat';
 import { ClearFiltersButton } from '@/shared/ui/ClearFiltersButton';
 import { showToast } from '@/shared/ui/AppFeedback';
 import { ActionButton, ActionGroup } from '@/shared/ui/ActionButton';
@@ -204,57 +205,10 @@ export default function AdminReportsPage() {
         )}
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-gutter">
-          <div className="bg-surface-container-lowest p-lg rounded-xl border border-outline-variant hover:shadow-[0_1px_3px_rgba(15,23,24,0.06)] transition-all flex flex-col justify-between">
-            <div className="flex items-center justify-between mb-md">
-              <span className="font-interface-sb text-interface-sb text-on-surface-variant">Tổng số người học</span>
-              <AppIcon className=" text-primary" data-icon="group">group</AppIcon>
-            </div>
-            <div>
-              <div className="font-headline-h1 text-headline-h1 text-on-surface">{loading ? '...' : analytics?.overview.totalUsers.toLocaleString()}</div>
-              <div className="flex items-center gap-xs mt-xs text-green-700 font-body-sm text-body-sm">
-                <AppIcon className=" text-[14px]" data-icon="trending_up">trending_up</AppIcon>
-                <span>Dữ liệu tài khoản hiện tại</span>
-              </div>
-            </div>
-          </div>
-
-          <div className="bg-surface-container-lowest p-lg rounded-xl border border-outline-variant hover:shadow-[0_1px_3px_rgba(15,23,24,0.06)] transition-all flex flex-col justify-between">
-            <div className="flex items-center justify-between mb-md">
-              <span className="font-interface-sb text-interface-sb text-on-surface-variant">Người học hoạt động</span>
-              <AppIcon className=" text-secondary" data-icon="local_fire_department">local_fire_department</AppIcon>
-            </div>
-            <div>
-              <div className="font-headline-h1 text-headline-h1 text-on-surface">{loading ? '...' : analytics?.overview.activeUsers.toLocaleString()}</div>
-              <div className="flex items-center gap-xs mt-xs text-green-700 font-body-sm text-body-sm">
-                <AppIcon className=" text-[14px]" data-icon="trending_up">trending_up</AppIcon>
-                <span>Dữ liệu hoạt động hiện tại</span>
-              </div>
-            </div>
-          </div>
-
-          <div className="bg-surface-container-lowest p-lg rounded-xl border border-outline-variant hover:shadow-[0_1px_3px_rgba(15,23,24,0.06)] transition-all flex flex-col justify-between">
-            <div className="flex items-center justify-between mb-md">
-              <span className="font-interface-sb text-interface-sb text-on-surface-variant">Tỷ lệ đạt bài thi</span>
-              <AppIcon className=" text-tertiary" data-icon="task_alt">task_alt</AppIcon>
-            </div>
-            <div>
-              <div className="font-headline-h1 text-headline-h1 text-on-surface">{loading ? '...' : Math.round(completionRate)}%</div>
-              <div className="w-full bg-surface-container-high h-2 rounded-full mt-sm overflow-hidden">
-                <div className="bg-tertiary h-full rounded-full" style={{ width: `${completionRate}%` }}></div>
-              </div>
-            </div>
-          </div>
-
-          <div className="bg-surface-container-lowest p-lg rounded-xl border border-outline-variant hover:shadow-[0_1px_3px_rgba(15,23,24,0.06)] transition-all flex flex-col justify-between">
-            <div className="flex items-center justify-between mb-md">
-              <span className="font-interface-sb text-interface-sb text-on-surface-variant">Điểm TB hệ thống</span>
-              <AppIcon className=" text-primary-container" data-icon="school">school</AppIcon>
-            </div>
-            <div>
-              <div className="font-headline-h1 text-headline-h1 text-on-surface">{loading ? '...' : ((analytics?.overview.averageScore ?? 0) / 10).toFixed(1)}<span className="text-headline-h3 text-on-surface-variant">/10</span></div>
-              <div className="mt-xs font-body-sm text-body-sm text-on-surface-variant">Tính từ các lượt thi thực tế</div>
-            </div>
-          </div>
+          <SummaryStat label="Tổng số người học" value={loading ? '…' : (analytics?.overview.totalUsers ?? 0).toLocaleString('vi-VN')} unit="người" icon="group" description="Dữ liệu tài khoản hiện tại" />
+          <SummaryStat label="Người học hoạt động" value={loading ? '…' : (analytics?.overview.activeUsers ?? 0).toLocaleString('vi-VN')} unit="người" icon="local_fire_department" description="Dữ liệu hoạt động hiện tại" />
+          <SummaryStat label="Tỷ lệ đạt bài thi" value={loading ? '…' : Math.round(completionRate)} unit="%" icon="task_alt" description="Tính từ các lượt thi thực tế" />
+          <SummaryStat label="Điểm TB hệ thống" value={loading ? '…' : ((analytics?.overview.averageScore ?? 0) / 10).toFixed(1)} unit="/ 10 điểm" icon="school" description="Tính từ các lượt thi thực tế" />
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-gutter">
