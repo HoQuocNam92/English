@@ -4,7 +4,7 @@ import { PaginatedList } from '@/shared/ui/PaginatedList';
 import { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
-import { ArrowLeft, BookOpen, Check, ChevronDown, ChevronRight, Clock3, FileQuestion, Flag, Play, Trophy } from 'lucide-react';
+import { ArrowLeft, ArrowUpRight, Award, BookOpen, Check, ChevronDown, ChevronRight, Clock3, FileQuestion, Layers3, Play, Trophy } from 'lucide-react';
 import { LearnerShell } from '@/shared/layout';
 import { apiClient } from '@/shared/api/api-client';
 import { LoadingSpinner } from '@/shared/ui';
@@ -69,92 +69,113 @@ export default function CertificationDetailPage() {
   const totalExams = certProgress?.totalExams ?? (certificate.exams ?? []).filter((exam: any) => exam.status === 'published' && exam._count?.questions > 0).length;
   const completionPercent = Math.round(certProgress?.completionPercent ?? 0);
   const hasStarted = Boolean(certProgress?.hasStarted || completionPercent > 0);
-  const attempts = (progress?.recentAttempts ?? []).filter((item: any) => certificate.exams?.some((exam: any) => exam.id === item.examId));
-  const tabs: { id: Tab; label: string; icon: typeof BookOpen }[] = [
-    { id: 'learn', label: 'Học', icon: BookOpen },
-    { id: 'exams', label: 'Bài kiểm tra', icon: FileQuestion },
+  const nextTopic = domains.flatMap((domain: any) => domain.topics).find((topic: any) => {
+    const study = topicProgress.find((item: any) => item.topicId === topic.id);
+    return study?.total > 0 && study.completed < study.total;
+  }) ?? domains.flatMap((domain: any) => domain.topics).find((topic: any) => topicProgress.some((item: any) => item.topicId === topic.id && item.total > 0));
+  const publishedExams = (certificate.exams ?? []).filter((exam: any) => exam.status === 'published');
+  const tabs: { id: Tab; label: string; icon: typeof BookOpen; count: number }[] = [
+    { id: 'learn', label: 'Lộ trình học', icon: BookOpen, count: totalCount },
+    { id: 'exams', label: 'Bài kiểm tra', icon: FileQuestion, count: totalExams },
   ];
 
-  return <LearnerShell><main className="min-h-screen bg-background pb-16">
-    <section className="border-b border-outline-variant bg-surface-container-lowest"><div className="w-full py-6">
-      <Link href="/learn/certifications" className="mb-5 inline-flex items-center gap-2 text-sm font-semibold text-on-surface-variant hover:text-primary"><ArrowLeft size={17} /> Tất cả chứng chỉ</Link>
-      <div className="flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between"><div className="flex items-start gap-4">
-        <div className="grid h-14 w-14 shrink-0 place-items-center rounded-xl bg-primary text-sm font-black text-white shadow-sm">{certificate.provider?.slice(0, 3).toUpperCase() || 'CERT'}</div>
-        <div><div className="mb-2 flex flex-wrap items-center gap-2"><span className={`rounded-full px-3 py-1 text-xs font-bold ${hasStarted ? 'bg-primary-light text-primary' : 'bg-surface-container text-on-surface-variant'}`}>{hasStarted ? 'ĐANG ÔN LUYỆN' : 'CHƯA BẮT ĐẦU'}</span><span className="text-sm font-semibold text-on-surface-variant">{certificate.code}</span></div><h1 className="text-2xl font-bold tracking-tight text-on-surface sm:text-3xl">{certificate.name}</h1><p className="mt-2 max-w-2xl text-sm leading-6 text-on-surface-variant">{certificate.description}</p></div>
-      </div><div className="w-full rounded-xl border border-outline-variant bg-surface-container-low p-4 lg:w-72"><div className="mb-2 flex items-end justify-between"><span className="text-sm font-semibold">Tiến độ tổng thể</span><span className="text-2xl font-bold text-primary">{completionPercent}%</span></div><div className="h-2.5 overflow-hidden rounded-full bg-surface-container-highest"><div className="h-full rounded-full bg-primary" style={{ width: `${completionPercent}%` }} /></div><p className="mt-2 text-xs text-on-surface-variant">{completedCount}/{totalCount} bài học · {certProgress?.completedExams ?? 0}/{totalExams} bài kiểm tra hoàn thành</p><p className="mt-2 text-xs text-on-surface-variant">{certProgress?.examAttempts ?? 0} lượt thi đã hoàn thành · Mỗi bài chỉ tính tiến độ một lần.</p></div></div>
-    </div></section>
-    <div className="sticky top-0 z-10 border-b border-outline-variant bg-surface-container-lowest/95 backdrop-blur"><nav className="w-full py-2"><div className="ui-tabs">{tabs.map(({ id, label, icon: Icon }) => <button key={id} onClick={() => setActiveTab(id)} className="ui-tab" aria-pressed={activeTab === id}><Icon size={18} />{label}</button>)}</div></nav></div>
-    <div className="w-full pb-8 pt-4">
-      {activeTab === 'learn' && <LearnTab topicProgress={topicProgress} certificateId={certificate.id} domains={domains} exams={certificate.exams ?? []} progress={progress} expanded={expanded} setExpanded={setExpanded} certProgress={certProgress} completedCount={completedCount} attempts={attempts} />}
-      {activeTab === 'exams' && <ExamsTab exams={certificate.exams ?? []} examStates={examStates} onLearn={() => setActiveTab('learn')} />}
-    </div>
-  </main></LearnerShell>;
-}
+  return <LearnerShell><div className="space-y-7 pb-12">
+    <Link href="/learn/certifications" className="inline-flex min-h-10 items-center gap-2 text-sm font-medium text-slate-500 transition-colors hover:text-primary"><ArrowLeft size={16} /> Tất cả chứng chỉ</Link>
 
-function LearnTab({ topicProgress, certificateId, domains, exams, progress, expanded, setExpanded, certProgress, completedCount, attempts }: any) {
-  return <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_300px]">
-    <section>
-      <h2 className="text-2xl font-bold">Nội dung theo chứng chỉ</h2>
-      <p className="mt-2 text-sm text-on-surface-variant">Học kiến thức theo chủ đề → Luyện câu hỏi → Xem giải thích và ôn lại.</p>
-      <div className="mt-5 space-y-4">
-        {domains.map((domain: any) => {
-          const isOpen = expanded.includes(domain.id);
-          return <article key={domain.id} className="overflow-hidden rounded-xl border border-outline-variant bg-surface-container-lowest shadow-sm">
-            <button onClick={() => setExpanded((current: string[]) => current.includes(domain.id) ? current.filter((id) => id !== domain.id) : [...current, domain.id])} className="flex w-full items-center gap-4 p-5 text-left hover:bg-surface-container-low">
-              <div className="grid h-10 w-10 shrink-0 place-items-center rounded-lg bg-primary-light text-sm font-bold text-primary">{domain.number}</div>
-              <div className="min-w-0 flex-1"><div className="flex items-center justify-between gap-2"><h3 className="font-bold">Chuyên ngành {domain.number} — {domain.name}</h3><span className="text-sm font-bold text-primary">{domain.totalQuestions} câu hỏi</span></div><span className="mt-2 block text-xs text-on-surface-variant">{domain.weightPercent}% bài thi</span></div>
-              {isOpen ? <ChevronDown size={20} /> : <ChevronRight size={20} />}
-            </button>
-            {isOpen && <div className="border-t border-outline-variant px-5 py-2">{domain.topics.length ? domain.topics.map((topic: any) => {
-              const study = topicProgress.find((item: any) => item.topicId === topic.id);
-              const studyUrl = `/learn/certifications/${certificateId}/topics/${topic.id}`;
-              return <div key={topic.id} className="flex flex-col gap-3 border-b border-outline-variant/60 py-4 last:border-0 sm:flex-row sm:items-center">
-                <span className={`grid h-7 w-7 shrink-0 place-items-center rounded-full border border-outline-variant`}><span className="h-2 w-2 rounded-full bg-current" /></span>
-                <div className="min-w-0 flex-1"><strong className="block text-sm">{topic.name}</strong><span className="mt-1 block text-xs text-on-surface-variant">{study?.completed ?? 0}/{study?.total ?? 0} bài học hoàn thành · {study?.total > 0 && study?.completed === study?.total ? 'Đã học' : study?.started ? 'Đang học' : 'Chưa học'}</span></div>
-                <div className="flex shrink-0 gap-2">
-                  <Link href={studyUrl} className="inline-flex items-center gap-1.5 rounded-lg bg-primary px-3 py-2 text-xs font-bold text-white"><BookOpen size={15} />{study?.total > 0 && study?.completed === study?.total ? 'Ôn lại kiến thức' : study?.started ? 'Học tiếp' : 'Bắt đầu học'}</Link>
+    <section aria-label="Tổng quan chứng chỉ" className="overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm">
+      <div className="grid gap-6 p-5 sm:p-6 lg:grid-cols-[minmax(0,1fr)_320px] lg:gap-10 lg:p-7">
+        <div className="min-w-0">
+          <div className="mb-4 flex flex-wrap items-center gap-2.5">
+            <span className="rounded-lg bg-violet-50 px-2.5 py-1 text-xs font-bold tracking-wide text-primary">{certificate.code}</span>
+            <span className="flex items-center gap-1.5 text-xs font-medium text-slate-500"><span className={`h-1.5 w-1.5 rounded-full ${hasStarted ? 'bg-emerald-500' : 'bg-slate-400'}`} />{hasStarted ? 'Đang ôn luyện' : 'Chưa bắt đầu'}</span>
+          </div>
+          <div className="flex items-start gap-4">
+            <div className="grid h-14 w-14 shrink-0 place-items-center rounded-2xl bg-violet-100 text-primary"><Award size={29} strokeWidth={1.7} /></div>
+            <div className="min-w-0"><h1 className="text-2xl font-bold leading-tight tracking-tight text-slate-900 sm:text-3xl">{certificate.name}</h1>{certificate.provider && <p className="mt-2 text-sm text-slate-500">{certificate.provider}</p>}</div>
+          </div>
+          <p className="mt-4 max-w-xl text-sm leading-6 text-slate-600">{certificate.description || 'Ôn kiến thức, luyện câu hỏi và theo dõi quá trình học của bạn trong cùng một lộ trình.'}</p>
+          <div className="mt-4 flex flex-wrap gap-x-5 gap-y-2 text-xs font-medium text-slate-500">
+            <span className="inline-flex items-center gap-1.5"><Layers3 size={15} />{domains.length} chuyên ngành</span>
+            <span className="inline-flex items-center gap-1.5"><BookOpen size={15} />{totalCount} bài học</span>
+            <span className="inline-flex items-center gap-1.5"><FileQuestion size={15} />{totalExams} bài kiểm tra</span>
+          </div>
+          <div className="mt-6 flex flex-wrap items-center gap-3">
+            {nextTopic ? <Link href={`/learn/certifications/${certificate.id}/topics/${nextTopic.id}`} className="ui-button ui-button-primary"><Play size={16} />{hasStarted ? 'Tiếp tục học' : 'Bắt đầu học'}</Link> : publishedExams.length > 0 ? <button type="button" onClick={() => setActiveTab('exams')} className="ui-button ui-button-primary"><Play size={16} />Làm bài kiểm tra</button> : <span className="text-sm text-slate-500">Nội dung đang được cập nhật.</span>}
+            {nextTopic && publishedExams.length > 0 && <button type="button" onClick={() => setActiveTab('exams')} className="inline-flex items-center gap-1.5 px-2 text-sm font-semibold text-slate-600 hover:text-primary">Xem bài kiểm tra<ArrowUpRight size={16} /></button>}
+          </div>
+        </div>
 
-                </div>
-              </div>;
-            }) : <p className="py-5 text-sm text-on-surface-variant">Chuyên ngành này chưa được cấu hình nội dung.</p>}</div>}
-          </article>;
-        })}
-        {!domains.length && <p className="rounded-xl border border-dashed p-6 text-sm text-on-surface-variant">Chứng chỉ chưa được cấu hình chuyên ngành.</p>}
+        <div className="self-start rounded-2xl border border-violet-100 bg-violet-50/60 p-5">
+          <div className="flex items-center justify-between gap-4"><span className="text-sm font-semibold text-slate-700">Tiến độ của bạn</span><span className="text-3xl font-bold tracking-tight text-primary">{completionPercent}<span className="ml-0.5 text-lg">%</span></span></div>
+          <div role="progressbar" aria-label="Tiến độ tổng thể" aria-valuenow={completionPercent} aria-valuemin={0} aria-valuemax={100} className="mt-4 h-2 overflow-hidden rounded-full bg-violet-100"><div className="h-full rounded-full bg-primary transition-[width] duration-300" style={{ width: `${completionPercent}%` }} /></div>
+          <div className="mt-4 space-y-2.5 text-sm">
+            <div className="flex items-center justify-between gap-4"><span className="flex items-center gap-2 text-slate-500"><BookOpen size={16} />Bài học</span><span className="font-semibold text-slate-800">{completedCount}<span className="font-normal text-slate-400"> / {totalCount}</span></span></div>
+            <div className="flex items-center justify-between gap-4"><span className="flex items-center gap-2 text-slate-500"><FileQuestion size={16} />Bài kiểm tra</span><span className="font-semibold text-slate-800">{certProgress?.completedExams ?? 0}<span className="font-normal text-slate-400"> / {totalExams}</span></span></div>
+          </div>
+          <div className="mt-4 grid grid-cols-2 gap-4 border-t border-violet-100 pt-3"><div><p className="text-lg font-bold text-slate-800">{certProgress?.examAttempts ?? 0}</p><p className="mt-1 text-xs text-slate-500">Lượt thi hoàn thành</p></div><div><p className="text-lg font-bold text-slate-800">{certProgress?.avgScore == null ? '—' : `${certProgress.avgScore}%`}</p><p className="mt-1 text-xs text-slate-500">Điểm trung bình</p></div></div>
+          <details className="mt-4 text-xs text-slate-500"><summary className="w-fit cursor-pointer rounded focus-visible:outline-2 focus-visible:outline-primary">Cách tính tiến độ</summary><p className="mt-2 leading-5">Tính theo bài học và bài kiểm tra đã hoàn thành. Mỗi bài chỉ tính một lần, kể cả khi bạn làm lại.</p></details>
+        </div>
       </div>
     </section>
-    <aside className="space-y-4"><div className="rounded-xl border border-outline-variant bg-surface-container-lowest p-5"><h3 className="font-bold">Kết quả thực tế</h3><div className="mt-4 grid grid-cols-3 gap-2 text-center">{[[String(completedCount ?? 0), 'Bài học'], [String(certProgress?.examAttempts ?? 0), 'Lượt thi'], [certProgress?.avgScore == null ? '—' : `${certProgress.avgScore}%`, 'Điểm TB']].map(([value, label]) => <div key={label} className="rounded-lg bg-surface-container-low p-3"><strong className="block text-lg text-primary">{value}</strong><span className="text-xs text-on-surface-variant">{label}</span></div>)}</div></div></aside>
-  </div>;
+
+    <div className="border-b border-slate-200"><div role="tablist" aria-label="Nội dung chứng chỉ" className="flex gap-6">{tabs.map(({ id, label, icon: Icon, count }) => <button key={id} type="button" role="tab" id={`certificate-tab-${id}`} aria-selected={activeTab === id} aria-controls={`certificate-panel-${id}`} onClick={() => setActiveTab(id)} className={`relative flex items-center gap-2 rounded-none! border-b-2 px-1 py-4 text-sm font-semibold transition-colors ${activeTab === id ? 'border-primary text-primary' : 'border-transparent text-slate-500 hover:text-slate-800'}`}><Icon size={18} />{label}<span className={`rounded-md px-1.5 py-0.5 text-xs ${activeTab === id ? 'bg-violet-100 text-primary' : 'bg-slate-100 text-slate-500'}`}>{count}</span></button>)}</div></div>
+    <div role="tabpanel" id={`certificate-panel-${activeTab}`} aria-labelledby={`certificate-tab-${activeTab}`}>
+      {activeTab === 'learn' ? <LearnTab topicProgress={topicProgress} certificateId={certificate.id} domains={domains} expanded={expanded} setExpanded={setExpanded} onExams={() => setActiveTab('exams')} hasExams={publishedExams.length > 0} /> : <ExamsTab exams={certificate.exams ?? []} examStates={examStates} onLearn={() => setActiveTab('learn')} />}
+    </div>
+  </div></LearnerShell>;
 }
 
-
+function LearnTab({ topicProgress, certificateId, domains, expanded, setExpanded, onExams, hasExams }: any) {
+  return <section className="space-y-5">
+    <div className="flex flex-wrap items-end justify-between gap-3"><div><h2 className="text-xl font-bold tracking-tight text-slate-900">Lộ trình học</h2><p className="mt-1.5 text-sm leading-6 text-slate-500">Chọn chuyên ngành và học lần lượt theo từng chủ đề.</p></div><span className="text-xs font-medium text-slate-400">{domains.length} chuyên ngành</span></div>
+    <div className="space-y-4">
+      {domains.map((domain: any) => {
+        const isOpen = expanded.includes(domain.id);
+        const lessonCount = new Set(domain.topics.flatMap((topic: any) => (topicProgress.find((item: any) => item.topicId === topic.id)?.lessons ?? []).map((lesson: any) => lesson.id))).size;
+        return <article key={domain.id} className="overflow-hidden rounded-2xl border border-slate-200 bg-white">
+          <button type="button" aria-expanded={isOpen || !domain.topics.length} aria-controls={`domain-content-${domain.id}`} onClick={() => domain.topics.length > 0 && setExpanded((current: string[]) => current.includes(domain.id) ? current.filter((id) => id !== domain.id) : [...current, domain.id])} className="flex w-full items-center gap-4 rounded-none! p-5 text-left transition-colors hover:bg-slate-50 sm:p-6">
+            <span className="grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-violet-50 text-sm font-bold text-primary">{String(domain.number).padStart(2, '0')}</span>
+            <span className="min-w-0 flex-1"><span className="block text-base font-semibold text-slate-900">{domain.name}</span><span className="mt-1.5 flex flex-wrap gap-x-3 gap-y-1 text-xs text-slate-500"><span>{domain.topics.length} chủ đề</span><span>{lessonCount} bài học</span>{Number(domain.weightPercent) > 0 && <span>Tỷ trọng bài thi: {domain.weightPercent}%</span>}</span></span>
+            {domain.topics.length > 0 && <ChevronDown size={19} className={`shrink-0 text-slate-400 transition-transform ${isOpen ? 'rotate-180' : ''}`} />}
+          </button>
+          {(isOpen || !domain.topics.length) && <div id={`domain-content-${domain.id}`} className="border-t border-slate-100 px-5 sm:px-6">{domain.topics.length ? domain.topics.map((topic: any, index: number) => {
+            const study = topicProgress.find((item: any) => item.topicId === topic.id);
+            const complete = study?.total > 0 && study.completed === study.total;
+            return <div key={topic.id} className="flex flex-col gap-3 border-b border-slate-100 py-4 last:border-0 sm:flex-row sm:items-center sm:gap-4">
+              <span className={`grid h-8 w-8 shrink-0 place-items-center rounded-full text-xs font-semibold ${complete ? 'bg-emerald-50 text-emerald-600' : 'bg-slate-100 text-slate-400'}`}>{complete ? <Check size={16} /> : String(index + 1).padStart(2, '0')}</span>
+              <div className="min-w-0 flex-1"><h3 className="text-sm font-semibold text-slate-800">{topic.name}</h3><p className="mt-1 text-xs leading-5 text-slate-500">{study?.total > 0 ? `${study.completed ?? 0}/${study.total} bài học hoàn thành` : 'Bài học đang được cập nhật'}{study?.started && !complete ? ' · Đang học' : complete ? ' · Đã hoàn thành' : ''}</p></div>
+              <Link href={`/learn/certifications/${certificateId}/topics/${topic.id}`} className="inline-flex min-h-10 items-center justify-center gap-2 self-start rounded-xl border border-slate-200 px-4 py-2 text-xs font-semibold text-primary transition-colors hover:border-violet-200 hover:bg-violet-50 sm:self-auto">{complete ? 'Ôn lại' : study?.started ? 'Học tiếp' : 'Xem chủ đề'}<ChevronRight size={15} /></Link>
+            </div>;
+          }) : <div className="flex flex-col items-start gap-3 py-5 sm:flex-row sm:items-center sm:justify-between"><p className="text-sm leading-6 text-slate-500">Chưa có chủ đề học trong chuyên ngành này.{hasExams ? ' Bạn có thể luyện tập với các bài kiểm tra đã có.' : ' Nội dung sẽ được bổ sung sau.'}</p>{hasExams && <button type="button" onClick={onExams} className="inline-flex shrink-0 items-center gap-1.5 text-sm font-semibold text-primary">Xem bài kiểm tra<ChevronRight size={15} /></button>}</div>}</div>}
+        </article>;
+      })}
+      {!domains.length && <div className="rounded-2xl border border-dashed border-slate-200 bg-white p-8 text-center"><Layers3 className="mx-auto text-slate-300" size={28} /><p className="mt-3 text-sm text-slate-500">Chuyên ngành đang được cập nhật.</p>{hasExams && <button type="button" onClick={onExams} className="mt-3 text-sm font-semibold text-primary">Xem bài kiểm tra hiện có</button>}</div>}
+    </div>
+  </section>;
+}
 
 function ExamsTab({ exams, examStates, onLearn }: any) {
   const publishedExams = exams.filter((exam: any) => exam.status === 'published');
   const kindLabels: Record<string, string> = { practice: 'Luyện tập chủ đề', domain_test: 'Kiểm tra chuyên ngành', mock_exam: 'Thi thử chứng chỉ', scenario_assessment: 'Tình huống thực tế' };
   return <section>
-    <p className="text-sm font-bold uppercase tracking-wider text-primary">Bài kiểm tra</p>
-    <h2 className="mt-1 text-2xl font-bold">Luyện tập và kiểm tra kiến thức</h2>
-    <p className="mt-2 text-sm text-on-surface-variant">Bài luyện tập yêu cầu hoàn thành kiến thức trước. Bài kiểm tra chuyên ngành và thi thử có thể làm độc lập.</p>
-    <PaginatedList enabled={publishedExams.length > 0} className="mt-6 space-y-4">
+    <h2 className="text-xl font-bold tracking-tight text-slate-900">Luyện tập và kiểm tra</h2>
+    <p className="mt-1.5 text-sm leading-6 text-slate-500">Luyện tập sau khi học kiến thức, hoặc làm bài kiểm tra chuyên ngành và thi thử độc lập.</p>
+    <PaginatedList enabled={publishedExams.length > 0} className="mt-5 grid gap-4 lg:grid-cols-2">
       {publishedExams.length ? publishedExams.map((exam: any) => {
         const state = examStates[exam.id];
         const attempt = state?.latestAttempt;
-        return <article key={exam.id} className="flex flex-col gap-5 rounded-xl border border-outline-variant bg-surface-container-lowest p-5 sm:flex-row sm:items-center">
-          <div className="grid h-14 w-14 place-items-center rounded-xl bg-surface-container-low text-primary">{attempt ? <Trophy size={25} /> : <FileQuestion size={25} />}</div>
-          <div className="flex-1">
-            <h3 className="text-lg font-bold">{exam.title}</h3>
-            <p className="mt-1 text-xs font-semibold text-primary">{kindLabels[exam.kind] || 'Bài kiểm tra'}</p>
-            <p className="mt-2 text-sm text-on-surface-variant">{exam._count?.questions ?? 0} câu · {exam.durationMinutes} phút · Đạt {exam.passingScorePercent}%</p>
-            <p className="mt-2 text-sm text-on-surface-variant">Đã dùng {state?.usedAttempts ?? 0}/{state?.maxAttempts ?? exam.maxAttempts} lượt · Còn {state?.remainingAttempts ?? 0} lượt</p>
-            {state?.reason && <p className="mt-2 text-sm text-on-surface-variant">{state.reason}</p>}
-          </div>
-          <div className="flex flex-wrap gap-2">
-            {state?.canStart ? <Link href={`/learn/quiz/${exam.id}?certificateId=${encodeURIComponent(exam.certificateId)}`} className="rounded-lg bg-primary px-5 py-2.5 text-sm font-bold text-white">{state.activeAttemptId ? 'Tiếp tục' : state.usedAttempts ? 'Làm lại' : 'Bắt đầu'}</Link> : <button disabled className="rounded-lg bg-surface-container px-5 py-2.5 text-sm text-on-surface-variant">{state?.unavailableLabel || (state?.remainingAttempts === 0 ? 'Hết lượt' : 'Chưa thể làm bài')}</button>}
-            {!state?.canStart && state?.requiredLessonIds?.length > 0 && <button onClick={onLearn} className="px-4 py-2.5 text-sm font-bold text-primary">Học trước</button>}
-            {attempt && <Link href={`/learn/quiz/result/${attempt.id}`} className="rounded-lg border border-primary px-4 py-2.5 text-sm font-bold text-primary">Xem kết quả {Math.round(attempt.scorePercent ?? 0)}%</Link>}
-          </div>
+        return <article key={exam.id} className="flex min-w-0 flex-col rounded-2xl border border-slate-200 bg-white p-5 sm:p-6">
+          <div className="flex items-start gap-3"><span className={`grid h-10 w-10 shrink-0 place-items-center rounded-xl ${attempt ? 'bg-emerald-50 text-emerald-600' : 'bg-violet-50 text-primary'}`}>{attempt ? <Trophy size={21} /> : <FileQuestion size={21} />}</span><div className="min-w-0"><p className="text-xs font-medium text-slate-500">{kindLabels[exam.kind] || 'Bài kiểm tra'}</p><h3 className="mt-1 text-base font-semibold leading-6 text-slate-900">{exam.title}</h3></div></div>
+          <div className="mt-4 flex flex-wrap gap-x-4 gap-y-2 text-xs text-slate-500"><span className="flex items-center gap-1.5"><FileQuestion size={14} />{exam._count?.questions ?? 0} câu hỏi</span><span className="flex items-center gap-1.5"><Clock3 size={14} />{exam.durationMinutes} phút</span><span>Đạt từ {exam.passingScorePercent}%</span></div>
+          <div className="mt-4 flex flex-wrap items-center justify-between gap-2 text-xs"><span className="text-slate-500">Đã làm {state?.usedAttempts ?? 0}/{state?.maxAttempts ?? exam.maxAttempts} lượt</span>{attempt && <span className="rounded-lg bg-violet-50 px-2 py-1 font-semibold text-primary">Kết quả gần nhất: {Math.round(attempt.scorePercent ?? 0)}%</span>}</div>
+          {state?.reason && <p className="mt-4 rounded-xl bg-slate-50 px-3 py-2.5 text-xs leading-5 text-slate-500">{state.reason}</p>}
+          <div className="mt-auto pt-5"><div className="flex flex-wrap gap-2 border-t border-slate-100 pt-4">
+            {state?.canStart ? <Link href={`/learn/quiz/${exam.id}?certificateId=${encodeURIComponent(exam.certificateId)}`} className="ui-button ui-button-primary text-sm"><Play size={15} />{state.activeAttemptId ? 'Tiếp tục' : state.usedAttempts ? 'Làm lại' : 'Bắt đầu'}</Link> : <button type="button" disabled className="rounded-xl bg-slate-100 px-4 py-2.5 text-xs font-medium text-slate-400">{state?.unavailableLabel || (state?.remainingAttempts === 0 ? 'Hết lượt' : 'Chưa thể làm bài')}</button>}
+            {!state?.canStart && state?.requiredLessonIds?.length > 0 && <button type="button" onClick={onLearn} className="rounded-xl border border-slate-200 px-4 py-2.5 text-xs font-semibold text-primary hover:bg-violet-50">Học trước</button>}
+            {attempt && <Link href={`/learn/quiz/result/${attempt.id}`} className="inline-flex items-center gap-1.5 rounded-xl border border-slate-200 px-4 py-2.5 text-xs font-semibold text-slate-600 hover:bg-slate-50">Xem kết quả<ArrowUpRight size={14} /></Link>}
+          </div></div>
         </article>;
-      }) : <p className="rounded-xl border border-dashed p-6 text-sm text-on-surface-variant">Chưa có bài kiểm tra nào được xuất bản cho chứng chỉ này.</p>}
+      }) : <div className="col-span-full rounded-2xl border border-dashed border-slate-200 bg-white p-8 text-center"><FileQuestion className="mx-auto text-slate-300" size={28} /><p className="mt-3 text-sm text-slate-500">Chưa có bài kiểm tra được xuất bản cho chứng chỉ này.</p></div>}
     </PaginatedList>
   </section>;
 }

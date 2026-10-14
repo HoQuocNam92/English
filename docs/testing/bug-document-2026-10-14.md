@@ -31,3 +31,12 @@ APK là đầu ra local, không đưa vào Git. Build Android thành công chưa
 - [x] 13 kiểm thử tiến độ backend, 8 kiểm thử web và 9 kiểm thử mobile thành công; build BE/FE và typecheck mobile thành công.
 
 Đã xác nhận truy vấn chỉ đọc trên database local với học viên có lượt thi: tiến độ tổng thể trả về khác 0. Không sửa kết quả thi hoặc tiến độ cũ trong database; API tính lại từ dữ liệu đã lưu.
+
+## Thiết kế lại chi tiết chứng chỉ trên web
+
+- [x] Khối đầu trang đặt thông tin và tiến độ trên cùng hàng, căn đầu thay vì căn đáy; bỏ khoảng trống lệch và cột thống kê trùng lặp.
+- [x] Tiêu đề, nhà cung cấp, số chuyên ngành/bài học/bài kiểm tra và hành động chính được phân cấp rõ. Chứng chỉ chưa có bài học dẫn tới bài kiểm tra hiện có.
+- [x] Thẻ tiến độ gom số bài hoàn thành, lượt thi và điểm trung bình; cách tính được thu gọn vào mục có thể mở.
+- [x] Tab có số lượng nội dung, thẻ chuyên ngành có số chủ đề/bài học và ghi rõ tỷ trọng bài thi; trạng thái chưa có nội dung có hướng dẫn phù hợp.
+- [x] Bài kiểm tra hiển thị thành các thẻ hai cột trên desktop, một cột trên màn hình nhỏ; giữ đường dẫn làm bài, xem kết quả và học trước.
+- [x] Kiểm tra bằng trình duyệt với English A2 chưa có chủ đề và AWS CLF-C02 có nhiều chủ đề: chuyển tab, mở chuyên ngành và đường dẫn bài học đúng. Màn hình 390px không tràn ngang.
