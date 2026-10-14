@@ -247,7 +247,7 @@ function ExamContent({ colors, exams, examStates, router, onLearn }: any) {
             </View>
             <View style={{ gap: 8 }}>
               <TouchableOpacity disabled={!canStart} accessibilityState={{ disabled: !canStart }} onPress={() => router.push(`/quiz/${exam.id}`)} style={[styles.examButton, { backgroundColor: colors.primary, borderColor: colors.primary, opacity: canStart ? 1 : 0.45 }]}>
-                <Text style={[styles.examButtonText, { color: '#fff' }]}>{canStart ? actionLabel : state?.remainingAttempts === 0 ? 'Hết lượt' : 'Chưa mở'}</Text>
+                <Text style={[styles.examButtonText, { color: '#fff' }]}>{canStart ? actionLabel : state?.unavailableLabel || (state?.remainingAttempts === 0 ? 'Hết lượt' : 'Chưa thể làm bài')}</Text>
               </TouchableOpacity>
               {attempt && <TouchableOpacity onPress={() => router.push(`/test-result/${attempt.id}`)} style={[styles.examButton, { borderColor: colors.primary }]}><Text style={[styles.examButtonText, { color: colors.primary }]}>Xem lại</Text></TouchableOpacity>}
               {!canStart && state?.requiredLessonIds?.length > 0 && <TouchableOpacity onPress={onLearn}><Text style={{ color: colors.primary, textAlign: 'center' }}>Học trước</Text></TouchableOpacity>}

@@ -10,7 +10,7 @@ Chạy trong `apps/api`:
 npm run db:seed:placement
 ```
 
-Seed bổ sung 105 câu: 7 lĩnh vực (Cloud, Cybersecurity, Networking, Data Engineering, Data Science, Software Engineering, DevOps), mỗi lĩnh vực 15 câu trải trên beginner/intermediate/advanced. Mỗi câu có đoạn văn, 4 lựa chọn, đáp án và giải thích. Seed có thể chạy lại và không sửa dữ liệu cũ.
+Bộ dữ liệu gồm 165 câu: 7 lĩnh vực chính (Cloud, Cybersecurity, Networking, Data Engineering, Data Science, Software Engineering, DevOps) và 4 nhóm AWS CLF-C02, mỗi lĩnh vực/nhóm 15 câu trải trên beginner/intermediate/advanced. Seed chỉ thêm câu thuộc danh mục đang hoạt động và bỏ qua các nhóm chưa có danh mục. Lệnh seed chính cũng nạp bộ câu hỏi này; migration `20261014090000_seed_placement_questions` bổ sung các câu còn thiếu khi cập nhật database. Mỗi câu có đoạn văn, 4 lựa chọn, đáp án và giải thích. Seed có thể chạy lại và không sửa dữ liệu cũ.
 
 Quản trị tại `/admin/questions`: chọn bộ lọc **Kiểm tra trình độ**, sửa nội dung, lựa chọn, lĩnh vực, trình độ hoặc trạng thái. Câu kiểm tra cần tag `placement`, trạng thái published, 2 lựa chọn trở lên và đúng một đáp án đúng. Các loại single_choice và multiple_choice có một đáp án đúng được hỗ trợ. Không dùng câu chưa xuất bản hoặc danh mục ngừng hoạt động.
 

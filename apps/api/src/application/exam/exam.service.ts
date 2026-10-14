@@ -176,7 +176,8 @@ export class ExamsService {
     const latestAttempt = attempts.find(attempt => ['submitted', 'graded'].includes(attempt.status)) ?? null
     const remainingAttempts = Math.max(0, exam.maxAttempts - usedAttempts)
     const reason = exam.availableFrom && exam.availableFrom > now ? 'Bài thi chưa đến thời gian mở' : exam.availableUntil && exam.availableUntil < now ? 'Bài thi đã hết thời gian mở' : !exam._count.questions ? 'Bài thi chưa có câu hỏi' : requirement.reason || (!activeAttempt && !remainingAttempts ? `Bạn đã sử dụng hết ${exam.maxAttempts} lượt làm bài` : '')
-    return { canStart: !reason, reason, usedAttempts, remainingAttempts, maxAttempts: exam.maxAttempts, activeAttemptId: activeAttempt?.id ?? null, latestAttempt, requiredLessonIds: requirement.lessonIds }
+    const unavailableLabel = exam.availableFrom && exam.availableFrom > now ? 'Chưa đến giờ' : exam.availableUntil && exam.availableUntil < now ? 'Đã đóng' : !exam._count.questions ? 'Chưa có câu hỏi' : !requirement.ready ? (requirement.lessonIds.length ? 'Cần học trước' : 'Chờ bổ sung bài học') : !activeAttempt && !remainingAttempts ? 'Hết lượt' : ''
+    return { canStart: !reason, reason, unavailableLabel, usedAttempts, remainingAttempts, maxAttempts: exam.maxAttempts, activeAttemptId: activeAttempt?.id ?? null, latestAttempt, requiredLessonIds: requirement.lessonIds }
   }
 
   async startAttempt(examId: string, learnerId: string) {

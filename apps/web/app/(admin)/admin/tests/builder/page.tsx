@@ -174,7 +174,7 @@ export default function TestBuilderPage() {
       } else {
         await apiClient.post('/exams', payload);
       }
-      setSavedExam({ title: title.trim(), certificateId, certificateName: certificates.find(item => item.id === certificateId)?.name || 'Chứng chỉ đã chọn', published: targetStatus === 'published', topicPractice: kind === 'practice' && Boolean(topics.trim()) });
+      setSavedExam({ title: title.trim(), certificateId, certificateName: certificates.find(item => item.id === certificateId)?.name || 'Chứng chỉ đã chọn', published: targetStatus === 'published', topicPractice: kind === 'practice' && Boolean(certificateId) });
     } catch (e) {
       setGlobalError(e instanceof ApiClientError ? e.message : 'Lỗi khi lưu bài thi');
     } finally {
@@ -232,7 +232,7 @@ export default function TestBuilderPage() {
           <p className="font-bold">Học viên tìm bài ở đâu?</p>
           <p>Chứng chỉ → {savedExam.certificateName} → Bài kiểm tra → {savedExam.title} → Bắt đầu.</p>
         </div>
-        {savedExam.topicPractice && <p className="text-sm text-on-surface-variant">Bài luyện tập đã gắn chủ đề: học viên cần hoàn thành bài học kiến thức của chủ đề trước khi làm bài.</p>}
+        {savedExam.topicPractice && <p className="text-sm text-on-surface-variant">Bài luyện tập chỉ mở khi học viên hoàn thành các bài học kiến thức đã xuất bản của chủ đề được chọn (hoặc của chứng chỉ nếu không chọn chủ đề). Hãy tạo bài học ôn chứng chỉ, gắn đúng chứng chỉ/chủ đề và xuất bản trong Quản lý bài học.</p>}
         <div className="flex flex-wrap gap-3">
           <button type="button" className="ui-button ui-button-primary" onClick={async () => {
             try {
@@ -352,6 +352,7 @@ export default function TestBuilderPage() {
                 <option value="practice">Luyện tập theo chủ đề</option><option value="domain_test">Kiểm tra chuyên ngành</option><option value="mock_exam">Thi thử chứng chỉ</option><option value="scenario_assessment">Bài tập tình huống thực tế</option>
               </Dropdown>
             </div>
+            <p className="text-xs leading-5 text-on-surface-variant">{kind === 'practice' ? 'Điều kiện mở: xuất bản đề có câu hỏi và học viên hoàn thành bài học kiến thức. Trong Quản lý bài học, tạo bài ôn chứng chỉ, gắn đúng chứng chỉ/chủ đề rồi xuất bản. Nếu không chọn chủ đề, học viên cần hoàn thành các bài học của chứng chỉ. Muốn kiểm tra độc lập, chọn Kiểm tra chuyên ngành hoặc Thi thử chứng chỉ.' : 'Học viên có thể làm ngay sau khi xuất bản đề có câu hỏi, trong thời gian mở và khi còn lượt làm bài.'} Số lượt làm bài chỉ giới hạn số lần thử, không bỏ qua điều kiện mở.</p>
             <div>
               <label className="block text-sm font-semibold text-slate-900 mb-1.5">Chứng chỉ liên quan <span className="text-error">*</span></label>
               <Dropdown
@@ -462,8 +463,8 @@ export default function TestBuilderPage() {
                     className="sr-only"
                   />
                   <AppIcon className=" text-[20px] text-emerald-600 mb-1">check_circle</AppIcon>
-                  <span className="text-xs font-bold">Đang mở thi</span>
-                  <span className="text-[10px] text-slate-500 mt-0.5">Học viên vào thi</span>
+                  <span className="text-xs font-bold">Đã xuất bản</span>
+                  <span className="text-[10px] text-slate-500 mt-0.5">Hiển thị cho học viên</span>
                 </label>
 
 

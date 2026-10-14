@@ -84,7 +84,7 @@ export default function MobileProfileScreen() {
               </View>
             )}
             <TouchableOpacity style={[styles.editAvatarButton, { backgroundColor: colors.primary }]} onPress={() => router.push('/profile/edit' as any)}>
-              <MaterialIcons name="edit" size={16} color="#ffffff" />
+              <MaterialIcons name="edit" size={20} color="#ffffff" />
             </TouchableOpacity>
           </View>
           <Text style={[styles.userName, { color: colors.onSurface }]}>{displayName}</Text>
@@ -241,9 +241,12 @@ const styles = StyleSheet.create({
     position: 'absolute',
     bottom: 0,
     right: 0,
-    width: 32,
-    height: 32,
-    borderRadius: 16,
+    width: 48,
+    height: 48,
+    minHeight: 48,
+    borderRadius: 24,
+    borderWidth: 3,
+    borderColor: '#fff',
     alignItems: 'center',
     justifyContent: 'center',
     shadowColor: '#000',

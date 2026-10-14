@@ -1,7 +1,7 @@
 import { FilterSelect } from '../../src/shared/ui/FilterSelect';
 import { Text, TouchableOpacity } from '../../src/shared/ui/primitives';
 import { useEffect, useState } from 'react';
-import { useRouter } from 'expo-router';
+import { useRouter, useLocalSearchParams } from 'expo-router';
 import { ActivityIndicator, StyleSheet, View } from 'react-native';
 import { MaterialIcons } from '../../src/shared/ui/AppIcon';
 import { api } from '../../src/shared/api/api-client';
@@ -14,8 +14,9 @@ const RATINGS = [['all', 'Mọi mức'], ['easy', 'Dễ'], ['medium', 'Trung bì
 export default function FlashcardHistoryScreen() {
   const { colors } = useTheme();
   const router = useRouter();
-  const [period, setPeriod] = useState('month');
-  const [rating, setRating] = useState('all');
+  const params = useLocalSearchParams<{ period?: string; rating?: string }>();
+  const [period, setPeriod] = useState(PERIODS.some(([value]) => value === params.period) ? params.period! : 'month');
+  const [rating, setRating] = useState(RATINGS.some(([value]) => value === params.rating) ? params.rating! : 'all');
   const [page, setPage] = useState(1); const [limit, setLimit] = useState('10');
   const [totalPages, setTotalPages] = useState(1);
   const [items, setItems] = useState<any[]>([]);

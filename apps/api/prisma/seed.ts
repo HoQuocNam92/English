@@ -1,4 +1,5 @@
 import { PrismaClient, UserStatus, ContentStatus, QuestionType, AttemptStatus, ProgressStatus, ProgressResourceType } from '@prisma/client'
+import { seedPlacement } from './seed-placement-data'
 import * as bcrypt from 'bcrypt'
 
 const LevelCode = {
@@ -756,6 +757,7 @@ async function main() {
 
   // ─── SEED: DISCUSSION COMMENTS & VOTES ───────────────────────────────────
   */
+  console.log('Placement:', await seedPlacement(prisma))
   console.log('\n✨ Seed hoàn tất!')
   console.log('\n📌 Tài khoản demo:')
   console.log('   Admin:    admin@techenglish.pro         / Demo@123456')

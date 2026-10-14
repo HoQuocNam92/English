@@ -200,3 +200,64 @@ test('filter choices support accents, mixed case and multiple words across large
   assert.equal(matchesFilterOption('Chứng chỉ Đám mây', 'bảo mật'), false);
   assert.equal(matchesFilterOption('Bất kỳ', '  '), true);
 });
+
+test('known words show saved all-time totals and remain accessible when previewing a card', async () => {
+  const require = createRequire(import.meta.url);
+  const ts = require('typescript');
+  const code = ts.transpileModule(readFileSync(new URL('../../app/flashcards/index.tsx', import.meta.url), 'utf8'), { compilerOptions: { module: ts.ModuleKind.CommonJS, jsx: ts.JsxEmit.ReactJSX } }).outputText;
+  const state = [], effects = [], requests = [], routes = [];
+  let cursor = 0, focus, failCount = false;
+  const jsx = (type, props) => ({ type, props });
+  class Value { interpolate() { return 0; } setValue() {} }
+  const mocks = {
+    'react/jsx-runtime': { jsx, jsxs: jsx },
+    react: {
+      useState: initial => {
+        const index = cursor++;
+        if (!(index in state)) state[index] = typeof initial === 'function' ? initial() : initial;
+        return [state[index], value => { state[index] = typeof value === 'function' ? value(state[index]) : value; }];
+      },
+      useCallback: callback => callback, useRef: current => ({ current }), useEffect: callback => effects.push(callback),
+    },
+    'react-native': { ScrollView: 'scroll', View: 'view', KeyboardAvoidingView: 'keyboard', Animated: { Value, View: 'animated' }, Alert: { alert() {} }, Dimensions: { get: () => ({ width: 390 }) }, Platform: { OS: 'ios' }, StyleSheet: { create: value => value } },
+    'expo-router': { useLocalSearchParams: () => ({ mode: 'preview', vocabularyId: 'known' }), useRouter: () => ({ push: route => routes.push(route) }), useFocusEffect: callback => { focus = callback; } },
+    'expo-speech': { stop: async () => {} },
+    '../../src/shared/api/api-client': { api: { get: async path => {
+      requests.push(path);
+      if (path.startsWith('/vocab-study/history')) {
+        if (failCount) throw new Error('Offline');
+        return { data: [], meta: { total: 30 } };
+      }
+      return { word: { id: 'known', term: 'API', studyStatus: 'mastered', definitionVi: 'Giao diện', examples: [] } };
+    } } },
+    '../../src/shared/store/theme-context': { useTheme: () => ({ colors: {} }) },
+    '../../src/shared/ui/primitives': { Button: 'button', Text: 'text', TextInput: 'input', TouchableOpacity: 'touch' },
+    '../../src/shared/ui/FilterSelect': { FilterSelect: 'filter' },
+    '../../src/shared/ui/AppIcon': { MaterialIcons: 'icon' },
+    '../../src/shared/ui/FeatureScreen': { FeatureScreen: 'screen', EmptyState: 'empty' },
+  };
+  const exports = {};
+  runInNewContext(code, { exports, URLSearchParams, require: name => { assert.ok(name in mocks, name); return mocks[name]; } });
+  const render = () => { cursor = 0; return exports.default(); };
+  const nodes = tree => !tree || typeof tree !== 'object' ? [] : Array.isArray(tree) ? tree.flatMap(nodes) : [tree, ...nodes(tree.props?.children)];
+  const label = tree => nodes(tree).filter(node => node.type === 'text').map(node => node.props.children).flat().join('');
+  render(); effects[0](); focus();
+  await new Promise(resolve => setImmediate(resolve));
+  let screen = render();
+  assert.ok(requests.includes('/vocab-study/history?period=all&rating=mastered&limit=1'));
+  const knownButton = nodes(screen).find(node => node.type === 'touch' && label(node).includes('Từ đã biết'));
+  assert.ok(knownButton); assert.match(label(knownButton), /Từ đã biết \(30\)/);
+  assert.notEqual(knownButton.props.disabled, true);
+  knownButton.props.onPress();
+  assert.equal(routes[0].pathname, '/flashcards/history');
+  assert.equal(routes[0].params.period, 'all'); assert.equal(routes[0].params.rating, 'mastered');
+  failCount = true; focus();
+  await new Promise(resolve => setImmediate(resolve));
+  screen = render();
+  assert.ok(label(screen).includes('Chưa tải được số từ đã biết'));
+  assert.ok(!label(screen).includes('(0)'));
+  failCount = false;
+  nodes(screen).find(node => node.type === 'touch' && label(node).includes('Chạm để thử lại')).props.onPress();
+  await new Promise(resolve => setImmediate(resolve));
+  assert.ok(label(render()).includes('Từ đã biết (30)'));
+});

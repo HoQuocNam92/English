@@ -57,3 +57,31 @@ test('submitted results are idempotent and expired sessions cannot be graded', a
  store.session.submittedAt=null;store.session.expiresAt=new Date(0)
  await assert.rejects(()=>service.submit('A',{assessmentId:id,answers:[]}))
 })
+
+test('placement bank supplies a valid assessment for every supported domain and is safe to seed twice', async () => {
+ const { seedPlacement } = await import('../../../prisma/seed-placement-data')
+ const items = require('../../../prisma/data/placement-questions.json')
+ const stored: any[] = []
+ const prisma: any = {
+  domain: { findMany: async () => [...new Set(items.map((q: any) => q.domain))].map(code => ({ id: code, code })) },
+  level: { findMany: async () => LEVEL_CODES.map(code => ({ id: code, code })) },
+  question: {
+   findFirst: async ({ where }: any) => stored.find(q => q.topics.includes(where.topics.has)),
+   create: async ({ data }: any) => { stored.push(data); return data },
+  },
+ }
+ assert.equal((await seedPlacement(prisma)).created, 165)
+ assert.equal((await seedPlacement(prisma)).created, 0)
+ for (const domain of new Set(stored.map(q => q.domainId))) {
+  const pool = stored.filter(q => q.domainId === domain).map(q => ({ ...q, options: q.options.create, domain: { code: q.domainId }, level: { code: q.levelId } }))
+  assert.equal(balancedQuestions(pool).length, 15)
+  assert.equal(new Set(pool.map(q => q.level.code)).size, 3)
+ }
+})
+const LEVEL_CODES = ['beginner', 'intermediate', 'advanced']
+
+test('insufficient valid placement questions never creates a partial assessment', async () => {
+ const { service, store } = fixture({ question: { findMany: async () => questions.slice(0, 9) } })
+ await assert.rejects(() => service.start('A'), /Chưa đủ 10 câu/)
+ assert.equal(store.created, undefined)
+})

@@ -6,7 +6,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { Animated, Alert, Dimensions, KeyboardAvoidingView, Platform, StyleSheet, View } from 'react-native';
 import { MaterialIcons } from '../../src/shared/ui/AppIcon';
 import * as Speech from 'expo-speech';
-import { useLocalSearchParams, useRouter } from 'expo-router';
+import { useLocalSearchParams, useRouter, useFocusEffect } from 'expo-router';
 import { api } from '../../src/shared/api/api-client';
 import { useTheme } from '../../src/shared/store/theme-context';
 import { FeatureScreen, EmptyState } from '../../src/shared/ui/FeatureScreen';
@@ -68,7 +68,15 @@ export default function FlashcardsScreen() {
 
   // Learn phase
   const [flipped, setFlipped] = useState(false);
-  const [onlyNew, setOnlyNew] = useState(params.mode !== 'review'); const [autoPronounce, setAutoPronounce] = useState(false); const [showKnown, setShowKnown] = useState(false);
+  const [onlyNew, setOnlyNew] = useState(params.mode !== 'review'); const [autoPronounce, setAutoPronounce] = useState(false); const [knownCount, setKnownCount] = useState<number | null>(null);
+  const [knownError, setKnownError] = useState(false);
+  const loadKnownCount = useCallback(async () => {
+    try {
+      const result = await api.get<{ meta: { total: number } }>('/vocab-study/history?period=all&rating=mastered&limit=1');
+      setKnownCount(result.meta.total); setKnownError(false);
+    } catch { setKnownCount(null); setKnownError(true); }
+  }, []);
+  useFocusEffect(useCallback(() => { void loadKnownCount(); }, [loadKnownCount]));
   const [responses, setResponses] = useState<Record<number, { answer: string; mastered?: boolean }>>({});
 
   // Quiz phase
@@ -235,6 +243,7 @@ export default function FlashcardsScreen() {
     savingRef.current = true; setSaving(true);
     try {
       await api.post('/vocab-study/answer', { vocabularyId: q.vocabularyId, isCorrect });
+      void loadKnownCount();
       const result = { vocabId: q.vocabularyId, term: words.find(word => word.id === q.vocabularyId)?.term ?? q.answer, correct: isCorrect };
       setQuizResults(prev => [...prev, result]);
       setAllTimeResults(prev => [...prev, result]);
@@ -252,6 +261,7 @@ export default function FlashcardsScreen() {
     savingRef.current = true; setSaving(true);
     try {
       await api.post('/vocab-study/rate', { vocabularyId: currentQuestion.vocabularyId, rating: 'mastered' });
+      void loadKnownCount();
       setQuizMarkedMastered(true);
       setResponses(previous => ({ ...previous, [quizIndex]: { answer: currentQuestion.answer, mastered: true } }));
       setMasteredSet(previous => new Set(previous).add(currentQuestion.vocabularyId));
@@ -356,6 +366,7 @@ export default function FlashcardsScreen() {
     savingRef.current = true; setSaving(true);
     try {
       await api.post('/vocab-study/rate', { vocabularyId: currentWord.id, rating });
+      void loadKnownCount();
       if (rating === 'mastered') setMasteredSet(previous => new Set(previous).add(currentWord.id));
       const nextRatings = { ...ratings, [currentWord.id]: rating };
       setRatings(nextRatings);
@@ -392,7 +403,14 @@ export default function FlashcardsScreen() {
 
     return (
       <View style={styles.phaseContainer}>
-        <View style={{flexDirection:'row',flexWrap:'wrap',gap:8}}><FilterSelect label="Phát âm tự động" value={String(autoPronounce)} onChange={value => setAutoPronounce(value === 'true')} items={[{value:'false',label:'Tắt'},{value:'true',label:'Bật'}]}/><Button disabled={isPreview} onPress={() => setShowKnown(value => !value)}>Các từ đã biết ({Object.values(ratings).filter(rating => rating === 'mastered').length})</Button></View>{showKnown && <View>{words.filter(word => ratings[word.id] === 'mastered').map(word => <Text key={word.id}>{word.term}</Text>)}{!Object.values(ratings).includes('mastered') && <Text>Chưa có từ nào được đánh dấu đã biết trong phiên.</Text>}</View>}
+        <View style={styles.studyControls}>
+          <FilterSelect label="Phát âm tự động" value={String(autoPronounce)} onChange={value => setAutoPronounce(value === 'true')} items={[{value:'false',label:'Tắt'},{value:'true',label:'Bật'}]}/>
+          <TouchableOpacity onPress={() => router.push({ pathname: '/flashcards/history', params: { period: 'all', rating: 'mastered' } } as any)} style={[styles.knownButton, { borderColor: colors.primary, backgroundColor: colors.surface }]}>
+            <MaterialIcons name="done-all" size={20} color={colors.primary} />
+            <Text style={[styles.secondaryBtnText, { color: colors.primary }]}>Từ đã biết{knownCount === null ? '' : ` (${knownCount})`}</Text>
+          </TouchableOpacity>
+        </View>
+        {knownError && <TouchableOpacity onPress={() => void loadKnownCount()}><Text style={{ color: colors.onSurfaceVariant }}>Chưa tải được số từ đã biết. Chạm để thử lại.</Text></TouchableOpacity>}
         <View style={styles.sessionToolbar}><Text style={[styles.dailyText, { color: colors.onSurfaceVariant }]}>{isPreview ? 'Xem lại flashcard đã học' : isReview ? `${totalWords} từ đến hạn ôn` : `Hôm nay: ${sessionMeta?.studiedToday ?? 0}/${sessionMeta?.maxDailyNewWords ?? '—'} từ mới`}</Text><TouchableOpacity onPress={() => router.push('/flashcards/history' as any)}><Text style={[styles.historyLink, { color: colors.primary }]}>Từ đã học</Text></TouchableOpacity></View>
         {dailyLimitNotice && <View style={styles.dailyNotice}><MaterialIcons name="check-circle" size={14} color="#a16207" /><Text style={styles.dailyNoticeText}>Đã đủ mục tiêu hôm nay · đang học thêm</Text></View>}
 
@@ -561,8 +579,8 @@ export default function FlashcardsScreen() {
           })}
         </View>}
         <View style={{ flexDirection: 'row', justifyContent: 'space-between', gap: 12 }}>
-          <TouchableOpacity disabled={quizIndex === 0 || saving} onPress={() => navigateQuiz(quizIndex - 1)} style={[styles.secondaryBtn, { borderColor: colors.primary, opacity: quizIndex === 0 ? 0.5 : 1 }]}><Text style={{ color: colors.primary }}>Trước đó</Text></TouchableOpacity>
-          <TouchableOpacity disabled={!showResult || saving} onPress={nextQuizQuestion} style={[styles.primaryBtn, { backgroundColor: colors.primary, opacity: !showResult ? 0.5 : 1 }]}><Text style={styles.primaryBtnText}>Tiếp tục</Text></TouchableOpacity>
+          <TouchableOpacity disabled={quizIndex === 0 || saving} onPress={() => navigateQuiz(quizIndex - 1)} style={[styles.secondaryBtn, styles.quizNavButton, { borderColor: colors.primary, opacity: quizIndex === 0 ? 0.5 : 1 }]}><MaterialIcons name="arrow-back" size={18} color={colors.primary} /><Text style={[styles.secondaryBtnText, { color: colors.primary }]}>Trước đó</Text></TouchableOpacity>
+          <TouchableOpacity disabled={!showResult || saving} onPress={nextQuizQuestion} style={[styles.primaryBtn, styles.quizNavButton, { backgroundColor: colors.primary, opacity: !showResult ? 0.5 : 1 }]}><Text style={styles.primaryBtnText}>{quizIndex + 1 === questions.length ? 'Hoàn thành' : 'Tiếp tục'}</Text><MaterialIcons name="arrow-forward" size={18} color="#fff" /></TouchableOpacity>
         </View>
         {/* Action button */}
         {!showResult && <View style={styles.quizActions}>
@@ -726,6 +744,9 @@ const styles = StyleSheet.create({
   quizActions: { flexDirection: 'row', gap: 10 },
 
   // Buttons
+  studyControls: { gap: 12 },
+  knownButton: { minHeight: 48, paddingHorizontal: 16, paddingVertical: 12, borderRadius: 14, borderWidth: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8 },
+  quizNavButton: { flex: 1, minWidth: 0, paddingHorizontal: 16, minHeight: 52 },
   primaryBtn: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, paddingVertical: 16, borderRadius: 14 },
   primaryBtnText: { color: '#fff', fontSize: 16, fontWeight: '800' },
   secondaryBtn: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, paddingVertical: 14, borderRadius: 14, borderWidth: 2 },

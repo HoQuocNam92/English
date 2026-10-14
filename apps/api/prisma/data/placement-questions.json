@@ -1573,5 +1573,905 @@
     ],
     "correctIndex": 2,
     "explanation": "Không thể suy ra nhận định: Success with a small sample guarantees success for all users. Đối chiếu điều kiện và giới hạn được nêu trong đoạn văn."
+  },
+  {
+    "tag": "placement-v2-aws-clf-c02-d1-1-beginner",
+    "domain": "AWS_CLF_C02_D1",
+    "level": "beginner",
+    "prompt": "In this passage, what does \"elastic\" mean?",
+    "context": "The service adds capacity when traffic rises and releases it when traffic falls. The team describes this arrangement as elastic. It does not reserve peak capacity for the whole year.",
+    "options": [
+      "able to expand and shrink with demand",
+      "fixed at the same size forever",
+      "available only during office hours",
+      "stored on a single personal laptop"
+    ],
+    "correctIndex": 0,
+    "explanation": "Đáp án được hỗ trợ bởi đoạn văn: able to expand and shrink with demand"
+  },
+  {
+    "tag": "placement-v2-aws-clf-c02-d1-1-intermediate",
+    "domain": "AWS_CLF_C02_D1",
+    "level": "intermediate",
+    "prompt": "Which statement best summarizes the passage?",
+    "context": "The service adds capacity when traffic rises and releases it when traffic falls. The team describes this arrangement as elastic. It does not reserve peak capacity for the whole year.",
+    "options": [
+      "The passage says that no further customer decisions are needed.",
+      "Traffic changes cause the service to adjust its capacity.",
+      "The passage recommends ignoring changes in workload usage.",
+      "The passage guarantees that every operational problem disappears."
+    ],
+    "correctIndex": 1,
+    "explanation": "Đáp án được hỗ trợ bởi đoạn văn: Traffic changes cause the service to adjust its capacity."
+  },
+  {
+    "tag": "placement-v2-aws-clf-c02-d1-1-advanced",
+    "domain": "AWS_CLF_C02_D1",
+    "level": "advanced",
+    "prompt": "Which conclusion is supported by the passage?",
+    "context": "The service adds capacity when traffic rises and releases it when traffic falls. The team describes this arrangement as elastic. It does not reserve peak capacity for the whole year.",
+    "options": [
+      "The passage says that no further customer decisions are needed.",
+      "The passage recommends ignoring changes in workload usage.",
+      "The team avoids keeping unused peak capacity all year.",
+      "The passage guarantees that every operational problem disappears."
+    ],
+    "correctIndex": 2,
+    "explanation": "Đáp án được hỗ trợ bởi đoạn văn: The team avoids keeping unused peak capacity all year."
+  },
+  {
+    "tag": "placement-v2-aws-clf-c02-d1-2-beginner",
+    "domain": "AWS_CLF_C02_D1",
+    "level": "beginner",
+    "prompt": "In this passage, what does \"variable expense\" mean?",
+    "context": "The team pays for resources while it uses them instead of buying servers in advance. This changes a large upfront purchase into a variable expense. Usage is lower during quiet weeks.",
+    "options": [
+      "a payment that never changes",
+      "a cost that changes with usage",
+      "a purchase made before any usage",
+      "a refund for every service request"
+    ],
+    "correctIndex": 1,
+    "explanation": "Đáp án được hỗ trợ bởi đoạn văn: a cost that changes with usage"
+  },
+  {
+    "tag": "placement-v2-aws-clf-c02-d1-2-intermediate",
+    "domain": "AWS_CLF_C02_D1",
+    "level": "intermediate",
+    "prompt": "Which statement best summarizes the passage?",
+    "context": "The team pays for resources while it uses them instead of buying servers in advance. This changes a large upfront purchase into a variable expense. Usage is lower during quiet weeks.",
+    "options": [
+      "The passage says that no further customer decisions are needed.",
+      "The passage recommends ignoring changes in workload usage.",
+      "The team pays according to its resource usage.",
+      "The passage guarantees that every operational problem disappears."
+    ],
+    "correctIndex": 2,
+    "explanation": "Đáp án được hỗ trợ bởi đoạn văn: The team pays according to its resource usage."
+  },
+  {
+    "tag": "placement-v2-aws-clf-c02-d1-2-advanced",
+    "domain": "AWS_CLF_C02_D1",
+    "level": "advanced",
+    "prompt": "Which conclusion is supported by the passage?",
+    "context": "The team pays for resources while it uses them instead of buying servers in advance. This changes a large upfront purchase into a variable expense. Usage is lower during quiet weeks.",
+    "options": [
+      "The passage says that no further customer decisions are needed.",
+      "The passage recommends ignoring changes in workload usage.",
+      "The passage guarantees that every operational problem disappears.",
+      "Quiet weeks can cost less because resource usage is lower."
+    ],
+    "correctIndex": 3,
+    "explanation": "Đáp án được hỗ trợ bởi đoạn văn: Quiet weeks can cost less because resource usage is lower."
+  },
+  {
+    "tag": "placement-v2-aws-clf-c02-d1-3-beginner",
+    "domain": "AWS_CLF_C02_D1",
+    "level": "beginner",
+    "prompt": "In this passage, what does \"availability\" mean?",
+    "context": "The application runs across separate locations so that one location can fail without stopping the entire service. The design improves availability. The team still monitors failures and tests recovery.",
+    "options": [
+      "the amount of source code stored",
+      "the number of employees hired",
+      "the ability to remain accessible when needed",
+      "the speed of writing a password"
+    ],
+    "correctIndex": 2,
+    "explanation": "Đáp án được hỗ trợ bởi đoạn văn: the ability to remain accessible when needed"
+  },
+  {
+    "tag": "placement-v2-aws-clf-c02-d1-3-intermediate",
+    "domain": "AWS_CLF_C02_D1",
+    "level": "intermediate",
+    "prompt": "Which statement best summarizes the passage?",
+    "context": "The application runs across separate locations so that one location can fail without stopping the entire service. The design improves availability. The team still monitors failures and tests recovery.",
+    "options": [
+      "The passage says that no further customer decisions are needed.",
+      "The passage recommends ignoring changes in workload usage.",
+      "The passage guarantees that every operational problem disappears.",
+      "Separate locations help the service remain accessible during a failure."
+    ],
+    "correctIndex": 3,
+    "explanation": "Đáp án được hỗ trợ bởi đoạn văn: Separate locations help the service remain accessible during a failure."
+  },
+  {
+    "tag": "placement-v2-aws-clf-c02-d1-3-advanced",
+    "domain": "AWS_CLF_C02_D1",
+    "level": "advanced",
+    "prompt": "Which conclusion is supported by the passage?",
+    "context": "The application runs across separate locations so that one location can fail without stopping the entire service. The design improves availability. The team still monitors failures and tests recovery.",
+    "options": [
+      "Using separate locations does not remove the need to test recovery.",
+      "The passage says that no further customer decisions are needed.",
+      "The passage recommends ignoring changes in workload usage.",
+      "The passage guarantees that every operational problem disappears."
+    ],
+    "correctIndex": 0,
+    "explanation": "Đáp án được hỗ trợ bởi đoạn văn: Using separate locations does not remove the need to test recovery."
+  },
+  {
+    "tag": "placement-v2-aws-clf-c02-d1-4-beginner",
+    "domain": "AWS_CLF_C02_D1",
+    "level": "beginner",
+    "prompt": "In this passage, what does \"agility\" mean?",
+    "context": "Developers can prepare temporary test environments quickly and remove them after an experiment. They no longer wait for a hardware purchase before every test. This improves agility.",
+    "options": [
+      "the need to keep every test server forever",
+      "the process of printing purchase orders",
+      "the practice of preventing experiments",
+      "the ability to respond and experiment quickly"
+    ],
+    "correctIndex": 3,
+    "explanation": "Đáp án được hỗ trợ bởi đoạn văn: the ability to respond and experiment quickly"
+  },
+  {
+    "tag": "placement-v2-aws-clf-c02-d1-4-intermediate",
+    "domain": "AWS_CLF_C02_D1",
+    "level": "intermediate",
+    "prompt": "Which statement best summarizes the passage?",
+    "context": "Developers can prepare temporary test environments quickly and remove them after an experiment. They no longer wait for a hardware purchase before every test. This improves agility.",
+    "options": [
+      "Temporary environments let developers test ideas without waiting for hardware.",
+      "The passage says that no further customer decisions are needed.",
+      "The passage recommends ignoring changes in workload usage.",
+      "The passage guarantees that every operational problem disappears."
+    ],
+    "correctIndex": 0,
+    "explanation": "Đáp án được hỗ trợ bởi đoạn văn: Temporary environments let developers test ideas without waiting for hardware."
+  },
+  {
+    "tag": "placement-v2-aws-clf-c02-d1-4-advanced",
+    "domain": "AWS_CLF_C02_D1",
+    "level": "advanced",
+    "prompt": "Which conclusion is supported by the passage?",
+    "context": "Developers can prepare temporary test environments quickly and remove them after an experiment. They no longer wait for a hardware purchase before every test. This improves agility.",
+    "options": [
+      "The passage says that no further customer decisions are needed.",
+      "Short experiments become easier when environments can be created and removed quickly.",
+      "The passage recommends ignoring changes in workload usage.",
+      "The passage guarantees that every operational problem disappears."
+    ],
+    "correctIndex": 1,
+    "explanation": "Đáp án được hỗ trợ bởi đoạn văn: Short experiments become easier when environments can be created and removed quickly."
+  },
+  {
+    "tag": "placement-v2-aws-clf-c02-d1-5-beginner",
+    "domain": "AWS_CLF_C02_D1",
+    "level": "beginner",
+    "prompt": "In this passage, what does \"trade-off\" mean?",
+    "context": "The architect compares cost, reliability and performance before selecting a design. Improving one goal may affect another. The final decision records each trade-off rather than claiming that one design is best in every situation.",
+    "options": [
+      "a compromise between competing goals",
+      "a guarantee that every goal improves equally",
+      "a list of employee account names",
+      "a rule that cost must always be ignored"
+    ],
+    "correctIndex": 0,
+    "explanation": "Đáp án được hỗ trợ bởi đoạn văn: a compromise between competing goals"
+  },
+  {
+    "tag": "placement-v2-aws-clf-c02-d1-5-intermediate",
+    "domain": "AWS_CLF_C02_D1",
+    "level": "intermediate",
+    "prompt": "Which statement best summarizes the passage?",
+    "context": "The architect compares cost, reliability and performance before selecting a design. Improving one goal may affect another. The final decision records each trade-off rather than claiming that one design is best in every situation.",
+    "options": [
+      "The passage says that no further customer decisions are needed.",
+      "A design decision may improve one goal while affecting another.",
+      "The passage recommends ignoring changes in workload usage.",
+      "The passage guarantees that every operational problem disappears."
+    ],
+    "correctIndex": 1,
+    "explanation": "Đáp án được hỗ trợ bởi đoạn văn: A design decision may improve one goal while affecting another."
+  },
+  {
+    "tag": "placement-v2-aws-clf-c02-d1-5-advanced",
+    "domain": "AWS_CLF_C02_D1",
+    "level": "advanced",
+    "prompt": "Which conclusion is supported by the passage?",
+    "context": "The architect compares cost, reliability and performance before selecting a design. Improving one goal may affect another. The final decision records each trade-off rather than claiming that one design is best in every situation.",
+    "options": [
+      "The passage says that no further customer decisions are needed.",
+      "The passage recommends ignoring changes in workload usage.",
+      "The best design depends on the goals and constraints of the workload.",
+      "The passage guarantees that every operational problem disappears."
+    ],
+    "correctIndex": 2,
+    "explanation": "Đáp án được hỗ trợ bởi đoạn văn: The best design depends on the goals and constraints of the workload."
+  },
+  {
+    "tag": "placement-v2-aws-clf-c02-d2-1-beginner",
+    "domain": "AWS_CLF_C02_D2",
+    "level": "beginner",
+    "prompt": "In this passage, what does \"responsibility\" mean?",
+    "context": "The cloud provider protects its physical facilities. The customer configures access to the application and its data. The team checks the service documentation because its responsibility depends on the service it uses.",
+    "options": [
+      "a duty that a party must perform",
+      "a discount for using fewer servers",
+      "a backup file stored on a laptop",
+      "a task that nobody needs to perform"
+    ],
+    "correctIndex": 0,
+    "explanation": "Đáp án được hỗ trợ bởi đoạn văn: a duty that a party must perform"
+  },
+  {
+    "tag": "placement-v2-aws-clf-c02-d2-1-intermediate",
+    "domain": "AWS_CLF_C02_D2",
+    "level": "intermediate",
+    "prompt": "Which statement best summarizes the passage?",
+    "context": "The cloud provider protects its physical facilities. The customer configures access to the application and its data. The team checks the service documentation because its responsibility depends on the service it uses.",
+    "options": [
+      "The passage says that no further customer decisions are needed.",
+      "Provider and customer each perform security duties.",
+      "The passage recommends ignoring changes in workload usage.",
+      "The passage guarantees that every operational problem disappears."
+    ],
+    "correctIndex": 1,
+    "explanation": "Đáp án được hỗ trợ bởi đoạn văn: Provider and customer each perform security duties."
+  },
+  {
+    "tag": "placement-v2-aws-clf-c02-d2-1-advanced",
+    "domain": "AWS_CLF_C02_D2",
+    "level": "advanced",
+    "prompt": "Which conclusion is supported by the passage?",
+    "context": "The cloud provider protects its physical facilities. The customer configures access to the application and its data. The team checks the service documentation because its responsibility depends on the service it uses.",
+    "options": [
+      "The passage says that no further customer decisions are needed.",
+      "The passage recommends ignoring changes in workload usage.",
+      "Changing services may change which security tasks the customer performs.",
+      "The passage guarantees that every operational problem disappears."
+    ],
+    "correctIndex": 2,
+    "explanation": "Đáp án được hỗ trợ bởi đoạn văn: Changing services may change which security tasks the customer performs."
+  },
+  {
+    "tag": "placement-v2-aws-clf-c02-d2-2-beginner",
+    "domain": "AWS_CLF_C02_D2",
+    "level": "beginner",
+    "prompt": "In this passage, what does \"least privilege\" mean?",
+    "context": "An analyst needs to read reports but does not need to delete them. The administrator grants only the permissions required for that work. This follows least privilege and avoids giving the analyst full administrative access.",
+    "options": [
+      "sharing one administrator password with everyone",
+      "granting only the permissions needed for a task",
+      "allowing every user to delete every report",
+      "turning off all access checks"
+    ],
+    "correctIndex": 1,
+    "explanation": "Đáp án được hỗ trợ bởi đoạn văn: granting only the permissions needed for a task"
+  },
+  {
+    "tag": "placement-v2-aws-clf-c02-d2-2-intermediate",
+    "domain": "AWS_CLF_C02_D2",
+    "level": "intermediate",
+    "prompt": "Which statement best summarizes the passage?",
+    "context": "An analyst needs to read reports but does not need to delete them. The administrator grants only the permissions required for that work. This follows least privilege and avoids giving the analyst full administrative access.",
+    "options": [
+      "The passage says that no further customer decisions are needed.",
+      "The passage recommends ignoring changes in workload usage.",
+      "The analyst receives report-reading permissions without unnecessary delete access.",
+      "The passage guarantees that every operational problem disappears."
+    ],
+    "correctIndex": 2,
+    "explanation": "Đáp án được hỗ trợ bởi đoạn văn: The analyst receives report-reading permissions without unnecessary delete access."
+  },
+  {
+    "tag": "placement-v2-aws-clf-c02-d2-2-advanced",
+    "domain": "AWS_CLF_C02_D2",
+    "level": "advanced",
+    "prompt": "Which conclusion is supported by the passage?",
+    "context": "An analyst needs to read reports but does not need to delete them. The administrator grants only the permissions required for that work. This follows least privilege and avoids giving the analyst full administrative access.",
+    "options": [
+      "The passage says that no further customer decisions are needed.",
+      "The passage recommends ignoring changes in workload usage.",
+      "The passage guarantees that every operational problem disappears.",
+      "Giving full administrative access would exceed the analyst's stated needs."
+    ],
+    "correctIndex": 3,
+    "explanation": "Đáp án được hỗ trợ bởi đoạn văn: Giving full administrative access would exceed the analyst's stated needs."
+  },
+  {
+    "tag": "placement-v2-aws-clf-c02-d2-3-beginner",
+    "domain": "AWS_CLF_C02_D2",
+    "level": "beginner",
+    "prompt": "In this passage, what does \"temporary credentials\" mean?",
+    "context": "A workload assumes a role and receives credentials that expire. The team uses these temporary credentials instead of embedding a permanent access key in its source code. The workload obtains new credentials when needed.",
+    "options": [
+      "passwords that remain valid forever",
+      "public filenames with no access function",
+      "access details that are valid for a limited time",
+      "copies of the application user interface"
+    ],
+    "correctIndex": 2,
+    "explanation": "Đáp án được hỗ trợ bởi đoạn văn: access details that are valid for a limited time"
+  },
+  {
+    "tag": "placement-v2-aws-clf-c02-d2-3-intermediate",
+    "domain": "AWS_CLF_C02_D2",
+    "level": "intermediate",
+    "prompt": "Which statement best summarizes the passage?",
+    "context": "A workload assumes a role and receives credentials that expire. The team uses these temporary credentials instead of embedding a permanent access key in its source code. The workload obtains new credentials when needed.",
+    "options": [
+      "The passage says that no further customer decisions are needed.",
+      "The passage recommends ignoring changes in workload usage.",
+      "The passage guarantees that every operational problem disappears.",
+      "The workload uses expiring credentials obtained through a role."
+    ],
+    "correctIndex": 3,
+    "explanation": "Đáp án được hỗ trợ bởi đoạn văn: The workload uses expiring credentials obtained through a role."
+  },
+  {
+    "tag": "placement-v2-aws-clf-c02-d2-3-advanced",
+    "domain": "AWS_CLF_C02_D2",
+    "level": "advanced",
+    "prompt": "Which conclusion is supported by the passage?",
+    "context": "A workload assumes a role and receives credentials that expire. The team uses these temporary credentials instead of embedding a permanent access key in its source code. The workload obtains new credentials when needed.",
+    "options": [
+      "Removing permanent keys from source code reduces exposure of long-lived secrets.",
+      "The passage says that no further customer decisions are needed.",
+      "The passage recommends ignoring changes in workload usage.",
+      "The passage guarantees that every operational problem disappears."
+    ],
+    "correctIndex": 0,
+    "explanation": "Đáp án được hỗ trợ bởi đoạn văn: Removing permanent keys from source code reduces exposure of long-lived secrets."
+  },
+  {
+    "tag": "placement-v2-aws-clf-c02-d2-4-beginner",
+    "domain": "AWS_CLF_C02_D2",
+    "level": "beginner",
+    "prompt": "In this passage, what does \"encryption\" mean?",
+    "context": "The team encrypts stored records and protects data sent between services. It also limits access to the keys. Encryption protects confidentiality, but the team still needs correct access permissions.",
+    "options": [
+      "removing all application monitoring",
+      "making every stored record public",
+      "replacing all user accounts with filenames",
+      "transforming data to prevent unauthorized reading"
+    ],
+    "correctIndex": 3,
+    "explanation": "Đáp án được hỗ trợ bởi đoạn văn: transforming data to prevent unauthorized reading"
+  },
+  {
+    "tag": "placement-v2-aws-clf-c02-d2-4-intermediate",
+    "domain": "AWS_CLF_C02_D2",
+    "level": "intermediate",
+    "prompt": "Which statement best summarizes the passage?",
+    "context": "The team encrypts stored records and protects data sent between services. It also limits access to the keys. Encryption protects confidentiality, but the team still needs correct access permissions.",
+    "options": [
+      "Encryption and access permissions both help protect the records.",
+      "The passage says that no further customer decisions are needed.",
+      "The passage recommends ignoring changes in workload usage.",
+      "The passage guarantees that every operational problem disappears."
+    ],
+    "correctIndex": 0,
+    "explanation": "Đáp án được hỗ trợ bởi đoạn văn: Encryption and access permissions both help protect the records."
+  },
+  {
+    "tag": "placement-v2-aws-clf-c02-d2-4-advanced",
+    "domain": "AWS_CLF_C02_D2",
+    "level": "advanced",
+    "prompt": "Which conclusion is supported by the passage?",
+    "context": "The team encrypts stored records and protects data sent between services. It also limits access to the keys. Encryption protects confidentiality, but the team still needs correct access permissions.",
+    "options": [
+      "The passage says that no further customer decisions are needed.",
+      "Encryption alone does not replace access control.",
+      "The passage recommends ignoring changes in workload usage.",
+      "The passage guarantees that every operational problem disappears."
+    ],
+    "correctIndex": 1,
+    "explanation": "Đáp án được hỗ trợ bởi đoạn văn: Encryption alone does not replace access control."
+  },
+  {
+    "tag": "placement-v2-aws-clf-c02-d2-5-beginner",
+    "domain": "AWS_CLF_C02_D2",
+    "level": "beginner",
+    "prompt": "In this passage, what does \"audit trail\" mean?",
+    "context": "The security team reviews records of account activity to investigate who changed a setting and when. These records provide an audit trail. They help investigations but do not automatically prevent every incorrect change.",
+    "options": [
+      "a record of actions that can be reviewed later",
+      "a promise that no setting can ever change",
+      "a collection of product advertisements",
+      "a replacement for all permission policies"
+    ],
+    "correctIndex": 0,
+    "explanation": "Đáp án được hỗ trợ bởi đoạn văn: a record of actions that can be reviewed later"
+  },
+  {
+    "tag": "placement-v2-aws-clf-c02-d2-5-intermediate",
+    "domain": "AWS_CLF_C02_D2",
+    "level": "intermediate",
+    "prompt": "Which statement best summarizes the passage?",
+    "context": "The security team reviews records of account activity to investigate who changed a setting and when. These records provide an audit trail. They help investigations but do not automatically prevent every incorrect change.",
+    "options": [
+      "The passage says that no further customer decisions are needed.",
+      "Activity records help the team investigate configuration changes.",
+      "The passage recommends ignoring changes in workload usage.",
+      "The passage guarantees that every operational problem disappears."
+    ],
+    "correctIndex": 1,
+    "explanation": "Đáp án được hỗ trợ bởi đoạn văn: Activity records help the team investigate configuration changes."
+  },
+  {
+    "tag": "placement-v2-aws-clf-c02-d2-5-advanced",
+    "domain": "AWS_CLF_C02_D2",
+    "level": "advanced",
+    "prompt": "Which conclusion is supported by the passage?",
+    "context": "The security team reviews records of account activity to investigate who changed a setting and when. These records provide an audit trail. They help investigations but do not automatically prevent every incorrect change.",
+    "options": [
+      "The passage says that no further customer decisions are needed.",
+      "The passage recommends ignoring changes in workload usage.",
+      "Recording an action is different from preventing that action.",
+      "The passage guarantees that every operational problem disappears."
+    ],
+    "correctIndex": 2,
+    "explanation": "Đáp án được hỗ trợ bởi đoạn văn: Recording an action is different from preventing that action."
+  },
+  {
+    "tag": "placement-v2-aws-clf-c02-d3-1-beginner",
+    "domain": "AWS_CLF_C02_D3",
+    "level": "beginner",
+    "prompt": "In this passage, what does \"instance\" mean?",
+    "context": "The team launches a virtual server to run its application. It calls this server an instance. The team selects suitable capacity and manages the software running on the server.",
+    "options": [
+      "a running virtual server in this context",
+      "a physical invoice for a training course",
+      "a password shared by all users",
+      "an archived paper diagram"
+    ],
+    "correctIndex": 0,
+    "explanation": "Đáp án được hỗ trợ bởi đoạn văn: a running virtual server in this context"
+  },
+  {
+    "tag": "placement-v2-aws-clf-c02-d3-1-intermediate",
+    "domain": "AWS_CLF_C02_D3",
+    "level": "intermediate",
+    "prompt": "Which statement best summarizes the passage?",
+    "context": "The team launches a virtual server to run its application. It calls this server an instance. The team selects suitable capacity and manages the software running on the server.",
+    "options": [
+      "The passage says that no further customer decisions are needed.",
+      "The application runs on a virtual server selected by the team.",
+      "The passage recommends ignoring changes in workload usage.",
+      "The passage guarantees that every operational problem disappears."
+    ],
+    "correctIndex": 1,
+    "explanation": "Đáp án được hỗ trợ bởi đoạn văn: The application runs on a virtual server selected by the team."
+  },
+  {
+    "tag": "placement-v2-aws-clf-c02-d3-1-advanced",
+    "domain": "AWS_CLF_C02_D3",
+    "level": "advanced",
+    "prompt": "Which conclusion is supported by the passage?",
+    "context": "The team launches a virtual server to run its application. It calls this server an instance. The team selects suitable capacity and manages the software running on the server.",
+    "options": [
+      "The passage says that no further customer decisions are needed.",
+      "The passage recommends ignoring changes in workload usage.",
+      "The team must consider both capacity and the software on the server.",
+      "The passage guarantees that every operational problem disappears."
+    ],
+    "correctIndex": 2,
+    "explanation": "Đáp án được hỗ trợ bởi đoạn văn: The team must consider both capacity and the software on the server."
+  },
+  {
+    "tag": "placement-v2-aws-clf-c02-d3-2-beginner",
+    "domain": "AWS_CLF_C02_D3",
+    "level": "beginner",
+    "prompt": "In this passage, what does \"object storage\" mean?",
+    "context": "The application saves uploaded images as objects in a bucket. Each object has a key used to retrieve it. This object storage pattern differs from attaching a disk directly to one virtual server.",
+    "options": [
+      "a list of unused employee passwords",
+      "storage that organizes data as retrievable objects",
+      "a processor that runs every database query",
+      "a private network cable between two offices"
+    ],
+    "correctIndex": 1,
+    "explanation": "Đáp án được hỗ trợ bởi đoạn văn: storage that organizes data as retrievable objects"
+  },
+  {
+    "tag": "placement-v2-aws-clf-c02-d3-2-intermediate",
+    "domain": "AWS_CLF_C02_D3",
+    "level": "intermediate",
+    "prompt": "Which statement best summarizes the passage?",
+    "context": "The application saves uploaded images as objects in a bucket. Each object has a key used to retrieve it. This object storage pattern differs from attaching a disk directly to one virtual server.",
+    "options": [
+      "The passage says that no further customer decisions are needed.",
+      "The passage recommends ignoring changes in workload usage.",
+      "Images are stored as objects identified by keys.",
+      "The passage guarantees that every operational problem disappears."
+    ],
+    "correctIndex": 2,
+    "explanation": "Đáp án được hỗ trợ bởi đoạn văn: Images are stored as objects identified by keys."
+  },
+  {
+    "tag": "placement-v2-aws-clf-c02-d3-2-advanced",
+    "domain": "AWS_CLF_C02_D3",
+    "level": "advanced",
+    "prompt": "Which conclusion is supported by the passage?",
+    "context": "The application saves uploaded images as objects in a bucket. Each object has a key used to retrieve it. This object storage pattern differs from attaching a disk directly to one virtual server.",
+    "options": [
+      "The passage says that no further customer decisions are needed.",
+      "The passage recommends ignoring changes in workload usage.",
+      "The passage guarantees that every operational problem disappears.",
+      "The team should not treat a bucket as a disk attached to one server."
+    ],
+    "correctIndex": 3,
+    "explanation": "Đáp án được hỗ trợ bởi đoạn văn: The team should not treat a bucket as a disk attached to one server."
+  },
+  {
+    "tag": "placement-v2-aws-clf-c02-d3-3-beginner",
+    "domain": "AWS_CLF_C02_D3",
+    "level": "beginner",
+    "prompt": "In this passage, what does \"managed service\" mean?",
+    "context": "The team chooses a database service whose provider handles routine infrastructure maintenance. The team still designs its data and controls access. A managed service reduces some operational tasks without removing every customer duty.",
+    "options": [
+      "a service requiring no customer decisions at all",
+      "a database that must be printed every day",
+      "a service where the provider handles specified operational tasks",
+      "a server that cannot receive updates"
+    ],
+    "correctIndex": 2,
+    "explanation": "Đáp án được hỗ trợ bởi đoạn văn: a service where the provider handles specified operational tasks"
+  },
+  {
+    "tag": "placement-v2-aws-clf-c02-d3-3-intermediate",
+    "domain": "AWS_CLF_C02_D3",
+    "level": "intermediate",
+    "prompt": "Which statement best summarizes the passage?",
+    "context": "The team chooses a database service whose provider handles routine infrastructure maintenance. The team still designs its data and controls access. A managed service reduces some operational tasks without removing every customer duty.",
+    "options": [
+      "The passage says that no further customer decisions are needed.",
+      "The passage recommends ignoring changes in workload usage.",
+      "The passage guarantees that every operational problem disappears.",
+      "The provider handles some maintenance while the team manages data and access."
+    ],
+    "correctIndex": 3,
+    "explanation": "Đáp án được hỗ trợ bởi đoạn văn: The provider handles some maintenance while the team manages data and access."
+  },
+  {
+    "tag": "placement-v2-aws-clf-c02-d3-3-advanced",
+    "domain": "AWS_CLF_C02_D3",
+    "level": "advanced",
+    "prompt": "Which conclusion is supported by the passage?",
+    "context": "The team chooses a database service whose provider handles routine infrastructure maintenance. The team still designs its data and controls access. A managed service reduces some operational tasks without removing every customer duty.",
+    "options": [
+      "Using a managed service does not remove every operational or security duty.",
+      "The passage says that no further customer decisions are needed.",
+      "The passage recommends ignoring changes in workload usage.",
+      "The passage guarantees that every operational problem disappears."
+    ],
+    "correctIndex": 0,
+    "explanation": "Đáp án được hỗ trợ bởi đoạn văn: Using a managed service does not remove every operational or security duty."
+  },
+  {
+    "tag": "placement-v2-aws-clf-c02-d3-4-beginner",
+    "domain": "AWS_CLF_C02_D3",
+    "level": "beginner",
+    "prompt": "In this passage, what does \"routing\" mean?",
+    "context": "The network team defines rules that direct traffic to the intended destination. It reviews routing when a service cannot reach another network. A route determines where traffic goes, while permission rules determine whether traffic is allowed.",
+    "options": [
+      "choosing the font of a billing report",
+      "replacing every password with a number",
+      "removing all network destinations",
+      "directing network traffic toward a destination"
+    ],
+    "correctIndex": 3,
+    "explanation": "Đáp án được hỗ trợ bởi đoạn văn: directing network traffic toward a destination"
+  },
+  {
+    "tag": "placement-v2-aws-clf-c02-d3-4-intermediate",
+    "domain": "AWS_CLF_C02_D3",
+    "level": "intermediate",
+    "prompt": "Which statement best summarizes the passage?",
+    "context": "The network team defines rules that direct traffic to the intended destination. It reviews routing when a service cannot reach another network. A route determines where traffic goes, while permission rules determine whether traffic is allowed.",
+    "options": [
+      "Routing rules determine the destination of network traffic.",
+      "The passage says that no further customer decisions are needed.",
+      "The passage recommends ignoring changes in workload usage.",
+      "The passage guarantees that every operational problem disappears."
+    ],
+    "correctIndex": 0,
+    "explanation": "Đáp án được hỗ trợ bởi đoạn văn: Routing rules determine the destination of network traffic."
+  },
+  {
+    "tag": "placement-v2-aws-clf-c02-d3-4-advanced",
+    "domain": "AWS_CLF_C02_D3",
+    "level": "advanced",
+    "prompt": "Which conclusion is supported by the passage?",
+    "context": "The network team defines rules that direct traffic to the intended destination. It reviews routing when a service cannot reach another network. A route determines where traffic goes, while permission rules determine whether traffic is allowed.",
+    "options": [
+      "The passage says that no further customer decisions are needed.",
+      "A valid route alone does not guarantee that permission rules allow the traffic.",
+      "The passage recommends ignoring changes in workload usage.",
+      "The passage guarantees that every operational problem disappears."
+    ],
+    "correctIndex": 1,
+    "explanation": "Đáp án được hỗ trợ bởi đoạn văn: A valid route alone does not guarantee that permission rules allow the traffic."
+  },
+  {
+    "tag": "placement-v2-aws-clf-c02-d3-5-beginner",
+    "domain": "AWS_CLF_C02_D3",
+    "level": "beginner",
+    "prompt": "In this passage, what does \"queue\" mean?",
+    "context": "The application places work items in a queue. Workers process these items when they have capacity. This separates receiving a request from completing its background work and helps absorb short bursts of demand.",
+    "options": [
+      "a collection of work items waiting to be processed",
+      "a guarantee that all work finishes instantly",
+      "a list of public encryption keys only",
+      "a display setting for the mobile screen"
+    ],
+    "correctIndex": 0,
+    "explanation": "Đáp án được hỗ trợ bởi đoạn văn: a collection of work items waiting to be processed"
+  },
+  {
+    "tag": "placement-v2-aws-clf-c02-d3-5-intermediate",
+    "domain": "AWS_CLF_C02_D3",
+    "level": "intermediate",
+    "prompt": "Which statement best summarizes the passage?",
+    "context": "The application places work items in a queue. Workers process these items when they have capacity. This separates receiving a request from completing its background work and helps absorb short bursts of demand.",
+    "options": [
+      "The passage says that no further customer decisions are needed.",
+      "Workers process queued items according to their available capacity.",
+      "The passage recommends ignoring changes in workload usage.",
+      "The passage guarantees that every operational problem disappears."
+    ],
+    "correctIndex": 1,
+    "explanation": "Đáp án được hỗ trợ bởi đoạn văn: Workers process queued items according to their available capacity."
+  },
+  {
+    "tag": "placement-v2-aws-clf-c02-d3-5-advanced",
+    "domain": "AWS_CLF_C02_D3",
+    "level": "advanced",
+    "prompt": "Which conclusion is supported by the passage?",
+    "context": "The application places work items in a queue. Workers process these items when they have capacity. This separates receiving a request from completing its background work and helps absorb short bursts of demand.",
+    "options": [
+      "The passage says that no further customer decisions are needed.",
+      "The passage recommends ignoring changes in workload usage.",
+      "A burst of incoming work need not force every item to be processed immediately.",
+      "The passage guarantees that every operational problem disappears."
+    ],
+    "correctIndex": 2,
+    "explanation": "Đáp án được hỗ trợ bởi đoạn văn: A burst of incoming work need not force every item to be processed immediately."
+  },
+  {
+    "tag": "placement-v2-aws-clf-c02-d4-1-beginner",
+    "domain": "AWS_CLF_C02_D4",
+    "level": "beginner",
+    "prompt": "In this passage, what does \"forecast\" mean?",
+    "context": "The finance team estimates next month's cloud spending from recent usage and planned changes. This forecast helps it prepare a budget. The estimate can change if actual usage differs from the assumptions.",
+    "options": [
+      "an estimate of a future outcome",
+      "a final invoice for a completed month",
+      "a password for the finance account",
+      "a refund issued after every request"
+    ],
+    "correctIndex": 0,
+    "explanation": "Đáp án được hỗ trợ bởi đoạn văn: an estimate of a future outcome"
+  },
+  {
+    "tag": "placement-v2-aws-clf-c02-d4-1-intermediate",
+    "domain": "AWS_CLF_C02_D4",
+    "level": "intermediate",
+    "prompt": "Which statement best summarizes the passage?",
+    "context": "The finance team estimates next month's cloud spending from recent usage and planned changes. This forecast helps it prepare a budget. The estimate can change if actual usage differs from the assumptions.",
+    "options": [
+      "The passage says that no further customer decisions are needed.",
+      "The spending estimate uses recent usage and expected changes.",
+      "The passage recommends ignoring changes in workload usage.",
+      "The passage guarantees that every operational problem disappears."
+    ],
+    "correctIndex": 1,
+    "explanation": "Đáp án được hỗ trợ bởi đoạn văn: The spending estimate uses recent usage and expected changes."
+  },
+  {
+    "tag": "placement-v2-aws-clf-c02-d4-1-advanced",
+    "domain": "AWS_CLF_C02_D4",
+    "level": "advanced",
+    "prompt": "Which conclusion is supported by the passage?",
+    "context": "The finance team estimates next month's cloud spending from recent usage and planned changes. This forecast helps it prepare a budget. The estimate can change if actual usage differs from the assumptions.",
+    "options": [
+      "The passage says that no further customer decisions are needed.",
+      "The passage recommends ignoring changes in workload usage.",
+      "A forecast is useful for planning but does not guarantee the final bill.",
+      "The passage guarantees that every operational problem disappears."
+    ],
+    "correctIndex": 2,
+    "explanation": "Đáp án được hỗ trợ bởi đoạn văn: A forecast is useful for planning but does not guarantee the final bill."
+  },
+  {
+    "tag": "placement-v2-aws-clf-c02-d4-2-beginner",
+    "domain": "AWS_CLF_C02_D4",
+    "level": "beginner",
+    "prompt": "In this passage, what does \"allocation\" mean?",
+    "context": "The team adds project tags to resources and groups spending by those tags. This supports cost allocation across projects. Resources without consistent tags are harder to assign to the correct project.",
+    "options": [
+      "deleting all historical billing records",
+      "assigning costs to the groups responsible for them",
+      "making every project share one password",
+      "changing the language of a login screen"
+    ],
+    "correctIndex": 1,
+    "explanation": "Đáp án được hỗ trợ bởi đoạn văn: assigning costs to the groups responsible for them"
+  },
+  {
+    "tag": "placement-v2-aws-clf-c02-d4-2-intermediate",
+    "domain": "AWS_CLF_C02_D4",
+    "level": "intermediate",
+    "prompt": "Which statement best summarizes the passage?",
+    "context": "The team adds project tags to resources and groups spending by those tags. This supports cost allocation across projects. Resources without consistent tags are harder to assign to the correct project.",
+    "options": [
+      "The passage says that no further customer decisions are needed.",
+      "The passage recommends ignoring changes in workload usage.",
+      "Project tags help the team attribute spending to projects.",
+      "The passage guarantees that every operational problem disappears."
+    ],
+    "correctIndex": 2,
+    "explanation": "Đáp án được hỗ trợ bởi đoạn văn: Project tags help the team attribute spending to projects."
+  },
+  {
+    "tag": "placement-v2-aws-clf-c02-d4-2-advanced",
+    "domain": "AWS_CLF_C02_D4",
+    "level": "advanced",
+    "prompt": "Which conclusion is supported by the passage?",
+    "context": "The team adds project tags to resources and groups spending by those tags. This supports cost allocation across projects. Resources without consistent tags are harder to assign to the correct project.",
+    "options": [
+      "The passage says that no further customer decisions are needed.",
+      "The passage recommends ignoring changes in workload usage.",
+      "The passage guarantees that every operational problem disappears.",
+      "Inconsistent tagging can reduce the accuracy of project cost reports."
+    ],
+    "correctIndex": 3,
+    "explanation": "Đáp án được hỗ trợ bởi đoạn văn: Inconsistent tagging can reduce the accuracy of project cost reports."
+  },
+  {
+    "tag": "placement-v2-aws-clf-c02-d4-3-beginner",
+    "domain": "AWS_CLF_C02_D4",
+    "level": "beginner",
+    "prompt": "In this passage, what does \"commitment\" mean?",
+    "context": "The team reviews stable usage before choosing a pricing option that requires a usage commitment. Such an option may reduce eligible costs, but the team must understand its terms. An uncertain workload needs careful evaluation before a commitment.",
+    "options": [
+      "a guarantee that every service becomes free",
+      "an instruction to remove all monitoring",
+      "an agreement to meet specified usage or spending terms",
+      "a report showing only past support tickets"
+    ],
+    "correctIndex": 2,
+    "explanation": "Đáp án được hỗ trợ bởi đoạn văn: an agreement to meet specified usage or spending terms"
+  },
+  {
+    "tag": "placement-v2-aws-clf-c02-d4-3-intermediate",
+    "domain": "AWS_CLF_C02_D4",
+    "level": "intermediate",
+    "prompt": "Which statement best summarizes the passage?",
+    "context": "The team reviews stable usage before choosing a pricing option that requires a usage commitment. Such an option may reduce eligible costs, but the team must understand its terms. An uncertain workload needs careful evaluation before a commitment.",
+    "options": [
+      "The passage says that no further customer decisions are needed.",
+      "The passage recommends ignoring changes in workload usage.",
+      "The passage guarantees that every operational problem disappears.",
+      "The team considers usage stability and pricing terms before committing."
+    ],
+    "correctIndex": 3,
+    "explanation": "Đáp án được hỗ trợ bởi đoạn văn: The team considers usage stability and pricing terms before committing."
+  },
+  {
+    "tag": "placement-v2-aws-clf-c02-d4-3-advanced",
+    "domain": "AWS_CLF_C02_D4",
+    "level": "advanced",
+    "prompt": "Which conclusion is supported by the passage?",
+    "context": "The team reviews stable usage before choosing a pricing option that requires a usage commitment. Such an option may reduce eligible costs, but the team must understand its terms. An uncertain workload needs careful evaluation before a commitment.",
+    "options": [
+      "A pricing commitment may be unsuitable when future usage is uncertain.",
+      "The passage says that no further customer decisions are needed.",
+      "The passage recommends ignoring changes in workload usage.",
+      "The passage guarantees that every operational problem disappears."
+    ],
+    "correctIndex": 0,
+    "explanation": "Đáp án được hỗ trợ bởi đoạn văn: A pricing commitment may be unsuitable when future usage is uncertain."
+  },
+  {
+    "tag": "placement-v2-aws-clf-c02-d4-4-beginner",
+    "domain": "AWS_CLF_C02_D4",
+    "level": "beginner",
+    "prompt": "In this passage, what does \"threshold\" mean?",
+    "context": "The team configures a budget alert when estimated spending crosses a threshold. The alert tells the owner to investigate. Receiving the alert does not itself stop all resources or guarantee that no further charges occur.",
+    "options": [
+      "a password that grants administrator access",
+      "a tool that automatically deletes all data",
+      "an invoice that can never be changed",
+      "a defined limit that triggers a notification or action"
+    ],
+    "correctIndex": 3,
+    "explanation": "Đáp án được hỗ trợ bởi đoạn văn: a defined limit that triggers a notification or action"
+  },
+  {
+    "tag": "placement-v2-aws-clf-c02-d4-4-intermediate",
+    "domain": "AWS_CLF_C02_D4",
+    "level": "intermediate",
+    "prompt": "Which statement best summarizes the passage?",
+    "context": "The team configures a budget alert when estimated spending crosses a threshold. The alert tells the owner to investigate. Receiving the alert does not itself stop all resources or guarantee that no further charges occur.",
+    "options": [
+      "The alert notifies the owner when spending exceeds a defined level.",
+      "The passage says that no further customer decisions are needed.",
+      "The passage recommends ignoring changes in workload usage.",
+      "The passage guarantees that every operational problem disappears."
+    ],
+    "correctIndex": 0,
+    "explanation": "Đáp án được hỗ trợ bởi đoạn văn: The alert notifies the owner when spending exceeds a defined level."
+  },
+  {
+    "tag": "placement-v2-aws-clf-c02-d4-4-advanced",
+    "domain": "AWS_CLF_C02_D4",
+    "level": "advanced",
+    "prompt": "Which conclusion is supported by the passage?",
+    "context": "The team configures a budget alert when estimated spending crosses a threshold. The alert tells the owner to investigate. Receiving the alert does not itself stop all resources or guarantee that no further charges occur.",
+    "options": [
+      "The passage says that no further customer decisions are needed.",
+      "The owner may still need to act after receiving a budget alert.",
+      "The passage recommends ignoring changes in workload usage.",
+      "The passage guarantees that every operational problem disappears."
+    ],
+    "correctIndex": 1,
+    "explanation": "Đáp án được hỗ trợ bởi đoạn văn: The owner may still need to act after receiving a budget alert."
+  },
+  {
+    "tag": "placement-v2-aws-clf-c02-d4-5-beginner",
+    "domain": "AWS_CLF_C02_D4",
+    "level": "beginner",
+    "prompt": "In this passage, what does \"support plan\" mean?",
+    "context": "The team compares support plans according to the help its workload needs. It checks the available channels and response-time targets before choosing. A support plan does not replace the team's own incident procedures.",
+    "options": [
+      "a service arrangement describing available assistance",
+      "a promise that incidents can never occur",
+      "a method for storing all source code",
+      "a replacement for every application test"
+    ],
+    "correctIndex": 0,
+    "explanation": "Đáp án được hỗ trợ bởi đoạn văn: a service arrangement describing available assistance"
+  },
+  {
+    "tag": "placement-v2-aws-clf-c02-d4-5-intermediate",
+    "domain": "AWS_CLF_C02_D4",
+    "level": "intermediate",
+    "prompt": "Which statement best summarizes the passage?",
+    "context": "The team compares support plans according to the help its workload needs. It checks the available channels and response-time targets before choosing. A support plan does not replace the team's own incident procedures.",
+    "options": [
+      "The passage says that no further customer decisions are needed.",
+      "The team selects support based on its assistance needs and plan terms.",
+      "The passage recommends ignoring changes in workload usage.",
+      "The passage guarantees that every operational problem disappears."
+    ],
+    "correctIndex": 1,
+    "explanation": "Đáp án được hỗ trợ bởi đoạn văn: The team selects support based on its assistance needs and plan terms."
+  },
+  {
+    "tag": "placement-v2-aws-clf-c02-d4-5-advanced",
+    "domain": "AWS_CLF_C02_D4",
+    "level": "advanced",
+    "prompt": "Which conclusion is supported by the passage?",
+    "context": "The team compares support plans according to the help its workload needs. It checks the available channels and response-time targets before choosing. A support plan does not replace the team's own incident procedures.",
+    "options": [
+      "The passage says that no further customer decisions are needed.",
+      "The passage recommends ignoring changes in workload usage.",
+      "The team still needs incident procedures after selecting a support plan.",
+      "The passage guarantees that every operational problem disappears."
+    ],
+    "correctIndex": 2,
+    "explanation": "Đáp án được hỗ trợ bởi đoạn văn: The team still needs incident procedures after selecting a support plan."
   }
 ]

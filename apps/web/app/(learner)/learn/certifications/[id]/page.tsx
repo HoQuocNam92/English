@@ -147,7 +147,7 @@ function ExamsTab({ exams, examStates, onLearn }: any) {
             {state?.reason && <p className="mt-2 text-sm text-on-surface-variant">{state.reason}</p>}
           </div>
           <div className="flex flex-wrap gap-2">
-            {state?.canStart ? <Link href={`/learn/quiz/${exam.id}?certificateId=${encodeURIComponent(exam.certificateId)}`} className="rounded-lg bg-primary px-5 py-2.5 text-sm font-bold text-white">{state.activeAttemptId ? 'Tiếp tục' : state.usedAttempts ? 'Làm lại' : 'Bắt đầu'}</Link> : <button disabled className="rounded-lg bg-surface-container px-5 py-2.5 text-sm text-on-surface-variant">{state?.remainingAttempts === 0 ? 'Hết lượt' : 'Chưa mở'}</button>}
+            {state?.canStart ? <Link href={`/learn/quiz/${exam.id}?certificateId=${encodeURIComponent(exam.certificateId)}`} className="rounded-lg bg-primary px-5 py-2.5 text-sm font-bold text-white">{state.activeAttemptId ? 'Tiếp tục' : state.usedAttempts ? 'Làm lại' : 'Bắt đầu'}</Link> : <button disabled className="rounded-lg bg-surface-container px-5 py-2.5 text-sm text-on-surface-variant">{state?.unavailableLabel || (state?.remainingAttempts === 0 ? 'Hết lượt' : 'Chưa thể làm bài')}</button>}
             {!state?.canStart && state?.requiredLessonIds?.length > 0 && <button onClick={onLearn} className="px-4 py-2.5 text-sm font-bold text-primary">Học trước</button>}
             {attempt && <Link href={`/learn/quiz/result/${attempt.id}`} className="rounded-lg border border-primary px-4 py-2.5 text-sm font-bold text-primary">Xem kết quả {Math.round(attempt.scorePercent ?? 0)}%</Link>}
           </div>

@@ -57,3 +57,21 @@ test('expired attempts count toward limits and active attempts resume without ne
   assert.equal(result.usedAttempts, 1); assert.equal(result.activeAttemptId, 'active')
   assert.equal((await service.startAttempt('exam', 'learner')).id, 'active'); assert.equal(writes(), 0)
 })
+
+test('blocked labels distinguish missing lessons, incomplete lessons, schedule, empty exams and exhausted attempts', async () => {
+ const cases = [
+  { overrides: { topics: [] }, label: 'Chờ bổ sung bài học' },
+  { overrides: { completed: 0 }, label: 'Cần học trước' },
+  { overrides: { exam: { availableFrom: new Date(Date.now() + 60000) } }, label: 'Chưa đến giờ' },
+  { overrides: { exam: { availableUntil: new Date(0) } }, label: 'Đã đóng' },
+  { overrides: { exam: { _count: { questions: 0 } } }, label: 'Chưa có câu hỏi' },
+  { overrides: { attempts: Array.from({ length: 5 }, () => ({ status: 'graded' })) }, label: 'Hết lượt' },
+ ]
+ for (const { overrides, label } of cases) {
+  const state = await fixture(overrides).service.getEligibility('exam', 'learner')
+  assert.equal(state.canStart, false)
+  assert.equal(state.unavailableLabel, label)
+  assert.ok(state.reason)
+ }
+ assert.equal((await fixture().service.getEligibility('exam', 'learner')).unavailableLabel, '')
+})
