@@ -3,7 +3,7 @@
 - [x] Nút Trước đó/Tiếp tục có chiều rộng bằng nhau, khoảng đệm ngang và biểu tượng điều hướng; câu cuối hiển thị Hoàn thành.
 - [x] Số từ đã biết lấy tổng từ lịch sử đã lưu của tài khoản trên toàn bộ thời gian; mở lịch sử với bộ lọc Đã biết, kể cả khi xem lại flashcard. Lỗi tải không hiển thị số 0 giả.
 - [x] Lý do chặn bài thi hiển thị riêng: chờ bổ sung bài học, cần học trước, chưa đến giờ, đã đóng, chưa có câu hỏi hoặc hết lượt. Admin có hướng dẫn xuất bản/gắn bài học và chọn bài kiểm tra độc lập.
-- [x] Nút bút cạnh ảnh đại diện là hình tròn 48 × 48, phù hợp chiều cao vùng chạm dùng chung.
+- [x] Hai trang Cá nhân/Chỉnh sửa hồ sơ dùng chung ProfileAvatar: ảnh 96 × 96, nút bút tròn 36 × 36, biểu tượng 18, viền trắng và bóng đổ giống nhau. Toàn bộ ảnh là vùng chạm 96 × 96.
 - [x] Bộ placement bổ sung 60 câu cho bốn nhóm AWS CLF-C02; tổng 165 câu, mỗi chuyên ngành/nhóm có 15 câu. Seed và hai lịch sử migration đều nạp dữ liệu còn thiếu, không ghi đè câu đã biên tập.
 
 Kiểm tra tự động: bộ kiểm thử mobile, nghiệp vụ lượt thi và placement; kiểm tra kiểu dữ liệu mobile/web/API; xác thực Prisma; chạy migration lặp lại trên PostgreSQL tạm để kiểm tra số câu, đáp án, phân bố và giữ chỉnh sửa cũ.

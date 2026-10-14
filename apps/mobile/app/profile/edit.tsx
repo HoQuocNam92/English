@@ -1,10 +1,11 @@
+import { ProfileAvatar } from '../../src/shared/ui/ProfileAvatar';
 import { RequiredMark } from '../../src/shared/ui/RequiredMark';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Text, TextInput, TouchableOpacity } from '../../src/shared/ui/primitives';
 import { useState, useEffect } from 'react';
 import { useRouter } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
-import { StyleSheet, View, ScrollView, Alert, ActivityIndicator, Image, Modal, Switch } from 'react-native';
+import { StyleSheet, View, ScrollView, Alert, ActivityIndicator, Modal, Switch } from 'react-native';
 import { MaterialIcons } from '../../src/shared/ui/AppIcon';
 import * as ImagePicker from 'expo-image-picker';
 import { colors, spacing } from '@techenglish/design-tokens';
@@ -242,20 +243,7 @@ export default function MobileEditProfileScreen() {
       <ScrollView contentContainerStyle={styles.scrollContent} keyboardShouldPersistTaps="handled" showsVerticalScrollIndicator={false}>
         {/* Avatar Section */}
         <View style={styles.avatarSection}>
-          <TouchableOpacity onPress={handlePickImage} disabled={uploading}>
-            <View style={styles.avatarBox}>
-              {uploading ? (
-                <ActivityIndicator color="#ffffff" />
-              ) : avatarUrl ? (
-                <Image source={{ uri: avatarUrl }} style={{ width: 96, height: 96, borderRadius: 48 }} />
-              ) : (
-                <Text style={styles.avatarText}>{avatarLetter}</Text>
-              )}
-              <View style={styles.editAvatarIcon}>
-                <MaterialIcons name="edit" size={16} color="#ffffff" />
-              </View>
-            </View>
-          </TouchableOpacity>
+          <ProfileAvatar letter={avatarLetter} imageUrl={avatarUrl} loading={uploading} accessibilityLabel="Đổi ảnh đại diện" onPress={handlePickImage} />
         </View>
 
         {/* Form Fields */}
@@ -374,37 +362,6 @@ const styles = StyleSheet.create({
   avatarSection: {
     alignItems: 'center',
     marginBottom: spacing.xl
-  },
-  avatarBox: {
-    width: 96,
-    height: 96,
-    borderRadius: 48,
-    backgroundColor: colors.primary,
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderWidth: 2,
-    borderColor: '#e0e3e5'
-  },
-  avatarText: {
-    fontSize: 32,
-    fontWeight: '800',
-    color: '#ffffff'
-  },
-  editAvatarIcon: {
-    position: 'absolute',
-    bottom: 0,
-    right: 0,
-    backgroundColor: colors.primary,
-    width: 28,
-    height: 28,
-    borderRadius: 14,
-    alignItems: 'center',
-    justifyContent: 'center',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 2
   },
   formContainer: {
     gap: spacing.md

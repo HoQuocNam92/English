@@ -1,9 +1,10 @@
+import { ProfileAvatar } from '../../src/shared/ui/ProfileAvatar';
 import { Text, TouchableOpacity } from '../../src/shared/ui/primitives';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useCallback, useState } from 'react';
 import { useFocusEffect, useRouter } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
-import { StyleSheet, View, ScrollView, Alert, ActivityIndicator, Image } from 'react-native';
+import { StyleSheet, View, ScrollView, Alert, ActivityIndicator } from 'react-native';
 import { MaterialIcons } from '../../src/shared/ui/AppIcon';
 import { spacing } from '@techenglish/design-tokens';
 import { useTheme } from '../../src/shared/store/theme-context';
@@ -76,16 +77,7 @@ export default function MobileProfileScreen() {
         {/* Profile Header */}
         <View style={styles.profileSection}>
           <View style={styles.avatarContainer}>
-            {avatarUrl ? (
-              <Image source={{ uri: avatarUrl }} style={styles.avatarLarge} />
-            ) : (
-              <View style={[styles.avatarLarge, { backgroundColor: colors.primary }]}>
-                <Text style={styles.avatarTextLarge}>{avatarLetter}</Text>
-              </View>
-            )}
-            <TouchableOpacity style={[styles.editAvatarButton, { backgroundColor: colors.primary }]} onPress={() => router.push('/profile/edit' as any)}>
-              <MaterialIcons name="edit" size={20} color="#ffffff" />
-            </TouchableOpacity>
+            <ProfileAvatar letter={avatarLetter} imageUrl={avatarUrl} accessibilityLabel="Chỉnh sửa hồ sơ" onPress={() => router.push('/profile/edit' as any)} />
           </View>
           <Text style={[styles.userName, { color: colors.onSurface }]}>{displayName}</Text>
           <Text style={[styles.userEmail, { color: colors.onSurfaceVariant }]}>{email}</Text>
@@ -222,38 +214,6 @@ const styles = StyleSheet.create({
     width: 96,
     height: 96,
     marginBottom: spacing.md,
-  },
-  avatarLarge: {
-    width: '100%',
-    height: '100%',
-    borderRadius: 48,
-    borderWidth: 4,
-    borderColor: '#e0e3e5', // surface-container-highest
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  avatarTextLarge: {
-    fontSize: 36,
-    fontWeight: '800',
-    color: '#ffffff',
-  },
-  editAvatarButton: {
-    position: 'absolute',
-    bottom: 0,
-    right: 0,
-    width: 48,
-    height: 48,
-    minHeight: 48,
-    borderRadius: 24,
-    borderWidth: 3,
-    borderColor: '#fff',
-    alignItems: 'center',
-    justifyContent: 'center',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
   },
   userName: {
     fontSize: 24,
