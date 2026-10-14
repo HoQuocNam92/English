@@ -1,8 +1,8 @@
 import { Text, Button, ListTools, Badge } from '../../src/shared/ui/primitives';
 import { Card, ProgressBar, ActivityIndicator } from 'react-native-paper';
 import { FeatureScreen, EmptyState } from '../../src/shared/ui/FeatureScreen';
-import { useState, useEffect } from 'react';
-import { useRouter } from 'expo-router';
+import { useState, useCallback } from 'react';
+import { useRouter, useFocusEffect } from 'expo-router';
 import { StyleSheet, View } from 'react-native';
 import { MaterialIcons } from '../../src/shared/ui/AppIcon';
 import { colors } from '@techenglish/design-tokens';
@@ -17,6 +17,7 @@ interface CertificateItem {
   examUrl?: string;
   domains?: { domain: { id: string; code: string; name: string } }[];
   readinessPercent?: number;
+  hasStarted?: boolean;
 }
 
 export default function MobileCertificationsScreen({ embedded = false }: { embedded?: boolean }) {
@@ -28,9 +29,9 @@ export default function MobileCertificationsScreen({ embedded = false }: { embed
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
-  useEffect(() => {
-    fetchCertifications();
-  }, []);
+  useFocusEffect(useCallback(() => {
+    void fetchCertifications();
+  }, []));
 
   const fetchCertifications = async () => {
     try {
@@ -44,13 +45,15 @@ export default function MobileCertificationsScreen({ embedded = false }: { embed
       if (certsRes.status === 'rejected') throw certsRes.reason;
       const rawCerts = certsRes.status === 'fulfilled' ? (certsRes.value?.data ?? certsRes.value ?? []) : [];
       const certProgressList = progressRes.status === 'fulfilled' ? (progressRes.value?.certProgress ?? []) : [];
-      const certProgressMap = new Map(certProgressList.map((cp: any) => [cp.certificateId, Math.round(cp.completionPercent ?? 0)]));
+      const certProgressMap = new Map<string, any>(certProgressList.map((cp: any) => [cp.certificateId, cp]));
 
       const items: CertificateItem[] = (Array.isArray(rawCerts) ? rawCerts : []).map((c: any) => {
-        const readiness = certProgressMap.get(c.id) ?? 0;
+        const savedProgress = certProgressMap.get(c.id);
+        const readiness = Math.round(savedProgress?.completionPercent ?? 0);
         return {
           ...c,
           readinessPercent: readiness,
+          hasStarted: Boolean(savedProgress?.hasStarted || readiness > 0),
         };
       });
 
@@ -70,7 +73,7 @@ export default function MobileCertificationsScreen({ embedded = false }: { embed
   };
 
   const filteredCertificates = certificates.filter(cert => `${cert.name} ${cert.code} ${cert.provider}`.toLocaleLowerCase('vi').includes(search.trim().toLocaleLowerCase('vi'))
-    && (!filter || ((cert.readinessPercent ?? 0) > 0) === (filter === 'started')));
+    && (!filter || (Boolean(cert.hasStarted)) === (filter === 'started')));
 
   return <FeatureScreen title="Chứng chỉ" subtitle="Xây kiến thức vững, tự tin bước vào kỳ thi" embedded={embedded}>
     <ListTools search={search} onSearch={setSearch} placeholder="Tìm chứng chỉ, nhà cung cấp…" filters={[{ value: '', label: 'Tất cả' }, { value: 'started', label: 'Đang học' }, { value: 'new', label: 'Chưa bắt đầu' }]} value={filter} onFilter={setFilter} />
@@ -86,7 +89,7 @@ export default function MobileCertificationsScreen({ embedded = false }: { embed
             <View style={styles.domains}>{(cert.domains ?? []).map(item => <Badge key={item.domain.id} tone="muted">{item.domain.name}</Badge>)}</View>
             <View style={styles.progressLabel}><Text style={styles.secondary}>Tiến độ học tập</Text><Text style={styles.percent}>{readiness}%</Text></View>
             <ProgressBar progress={readiness / 100} color={colors.primary} style={styles.progress} />
-            <View style={styles.footer}><Text style={styles.link}>{readiness > 0 ? 'Tiếp tục lộ trình' : 'Khám phá lộ trình'}</Text><MaterialIcons name="arrow-forward" size={22} color="#6054c8" /></View>
+            <View style={styles.footer}><Text style={styles.link}>{cert.hasStarted ? 'Tiếp tục lộ trình' : 'Khám phá lộ trình'}</Text><MaterialIcons name="arrow-forward" size={22} color="#6054c8" /></View>
           </Card.Content>
         </Card>;
       })}

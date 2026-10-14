@@ -20,3 +20,14 @@ Cần kiểm tra giao diện trên thiết bị sau khi cập nhật bản mobil
 - [x] Backend: 17 bộ kiểm thử xác thực, người dùng, từ vựng, tiến độ, thông báo, AI, chứng chỉ, đề thi và placement thành công.
 
 APK là đầu ra local, không đưa vào Git. Build Android thành công chưa xác nhận hiển thị trên thiết bị thật; chưa chạy build native iOS trên môi trường Linux này.
+
+## Sửa tiến độ chứng chỉ sau khi làm bài kiểm tra
+
+- [x] API tính tiến độ tổng thể từ bài học kiến thức và bài kiểm tra đã xuất bản có câu hỏi; mỗi bài hoàn thành được tính một lần.
+- [x] Tổng hợp cả chứng chỉ học ngoài mục tiêu; không giới hạn số lượt bởi 10 kết quả gần nhất. Lượt đang làm/hết hạn không tính hoàn thành.
+- [x] Làm lại một đề tăng số lượt nhưng không cộng trùng tiến độ; chỉ lấy lượt có điểm khi tính điểm trung bình.
+- [x] Web/mobile dùng cùng phần trăm từ API, hiển thị riêng bài học, bài kiểm tra và lượt thi. Nhãn Đang ôn luyện vẫn đúng khi đã bắt đầu nhưng phần trăm còn 0.
+- [x] Danh sách chứng chỉ mobile cập nhật khi quay lại.
+- [x] 13 kiểm thử tiến độ backend, 8 kiểm thử web và 9 kiểm thử mobile thành công; build BE/FE và typecheck mobile thành công.
+
+Đã xác nhận truy vấn chỉ đọc trên database local với học viên có lượt thi: tiến độ tổng thể trả về khác 0. Không sửa kết quả thi hoặc tiến độ cũ trong database; API tính lại từ dữ liệu đã lưu.

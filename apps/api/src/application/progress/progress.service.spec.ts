@@ -8,10 +8,11 @@ function fixture(goal: 'vocabulary' | 'certification' | 'both' | null, overrides
     user: { findFirst: async () => ({ id: 'learner', learnerProfile: { id: 'profile' } }) },
     learnerProfile: { findUnique: async () => profile },
     learningProgress: { findMany: async () => overrides.progress ?? [] },
-    examAttempt: { findMany: async (args: any) => args.select ? (overrides.quizActivity ?? []) : args.include ? (overrides.recentAttempts ?? []) : (overrides.certAttempts ?? []) },
+    examAttempt: { findMany: async (args: any) => { overrides.attemptQueries?.push(args); return typeof args.where.exam?.certificateId === 'string' ? (overrides.certAttempts ?? []) : args.select ? (overrides.quizActivity ?? []) : (overrides.recentAttempts ?? []) } },
+    exam: { findMany: async (args: any) => { overrides.examQueries?.push(args); return overrides.publishedExams ?? [] } },
     vocabularyProgress: { findMany: async () => overrides.vocabularyActivity ?? [] },
     domain: { findMany: async () => [] },
-    certificate: { findMany: async () => [] },
+    certificate: { findMany: async (args: any) => { overrides.certificateQueries?.push(args); return args.where.OR ? (overrides.trackedCertificates ?? []) : [] } },
     lesson: { findMany: async (args: any) => { overrides.queries?.push(args); return args.where?.OR ? (overrides.certificateLessons ?? []) : [] } },
   }
   return new ProgressService(prisma as any)
@@ -101,4 +102,61 @@ test('certificate completion uses only published review lessons linked to that c
 test('admin progress propagates storage failures instead of returning fabricated zeros', async () => {
   const service = new ProgressService({ user: { findFirst: async () => { throw new Error('database offline') } } } as any)
   await assert.rejects(() => service.getLearnerProgress('learner'), /database offline/)
+})
+
+test('completed exams count outside selected goals and beyond recent history', async () => {
+  const certificateQueries: any[] = [], attemptQueries: any[] = [], examQueries: any[] = []
+  const result = await fixture('vocabulary', {
+    certificateQueries, attemptQueries, examQueries,
+    trackedCertificates: [{ id: 'cert-other', code: 'A2', name: 'English A2' }],
+    publishedExams: [{ id: 'exam-1' }, { id: 'exam-2' }, { id: 'exam-3' }],
+    certAttempts: [{ examId: 'exam-1', scorePercent: 0 }, { examId: 'exam-2', scorePercent: 80 }],
+    recentAttempts: [],
+  }).getMyProgress('learner')
+  const certificate = result.certProgress[0]
+  assert.equal(certificate.certificateId, 'cert-other')
+  assert.equal(certificate.examAttempts, 2)
+  assert.equal(certificate.completedExams, 2)
+  assert.equal(certificate.totalExams, 3)
+  assert.equal(certificate.completionPercent, 67)
+  assert.equal(certificate.avgScore, 40)
+  assert.equal(certificate.hasStarted, true)
+  const trackedQuery = certificateQueries.find(query => query.where.OR)
+  assert.equal(trackedQuery.where.OR[1].exams.some.attempts.some.learnerId, 'learner')
+  const attemptQuery = attemptQueries.find(query => query.where.exam?.certificateId === 'cert-other')
+  assert.equal(attemptQuery.where.learnerId, 'learner')
+  assert.deepEqual(attemptQuery.where.status.in, ['graded', 'submitted'])
+  assert.equal(attemptQuery.take, undefined)
+  assert.equal(examQueries[0].where.status, 'published')
+  assert.deepEqual(examQueries[0].where.questions, { some: {} })
+})
+
+test('retakes and archived exams do not inflate completion; ungraded scores remain absent', async () => {
+  const result = await fixture('certification', {
+    publishedExams: [{ id: 'exam-1' }, { id: 'exam-2' }],
+    certAttempts: [
+      { examId: 'exam-1', scorePercent: 0 },
+      { examId: 'exam-1', scorePercent: 60 },
+      { examId: 'exam-1', scorePercent: null },
+      { examId: 'archived', scorePercent: null },
+    ],
+  }).getMyProgress('learner')
+  assert.equal(result.certProgress[0].examAttempts, 4)
+  assert.equal(result.certProgress[0].completedExams, 1)
+  assert.equal(result.certProgress[0].completionPercent, 50)
+  assert.equal(result.certProgress[0].avgScore, 30)
+})
+
+test('overall certificate completion combines review lessons and completed published exams', async () => {
+  const result = await fixture('both', {
+    certificateLessons: [{ id: 'review-1' }, { id: 'review-2' }],
+    progress: [{ resourceType: 'lesson', resourceId: 'review-1', status: 'completed', completionPercent: 100 }],
+    publishedExams: [{ id: 'exam-1' }, { id: 'exam-2' }, { id: 'exam-3' }],
+    certAttempts: [{ examId: 'exam-1', scorePercent: 0 }, { examId: 'exam-2', scorePercent: null }],
+  }).getMyProgress('learner')
+  const certificate = result.certProgress[0]
+  assert.equal(certificate.lessonCompletionPercent, 50)
+  assert.equal(certificate.totalItems, 5)
+  assert.equal(certificate.completedItems, 3)
+  assert.equal(certificate.completionPercent, 60)
 })

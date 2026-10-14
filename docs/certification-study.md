@@ -47,3 +47,9 @@ Seed thêm 19 bài kiến thức và 19 Quiz tình huống cho AWS-CLF-C02 hiệ
 ### Phát âm trong hộp dịch
 
 Nút Nghe gọi `POST /translation/pronunciation` và phát WAV tiếng Anh, không phụ thuộc giọng đọc cài trong trình duyệt. API cần Python 3 và thư viện hệ thống eSpeak NG (`libespeak-ng1` trên Debian/Ubuntu); máy phát triển hiện có sẵn. Giọng đọc tổng hợp cơ bản. Giới hạn đầu vào 500 byte, chạy tối đa 10 giây, cache 30 đoạn, dùng chung giới hạn gọi với dịch.
+
+## Tiến độ tổng thể và lượt thi
+
+Tiến độ tổng thể = (số bài học kiến thức hoàn thành + số bài kiểm tra hoàn thành) / (tổng bài học kiến thức đã xuất bản + tổng bài kiểm tra đã xuất bản có câu hỏi). Bài học được loại trùng theo ID dù gắn nhiều chủ đề; bài kiểm tra được tính một lần dù làm lại nhiều lượt. Lượt đã nộp/đã chấm được tính hoàn thành bài kiểm tra, độc lập với điểm đậu; lượt đang làm hoặc hết hạn không tính. Nội dung chưa xuất bản/lưu trữ không nằm trong mẫu số.
+
+Số lượt thi thống kê toàn bộ lượt đã nộp/đã chấm của chính học viên, gồm cả các lượt làm lại và không bị giới hạn bởi lịch sử 10 lượt gần nhất. Tiến độ có cả chứng chỉ đã học ngoài mục tiêu đã chọn. Điểm trung bình chỉ lấy các lượt có điểm; điểm 0 là điểm hợp lệ. Web và mobile dùng cùng kết quả tổng hợp từ API, hiển thị riêng số bài học/bài kiểm tra và số lượt thi. Danh sách chứng chỉ mobile cập nhật khi quay lại màn hình.

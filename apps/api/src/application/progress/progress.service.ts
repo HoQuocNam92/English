@@ -76,32 +76,61 @@ export class ProgressService {
       where: { userId: learnerId },
       include: { level: true, certGoals: { include: { certificate: true } } },
     })
+    // Include certificates studied outside the learner's selected goals. Use all
+    // completed attempts, rather than the ten-item recent-history window.
+    const trackedCertificates = await this.prisma.certificate.findMany({
+      where: { OR: [
+        { id: { in: [...new Set([...certIds, ...(profile?.certGoals ?? []).map(goal => goal.certificateId)])] } },
+        { exams: { some: { attempts: { some: { learnerId, status: { in: ['graded', 'submitted'] } } } } } },
+        { lessons: { some: { lessonId: { in: lessonIds } } } },
+        { domains: { some: { certificationTopics: { some: { lessons: { some: { lessonId: { in: lessonIds } } } } } } } },
+      ] },
+      select: { id: true, code: true, name: true },
+    })
+    const certificates = new Map((profile?.certGoals ?? []).map(goal => [goal.certificateId, { id: goal.certificateId, code: goal.certificate.code, name: goal.certificate.name }]))
+    trackedCertificates.forEach(certificate => certificates.set(certificate.id, certificate))
     const certProgress = await Promise.all(
-      (profile?.certGoals ?? []).map(async (cg) => {
+      [...certificates.values()].map(async (certificate) => {
+        const certificateId = certificate.id
         // Exam scores for this certificate
         const certAttempts = await this.prisma.examAttempt.findMany({
-          where: { learnerId, exam: { certificateId: cg.certificateId }, status: { in: ['graded', 'submitted'] } },
-          select: { scorePercent: true, passed: true },
+          where: { learnerId, exam: { certificateId: certificateId }, status: { in: ['graded', 'submitted'] } },
+          select: { examId: true, scorePercent: true, passed: true },
         })
-        const avgScore = certAttempts.length > 0
-          ? Math.round(certAttempts.reduce((sum, a) => sum + Number(a.scorePercent ?? 0), 0) / certAttempts.length)
+        const scoredCertAttempts = certAttempts.filter(attempt => attempt.scorePercent !== null)
+        const avgScore = scoredCertAttempts.length
+          ? Math.round(scoredCertAttempts.reduce((sum, attempt) => sum + Number(attempt.scorePercent), 0) / scoredCertAttempts.length)
           : null
+        const publishedExams = await this.prisma.exam.findMany({
+          where: { certificateId, status: 'published', questions: { some: {} } },
+          select: { id: true },
+        })
+        const completedExamIds = new Set(certAttempts.map(attempt => attempt.examId))
+        const completedExams = publishedExams.filter(exam => completedExamIds.has(exam.id)).length
         const certificateLessons = await this.prisma.lesson.findMany({
           where: { status: 'published', type: 'certification_review', OR: [
-            { certificates: { some: { certificateId: cg.certificateId } } },
-            { certificationTopics: { some: { topic: { certificateId: cg.certificateId } } } },
+            { certificates: { some: { certificateId: certificateId } } },
+            { certificationTopics: { some: { topic: { certificateId: certificateId } } } },
           ] },
           select: { id: true },
         })
         const ids = new Set(certificateLessons.map(lesson => lesson.id))
         const completedLessons = lessonProgress.filter(item => ids.has(item.resourceId) && (item.status === 'completed' || item.completionPercent >= 100)).length
+        const totalItems = ids.size + publishedExams.length
+        const completedItems = completedLessons + completedExams
         return {
           totalLessons: ids.size,
           completedLessons,
-          completionPercent: ids.size ? Math.round(completedLessons / ids.size * 100) : 0,
-          certificateId: cg.certificateId,
-          certificateCode: cg.certificate.code,
-          certificateName: cg.certificate.name,
+          lessonCompletionPercent: ids.size ? Math.round(completedLessons / ids.size * 100) : 0,
+          totalExams: publishedExams.length,
+          completedExams,
+          totalItems,
+          completedItems,
+          hasStarted: certAttempts.length > 0 || lessonProgress.some(item => ids.has(item.resourceId)),
+          completionPercent: totalItems ? Math.round(completedItems / totalItems * 100) : 0,
+          certificateId: certificateId,
+          certificateCode: certificate.code,
+          certificateName: certificate.name,
           examAttempts: certAttempts.length,
           avgScore,
         }

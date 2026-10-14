@@ -64,9 +64,11 @@ export default function CertificationDetailPage() {
 
   const certProgress = (progress?.certProgress ?? []).find((item: any) => item.certificateId === certificate.id);
   const topicProgress = studyProgress?.topics ?? [];
-  const completedCount = topicProgress.reduce((sum: number, topic: any) => sum + topic.completed, 0);
-  const totalCount = topicProgress.reduce((sum: number, topic: any) => sum + topic.total, 0);
-  const completionPercent = totalCount ? Math.round(completedCount / totalCount * 100) : 0;
+  const completedCount = certProgress?.completedLessons ?? 0;
+  const totalCount = certProgress?.totalLessons ?? new Set(topicProgress.flatMap((topic: any) => (topic.lessons ?? []).map((lesson: any) => lesson.id))).size;
+  const totalExams = certProgress?.totalExams ?? (certificate.exams ?? []).filter((exam: any) => exam.status === 'published' && exam._count?.questions > 0).length;
+  const completionPercent = Math.round(certProgress?.completionPercent ?? 0);
+  const hasStarted = Boolean(certProgress?.hasStarted || completionPercent > 0);
   const attempts = (progress?.recentAttempts ?? []).filter((item: any) => certificate.exams?.some((exam: any) => exam.id === item.examId));
   const tabs: { id: Tab; label: string; icon: typeof BookOpen }[] = [
     { id: 'learn', label: 'Học', icon: BookOpen },
@@ -78,8 +80,8 @@ export default function CertificationDetailPage() {
       <Link href="/learn/certifications" className="mb-5 inline-flex items-center gap-2 text-sm font-semibold text-on-surface-variant hover:text-primary"><ArrowLeft size={17} /> Tất cả chứng chỉ</Link>
       <div className="flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between"><div className="flex items-start gap-4">
         <div className="grid h-14 w-14 shrink-0 place-items-center rounded-xl bg-primary text-sm font-black text-white shadow-sm">{certificate.provider?.slice(0, 3).toUpperCase() || 'CERT'}</div>
-        <div><div className="mb-2 flex flex-wrap items-center gap-2"><span className={`rounded-full px-3 py-1 text-xs font-bold ${completionPercent > 0 ? 'bg-primary-light text-primary' : 'bg-surface-container text-on-surface-variant'}`}>{completionPercent > 0 ? 'ĐANG ÔN LUYỆN' : 'CHƯA BẮT ĐẦU'}</span><span className="text-sm font-semibold text-on-surface-variant">{certificate.code}</span></div><h1 className="text-2xl font-bold tracking-tight text-on-surface sm:text-3xl">{certificate.name}</h1><p className="mt-2 max-w-2xl text-sm leading-6 text-on-surface-variant">{certificate.description}</p></div>
-      </div><div className="w-full rounded-xl border border-outline-variant bg-surface-container-low p-4 lg:w-72"><div className="mb-2 flex items-end justify-between"><span className="text-sm font-semibold">Tiến độ tổng thể</span><span className="text-2xl font-bold text-primary">{completionPercent}%</span></div><div className="h-2.5 overflow-hidden rounded-full bg-surface-container-highest"><div className="h-full rounded-full bg-primary" style={{ width: `${completionPercent}%` }} /></div><p className="mt-2 text-xs text-on-surface-variant">{completedCount}/{totalCount} bài học đã hoàn thành</p></div></div>
+        <div><div className="mb-2 flex flex-wrap items-center gap-2"><span className={`rounded-full px-3 py-1 text-xs font-bold ${hasStarted ? 'bg-primary-light text-primary' : 'bg-surface-container text-on-surface-variant'}`}>{hasStarted ? 'ĐANG ÔN LUYỆN' : 'CHƯA BẮT ĐẦU'}</span><span className="text-sm font-semibold text-on-surface-variant">{certificate.code}</span></div><h1 className="text-2xl font-bold tracking-tight text-on-surface sm:text-3xl">{certificate.name}</h1><p className="mt-2 max-w-2xl text-sm leading-6 text-on-surface-variant">{certificate.description}</p></div>
+      </div><div className="w-full rounded-xl border border-outline-variant bg-surface-container-low p-4 lg:w-72"><div className="mb-2 flex items-end justify-between"><span className="text-sm font-semibold">Tiến độ tổng thể</span><span className="text-2xl font-bold text-primary">{completionPercent}%</span></div><div className="h-2.5 overflow-hidden rounded-full bg-surface-container-highest"><div className="h-full rounded-full bg-primary" style={{ width: `${completionPercent}%` }} /></div><p className="mt-2 text-xs text-on-surface-variant">{completedCount}/{totalCount} bài học · {certProgress?.completedExams ?? 0}/{totalExams} bài kiểm tra hoàn thành</p><p className="mt-2 text-xs text-on-surface-variant">{certProgress?.examAttempts ?? 0} lượt thi đã hoàn thành · Mỗi bài chỉ tính tiến độ một lần.</p></div></div>
     </div></section>
     <div className="sticky top-0 z-10 border-b border-outline-variant bg-surface-container-lowest/95 backdrop-blur"><nav className="w-full py-2"><div className="ui-tabs">{tabs.map(({ id, label, icon: Icon }) => <button key={id} onClick={() => setActiveTab(id)} className="ui-tab" aria-pressed={activeTab === id}><Icon size={18} />{label}</button>)}</div></nav></div>
     <div className="w-full pb-8 pt-4">
@@ -120,7 +122,7 @@ function LearnTab({ topicProgress, certificateId, domains, exams, progress, expa
         {!domains.length && <p className="rounded-xl border border-dashed p-6 text-sm text-on-surface-variant">Chứng chỉ chưa được cấu hình chuyên ngành.</p>}
       </div>
     </section>
-    <aside className="space-y-4"><div className="rounded-xl border border-outline-variant bg-surface-container-lowest p-5"><h3 className="font-bold">Kết quả thực tế</h3><div className="mt-4 grid grid-cols-3 gap-2 text-center">{[[String(completedCount ?? 0), 'Bài học'], [String(attempts?.length ?? 0), 'Lượt thi'], [certProgress?.avgScore == null ? '—' : `${certProgress.avgScore}%`, 'Điểm TB']].map(([value, label]) => <div key={label} className="rounded-lg bg-surface-container-low p-3"><strong className="block text-lg text-primary">{value}</strong><span className="text-xs text-on-surface-variant">{label}</span></div>)}</div></div></aside>
+    <aside className="space-y-4"><div className="rounded-xl border border-outline-variant bg-surface-container-lowest p-5"><h3 className="font-bold">Kết quả thực tế</h3><div className="mt-4 grid grid-cols-3 gap-2 text-center">{[[String(completedCount ?? 0), 'Bài học'], [String(certProgress?.examAttempts ?? 0), 'Lượt thi'], [certProgress?.avgScore == null ? '—' : `${certProgress.avgScore}%`, 'Điểm TB']].map(([value, label]) => <div key={label} className="rounded-lg bg-surface-container-low p-3"><strong className="block text-lg text-primary">{value}</strong><span className="text-xs text-on-surface-variant">{label}</span></div>)}</div></div></aside>
   </div>;
 }
 

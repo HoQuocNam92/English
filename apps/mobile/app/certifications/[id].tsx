@@ -84,11 +84,12 @@ export default function CertificationDetailScreen() {
     code: certificateData?.code || params.code || '',
     provider: certificateData?.provider || '',
     description: certificateData?.description || 'Luyện tiếng Anh chuyên ngành theo nội dung chứng chỉ.',
-    progress: Math.round((progressData?.certProgress ?? []).find((item: any) => item.certificateId === certificateData?.id)?.completionPercent ?? (Number(params.progress) || 0)),
+    progress: Math.round((progressData?.certProgress ?? []).find((item: any) => item.certificateId === certificateData?.id)?.completionPercent ?? 0),
   }), [certificateData, params.code, params.name, params.progress, progressData]);
 
   const certProgress = (progressData?.certProgress ?? []).find((item: any) => item.certificateId === certificateData?.id);
-  const attempts = (progressData?.recentAttempts ?? []).filter((item: any) => certificateData?.exams?.some((exam: any) => exam.id === item.examId));
+  const totalLessons = certProgress?.totalLessons ?? new Set((studyProgress?.topics ?? []).flatMap((topic: any) => (topic.lessons ?? []).map((lesson: any) => lesson.id))).size;
+  const totalExams = certProgress?.totalExams ?? (certificateData?.exams ?? []).filter((exam: any) => exam.status === 'published' && exam._count?.questions > 0).length;
 
   const toggleDomain = (number: number) => {
     setExpandedDomains((current) => current.includes(number)
@@ -120,7 +121,7 @@ export default function CertificationDetailScreen() {
             <View style={[styles.awsLogo, { backgroundColor: /^aws(?:$|[-\s])/i.test(certificate.code) || /^aws$|amazon web services/i.test(certificate.provider) ? '#ff9900' : colors.primaryContainer }]}>{/^aws(?:$|[-\s])/i.test(certificate.code) || /^aws$|amazon web services/i.test(certificate.provider) ? <Text style={styles.awsLogoText}>aws</Text> : <MaterialIcons name="school" size={28} color={colors.primary} />}</View>
             <View style={styles.identityText}>
               <View style={styles.badgeRow}>
-                <View style={[styles.badge, { backgroundColor: colors.primaryContainer }]}><Text style={[styles.badgeText, { color: colors.primary }]}>{certificate.progress > 0 ? 'ĐANG ÔN LUYỆN' : 'CHƯA BẮT ĐẦU'}</Text></View>
+                <View style={[styles.badge, { backgroundColor: colors.primaryContainer }]}><Text style={[styles.badgeText, { color: colors.primary }]}>{certProgress?.hasStarted || certificate.progress > 0 ? 'ĐANG ÔN LUYỆN' : 'CHƯA BẮT ĐẦU'}</Text></View>
                 <Text style={[styles.code, { color: colors.onSurfaceVariant }]}>{certificate.code}</Text>
               </View>
               <Text style={[styles.title, { color: colors.onSurface }]}>{certificate.name}</Text>
@@ -134,7 +135,8 @@ export default function CertificationDetailScreen() {
           <View style={[styles.progressTrack, { backgroundColor: colors.surfaceContainerHigh }]}>
             <View style={[styles.progressFill, { width: `${certificate.progress}%`, backgroundColor: colors.primary }]} />
           </View>
-          <Text style={[styles.progressCaption, { color: colors.onSurfaceVariant }]}>{certProgress?.examAttempts ?? 0} lượt thi đã hoàn thành</Text>
+          <Text style={[styles.progressCaption, { color: colors.onSurfaceVariant }]}>{certProgress?.completedLessons ?? 0}/{totalLessons} bài học · {certProgress?.completedExams ?? 0}/{totalExams} bài kiểm tra hoàn thành</Text>
+          <Text style={[styles.progressCaption, { color: colors.onSurfaceVariant }]}>{certProgress?.examAttempts ?? 0} lượt thi đã hoàn thành · Mỗi bài chỉ tính tiến độ một lần.</Text>
         </View>
 
         <View style={{ padding: 16, backgroundColor: colors.surface }}><Tabs items={TABS.map(item => ({ value: item.id, label: item.label }))} value={tab} onChange={value => setTab(value as Tab)} /></View>

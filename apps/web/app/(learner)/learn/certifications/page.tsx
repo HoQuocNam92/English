@@ -27,7 +27,7 @@ export default function CertificationsPage() {
   }, []);
 
   const filteredCertificates = certificates.filter(certificate => matchesSearch(search, certificate.name, certificate.code, certificate.provider)
-    && (!filter || (progress.some(item => item.certificateId === certificate.id && item.completionPercent > 0) === (filter === 'started'))));
+    && (!filter || (progress.some(item => item.certificateId === certificate.id && (item.hasStarted || item.completionPercent > 0)) === (filter === 'started'))));
 
   if (loading) return <LearnerShell><LoadingSpinner /></LearnerShell>;
 
@@ -50,7 +50,7 @@ export default function CertificationsPage() {
         <div className="mt-2 flex items-start justify-between gap-4"><div><span className="text-xs font-bold uppercase tracking-wide text-primary">{certificate.code}</span><h2 className="mt-1 text-[20px] font-bold text-on-surface">{certificate.name}</h2><p className="mt-1 text-xs font-semibold text-on-surface-variant">{certificate.provider}</p></div><strong className="text-[24px] text-primary">{percent}%</strong></div>
         <p className="mt-4 line-clamp-2 text-sm leading-6 text-on-surface-variant">{certificate.description}</p>
         <div className="mt-4 flex flex-wrap gap-2">{domains.map((name: string) => <span key={name} className="rounded-full bg-primary/10 px-2.5 py-1 text-xs font-semibold text-primary">{name}</span>)}</div>
-        <div className="content-card-footer"><div className="content-card-actions border-t border-outline-variant pt-4"><Link href={`/learn/certifications/${certificate.id}`} className="ui-button ui-button-primary text-sm">{percent > 0 ? 'Tiếp tục ôn' : 'Xem lộ trình'}</Link></div></div>
+        <div className="content-card-footer"><div className="content-card-actions border-t border-outline-variant pt-4"><Link href={`/learn/certifications/${certificate.id}`} className="ui-button ui-button-primary text-sm">{itemProgress?.hasStarted || percent > 0 ? 'Tiếp tục ôn' : 'Xem lộ trình'}</Link></div></div>
       </article>;
     })}</PaginatedList>}
   </div></LearnerShell>;
