@@ -149,7 +149,6 @@ export default function AdminCertifications({ createOnly = false }: { createOnly
     <main className="flex-1 p-margin flex flex-col gap-xl">
       <PageHeader
         title="Quản lý Chứng chỉ"
-        description="Quản lý và tổ chức nội dung học tập theo chứng chỉ IT."
         icon="workspace_premium"
         action={<button type="button" onClick={openCreate} className="inline-flex shrink-0 items-center gap-2 rounded-xl bg-primary px-4 py-2.5 text-sm font-semibold !text-white"><AppIcon className=" text-[19px]">add</AppIcon>Thêm chứng chỉ mới</button>}
       />
@@ -192,8 +191,6 @@ export default function AdminCertifications({ createOnly = false }: { createOnly
             const badgeClass = badgeClasses[idx % badgeClasses.length];
             const topicList = c.domains?.flatMap(domain => domain.certificationTopics ?? []) ?? [];
             const questionCount = topicList.reduce((sum, topic) => sum + Number(topic._count?.questions ?? 0), 0);
-            const readyParts = Number(questionCount > 0) + Number((c._count?.exams ?? 0) > 0);
-            const contentProgress = Math.round(readyParts / 2 * 100);
 
             return (
               <div key={c.id} className="relative bg-surface-container-lowest rounded-xl border border-outline-variant p-lg hover:shadow-[0_1px_3px_rgba(15,23,24,0.06)] transition-all flex flex-col gap-md">
@@ -234,15 +231,6 @@ export default function AdminCertifications({ createOnly = false }: { createOnly
                   </div>
                 </div>
 
-                <div className="flex flex-col gap-xs mt-auto">
-                  <div className="flex justify-between items-center">
-                    <span className="font-body-sm text-body-sm text-on-surface-variant">Mức hoàn thiện nội dung</span>
-                    <span className="font-interface-sb text-interface-sb text-primary">{contentProgress}%</span>
-                  </div>
-                  <div className="w-full bg-surface-container-high h-[8px] rounded-full overflow-hidden">
-                    <div className="bg-primary h-full rounded-full" style={{ width: `${contentProgress}%` }}></div>
-                  </div>
-                </div>
               </div>
             );
           })

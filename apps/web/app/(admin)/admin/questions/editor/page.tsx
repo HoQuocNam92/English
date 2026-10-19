@@ -171,7 +171,7 @@ export default function QuestionEditorPage() {
   if (loading) {
     return (
       <FormPageLayout>
-        <PageHeader title={isEdit ? 'Chỉnh sửa câu hỏi' : 'Soạn câu hỏi mới'} description="Tạo và chỉnh sửa câu hỏi trắc nghiệm" />
+        <PageHeader title={isEdit ? 'Chỉnh sửa câu hỏi' : 'Soạn câu hỏi mới'} />
         <div className="mt-6 flex items-center justify-center h-64">
           <AppIcon className="animate-spin  text-primary">progress_activity</AppIcon>
         </div>
@@ -183,7 +183,6 @@ export default function QuestionEditorPage() {
     <FormPageLayout><BackButton fallbackHref="/admin/questions" />
       <PageHeader
         title={isEdit ? 'Chỉnh sửa câu hỏi' : 'Soạn câu hỏi mới'}
-        description="Tạo câu hỏi trắc nghiệm để đưa vào bài thi hoặc flashcard"
       />
 
       <form onSubmit={handleSubmit} className="mt-6 w-full space-y-6 rounded-2xl bg-surface-container-lowest p-6 shadow-[0_8px_28px_rgba(15,23,42,0.05)]">

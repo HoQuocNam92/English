@@ -15,7 +15,7 @@ const features = [
 
 export default function LearnerPreviewPage() {
   return <main className="flex-1 p-margin">
-    <PageHeader title="Giao diện ứng dụng người học" description="Bản đồ đầy đủ các màn hình trên ứng dụng mobile dành cho học viên theo đề cương KLCN028." icon="phone_iphone" iconClassName="from-violet-500 to-indigo-600" />
+    <PageHeader title="Giao diện ứng dụng người học" icon="phone_iphone" iconClassName="from-violet-500 to-indigo-600" />
     <div className="mt-6 grid gap-6 xl:grid-cols-[360px_1fr]">
       <section className="rounded-[32px] border-[8px] border-slate-900 bg-slate-50 p-4 shadow-xl">
         <div className="mx-auto mb-5 h-5 w-28 rounded-full bg-slate-900" />

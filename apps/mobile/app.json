@@ -12,7 +12,8 @@
       "infoPlist": {
         "NSAppTransportSecurity": {
           "NSAllowsArbitraryLoads": true
-        }
+        },
+        "ITSAppUsesNonExemptEncryption": false
       }
     },
     "android": {
@@ -43,6 +44,12 @@
       "expo-status-bar",
       "expo-web-browser",
       "expo-notifications"
-    ]
+    ],
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "cd29e7fa-6dc2-473c-b1bc-b046921ebecc"
+      }
+    }
   }
 }

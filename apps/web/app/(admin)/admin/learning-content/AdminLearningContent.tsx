@@ -551,7 +551,6 @@ export default function AdminLearningContent({ createOnly = false }: { createOnl
         <PageHeader
           title="Nội dung học tập"
           icon="library_books"
-          description="Quản trị toàn bộ kho từ vựng và thuật ngữ chuyên ngành IT"
         />
         <button
           type="button"

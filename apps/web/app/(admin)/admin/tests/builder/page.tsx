@@ -16,7 +16,7 @@ import { PageHeader, showToast } from '@/shared/ui';
 import { apiClient, ApiClientError } from '@/shared/api/api-client';
 import type { QuestionItem } from '@/shared/api/api-client';
 
-interface SelectOption { id: string; code: string; name: string }
+interface SelectOption { id: string; code: string; name: string; isActive?: boolean }
 
 function FieldError({ msg }: { msg?: string }) {
   if (!msg) return null;
@@ -54,7 +54,7 @@ export default function TestBuilderPage() {
   const [errors, setErrors] = React.useState<Record<string, string>>({});
   const [loading, setLoading] = React.useState(false);
   const [saving, setSaving] = React.useState(false);
-  const [savedExam, setSavedExam] = React.useState<{ title: string; certificateId: string; certificateName: string; published: boolean; topicPractice: boolean } | null>(null);
+  const [savedExam, setSavedExam] = React.useState<{ id: string; title: string; certificateId: string; certificateName: string; certificateActive: boolean; published: boolean; topicPractice: boolean } | null>(null);
   const [globalError, setGlobalError] = React.useState('');
 
   const changeScope = (nextDomainId: string, nextLevelId: string) => {
@@ -78,7 +78,7 @@ export default function TestBuilderPage() {
           apiClient.get<any>('/domains'),
           apiClient.get<any>('/levels'),
           apiClient.get<any>('/certificates'),
-          loadAllPages<QuestionItem>(page => apiClient.get(`/questions?page=${page}&limit=100`)),
+          loadAllPages<QuestionItem>(page => apiClient.get(`/questions?page=${page}&limit=100`), question => question.id),
         ]);
         setDomains(domainsRes?.data ?? domainsRes ?? []);
         setLevels(levelsRes?.data ?? levelsRes ?? []);
@@ -124,6 +124,7 @@ export default function TestBuilderPage() {
   const retainedLegacyIds = originalScope?.domainId === domainId && originalScope?.levelId === levelId
     ? incompatibleSelectedIds.filter(id => originalScope.questionIds.includes(id) && availableQuestions.some(q => q.id === id)) : [];
   const invalidSelectedIds = incompatibleSelectedIds.filter(id => !retainedLegacyIds.includes(id));
+  const selectedCertificate = certificates.find(item => item.id === certificateId);
 
   const validate = (): boolean => {
     const errs: Record<string, string> = {};
@@ -169,12 +170,10 @@ export default function TestBuilderPage() {
         questions: selectedQuestionIds.map((id, idx) => ({ questionId: id, order: idx + 1 })),
       };
 
-      if (isEdit) {
-        await apiClient.patch(`/exams/${examId}`, payload);
-      } else {
-        await apiClient.post('/exams', payload);
-      }
-      setSavedExam({ title: title.trim(), certificateId, certificateName: certificates.find(item => item.id === certificateId)?.name || 'Chứng chỉ đã chọn', published: targetStatus === 'published', topicPractice: kind === 'practice' && Boolean(certificateId) });
+      const saved: any = isEdit
+        ? await apiClient.patch(`/exams/${examId}`, payload)
+        : await apiClient.post('/exams', payload);
+      setSavedExam({ id: saved?.id ?? saved?.data?.id ?? examId ?? '', title: title.trim(), certificateId, certificateName: selectedCertificate?.name || 'Chứng chỉ đã chọn', certificateActive: selectedCertificate?.isActive !== false, published: targetStatus === 'published', topicPractice: kind === 'practice' && Boolean(certificateId) });
     } catch (e) {
       setGlobalError(e instanceof ApiClientError ? e.message : 'Lỗi khi lưu bài thi');
     } finally {
@@ -227,23 +226,25 @@ export default function TestBuilderPage() {
     return <FormPageLayout className="max-w-3xl">
       <PageHeader title={savedExam.published ? 'Đã xuất bản bài kiểm tra' : 'Đã lưu bản nháp'} description={savedExam.title} />
       <section role="status" className="mt-6 space-y-4 rounded-2xl border border-outline-variant bg-white p-6">
-        <p className="font-semibold">{savedExam.published ? 'Bài kiểm tra đã xuất hiện trong danh sách bài kiểm tra của chứng chỉ.' : 'Học viên chưa thấy bài này. Để mở cho học viên, vào danh sách bài kiểm tra, tích chọn bài rồi bấm “Xuất bản”.'}</p>
+        <p className="font-semibold">{savedExam.published ? 'Bài kiểm tra đã được xuất bản trong chứng chỉ liên quan.' : 'Học viên chưa thấy bài này. Hãy xuất bản bài kiểm tra để mở cho học viên.'}</p>
+        {!savedExam.certificateActive && <p className="rounded-xl bg-amber-50 p-3 text-sm text-amber-900">Chứng chỉ đang tắt. Hãy bật chứng chỉ trong Quản lý chứng chỉ trước khi giới thiệu bài kiểm tra cho học viên.</p>}
         <div className="rounded-xl bg-primary/5 p-4 text-sm leading-7">
           <p className="font-bold">Học viên tìm bài ở đâu?</p>
-          <p>Chứng chỉ → {savedExam.certificateName} → Bài kiểm tra → {savedExam.title} → Bắt đầu.</p>
+          <p>Chứng chỉ → tìm “{savedExam.title}” → chọn đúng tên bài kiểm tra trong kết quả.</p>
+          <p className="text-on-surface-variant">Bài kiểm tra đã xuất bản có thể tìm bằng tên bài trên trang Chứng chỉ.</p>
         </div>
         {savedExam.topicPractice && <p className="text-sm text-on-surface-variant">Bài luyện tập chỉ mở khi học viên hoàn thành các bài học kiến thức đã xuất bản của chủ đề được chọn (hoặc của chứng chỉ nếu không chọn chủ đề). Hãy tạo bài học ôn chứng chỉ, gắn đúng chứng chỉ/chủ đề và xuất bản trong Quản lý bài học.</p>}
         <div className="flex flex-wrap gap-3">
           <button type="button" className="ui-button ui-button-primary" onClick={async () => {
             try {
-              await navigator.clipboard.writeText(`${window.location.origin}/learn/certifications/${savedExam.certificateId}?tab=exams`);
+              await navigator.clipboard.writeText(`${window.location.origin}/learn/certifications/${savedExam.certificateId}?tab=exams&examId=${encodeURIComponent(savedExam.id)}`);
               showToast('Đã sao chép đường dẫn. Học viên đăng nhập rồi mở đường dẫn này để xem bài kiểm tra.', 'success');
             } catch { showToast('Không thể sao chép tự động. Bạn có thể chọn và sao chép đường dẫn bên dưới.', 'error'); }
           }}>Sao chép đường dẫn cho học viên</button>
           <Link className="ui-button ui-button-outline" href="/admin/tests">Về danh sách quản trị</Link>
         </div>
-        <label className="block text-sm font-semibold">Đường dẫn chứng chỉ dành cho học viên
-          <input readOnly aria-label="Đường dẫn chứng chỉ dành cho học viên" onFocus={event => event.target.select()} value={`${window.location.origin}/learn/certifications/${savedExam.certificateId}?tab=exams`} className="mt-2 h-11 w-full rounded-xl border border-outline-variant px-3 text-sm font-normal" />
+        <label className="block text-sm font-semibold">Đường dẫn trực tiếp tới bài kiểm tra
+          <input readOnly aria-label="Đường dẫn bài kiểm tra dành cho học viên" onFocus={event => event.target.select()} value={`${window.location.origin}/learn/certifications/${savedExam.certificateId}?tab=exams&examId=${encodeURIComponent(savedExam.id)}`} className="mt-2 h-11 w-full rounded-xl border border-outline-variant px-3 text-sm font-normal" />
         </label>
         <p className="text-xs text-on-surface-variant">Mở đường dẫn bằng tài khoản học viên. Bài còn ở bản nháp sẽ chưa xuất hiện.</p>
       </section>
@@ -253,7 +254,7 @@ export default function TestBuilderPage() {
   if (loading) {
     return (
       <FormPageLayout>
-        <PageHeader title={isEdit ? 'Chỉnh sửa bài thi' : 'Tạo bài thi mới'} description="Xây dựng cấu trúc bài thi" />
+        <PageHeader title={isEdit ? 'Chỉnh sửa bài thi' : 'Tạo bài thi mới'} />
         <div className="mt-6 flex items-center justify-center h-64">
           <AppIcon className="animate-spin  text-primary">progress_activity</AppIcon>
         </div>
@@ -265,8 +266,18 @@ export default function TestBuilderPage() {
     <FormPageLayout className="max-w-7xl"><BackButton fallbackHref="/admin/tests" />
       <PageHeader
         title={isEdit ? 'Chỉnh sửa bài thi' : 'Tạo bài thi mới'}
-        description="Cấu hình thông tin và chọn câu hỏi cho bài thi"
       />
+
+      <section className="mt-6 rounded-2xl border border-primary/20 bg-primary/5 p-5 text-sm leading-6" aria-label="Các bước để học viên thấy và làm được bài kiểm tra">
+        <h2 className="font-bold text-on-surface">Để học viên thấy và làm được bài kiểm tra</h2>
+        <ol className="mt-2 list-inside list-decimal space-y-1 text-on-surface-variant">
+          <li>Chọn đúng chứng chỉ đang hoạt động: <strong className="text-on-surface">{selectedCertificate ? `${selectedCertificate.name}${selectedCertificate.isActive === false ? ' (đang tắt)' : ''}` : 'chưa chọn'}</strong>.</li>
+          <li>Chọn ít nhất một câu hỏi: <strong className="text-on-surface">{selectedQuestionIds.length} câu đã chọn</strong>.</li>
+          <li>Chọn “Đã xuất bản”: <strong className="text-on-surface">{status === 'published' ? 'đã chọn' : 'hiện là bản nháp'}</strong>.</li>
+          {kind === 'practice' && <li>Với bài luyện tập chủ đề, tạo và xuất bản bài học kiến thức gắn đúng chứng chỉ/chủ đề trong <Link href="/admin/lessons" className="font-semibold text-primary underline">Quản lý bài học</Link>; học viên cần học xong trước khi làm bài.</li>}
+        </ol>
+        <p className="mt-2 text-on-surface-variant">Học viên có thể tìm theo <strong>tên chứng chỉ hoặc tên bài kiểm tra đã xuất bản</strong> ở trang Chứng chỉ. Chọn tên bài trong kết quả sẽ mở đúng bài kiểm tra.</p>
+      </section>
 
       <form onSubmit={handleSubmit} className="mt-6 space-y-6">
         {globalError && (

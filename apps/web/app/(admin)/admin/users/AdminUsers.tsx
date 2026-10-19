@@ -340,7 +340,7 @@ export default function AdminUsers({ createOnly = false }: { createOnly?: boolea
   return (
     <main className="flex-1 p-6 lg:p-9 flex flex-col gap-7 w-full">
       {/* Page Header & Actions */}
-      <PageHeader title="Quản lý người dùng" description="Quản lý danh sách học viên, giảng viên và quản trị viên." icon="manage_accounts" iconClassName="from-teal-500 to-emerald-600" action={<button
+      <PageHeader title="Quản lý người dùng" icon="manage_accounts" iconClassName="from-teal-500 to-emerald-600" action={<button
           onClick={() => router.push('/admin/users/new')}
           className="flex h-11 items-center justify-center gap-2 text-on-primary px-5 rounded-xl text-sm font-semibold hover:bg-primary-container transition-all shadow-[0_8px_18px_rgba(53,37,205,0.18)] hover:-translate-y-0.5 whitespace-nowrap bg-primary"
         >
@@ -406,7 +406,7 @@ export default function AdminUsers({ createOnly = false }: { createOnly?: boolea
                 <th className="w-[13%] px-5 py-3 font-interface-sb text-interface-sb text-on-surface-variant">Vai trò</th>
                 <th className="w-[15%] px-5 py-3 font-interface-sb text-interface-sb text-on-surface-variant">Trạng thái</th>
                 <th className="w-[12%] px-5 py-3 font-interface-sb text-interface-sb text-on-surface-variant">Ngày tạo</th>
-                <th className="w-[14%] px-5 py-3 font-interface-sb text-interface-sb text-on-surface-variant text-right">Hành động</th>
+                <th className="w-[14%] px-5 py-3 font-interface-sb text-interface-sb text-on-surface-variant text-right">Thao tác</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-outline-variant">

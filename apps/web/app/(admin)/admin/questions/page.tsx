@@ -142,7 +142,7 @@ export default function AdminQuestionsPage() {
   return (
     <div>
       <div className="flex flex-wrap items-start justify-between gap-4">
-        <PageHeader title="Ngân hàng câu hỏi" description="Quản lý toàn bộ câu hỏi luyện tập và thi trắc nghiệm IT" />
+        <PageHeader title="Ngân hàng câu hỏi" />
         <div className="flex flex-wrap items-center gap-2.5">
           <button
             type="button"

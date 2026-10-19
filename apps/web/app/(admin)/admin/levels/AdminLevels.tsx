@@ -304,7 +304,6 @@ export default function AdminLevels({ createOnly = false }: { createOnly?: boole
         <PageHeader
           title="Cấp độ học tập"
           icon="stairs"
-          description="Quản lý và thống kê toàn bộ cấp độ học theo khung năng lực chuẩn (CEFR & Tech Framework)"
         />
         <button
           type="button"

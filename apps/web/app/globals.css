@@ -1,5 +1,13 @@
 @import "tailwindcss";
 
+@font-face {
+  font-family: 'Inter';
+  src: url('/fonts/Inter.ttf') format('truetype');
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+}
+
 :root {
   /* shadcn/ui semantic tokens — one light theme for the whole product */
   --foreground: #0f172a;
@@ -252,14 +260,14 @@
   --container-6xl: 72rem;
   --container-7xl: 80rem;
 
-  --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
-  --font-headline-h1: 'Inter', sans-serif;
-  --font-headline-h2: 'Inter', sans-serif;
-  --font-headline-h3: 'Inter', sans-serif;
-  --font-body-md: 'Inter', sans-serif;
-  --font-body-sm: 'Inter', sans-serif;
-  --font-interface-sb: 'Inter', sans-serif;
-  --font-label-caps: 'Inter', sans-serif;
+  --font-sans: 'Inter', sans-serif;
+  --font-headline-h1: var(--font-sans);
+  --font-headline-h2: var(--font-sans);
+  --font-headline-h3: var(--font-sans);
+  --font-body-md: var(--font-sans);
+  --font-body-sm: var(--font-sans);
+  --font-interface-sb: var(--font-sans);
+  --font-label-caps: var(--font-sans);
 
   /* Radius tokens */
   --radius-sm: 4px;

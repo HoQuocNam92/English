@@ -18,5 +18,6 @@ test('default dates follow Vietnam midnight and handle month and leap-year bound
   assert.equal(days[6].day, 'Thứ Năm, 01/10/2026')
   assert.equal(activityDays('2024-02-28', '2024-03-01')[1].day, 'Thứ Năm, 29/02/2024')
   assert.equal(activityDays('2026-10-11', '2026-10-11').length, 1)
-  assert.equal(activityDays('2026-01-01', '2026-10-11').length, 31)
+  assert.equal(activityDays('2026-01-01', '2026-10-11').length, 284)
+  assert.equal(activityDays('2026-01-01', '2026-10-11')[0].date, '2026-01-01')
 })

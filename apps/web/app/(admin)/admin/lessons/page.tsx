@@ -75,7 +75,7 @@ export default function LessonsPage() {
   const remove = async (item: Lesson) => { if (!await confirmDialog(`Bạn có muốn xóa bài học “${item.title}” hay không?`, { title: 'Xóa bài học', confirmLabel: 'Xóa', tone: 'danger' })) return; try { await apiClient.delete(`/lessons/${item.id}`); await load(); } catch (e) { setError(e instanceof ApiClientError ? e.message : 'Không thể xóa bài học'); } };
 
   return <div>
-    <div className="flex items-start justify-between gap-4"><PageHeader icon={category?.icon} iconClassName={category?.iconClassName} title={pageTitle} description={category?.description ?? 'Quản lý các loại nội dung học tập'} /><Link href={`/admin/lessons/editor${type ? `?type=${type}` : ''}`} className="inline-flex items-center gap-2 rounded-xl bg-primary px-4 py-2.5 text-sm font-semibold !text-white"><AppIcon className=" text-[19px]">add</AppIcon>Thêm {itemName}</Link></div>
+    <div className="flex items-start justify-between gap-4"><PageHeader icon={category?.icon} iconClassName={category?.iconClassName} title={pageTitle} /><Link href={`/admin/lessons/editor${type ? `?type=${type}` : ''}`} className="inline-flex items-center gap-2 rounded-xl bg-primary px-4 py-2.5 text-sm font-semibold !text-white"><AppIcon className=" text-[19px]">add</AppIcon>Thêm {itemName}</Link></div>
     <FilterPanel className="mt-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
       <SearchInput value={searchInput} onChange={setSearchInput} onSearch={value => { setSearch(value); setPage(1); }} placeholder="Tìm theo tiêu đề, tóm tắt..." />
       <div className="flex flex-wrap gap-3 sm:ml-auto">

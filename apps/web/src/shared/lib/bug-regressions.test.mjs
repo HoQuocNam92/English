@@ -61,11 +61,27 @@ test('selection menus load records beyond the first hundred without dropping fil
 });
 
 
+test('question selection removes overlapping page records without merging distinct questions with the same prompt', async () => {
+  const { loadAllPages } = await import('./load-all-pages.ts');
+  const records = await loadAllPages(async page => ({
+    data: page === 1
+      ? [{ id: 'a', prompt: 'Same prompt' }, { id: 'b', prompt: 'Original' }]
+      : [{ id: 'b', prompt: 'Updated' }, { id: 'c', prompt: 'Same prompt' }],
+    meta: { totalPages: 2 },
+  }), question => question.id);
+  assert.deepEqual(records, [
+    { id: 'a', prompt: 'Same prompt' },
+    { id: 'b', prompt: 'Updated' },
+    { id: 'c', prompt: 'Same prompt' },
+  ]);
+});
+
 test('dashboard date filters use the Vietnam calendar at midnight and month rollover', async () => {
   const { dashboardDateRange } = await import('./dashboard-date-range.ts');
   const now = new Date('2026-09-30T18:00:00Z');
   assert.deepEqual(dashboardDateRange('month', now), { dateFrom: '2026-10-01', dateTo: '2026-10-01' });
   assert.deepEqual(dashboardDateRange('week', now), { dateFrom: '2026-09-25', dateTo: '2026-10-01' });
+  assert.deepEqual(dashboardDateRange('year', now), { dateFrom: '2026-01-01', dateTo: '2026-10-01' });
 });
 
 test('exam question scope distinguishes similar domains and rejects mismatched levels', async () => {

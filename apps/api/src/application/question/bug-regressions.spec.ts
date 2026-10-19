@@ -18,6 +18,23 @@ test('questions search prompt and context, and selected exam filters both rows a
   assert.equal(queries[0].where.examQuestions, undefined)
 })
 
+test('question pages use a unique tie breaker for questions created together', async () => {
+  const records = ['c', 'a', 'b'].map(id => ({ id, createdAt: new Date('2026-10-01T00:00:00Z') }))
+  const service = new QuestionsService({ question: {
+    findMany: async ({ orderBy, skip, take }: any) => [...records].sort((a: any, b: any) => {
+      for (const order of Array.isArray(orderBy) ? orderBy : [orderBy]) {
+        const [field, direction] = Object.entries(order)[0]
+        const compared = a[field] < b[field] ? -1 : a[field] > b[field] ? 1 : 0
+        if (compared) return direction === 'desc' ? -compared : compared
+      }
+      return 0
+    }).slice(skip, skip + take),
+    count: async () => records.length,
+  } } as any)
+  const pages = await Promise.all([1, 2, 3].map(page => service.findAll({ page, limit: 1 })))
+  assert.deepEqual(pages.flatMap(page => page.data.map((item: any) => item.id)), ['c', 'b', 'a'])
+})
+
 test('test results do not invent a zero duration or submission time when timestamps are missing', async () => {
   const service = new TaxonomyService({ examAttempt: { findMany: async () => [{ id: 'missing', createdAt: new Date(), submittedAt: null, startedAt: null, exam: {} }, { id: 'timed', startedAt: new Date('2026-10-07T01:00:00Z'), submittedAt: new Date('2026-10-07T01:03:42Z'), exam: {} }], count: async () => 2 } } as any)
   const result: any = await service.getTestResults({})

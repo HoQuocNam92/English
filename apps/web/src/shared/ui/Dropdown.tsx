@@ -2,7 +2,7 @@
 
 import * as React from 'react';
 import { createPortal } from 'react-dom';
-import { Check, ChevronDown, Search } from 'lucide-react';
+import { Check, ChevronDown } from 'lucide-react';
 import { filterDropdownItems } from '@/shared/lib/dropdown-search';
 import { cn } from '@/shared/lib/cn';
 import { LevelBadge } from '@/shared/ui/LevelBadge';
@@ -36,8 +36,9 @@ export const Dropdown = React.forwardRef<HTMLSelectElement, React.SelectHTMLAttr
     });
 
     const visibleItems = React.useMemo(() => filterDropdownItems(items, query), [items, query]);
+    const showSearch = items.length > 10;
     const close = React.useCallback(() => { setOpen(false); setQuery(''); }, []);
-    React.useEffect(() => { if (open) searchRef.current?.focus({ preventScroll: true }); }, [open]);
+    React.useEffect(() => { if (open && showSearch) searchRef.current?.focus({ preventScroll: true }); }, [open, showSearch]);
     React.useEffect(() => {
       if (!open) return;
       const place = () => {
@@ -47,7 +48,7 @@ export const Dropdown = React.forwardRef<HTMLSelectElement, React.SelectHTMLAttr
         const above = rect.top - 16;
         const upwards = below < 180 && above > below;
         const maxHeight = Math.min(280, Math.max(80, upwards ? above : below));
-        const height = Math.min(maxHeight, visibleItems.length * 42 + 72);
+        const height = Math.min(maxHeight, visibleItems.length * 42 + (showSearch ? 72 : 16));
         const width = Math.min(Math.max(rect.width, 260), window.innerWidth - 24);
         setPosition({ left: Math.max(12, Math.min(rect.left, window.innerWidth - width - 12)), top: upwards ? rect.top - height - 8 : rect.bottom + 8, width, maxHeight });
       };
@@ -64,7 +65,7 @@ export const Dropdown = React.forwardRef<HTMLSelectElement, React.SelectHTMLAttr
         window.removeEventListener('resize', close);
         window.removeEventListener('scroll', scroll, true);
       };
-    }, [open, visibleItems.length, close]);
+    }, [open, visibleItems.length, showSearch, close]);
     React.useEffect(() => {
       if (open) menuRef.current?.querySelector(`[data-index="${active}"]`)?.scrollIntoView({ block: 'nearest' });
     }, [active, open]);
@@ -128,8 +129,7 @@ export const Dropdown = React.forwardRef<HTMLSelectElement, React.SelectHTMLAttr
       {open && createPortal(<div ref={menuRef} className="dropdown-menu" style={position}
         onMouseDown={event => { if ((event.target as HTMLElement).closest('[role="option"]')) event.preventDefault(); }}
         onBlur={event => { if (!menuRef.current?.contains(event.relatedTarget as Node) && event.relatedTarget !== triggerRef.current) close(); }}>
-        <div className="dropdown-search">
-          <Search aria-hidden="true" className="size-4 shrink-0 text-outline" />
+        {showSearch && <div className="dropdown-search">
           <input ref={searchRef} type="search" role="combobox" value={query}
             aria-label={`Tìm trong ${props['aria-label'] || 'danh sách'}`} aria-expanded={open}
             aria-controls={menuId} aria-autocomplete="list"
@@ -140,7 +140,7 @@ export const Dropdown = React.forwardRef<HTMLSelectElement, React.SelectHTMLAttr
               setQuery(value);
               setActive(filterDropdownItems(items, value).find(({ item }) => !item.disabled)?.index ?? -1);
             }} onKeyDown={keyDown} />
-        </div>
+        </div>}
         <div id={menuId} role="listbox" aria-label={props['aria-label']}>
           {visibleItems.map(({ item, index }) => <div key={index} id={`${menuId}-${index}`} role="option" aria-selected={item.value === selected} aria-disabled={item.disabled} data-index={index}
             className={cn('dropdown-option', item.value === selected && 'dropdown-option-selected', active === index && 'dropdown-option-active', item.disabled && 'dropdown-option-disabled')}

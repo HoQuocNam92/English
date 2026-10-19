@@ -63,7 +63,7 @@ function TreeBranch({ node, depth, selectedIds, busyId, onToggle, onToggleMany, 
       <AppIcon className={` text-[20px] ${isLeaf ? 'text-primary' : 'text-amber-500'}`}>{isLeaf ? 'task_alt' : open ? 'folder_open' : 'folder'}</AppIcon>
       {isLeaf && onToggle && node.permission ? <SelectionCheckbox checked={selectedIds?.has(node.permission.id) ?? false} disabled={busyId === node.permission.id} onChange={() => onToggle(node.permission!)} label={`Chọn quyền ${node.label}`} /> : null}
       {!isLeaf && onToggleMany ? <SelectionCheckbox checked={allSelected} indeterminate={partlySelected} disabled={Boolean(busyId)} onChange={() => onToggleMany(childPermissions, !allSelected)} label={node.kind === 'root' ? 'Chọn tất cả quyền' : `Chọn tất cả quyền trong ${node.label}`} /> : null}
-      <span className={isLeaf ? 'text-sm text-on-surface' : 'text-sm capitalize text-on-surface'}>{node.label}</span>
+      <span className="text-sm text-on-surface">{node.label}</span>
       {!isLeaf && <span className="ml-auto rounded-full bg-white px-2 py-0.5 text-[11px] font-medium text-on-surface-variant">{selectedIds ? `${selectedChildren}/${childPermissions.length}` : childPermissions.length}</span>}
       {isLeaf && node.permission && renderMeta ? <div className="ml-auto">{renderMeta(node.permission)}</div> : null}
     </div>

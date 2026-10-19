@@ -16,6 +16,12 @@ config.resolver.blockList = [
   ...(Array.isArray(existingBlockList) ? existingBlockList : existingBlockList ? [existingBlockList] : []),
   /[/\\]node_modules_old(?:[/\\]|$)/,
   /[/\\]\.pnpm-store(?:[/\\]|$)/,
+  // Native build output can contain thousands of directories. Watching it
+  // exhausts Linux inotify limits without helping JavaScript hot reload.
+  /[/\\]\.cxx(?:[/\\]|$)/,
+  /[/\\]\.gradle(?:[/\\]|$)/,
+  /[/\\]android[/\\](?:app[/\\])?build(?:[/\\]|$)/,
+  /[/\\]ios[/\\]build(?:[/\\]|$)/,
 ];
 
 // 2. Let Metro know where to resolve packages and in what order.

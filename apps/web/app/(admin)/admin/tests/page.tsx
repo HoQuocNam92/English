@@ -101,39 +101,38 @@ export default function AdminTestsPage() {
   return (
     <div>
       <div className="flex items-start justify-between gap-4">
-        <PageHeader title="Bài kiểm tra chứng chỉ" description="Luyện tập chủ đề, kiểm tra chuyên ngành và thi thử theo chứng chỉ" />
+        <PageHeader title="Bài kiểm tra chứng chỉ" />
         <Link href="/admin/tests/builder" className="inline-flex shrink-0 items-center gap-2 rounded-xl bg-primary px-4 py-2.5 text-sm font-semibold !text-white shadow-sm"><AppIcon className=" text-[19px]">add</AppIcon>Tạo bài kiểm tra</Link>
       </div>
-
       {/* Filters */}
       <FilterPanel className="mt-6 grid min-w-0 gap-4">
-        <div className="grid w-full min-w-0 gap-1">
-          <span className="text-xs font-semibold">Tìm kiếm</span>
-        <SearchInput
-          className="sm:!w-full"
-          value={searchInput}
-          onChange={setSearchInput}
-          onSearch={(sanitized) => {
-            setPage(1);
-            setSearch(sanitized);
-          }}
-          placeholder="Tìm kiếm theo tiêu đề bài kiểm tra..."
-          maxLength={100}
-        />
+        <div className="min-w-0">
+          <SearchInput
+            className="sm:!w-full"
+            value={searchInput}
+            onChange={setSearchInput}
+            onSearch={(sanitized) => {
+              setPage(1);
+              setSearch(sanitized);
+            }}
+            placeholder="Tìm kiếm theo tiêu đề bài kiểm tra..."
+            maxLength={100}
+          />
         </div>
         <div className="grid w-full min-w-0 items-end gap-3 sm:grid-cols-2 xl:grid-cols-3">
-        <label className="grid gap-1 text-xs font-semibold">Trạng thái
-        <Dropdown
-          value={status}
-          onChange={(e) => { setStatus(e.target.value); setPage(1); }}
-          className="h-11 w-full rounded-xl border border-outline-variant/60 bg-surface-container-lowest px-3 py-2 text-sm text-on-surface focus:outline-none"
-        >
-          {STATUSES.map((s) => <option key={s.value} value={s.value}>{s.label}</option>)}
-        </Dropdown>
-        </label>
-        {([['domainCode', 'Chuyên ngành', options.domains], ['levelCode', 'Trình độ', options.levels], ['certificateId', 'Chứng chỉ', options.certificates]] as const).map(([key,label,list]) => <label key={key} className="grid min-w-0 flex-1 basis-48 gap-1 text-xs font-semibold">{label}<Dropdown aria-label={label} value={filters[key]} onChange={e => { setFilters(f => ({ ...f, [key]: e.target.value })); setPage(1); }} className="h-11 min-w-0 rounded-xl border border-outline-variant px-3 text-sm"><option value="">Tất cả {label.toLocaleLowerCase('vi-VN')}</option>{list.map(x => <option key={x.id} value={key === 'certificateId' ? x.id : x.code}>{x.name}</option>)}</Dropdown></label>)}
-        <label className="grid gap-1 text-xs font-semibold">Loại bài kiểm tra<Dropdown aria-label="Loại bài kiểm tra" value={filters.kind} onChange={e => { setFilters(f => ({ ...f, kind: e.target.value })); setPage(1); }} className="h-11 rounded-xl border border-outline-variant px-3 text-sm"><option value="">Tất cả loại bài kiểm tra</option>{Object.entries(EXAM_KINDS).map(([v,l]) => <option key={v} value={v}>{l}</option>)}</Dropdown></label>
-        <ClearFiltersButton className="justify-self-start" onClick={() => { setFilters({ domainCode: '', levelCode: '', certificateId: '', kind: '' }); setStatus(''); setSearch(''); setSearchInput(''); setPage(1); }} />
+          <div className="min-w-0">
+            <Dropdown
+              aria-label="Trạng thái"
+              value={status}
+              onChange={(e) => { setStatus(e.target.value); setPage(1); }}
+              className="h-11 w-full rounded-xl border border-outline-variant/60 bg-surface-container-lowest px-3 py-2 text-sm text-on-surface focus:outline-none"
+            >
+              {STATUSES.map((s) => <option key={s.value} value={s.value}>{s.label}</option>)}
+            </Dropdown>
+          </div>
+          {([['domainCode', 'Chuyên ngành', options.domains], ['levelCode', 'Trình độ', options.levels], ['certificateId', 'Chứng chỉ', options.certificates]] as const).map(([key,label,list]) => <div key={key} className="min-w-0"><Dropdown aria-label={label} value={filters[key]} onChange={e => { setFilters(f => ({ ...f, [key]: e.target.value })); setPage(1); }} className="h-11 w-full min-w-0 rounded-xl border border-outline-variant px-3 text-sm"><option value="">Tất cả {label.toLocaleLowerCase('vi-VN')}</option>{list.map(x => <option key={x.id} value={key === 'certificateId' ? x.id : x.code}>{x.name}</option>)}</Dropdown></div>)}
+          <div className="min-w-0"><Dropdown aria-label="Loại bài kiểm tra" value={filters.kind} onChange={e => { setFilters(f => ({ ...f, kind: e.target.value })); setPage(1); }} className="h-11 w-full rounded-xl border border-outline-variant px-3 text-sm"><option value="">Tất cả loại bài kiểm tra</option>{Object.entries(EXAM_KINDS).map(([v,l]) => <option key={v} value={v}>{l}</option>)}</Dropdown></div>
+          <ClearFiltersButton className="justify-self-start" onClick={() => { setFilters({ domainCode: '', levelCode: '', certificateId: '', kind: '' }); setStatus(''); setSearch(''); setSearchInput(''); setPage(1); }} />
         </div>
       </FilterPanel>
 
@@ -167,7 +166,7 @@ export default function AdminTestsPage() {
           </div>
         ) : (
           items.map((exam) => (
-            <div key={exam.id} className="rounded-2xl border border-outline-variant/50 bg-surface-container-lowest p-5 shadow-[0_8px_28px_rgba(15,23,42,0.035)] hover:shadow-md transition-shadow content-card">
+            <div key={exam.id} className="rounded-2xl border border-outline-variant/50 bg-surface-container-lowest p-5 shadow-[0_8px_28px_rgba(15,23,42,0.035)] hover:shadow-md transition-shadow content-card md:min-h-[460px]">
               <div>
                 <div className="flex items-start justify-between gap-2 mb-2">
                   <input type="checkbox" aria-label={`Chọn ${exam.title}`} checked={selectedIds.has(exam.id)} onChange={() => setSelectedIds((current) => { const next = new Set(current); if (next.has(exam.id)) next.delete(exam.id); else next.add(exam.id); return next; })} className="mt-1 h-4 w-4 shrink-0 accent-primary" />
@@ -175,10 +174,15 @@ export default function AdminTestsPage() {
                   <StatusBadge status={exam.status} />
                 </div>
                 <span className="mb-3 inline-flex rounded-full bg-violet-50 px-2.5 py-1 text-[11px] font-bold text-violet-700">{EXAM_KINDS[exam.kind] ?? exam.kind}</span>
+                <div className="mb-3 rounded-xl bg-surface-container p-3 text-xs leading-5 text-on-surface-variant">
+                  <p>Chứng chỉ: <strong className="text-on-surface">{exam.certificate?.name ?? 'Chưa gắn chứng chỉ'}</strong>{exam.certificate?.isActive === false && <span className="ml-1 font-semibold text-amber-700">(đang tắt)</span>}</p>
+                  <p>{exam.status === 'published' ? `${exam._count?.questions ?? 0} câu hỏi · Học viên mở chứng chỉ → Bài kiểm tra` : 'Bản nháp · Học viên chưa thấy bài này'}</p>
+                  {exam.status === 'published' && exam.kind === 'practice' && <p>Cần bài học kiến thức đã xuất bản; học viên phải học xong trước khi làm.</p>}
+                </div>
 
-                {exam.description && (
-                  <p className="text-xs text-on-surface-variant line-clamp-2 mb-3 leading-relaxed">{exam.description}</p>
-                )}
+                <div className="mb-3 min-h-10">
+                  {exam.description && <p className="text-xs text-on-surface-variant line-clamp-2 leading-relaxed">{exam.description}</p>}
+                </div>
 
                 {/* Meta */}
                 <div className="grid grid-cols-2 gap-2 text-xs mb-3">

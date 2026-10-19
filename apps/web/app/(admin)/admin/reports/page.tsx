@@ -9,6 +9,7 @@ import { PageHeader } from '@/shared/ui/PageHeader';
 import { Dropdown } from '@/shared/ui/Dropdown';
 import * as React from 'react';
 import { ActivityChart } from '@/shared/ui/ActivityChart';
+import { dashboardDateRange } from '@/shared/lib/dashboard-date-range';
 import { apiClient, ApiClientError } from '@/shared/api/api-client';
 
 interface AnalyticsData {
@@ -40,6 +41,7 @@ interface AnalyticsData {
     exams: number;
   }>;
   weeklyActivity: Array<{
+    date: string;
     day: string;
     activityCount: number;
     activeUsers: number;
@@ -51,14 +53,13 @@ interface AnalyticsData {
 type FilterOption = { id: string; code?: string; name: string };
 type ReportFilters = { dateFrom: string; dateTo: string; domainCode: string; certificateId: string };
 
-const formatDateInput = (date: Date) => `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
-
 const presetRange = (preset: string): Pick<ReportFilters, 'dateFrom' | 'dateTo'> => {
-  const today = new Date();
-  if (preset === 'last_month') return { dateFrom: formatDateInput(new Date(today.getFullYear(), today.getMonth() - 1, 1)), dateTo: formatDateInput(new Date(today.getFullYear(), today.getMonth(), 0)) };
-  if (preset === 'year') return { dateFrom: formatDateInput(new Date(today.getFullYear(), 0, 1)), dateTo: formatDateInput(today) };
-  if (preset === 'last_7_days') { const from = new Date(today); from.setDate(today.getDate() - 6); return { dateFrom: formatDateInput(from), dateTo: formatDateInput(today) }; }
-  return { dateFrom: formatDateInput(new Date(today.getFullYear(), today.getMonth(), 1)), dateTo: formatDateInput(today) };
+  if (preset === 'last_month') {
+    const { dateFrom } = dashboardDateRange('month');
+    const dateTo = new Date(Date.parse(`${dateFrom}T00:00:00Z`) - 86400000).toISOString().slice(0, 10);
+    return { dateFrom: `${dateTo.slice(0, 8)}01`, dateTo };
+  }
+  return dashboardDateRange(preset === 'last_7_days' ? 'week' : preset);
 };
 
 const DOMAIN_COLORS = [
@@ -124,6 +125,8 @@ export default function AdminReportsPage() {
   const applyFilters = () => {
     if (!dateFrom || !dateTo) { setError('Vui lòng chọn đầy đủ ngày bắt đầu và ngày kết thúc.'); return; }
     if (dateFrom > dateTo) { setError('Ngày bắt đầu phải trước hoặc bằng ngày kết thúc.'); return; }
+    if ((Date.parse(dateTo) - Date.parse(dateFrom)) / 86400000 >= 366) { setError('Khoảng thời gian tối đa 366 ngày.'); return; }
+    if (dateTo > dashboardDateRange('week').dateTo) { setError('Ngày kết thúc không được sau hôm nay.'); return; }
     setAppliedFilters({ dateFrom, dateTo, domainCode, certificateId });
   };
 
@@ -147,7 +150,6 @@ export default function AdminReportsPage() {
     || appliedFilters.dateTo !== initialRange.dateTo;
 
   const totalDomainItems = analytics?.domainsDistribution.reduce((s, d) => s + d.totalItems, 0) || 1;
-  const maxWeeklyActivity = Math.max(1, ...(analytics?.weeklyActivity.map((w) => w.activityCount) ?? [100]));
   const completionRate = Math.min(100, Math.max(0, analytics?.overview.passRate ?? 0));
 
   const exportExcel = async () => {
@@ -183,17 +185,16 @@ export default function AdminReportsPage() {
         <div className="flex min-w-0 flex-col gap-5">
           <PageHeader
             title="Báo cáo thống kê"
-            description="Hiệu suất học tập và tương tác của hệ thống."
             icon="leaderboard"
           />
           <section aria-label="Bộ lọc báo cáo" className="grid w-full min-w-0 gap-4 rounded-2xl border border-outline-variant/50 bg-white p-4 sm:grid-cols-2 xl:grid-cols-3">
-            <label className="grid gap-1 text-sm font-semibold">Khoảng thời gian<Dropdown aria-label="Khoảng thời gian" value={period} onChange={e => changePeriod(e.target.value)} className="h-11 min-w-0 rounded-xl border border-outline-variant px-3"><option value="month">Tháng này</option><option value="last_month">Tháng trước</option><option value="last_7_days">7 ngày gần nhất</option><option value="year">Năm nay</option><option value="custom">Tùy chọn ngày</option></Dropdown></label>
-            <label className="grid gap-1 text-sm font-semibold">Chuyên ngành<Dropdown aria-label="Chuyên ngành" value={domainCode} onChange={e => setDomainCode(e.target.value)} className="h-11 min-w-0 rounded-xl border border-outline-variant px-3"><option value="">Tất cả chuyên ngành</option>{domains.map(d => <option key={d.id} value={d.code}>{d.name}</option>)}</Dropdown></label>
-            <label className="grid gap-1 text-sm font-semibold">Chứng chỉ<Dropdown aria-label="Chứng chỉ" value={certificateId} onChange={e => setCertificateId(e.target.value)} className="h-11 min-w-0 rounded-xl border border-outline-variant px-3"><option value="">Tất cả chứng chỉ</option>{certificates.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}</Dropdown></label>
-            <label className="grid gap-1 text-sm font-semibold">Từ ngày<input aria-label="Từ ngày" type="date" value={dateFrom} max={dateTo} onChange={e => { setDateFrom(e.target.value); setPeriod('custom'); }} className="h-11 min-w-0 w-full rounded-xl border border-outline-variant px-3" /></label>
-            <label className="grid gap-1 text-sm font-semibold">Đến ngày<input aria-label="Đến ngày" type="date" value={dateTo} min={dateFrom} onChange={e => { setDateTo(e.target.value); setPeriod('custom'); }} className="h-11 min-w-0 w-full rounded-xl border border-outline-variant px-3" /></label>
+            <div className="min-w-0"><Dropdown aria-label="Khoảng thời gian" value={period} onChange={e => changePeriod(e.target.value)} className="h-11 w-full min-w-0 rounded-xl border border-outline-variant px-3"><option value="month">Tháng này</option><option value="last_month">Tháng trước</option><option value="last_7_days">7 ngày gần nhất</option><option value="year">Năm nay</option><option value="custom">Tùy chọn ngày</option></Dropdown></div>
+            <div className="min-w-0"><Dropdown aria-label="Chuyên ngành" value={domainCode} onChange={e => setDomainCode(e.target.value)} className="h-11 w-full min-w-0 rounded-xl border border-outline-variant px-3"><option value="">Tất cả chuyên ngành</option>{domains.map(d => <option key={d.id} value={d.code}>{d.name}</option>)}</Dropdown></div>
+            <div className="min-w-0"><Dropdown aria-label="Chứng chỉ" value={certificateId} onChange={e => setCertificateId(e.target.value)} className="h-11 w-full min-w-0 rounded-xl border border-outline-variant px-3"><option value="">Tất cả chứng chỉ</option>{certificates.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}</Dropdown></div>
+            <input aria-label="Từ ngày" title="Từ ngày" type="date" value={dateFrom} max={dateTo} onChange={e => { setDateFrom(e.target.value); setPeriod('custom'); }} className="h-11 min-w-0 w-full rounded-xl border border-outline-variant px-3" />
+            <input aria-label="Đến ngày" title="Đến ngày" type="date" value={dateTo} min={dateFrom} max={dashboardDateRange('week').dateTo} onChange={e => { setDateTo(e.target.value); setPeriod('custom'); }} className="h-11 min-w-0 w-full rounded-xl border border-outline-variant px-3" />
             <div className="flex flex-wrap items-end gap-2"><button onClick={applyFilters} disabled={loading} className="h-11 rounded-xl bg-primary px-4 text-sm font-semibold !text-white disabled:opacity-50">Áp dụng</button><ClearFiltersButton onClick={resetFilters} /><button onClick={() => void exportExcel()} disabled={!analytics || loading || hasPendingFilters || !!error} className="h-11 rounded-xl border border-outline-variant px-4 text-sm disabled:opacity-50">Xuất Excel</button></div>
-            <p className="text-sm text-on-surface-variant sm:col-span-2 xl:col-span-3">{hasPendingFilters ? 'Bộ lọc đã thay đổi. Nhấn Áp dụng để cập nhật dữ liệu.' : `Đang hiển thị: ${appliedFilters.dateFrom} đến ${appliedFilters.dateTo}`}</p>
+            <p className="text-sm text-on-surface-variant sm:col-span-2 xl:col-span-3">{hasPendingFilters ? 'Bộ lọc đã thay đổi. Nhấn Áp dụng để cập nhật dữ liệu.' : `Đang xem từ ${appliedFilters.dateFrom.split('-').reverse().join('/')} đến ${appliedFilters.dateTo.split('-').reverse().join('/')}. Khoảng ngày áp dụng cho hoạt động, lượt thi và học liệu được tạo trong kỳ.`}</p>
           </section>
         </div>
 
@@ -205,8 +206,8 @@ export default function AdminReportsPage() {
         )}
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-gutter">
-          <SummaryStat label="Tổng số người học" value={loading ? '…' : (analytics?.overview.totalUsers ?? 0).toLocaleString('vi-VN')} unit="người" icon="group" description="Dữ liệu tài khoản hiện tại" />
-          <SummaryStat label="Người học hoạt động" value={loading ? '…' : (analytics?.overview.activeUsers ?? 0).toLocaleString('vi-VN')} unit="người" icon="local_fire_department" description="Dữ liệu hoạt động hiện tại" />
+          <SummaryStat label="Người học đăng ký trong kỳ" value={loading ? '…' : (analytics?.overview.totalUsers ?? 0).toLocaleString('vi-VN')} unit="người" icon="group" description="Tài khoản người học được tạo trong khoảng ngày đã chọn" />
+          <SummaryStat label="Tài khoản đang hoạt động" value={loading ? '…' : (analytics?.overview.activeUsers ?? 0).toLocaleString('vi-VN')} unit="người" icon="local_fire_department" description="Người học đăng ký trong kỳ, trạng thái tài khoản đang hoạt động" />
           <SummaryStat label="Tỷ lệ đạt bài thi" value={loading ? '…' : Math.round(completionRate)} unit="%" icon="task_alt" description="Tính từ các lượt thi thực tế" />
           <SummaryStat label="Điểm TB hệ thống" value={loading ? '…' : ((analytics?.overview.averageScore ?? 0) / 10).toFixed(1)} unit="/ 10 điểm" icon="school" description="Tính từ các lượt thi thực tế" />
         </div>
@@ -214,7 +215,7 @@ export default function AdminReportsPage() {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-gutter">
           <div className="min-w-0 lg:col-span-2 bg-surface-container-lowest p-lg rounded-xl border border-outline-variant hover:shadow-[0_1px_3px_rgba(15,23,24,0.06)] transition-all flex flex-col overflow-hidden">
             <div className="flex items-center justify-between mb-lg">
-              <h3 className="font-headline-h3 text-headline-h3 text-on-surface">Hoạt động học tập (tối đa 31 ngày cuối kỳ)</h3>
+              <h3 className="font-headline-h3 text-headline-h3 text-on-surface">Hoạt động học tập</h3>
               <ActionGroup><ActionButton action="export" label="Xuất dữ liệu biểu đồ" disabled={!analytics || loading || hasPendingFilters || !!error} onClick={() => void exportChart('activity')} /></ActionGroup>
             </div>
             <ActivityChart data={analytics?.weeklyActivity ?? []} />
@@ -222,16 +223,17 @@ export default function AdminReportsPage() {
 
           <div className="bg-surface-container-lowest p-lg rounded-xl border border-outline-variant hover:shadow-[0_1px_3px_rgba(15,23,24,0.06)] transition-all flex flex-col">
             <div className="flex items-center justify-between mb-lg">
-              <h3 className="font-headline-h3 text-headline-h3 text-on-surface">Phân bố theo chuyên ngành</h3>
+              <h3 className="font-headline-h3 text-headline-h3 text-on-surface">Học liệu được tạo theo chuyên ngành</h3>
               <ActionGroup><ActionButton action="export" label="Xuất dữ liệu biểu đồ" disabled={!analytics || loading || hasPendingFilters || !!error} onClick={() => void exportChart('domains')} /></ActionGroup>
             </div>
+            <p className="text-xs text-on-surface-variant">% là tỷ trọng bài học, từ vựng, câu hỏi và đề thi được tạo trong khoảng ngày đã chọn.</p>
             <div className="mt-md flex flex-col gap-sm">
               {(analytics?.domainsDistribution ?? []).map((dom, idx) => {
                 const bgClasses = ['bg-primary', 'bg-secondary', 'bg-tertiary'];
                 return (
                   <div key={dom.code} className="flex items-center justify-between font-body-sm text-body-sm">
                     <div className="flex items-center gap-xs"><div className={`w-3 h-3 rounded-full ${bgClasses[idx%3]}`}></div><span className="break-words">{dom.name}</span></div>
-                    <span className="font-interface-sb text-on-surface">{Math.round((dom.totalItems / totalDomainItems) * 100)}%</span>
+                    <span className="font-interface-sb text-on-surface">{dom.totalItems.toLocaleString('vi-VN')} học liệu · {Math.round((dom.totalItems / totalDomainItems) * 100)}%</span>
                   </div>
                 )
               })}
@@ -243,6 +245,7 @@ export default function AdminReportsPage() {
               <h3 className="font-headline-h3 text-headline-h3 text-on-surface">Điểm trung bình theo chứng chỉ</h3>
               <ActionGroup><ActionButton action="export" label="Xuất dữ liệu biểu đồ" disabled={!analytics || loading || hasPendingFilters || !!error} onClick={() => void exportChart('certificates')} /></ActionGroup>
             </div>
+            <p className="text-xs text-on-surface-variant">Cột thể hiện điểm trung bình (%) của các lượt thi trong khoảng ngày đã chọn. Số lượt thi nằm phía trên cột.</p>
             <div className="relative h-[300px] w-full min-w-0 overflow-x-auto overflow-y-hidden pb-2">
               <div className="flex h-full min-w-full items-end justify-between gap-6 px-2 pt-6" style={{ width: `${Math.max(100, (analytics?.certificatesDistribution.length ?? 0) * 108)}px` }}>
                  {(analytics?.certificatesDistribution ?? []).map(item => {

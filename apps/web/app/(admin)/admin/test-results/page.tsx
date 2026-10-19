@@ -101,7 +101,6 @@ export default function AdminTestResultsPage() {
       <PageHeader
         className="mb-lg"
         title="Kết quả bài thi"
-        description="Kết quả thi của tất cả người học"
         icon="fact_check"
         iconClassName="from-blue-500 to-indigo-500"
         action={<button type="button" onClick={() => void exportExcel()} className="inline-flex items-center gap-2 rounded-lg border border-outline-variant bg-surface-container-lowest px-4 py-2.5 font-interface-sb text-interface-sb text-on-surface transition-colors hover:bg-surface-container-low"><AppIcon className=" text-[18px]">download</AppIcon>Xuất Excel</button>}

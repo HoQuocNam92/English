@@ -2027,8 +2027,8 @@ export const quizMeanings: Record<string, { term: string; meaning: string; sourc
   },
   "ea531430-5e38-4f3c-93ec-f38086d22a4c": {
     "term": "clean",
-    "meaning": "Cây đang hoạt động sẽ sạch nếu nó tương ứng với bản sửa đổi được tham chiếu bởi người đứng đầu hiện tại.",
-    "source": "short-definition"
+    "meaning": "Trong Git, cây làm việc ở trạng thái sạch khi không có thay đổi chưa được commit so với commit hiện tại.",
+    "source": "edited"
   },
   "01f49106-6156-4e71-a2f7-c47f0eedb7f9": {
     "term": "Client-side rendering (CSR)",
@@ -2037,8 +2037,8 @@ export const quizMeanings: Record<string, { term: string; meaning: string; sourc
   },
   "17d7fca6-776c-41d2-ac5a-e66b1f865dfc": {
     "term": "clone",
-    "meaning": "Bản sao là bản sao của kho lưu trữ nằm trên máy tính của bạn thay vì trên máy chủ của trang web ở đâu đó hoặc hành động tạo bản sao đó.",
-    "source": "short-definition"
+    "meaning": "Bản sao cục bộ của kho mã nguồn; clone cũng là thao tác tạo bản sao đó từ kho từ xa.",
+    "source": "edited"
   },
   "909bbe5a-a69d-4e23-914b-fad1a7fea9fc": {
     "term": "Closure",
@@ -7317,8 +7317,8 @@ export const quizMeanings: Record<string, { term: string; meaning: string; sourc
   },
   "3d7da4f1-cccb-42ed-81f6-f6fbde38ecd6": {
     "term": "orphan",
-    "meaning": "Hành động trèo lên một cành chưa tồn tại (tức là một cành chưa sinh ra).",
-    "source": "short-definition"
+    "meaning": "Trong Git, tạo một nhánh mới chưa có commit bằng cách bắt đầu từ trạng thái không có lịch sử commit.",
+    "source": "edited"
   },
   "7a152f3a-f92e-4cfa-b8cd-7eecd8aa9668": {
     "term": "OSB transformation",

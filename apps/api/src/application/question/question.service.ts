@@ -41,7 +41,7 @@ export class QuestionsService {
           certificationTopics: { include: { topic: { include: { certificateDomain: { include: { certificate: true } } } } } },
           examQuestions: { include: { exam: { select: { id: true, title: true } } }, orderBy: { order: 'asc' } },
         },
-        orderBy: { createdAt: 'desc' },
+        orderBy: [{ createdAt: 'desc' }, { id: 'desc' }],
       }),
       this.prisma.question.count({ where }),
     ])

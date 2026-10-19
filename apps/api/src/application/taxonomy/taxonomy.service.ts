@@ -6,6 +6,12 @@ import { PrismaService } from '../../infrastructure/database/prisma.service'
 export class TaxonomyService {
   constructor(private prisma: PrismaService) {}
 
+  private assertProfessionalCertificate(name: unknown) {
+    if (/^english\s+(?:a1|a2|b1|b2|c1|c2)$/i.test(String(name ?? '').trim())) {
+      throw new BadRequestException('Chỉ hỗ trợ chứng chỉ tiếng Anh chuyên ngành CNTT.')
+    }
+  }
+
   async getCareerGoals() {
     const data = await this.prisma.careerGoal.findMany({ where: { isActive: true }, include: { _count: { select: { profileGoals: true, learnerGroups: true } } }, orderBy: { name: 'asc' } })
     return { data }
@@ -200,6 +206,11 @@ export class TaxonomyService {
       where: activeOnly ? { isActive: true } : undefined,
       orderBy: { name: 'asc' },
       include: {
+        exams: {
+          where: { status: 'published' },
+          orderBy: { createdAt: 'desc' },
+          select: { id: true, title: true, createdAt: true },
+        },
         domains: {
           include: {
             domain: true,
@@ -410,6 +421,8 @@ export class TaxonomyService {
     if (dateFrom && Number.isNaN(dateFrom.getTime())) throw new BadRequestException('Ngày bắt đầu không hợp lệ')
     if (dateTo && Number.isNaN(dateTo.getTime())) throw new BadRequestException('Ngày kết thúc không hợp lệ')
     if (dateFrom && dateTo && dateFrom > dateTo) throw new BadRequestException('Ngày bắt đầu phải trước hoặc bằng ngày kết thúc')
+    const days = activityDays(params.dateFrom, params.dateTo)
+    if (days.length > 366) throw new BadRequestException('Khoảng thời gian tối đa 366 ngày')
     const createdAt = dateFrom || dateTo ? { ...(dateFrom ? { gte: dateFrom } : {}), ...(dateTo ? { lte: dateTo } : {}) } : undefined
     const domainRelation = params.domainCode ? { domain: { code: params.domainCode } } : {}
     const examCertificateRelation = params.certificateId ? { certificateId: params.certificateId } : {}
@@ -437,7 +450,7 @@ export class TaxonomyService {
       ...(params.domainCode ? { code: params.domainCode } : {}),
       ...(params.certificateId ? { certificateDomains: { some: { certificateId: params.certificateId } } } : {}),
     }
-    const [domains, levels, totalUsers, activeUsers, totalExams, totalVocab, totalLessons, attempts] =
+    const [domains, levels, totalUsers, activeUsers, totalExams, totalVocab, totalLessons, attemptTotals, passedCount] =
       await Promise.all([
         this.prisma.domain.findMany({
           where: domainWhere,
@@ -460,17 +473,13 @@ export class TaxonomyService {
         this.prisma.exam.count({ where: examWhere }),
         this.prisma.vocabulary.count({ where: vocabularyWhere }),
         this.prisma.lesson.count({ where: { ...(createdAt ? { createdAt } : {}), ...domainRelation } }),
-        this.prisma.examAttempt.findMany({
-          where: attemptWhere,
-          take: 500,
-          orderBy: { createdAt: 'desc' },
-        }),
+        this.prisma.examAttempt.aggregate({ where: attemptWhere, _count: { _all: true }, _sum: { scorePercent: true } }),
+        this.prisma.examAttempt.count({ where: { ...attemptWhere, passed: true } }),
       ])
 
-    const passedCount = attempts.filter((a) => a.passed).length
-    const passRate = attempts.length > 0 ? Math.round((passedCount / attempts.length) * 100) : 0
-    const averageScore = attempts.length > 0
-      ? Math.round(attempts.reduce((sum, attempt) => sum + Number(attempt.scorePercent ?? 0), 0) / attempts.length)
+    const passRate = attemptTotals._count._all > 0 ? Math.round((passedCount / attemptTotals._count._all) * 100) : 0
+    const averageScore = attemptTotals._count._all > 0
+      ? Math.round(Number(attemptTotals._sum.scorePercent ?? 0) / attemptTotals._count._all)
       : 0
 
     const [certificateRows, completedProgress, completionLeaders] = await Promise.all([
@@ -502,23 +511,37 @@ export class TaxonomyService {
       }
     })
 
-    const weeklyActivity = [];
-    for (const { day, startOfDay, endOfDay } of activityDays(params.dateFrom, params.dateTo)) {
-      const activity = await this.prisma.learningProgress.findMany({
-        where: {
-          updatedAt: { gte: startOfDay, lte: endOfDay },
-          ...(hasAudienceFilter ? { learner: { learnerProfile: { is: learnerProfileFilter } } } : {}),
-        },
-        select: { learnerId: true },
-      });
-      const activeUsers = new Set(activity.map(item => item.learnerId)).size;
-
-      weeklyActivity.push({
-        day,
-        activityCount: activity.length,
-        activeUsers
-      });
+    const activityRows = await this.prisma.learningProgress.findMany({
+      where: {
+        updatedAt: { gte: days[0].startOfDay, lte: days[days.length - 1].endOfDay },
+        ...(hasAudienceFilter ? { learner: { learnerProfile: { is: learnerProfileFilter } } } : {}),
+      },
+      select: { learnerId: true, updatedAt: true },
+    })
+    const activityByDay = new Map<string, { count: number; learners: Set<string> }>()
+    for (const row of activityRows) {
+      const date = new Date(row.updatedAt.getTime() + 7 * 3600000).toISOString().slice(0, 10)
+      const bucket = activityByDay.get(date) ?? { count: 0, learners: new Set<string>() }
+      bucket.count += 1
+      bucket.learners.add(row.learnerId)
+      activityByDay.set(date, bucket)
     }
+    const weeklyActivity = days.map(({ date, day }) => ({
+      date,
+      day,
+      activityCount: activityByDay.get(date)?.count ?? 0,
+      activeUsers: activityByDay.get(date)?.learners.size ?? 0,
+    }))
+
+    const domainIds = domains.map(domain => domain.id)
+    const contentWhere = { ...(createdAt ? { createdAt } : {}), domainId: { in: domainIds } }
+    const [lessonCounts, vocabularyCounts, questionCounts, examCounts] = await Promise.all([
+      this.prisma.lesson.groupBy({ by: ['domainId'], where: contentWhere, _count: { _all: true } }),
+      this.prisma.vocabulary.groupBy({ by: ['domainId'], where: contentWhere, _count: { _all: true } }),
+      this.prisma.question.groupBy({ by: ['domainId'], where: contentWhere, _count: { _all: true } }),
+      this.prisma.exam.groupBy({ by: ['domainId'], where: { ...contentWhere, ...examCertificateRelation }, _count: { _all: true } }),
+    ])
+    const countFor = (rows: { domainId: string; _count: { _all: number } }[], domainId: string) => rows.find(row => row.domainId === domainId)?._count._all ?? 0
 
     return {
       overview: {
@@ -530,15 +553,13 @@ export class TaxonomyService {
         passRate,
         averageScore,
       },
-      domainsDistribution: domains.map((d) => ({
-        code: d.code,
-        name: d.name,
-        lessons: d._count.lessons,
-        vocabularies: d._count.vocabularies,
-        questions: d._count.questions,
-        exams: d._count.exams,
-        totalItems: d._count.lessons + d._count.vocabularies + d._count.questions + d._count.exams,
-      })),
+      domainsDistribution: domains.map((d) => {
+        const lessons = countFor(lessonCounts, d.id)
+        const vocabularies = countFor(vocabularyCounts, d.id)
+        const questions = countFor(questionCounts, d.id)
+        const exams = countFor(examCounts, d.id)
+        return { code: d.code, name: d.name, lessons, vocabularies, questions, exams, totalItems: lessons + vocabularies + questions + exams }
+      }),
       levelsDistribution: levels.map((l) => ({
         code: l.code,
         name: l.name,
@@ -650,6 +671,7 @@ export class TaxonomyService {
   }
 
   async createCertificate(dto: any) {
+    this.assertProfessionalCertificate(dto.name)
     const cert = await this.prisma.certificate.create({
       data: {
         code: dto.code,
@@ -694,7 +716,7 @@ export class TaxonomyService {
           },
           orderBy: { order: 'asc' },
         },
-        exams: { include: { domain: true, level: true, _count: { select: { questions: true, attempts: true } } } },
+        exams: { orderBy: { createdAt: 'desc' }, include: { domain: true, level: true, _count: { select: { questions: true, attempts: true } } } },
         profileGoals: true,
       },
     })
@@ -795,6 +817,7 @@ export class TaxonomyService {
   }
 
   async updateCertificate(id: string, dto: any) {
+    if (dto.name !== undefined) this.assertProfessionalCertificate(dto.name)
     const data: any = {}
     if (dto.code !== undefined) data.code = dto.code
     if (dto.name !== undefined) data.name = dto.name

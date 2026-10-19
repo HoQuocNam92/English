@@ -64,26 +64,26 @@ export default function AdminProgressPage() {
 
   return (
     <div>
-      <PageHeader title="Tiến độ học tập toàn hệ thống" icon="trending_up" description="Báo cáo tiến độ hoàn thành bài học, tỷ lệ đạt bài thi và năng lực học viên" />
+      <PageHeader title="Tiến độ học tập toàn hệ thống" icon="trending_up" />
 
       {/* Filters */}
       <div className="mt-6 flex flex-wrap items-end gap-4 rounded-2xl border border-outline-variant/50 bg-white p-4">
-        <div className="grid w-full min-w-0 gap-1 text-xs font-semibold text-on-surface-variant lg:min-w-[320px] lg:flex-1"><span>Tìm học viên</span>
-        <SearchInput
-          className="!w-full !max-w-none"
-          value={searchInput}
-          onChange={setSearchInput}
-          onSearch={(sanitized) => {
-            setPage(1);
-            setSearch(sanitized);
-          }}
-          placeholder="Tìm theo tên học viên hoặc email..."
-          maxLength={100}
-        />
+        <div className="w-full min-w-0 lg:min-w-[320px] lg:flex-1">
+          <SearchInput
+            className="!w-full !max-w-none"
+            value={searchInput}
+            onChange={setSearchInput}
+            onSearch={(sanitized) => {
+              setPage(1);
+              setSearch(sanitized);
+            }}
+            placeholder="Tìm theo tên học viên hoặc email..."
+            maxLength={100}
+          />
         </div>
         <div className="grid w-full min-w-0 items-end gap-3 sm:grid-cols-2 xl:grid-cols-[repeat(3,minmax(140px,1fr))_auto] lg:ml-auto lg:flex-1 lg:basis-[560px]">
-        {([['levelCode', 'Trình độ', options.levels], ['domainCode', 'Chuyên ngành', options.domains], ['certificateId', 'Mục tiêu chứng chỉ', options.certificates]] as const).map(([key, label, list]) => <label key={key} className="grid min-w-0 gap-1 text-xs font-semibold text-on-surface-variant">{label}<Dropdown aria-label={label} value={filters[key]} onChange={event => { setFilters(current => ({ ...current, [key]: event.target.value })); setPage(1); }} className="h-11 w-full rounded-xl border border-outline-variant bg-white px-3 text-sm text-on-surface"><option value="">Tất cả {label.toLocaleLowerCase('vi-VN')}</option>{list.map(item => <option key={item.id} value={key === 'certificateId' ? item.id : item.code}>{item.name}</option>)}</Dropdown></label>)}
-        <ClearFiltersButton onClick={() => { setFilters({ levelCode: '', domainCode: '', certificateId: '' }); setSearch(''); setSearchInput(''); setPage(1); }} />
+          {([['levelCode', 'Trình độ', options.levels], ['domainCode', 'Chuyên ngành', options.domains], ['certificateId', 'Mục tiêu chứng chỉ', options.certificates]] as const).map(([key, label, list]) => <div key={key} className="min-w-0"><Dropdown aria-label={label} value={filters[key]} onChange={event => { setFilters(current => ({ ...current, [key]: event.target.value })); setPage(1); }} className="h-11 w-full rounded-xl border border-outline-variant bg-white px-3 text-sm text-on-surface"><option value="">Tất cả {label.toLocaleLowerCase('vi-VN')}</option>{list.map(item => <option key={item.id} value={key === 'certificateId' ? item.id : item.code}>{item.name}</option>)}</Dropdown></div>)}
+          <ClearFiltersButton onClick={() => { setFilters({ levelCode: '', domainCode: '', certificateId: '' }); setSearch(''); setSearchInput(''); setPage(1); }} />
         </div>
       </div>
 

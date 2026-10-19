@@ -200,7 +200,6 @@ export default function AdminRoles({ createKind }: { createKind?: 'role' | 'perm
     if (new URLSearchParams(window.location.search).get('tab') === 'permissions') setActiveTab('permissions');
   }, []);
 
-  const totalAssigned = roles.reduce((s, r) => s + (r.userCount ?? 0), 0);
 
   const permissionFormView = (<FormSurface page={Boolean(createKind)} open={permissionModal} onClose={closePermission} maxWidth="max-w-lg">
         <form onSubmit={savePermission}>
@@ -235,7 +234,7 @@ export default function AdminRoles({ createKind }: { createKind?: 'role' | 'perm
 
   return (
     <div className="p-6">
-      <PageHeader className="mb-6" title="Phân quyền" description="Quản lý vai trò người dùng và quyền truy cập hệ thống." icon="admin_panel_settings" iconClassName="from-violet-500 to-indigo-500" />
+      <PageHeader className="mb-6" title="Phân quyền" icon="admin_panel_settings" iconClassName="from-violet-500 to-indigo-500" />
 
       {error && (
         <div className="mb-6 p-4 rounded-xl bg-error-container text-on-error-container text-sm font-semibold">{error}</div>
@@ -248,11 +247,10 @@ export default function AdminRoles({ createKind }: { createKind?: 'role' | 'perm
 
       <ListTools search={search} onSearch={setSearch} filter={filter} onFilter={setFilter} options={activeTab === 'roles' ? [{value:'',label:'Tất cả vai trò'},{value:'assigned',label:'Đã có người dùng'},{value:'empty',label:'Chưa có người dùng'}] : [{value:'',label:'Tất cả tài nguyên'},...Array.from(new Set(permissions.map(item=>item.resource))).map(resource=>({value:resource,label:resourceLabel(resource)}))]} />
       {/* Summary stats */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-md mb-xl">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-md mb-xl">
         {[
           { label: 'Vai trò người dùng', value: loading ? '—' : roles.length.toLocaleString('vi-VN'), icon: 'shield_person', unit: 'vai trò' },
           { label: 'Quyền hạn', value: loading ? '—' : permissions.length.toLocaleString('vi-VN'), icon: 'lock', unit: 'quyền' },
-          { label: 'Lượt gán vai trò', value: loading ? '—' : totalAssigned.toLocaleString('vi-VN'), icon: 'people', unit: 'lượt gán' },
         ].map((stat) => <SummaryStat key={stat.label} {...stat} />)}
       </div>
 

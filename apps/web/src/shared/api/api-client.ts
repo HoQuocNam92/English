@@ -223,6 +223,8 @@ export interface QuestionItem {
 // Exams
 export interface ExamItem {
   id: string;
+  certificateId?: string | null;
+  certificate?: { id: string; name: string; code: string; isActive: boolean } | null;
   kind: string;
   title: string;
   description: string | null;

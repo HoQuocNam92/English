@@ -6,6 +6,7 @@ import { Pagination } from '@/shared/ui/Pagination';
 import { AppIcon } from '@/shared/ui/AppIcon';
 
 import { levelLabel } from '@/shared/lib/level-label';
+import { dashboardDateRange } from '@/shared/lib/dashboard-date-range';
 import { Dropdown } from '@/shared/ui/Dropdown';
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
@@ -33,12 +34,12 @@ export default function FlashcardsDashboard({ activeTab }: { activeTab: TabType 
   const [level, setLevel] = useState('');
   const [userProfile, setUserProfile] = useState<any>(null);
   const [activityDays, setActivityDays] = useState(30);
-  const today = new Date().toISOString().slice(0, 10);
+  const today = dashboardDateRange('week').dateTo;
   const [activityFrom, setActivityFrom] = useState(() => new Date(Date.now() - 29 * 86400000).toISOString().slice(0, 10));
   const [activityTo, setActivityTo] = useState(today);
   const [activityError, setActivityError] = useState('');
   const [activityLoading, setActivityLoading] = useState(false);
-  const activityStart = activityDays ? new Date(Date.now() - (activityDays - 1) * 86400000).toISOString().slice(0, 10) : activityFrom;
+  const activityStart = activityDays === 7 ? dashboardDateRange('week').dateFrom : activityDays === 30 ? dashboardDateRange('month').dateFrom : activityDays === 365 ? dashboardDateRange('year').dateFrom : activityDays ? new Date(Date.parse(`${today}T00:00:00Z`) - (activityDays - 1) * 86400000).toISOString().slice(0, 10) : activityFrom;
   const activityEnd = activityDays ? today : activityTo;
   const activityCount = activityStart && activityEnd ? Math.round((Date.parse(activityEnd) - Date.parse(activityStart)) / 86400000) + 1 : 0;
   const activityValid = activityCount > 0 && activityCount <= 366 && activityEnd <= today;
@@ -339,7 +340,7 @@ export default function FlashcardsDashboard({ activeTab }: { activeTab: TabType 
               {/* Activity Heatmap */}
               <div className="pt-4 border-t border-slate-100">
                 <div className="flex flex-wrap justify-between items-center gap-3 text-[11px] font-bold text-slate-600 uppercase tracking-wider mb-1">
-                  <div className="flex flex-wrap items-center gap-3"><span>Hoạt động ôn tập</span><Dropdown aria-label="Khoảng thời gian hoạt động ôn tập" value={String(activityDays)} onChange={event => setActivityDays(Number(event.target.value))} className="rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs font-semibold normal-case tracking-normal text-slate-700"><option value="7">7 ngày gần đây</option><option value="30">30 ngày gần đây</option><option value="56">8 tuần gần đây</option><option value="0">Tùy chọn ngày</option></Dropdown></div>
+                  <div className="flex flex-wrap items-center gap-3"><span>Hoạt động ôn tập</span><Dropdown aria-label="Khoảng thời gian hoạt động ôn tập" value={String(activityDays)} onChange={event => setActivityDays(Number(event.target.value))} className="rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs font-semibold normal-case tracking-normal text-slate-700"><option value="7">7 ngày gần nhất</option><option value="30">Tháng này</option><option value="365">Năm nay</option><option value="0">Tùy chọn ngày</option></Dropdown></div>
                   <div className="flex items-center gap-1.5 lowercase">
                     <span>Ít</span>
                     <span className="w-2.5 h-2.5 rounded-xs bg-slate-100 inline-block" />
@@ -349,7 +350,7 @@ export default function FlashcardsDashboard({ activeTab }: { activeTab: TabType 
                     <span>Nhiều</span>
                   </div>
                 </div>
-                {activityDays === 0 && <div className="mt-4 flex flex-wrap items-end gap-3"><label className="grid gap-1 text-xs font-semibold text-slate-600">Từ ngày<input type="date" value={activityFrom} max={activityTo || today} onChange={event => setActivityFrom(event.target.value)} className="rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-800" /></label><label className="grid gap-1 text-xs font-semibold text-slate-600">Đến ngày<input type="date" value={activityTo} min={activityFrom} max={today} onChange={event => setActivityTo(event.target.value)} className="rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-800" /></label>{activityValid && <span className="pb-2 text-xs text-slate-500">{activityCount} ngày</span>}</div>}
+                {activityDays === 0 && <div className="mt-4 flex flex-wrap items-end gap-3"><label className="grid gap-1 text-xs font-semibold text-slate-600">Từ ngày<input type="date" value={activityFrom} max={activityTo || today} onChange={event => setActivityFrom(event.target.value)} className="rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-800" /></label><label className="grid gap-1 text-xs font-semibold text-slate-600">Đến ngày<input type="date" value={activityTo} min={activityFrom} max={today} onChange={event => setActivityTo(event.target.value)} className="rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-800" /></label></div>}
                 {activityError ? <p role="alert" className="mt-4 text-sm text-rose-600">{activityError}</p> : activityLoading ? <p role="status" className="mt-4 text-sm text-slate-500">Đang tải hoạt động…</p> : activityValid ? renderHeatmap() : null}
               </div>
             </div>

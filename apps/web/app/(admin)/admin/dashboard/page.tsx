@@ -39,6 +39,7 @@ interface AnalyticsData {
     exams: number;
   }>;
   weeklyActivity: Array<{
+    date: string;
     day: string;
     activityCount: number;
     activeUsers: number;
@@ -84,21 +85,29 @@ export default function AdminDashboardPage() {
   const [error, setError] = React.useState<string | null>(null);
 
   const [period, setPeriod] = React.useState('week');
+  const [customRange, setCustomRange] = React.useState(() => dashboardDateRange('week'));
+  const activityRange = period === 'custom' ? customRange : dashboardDateRange(period);
+  const activityRangeDays = activityRange.dateFrom && activityRange.dateTo ? Math.round((Date.parse(activityRange.dateTo) - Date.parse(activityRange.dateFrom)) / 86400000) + 1 : 0;
+  const validActivityRange = activityRangeDays > 0 && activityRangeDays <= 366 && activityRange.dateTo <= dashboardDateRange('week').dateTo;
   React.useEffect(() => {
+    if (!validActivityRange) return;
+    let current = true;
     async function load() {
       setLoading(true);
+      setAnalytics(null);
       setError(null);
       try {
         const [allUsers, allExams, allVocab, analyticsRes, activeUsers] = await Promise.all<any>([
           isAdmin ? apiClient.get<PaginatedResponse<UserItem>>('/users?limit=5') : Promise.resolve({ data: [], meta: { total: 0 } }),
           apiClient.get<PaginatedResponse<ExamItem>>('/exams?limit=1'),
           apiClient.get<PaginatedResponse<unknown>>('/vocabulary?limit=1'),
-          isAdmin ? apiClient.get<AnalyticsData>(`/analytics/dashboard?${new URLSearchParams(dashboardDateRange(period))}`).catch(() => null) : Promise.resolve(null),
+          isAdmin ? apiClient.get<AnalyticsData>(`/analytics/dashboard?${new URLSearchParams(activityRange)}`) : Promise.resolve(null),
           isAdmin ? apiClient.get<any>('/users?limit=1&status=active') : Promise.resolve({ meta: { total: 0 } }),
         ]);
 
         const activeCount = allUsers.data.filter((u: any) => u.status === 'active').length;
 
+        if (!current) return;
         setStats({
           totalUsers: allUsers.meta.total,
           activeUsers: activeUsers.meta.total,
@@ -108,13 +117,14 @@ export default function AdminDashboardPage() {
         setRecentUsers(allUsers.data.slice(0, 5));
         if (analyticsRes) setAnalytics(analyticsRes);
       } catch (e: unknown) {
-        setError(e instanceof ApiClientError ? e.message : 'Không thể tải dữ liệu Dashboard');
+        if (current) setError(e instanceof ApiClientError ? e.message : 'Không thể tải dữ liệu Dashboard');
       } finally {
-        setLoading(false);
+        if (current) setLoading(false);
       }
     }
     void load();
-  }, [isAdmin, period]);
+    return () => { current = false; };
+  }, [isAdmin, activityRange.dateFrom, activityRange.dateTo, validActivityRange]);
 
   const statCards = [
     { label: 'Tổng người dùng', value: stats?.totalUsers ?? 0, sub: `${stats?.totalUsers ?? 0} tài khoản hệ thống`, icon: 'people', color: 'text-primary' },
@@ -122,12 +132,11 @@ export default function AdminDashboardPage() {
     { label: 'Kho thuật ngữ IT', value: stats?.totalVocab ?? 0, sub: 'Thuật ngữ có IPA & ví dụ', icon: 'translate', color: 'text-emerald-600' },
   ];
 
-  const maxWeeklyActivity = Math.max(...(analytics?.weeklyActivity.map((w) => w.activityCount) ?? [100]));
   const totalDomainItems = analytics?.domainsDistribution.reduce((s, d) => s + d.totalItems, 0) || 1;
 
   if (!isAdmin) return (
     <main className="w-full space-y-8">
-      <div><h2 className="text-3xl font-bold tracking-tight text-on-surface">Không gian giảng viên</h2><p className="mt-1 text-sm text-on-surface-variant">Quản lý nội dung giảng dạy và theo dõi học viên của bạn.</p></div>
+      <div><h2 className="text-3xl font-bold tracking-tight text-on-surface">Không gian giảng viên</h2></div>
       {error && <div className="rounded-xl bg-error-container p-4 text-sm text-on-error-container">{error}</div>}
       <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
       </div>
@@ -141,8 +150,7 @@ export default function AdminDashboardPage() {
     <main className="flex-1 overflow-y-auto p-gutter lg:px-xl xl:px-margin bg-background">
       <PageHeader
         className="mb-xl"
-        title="Tổng quan quản trị viên"
-        description="Hãy xem tình hình học tập hôm nay."
+        title="Tổng quan"
         icon="dashboard"
       />
 
@@ -160,10 +168,25 @@ export default function AdminDashboardPage() {
         <SummaryStat label="Tài khoản hoạt động" value={loading ? '…' : (stats?.activeUsers ?? 0).toLocaleString('vi-VN')} unit="người" icon="group" />
       </div>
 
+      <div className="mb-4 flex flex-wrap items-end gap-3 rounded-xl border border-outline-variant bg-surface-container-lowest p-4">
+        <label className="grid gap-1 text-sm font-semibold text-on-surface">Khoảng thời gian biểu đồ
+          <Dropdown aria-label="Khoảng thời gian biểu đồ" value={period} onChange={e => setPeriod(e.target.value)} className="bg-surface-bright border border-outline-variant rounded-md px-sm py-xs font-body-sm text-body-sm outline-none focus:border-primary">
+            <option value="week">7 ngày gần nhất</option>
+            <option value="month">Tháng này</option>
+            <option value="year">Năm nay</option>
+            <option value="custom">Tùy chọn ngày</option>
+          </Dropdown>
+        </label>
+        {period === 'custom' && <>
+          <label className="grid gap-1 text-xs text-on-surface-variant">Từ ngày<input type="date" value={customRange.dateFrom} max={customRange.dateTo} onChange={e => setCustomRange(previous => ({ ...previous, dateFrom: e.target.value }))} className="rounded-lg border border-outline-variant bg-white px-3 py-2 text-sm text-on-surface" /></label>
+          <label className="grid gap-1 text-xs text-on-surface-variant">Đến ngày<input type="date" value={customRange.dateTo} min={customRange.dateFrom} max={dashboardDateRange('week').dateTo} onChange={e => setCustomRange(previous => ({ ...previous, dateTo: e.target.value }))} className="rounded-lg border border-outline-variant bg-white px-3 py-2 text-sm text-on-surface" /></label>
+        </>}
+        <p className="text-xs text-on-surface-variant">Áp dụng cho các biểu đồ hoạt động và học liệu bên dưới.</p>
+      </div>
       <div className="grid grid-cols-12 gap-6 mb-xl">
         <div className="stat-card bg-surface-container-lowest p-lg col-span-12 lg:col-span-4 min-h-[360px] flex flex-col rounded-lg border border-outline-variant hover:shadow-[0_1px_3px_rgba(15,23,24,0.06)] hover:-translate-y-0.5 transition-all">
-          <h3 className="font-headline-h3 text-headline-h3 text-on-surface mb-xl">Phân bố học liệu theo chuyên ngành CNTT</h3>
-          <p className="mb-4 text-xs text-on-surface-variant">Tổng bài học, từ vựng, câu hỏi và đề thi trong từng chuyên ngành.</p>
+          <h3 className="font-headline-h3 text-headline-h3 text-on-surface mb-xl">Học liệu được tạo theo chuyên ngành</h3>
+          <p className="mb-4 text-xs text-on-surface-variant">Trong khoảng thời gian đã chọn phía trên. Mỗi số là tổng bài học, từ vựng, câu hỏi và đề thi được tạo; % là tỷ trọng của chuyên ngành.</p>
           <div className="max-h-[360px] space-y-4 overflow-y-auto pr-2">
             {loading ? <p className="text-sm text-on-surface-variant">Đang tải số liệu...</p> : !(analytics?.domainsDistribution ?? []).some(dom => dom.totalItems > 0) ? <p className="text-sm text-on-surface-variant">Chưa có học liệu.</p> : [...(analytics?.domainsDistribution ?? [])].sort((a, b) => b.totalItems - a.totalItems).map(dom => {
               const percentage = dom.totalItems / totalDomainItems * 100;
@@ -171,7 +194,7 @@ export default function AdminDashboardPage() {
                 <div key={dom.code}>
                   <div className="mb-1.5 flex items-start justify-between gap-3 text-sm">
                     <span className="min-w-0 text-on-surface">{dom.name}</span>
-                    <span className="shrink-0 text-xs text-on-surface-variant">{dom.totalItems.toLocaleString('vi-VN')} · {percentage.toLocaleString('vi-VN', { maximumFractionDigits: 1 })}%</span>
+                    <span className="shrink-0 text-xs text-on-surface-variant">{dom.totalItems.toLocaleString('vi-VN')} học liệu · {percentage.toLocaleString('vi-VN', { maximumFractionDigits: 1 })}%</span>
                   </div>
                   <div className="h-2 overflow-hidden rounded-full bg-surface-container-high" role="img" aria-label={`${dom.name}: ${dom.totalItems} học liệu, ${percentage.toFixed(1)}%`}>
                     <div className="h-full rounded-full bg-primary" style={{ width: `${percentage}%` }} />
@@ -183,14 +206,8 @@ export default function AdminDashboardPage() {
         </div>
 
         <div className="stat-card bg-surface-container-lowest p-lg col-span-12 lg:col-span-8 min-h-[360px] flex flex-col rounded-lg border border-outline-variant hover:shadow-[0_1px_3px_rgba(15,23,24,0.06)] hover:-translate-y-0.5 transition-all">
-          <div className="flex justify-between items-center mb-xl">
-            <h3 className="font-headline-h3 text-headline-h3 text-on-surface">Hoạt động học tập</h3>
-            <Dropdown aria-label="Khoảng thời gian hoạt động" value={period} onChange={e => setPeriod(e.target.value)} className="bg-surface-bright border border-outline-variant rounded-md px-sm py-xs font-body-sm text-body-sm outline-none focus:border-primary">
-              <option value="week">7 ngày gần nhất</option>
-              <option value="month">Tháng này</option>
-            </Dropdown>
-          </div>
-          <ActivityChart data={analytics?.weeklyActivity ?? []} />
+          <h3 className="font-headline-h3 text-headline-h3 text-on-surface mb-xl">Hoạt động học tập</h3>
+          {!validActivityRange ? <p role="alert" className="text-sm text-error">Chọn khoảng ngày hợp lệ, tối đa 366 ngày và không sau hôm nay.</p> : loading ? <p className="py-12 text-center text-sm text-on-surface-variant">Đang tải số liệu...</p> : <ActivityChart data={analytics?.weeklyActivity ?? []} />}
         </div>
       </div>
 

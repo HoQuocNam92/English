@@ -3,7 +3,7 @@ import { PaginatedList } from '@/shared/ui/PaginatedList';
 
 import { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
-import { useParams } from 'next/navigation';
+import { useParams, useSearchParams } from 'next/navigation';
 import { ArrowLeft, ArrowUpRight, Award, BookOpen, Check, ChevronDown, ChevronRight, Clock3, FileQuestion, Layers3, Play, Trophy } from 'lucide-react';
 import { LearnerShell } from '@/shared/layout';
 import { apiClient } from '@/shared/api/api-client';
@@ -13,6 +13,8 @@ type Tab = 'learn' | 'exams';
 
 export default function CertificationDetailPage() {
   const params = useParams<{ id: string }>();
+  const searchParams = useSearchParams();
+  const selectedExamId = searchParams.get('examId') ?? '';
   const [activeTab, setActiveTab] = useState<Tab>('learn');
   const [expanded, setExpanded] = useState<string[]>([]);
   const [certificate, setCertificate] = useState<any>(null);
@@ -23,7 +25,10 @@ export default function CertificationDetailPage() {
   const [error, setError] = useState('');
 
   useEffect(() => {
-    if (new URLSearchParams(window.location.search).get('tab') === 'exams') setActiveTab('exams');
+    if (searchParams.get('tab') === 'exams' || selectedExamId) setActiveTab('exams');
+  }, [searchParams, selectedExamId]);
+
+  useEffect(() => {
     async function load() {
       try {
         const [certificateResult, progressResult, studyResult] = await Promise.all([
@@ -51,6 +56,12 @@ export default function CertificationDetailPage() {
     const timer = window.setInterval(refresh, 60000);
     return () => { window.removeEventListener('focus', refresh); window.clearInterval(timer); };
   }, [params.id]);
+
+  useEffect(() => {
+    if (!loading && activeTab === 'exams' && selectedExamId) {
+      document.getElementById(`exam-${selectedExamId}`)?.scrollIntoView({ block: 'start' });
+    }
+  }, [loading, activeTab, selectedExamId]);
 
   const domains = useMemo(() => (certificate?.domains ?? []).map((item: any, index: number) => {
     const domain = item.domain;
@@ -120,7 +131,7 @@ export default function CertificationDetailPage() {
 
     <div className="border-b border-slate-200"><div role="tablist" aria-label="Nội dung chứng chỉ" className="flex gap-6">{tabs.map(({ id, label, icon: Icon, count }) => <button key={id} type="button" role="tab" id={`certificate-tab-${id}`} aria-selected={activeTab === id} aria-controls={`certificate-panel-${id}`} onClick={() => setActiveTab(id)} className={`relative flex items-center gap-2 rounded-none! border-b-2 px-1 py-4 text-sm font-semibold transition-colors ${activeTab === id ? 'border-primary text-primary' : 'border-transparent text-slate-500 hover:text-slate-800'}`}><Icon size={18} />{label}<span className={`rounded-md px-1.5 py-0.5 text-xs ${activeTab === id ? 'bg-violet-100 text-primary' : 'bg-slate-100 text-slate-500'}`}>{count}</span></button>)}</div></div>
     <div role="tabpanel" id={`certificate-panel-${activeTab}`} aria-labelledby={`certificate-tab-${activeTab}`}>
-      {activeTab === 'learn' ? <LearnTab topicProgress={topicProgress} certificateId={certificate.id} domains={domains} expanded={expanded} setExpanded={setExpanded} onExams={() => setActiveTab('exams')} hasExams={publishedExams.length > 0} /> : <ExamsTab exams={certificate.exams ?? []} examStates={examStates} onLearn={() => setActiveTab('learn')} />}
+      {activeTab === 'learn' ? <LearnTab topicProgress={topicProgress} certificateId={certificate.id} domains={domains} expanded={expanded} setExpanded={setExpanded} onExams={() => setActiveTab('exams')} hasExams={publishedExams.length > 0} /> : <ExamsTab exams={certificate.exams ?? []} examStates={examStates} selectedExamId={selectedExamId} onLearn={() => setActiveTab('learn')} />}
     </div>
   </div></LearnerShell>;
 }
@@ -154,8 +165,10 @@ function LearnTab({ topicProgress, certificateId, domains, expanded, setExpanded
   </section>;
 }
 
-function ExamsTab({ exams, examStates, onLearn }: any) {
-  const publishedExams = exams.filter((exam: any) => exam.status === 'published');
+function ExamsTab({ exams, examStates, selectedExamId, onLearn }: any) {
+  const publishedExams = exams.filter((exam: any) => exam.status === 'published').sort((a: any, b: any) =>
+    Number(b.id === selectedExamId) - Number(a.id === selectedExamId) ||
+    new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
   const kindLabels: Record<string, string> = { practice: 'Luyện tập chủ đề', domain_test: 'Kiểm tra chuyên ngành', mock_exam: 'Thi thử chứng chỉ', scenario_assessment: 'Tình huống thực tế' };
   return <section>
     <h2 className="text-xl font-bold tracking-tight text-slate-900">Luyện tập và kiểm tra</h2>
@@ -164,7 +177,8 @@ function ExamsTab({ exams, examStates, onLearn }: any) {
       {publishedExams.length ? publishedExams.map((exam: any) => {
         const state = examStates[exam.id];
         const attempt = state?.latestAttempt;
-        return <article key={exam.id} className="flex min-w-0 flex-col rounded-2xl border border-slate-200 bg-white p-5 sm:p-6">
+        return <article key={exam.id} id={`exam-${exam.id}`} className={`flex min-w-0 scroll-mt-24 flex-col rounded-2xl border bg-white p-5 sm:p-6 ${exam.id === selectedExamId ? 'border-primary ring-2 ring-primary/15' : 'border-slate-200'}`}>
+          {exam.id === selectedExamId && <p className="mb-3 text-xs font-bold text-primary">Bài kiểm tra bạn vừa chọn</p>}
           <div className="flex items-start gap-3"><span className={`grid h-10 w-10 shrink-0 place-items-center rounded-xl ${attempt ? 'bg-emerald-50 text-emerald-600' : 'bg-violet-50 text-primary'}`}>{attempt ? <Trophy size={21} /> : <FileQuestion size={21} />}</span><div className="min-w-0"><p className="text-xs font-medium text-slate-500">{kindLabels[exam.kind] || 'Bài kiểm tra'}</p><h3 className="mt-1 text-base font-semibold leading-6 text-slate-900">{exam.title}</h3></div></div>
           <div className="mt-4 flex flex-wrap gap-x-4 gap-y-2 text-xs text-slate-500"><span className="flex items-center gap-1.5"><FileQuestion size={14} />{exam._count?.questions ?? 0} câu hỏi</span><span className="flex items-center gap-1.5"><Clock3 size={14} />{exam.durationMinutes} phút</span><span>Đạt từ {exam.passingScorePercent}%</span></div>
           <div className="mt-4 flex flex-wrap items-center justify-between gap-2 text-xs"><span className="text-slate-500">Đã làm {state?.usedAttempts ?? 0}/{state?.maxAttempts ?? exam.maxAttempts} lượt</span>{attempt && <span className="rounded-lg bg-violet-50 px-2 py-1 font-semibold text-primary">Kết quả gần nhất: {Math.round(attempt.scorePercent ?? 0)}%</span>}</div>
