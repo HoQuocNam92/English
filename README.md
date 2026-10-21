@@ -1,49 +1,69 @@
 # TechEnglish Pro
 
-Nền tảng học tiếng Anh chuyên ngành CNTT, học từ vựng và luyện thi chứng chỉ. Dự án dùng monorepo gồm web dành cho học viên/quản trị, ứng dụng mobile và REST API.
+Nền tảng học tiếng Anh chuyên ngành CNTT, luyện từ vựng và ôn thi chứng chỉ. Dự án gồm website cho học viên/quản trị, REST API và ứng dụng mobile trong cùng một pnpm workspace.
 
-## Công nghệ và địa chỉ
+## Địa chỉ khi chạy local
 
-| Thành phần | Công nghệ | Địa chỉ local |
-| --- | --- | --- |
-| Frontend | Next.js 15, React 19, Tailwind CSS 4 | http://localhost:3000 |
-| Backend | NestJS 11, Prisma 5, PostgreSQL | http://localhost:8080/api/v1 |
-| API docs | Swagger | http://localhost:8080/api/docs |
-| Mobile | Expo SDK 57, React Native | Expo Dev Server |
+| Thành phần | Địa chỉ |
+| --- | --- |
+| Trang giới thiệu | http://localhost:3000/landing |
+| Đăng nhập | http://localhost:3000/login |
+| REST API | http://localhost:8080/api/v1 |
+| Tài liệu Swagger | http://localhost:8080/api/docs |
 
-## Chức năng
+Các địa chỉ trên hoạt động khi tiến trình web và API đang chạy. PostgreSQL phải truy cập được theo cấu hình trong `apps/api/.env`.
 
-- Đăng ký, đăng nhập, Google OAuth, khôi phục mật khẩu và phân quyền theo vai trò.
-- Quản lý người dùng, học viên, nhóm học viên, cấp độ và mục tiêu nghề nghiệp.
-- Quản lý bài học, từ vựng, ngân hàng câu hỏi, đề thi và chứng chỉ theo lĩnh vực/chủ đề.
-- Kiểm tra đầu vào, lộ trình cá nhân, kế hoạch học theo tuần và theo dõi tiến độ.
-- Học từ vựng bằng flashcard, ôn tập theo lịch và kiểm tra nghĩa của từ.
-- Khi trả lời câu hỏi từ vựng: đáp án đúng màu xanh, lựa chọn sai màu đỏ; giải thích chỉ mở khi bấm **Xem chi tiết**.
-- Lọc lịch sử ôn tập theo khoảng ngày; danh sách hỗ trợ phân trang, trang con có nút quay lại.
-- Báo cáo học tập, kết quả bài thi và gợi ý học bằng luật hoặc dịch vụ AI tùy cấu hình.
-- Nhắc học lưu trên máy chủ và hiển thị trong web; hỗ trợ cron trên Ubuntu gọi API.
-- Upload ảnh qua Cloudinary và thông báo đẩy qua Firebase khi được cấu hình.
+## Công nghệ và cấu trúc
 
-## Cấu trúc
+- **Web:** Next.js 15, React 19, Tailwind CSS 4.
+- **API:** NestJS 11, Prisma 5, PostgreSQL.
+- **Mobile:** Expo SDK 57, React Native.
+- **Workspace:** pnpm, TypeScript; dependencies dùng chế độ `hoisted`.
 
 ```text
 apps/
-  api/                  # NestJS: application, infrastructure, modules, presentation
-    prisma/             # Schema, migration, seed và dữ liệu từ vựng
-  web/                  # Next.js App Router và UI dùng chung
-  mobile/               # Expo Router
+  api/                 # Backend; Clean Architecture
+    prisma/            # Schema, migrations và seed
+    src/               # Application, infrastructure, presentation
+  web/                 # Next.js App Router
+  mobile/              # Expo Router
 packages/
-  contracts/            # Kiểu/giao ước API
-  design-tokens/        # Màu sắc và token giao diện
-  shared-kernel/        # Nghiệp vụ dùng chung
-docker/                 # Container, migration cho cài đặt mới, tài liệu triển khai
-docs/                   # Tài liệu hệ thống và kiểm thử
-scripts/ubuntu/        # Script lập lịch nhắc học
+  contracts/           # Kiểu và giao ước API
+  design-tokens/       # Màu sắc và token giao diện
+  shared-kernel/       # Nghiệp vụ dùng chung
+docker/                # Migration runner, cấu hình và hướng dẫn triển khai
+docs/                  # Tài liệu hệ thống, kiểm thử và luận văn
+scripts/ubuntu/        # Lập lịch nhắc học
 ```
 
-## Cài đặt và chạy local
+## Chức năng chính
 
-Chuẩn bị Node.js 24 (cùng phiên bản CI), pnpm theo `packageManager` trong [package.json](package.json) — hiện là `12.8.1` — và PostgreSQL. Chạy các lệnh dưới đây tại thư mục gốc.
+- Đăng ký, đăng nhập, Google OAuth, khôi phục mật khẩu và phân quyền.
+- Quản lý học viên, nhóm học, bài học, từ vựng, câu hỏi, đề thi và chứng chỉ.
+- Kiểm tra đầu vào, lộ trình cá nhân, kế hoạch tuần và theo dõi tiến độ.
+- Flashcard, ôn tập theo lịch, câu hỏi nghĩa từ và lịch sử ôn tập.
+- Thi thử, báo cáo kết quả và gợi ý học theo luật hoặc dịch vụ AI tùy cấu hình.
+- Nhắc học trong web; upload ảnh và thông báo đẩy khi cấu hình dịch vụ tương ứng.
+
+## Yêu cầu
+
+- Node.js **24**, theo môi trường CI của dự án.
+- pnpm **12.8.1**, theo trường `packageManager` trong `package.json`.
+- PostgreSQL đang chạy và một database dành cho dự án.
+- Kết nối mạng khi cài dependencies và tải Prisma engine lần đầu.
+
+Kiểm tra công cụ trước khi cài:
+
+```bash
+node --version
+pnpm --version
+```
+
+Dùng phiên bản pnpm trong `package.json` để đọc đúng lockfile; không hạ xuống pnpm 9/10. Khi chuyển giữa Linux và Windows, cài lại dependencies trên hệ điều hành đích thay vì sao chép `node_modules`.
+
+## Cài đặt lần đầu
+
+Chạy các lệnh sau tại thư mục gốc repository:
 
 ```bash
 git clone https://github.com/HoQuocNam92/English.git
@@ -51,27 +71,46 @@ cd English
 pnpm install --frozen-lockfile
 ```
 
-### 1. Cấu hình môi trường
+### 1. Tạo file môi trường
 
-Linux/macOS:
+Chỉ sao chép nếu chưa có file cấu hình; giữ lại file đang dùng.
 
-```bash
-cp apps/api/.env.example apps/api/.env
-cp apps/web/.env.example apps/web/.env.local
-```
-
-PowerShell:
+**Windows PowerShell:**
 
 ```powershell
-Copy-Item apps/api/.env.example apps/api/.env
-Copy-Item apps/web/.env.example apps/web/.env.local
+if (!(Test-Path apps/api/.env)) { Copy-Item apps/api/.env.example apps/api/.env }
+if (!(Test-Path apps/web/.env.local)) { Copy-Item apps/web/.env.example apps/web/.env.local }
 ```
 
-Trong `apps/api/.env`, cấu hình `DATABASE_URL`, `JWT_SECRET`, `HOST`, `PORT`, `API_PUBLIC_URL`, `WEB_URL` và `CORS_ORIGIN`. File mẫu đã có địa chỉ local; thay mật khẩu database và JWT secret theo môi trường của bạn.
+**Linux/macOS:**
 
-Trong `apps/web/.env.local`, đặt `NEXT_PUBLIC_API_URL=http://localhost:8080/api/v1`. Khi đổi địa chỉ triển khai, cấu hình lại biến này **trước khi build frontend**.
+```bash
+[ -f apps/api/.env ] || cp apps/api/.env.example apps/api/.env
+[ -f apps/web/.env.local ] || cp apps/web/.env.example apps/web/.env.local
+```
 
-Google OAuth, SMTP, Cloudinary, Firebase và AI chỉ cần cấu hình khi sử dụng tính năng tương ứng. Không đưa khóa máy chủ vào biến `NEXT_PUBLIC_*` hoặc commit file môi trường thật.
+Chỉnh các biến chính trong `apps/api/.env`:
+
+```dotenv
+DATABASE_URL="postgresql://USER:PASSWORD@localhost:5432/techenglish?schema=public"
+JWT_SECRET=thay-bang-chuoi-bi-mat-ngau-nhien
+NODE_ENV=development
+HOST=0.0.0.0
+PORT=8080
+API_PUBLIC_URL=http://localhost:8080
+WEB_URL=http://localhost:3000
+CORS_ORIGIN=http://localhost:3000
+```
+
+Thay `USER`, `PASSWORD` và tên database bằng thông tin PostgreSQL của bạn. Tạo database trước nếu chưa tồn tại. Mật khẩu chứa ký tự đặc biệt cần được URL-encode trong connection string.
+
+Trong `apps/web/.env.local`:
+
+```dotenv
+NEXT_PUBLIC_API_URL=http://localhost:8080/api/v1
+```
+
+Google OAuth, SMTP, Cloudinary, Firebase và AI được cấu hình qua các biến trong file mẫu khi cần dùng. Không commit file môi trường thật hoặc đưa khóa máy chủ vào biến `NEXT_PUBLIC_*`.
 
 ### 2. Tạo Prisma Client và áp dụng migration
 
@@ -80,42 +119,81 @@ pnpm --filter @techenglish/api db:generate
 node --env-file=apps/api/.env docker/migrate.cjs
 ```
 
-Migration runner chọn lịch sử phù hợp cho database mới hoặc database đã có Prisma migration. Các migration bổ sung được duy trì trong cả `apps/api/prisma/migrations` và `docker/prisma/migrations`.
+Migration runner chọn lịch sử phù hợp cho database mới hoặc database đã có Prisma migration. Kiểm tra `DATABASE_URL` trước khi chạy vì migration cập nhật cấu trúc database đích. Lệnh này không tự seed hoặc reset dữ liệu.
 
-Lệnh trên không tự seed hoặc reset dữ liệu. Nếu cần dữ liệu mẫu cho môi trường phát triển:
+Nếu cần dữ liệu mẫu trên database phát triển:
 
 ```bash
 pnpm --filter @techenglish/api db:seed
 ```
 
-Không chạy `db:reset` trên database cần giữ dữ liệu.
+Seed ghi dữ liệu vào database; không chạy seed demo trên production. Không dùng `db:reset` với database cần giữ dữ liệu.
 
-### 3. Chạy backend và frontend
-
-Mở hai terminal riêng:
+### 3. Khởi chạy web và API
 
 ```bash
-pnpm --filter @techenglish/api dev
+pnpm dev
+```
+
+Mở http://localhost:3000/login. Giữ terminal đang chạy; nhấn **Ctrl+C** để dừng.
+
+Có thể chạy hai phần trong hai terminal riêng:
+
+```bash
+# Terminal 1
+pnpm dev:api
 ```
 
 ```bash
-pnpm --filter web dev
+# Terminal 2
+pnpm dev:web
 ```
 
-Hoặc chạy cả backend và frontend từ thư mục gốc bằng `pnpm dev`.
-Chạy riêng từng phần bằng `pnpm dev:api` và `pnpm dev:web`.
-Nếu backend báo `EADDRINUSE` ở cổng 8080, kiểm tra terminal backend đã chạy
-trước đó; dùng tiến trình đó hoặc dừng bằng Ctrl+C trước khi chạy lại.
+Những lần chạy sau, khi dependencies, môi trường và database đã sẵn sàng, chỉ cần chạy `pnpm dev` từ thư mục gốc.
 
-Trang giới thiệu: http://localhost:3000/landing. Đăng nhập: http://localhost:3000/login.
+### 4. Kiểm tra dịch vụ
 
-Mobile tùy chọn:
+**PowerShell:**
+
+```powershell
+(Invoke-WebRequest http://localhost:3000/login).StatusCode
+(Invoke-WebRequest http://localhost:8080/api/docs).StatusCode
+```
+
+**Linux/macOS:**
+
+```bash
+curl -I http://localhost:3000/login
+curl -I http://localhost:8080/api/docs
+```
+
+Cả hai địa chỉ cần trả về HTTP 200. Kiểm tra này xác nhận dịch vụ HTTP hoạt động; để kiểm tra nghiệp vụ, đăng nhập và thử chức năng trên giao diện.
+
+## Tài khoản mẫu
+
+Các tài khoản dưới đây được tạo sau khi seed dữ liệu phát triển:
+
+| Vai trò | Email | Mật khẩu |
+| --- | --- | --- |
+| Quản trị viên | `admin@techenglish.pro` | `Demo@123456` |
+| Giảng viên | `nguyen.thanh@techenglish.pro` | `Demo@123456` |
+| Học viên | `learner1@techenglish.pro` | `Demo@123456` |
+
+## Mobile
+
+Cấu hình `EXPO_PUBLIC_API_URL` cho môi trường chạy mobile, sau đó khởi động Expo:
 
 ```bash
 pnpm --filter mobile dev
 ```
 
-## Build production
+- Android emulator: thường dùng `http://10.0.2.2:8080/api/v1`.
+- Điện thoại thật: dùng IP LAN của máy chạy API, chẳng hạn `http://192.168.1.10:8080/api/v1`; máy tính và điện thoại cần kết nối được với nhau.
+- Dùng Expo Go tương thích hoặc development client phù hợp với các module native của ứng dụng.
+
+Lệnh trên chạy dev server, không tạo APK/IPA.
+
+## Build và chạy production
 
 ```bash
 pnpm --filter @techenglish/api db:generate
@@ -123,7 +201,7 @@ pnpm --filter @techenglish/api build
 pnpm --filter web build
 ```
 
-Chạy các bản build trong hai terminal:
+Sau khi thiết lập môi trường production và áp dụng migration, chạy mỗi lệnh trong một terminal:
 
 ```bash
 pnpm --filter @techenglish/api start
@@ -133,91 +211,93 @@ pnpm --filter @techenglish/api start
 pnpm --filter web start
 ```
 
-Backend xuất mã vào `apps/api/dist`; frontend tạo `apps/web/.next`. Cấu hình môi trường production, CORS và database trước khi khởi động. Áp dụng migration bằng runner trước khi dùng chức năng mới; không commit thư mục build.
+API xuất mã vào `apps/api/dist`, web vào `apps/web/.next`. `NEXT_PUBLIC_API_URL` được đưa vào bundle khi build; đổi địa chỉ API cần build lại web.
 
 ## Kiểm thử
 
+| Mục đích | Lệnh |
+| --- | --- |
+| Backend | `pnpm --filter @techenglish/api test` |
+| Web regression | `pnpm --filter web test` |
+| Web typecheck | `pnpm --filter web typecheck` |
+| Mobile typecheck | `pnpm --filter mobile typecheck` |
+| Các package `@techenglish/*` có script typecheck | `pnpm typecheck` |
+| Nghiệp vụ chứng chỉ | `pnpm --filter @techenglish/api test:certification` |
+| Kiểm tra đầu vào | `pnpm --filter @techenglish/api test:placement` |
+| Kế hoạch học | `pnpm --filter @techenglish/api test:agenda` |
+| AI lập kế hoạch | `pnpm --filter @techenglish/api test:learning-ai` |
+
+Xem [tài liệu kiểm thử](docs/testing/README.md) cho danh mục và kịch bản chi tiết.
+
+## Xử lý lỗi thường gặp
+
+### Thiếu thư viện native sau khi chuyển Linux/Windows
+
+Biểu hiện: thiếu `@next/swc-win32-x64-msvc`, `lightningcss.win32-x64-msvc.node` hoặc `@tailwindcss/oxide-win32-x64-msvc`.
+
+Dừng dev server, cài lại dependencies từ thư mục gốc trên máy đích rồi khởi động lại:
+
 ```bash
-pnpm --filter @techenglish/api test
-pnpm --filter web typecheck
-pnpm typecheck
+pnpm install --frozen-lockfile --force
+pnpm --filter @techenglish/api db:generate
+pnpm dev
 ```
 
-Lệnh test backend bao gồm xác thực, người dùng, từ vựng, tiến độ, gợi ý AI và nhắc học. Có thêm các bộ kiểm thử nghiệp vụ:
+Giữ nguyên lockfile. Đảm bảo máy truy cập được npm registry khi tải các gói theo hệ điều hành.
+
+### Prisma được tạo cho Linux nhưng đang chạy Windows
+
+Nếu báo `Prisma Client could not locate the Query Engine for runtime "windows"`, tạo lại client trên máy đang chạy:
 
 ```bash
-pnpm --filter @techenglish/api test:certification
-pnpm --filter @techenglish/api test:placement
-pnpm --filter @techenglish/api test:agenda
-pnpm --filter @techenglish/api test:learning-ai
+pnpm --filter @techenglish/api db:generate
 ```
 
-Xem [tài liệu kiểm thử](docs/testing/README.md) cho danh mục và kịch bản kiểm thử hệ thống.
+Sau đó khởi động lại backend. Chạy lệnh này cả khi Prisma Client thiếu model sau khi cập nhật schema.
 
-## Nhắc học trên web và Ubuntu Server
+### Không kết nối được database (`P1001`)
 
-Nhắc học được lưu vào bảng `learning_notifications`; migration `20261005040000_learning_notifications` cần được áp dụng khi triển khai.
+Kiểm tra PostgreSQL đang chạy, host/port truy cập được và `DATABASE_URL` đúng. Nếu database ở máy khác, kiểm tra kết nối mạng và quyền truy cập. Không reset database để xử lý lỗi kết nối.
 
-- Cron trên Ubuntu gọi API mỗi phút; backend không tự chạy lịch nhắc học trong NestJS.
-- Đặt `LEARNING_REMINDER_JOB_KEY` là khóa ngẫu nhiên tối thiểu 32 ký tự; cài lịch bằng `sudo bash scripts/ubuntu/install-learning-reminders.sh /etc/techenglish/learning-reminders.curl`.
-- Scheduler gọi `POST /api/v1/internal/jobs/learning-reminders` với header `x-scheduler-key`. Khóa này chỉ nằm trên server.
-- Web kiểm tra thông báo khi đang mở; thông báo chưa đọc được lưu để hiển thị khi người học quay lại. Nhắc trong web không cần quyền thông báo trình duyệt.
-- Thông báo ngoài cửa sổ web vẫn cần cấu hình Firebase và quyền thông báo phù hợp.
+### Cổng 3000 hoặc 8080 đã được sử dụng
 
-Xem [hướng dẫn Ubuntu Server](docs/ubuntu-learning-reminders.md) và script trong [scripts/ubuntu](scripts/ubuntu).
+Kiểm tra terminal và tiến trình đang chạy trước khi mở thêm dev server. Dùng lại dịch vụ hiện có hoặc dừng đúng tiến trình bằng Ctrl+C. Nếu đổi cổng, cập nhật cả URL API, web và CORS tương ứng.
 
-## Dữ liệu kiểm tra từ vựng
+### Web mở được nhưng không gọi được API
 
-Nghĩa ngắn phục vụ câu hỏi được tách khỏi định nghĩa đầy đủ, không thay đổi tiến độ học. Câu có nghĩa quá dài hoặc tham chiếu chưa giải quyết được sẽ không dùng để sinh lựa chọn trắc nghiệm.
+Kiểm tra API tại http://localhost:8080/api/docs, sau đó đối chiếu `NEXT_PUBLIC_API_URL`, `WEB_URL` và `CORS_ORIGIN`. Khởi động lại dev server sau khi đổi môi trường; với production, build lại web khi đổi biến public.
 
-Xem [ghi chú dữ liệu](apps/api/prisma/data/vocabulary-quiz-notes.md), [danh sách cần biên tập](apps/api/prisma/data/vocabulary-quiz-review.json) và [bộ nghĩa ngắn](apps/api/src/application/vocab-study/quiz-meanings.ts).
+### Không có thông báo đẩy
 
-## Tài khoản mẫu
+Firebase chưa cấu hình sẽ tắt push notification. Nhắc học trong web vẫn dùng dữ liệu lưu trên máy chủ, nhưng cần migration và lịch gọi job nhắc học.
 
-Sau khi seed ở môi trường phát triển:
+## Nhắc học trên Ubuntu
 
-| Vai trò | Email | Mật khẩu |
-| --- | --- | --- |
-| Quản trị viên | `admin@techenglish.pro` | `Demo@123456` |
-| Giảng viên | `nguyen.thanh@techenglish.pro` | `Demo@123456` |
-| Học viên | `learner1@techenglish.pro` | `Demo@123456` |
+Cron gọi `POST /api/v1/internal/jobs/learning-reminders` mỗi phút với header `x-scheduler-key`; backend không tự chạy lịch nhắc học trong NestJS.
 
-## Lỗi thường gặp
+Đặt `LEARNING_REMINDER_JOB_KEY` là khóa ngẫu nhiên tối thiểu 32 ký tự, áp dụng migration rồi làm theo [hướng dẫn nhắc học Ubuntu](docs/ubuntu-learning-reminders.md). Web kiểm tra thông báo khi đang mở; thông báo chưa đọc được lưu cho lần truy cập sau.
 
-- **Prisma thiếu model hoặc phương thức:** chạy `pnpm --filter @techenglish/api db:generate`, sau đó build lại backend.
-- **Web không gọi được API:** kiểm tra API đang chạy, `NEXT_PUBLIC_API_URL`, `WEB_URL` và `CORS_ORIGIN`; build lại frontend nếu đã đổi biến public.
-- **Nhắc học không hiển thị:** kiểm tra migration, giờ/múi giờ của hồ sơ, khóa gọi API, trạng thái cron và log trên Ubuntu.
-- **Migration runner không tìm thấy database:** truyền `DATABASE_URL` bằng môi trường hoặc dùng `node --env-file=apps/api/.env docker/migrate.cjs`.
+## Docker và triển khai
 
-## Docker và CI/CD
+Xem [hướng dẫn Docker và CI/CD](docker/README.md) trước khi triển khai.
 
-Xem [hướng dẫn Docker và triển khai](docker/README.md) cho Compose, PostgreSQL hiện có, backup và rollback.
+- [docker-compose.yml](docker-compose.yml): PostgreSQL riêng, migration runner, API và web.
+- [compose.postgres.yml](compose.postgres.yml): kết nối PostgreSQL hiện có; không tự tạo database hoặc chạy migration.
+- [.env.compose.example](.env.compose.example): biến môi trường Compose.
+- [Dockerfile](Dockerfile): các target API, web và mobile.
+- [CI](.github/workflows/ci.yml), [deploy](.github/workflows/deploy.yml), [mobile build](.github/workflows/mobile-build.yml).
 
-- [Docker Compose](docker-compose.yml), [Dockerfile](Dockerfile), [môi trường mẫu](.env.compose.example).
-- [CI và build image GHCR](.github/workflows/ci.yml).
-- [Triển khai server](.github/workflows/deploy.yml).
-- [Build mobile qua EAS](.github/workflows/mobile-build.yml).
+Với Vercel, chọn Root Directory là `apps/web` và cho phép truy cập các package ngoài thư mục này. Cấu hình [apps/web/vercel.json](apps/web/vercel.json) dùng pnpm 12.8.1 qua `npx` và gọi Next.js từ `node_modules` gốc. Đặt `NEXT_PUBLIC_API_URL` trước khi deploy.
 
-CI trên `main` chạy kiểm tra và build trước khi xuất bản container. Build local không đồng nghĩa với đã triển khai hoặc đã áp dụng migration trên server.
+## Tài liệu bổ sung
 
-### Frontend trên Vercel
-
-Đặt **Root Directory** của project Vercel là `apps/web` và cho phép truy cập mã nguồn bên ngoài thư mục này để dùng các package trong workspace.
-File `apps/web/vercel.json` cố định lệnh cài đặt bằng pnpm `12.8.1`, cùng phiên bản trong `package.json`.
-Lệnh cài đặt gọi pnpm qua `npx` để tránh lỗi bootstrap `the installed pnpm wrapper is missing` trong `package-manager-store` của môi trường build Vercel.
-Lệnh build gọi trực tiếp Next.js trong `node_modules` ở gốc workspace (dự án dùng `nodeLinker: hoisted`), tránh launcher `next` từ cache cũ trỏ vào đường dẫn `.pnpm` không còn tồn tại.
-Không hạ xuống pnpm 9/10: lockfile của pnpm 12 chứa nhiều YAML document mà các phiên bản này không đọc được.
-Khi nâng phiên bản pnpm, cập nhật cả `packageManager` và lệnh cài đặt trong file cấu hình Vercel.
-Đặt `NEXT_PUBLIC_API_URL` trong môi trường Vercel trước khi deploy.
+- [Cấu trúc dự án](docs/08-project-structure.md).
+- [Ghi chú dữ liệu câu hỏi từ vựng](apps/api/prisma/data/vocabulary-quiz-notes.md).
+- [Danh sách nghĩa từ cần biên tập](apps/api/prisma/data/vocabulary-quiz-review.json).
+- Hồ sơ luận văn: `docs/thesis/`.
 
 ## Tác giả và giấy phép
 
 Hồ Quốc Nam — Đại học Công nghiệp TP.HCM (IUH).
 
 Private — All rights reserved.
-
-## File xuất ra và tài liệu bổ sung
-
-APK và kết quả kiểm tra local không thuộc mã nguồn dự án.
-Hồ sơ luận văn và gói kiểm chứng nằm trong `docs/thesis/`.
-Xem [cấu trúc dự án](docs/08-project-structure.md). Clean Architecture chỉ áp dụng cho backend.
