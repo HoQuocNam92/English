@@ -1,4 +1,5 @@
 'use client';
+import { ResultCount } from '@/shared/ui/ResultCount';
 import { FilterPanel } from '@/shared/ui/FilterPanel';
 import { ClearFiltersButton } from '@/shared/ui/ClearFiltersButton';
 import { AppIcon } from '@/shared/ui/AppIcon';
@@ -136,11 +137,7 @@ export default function AdminTestsPage() {
         </div>
       </FilterPanel>
 
-      {!loading && (
-        <p className="mt-3 text-xs text-on-surface-variant">
-          Tổng cộng {total} đề thi {search && `— kết quả cho "${search}"`}
-        </p>
-      )}
+      <ResultCount total={total} unit="đề thi" loading={loading} error={Boolean(error)} filtered={Boolean(search || status || Object.values(filters).some(Boolean))} />
 
       {successMessage && <div className="mt-4 rounded-xl bg-emerald-50 p-3 text-sm text-emerald-800">{successMessage}</div>}
 

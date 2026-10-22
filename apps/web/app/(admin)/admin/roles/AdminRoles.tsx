@@ -1,4 +1,5 @@
 'use client';
+import { ResultCount } from '@/shared/ui/ResultCount';
 import { SummaryStat } from '@/shared/ui/SummaryStat';
 import { RequiredMark } from '@/shared/ui/RequiredMark';
 import { PaginatedList } from '@/shared/ui/PaginatedList';
@@ -250,7 +251,7 @@ export default function AdminRoles({ createKind }: { createKind?: 'role' | 'perm
           <div className="flex items-center justify-between border-b border-outline-variant/20 px-6 py-5"><div><h2 className="text-xl font-bold">Thêm vai trò</h2><p className="mt-1 text-xs text-on-surface-variant">Tạo vai trò nghiệp vụ, sau đó chọn người dùng và quyền truy cập.</p></div><button type="button" onClick={closeRole}><AppIcon className="">close</AppIcon></button></div>
           <div className="grid gap-4 p-6">
             <label className="text-sm font-semibold">Tên vai trò<RequiredMark /><input required minLength={2} maxLength={100} value={roleForm.name} onChange={e => { const name = e.target.value; setRoleForm(current => ({ ...current, name, code: roleCodeFromName(name) })); }} className="mt-2 h-11 w-full rounded-xl border border-outline-variant/50 px-3" placeholder="Ví dụ: Người duyệt nội dung" /></label>
-            <label className="text-sm font-semibold">Mã role<RequiredMark /><input required pattern="[a-z0-9_]+" minLength={2} maxLength={50} value={roleForm.code} onChange={e => setRoleForm({...roleForm, code: roleCodeFromName(e.target.value)})} className="mt-2 h-11 w-full rounded-xl border border-outline-variant/50 px-3 font-mono" placeholder="content_reviewer" /><span className="mt-1 block text-xs font-normal text-on-surface-variant">Chỉ dùng chữ thường, số và dấu gạch dưới; mã không đổi sau khi tạo.</span></label>
+            <label className="text-sm font-semibold">Mã role<RequiredMark /><input required pattern="[a-z0-9_]+" minLength={2} maxLength={50} value={roleForm.code} onChange={e => setRoleForm({...roleForm, code: roleCodeFromName(e.target.value)})} className="mt-2 h-11 w-full rounded-xl border border-outline-variant/50 px-3" placeholder="content_reviewer" /><span className="mt-1 block text-xs font-normal text-on-surface-variant">Chỉ dùng chữ thường, số và dấu gạch dưới; mã không đổi sau khi tạo.</span></label>
             <label className="text-sm font-semibold">Mô tả nhiệm vụ<RequiredMark /><textarea required minLength={5} maxLength={500} value={roleForm.description} onChange={e => setRoleForm({...roleForm, description:e.target.value})} className="mt-2 min-h-24 w-full rounded-xl border border-outline-variant/50 p-3" placeholder="Mô tả phạm vi trách nhiệm của nhóm..." /></label>
             <div className="rounded-lg bg-primary/5 p-3 text-sm text-primary">Role mới chưa có quyền và người dùng. Sau khi tạo, chọn <strong>“Quản lý người dùng và quyền hạn”</strong> để cấu hình.</div>
             {roleError && <div className="rounded-lg bg-error-container p-3 text-sm text-on-error-container">{roleError}</div>}
@@ -258,6 +259,7 @@ export default function AdminRoles({ createKind }: { createKind?: 'role' | 'perm
           <div className="flex justify-end gap-3 border-t border-outline-variant/20 px-6 py-4"><button type="button" onClick={closeRole} className="h-10 rounded-xl px-4 text-sm font-semibold">Huỷ</button><button type="submit" disabled={savingRole} className="h-10 rounded-xl bg-primary px-5 text-sm font-semibold !text-white disabled:opacity-50">{savingRole ? 'Đang tạo...' : 'Tạo vai trò'}</button></div>
         </form>
       </FormSurface>);
+  const visiblePermissions = permissions.filter(item => matchesSearch(search, item.code, item.name, item.resource) && (!filter || item.resource === filter));
   const visibleRoles = roles.filter(role => matchesSearch(search, role.name, role.code, role.description) && (!filter || ((role.userCount ?? 0) > 0) === (filter === 'assigned')));
 
   if (createKind) return <CreatePage backHref={createKind === 'permission' ? '/admin/roles?tab=permissions' : '/admin/roles'}>{createKind === 'permission' ? permissionFormView : roleFormView}</CreatePage>;
@@ -276,6 +278,7 @@ export default function AdminRoles({ createKind }: { createKind?: 'role' | 'perm
       </div>
 
       <ListTools search={search} onSearch={setSearch} filter={filter} onFilter={setFilter} options={activeTab === 'roles' ? [{value:'',label:'Tất cả vai trò'},{value:'assigned',label:'Đã có người dùng'},{value:'empty',label:'Chưa có người dùng'}] : [{value:'',label:'Tất cả tài nguyên'},...Array.from(new Set(permissions.map(item=>item.resource))).map(resource=>({value:resource,label:resourceLabel(resource)}))]} />
+      <ResultCount total={activeTab === 'roles' ? visibleRoles.length : visiblePermissions.length} unit={activeTab === 'roles' ? 'vai trò' : 'quyền hạn'} loading={loading} error={Boolean(error)} filtered={Boolean(search || filter)} />
       {/* Summary stats */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-md mb-xl">
         {[
@@ -321,7 +324,7 @@ export default function AdminRoles({ createKind }: { createKind?: 'role' | 'perm
             </div>
           </div>
           ) : (
-            <PermissionTree paginate permissions={permissions.filter(item=>matchesSearch(search,item.code,item.name,item.resource) && (!filter || item.resource===filter))} renderMeta={(permission) => {
+            <PermissionTree paginate permissions={visiblePermissions} renderMeta={(permission) => {
               const rolesWithPerm = roles.filter((role) => role.permissions?.some((item) => item.id === permission.id));
               return <div className="flex flex-wrap items-center justify-end gap-2"><div className="hidden flex-wrap justify-end gap-1.5 md:flex">{rolesWithPerm.map((role) => <span key={role.id} className="rounded-full border border-primary/20 bg-primary/5 px-2 py-1 text-[11px] font-semibold text-primary">{roleLabel(role.code, role.name)}</span>)}</div><ActionGroup><ActionButton action="edit" type="button" onClick={() => openEditPermission(permission as PermissionItem)} title="Sửa" />
 <ActionButton action="delete" type="button" onClick={() => void deletePermission(permission as PermissionItem)} title="Xóa" /></ActionGroup></div>;

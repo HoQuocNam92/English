@@ -1,4 +1,5 @@
 'use client';
+import { ResultCount } from '@/shared/ui/ResultCount';
 import { RequiredMark } from '@/shared/ui/RequiredMark';
 import { PaginatedTable } from '@/shared/ui/PaginatedTable';
 import { AppIcon } from '@/shared/ui/AppIcon';
@@ -56,11 +57,12 @@ export default function CareerGoals({ createOnly = false }: { createOnly?: boole
   return <main className="flex-1 p-margin">
     <PageHeader title="Mục tiêu nghề nghiệp" icon="work_outline" iconClassName="from-amber-500 to-orange-600" action={<button type="button" onClick={() => router.push('/admin/career-goals/new')} className="inline-flex h-10 items-center gap-2 rounded-xl bg-primary px-4 text-sm font-semibold text-white"><AppIcon aria-hidden="true" className="" style={{ fontSize: 18 }}>add</AppIcon>Thêm mục tiêu</button>} />
     <ListTools search={search} onSearch={setSearch} filter={filter} onFilter={setFilter} options={[{value:'',label:'Tất cả mục tiêu'},{value:'assigned',label:'Đã có học viên'},{value:'empty',label:'Chưa có học viên'}]} />
+    <ResultCount total={visible.length} unit="mục tiêu nghề nghiệp" loading={loading} error={Boolean(error)} filtered={Boolean(search || filter)} />
     {error && <div className="mt-5 rounded-xl bg-error-container p-3 text-sm text-on-error-container">{error}</div>}
     {form.id && <section className="mt-6 rounded-2xl border border-outline-variant bg-white">{goalForm}</section>}
     <div className="mt-5 overflow-hidden rounded-2xl border border-outline-variant bg-white">
       <PaginatedTable enabled={!loading && visible.length > 0}><table className="w-full text-left text-sm"><thead className="bg-white"><tr><th className="p-4">Mã</th><th className="p-4">Mục tiêu nghề nghiệp</th><th className="p-4">Học viên</th><th className="p-4">Nhóm</th><th className="p-4 text-right">Thao tác</th></tr></thead><tbody className="divide-y divide-outline-variant/40">
-        {loading ? <tr><td colSpan={5} className="p-10 text-center">Đang tải...</td></tr> : visible.length ? visible.map(item => <tr key={item.id}><td className="p-4 font-mono text-xs font-bold text-primary">{item.code}</td><td className="p-4"><strong>{item.name}</strong><p className="mt-1 text-xs text-on-surface-variant">{item.description || 'Chưa có mô tả'}</p></td><td className="p-4">{item._count?.profileGoals ?? 0}</td><td className="p-4">{item._count?.learnerGroups ?? 0}</td><td className="p-4 text-right"><ActionGroup><ActionButton action="edit" type="button" onClick={() => setForm({ id: item.id, code: item.code, name: item.name, description: item.description ?? '' })} /></ActionGroup></td></tr>) : <tr><td colSpan={5} className="p-10 text-center text-on-surface-variant">Không có mục tiêu phù hợp.</td></tr>}
+        {loading ? <tr><td colSpan={5} className="p-10 text-center">Đang tải...</td></tr> : visible.length ? visible.map(item => <tr key={item.id}><td className="p-4 text-sm font-medium text-primary">{item.code}</td><td className="p-4"><strong>{item.name}</strong><p className="mt-1 text-xs text-on-surface-variant">{item.description || 'Chưa có mô tả'}</p></td><td className="p-4">{item._count?.profileGoals ?? 0}</td><td className="p-4">{item._count?.learnerGroups ?? 0}</td><td className="p-4 text-right"><ActionGroup><ActionButton action="edit" type="button" onClick={() => setForm({ id: item.id, code: item.code, name: item.name, description: item.description ?? '' })} /></ActionGroup></td></tr>) : <tr><td colSpan={5} className="p-10 text-center text-on-surface-variant">Không có mục tiêu phù hợp.</td></tr>}
       </tbody></table></PaginatedTable>
     </div>
   </main>;

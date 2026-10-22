@@ -1,4 +1,5 @@
 'use client';
+import { ResultCount } from '@/shared/ui/ResultCount';
 import { FilterPanel } from '@/shared/ui/FilterPanel';
 import { ClearFiltersButton } from '@/shared/ui/ClearFiltersButton';
 import { AppIcon } from '@/shared/ui/AppIcon';
@@ -595,12 +596,7 @@ export default function AdminLearningContent({ createOnly = false }: { createOnl
         </div>
       </FilterPanel>
 
-      {/* Summary */}
-      {!loading && (
-        <p className="mt-3 text-xs text-on-surface-variant">
-          Tổng cộng {total} thuật ngữ IT {search && `— kết quả cho "${search}"`}
-        </p>
-      )}
+      <ResultCount total={total} unit="thuật ngữ IT" loading={loading} error={Boolean(error)} filtered={Boolean(search || domainCode || status)} />
 
       {!loading && items.length > 0 && (
         <BulkSelectionBar pageCount={items.length} selectedCount={selectedIds.size} allPageSelected={items.every((item) => selectedIds.has(item.id))} onSelectPage={(selected) => setSelectedIds((current) => { const next = new Set(current); items.forEach((item) => selected ? next.add(item.id) : next.delete(item.id)); return next; })}>

@@ -1,4 +1,5 @@
 'use client';
+import { ResultCount } from '@/shared/ui/ResultCount';
 import { ClearFiltersButton } from '@/shared/ui/ClearFiltersButton';
 import { AppIcon } from '@/shared/ui/AppIcon';
 
@@ -87,11 +88,7 @@ export default function AdminProgressPage() {
         </div>
       </div>
 
-      {!loading && (
-        <p className="mt-3 text-xs text-on-surface-variant">
-          Tổng cộng {total} học viên theo dõi {search && `— kết quả cho "${search}"`}
-        </p>
-      )}
+      <ResultCount total={total} unit="học viên" loading={loading} error={Boolean(error)} filtered={Boolean(search || Object.values(filters).some(Boolean))} />
 
       {error && (
         <div className="mt-4 p-3 rounded-xl bg-error-container text-on-error-container text-sm flex items-center gap-2">

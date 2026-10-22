@@ -18,7 +18,7 @@ interface AnalyticsData {
     activeUsers: number;
         totalExams: number;
     totalVocab: number;
-    passRate: number;
+    passRate: number; averageScore: number;
   };
   domainsDistribution: Array<{
     code: string;
@@ -72,7 +72,7 @@ const DOMAIN_COLORS = [
 export default function AdminDashboardPage() {
   const { session } = useAuth();
   const roles = session?.user?.roles ?? (session?.user?.role ? [session.user.role] : []);
-  const isAdmin = roles.includes('admin') && !roles.includes('teacher');
+  const isAdmin = roles.includes('admin');
   const [stats, setStats] = React.useState<{
     totalUsers: number;
     activeUsers: number;
@@ -101,7 +101,7 @@ export default function AdminDashboardPage() {
           isAdmin ? apiClient.get<PaginatedResponse<UserItem>>('/users?limit=5') : Promise.resolve({ data: [], meta: { total: 0 } }),
           apiClient.get<PaginatedResponse<ExamItem>>('/exams?limit=1'),
           apiClient.get<PaginatedResponse<unknown>>('/vocabulary?limit=1'),
-          isAdmin ? apiClient.get<AnalyticsData>(`/analytics/dashboard?${new URLSearchParams(activityRange)}`) : Promise.resolve(null),
+          apiClient.get<AnalyticsData>(`/analytics/dashboard?${new URLSearchParams(activityRange)}`),
           isAdmin ? apiClient.get<any>('/users?limit=1&status=active') : Promise.resolve({ meta: { total: 0 } }),
         ]);
 
@@ -139,7 +139,21 @@ export default function AdminDashboardPage() {
       <div><h2 className="text-3xl font-bold tracking-tight text-on-surface">Không gian giảng viên</h2></div>
       {error && <div className="rounded-xl bg-error-container p-4 text-sm text-on-error-container">{error}</div>}
       <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
+        <SummaryStat label="Kho từ vựng" value={loading ? '…' : (stats?.totalVocab ?? 0).toLocaleString('vi-VN')} unit="từ" icon="library_books" />
+        <SummaryStat label="Bài kiểm tra" value={loading ? '…' : (stats?.totalExams ?? 0).toLocaleString('vi-VN')} unit="bài" icon="quiz" />
+        <SummaryStat label="Điểm trung bình trong kỳ" value={loading ? '…' : (analytics?.overview.averageScore ?? 0)} unit="%" icon="insights" />
+        <SummaryStat label="Tỷ lệ đạt trong kỳ" value={loading ? '…' : (analytics?.overview.passRate ?? 0)} unit="%" icon="task_alt" />
       </div>
+      <section className="space-y-4">
+        <div className="flex flex-wrap items-end justify-between gap-4">
+          <div><h3 className="text-xl font-bold">Tình hình học tập</h3><p className="mt-1 text-sm text-on-surface-variant">Dữ liệu toàn hệ thống phục vụ giảng dạy; chưa giới hạn theo nhóm phụ trách.</p></div>
+          <label className="grid gap-1 text-sm font-medium">Khoảng thời gian<Dropdown value={period} onChange={e => setPeriod(e.target.value)} className="rounded-xl border border-outline-variant bg-white px-3 py-2"><option value="week">7 ngày gần nhất</option><option value="month">Tháng này</option><option value="year">Năm nay</option></Dropdown></label>
+        </div>
+        {!error && <div className="grid gap-5 lg:grid-cols-3">
+          <div className="min-w-0 rounded-2xl border border-outline-variant bg-white p-5 lg:col-span-2"><h4 className="mb-5 text-base font-semibold">Hoạt động học tập</h4>{loading ? <p className="py-12 text-center text-sm">Đang tải biểu đồ...</p> : <ActivityChart data={analytics?.weeklyActivity ?? []} />}</div>
+          <div className="min-w-0 rounded-2xl border border-outline-variant bg-white p-5"><h4 className="mb-5 text-base font-semibold">Học liệu theo lĩnh vực trong kỳ</h4><p className="mb-4 text-xs text-on-surface-variant">Bài học, từ vựng, câu hỏi và bài kiểm tra được tạo trong kỳ.</p><div className="space-y-4">{loading ? <p className="text-sm">Đang tải biểu đồ...</p> : !analytics?.domainsDistribution.some(item => item.totalItems > 0) ? <p className="text-sm text-on-surface-variant">Chưa có học liệu trong kỳ này.</p> : [...analytics.domainsDistribution].filter(item => item.totalItems > 0).sort((a,b) => b.totalItems - a.totalItems).map(item => <div key={item.code}><div className="mb-1 flex justify-between gap-3 text-sm"><span>{item.name}</span><span className="font-semibold">{item.totalItems}</span></div><div className="h-2 overflow-hidden rounded-full bg-surface-container" role="img" aria-label={`${item.name}: ${item.totalItems} học liệu`}><div className="h-full rounded-full bg-primary" style={{ width: `${item.totalItems / totalDomainItems * 100}%` }} /></div></div>)}</div></div>
+        </div>}
+      </section>
       <section><h3 className="mb-4 text-xl font-bold">Công việc giảng dạy</h3><div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {[['Thêm câu hỏi','/admin/questions/editor','post_add'],['Tạo quiz chứng chỉ','/admin/tests/builder','quiz'],['Xem kết quả thi','/admin/test-results','fact_check'],['Theo dõi tiến độ','/admin/progress','insights']].map(([label,href,icon]) => <Link key={href} href={href} className="flex items-center gap-4 rounded-2xl bg-white p-5 shadow-[0_8px_28px_rgba(15,23,42,0.05)] transition hover:-translate-y-0.5 hover:text-primary"><AppIcon className=" text-primary">{icon}</AppIcon><span className="font-semibold">{label}</span><AppIcon className=" ml-auto text-outline">chevron_right</AppIcon></Link>)}
       </div></section>

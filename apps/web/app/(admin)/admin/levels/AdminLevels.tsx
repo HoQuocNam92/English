@@ -1,4 +1,5 @@
 'use client';
+import { ResultCount } from '@/shared/ui/ResultCount';
 import { Input } from '@/shared/ui/Input';
 import { SummaryStat } from '@/shared/ui/SummaryStat';
 import { Pagination } from '@/shared/ui/Pagination';
@@ -349,6 +350,7 @@ export default function AdminLevels({ createOnly = false }: { createOnly?: boole
       </div>
 
       <ListTools search={search} onSearch={setSearch} filter={filter} onFilter={setFilter} options={[{value:'',label:'Tất cả trạng thái'},{value:'active',label:'Đang hoạt động'},{value:'inactive',label:'Ngừng hoạt động'}]} />
+      <ResultCount total={visibleLevels.length} unit="cấp độ" loading={loading} error={Boolean(error)} filtered={Boolean(search || filter)} />
 
       {/* Level Cards Grid */}
       <section className="space-y-4" aria-labelledby="levels-list-title">
@@ -395,7 +397,7 @@ export default function AdminLevels({ createOnly = false }: { createOnly?: boole
               return (
                 <div
                   key={lvl.id}
-                  className="rounded-2xl bg-surface-container-lowest p-6 flex flex-col justify-between border border-outline-variant/40 shadow-[0_8px_28px_rgba(15,23,42,0.03)] hover:shadow-md transition-all group"
+                  className="rounded-2xl bg-surface-container-lowest p-6 font-sans text-sm leading-6 flex flex-col justify-between border border-outline-variant/40 shadow-[0_8px_28px_rgba(15,23,42,0.03)] hover:shadow-md transition-all group"
                 >
                   <div>
                     {/* Header */}
@@ -410,11 +412,11 @@ export default function AdminLevels({ createOnly = false }: { createOnly?: boole
                         <div>
                           <div className="flex items-center gap-2">
                             <h3 className="font-bold text-base text-on-surface">{lvl.name}</h3>
-                            <span className="text-xs font-mono px-2 py-0.5 rounded bg-surface-container text-on-surface-variant font-semibold">
+                            <span className="text-sm px-2 py-0.5 rounded bg-surface-container text-on-surface-variant font-medium">
                               Bậc {lvl.order}
                             </span>
                           </div>
-                          <code className="text-xs text-on-surface-variant font-mono">{lvl.code}</code>
+                          <span className="text-sm text-on-surface-variant">{lvl.code}</span>
                         </div>
                       </div>
 
@@ -444,15 +446,15 @@ export default function AdminLevels({ createOnly = false }: { createOnly?: boole
                   {/* Counters */}
                   <div className="grid grid-cols-3 gap-2 pt-4 border-t border-outline-variant/20 text-center">
                     <div className="bg-surface-container-low/70 rounded-xl p-2.5">
-                      <p className="text-[11px] text-on-surface-variant mb-0.5">Từ vựng</p>
+                      <p className="text-sm font-medium text-on-surface-variant mb-0.5">Từ vựng</p>
                       <p className="text-sm font-bold text-on-surface">{lvl._count?.vocabularies ?? 0}</p>
                     </div>
                     <div className="bg-surface-container-low/70 rounded-xl p-2.5">
-                      <p className="text-[11px] text-on-surface-variant mb-0.5">Câu hỏi</p>
+                      <p className="text-sm font-medium text-on-surface-variant mb-0.5">Câu hỏi</p>
                       <p className="text-sm font-bold text-on-surface">{lvl._count?.questions ?? 0}</p>
                     </div>
                     <div className="bg-surface-container-low/70 rounded-xl p-2.5">
-                      <p className="text-[11px] text-on-surface-variant mb-0.5">Đề thi</p>
+                      <p className="text-sm font-medium text-on-surface-variant mb-0.5">Đề thi</p>
                       <p className="text-sm font-bold text-on-surface">{lvl._count?.exams ?? 0}</p>
                     </div>
                   </div>

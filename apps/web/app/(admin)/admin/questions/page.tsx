@@ -1,4 +1,5 @@
 'use client';
+import { ResultCount } from '@/shared/ui/ResultCount';
 import { loadAllPages } from '@/shared/lib/load-all-pages';
 import { ClearFiltersButton } from '@/shared/ui/ClearFiltersButton';
 import { showToast } from '@/shared/ui/AppFeedback';
@@ -241,11 +242,7 @@ export default function AdminQuestionsPage() {
         </div>
       </div>
 
-      {!loading && (
-        <p className="mt-3 text-xs text-on-surface-variant">
-          Tổng cộng {total} câu hỏi trong ngân hàng {search && `— kết quả cho "${search}"`}
-        </p>
-      )}
+      <ResultCount total={total} unit="câu hỏi" loading={loading} error={Boolean(error)} filtered={Boolean(search || type || topic || skill || domainCode || examId || status)} />
 
       {successMessage && (
         <div className="mt-4 p-3.5 rounded-xl bg-emerald-50 border border-emerald-300 text-emerald-800 text-sm flex items-center justify-between gap-2">
