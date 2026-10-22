@@ -26,10 +26,14 @@ function RoleCard({
   role,
   onExpand,
   isExpanded,
+  onDelete,
+  deleting,
 }: {
   role: RoleItem;
   onExpand: () => void;
   isExpanded: boolean;
+  onDelete: () => void;
+  deleting: boolean;
 }) {
   const color = ROLE_COLORS[role.code] ?? 'bg-surface-container-low text-on-surface-variant';
 
@@ -73,6 +77,7 @@ function RoleCard({
         <ActionGroup className="mt-2">
           <ActionButton action="view" label={isExpanded ? 'Thu gọn quyền' : 'Xem quyền của vai trò'} onClick={onExpand} />
           <ActionButton action="edit" label="Quản lý người dùng và quyền hạn" href={`/admin/roles/${role.id}`} />
+          {!role.isSystem && <ActionButton action="delete" label="Xóa vai trò" onClick={onDelete} loading={deleting} disabled={deleting} />}
         </ActionGroup>
       </div>
 
@@ -130,6 +135,8 @@ export default function AdminRoles({ createKind }: { createKind?: 'role' | 'perm
   const [permissionForm, setPermissionForm] = React.useState({ resource: '', action: 'read', name: '', description: '' });
   const [roleForm, setRoleForm] = React.useState({ name: '', code: '', description: '' });
   const [savingRole, setSavingRole] = React.useState(false);
+  const [deletingRoleId, setDeletingRoleId] = React.useState<string | null>(null);
+  const deleteRolePending = React.useRef(false);
   const [roleError, setRoleError] = React.useState<string | null>(null);
 
   const roleCodeFromName = (value: string) => value
@@ -152,6 +159,29 @@ export default function AdminRoles({ createKind }: { createKind?: 'role' | 'perm
   };
 
   const openCreateRole = () => router.push('/admin/roles/new');
+
+  const deleteRole = async (role: RoleItem) => {
+    if (role.isSystem || deleteRolePending.current) return;
+    deleteRolePending.current = true;
+    try {
+      const count = role.userCount ?? 0;
+      const confirmed = await confirmDialog(
+        `Bạn có muốn xóa vai trò “${roleLabel(role.code, role.name)}”? ${count} người dùng đang được gán vai trò này sẽ bị gỡ vai trò và các quyền đi kèm. Tài khoản người dùng vẫn được giữ lại.`,
+        { title: 'Xóa vai trò', confirmLabel: 'Xóa vai trò', tone: 'danger' },
+      );
+      if (!confirmed) return;
+      setDeletingRoleId(role.id);
+      setError(null);
+      await apiClient.delete(`/roles/${role.id}`);
+      setRoles(current => current.filter(item => item.id !== role.id));
+      setExpanded(current => current === role.id ? null : current);
+    } catch (e) {
+      setError(e instanceof ApiClientError ? e.message : 'Không thể xóa vai trò');
+    } finally {
+      setDeletingRoleId(null);
+      deleteRolePending.current = false;
+    }
+  };
 
   const savePermission = async (event: React.FormEvent) => {
     event.preventDefault(); setSavingPermission(true); setPermissionError(null);
@@ -269,6 +299,8 @@ export default function AdminRoles({ createKind }: { createKind?: 'role' | 'perm
               <RoleCard
                 key={role.id}
                 role={role}
+                onDelete={() => void deleteRole(role)}
+                deleting={deletingRoleId === role.id}
                 isExpanded={expanded === role.id}
                 onExpand={() => setExpanded((prev) => (prev === role.id ? null : role.id))}
               />
