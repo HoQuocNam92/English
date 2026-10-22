@@ -253,6 +253,43 @@ function CreateUserModal({ onClose, onCreated, page = false }: CreateUserModalPr
   );
 }
 
+function EditUserModal({ user, onClose, onSaved }: { user: UserItem; onClose: () => void; onSaved: () => void }) {
+  const [displayName, setDisplayName] = React.useState(user.displayName ?? '');
+  const [phoneNumber, setPhoneNumber] = React.useState(user.phoneNumber ?? '');
+  const [saving, setSaving] = React.useState(false);
+  const [error, setError] = React.useState<string | null>(null);
+  const pending = React.useRef(false);
+  const close = () => { if (!pending.current) onClose(); };
+  const save = async (event: React.FormEvent) => {
+    event.preventDefault();
+    if (pending.current) return;
+    if (!displayName.trim()) { setError('Tên hiển thị không được để trống'); return; }
+    pending.current = true;
+    setSaving(true); setError(null);
+    try {
+      await apiClient.patch(`/users/${user.id}`, { displayName: displayName.trim(), phoneNumber: phoneNumber.trim() });
+      showToast('Đã cập nhật thông tin người dùng.', 'success');
+      onSaved();
+    } catch (e) {
+      setError(e instanceof ApiClientError ? e.message : 'Không thể cập nhật người dùng. Vui lòng thử lại.');
+    } finally { pending.current = false; setSaving(false); }
+  };
+  const inputClass = 'mt-2 w-full rounded-xl border border-outline-variant px-3 py-2 text-sm';
+  return <FormSurface open onClose={close} maxWidth="max-w-[520px]">
+    <form onSubmit={save} className="space-y-4 p-6">
+      <h2 className="text-lg font-bold">Chỉnh sửa người dùng</h2>
+      <label className="block text-sm font-medium">Email đăng nhập<input type="email" value={user.email} readOnly className={`${inputClass} bg-surface-container-low text-on-surface-variant`} /></label>
+      <label className="block text-sm font-medium">Tên hiển thị <span className="text-error">*</span><input required value={displayName} onChange={e => setDisplayName(e.target.value)} disabled={saving} className={inputClass} autoComplete="name" /></label>
+      <label className="block text-sm font-medium">Số điện thoại<input type="tel" value={phoneNumber} onChange={e => setPhoneNumber(e.target.value)} disabled={saving} className={inputClass} autoComplete="tel" /></label>
+      {error && <p role="alert" className="text-sm text-error">{error}</p>}
+      <div className="flex justify-end gap-3 border-t border-outline-variant/30 pt-4">
+        <button type="button" disabled={saving} onClick={close} className="rounded-xl border border-outline-variant px-4 py-2 text-sm font-semibold">Hủy</button>
+        <button type="submit" disabled={saving} className="rounded-xl bg-primary px-4 py-2 text-sm font-semibold text-on-primary disabled:opacity-50">{saving ? 'Đang lưu...' : 'Lưu thay đổi'}</button>
+      </div>
+    </form>
+  </FormSurface>;
+}
+
 // ─── Page ──────────────────────────────────────────────────────────────
 export default function AdminUsers({ createOnly = false }: { createOnly?: boolean }) {
   const router = useRouter();
@@ -269,6 +306,7 @@ export default function AdminUsers({ createOnly = false }: { createOnly?: boolea
   const [actionError, setActionError] = React.useState<string | null>(null);
   const [successMessage, setSuccessMessage] = React.useState<string | null>(null);
   const [limit, setLimit] = React.useState(30);
+  const [editingUser, setEditingUser] = React.useState<UserItem | null>(null);
 
   const totalPages = Math.ceil(total / limit);
 
@@ -443,12 +481,11 @@ export default function AdminUsers({ createOnly = false }: { createOnly?: boolea
                       {new Date(user.createdAt).toLocaleDateString('vi-VN')}
                     </td>
                     <td className="px-5 py-4 text-right">
-                      {!user.roles?.includes('admin') && (
                         <ActionGroup>
-                          <ActionButton action={user.status === 'active' ? 'lock' : 'unlock'} loading={actionLoading === user.id} onClick={() => handleToggleStatus(user)} />
-                          <ActionButton action="delete" disabled={actionLoading === user.id} onClick={() => handleDelete(user)} />
+                          <ActionButton action="edit" label="Chỉnh sửa người dùng" onClick={() => setEditingUser(user)} />
+                          {!user.roles?.includes('admin') && <ActionButton action={user.status === 'active' ? 'lock' : 'unlock'} loading={actionLoading === user.id} onClick={() => handleToggleStatus(user)} />}
+                          {!user.roles?.includes('admin') && <ActionButton action="delete" disabled={actionLoading === user.id} onClick={() => handleDelete(user)} />}
                         </ActionGroup>
-                      )}
                     </td>
                   </tr>
                 ))
@@ -462,6 +499,7 @@ export default function AdminUsers({ createOnly = false }: { createOnly?: boolea
       </div>
 
 
+      {editingUser && <EditUserModal key={editingUser.id} user={editingUser} onClose={() => setEditingUser(null)} onSaved={() => { setEditingUser(null); void load(); }} />}
     </main>
   );
 }
