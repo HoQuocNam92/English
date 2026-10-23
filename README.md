@@ -170,13 +170,15 @@ Hoặc chạy riêng `pnpm dev:api` và `pnpm dev:web` trong hai terminal.
 
 ### Tài khoản mẫu
 
-Các tài khoản sau được tạo sau khi seed dữ liệu phát triển:
+Các tài khoản sau được khai báo trong `apps/api/prisma/seed.ts` và được tạo khi chạy seed dữ liệu phát triển. Đây là tài khoản demo dùng đuôi `@techenglish.pro`; tài khoản tự đăng ký mới phải dùng đúng đuôi `@gmail.com`.
 
 | Vai trò | Email | Mật khẩu |
 | --- | --- | --- |
 | Quản trị viên | `admin@techenglish.pro` | `Demo@123456` |
 | Giảng viên | `nguyen.thanh@techenglish.pro` | `Demo@123456` |
 | Học viên | `learner1@techenglish.pro` | `Demo@123456` |
+
+Bảng này mô tả dữ liệu seed, không xác nhận tài khoản đang có trong database của bạn. Khi đăng nhập, dùng đúng email đã tạo; không tự thay `@techenglish.pro` thành `@gmail.com`. Seed dùng `upsert` với `update: {}`, nên chạy lại không đặt lại mật khẩu tài khoản đã tồn tại.
 
 ## Mobile
 
