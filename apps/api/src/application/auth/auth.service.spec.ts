@@ -5,7 +5,7 @@ import { AuthService } from './auth.service'
 function fixture(user: any = { id: 'user', email: 'user@example.com', status: 'active', deletedAt: null, passwordHash: 'local-hash' }) {
   const calls: any[] = []
   const prisma: any = {
-    user: { findUnique: async () => user, updateMany: async (args: any) => { calls.push(['password', args]); return { count: 1 } } },
+    user: { findUnique: async () => user, findFirst: async () => user, updateMany: async (args: any) => { calls.push(['password', args]); return { count: 1 } } },
     passwordResetToken: {
       create: async (args: any) => { calls.push(['create', args]); return { id: 'otp', userId: 'user', email: 'user@example.com' } },
       findFirst: async (args: any) => { calls.push(['find', args]); return { id: 'otp', userId: 'user', email: 'user@example.com' } },

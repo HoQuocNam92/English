@@ -6,6 +6,7 @@ import { EmailService } from '../../infrastructure/email/email.service'
 import { LoginDto, RegisterDto, AuthChangePasswordDto, ForgotPasswordDto, ResetPasswordDto, ValidatePasswordResetDto } from '../../presentation/http-dto/auth.dto'
 import * as bcrypt from 'bcrypt'
 import * as crypto from 'crypto'
+import { isEmail } from 'class-validator'
 
 @Injectable()
 export class AuthService {
@@ -41,7 +42,7 @@ export class AuthService {
   }
 
   async login(dto: LoginDto) {
-    const user = await this.prisma.user.findUnique({ where: { email: dto.email } })
+    const user = await this.prisma.user.findFirst({ where: { email: { equals: dto.email.trim().toLowerCase(), mode: 'insensitive' } } })
     if (!user) throw new UnauthorizedException('Không tìm thấy tài khoản với email này')
     if (user.deletedAt || user.status === 'inactive') throw new UnauthorizedException('Tài khoản đã bị vô hiệu hóa hoặc chưa được kích hoạt')
     if (user.status === 'suspended') throw new UnauthorizedException('Tài khoản đã bị khóa. Vui lòng liên hệ quản trị viên')
@@ -55,7 +56,9 @@ export class AuthService {
 
   async register(dto: RegisterDto) {
     // Kiểm tra email đã tồn tại chưa
-    const existing = await this.prisma.user.findUnique({ where: { email: dto.email } })
+    const email = dto.email.trim().toLowerCase()
+    this.assertRegistrationEmail(email)
+    const existing = await this.prisma.user.findFirst({ where: { email: { equals: email, mode: 'insensitive' } } })
     if (existing) throw new ConflictException('Email đã được sử dụng')
 
     const passwordHash = await bcrypt.hash(dto.password, 12)
@@ -65,7 +68,7 @@ export class AuthService {
 
     const user = await this.prisma.user.create({
       data: {
-        email: dto.email,
+        email,
         passwordHash,
         status: 'active',
         userDetail: {
@@ -74,6 +77,9 @@ export class AuthService {
         userRoles: { create: { roleId: learnerRole.id } },
         learnerProfile: { create: { levelId: defaultLevel.id, onboardingCompleted: false } },
       },
+    }).catch(error => {
+      if (error?.code === 'P2002') throw new ConflictException('Email đã được sử dụng')
+      throw error
     })
 
     const full = await this.getUserWithPermissions(user.id)
@@ -118,17 +124,19 @@ export class AuthService {
   }
 
   async findOrCreateGoogleUser(profile: { googleId: string; email: string; displayName: string; avatarUrl?: string }) {
-    let user = await this.prisma.user.findUnique({
-      where: { email: profile.email },
+    const email = profile.email.trim().toLowerCase()
+    let user = await this.prisma.user.findFirst({
+      where: { email: { equals: email, mode: 'insensitive' } },
     })
 
     if (!user) {
+      this.assertRegistrationEmail(email)
       const learnerRole = await this.prisma.role.findUnique({ where: { code: 'learner' } })
       const defaultLevel = await this.prisma.level.findFirst({ orderBy: { order: 'asc' } })
       if (!learnerRole || !defaultLevel) throw new BadRequestException('Hệ thống chưa cấu hình vai trò hoặc cấp độ mặc định cho học viên')
       user = await this.prisma.user.create({
         data: {
-          email: profile.email,
+          email,
           passwordHash: '',
           status: 'active',
           userDetail: {
@@ -154,6 +162,11 @@ export class AuthService {
 
     const fullUser = await this.getUserWithPermissions(user.id)
     return this.generateTokensForUser(fullUser)
+  }
+
+  private assertRegistrationEmail(email: string) {
+    if (!isEmail(email)) throw new BadRequestException('Email không hợp lệ')
+    if (!/^[^\s@]+@gmail\.com$/i.test(email)) throw new BadRequestException('Chỉ chấp nhận địa chỉ email @gmail.com')
   }
 
   async verifyGoogleIdToken(idToken: string) {
@@ -245,7 +258,7 @@ export class AuthService {
   }
 
   private async getPasswordResetUser(email: string) {
-    const user = await this.prisma.user.findUnique({ where: { email } })
+    const user = await this.prisma.user.findFirst({ where: { email: { equals: email.trim().toLowerCase(), mode: 'insensitive' } } })
     if (!user) throw new BadRequestException('Email chưa được đăng ký trên hệ thống')
     if (user.deletedAt || user.status !== 'active') {
       throw new BadRequestException('Tài khoản không hoạt động. Vui lòng liên hệ quản trị viên')

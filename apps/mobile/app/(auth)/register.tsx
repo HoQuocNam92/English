@@ -8,7 +8,7 @@ import { MaterialIcons } from '../../src/shared/ui/AppIcon';
 import Svg, { Path } from 'react-native-svg';
 import { colors, spacing } from '@techenglish/design-tokens';
 import { api, ApiError } from '../../src/shared/api/api-client';
-import { validateEmail, validatePassword, validateDisplayName } from '../../src/shared/utils/validators';
+import { validateRegistrationEmail, validatePassword, validateDisplayName } from '../../src/shared/utils/validators';
 import { useAuth } from '../../src/shared/store/auth-context';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { GoogleAuthButton } from '../../src/shared/ui/GoogleAuthButton';
@@ -95,7 +95,7 @@ export default function MobileRegisterScreen() {
     const nameErr = validateDisplayName(displayName);
     if (nameErr) setNameError(nameErr);
     
-    const emailErr = validateEmail(email);
+    const emailErr = validateRegistrationEmail(email);
     if (emailErr) setEmailError(emailErr);
     
     const passErr = validatePassword(password);

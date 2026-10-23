@@ -6,6 +6,7 @@ import { PermissionsGuard } from '../infrastructure/auth/permissions.guard'
 import { RequirePermissions } from './decorators/require-permissions.decorator'
 import { CurrentUser, JwtPayload } from './decorators/current-user.decorator'
 import { CreateQuestionDto, UpdateQuestionDto, BulkCreateQuestionsDto, BulkUpdateStatusDto } from './http-dto/content.dto'
+import { canManageContent } from '../infrastructure/auth/content-access'
 
 @ApiTags('Questions')
 @ApiBearerAuth()
@@ -16,11 +17,11 @@ export class QuestionsController {
 
   @Get()
   @ApiOperation({ summary: 'List questions with filters' })
-  findAll(@Query() q: any) { return this.svc.findAll(q) }
+  findAll(@Query() q: any, @CurrentUser() user: JwtPayload) { return this.svc.findAll(q, canManageContent(user, 'questions')) }
 
   @Get(':id')
   @ApiOperation({ summary: 'Get question by id' })
-  findOne(@Param('id') id: string) { return this.svc.findOne(id) }
+  findOne(@Param('id') id: string, @CurrentUser() user: JwtPayload) { return this.svc.findForViewer(id, canManageContent(user, 'questions')) }
 
   @Post('bulk')
   @RequirePermissions('questions:manage')

@@ -6,21 +6,23 @@ import { PermissionsGuard } from '../infrastructure/auth/permissions.guard'
 import { CreateLessonDto, UpdateLessonDto, BulkUpdateStatusDto } from './http-dto/content.dto'
 import { CurrentUser, JwtPayload } from './decorators/current-user.decorator'
 import { RequirePermissions } from './decorators/require-permissions.decorator'
+import { OptionalJwtAuthGuard } from '../infrastructure/auth/optional-jwt-auth.guard'
+import { canManageContent } from '../infrastructure/auth/content-access'
 
 @ApiTags('Lessons')
 @Controller('lessons')
 export class LessonsController {
   constructor(private readonly lessons: LessonsService) {}
 
-  @Get() @ApiOperation({ summary: 'Danh sách bài học với bộ lọc' })
-  findAll(@Query() query: Record<string, unknown>) { return this.lessons.findAll(query) }
+  @Get() @UseGuards(OptionalJwtAuthGuard) @ApiOperation({ summary: 'Danh sách bài học với bộ lọc' })
+  findAll(@Query() query: Record<string, unknown>, @CurrentUser() user: JwtPayload) { return this.lessons.findAll(query, canManageContent(user, 'lessons')) }
 
   @Patch('bulk-status') @ApiBearerAuth() @UseGuards(JwtAuthGuard, PermissionsGuard) @RequirePermissions('lessons:update')
   @ApiOperation({ summary: 'Bulk publish or move selected lessons back to draft' })
   bulkUpdateStatus(@Body() dto: BulkUpdateStatusDto) { return this.lessons.bulkUpdateStatus(dto) }
 
-  @Get(':id') @ApiOperation({ summary: 'Chi tiết bài học' })
-  findOne(@Param('id') id: string) { return this.lessons.findOne(id) }
+  @Get(':id') @UseGuards(OptionalJwtAuthGuard) @ApiOperation({ summary: 'Chi tiết bài học' })
+  findOne(@Param('id') id: string, @CurrentUser() user: JwtPayload) { return this.lessons.findForViewer(id, canManageContent(user, 'lessons')) }
 
   @Post() @ApiBearerAuth() @UseGuards(JwtAuthGuard, PermissionsGuard) @RequirePermissions('lessons:create')
   create(@Body() dto: CreateLessonDto, @CurrentUser() user: JwtPayload) { return this.lessons.create(dto, user.sub) }

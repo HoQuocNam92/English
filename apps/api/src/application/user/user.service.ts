@@ -60,7 +60,8 @@ export class UsersService {
   }
 
   async create(dto: any) {
-    const exists = await this.prisma.user.findUnique({ where: { email: dto.email } })
+    const email = dto.email.trim().toLowerCase()
+    const exists = await this.prisma.user.findFirst({ where: { email: { equals: email, mode: 'insensitive' } } })
     if (exists) throw new ConflictException('Email này đã được sử dụng')
 
     const passwordHash = await bcrypt.hash(dto.password, 12)
@@ -74,7 +75,7 @@ export class UsersService {
 
     const user = await this.prisma.user.create({
       data: {
-        email: dto.email,
+        email,
         passwordHash,
         status: dto.status ?? 'active',
         userDetail: {

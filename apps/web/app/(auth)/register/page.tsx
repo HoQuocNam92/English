@@ -44,6 +44,12 @@ export default function RegisterPage() {
     setSubmitting(true);
     setError('');
 
+    if (!/^[^\s@]+@gmail\.com$/i.test(email.trim())) {
+      setError('Chỉ chấp nhận địa chỉ email @gmail.com');
+      setSubmitting(false);
+      return;
+    }
+
     if (password !== confirmPassword) {
       setError('Mật khẩu xác nhận không khớp.');
       setSubmitting(false);
@@ -58,7 +64,7 @@ export default function RegisterPage() {
 
     try {
       const res: any = await apiClient.post('/auth/register', {
-        email,
+        email: email.trim().toLowerCase(),
         password,
         displayName: displayName || email.split('@')[0],
       });
@@ -162,10 +168,17 @@ export default function RegisterPage() {
                   id="email"
                   name="email"
                   autoComplete="email"
-                  placeholder="email@example.com"
+                  placeholder="email@gmail.com"
                   type="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
+                  onBlur={() => {
+                    if (email.trim() && !/^[^\s@]+@gmail\.com$/i.test(email.trim())) {
+                      setError('Chỉ chấp nhận địa chỉ email @gmail.com');
+                    } else {
+                      setError(current => current === 'Chỉ chấp nhận địa chỉ email @gmail.com' ? '' : current);
+                    }
+                  }}
                   required
                 />
               </div>

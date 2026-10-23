@@ -28,6 +28,7 @@ export class LearnerProfilesService {
 
   async completeOnboarding(userId: string, dto: CompleteOnboardingDto) {
     await this.assertLearner(userId)
+    this.assertCompleteGoal(dto.learningGoal, dto.domainCodes?.length ?? 0, dto.certificateCodes?.length ?? 0)
     if (dto.reminderTime && !/^([01]\d|2[0-3]):[0-5]\d$/.test(dto.reminderTime)) {
       throw new BadRequestException('Giờ nhắc học phải có định dạng HH:mm')
     }
@@ -111,27 +112,57 @@ export class LearnerProfilesService {
 
   async updateDomains(userId: string, domainCodes: string[]) {
     const profile = await this.findByUser(userId)
-    await this.prisma.learnerProfileDomain.deleteMany({ where: { profileId: profile.id } })
-    const domains = await this.prisma.domain.findMany({ where: { code: { in: domainCodes } } })
-    await this.prisma.learnerProfileDomain.createMany({ data: domains.map(d => ({ profileId: profile.id, domainId: d.id })) })
+    const domains = await this.activeChoices(this.prisma.domain, domainCodes, 'chuyên ngành')
+    if (!domains) throw new BadRequestException('Danh sách chuyên ngành không hợp lệ')
+    if (profile.onboardingCompleted) this.assertCompleteGoal(profile.learningGoal, domains.length, profile.certGoals.length)
+    await this.prisma.$transaction(async tx => {
+      await tx.learnerProfileDomain.deleteMany({ where: { profileId: profile.id } })
+      if (domains.length) await tx.learnerProfileDomain.createMany({ data: domains.map(d => ({ profileId: profile.id, domainId: d.id })) })
+    })
     return this.findByUser(userId)
+  }
+
+  private async activeChoices(model: { findMany: Function }, codes: unknown, label: string): Promise<any[] | undefined> {
+    if (codes === undefined) return undefined
+    if (!Array.isArray(codes) || codes.some(code => typeof code !== 'string' || !code.trim())) throw new BadRequestException(`Danh sách ${label} không hợp lệ`)
+    const unique = [...new Set(codes.map(code => code.trim()))]
+    if (!unique.length) return []
+    const choices = await model.findMany({ where: { code: { in: unique }, isActive: true } })
+    if (choices.length !== unique.length) throw new BadRequestException(`Có ${label} không tồn tại hoặc đã ngừng hoạt động`)
+    return choices
+  }
+
+  private assertCompleteGoal(goal: unknown, domainCount: number, certificateCount: number) {
+    if (!['vocabulary', 'certification', 'both'].includes(String(goal))) throw new BadRequestException('Vui lòng chọn mục tiêu học tập')
+    if ((goal === 'vocabulary' || goal === 'both') && domainCount === 0) throw new BadRequestException('Vui lòng chọn ít nhất một chuyên ngành')
+    if ((goal === 'certification' || goal === 'both') && certificateCount === 0) throw new BadRequestException('Vui lòng chọn ít nhất một chứng chỉ mục tiêu')
   }
 
   async updateGoals(userId: string, dto: UpdateLearnerGoalsDto) {
     await this.assertLearner(userId)
-    const existing = await this.prisma.learnerProfile.findUnique({ where: { userId } })
+    const existing = await this.prisma.learnerProfile.findUnique({ where: { userId }, include: { domains: true, certGoals: true } })
     if (!existing) throw new NotFoundException('Không tìm thấy hồ sơ học viên')
 
     let levelId = existing.levelId
-    if (dto.levelCode) {
+    if (dto.levelCode !== undefined) {
+      if (typeof dto.levelCode !== 'string' || !dto.levelCode.trim()) throw new BadRequestException('Trình độ không hợp lệ')
       const level = await this.prisma.level.findUnique({ where: { code: dto.levelCode } })
-      if (level) levelId = level.id
+      if (!level?.isActive) throw new BadRequestException('Trình độ không tồn tại hoặc đã ngừng hoạt động')
+      levelId = level.id
     }
+
+    // Resolve every reference before changing either the profile or its links.
+    const [domains, certs, goals] = await Promise.all([
+      this.activeChoices(this.prisma.domain, dto.domainCodes, 'chuyên ngành'),
+      this.activeChoices(this.prisma.certificate, dto.certificateCodes, 'chứng chỉ'),
+      this.activeChoices(this.prisma.careerGoal, dto.careerGoalCodes, 'mục tiêu nghề nghiệp'),
+    ])
 
     const updateData: any = {
       levelId,
-      onboardingCompleted: true,
     }
+    // Editing preferences must not bypass the explicit completion flow.
+    if (existing.onboardingCompleted) this.assertCompleteGoal(dto.learningGoal ?? existing.learningGoal, domains?.length ?? existing.domains.length, certs?.length ?? existing.certGoals.length)
     if (dto.weeklyStudyTargetMinutes !== undefined) {
       updateData.weeklyStudyTargetMinutes = dto.weeklyStudyTargetMinutes
     }
@@ -148,42 +179,21 @@ export class LearnerProfilesService {
     if (dto.learningPathMode !== undefined) updateData.learningPathMode = dto.learningPathMode
     if (dto.learningGoal !== undefined) updateData.learningGoal = dto.learningGoal
 
-    await this.prisma.learnerProfile.update({
-      where: { userId },
-      data: updateData,
+    await this.prisma.$transaction(async tx => {
+      await tx.learnerProfile.update({ where: { userId }, data: updateData })
+      if (domains !== undefined) {
+        await tx.learnerProfileDomain.deleteMany({ where: { profileId: existing.id } })
+        if (domains.length) await tx.learnerProfileDomain.createMany({ data: domains.map(d => ({ profileId: existing.id, domainId: d.id })) })
+      }
+      if (certs !== undefined) {
+        await tx.learnerCertificateGoal.deleteMany({ where: { profileId: existing.id } })
+        if (certs.length) await tx.learnerCertificateGoal.createMany({ data: certs.map(c => ({ profileId: existing.id, certificateId: c.id })) })
+      }
+      if (goals !== undefined) {
+        await tx.learnerProfileCareerGoal.deleteMany({ where: { profileId: existing.id } })
+        if (goals.length) await tx.learnerProfileCareerGoal.createMany({ data: goals.map(goal => ({ profileId: existing.id, careerGoalId: goal.id })) })
+      }
     })
-
-    if (dto.domainCodes !== undefined) {
-      await this.prisma.learnerProfileDomain.deleteMany({ where: { profileId: existing.id } })
-      if (dto.domainCodes.length > 0) {
-        const domains = await this.prisma.domain.findMany({ where: { code: { in: dto.domainCodes } } })
-        if (domains.length > 0) {
-          await this.prisma.learnerProfileDomain.createMany({
-            data: domains.map(d => ({ profileId: existing.id, domainId: d.id })),
-          })
-        }
-      }
-    }
-
-    if (dto.certificateCodes !== undefined) {
-      await this.prisma.learnerCertificateGoal.deleteMany({ where: { profileId: existing.id } })
-      if (dto.certificateCodes.length > 0) {
-        const certs = await this.prisma.certificate.findMany({ where: { code: { in: dto.certificateCodes } } })
-        if (certs.length > 0) {
-          await this.prisma.learnerCertificateGoal.createMany({
-            data: certs.map(c => ({ profileId: existing.id, certificateId: c.id })),
-          })
-        }
-      }
-    }
-
-    if (dto.careerGoalCodes !== undefined) {
-      await this.prisma.learnerProfileCareerGoal.deleteMany({ where: { profileId: existing.id } })
-      if (dto.careerGoalCodes.length > 0) {
-        const goals = await this.prisma.careerGoal.findMany({ where: { code: { in: dto.careerGoalCodes }, isActive: true } })
-        await this.prisma.learnerProfileCareerGoal.createMany({ data: goals.map(goal => ({ profileId: existing.id, careerGoalId: goal.id })) })
-      }
-    }
 
     return this.findByUser(userId)
   }

@@ -7,6 +7,7 @@ import { RequirePermissions } from './decorators/require-permissions.decorator'
 import { CurrentUser, JwtPayload } from './decorators/current-user.decorator'
 import { SubmitAttemptDto } from './http-dto/exam-attempt.dto'
 import { CreateExamDto, UpdateExamDto, BulkUpdateStatusDto } from './http-dto/content.dto'
+import { canManageContent } from '../infrastructure/auth/content-access'
 
 @ApiTags('Exams')
 @ApiBearerAuth()
@@ -17,7 +18,7 @@ export class ExamsController {
 
   @Get()
   @ApiOperation({ summary: 'List exams' })
-  findAll(@Query() q: any) { return this.svc.findAll(q) }
+  findAll(@Query() q: any, @CurrentUser() u: JwtPayload) { return this.svc.findAll(q, canManageContent(u, 'exams')) }
 
   @Patch('bulk-status')
   @RequirePermissions('exams:create')
@@ -32,7 +33,7 @@ export class ExamsController {
 
   @Get(':id')
   @ApiOperation({ summary: 'Get exam by id' })
-  findOne(@Param('id') id: string) { return this.svc.findOne(id) }
+  findOne(@Param('id') id: string, @CurrentUser() u: JwtPayload) { return this.svc.findForViewer(id, canManageContent(u, 'exams')) }
 
   @Post()
   @RequirePermissions('exams:create')

@@ -1,5 +1,6 @@
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common'
 import { PrismaService } from '../../infrastructure/database/prisma.service'
+import { learnerQuestion } from './learner-question'
 
 @Injectable()
 export class QuestionsService {
@@ -15,9 +16,18 @@ export class QuestionsService {
     if (!Array.isArray(dto.options) || dto.options.length === 0) {
       throw new BadRequestException('Câu hỏi lựa chọn phải có ít nhất một phương án')
     }
+    const keys = dto.options.map((option: any) => String(option.key ?? '').trim().toUpperCase())
+    if (dto.options.length < 2 || keys.some((key: string) => !key) || new Set(keys).size !== keys.length) {
+      throw new BadRequestException('Câu hỏi cần ít nhất hai phương án với mã không trùng nhau')
+    }
+    const correctCount = dto.options.filter((option: any) => option.isCorrect === true).length
+    if (!correctCount || (['single_choice', 'true_false'].includes(dto.type) && correctCount !== 1)) {
+      throw new BadRequestException('Số đáp án đúng không phù hợp với loại câu hỏi')
+    }
+    if (dto.type === 'true_false' && dto.options.length !== 2) throw new BadRequestException('Câu đúng sai cần đúng hai phương án')
   }
 
-  async findAll(params: any) {
+  async findAll(params: any, canPreview = false) {
     const page = Math.max(1, Number(params?.page) || 1)
     const limit = Math.min(Math.max(1, Number(params?.limit) || 20), 100)
     const { search, domainCode, levelCode, status, type, skill, examId, topic } = params || {}
@@ -27,6 +37,7 @@ export class QuestionsService {
     if (domainCode) where.domain = { code: domainCode }
     if (levelCode) where.level = { code: levelCode }
     if (status) where.status = status
+    if (!canPreview) where.status = 'published'
     if (type) where.type = type
     if (skill) where.skill = skill
     if (topic) where.topics = { has: String(topic) }
@@ -45,7 +56,7 @@ export class QuestionsService {
       }),
       this.prisma.question.count({ where }),
     ])
-    return { data, meta: { total, page, limit, totalPages: Math.ceil(total / limit) } }
+    return { data: canPreview ? data : data.map(learnerQuestion), meta: { total, page, limit, totalPages: Math.ceil(total / limit) } }
   }
 
   async bulkUpdateStatus(dto: any) {
@@ -70,6 +81,13 @@ export class QuestionsService {
     })
     if (!q) throw new NotFoundException('Không tìm thấy câu hỏi')
     return q
+  }
+
+  async findForViewer(id: string, canPreview = false) {
+    const question = await this.findOne(id)
+    if (canPreview) return question
+    if (question.status !== 'published') throw new NotFoundException('Không tìm thấy câu hỏi')
+    return learnerQuestion(question)
   }
 
   async create(dto: any) {
@@ -119,6 +137,8 @@ export class QuestionsService {
     if (!Array.isArray(dtos) || dtos.length === 0) {
       return { count: 0, success: true, message: 'Không có câu hỏi nào để nhập' }
     }
+    dtos = dtos.map(item => ({ ...item, type: item.type || 'single_choice', options: item.options?.map((option: any, index: number) => ({ ...option, key: option.key || String.fromCharCode(65 + index) })) }))
+    for (const item of dtos) this.validateAnswerDefinition(item)
 
     const [allDomains, allLevels] = await Promise.all([
       this.prisma.domain.findMany(),
@@ -142,17 +162,21 @@ export class QuestionsService {
     const defaultDomainId = allDomains[0]?.id
     const defaultLevelId = allLevels[0]?.id
 
+    // Validate the entire batch before writing. Defaults only apply to omitted
+    // taxonomy fields, never to an explicitly supplied unknown code or ID.
+    const resolved = dtos.map((item, index) => {
+      const dKey = String(item.domainId || item.domainCode || item.domainName || item.domain || '').trim().toLowerCase()
+      const lKey = String(item.levelId || item.levelCode || item.levelName || item.level || '').trim().toLowerCase()
+      const domainId = dKey ? domainMap.get(dKey) : defaultDomainId
+      const levelId = lKey ? levelMap.get(lKey) : defaultLevelId
+      if (!domainId) throw new BadRequestException(`Dòng ${index + 1}: chuyên ngành không tồn tại hoặc chưa được cấu hình`)
+      if (!levelId) throw new BadRequestException(`Dòng ${index + 1}: cấp độ không tồn tại hoặc chưa được cấu hình`)
+      return { item, domainId, levelId }
+    })
+
     const created = await this.prisma.$transaction(async (tx) => {
       const results = []
-      for (const item of dtos) {
-        this.validateAnswerDefinition(item)
-        const dKey = String(item.domainId || item.domainCode || item.domainName || item.domain || '').trim().toLowerCase()
-        const domainId = domainMap.get(dKey) || defaultDomainId
-
-        const lKey = String(item.levelId || item.levelCode || item.levelName || item.level || '').trim().toLowerCase()
-        const levelId = levelMap.get(lKey) || defaultLevelId
-
-        if (!domainId || !levelId) continue
+      for (const { item, domainId, levelId } of resolved) {
 
         const q = await tx.question.create({
           data: {

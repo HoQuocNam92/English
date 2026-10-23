@@ -675,9 +675,9 @@ export class UpdateLearnerProfileDto {
 }
 
 export class CompleteOnboardingDto {
-  @ApiPropertyOptional({ enum: ['vocabulary', 'certification', 'both'] })
-  @IsOptional() @IsEnum(['vocabulary', 'certification', 'both'])
-  learningGoal?: 'vocabulary' | 'certification' | 'both'
+  @ApiProperty({ enum: ['vocabulary', 'certification', 'both'] })
+  @IsEnum(['vocabulary', 'certification', 'both'], { message: 'Vui lòng chọn mục tiêu học tập' })
+  learningGoal: 'vocabulary' | 'certification' | 'both'
 
   @ApiPropertyOptional({ description: 'Level code (beginner/intermediate/advanced/professional)' })
   @IsOptional()

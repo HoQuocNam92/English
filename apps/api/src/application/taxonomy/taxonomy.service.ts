@@ -319,7 +319,7 @@ export class TaxonomyService {
         skip,
         take: limit,
         include: {
-          learner: { include: { userDetail: true } },
+          learner: { select: { id: true, email: true, status: true, userDetail: true } },
           exam: { include: { domain: true, level: true } },
         },
         orderBy: { createdAt: 'desc' },

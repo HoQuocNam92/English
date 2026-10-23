@@ -8,6 +8,12 @@ export function validateEmail(email: string): string | null {
   return null;
 }
 
+export function validateRegistrationEmail(email: string): string | null {
+  const error = validateEmail(email);
+  if (error) return error;
+  return /^[^\s@]+@gmail\.com$/i.test(email.trim()) ? null : 'Chỉ chấp nhận địa chỉ email @gmail.com';
+}
+
 export function validatePassword(password: string): string | null {
   if (!password) return 'Mật khẩu không được để trống';
   if (password.length < 6) return 'Mật khẩu phải có ít nhất 6 ký tự';

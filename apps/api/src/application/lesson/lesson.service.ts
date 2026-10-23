@@ -6,7 +6,7 @@ import { CreateLessonDto, UpdateLessonDto } from '../../presentation/http-dto/co
 export class LessonsService {
   constructor(private readonly prisma: PrismaService) {}
 
-  async findAll(params: Record<string, unknown>) {
+  async findAll(params: Record<string, unknown>, canPreview = false) {
     const page = Math.max(1, Number(params.page) || 1)
     const limit = Math.min(100, Math.max(1, Number(params.limit) || 20))
     const where: any = {}
@@ -23,6 +23,7 @@ export class LessonsService {
     if (params.domainCode) where.domain = { code: String(params.domainCode) }
     if (params.levelCode) where.level = { code: String(params.levelCode) }
     if (params.status) where.status = String(params.status)
+    if (!canPreview) where.status = 'published'
     if (params.type) where.type = String(params.type)
     if (params.topicId) where.certificationTopics = { some: { topicId: String(params.topicId) } }
     if (params.certificateId) where.certificates = { some: { certificateId: String(params.certificateId) } }
@@ -38,7 +39,7 @@ export class LessonsService {
           certificates: { include: { certificate: true } },
         certificationTopics: { include: { topic: true } },
           vocabularies: { include: { vocabulary: { select: { id: true, term: true } } } },
-          createdBy: { include: { userDetail: true } },
+          createdBy: { select: { id: true, userDetail: true } },
           _count: { select: { sections: true, vocabularies: true } },
         },
         orderBy: { updatedAt: 'desc' },
@@ -62,7 +63,8 @@ export class LessonsService {
 
   async findOne(idOrSlug: string) {
     const lesson = await this.prisma.lesson.findFirst({
-      where: { OR: [{ id: idOrSlug }, { slug: idOrSlug }] },
+      where: /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(idOrSlug)
+        ? { OR: [{ id: idOrSlug }, { slug: idOrSlug }] } : { slug: idOrSlug },
       include: {
         domain: true,
         level: true,
@@ -70,10 +72,16 @@ export class LessonsService {
         vocabularies: { include: { vocabulary: true } },
         certificates: { include: { certificate: true } },
         certificationTopics: { include: { topic: true } },
-        createdBy: { include: { userDetail: true } },
+        createdBy: { select: { id: true, userDetail: true } },
       },
     })
     if (!lesson) throw new NotFoundException('Không tìm thấy bài học')
+    return lesson
+  }
+
+  async findForViewer(idOrSlug: string, canPreview = false) {
+    const lesson = await this.findOne(idOrSlug)
+    if (!canPreview && lesson.status !== 'published') throw new NotFoundException('Không tìm thấy bài học')
     return lesson
   }
 

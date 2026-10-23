@@ -1,5 +1,6 @@
 import { Injectable, NotFoundException, BadRequestException, ConflictException, ForbiddenException } from '@nestjs/common'
 import { PrismaService } from '../../infrastructure/database/prisma.service'
+import { learnerQuestion } from '../question/learner-question'
 
 @Injectable()
 export class ExamsService {
@@ -30,16 +31,7 @@ export class ExamsService {
     const questions = Array.isArray(attempt.questionsSnapshot) ? attempt.questionsSnapshot : []
     return {
       ...attempt,
-      questionsSnapshot: questions.map((item: any) => {
-        const { acceptedAnswers: _acceptedAnswers, explanation: _explanation, ...question } = item
-        return {
-          ...question,
-          options: (item.options ?? []).map((option: any) => {
-            const { isCorrect: _isCorrect, explanation: _optionExplanation, ...safeOption } = option
-            return safeOption
-          }),
-        }
-      }),
+      questionsSnapshot: questions.map(learnerQuestion),
     }
   }
 
@@ -49,7 +41,7 @@ export class ExamsService {
     }
   }
 
-  async findAll(params: any) {
+  async findAll(params: any, canPreview = false) {
     const page = Math.max(1, Number(params.page) || 1)
     const limit = Math.min(Math.max(1, Number(params.limit) || 20), 100)
     const { search, domainCode, levelCode, status, kind } = params
@@ -59,6 +51,7 @@ export class ExamsService {
     if (domainCode) where.domain = { code: domainCode }
     if (levelCode) where.level = { code: levelCode }
     if (status) where.status = status
+    if (!canPreview) where.status = 'published'
     if (kind) where.kind = kind
     if (params.certificateId) where.certificateId = params.certificateId
     const [data, total] = await Promise.all([
@@ -95,6 +88,17 @@ export class ExamsService {
     const e = await this.prisma.exam.findUnique({ where: { id }, include: { domain: true, level: true, certificate: true, questions: { include: { question: { include: { options: { orderBy: { order: 'asc' } } } } }, orderBy: { order: 'asc' } } } })
     if (!e) throw new NotFoundException('Không tìm thấy bài thi')
     return e
+  }
+
+  async findForViewer(id: string, canPreview = false) {
+    if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id)) throw new BadRequestException('Mã bài thi phải là UUID hợp lệ')
+    const exam = await this.findOne(id)
+    if (canPreview) return exam
+    if (exam.status !== 'published') throw new NotFoundException('Không tìm thấy bài thi')
+    return {
+      ...exam,
+      questions: exam.questions.map(link => ({ ...link, question: learnerQuestion(link.question) })),
+    }
   }
 
   async create(dto: any, createdById: string) {
@@ -226,6 +230,7 @@ export class ExamsService {
     const attempt = await this.prisma.examAttempt.findUnique({ where: { id: attemptId } })
     if (!attempt || attempt.learnerId !== learnerId) throw new NotFoundException('Không tìm thấy lượt làm bài')
     if (attempt.status !== 'in_progress') throw new BadRequestException('Lượt làm bài này đã được nộp trước đó')
+    if (attempt.expiresAt && new Date(attempt.expiresAt).getTime() <= Date.now()) throw new BadRequestException('Lượt làm bài đã hết thời gian')
 
     const snapshot = (attempt.questionsSnapshot as any[]) || []
     const snapshotById = new Map(snapshot.map((question: any) => [question.id, question]))
@@ -293,7 +298,7 @@ export class ExamsService {
 
     const updated = await this.prisma.$transaction(async (tx) => {
       const claimed = await tx.examAttempt.updateMany({
-        where: { id: attemptId, learnerId, status: 'in_progress' },
+          where: { id: attemptId, learnerId, status: 'in_progress', OR: [{ expiresAt: null }, { expiresAt: { gt: new Date() } }] },
         data: {
           status: 'graded',
           questionsSnapshot: updatedSnapshot,
@@ -343,7 +348,7 @@ export class ExamsService {
   async getAttempts(examId: string, learnerId?: string) {
     const where: any = { examId }
     if (learnerId) where.learnerId = learnerId
-    return this.prisma.examAttempt.findMany({ where, include: { learner: { include: { userDetail: true } } }, orderBy: { startedAt: 'desc' } })
+    return this.prisma.examAttempt.findMany({ where, include: { learner: { select: { id: true, email: true, userDetail: true } } }, orderBy: { startedAt: 'desc' } })
   }
 
   async getMyAttempts(learnerId: string, params: any = {}) {
@@ -367,7 +372,7 @@ export class ExamsService {
       const isPassed = a.passed ?? ((a.scorePercent ?? 0) >= 70)
       const score = Math.round(a.scorePercent ?? a.score ?? 0)
       return {
-        ...a,
+        ...(a.status === 'in_progress' ? this.toLearnerAttempt(a) : a),
         isPassed,
         score
       }
@@ -389,7 +394,7 @@ export class ExamsService {
       where: { id },
       include: {
         exam: { include: { domain: true, level: true } },
-        learner: { include: { userDetail: true } }
+        learner: { select: { id: true, email: true, userDetail: true } }
       }
     })
     if (!attempt) throw new NotFoundException('Không tìm thấy lượt làm bài')
@@ -428,7 +433,7 @@ export class ExamsService {
     const performanceByTopic = summarize(topicCodes, (question) => question.topics?.[0], (key) => topicNames.get(key) ?? key)
 
     return {
-      ...attempt,
+      ...(!isAdminOrStaff && attempt.status === 'in_progress' ? this.toLearnerAttempt(attempt) : attempt),
       timeSpentSeconds,
       isPassed: attempt.passed ?? ((attempt.scorePercent ?? 0) >= ((attempt.exam as any)?.passingScorePercent ?? 70)),
       score: Math.round(attempt.scorePercent ?? attempt.score ?? 0),

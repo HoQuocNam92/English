@@ -2,7 +2,7 @@
 
 ## Trạng thái kiểm chứng
 
-Đã kiểm tra cú pháp YAML và shell. Máy phát triển hiện chưa có Docker nên chưa xác nhận build/run container.
+Ngày 22–23/10/2026: đã build và chạy thực tế bằng Docker Desktop trên Windows. Stack PostgreSQL riêng đã chạy migration thành công; cấu hình `compose.postgres.yml` đã kết nối PostgreSQL hiện có. API và web đều healthy. Các kiểm tra nghiệp vụ thay đổi dữ liệu chạy trên stack QA riêng; xem [kết quả kiểm thử](../docs/testing/bug-document-2026-10-23.md). Chưa kiểm chứng toàn bộ luồng native và dịch vụ bên ngoài.
 
 Database mới dùng lịch sử khởi tạo riêng tại `docker/prisma/migrations`. Đã chạy SQL thật trên database tạm rỗng, đối chiếu schema không có khác biệt và chạy lại thành công. Database có lịch sử cũ vẫn dùng `apps/api/prisma/migrations`; không sửa checksum, không đánh dấu migration chưa chạy là đã chạy. PostgreSQL thật không bị thay đổi trong quá trình kiểm tra.
 
@@ -36,7 +36,7 @@ Không dùng hostname `api` trong `NEXT_PUBLIC_API_URL`: trình duyệt phải t
 Tùy chọn email, OAuth, Cloudinary, Firebase: cấu hình `apps/api/.env` (không đưa vào image). Với Compose, các biến SMTP_HOST/SMTP_PORT/SMTP_FROM và GOOGLE_CALLBACK_URL cần đặt trong `.env.compose` để ghi đè giá trị mặc định. Không tự seed. Khi cần dữ liệu demo, sau khi database sẵn sàng:
 
 ```bash
-docker compose --env-file .env.compose exec api ./node_modules/.bin/ts-node prisma/seed.ts
+docker compose --env-file .env.compose exec api node -r ts-node/register prisma/seed.ts
 ```
 
 Không chạy seed demo trên production.

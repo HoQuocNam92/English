@@ -1,5 +1,6 @@
 import { IsEmail, IsString, IsNotEmpty, IsOptional, MinLength, MaxLength, Matches } from 'class-validator'
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger'
+import { Transform } from 'class-transformer'
 
 export class LoginDto {
   @ApiProperty({ example: 'admin@techenglish.pro' })
@@ -20,8 +21,10 @@ export class RegisterDto {
   @MaxLength(100, { message: 'Tên tối đa 100 ký tự' })
   displayName: string
 
-  @ApiProperty({ example: 'user@example.com' })
+  @ApiProperty({ example: 'user@gmail.com' })
+  @Transform(({ value }) => typeof value === 'string' ? value.trim().toLowerCase() : value)
   @IsEmail({}, { message: 'Email không hợp lệ' })
+  @Matches(/^[^\s@]+@gmail\.com$/i, { message: 'Chỉ chấp nhận địa chỉ email @gmail.com' })
   email: string
 
   @ApiProperty({ example: 'Password123!' })

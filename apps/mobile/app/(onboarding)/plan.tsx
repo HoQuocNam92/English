@@ -47,6 +47,7 @@ export default function OnboardingPlanScreen() {
       const examTarget = Math.min(50, Math.max(1, Number(weeklyExamTarget) || 2));
       const minuteTarget = Math.min(1440, Math.max(5, Number(dailyStudyTargetMinutes) || 30));
       await api.post('/learner-profiles/me/complete-onboarding', {
+        learningGoal: goal,
         levelCode,
         domainCodes,
         certificateCodes: certificateCode ? [certificateCode] : [],

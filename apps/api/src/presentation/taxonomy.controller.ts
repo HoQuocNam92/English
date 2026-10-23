@@ -4,6 +4,7 @@ import { TaxonomyService } from '../application/taxonomy/taxonomy.service'
 import { JwtAuthGuard } from '../infrastructure/auth/jwt-auth.guard'
 import { PermissionsGuard } from '../infrastructure/auth/permissions.guard'
 import { RequirePermissions } from './decorators/require-permissions.decorator'
+import { CreateCertificateDto, UpdateCertificateDto } from './http-dto/certificate.dto'
 
 @ApiTags('Taxonomy & Metadata')
 @ApiBearerAuth()
@@ -77,14 +78,14 @@ export class TaxonomyController {
   @Post('certificates')
   @RequirePermissions('certificates:manage')
   @ApiOperation({ summary: 'Create a certificate' })
-  createCertificate(@Body() dto: any) {
+  createCertificate(@Body() dto: CreateCertificateDto) {
     return this.svc.createCertificate(dto)
   }
 
   @Patch('certificates/:id')
   @RequirePermissions('certificates:manage')
   @ApiOperation({ summary: 'Update a certificate' })
-  updateCertificate(@Param('id') id: string, @Body() dto: any) {
+  updateCertificate(@Param('id') id: string, @Body() dto: UpdateCertificateDto) {
     return this.svc.updateCertificate(id, dto)
   }
 
