@@ -1,9 +1,8 @@
 'use client';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
-import { ArrowRight, CalendarDays, Check, CheckCircle2, ChevronRight, Clock3, Flame, RefreshCw, Route, Target, Trophy, Zap } from 'lucide-react';
+import { ArrowRight, CalendarDays, Check, ChevronRight, Clock3, RefreshCw, Route, Target, Trophy } from 'lucide-react';
 import { LearningPathJourney } from '@/shared/ui/LearningPathJourney';
-import { AppIcon } from '@/shared/ui/AppIcon';
 import { LearnerShell } from '@/shared/layout';
 import { apiClient } from '@/shared/api/api-client';
 import { LoadingSpinner } from '@/shared/ui';
@@ -13,14 +12,6 @@ import { progressViewModel, type ProgressPayload } from '@techenglish/shared-ker
 type Metric = { label: string; current: number; target: number; unit: string };
 type Task = { id: string; title: string; reason: string; href: string; action: string; status: 'todo' | 'done'; kind: string; minutes?: number; completedLessons?: { id: string; title: string; href: string }[] };
 type Agenda = { source?: string; aiSummary?: string; aiMessage?: string; configured: boolean; calculatedAt: string; date: string; level: { code: string; name: string }; dailyMinutes: number; tasks: Task[]; month: { label: string; metrics: Metric[]; focus: string }; year: { focus?: string; label: string; metrics: Metric[]; certificates: { name: string; href: string }[] }; completedLessons: number; totalLessons: number; retestSuggested: boolean; explanation: string };
-const colors: Record<string, { background: string; icon: string }> = {
-  violet: { background: 'bg-violet-50 border-violet-100', icon: 'bg-violet-600' },
-  blue: { background: 'bg-blue-50 border-blue-100', icon: 'bg-blue-600' },
-  fuchsia: { background: 'bg-fuchsia-50 border-fuchsia-100', icon: 'bg-fuchsia-600' },
-  orange: { background: 'bg-orange-50 border-orange-100', icon: 'bg-orange-600' },
-  amber: { background: 'bg-amber-50 border-amber-100', icon: 'bg-amber-600' },
-};
-
 export default function LearnerProgressPage() {
   const [data, setData] = useState<ProgressPayload | null>(null);
   const [agenda, setAgenda] = useState<Agenda | null>(null);
@@ -53,7 +44,7 @@ export default function LearnerProgressPage() {
   const view = progressViewModel(data);
   const unfinished = agenda?.tasks.filter(t => t.status !== 'done') ?? [];
   return <LearnerShell><main className="flex w-full flex-col gap-6 pb-8">
-    <header className="flex flex-wrap items-start justify-between gap-4"><div><h1 className="text-3xl font-bold tracking-tight">Kế hoạch & cột mốc học tập</h1><p className="mt-2 text-sm text-on-surface-variant">Biết bước tiếp theo, theo dõi mục tiêu và tiến bộ từng ngày.</p></div><div className="flex items-center gap-3"><Link href="/learn/plan" className="rounded-xl border border-outline-variant bg-white px-4 py-2.5 text-sm font-semibold">Lộ trình của tôi</Link><button onClick={() => void load()} disabled={refreshing} aria-label="Cập nhật kế hoạch" className="rounded-xl border border-outline-variant bg-white p-2.5 text-primary disabled:opacity-50"><RefreshCw size={18} className={refreshing ? 'animate-spin' : ''} /></button></div></header>
+    <header className="flex flex-wrap items-start justify-between gap-4"><div><h1 className="text-3xl font-bold tracking-tight">Kế hoạch & tiến độ học tập</h1><p className="mt-2 text-sm text-on-surface-variant">Biết bước tiếp theo, theo dõi mục tiêu và tiến bộ từng ngày.</p></div><div className="flex items-center gap-3"><Link href="/learn/plan" className="rounded-xl border border-outline-variant bg-white px-4 py-2.5 text-sm font-semibold">Lộ trình của tôi</Link><button onClick={() => void load()} disabled={refreshing} aria-label="Cập nhật kế hoạch" className="rounded-xl border border-outline-variant bg-white p-2.5 text-primary disabled:opacity-50"><RefreshCw size={18} className={refreshing ? 'animate-spin' : ''} /></button></div></header>
     {agendaError && <p role="alert" className="rounded-xl bg-amber-50 p-4 text-sm text-amber-800">{agendaError}</p>}
     {error && <p role="alert" className="text-sm text-red-600">{error}</p>}
     {agenda?.configured ? <>
@@ -69,7 +60,6 @@ export default function LearnerProgressPage() {
       <div className="grid gap-5 md:grid-cols-2"><PeriodCard title="Tháng này" subtitle={agenda.month.label} metrics={agenda.month.metrics} icon="month"><p className="mt-4 border-t border-outline-variant pt-4 text-xs leading-6 text-on-surface-variant"><strong className="text-on-surface">Ưu tiên: </strong>{agenda.month.focus}</p></PeriodCard><PeriodCard title="Năm nay" subtitle={agenda.year.label} metrics={agenda.year.metrics} icon="year">{agenda.year.focus && <p className="mt-4 text-xs leading-6 text-on-surface-variant">{agenda.year.focus}</p>}{!!agenda.year.certificates.length && <div className="mt-4 border-t border-outline-variant pt-4"><p className="text-xs font-semibold">Chứng chỉ mục tiêu</p>{agenda.year.certificates.map(c => <Link key={c.href} href={c.href} className="mt-2 flex items-center justify-between gap-3 text-xs font-semibold text-primary"><span>{c.name}</span><ChevronRight size={15} className="shrink-0" /></Link>)}</div>}</PeriodCard></div>
       <p className="text-xs leading-5 text-on-surface-variant">Mục tiêu dự kiến theo nhịp học trong hồ sơ và nội dung đang có. Số phút là thời gian bạn dự định dành ra, chưa phải thời gian được đo. Cập nhật lúc {new Date(agenda.calculatedAt).toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' })}.</p>
     </> : !agendaError && <section className="rounded-2xl border border-outline-variant bg-white p-6"><h2 className="font-bold">Thiết lập mục tiêu để có kế hoạch ngày, tháng và năm</h2><Link href="/onboarding" className="mt-4 inline-block rounded-xl bg-primary px-4 py-2 text-sm font-bold text-white">Chọn mục tiêu học</Link></section>}
-    <section className="rounded-2xl border border-outline-variant bg-white p-5 sm:p-6"><div className="flex flex-wrap items-center justify-between gap-4"><div><h2 className="text-xl font-bold">Cột mốc học tập</h2><p className="mt-1 text-xs text-on-surface-variant">{view.unlockedCount}/{view.totalMilestones} cột mốc đạt được</p></div><div className="flex flex-wrap gap-4 text-sm font-bold"><span className="flex items-center gap-1.5 text-amber-700"><Zap size={17} />{view.totalXp} điểm tích lũy</span><span className="flex items-center gap-1.5 text-orange-600"><Flame size={17} />{view.studyStreak} ngày học liên tiếp</span></div></div><div className={`mt-5 grid gap-3 sm:grid-cols-2 ${view.milestones.length === 4 ? 'xl:grid-cols-4' : 'xl:grid-cols-3'}`}>{view.milestones.map(m => { const color = colors[m.color] ?? colors.violet; return <article key={m.id} className={`flex h-full min-w-0 flex-col rounded-xl border p-4 ${color.background}`}><div className="flex min-h-10 items-start justify-between gap-3"><span className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl text-white ${color.icon}`}><AppIcon className="!text-white text-xl">{m.icon}</AppIcon></span>{m.unlocked && <span className="inline-flex items-center gap-1 text-[11px] font-bold text-emerald-700"><CheckCircle2 size={13} />Đã đạt</span>}</div><h3 className="mt-3 text-sm font-bold">{m.title}</h3><p className="mt-1 text-xs leading-5 text-on-surface-variant">{m.description}</p><div className="mt-auto pt-4"><div className="flex justify-between gap-2 text-xs font-semibold"><span>{m.current}/{m.target}</span><span className="text-right text-amber-700">+{m.xp} điểm</span></div><div className="mt-2 h-1.5 overflow-hidden rounded-full bg-white"><div className={`h-full rounded-full ${color.icon}`} style={{ width: `${m.progressPercent}%` }} /></div></div></article>; })}</div></section>
     {!!view.recentAttempts.length && <section className="rounded-2xl border border-outline-variant bg-white p-5 sm:p-6"><h2 className="font-bold">Bài kiểm tra gần đây</h2><div className="mt-3 divide-y divide-outline-variant">{view.recentAttempts.slice(0, 3).map((a: any) => <div key={a.id} className="flex items-center justify-between gap-3 py-3"><div className="min-w-0"><p className="truncate text-sm font-semibold">{a.exam?.title}</p><p className="mt-1 text-xs text-on-surface-variant">{a.passed ? 'Đã đạt' : 'Xem lại giải thích để củng cố'}</p></div><span className={`font-bold ${a.passed ? 'text-emerald-600' : 'text-primary'}`}>{Math.round(a.scorePercent ?? 0)}%</span></div>)}</div></section>}
   </main></LearnerShell>;
 }
