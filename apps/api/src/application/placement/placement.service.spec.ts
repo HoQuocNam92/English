@@ -80,6 +80,12 @@ test('placement bank supplies a valid assessment for every supported domain and 
 })
 const LEVEL_CODES = ['beginner', 'intermediate', 'advanced']
 
+test('saved continuation JSON cannot be submitted as a placement assessment', async () => {
+ const { service, store } = fixture(); store.session.result = { kind: 'continuation-v1' }
+ await assert.rejects(() => service.submit('A', { assessmentId: id, answers: questions.map(q => ({ questionId: q.id, optionId: q.options[0].id })) }), /lộ trình tiếp nối/)
+ assert.equal(store.updated, undefined)
+})
+
 test('insufficient valid placement questions never creates a partial assessment', async () => {
  const { service, store } = fixture({ question: { findMany: async () => questions.slice(0, 9) } })
  await assert.rejects(() => service.start('A'), /Chưa đủ 10 câu/)

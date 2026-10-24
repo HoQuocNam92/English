@@ -8,13 +8,23 @@ import { RequirePermissions } from './decorators/require-permissions.decorator'
 import { CurrentUser, JwtPayload } from './decorators/current-user.decorator'
 import { TrackProgressDto } from './http-dto/content.dto'
 import { LearningPathService } from '../application/progress/learning-path.service'
+import { ContinuationPlanService } from '../application/progress/continuation-plan.service'
 
 @ApiTags('Progress')
 @ApiBearerAuth()
 @UseGuards(JwtAuthGuard, PermissionsGuard)
 @Controller('progress')
 export class ProgressController {
-  constructor(private svc: ProgressService, private readonly agenda: LearningAgendaService, private readonly path: LearningPathService) {}
+  constructor(private svc: ProgressService, private readonly agenda: LearningAgendaService, private readonly path: LearningPathService, private readonly continuation: ContinuationPlanService) {}
+
+  @Get('me/continuation')
+  getContinuation(@CurrentUser() u: JwtPayload) { return this.continuation.getOptions(u.sub) }
+
+  @Post('me/continuation')
+  chooseContinuation(@CurrentUser() u: JwtPayload, @Body() body: { planId?: unknown }) { return this.continuation.choose(u.sub, body?.planId) }
+
+  @Post('me/continuation/complete-step')
+  completeContinuationStep(@CurrentUser() u: JwtPayload, @Body() body: { recordId?: unknown; stepId?: unknown }) { return this.continuation.completeStep(u.sub, body?.recordId, body?.stepId) }
 
   @Get('me/learning-path')
   getLearningPath(@CurrentUser() u: JwtPayload) { return this.path.getPath(u.sub) }

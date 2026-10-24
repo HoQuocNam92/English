@@ -56,6 +56,7 @@ export class PlacementService {
     if (typeof body?.assessmentId !== 'string' || !UUID.test(body.assessmentId)) throw new BadRequestException('Phiên kiểm tra không hợp lệ.')
     const session = await this.prisma.placementAssessment.findFirst({ where: { id: body.assessmentId, learnerId } })
     if (!session) throw new NotFoundException('Không tìm thấy bài kiểm tra của bạn.')
+    if ((session.result as any)?.kind === 'continuation-v1') throw new BadRequestException('Đây là lộ trình tiếp nối, không phải phiên kiểm tra đầu vào.')
     if (session.submittedAt) return session.result
     if (session.expiresAt.getTime() < Date.now()) throw new BadRequestException('Bài kiểm tra đã hết hạn. Hãy tải lại để làm bài mới.')
     const questions = session.questions as any[]

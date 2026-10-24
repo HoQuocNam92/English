@@ -5,6 +5,7 @@ import { useEffect, useRef, useState } from 'react';
 import { apiClient } from '@/shared/api/api-client';
 import { AppIcon } from './AppIcon';
 import { WeeklyLearningPath } from './WeeklyLearningPath';
+import { ContinuationPlans } from './ContinuationPlans';
 
 type PathLesson = { id: string; title: string; href: string; week: number; completed: boolean };
 type PathDomain = {
@@ -98,6 +99,8 @@ export function LearningPathJourney({ full = false, lessonId, onAvailability }: 
       {path.allCompleted && !path.finalLevel && !path.nextLevel && <p className="mt-3 text-sm">Nội dung cấp tiếp theo đang được bổ sung. Bạn có thể tiếp tục ôn tập.</p>}
       <div className="mt-4 flex flex-wrap gap-2"><Link href="/learn/flashcards" className={secondaryClass}>Ôn flashcards</Link>{path.allCompleted && <><Link href="/learn/certifications" className={secondaryClass}>Khám phá chứng chỉ</Link><Link href="/learn/profile?tab=goals" className={secondaryClass}>Chọn thêm ngành học</Link></>}{!full && <Link href="/learn/plan" className={secondaryClass}>Xem toàn bộ lộ trình</Link>}</div>
     </section>
+
+    {path.allCompleted && path.finalLevel && <ContinuationPlans />}
 
     {full && <>
       <div className="grid gap-3 sm:grid-cols-2">{path.domains.map(domain => <section key={domain.id} className="rounded-2xl border border-outline-variant bg-white p-4"><h3 className="font-bold">{domain.name}</h3><p className="mt-2 text-sm">{domain.completedLessons}/{domain.totalLessons} bài đã học</p><p className={`mt-1 text-sm font-semibold ${domain.state === 'complete' ? 'text-emerald-700' : 'text-on-surface-variant'}`}>{domain.state === 'complete' ? 'Đã hoàn thành cấp ở ngành này' : domain.state === 'assessment_due' ? 'Còn bài tổng kết' : domain.state === 'review_needed' ? 'Cần ôn và làm lại tổng kết' : domain.available ? 'Đang học' : 'Nội dung đang bổ sung'}</p></section>)}</div>

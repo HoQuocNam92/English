@@ -63,6 +63,7 @@ export class LearningPathService {
       allCompleted, canAdvance: allCompleted && nextAvailable,
       nextLevel: nextAvailable ? next : null,
       finalLevel: profile.level.code === 'professional',
+      dailyMinutes: profile.dailyStudyTargetMinutes ?? 30,
     }
   }
 

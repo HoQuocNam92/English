@@ -1,0 +1,40 @@
+// Isolated PostgreSQL integration check; never writes to the production database.
+const assert = require('node:assert/strict');
+const { PrismaClient } = require('/app/node_modules/@prisma/client');
+const url = new URL(process.env.DATABASE_URL); url.pathname = '/techenglish_curriculum_qa20261024'; process.env.DATABASE_URL = url.toString();
+const p = new PrismaClient();
+require('/app/node_modules/ts-node').register({ project: '/app/apps/api/tsconfig.json' });
+const { LearningPathService } = require('/app/apps/api/src/application/progress/learning-path.service.ts');
+const { ContinuationPlanService } = require('/app/apps/api/src/application/progress/continuation-plan.service.ts');
+
+(async () => {
+  assert.equal(new URL(process.env.DATABASE_URL).pathname, '/techenglish_curriculum_qa20261024');
+  const before = await p.$queryRawUnsafe("SELECT tablename FROM pg_tables WHERE schemaname='public' ORDER BY tablename");
+  const role = await p.role.findUnique({ where: { code: 'learner' } });
+  const level = await p.level.findUnique({ where: { code: 'professional' } });
+  const domain = await p.domain.findUnique({ where: { code: 'CLOUD' } });
+  const learner = await p.user.create({ data: { email: `continuation-${Date.now()}@example.invalid`, passwordHash: 'isolated-qa-only', status: 'active', userRoles: { create: { roleId: role.id } }, learnerProfile: { create: { levelId: level.id, learningGoal: 'vocabulary', onboardingCompleted: true, domains: { create: { domainId: domain.id } } } } } });
+  const pathService = new LearningPathService(p); const service = new ContinuationPlanService(p, pathService);
+  assert.equal((await service.getOptions(learner.id)).eligible, false);
+  const path = await pathService.getPath(learner.id);
+  await p.learningProgress.createMany({ data: path.domains[0].lessons.map(lesson => ({ learnerId: learner.id, resourceId: lesson.id, resourceType: 'lesson', status: 'completed', completionPercent: 100, completedAt: new Date(Date.now() - 5000) })) });
+  await p.examAttempt.create({ data: { learnerId: learner.id, examId: path.domains[0].assessment.id, status: 'graded', questionsSnapshot: [], examSnapshot: {}, scorePercent: 90, passed: true, submittedAt: new Date() } });
+  const measured = await p.placementAssessment.create({ data: { learnerId: learner.id, questions: [], expiresAt: new Date(), submittedAt: new Date(), result: { selfSelected: true, levelCode: 'professional' } } });
+  const options = await service.getOptions(learner.id);
+  assert.equal(options.eligible, true); assert.ok(options.plans.some(plan => plan.kind === 'certificate'));
+  const chosen = await service.choose(learner.id, 'review'); const recordId = chosen.active.recordId;
+  const reload = await service.getOptions(learner.id); assert.equal(reload.active.recordId, recordId);
+  await service.completeStep(learner.id, recordId, 'review-1'); await service.completeStep(learner.id, recordId, 'review-1');
+  assert.deepEqual((await service.getOptions(learner.id)).active.completedStepIds, ['review-1']);
+  await assert.rejects(() => service.completeStep(learner.id, recordId, 'invented'));
+  await service.choose(learner.id, 'application');
+  await assert.rejects(() => service.completeStep(learner.id, recordId, 'review-2'));
+  const latestMeasured = await p.placementAssessment.findFirst({ where: { learnerId: learner.id, submittedAt: { not: null } }, orderBy: { submittedAt: 'desc' } });
+  assert.equal(latestMeasured.id, measured.id);
+  assert.equal((await p.learnerProfile.findUnique({ where: { userId: learner.id } })).levelId, level.id);
+  assert.equal(await p.learningProgress.count({ where: { learnerId: learner.id } }), 4);
+  assert.equal(await p.examAttempt.count({ where: { learnerId: learner.id } }), 1);
+  const after = await p.$queryRawUnsafe("SELECT tablename FROM pg_tables WHERE schemaname='public' ORDER BY tablename");
+  assert.deepEqual(after, before);
+  console.log('PASS: PostgreSQL JSON selection/reload/session completion; certificate content available; no new tables; grades and level unchanged');
+})().catch(error => { console.error(error.name, error.message?.replace(/postgres(?:ql)?:\/\/[^\s]+/g, '[REDACTED]').slice(-500)); process.exitCode = 1; }).finally(() => p.$disconnect());
