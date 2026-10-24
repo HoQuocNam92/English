@@ -60,6 +60,10 @@ export class AuthService {
     // Kiểm tra email đã tồn tại chưa
     const email = dto.email.trim().toLowerCase()
     this.assertRegistrationEmail(email)
+    // Reject an occupied email before hashing or loading registration defaults.
+    // The transaction below checks again before releasing a deleted identity.
+    const existing = await this.prisma.user.findFirst({ where: { email: { equals: email, mode: 'insensitive' } } })
+    if (existing && !existing.deletedAt) throw new ConflictException('Email đã được sử dụng')
 
     const passwordHash = await bcrypt.hash(dto.password, 12)
     const learnerRole = await this.prisma.role.findUnique({ where: { code: 'learner' } })
