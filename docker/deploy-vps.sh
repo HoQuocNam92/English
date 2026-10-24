@@ -32,6 +32,16 @@ compose=(docker compose --env-file .env.compose)
 # This script is streamed into bash over SSH. Container commands must never
 # consume that stream, otherwise the script can silently end after the backup.
 "${compose[@]}" config --quiet < /dev/null
+# Keep the release that is running now for rollback after a successful deploy.
+previous_images=()
+for service in api web; do
+  old_container=$("${compose[@]}" ps -q "$service" < /dev/null)
+  if [[ -n "$old_container" ]]; then
+    previous_images+=("$(docker inspect --format '{{.Image}}' "$old_container" < /dev/null)")
+  fi
+done
+echo 'Disk space before pulling release images:'
+df -h .
 "${compose[@]}" pull db migrate api web < /dev/null
 "${compose[@]}" up -d --wait db < /dev/null
 
@@ -51,4 +61,22 @@ for service in api web; do
   }
 done
 "${compose[@]}" ps < /dev/null
+
+# Limit retention to this release and its predecessor. Never prune volumes,
+# unrelated repositories, or images referenced by any container. No forced rm.
+while read -r repository tag image_id; do
+  [[ "$repository" == "$prefix-api" || "$repository" == "$prefix-web" ]] || continue
+  [[ "$tag" == "$sha" ]] && continue
+  keep=false
+  for previous in "${previous_images[@]}"; do
+    [[ "$image_id" == "$previous" ]] && keep=true
+  done
+  [[ "$keep" == true ]] && continue
+  if [[ -n "$(docker ps -aq --filter "ancestor=$image_id" < /dev/null)" ]]; then
+    continue
+  fi
+  docker image rm "$repository:$tag" < /dev/null || echo "Could not remove old image $repository:$tag; retained."
+done < <(docker image ls --no-trunc --format '{{.Repository}} {{.Tag}} {{.ID}}' < /dev/null)
+echo 'Disk space after deployment and old release cleanup:'
+df -h .
 echo "Deployed $sha; database backup: $backup"
