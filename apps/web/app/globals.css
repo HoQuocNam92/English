@@ -1063,6 +1063,26 @@ button, input, select, textarea { font-family: inherit; }
 .ui-tabs { min-width: 0; }
 .ui-tab svg { flex-shrink: 0; }
 
+/* Profile navigation stays fully visible even on narrow phones. */
+.learner-profile .profile-tabs {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  width: 100%;
+  overflow: visible;
+  border: 1px solid var(--outline-variant);
+}
+.learner-profile .profile-tabs .ui-tab {
+  min-width: 0;
+  padding: 10px 8px;
+  white-space: normal;
+}
+.learner-profile :is(input, textarea, select) { min-width: 0; max-width: 100%; }
+@media (max-width: 639px) {
+  .learner-profile :is(input, textarea, select) { font-size: 16px; }
+  .learner-profile .profile-tabs .ui-tab { font-size: 13px; }
+  .learner-profile > section { padding: 16px; }
+}
+
 /* Keep validation borders visible over the shared control defaults and focus styles. */
 .admin-canvas :is(input, textarea, select)[aria-invalid='true'],
 .ui-control[aria-invalid='true'],

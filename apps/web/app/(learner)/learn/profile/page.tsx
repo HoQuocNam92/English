@@ -227,41 +227,41 @@ function LearnerProfileContent() {
 
   return (
     <LearnerShell>
-      <div className="flex w-full flex-col gap-6 pb-16">
+      <div className="learner-profile flex min-w-0 w-full flex-col gap-5 pb-10 sm:gap-6 sm:pb-16">
         {/* Profile Header */}
-        <section className="flex flex-col justify-between gap-4 rounded-2xl border border-outline-variant/40 bg-surface-container-lowest p-6 shadow-2xs md:flex-row md:items-center">
-          <div className="flex items-center gap-4">
-            <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-primary text-2xl font-black text-white">{displayName.charAt(0).toUpperCase()}</div>
-            <div>
-              <h1 className="text-xl font-bold text-on-surface">{displayName}</h1>
-              <p className="mt-1 text-xs text-on-surface-variant">{form.email}</p>
+        <section className="flex min-w-0 flex-col justify-between gap-5 rounded-2xl border border-outline-variant/40 bg-surface-container-lowest p-4 shadow-2xs sm:p-6 md:flex-row md:items-center">
+          <div className="flex min-w-0 items-center gap-3 sm:gap-4">
+            <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-primary text-xl font-black text-white sm:h-16 sm:w-16 sm:text-2xl">{displayName.charAt(0).toUpperCase()}</div>
+            <div className="min-w-0">
+              <h1 className="break-words text-lg font-bold text-on-surface sm:text-xl">{displayName}</h1>
+              <p className="mt-1 break-all text-xs leading-5 text-on-surface-variant sm:text-sm">{form.email}</p>
             </div>
           </div>
-          <div className="flex gap-3">
-            <Link href="/learn/certifications" className="rounded-xl bg-primary px-4 py-2.5 text-xs font-bold !text-white">Tiếp tục học</Link>
-            <button type="button" onClick={signOut} className="rounded-xl border border-red-200 bg-red-50 px-4 py-2.5 text-xs font-bold text-red-700 hover:bg-red-100 transition-colors">Đăng xuất</button>
+          <div className="grid grid-cols-2 gap-3 md:flex md:shrink-0">
+            <Link href="/learn/certifications" className="flex min-h-11 items-center justify-center rounded-xl bg-primary px-4 py-2.5 text-sm font-bold !text-white">Tiếp tục học</Link>
+            <button type="button" onClick={signOut} className="min-h-11 rounded-xl border border-red-200 bg-red-50 px-4 py-2.5 text-sm font-bold text-red-700 hover:bg-red-100 transition-colors">Đăng xuất</button>
           </div>
         </section>
 
         {/* Tab Navigation */}
-        <div className="ui-tabs">
+        <div className="ui-tabs profile-tabs" role="group" aria-label="Nội dung hồ sơ">
           <button
             onClick={() => setActiveTab('info')}
             className="ui-tab" aria-pressed={activeTab === 'info'}
           >
-            Hồ sơ cá nhân
+            <span className="sm:hidden">Hồ sơ</span><span className="hidden sm:inline">Hồ sơ cá nhân</span>
           </button>
           <button
             onClick={() => setActiveTab('goals')}
             className="ui-tab" aria-pressed={activeTab === 'goals'}
           >
-            Mục tiêu & Trình độ học tập
+            <span className="sm:hidden">Mục tiêu</span><span className="hidden sm:inline">Mục tiêu & Trình độ học tập</span>
           </button>
           <button
             onClick={() => setActiveTab('history')}
             className="ui-tab" aria-pressed={activeTab === 'history'}
           >
-            Lịch sử học tập
+            <span className="sm:hidden">Lịch sử</span><span className="hidden sm:inline">Lịch sử học tập</span>
           </button>
         </div>
 
@@ -560,8 +560,8 @@ function LearnerProfileContent() {
                               {title}
                             </h3>
 
-                            <div className="mt-2 flex items-center gap-3">
-                              <div className="w-32 bg-surface-container h-1.5 rounded-full overflow-hidden">
+                            <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-2">
+                              <div className="w-24 shrink-0 bg-surface-container h-1.5 rounded-full overflow-hidden sm:w-32">
                                 <div
                                   className={`h-full rounded-full ${isCompleted ? 'bg-green-600' : 'bg-primary'}`}
                                   style={{ width: `${percent}%` }}

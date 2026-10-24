@@ -30,6 +30,7 @@ export default function LearnerLessonDetail({ params }: { params: Promise<{ id: 
   }, [id]);
 
   const finish = async () => {
+    if (saving || completed) return;
     setSaving(true); setError('');
     try { await apiClient.post('/progress/me', { resourceType: 'lesson', resourceId: id, status: 'completed', completionPercent: 100 }); setCompleted(true); }
     catch (cause: any) { setError(cause?.message ?? 'Không thể ghi nhận tiến độ.'); }
@@ -48,17 +49,7 @@ export default function LearnerLessonDetail({ params }: { params: Promise<{ id: 
       <article className="w-full pb-16">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <BackButton fallbackHref={fallbackUrl}>Quay lại {backLabel}</BackButton>
-          <button
-            type="button"
-            onClick={() => void finish()}
-            disabled={completed || saving}
-            className={`inline-flex items-center gap-1.5 rounded-xl px-4 py-2 text-xs font-black text-white shadow-sm transition-all disabled:opacity-80 cursor-pointer ${
-              completed ? 'bg-emerald-600 hover:bg-emerald-700' : 'bg-primary hover:bg-primary/90'
-            }`}
-          >
-            <AppIcon className="text-[17px]">check_circle</AppIcon>
-            {saving ? 'Đang lưu...' : completed ? 'Đã hoàn thành' : 'Đánh dấu hoàn thành'}
-          </button>
+          {completed && <span className="inline-flex items-center gap-2 rounded-full bg-emerald-50 px-3 py-2 text-sm font-bold text-emerald-700"><AppIcon className="text-[17px]">check_circle</AppIcon>Đã hoàn thành · Đang xem lại</span>}
         </div>
         {error && <p className="mt-5 rounded-xl bg-red-50 p-3 text-sm font-semibold text-red-700">{error}</p>}
         <div data-learning-content className="mt-5"><LessonExperience lesson={lesson} /></div>
@@ -69,10 +60,10 @@ export default function LearnerLessonDetail({ params }: { params: Promise<{ id: 
             </div>
             <div>
               <p className="text-sm font-bold text-on-surface">{completed ? 'Đã hoàn thành bài học' : 'Hoàn thành bài học'}</p>
-              <p className="text-xs text-on-surface-variant">{completed ? 'Tiến độ học tập đã được lưu vào hệ thống.' : 'Xác nhận hoàn thành sau khi đã đọc và hiểu nội dung bài học.'}</p>
+              <p className="text-xs text-on-surface-variant">{completed ? 'Tiến độ đã lưu. Bạn có thể xem lại nội dung mà không cần đánh dấu lần nữa.' : 'Xác nhận hoàn thành sau khi đã đọc và hiểu nội dung bài học.'}</p>
             </div>
           </div>
-          <button
+          {completed ? <a href="/learn/plan" className="inline-flex min-h-11 items-center justify-center rounded-xl bg-primary px-5 py-3 text-sm font-bold text-white">Về lộ trình học</a> : <button
             type="button"
             onClick={() => void finish()}
             disabled={completed || saving}
@@ -82,7 +73,7 @@ export default function LearnerLessonDetail({ params }: { params: Promise<{ id: 
           >
             <AppIcon className="">check_circle</AppIcon>
             {saving ? 'Đang lưu...' : completed ? 'Đã hoàn thành' : 'Đánh dấu hoàn thành'}
-          </button>
+          </button>}
         </div>
       </article>
     </LearnerShell>

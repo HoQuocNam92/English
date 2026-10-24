@@ -1,13 +1,32 @@
+'use client';
 import Link from 'next/link';
+import { useEffect, useState } from 'react';
+import { apiClient } from '@/shared/api/api-client';
 import { ArrowRight, Flag, MapPin } from 'lucide-react';
 
 export type WeekStep = { id: string; week: number; title: string; reason: string; actionUrl: string; kind: string };
 
 export function WeeklyLearningPath({ steps }: { steps: WeekStep[] }) {
+  const [completedIds, setCompletedIds] = useState<Set<string>>(new Set());
+  const [progressLoaded, setProgressLoaded] = useState(false);
+  useEffect(() => {
+    let current = true;
+    const refresh = () => {
+      void apiClient.get<{ progress: { resourceType: string; resourceId: string; status: string; completionPercent: number }[] }>('/progress/me').then(result => {
+        if (!current) return;
+        setCompletedIds(new Set((result.progress ?? []).filter(item => item.resourceType === 'lesson' && (item.status === 'completed' || item.completionPercent >= 100)).map(item => item.resourceId)));
+        setProgressLoaded(true);
+      }).catch(() => { if (current) setProgressLoaded(false); });
+    };
+    refresh();
+    window.addEventListener('focus', refresh);
+    window.addEventListener('pageshow', refresh);
+    return () => { current = false; window.removeEventListener('focus', refresh); window.removeEventListener('pageshow', refresh); };
+  }, []);
   const weeks = [...new Set(steps.map(step => step.week))].sort((a, b) => a - b);
   if (!weeks.length) return <p className="mt-5 text-sm text-on-surface-variant">Chưa có bài học phù hợp với mục tiêu của bạn. Hãy điều chỉnh mục tiêu trong hồ sơ.</p>;
   return <div className="mt-7">
-    <p className="mb-6 flex items-center gap-2 text-xs text-on-surface-variant"><MapPin size={15} className="text-primary" />Đi từng bước theo thứ tự tuần. Bạn có thể mở lại bài học bất cứ lúc nào.</p>
+    <p className="mb-6 flex items-center gap-2 text-xs text-on-surface-variant"><MapPin size={15} className="text-primary" />Đi từng bước theo thứ tự tuần. Bài đã hoàn thành vẫn được giữ trong lộ trình để bạn ôn lại.</p>
     <div className="relative">
       <div aria-hidden="true" className="absolute bottom-6 left-5 top-5 w-1 rounded-full bg-violet-200 sm:hidden" />
     <ol className="relative space-y-8 sm:space-y-0">
@@ -17,7 +36,7 @@ export function WeeklyLearningPath({ steps }: { steps: WeekStep[] }) {
         <article className={`relative rounded-2xl border border-violet-200 bg-white p-5 shadow-[0_4px_20px_rgba(53,37,205,0.04)] sm:col-span-1 ${index % 2 ? 'sm:col-start-3' : 'sm:col-start-1'}`}>
           <span aria-hidden="true" className={`absolute top-9 hidden h-0.5 w-12 bg-violet-200 sm:block ${index % 2 ? '-left-12' : '-right-12'}`} />
           <p className="text-xs font-bold uppercase tracking-wider text-primary">Tuần {week}</p>
-          <div className="mt-3 space-y-4">{steps.filter(step => step.week === week).map((step, i) => <div key={`${step.id}-${i}`} className={i ? 'border-t border-violet-100 pt-4' : ''}><h3 className="text-sm font-bold leading-6">{step.title}</h3><p className="mt-1 text-xs leading-6 text-on-surface-variant">{step.reason.replace(/\bQuiz\b/gi, 'bài kiểm tra')}</p><Link href={step.actionUrl} className="mt-3 inline-flex items-center gap-2 rounded-lg bg-primary/10 px-3 py-2 text-xs font-bold text-primary hover:bg-primary/15">{step.kind === 'certificate' ? 'Học theo chứng chỉ' : step.kind === 'vocabulary' ? 'Học từ vựng' : 'Mở bài học'}<ArrowRight size={14} /></Link></div>)}</div>
+          <div className="mt-3 space-y-4">{steps.filter(step => step.week === week).map((step, i) => <div key={`${step.id}-${i}`} className={i ? 'border-t border-violet-100 pt-4' : ''}><h3 className="text-sm font-bold leading-6">{step.title}</h3>{step.kind === 'lesson' && progressLoaded && <p className={`mt-1 text-xs font-semibold ${completedIds.has(step.id) ? 'text-emerald-700' : 'text-on-surface-variant'}`}>{completedIds.has(step.id) ? 'Đã hoàn thành' : 'Chưa hoàn thành'}</p>}<p className="mt-1 text-xs leading-6 text-on-surface-variant">{step.reason.replace(/\bQuiz\b/gi, 'bài kiểm tra')}</p><Link href={step.actionUrl} className="mt-3 inline-flex items-center gap-2 rounded-lg bg-primary/10 px-3 py-2 text-xs font-bold text-primary hover:bg-primary/15">{step.kind === 'certificate' ? 'Học theo chứng chỉ' : step.kind === 'vocabulary' ? 'Học từ vựng' : completedIds.has(step.id) ? 'Xem lại bài học' : 'Mở bài học'}<ArrowRight size={14} /></Link></div>)}</div>
         </article>
       </li>)}
     </ol>
