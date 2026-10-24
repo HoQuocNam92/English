@@ -14,6 +14,16 @@ export default function LoginPage() {
   const router = useRouter();
   const { session, loading, submitting, error, submitLogin } = useAuth();
   const [email, setEmail] = useState('');
+  const [googleError, setGoogleError] = useState('');
+  useEffect(() => {
+    const url = new URL(window.location.href);
+    const message = url.searchParams.get('auth_error');
+    if (message) {
+      setGoogleError(message.slice(0, 600));
+      url.searchParams.delete('auth_error');
+      window.history.replaceState(null, '', url.pathname + url.search + url.hash);
+    }
+  }, []);
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [rememberMe, setRememberMe] = useState(true);
@@ -167,12 +177,12 @@ export default function LoginPage() {
               </Link>
             </div>
 
-            {error ? (
+            {(error || googleError) ? (
               <div role="alert" aria-live="polite" className="rounded-xl border border-red-200 bg-red-50 p-3.5 text-red-800 flex items-start gap-3 shadow-sm">
                 <AppIcon className=" flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-red-100 text-[19px] text-red-600">error</AppIcon>
                 <div>
                   <p className="text-sm font-bold">Đăng nhập không thành công</p>
-                  <p className="mt-0.5 text-xs leading-5">{error}</p>
+                  <p className="mt-0.5 text-xs leading-5">{error || googleError}</p>
                 </div>
               </div>
             ) : null}

@@ -1,3 +1,4 @@
+import { GoogleCallbackGuard } from '../infrastructure/auth/google-callback.guard'
 import { Controller, Post, Body, HttpCode, HttpStatus, UseGuards, Get, Request, Res } from '@nestjs/common'
 import { AuthGuard } from '@nestjs/passport'
 import { ConfigService } from '@nestjs/config'
@@ -44,10 +45,11 @@ export class AuthController {
   googleAuth() {}
 
   @Get('google/callback')
-  @UseGuards(AuthGuard('google'))
+  @UseGuards(GoogleCallbackGuard)
   @ApiOperation({ summary: 'Google OAuth callback trên web' })
   googleCallback(@Request() req: any, @Res() response: Response) {
     const webUrl = this.resolveWebUrl()
+    if (req.user?.authError) return response.redirect(`${webUrl}/login?${new URLSearchParams({ auth_error: req.user.authError }).toString()}`)
     const params = new URLSearchParams({ access_token: req.user.accessToken, refresh_token: req.user.refreshToken, user: JSON.stringify(req.user.user) })
     return response.redirect(`${webUrl}/google/callback?${params.toString()}`)
   }

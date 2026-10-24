@@ -1,6 +1,83 @@
 import { test } from 'node:test'
 import { strict as assert } from 'node:assert'
 import { AuthService } from './auth.service'
+import { ACCOUNT_REUSE_DELAY_MS } from './account-deletion.policy'
+import { GoogleCallbackGuard } from '../../infrastructure/auth/google-callback.guard'
+import { AuthController } from '../../presentation/auth.controller'
+import { UnauthorizedException } from '@nestjs/common'
+
+function registrationFixture(age: number, status = 'inactive') {
+  let old: any = { id: 'old-id', email: 'reuse@gmail.com', status, deletedAt: new Date(Date.now() - age) }
+  let created: any = null
+  const db: any = {
+    user: {
+      findFirst: async () => old.email === 'reuse@gmail.com' ? old : created,
+      findUnique: async () => ({ ...created, userDetail: { displayName: 'New learner' }, userRoles: [{ role: { code: 'learner', rolePermissions: [] } }] }),
+      updateMany: async ({ where, data }: any) => {
+        assert.equal(where.id, 'old-id'); assert.equal(where.deletedAt, old.deletedAt)
+        old = { ...old, ...data }; return { count: 1 }
+      },
+      create: async ({ data }: any) => { created = { id: 'new-id', ...data }; return created },
+    },
+    role: { findUnique: async () => ({ id: 'learner-role' }) },
+    level: { findFirst: async () => ({ id: 'beginner' }) },
+    refreshToken: { create: async () => ({}) },
+    userDetail: { update: async () => ({}) },
+    $transaction: async (run: any, options: any) => {
+      assert.equal(options.isolationLevel, 'Serializable')
+      const before = old
+      try { return await run(db) } catch (error) { old = before; throw error }
+    },
+  }
+  return { service: new AuthService(db, { sign: () => 'new-token' } as any, {} as any, {} as any), db, get old() { return old }, get created() { return created } }
+}
+
+test('deleted email is reserved during 30-day delay for password and Google registration', async () => {
+  for (const google of [false, true]) {
+    const f = registrationFixture(ACCOUNT_REUSE_DELAY_MS - 60_000)
+    const attempt = google ? f.service.findOrCreateGoogleUser({ googleId: 'google', email: 'reuse@gmail.com', displayName: 'New' }) : f.service.register({ email: 'reuse@gmail.com', password: 'Password123!', displayName: 'New' })
+    await assert.rejects(attempt, /sau 30 ngày/)
+    assert.equal(f.old.email, 'reuse@gmail.com'); assert.equal(f.created, null)
+  }
+})
+
+test('after delay both registration paths create a fresh learner identity and preserve deleted history', async () => {
+  for (const google of [false, true]) {
+    const f = registrationFixture(ACCOUNT_REUSE_DELAY_MS + 60_000)
+    const result = google ? await f.service.findOrCreateGoogleUser({ googleId: 'google', email: 'reuse@gmail.com', displayName: 'New' }) : await f.service.register({ email: ' REUSE@gmail.com ', password: 'Password123!', displayName: 'New' })
+    assert.equal(result.user.id, 'new-id'); assert.equal(f.old.email, 'old-id@deleted.invalid')
+    assert.equal(f.old.status, 'inactive'); assert.ok(f.old.deletedAt)
+    assert.equal(f.created.email, 'reuse@gmail.com'); assert.equal(f.created.learnerProfile.create.onboardingCompleted, false)
+    assert.deepEqual(f.created.userRoles.create, { roleId: 'learner-role' })
+  }
+})
+
+test('suspended accounts cannot bypass blocking through re-registration', async () => {
+  const f = registrationFixture(ACCOUNT_REUSE_DELAY_MS + 60_000, 'suspended')
+  await assert.rejects(f.service.findOrCreateGoogleUser({ googleId: 'google', email: 'reuse@gmail.com', displayName: 'New' }), /bị khóa/)
+  assert.equal(f.created, null); assert.equal(f.old.email, 'reuse@gmail.com')
+})
+
+test('failed recreation rolls back email release; stale transactions return a retry message', async () => {
+  const f = registrationFixture(ACCOUNT_REUSE_DELAY_MS + 60_000)
+  f.db.user.create = async () => { throw { code: 'P2002' } }
+  await assert.rejects(f.service.findOrCreateGoogleUser({ googleId: 'google', email: 'reuse@gmail.com', displayName: 'New' }), /đã được sử dụng/)
+  assert.equal(f.old.email, 'reuse@gmail.com')
+  f.db.$transaction = async () => { throw { code: 'P2034' } }
+  await assert.rejects(f.service.findOrCreateGoogleUser({ googleId: 'google', email: 'reuse@gmail.com', displayName: 'New' }), /thử lại/)
+})
+
+test('Google account errors redirect to login without tokens or raw provider diagnostics', () => {
+  const guard = new GoogleCallbackGuard()
+  const user = guard.handleRequest(new UnauthorizedException('Tài khoản đã bị xóa'), null)
+  const controller = new AuthController({} as any, { get: (key: string) => key === 'WEB_URL' ? 'http://localhost:3000' : 'development' } as any)
+  let location = ''
+  controller.googleCallback({ user }, { redirect: (url: string) => { location = url } } as any)
+  const url = new URL(location)
+  assert.equal(url.pathname, '/login'); assert.equal(url.searchParams.get('auth_error'), 'Tài khoản đã bị xóa')
+  assert.equal(url.searchParams.has('access_token'), false)
+  assert.equal(guard.handleRequest(new Error('provider secret'), null).authError.includes('provider secret'), false)
+})
 
 function fixture(user: any = { id: 'user', email: 'user@example.com', status: 'active', deletedAt: null, passwordHash: 'local-hash' }) {
   const calls: any[] = []

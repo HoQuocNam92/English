@@ -1,3 +1,4 @@
+import { ACCOUNT_REUSE_DELAY_MS, deletedAccountMessage } from './account-deletion.policy'
 import { Injectable, UnauthorizedException, ConflictException, BadRequestException, NotFoundException, ServiceUnavailableException } from '@nestjs/common'
 import { JwtService } from '@nestjs/jwt'
 import { ConfigService } from '@nestjs/config'
@@ -44,7 +45,8 @@ export class AuthService {
   async login(dto: LoginDto) {
     const user = await this.prisma.user.findFirst({ where: { email: { equals: dto.email.trim().toLowerCase(), mode: 'insensitive' } } })
     if (!user) throw new UnauthorizedException('Không tìm thấy tài khoản với email này')
-    if (user.deletedAt || user.status === 'inactive') throw new UnauthorizedException('Tài khoản đã bị vô hiệu hóa hoặc chưa được kích hoạt')
+    if (user.deletedAt) throw new UnauthorizedException(deletedAccountMessage(user.deletedAt))
+    if (user.status === 'inactive') throw new UnauthorizedException('Tài khoản đã bị vô hiệu hóa hoặc chưa được kích hoạt')
     if (user.status === 'suspended') throw new UnauthorizedException('Tài khoản đã bị khóa. Vui lòng liên hệ quản trị viên')
 
     const valid = await bcrypt.compare(dto.password, user.passwordHash)
@@ -58,15 +60,13 @@ export class AuthService {
     // Kiểm tra email đã tồn tại chưa
     const email = dto.email.trim().toLowerCase()
     this.assertRegistrationEmail(email)
-    const existing = await this.prisma.user.findFirst({ where: { email: { equals: email, mode: 'insensitive' } } })
-    if (existing) throw new ConflictException('Email đã được sử dụng')
 
     const passwordHash = await bcrypt.hash(dto.password, 12)
     const learnerRole = await this.prisma.role.findUnique({ where: { code: 'learner' } })
     const defaultLevel = await this.prisma.level.findFirst({ orderBy: { order: 'asc' } })
     if (!learnerRole || !defaultLevel) throw new BadRequestException('Hệ thống chưa cấu hình vai trò hoặc cấp độ mặc định cho học viên')
 
-    const user = await this.prisma.user.create({
+    const user = await this.createRegistrationAccount(email, {
       data: {
         email,
         passwordHash,
@@ -129,12 +129,12 @@ export class AuthService {
       where: { email: { equals: email, mode: 'insensitive' } },
     })
 
-    if (!user) {
+    if (!user || user.deletedAt) {
       this.assertRegistrationEmail(email)
       const learnerRole = await this.prisma.role.findUnique({ where: { code: 'learner' } })
       const defaultLevel = await this.prisma.level.findFirst({ orderBy: { order: 'asc' } })
       if (!learnerRole || !defaultLevel) throw new BadRequestException('Hệ thống chưa cấu hình vai trò hoặc cấp độ mặc định cho học viên')
-      user = await this.prisma.user.create({
+      user = await this.createRegistrationAccount(email, {
         data: {
           email,
           passwordHash: '',
@@ -162,6 +162,31 @@ export class AuthService {
 
     const fullUser = await this.getUserWithPermissions(user.id)
     return this.generateTokensForUser(fullUser)
+  }
+
+  private async createRegistrationAccount(email: string, input: any) {
+    try {
+      return await this.prisma.$transaction(async tx => {
+        const existing = await tx.user.findFirst({ where: { email: { equals: email, mode: 'insensitive' } } })
+        if (existing) {
+          if (!existing.deletedAt) throw new ConflictException('Email đã được sử dụng')
+          // A suspension is never bypassed by re-registration.
+          if (existing.status === 'suspended') throw new UnauthorizedException('Tài khoản đã bị khóa. Vui lòng liên hệ quản trị viên')
+          if (Date.now() < existing.deletedAt.getTime() + ACCOUNT_REUSE_DELAY_MS) throw new ConflictException(deletedAccountMessage(existing.deletedAt))
+          const released = await tx.user.updateMany({
+            where: { id: existing.id, email: existing.email, deletedAt: existing.deletedAt, status: existing.status },
+            data: { email: existing.id + '@deleted.invalid', status: 'inactive' },
+          })
+          if (released.count !== 1) throw new ConflictException('Tài khoản vừa thay đổi. Vui lòng thử lại.')
+        }
+        // Preserve the old identity and history; create a new learner identity.
+        return tx.user.create(input)
+      }, { isolationLevel: 'Serializable' })
+    } catch (error) {
+      if ((error as any)?.code === 'P2002') throw new ConflictException('Email đã được sử dụng')
+      if ((error as any)?.code === 'P2034') throw new ConflictException('Một yêu cầu đăng ký khác đang được xử lý. Vui lòng thử lại.')
+      throw error
+    }
   }
 
   private assertRegistrationEmail(email: string) {

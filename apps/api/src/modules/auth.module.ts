@@ -1,3 +1,4 @@
+import { GoogleCallbackGuard } from '../infrastructure/auth/google-callback.guard'
 import { Module } from '@nestjs/common'
 import { JwtModule } from '@nestjs/jwt'
 import { PassportModule } from '@nestjs/passport'
@@ -23,7 +24,7 @@ import { GoogleStrategy } from '../infrastructure/auth/google.strategy'
       }),
     }),
   ],
-  providers: [AuthService, JwtStrategy, GoogleStrategy, JwtAuthGuard, PermissionsGuard],
+  providers: [GoogleCallbackGuard, AuthService, JwtStrategy, GoogleStrategy, JwtAuthGuard, PermissionsGuard],
   controllers: [AuthController],
   exports: [AuthService, JwtAuthGuard, PermissionsGuard],
 })

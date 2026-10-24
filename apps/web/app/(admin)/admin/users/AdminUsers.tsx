@@ -359,7 +359,7 @@ export default function AdminUsers({ createOnly = false }: { createOnly?: boolea
   };
 
   const handleDelete = async (user: UserItem) => {
-    if (!(await confirmDialog(`Bạn có muốn xóa tài khoản ${user.email} hay không? Dữ liệu sẽ được giữ lại để kiểm toán nhưng người dùng không thể đăng nhập.`, { title: 'Xóa tài khoản người dùng', confirmLabel: 'Xóa tài khoản', tone: 'danger' }))) return;
+    if (!(await confirmDialog(`Bạn có muốn xóa tài khoản ${user.email} hay không? Tài khoản sẽ ngừng đăng nhập. Email được phép đăng ký tài khoản mới sau 30 ngày, bắt đầu từ đầu. Lịch sử tài khoản cũ được giữ riêng.`, { title: 'Xóa tài khoản người dùng', confirmLabel: 'Xóa tài khoản', tone: 'danger' }))) return;
     setActionLoading(user.id);
     setActionError(null);
     try {
