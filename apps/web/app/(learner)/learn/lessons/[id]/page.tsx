@@ -8,6 +8,7 @@ import { LearnerShell } from '@/shared/layout';
 import { apiClient } from '@/shared/api/api-client';
 import { lessonTrackByType } from '@/shared/lib/lesson-tracks';
 import { LessonExperience, type Lesson } from './lesson-experiences';
+import { LearningPathJourney } from '@/shared/ui/LearningPathJourney';
 
 export default function LearnerLessonDetail({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
@@ -75,6 +76,7 @@ export default function LearnerLessonDetail({ params }: { params: Promise<{ id: 
             {saving ? 'Đang lưu...' : completed ? 'Đã hoàn thành' : 'Đánh dấu hoàn thành'}
           </button>}
         </div>
+        {completed && <div className="mt-5"><LearningPathJourney lessonId={id} /></div>}
       </article>
     </LearnerShell>
   );

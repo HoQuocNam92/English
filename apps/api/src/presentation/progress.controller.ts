@@ -7,13 +7,20 @@ import { PermissionsGuard } from '../infrastructure/auth/permissions.guard'
 import { RequirePermissions } from './decorators/require-permissions.decorator'
 import { CurrentUser, JwtPayload } from './decorators/current-user.decorator'
 import { TrackProgressDto } from './http-dto/content.dto'
+import { LearningPathService } from '../application/progress/learning-path.service'
 
 @ApiTags('Progress')
 @ApiBearerAuth()
 @UseGuards(JwtAuthGuard, PermissionsGuard)
 @Controller('progress')
 export class ProgressController {
-  constructor(private svc: ProgressService, private readonly agenda: LearningAgendaService) {}
+  constructor(private svc: ProgressService, private readonly agenda: LearningAgendaService, private readonly path: LearningPathService) {}
+
+  @Get('me/learning-path')
+  getLearningPath(@CurrentUser() u: JwtPayload) { return this.path.getPath(u.sub) }
+
+  @Post('me/learning-path/advance')
+  advanceLearningPath(@CurrentUser() u: JwtPayload, @Body() body: { fromLevelCode?: unknown }) { return this.path.advance(u.sub, body?.fromLevelCode) }
 
   @Get('me/agenda')
   getAgenda(@CurrentUser() u: JwtPayload) { return this.agenda.getAgenda(u.sub) }

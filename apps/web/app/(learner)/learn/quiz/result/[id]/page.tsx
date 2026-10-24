@@ -8,6 +8,7 @@ import { useSearchParams } from 'next/navigation';
 import { LearnerShell } from '@/shared/layout';
 import { apiClient } from '@/shared/api/api-client';
 import { LoadingSpinner, Pagination } from '@/shared/ui';
+import { LearningPathJourney } from '@/shared/ui/LearningPathJourney';
 
 export default function LearnerQuizResultPage({ params }: { params: Promise<{ id: string }> }) {
   const unwrappedParams = React.use(params);
@@ -60,7 +61,7 @@ export default function LearnerQuizResultPage({ params }: { params: Promise<{ id
 
   return (
     <LearnerShell>
-      <div className="flex w-full flex-col gap-6 pb-12"><Link href={certificateId ? (topicId ? `/learn/certifications/${certificateId}/topics/${topicId}` : `/learn/certifications/${certificateId}`) : "/learn/certifications"} className="inline-flex w-fit py-2 text-sm font-semibold text-primary">← Quay lại</Link>
+      <div className="flex w-full flex-col gap-6 pb-12"><Link href={certificateId ? (topicId ? `/learn/certifications/${certificateId}/topics/${topicId}` : `/learn/certifications/${certificateId}`) : "/learn/plan"} className="inline-flex w-fit py-2 text-sm font-semibold text-primary">← Quay lại</Link>
         {/* Top Score Banner */}
         <div className="p-8 rounded-2xl bg-surface-container-lowest border border-outline-variant/40 shadow-2xs flex flex-col md:flex-row items-center justify-between gap-6 text-center md:text-left">
           <div className="flex flex-col md:flex-row items-center gap-6">
@@ -84,13 +85,15 @@ export default function LearnerQuizResultPage({ params }: { params: Promise<{ id
 
           <div className="flex flex-col sm:flex-row gap-3 w-full md:w-auto">
             <Link
-              href={certificateId ? (topicId ? `/learn/certifications/${certificateId}/topics/${topicId}` : `/learn/certifications/${certificateId}`) : "/learn/certifications"}
+              href={certificateId ? (topicId ? `/learn/certifications/${certificateId}/topics/${topicId}` : `/learn/certifications/${certificateId}`) : "/learn/plan"}
               className="px-5 py-2.5 bg-primary hover:bg-indigo-700 !text-white font-bold text-xs rounded-xl transition-colors shadow-2xs text-center"
             >
-              <span className="!text-white">{certificateId && topicId ? 'Ôn lại kiến thức' : 'Làm đề thi khác'}</span>
+              <span className="!text-white">{!certificateId ? 'Về lộ trình học' : topicId ? 'Ôn lại kiến thức' : 'Làm đề thi khác'}</span>
             </Link>
           </div>
         </div>
+
+        {!certificateId && !attempt.exam?.certificateId && <LearningPathJourney />}
 
         {(attempt.performanceByDomain?.length > 0 || attempt.performanceByTopic?.length > 0) && (
           <div className="grid gap-4 md:grid-cols-2">
