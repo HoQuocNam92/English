@@ -4,10 +4,10 @@ import Link from 'next/link';
 import { useEffect, useRef, useState } from 'react';
 import { apiClient } from '@/shared/api/api-client';
 import { AppIcon } from './AppIcon';
-import { WeeklyLearningPath } from './WeeklyLearningPath';
+import { DailyLearningPath } from './DailyLearningPath';
 import { ContinuationPlans } from './ContinuationPlans';
 
-type PathLesson = { id: string; title: string; href: string; week: number; completed: boolean };
+type PathLesson = { id: string; title: string; href: string; week: number; completed: boolean; estimatedMinutes: number; vocabularyCount: number };
 type PathDomain = {
   id: string; name: string; available: boolean; lessons: PathLesson[];
   completedLessons: number; totalLessons: number; nextLesson: PathLesson | null;
@@ -15,7 +15,7 @@ type PathDomain = {
   assessment: { id: string; title: string; href: string; passingScorePercent: number; passed: boolean; scorePercent: number | null } | null;
 };
 type Path = {
-  configured: true; level: { code: string; name: string }; domains: PathDomain[];
+  dailyMinutes: number; configured: true; level: { code: string; name: string }; domains: PathDomain[];
   completedLessons: number; totalLessons: number; allCompleted: boolean; canAdvance: boolean;
   nextLevel: { code: string; name: string } | null; finalLevel: boolean;
 };
@@ -47,9 +47,11 @@ export function LearningPathJourney({ full = false, lessonId, onAvailability }: 
       } finally { if (current && request === sequence.current) setLoading(false); }
     };
     void refresh();
+    window.addEventListener('techenglish:learning-updated', refresh);
+    window.addEventListener('techenglish:learning-path-changed', refresh);
     window.addEventListener('focus', refresh);
     window.addEventListener('pageshow', refresh);
-    return () => { current = false; window.removeEventListener('focus', refresh); window.removeEventListener('pageshow', refresh); };
+    return () => { current = false; window.removeEventListener('techenglish:learning-updated', refresh); window.removeEventListener('techenglish:learning-path-changed', refresh); window.removeEventListener('focus', refresh); window.removeEventListener('pageshow', refresh); };
   }, [reload, onAvailability]);
 
   const advance = async () => {
@@ -104,10 +106,7 @@ export function LearningPathJourney({ full = false, lessonId, onAvailability }: 
 
     {full && <>
       <div className="grid gap-3 sm:grid-cols-2">{path.domains.map(domain => <section key={domain.id} className="rounded-2xl border border-outline-variant bg-white p-4"><h3 className="font-bold">{domain.name}</h3><p className="mt-2 text-sm">{domain.completedLessons}/{domain.totalLessons} bài đã học</p><p className={`mt-1 text-sm font-semibold ${domain.state === 'complete' ? 'text-emerald-700' : 'text-on-surface-variant'}`}>{domain.state === 'complete' ? 'Đã hoàn thành cấp ở ngành này' : domain.state === 'assessment_due' ? 'Còn bài tổng kết' : domain.state === 'review_needed' ? 'Cần ôn và làm lại tổng kết' : domain.available ? 'Đang học' : 'Nội dung đang bổ sung'}</p></section>)}</div>
-      <section className="rounded-2xl border border-outline-variant bg-white p-4 sm:p-6"><h2 className="text-lg font-bold">Chuỗi bài {path.level.name}</h2><WeeklyLearningPath steps={path.domains.flatMap(domain => [
-        ...domain.lessons.map(lesson => ({ id: lesson.id, title: `${domain.name} · ${lesson.title}`, reason: lesson.completed ? 'Đã học, có thể mở lại để ôn.' : 'Học theo thứ tự 01 → 04 trước khi làm tổng kết.', week: lesson.week, actionUrl: lesson.href, kind: 'lesson' })),
-        ...(domain.assessment ? [{ id: domain.assessment.id, title: `${domain.name} · Tổng kết`, reason: domain.assessment.passed ? 'Đã đạt sau khi hoàn thành chuỗi bài.' : `Làm sau khi học đủ bài. Mức đạt ${domain.assessment.passingScorePercent}%.`, week: 4, actionUrl: domain.assessment.href, kind: 'quiz' }] : []),
-      ])} /></section>
+      <DailyLearningPath domains={path.domains} dailyMinutes={path.dailyMinutes} />
     </>}
   </div>;
 }

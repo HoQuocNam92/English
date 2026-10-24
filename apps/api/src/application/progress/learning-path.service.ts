@@ -19,7 +19,7 @@ export class LearningPathService {
     if (!selected.length) return { configured: false as const }
     const domainIds = selected.map((link: any) => link.domainId)
     const [lessons, progress, exams, attempts, levels] = await Promise.all([
-      db.lesson.findMany({ where: { status: 'published', slug: { startsWith: PREFIX }, domainId: { in: domainIds }, levelId: profile.levelId }, select: { id: true, title: true, slug: true, domainId: true, estimatedMinutes: true } }),
+      db.lesson.findMany({ where: { status: 'published', slug: { startsWith: PREFIX }, domainId: { in: domainIds }, levelId: profile.levelId }, select: { id: true, title: true, slug: true, domainId: true, estimatedMinutes: true, _count: { select: { vocabularies: true } } } }),
       db.learningProgress.findMany({ where: { learnerId, resourceType: 'lesson' }, select: { resourceId: true, status: true, completionPercent: true, completedAt: true, updatedAt: true } }),
       db.exam.findMany({ where: { status: 'published', kind: 'practice', certificateId: null, domainId: { in: domainIds }, levelId: profile.levelId, questions: { some: {} } }, select: { id: true, title: true, domainId: true, topics: true, passingScorePercent: true } }),
       db.examAttempt.findMany({ where: { learnerId, status: 'graded', exam: { domainId: { in: domainIds }, levelId: profile.levelId, certificateId: null } }, select: { id: true, examId: true, passed: true, scorePercent: true, submittedAt: true }, orderBy: [{ submittedAt: 'desc' }, { createdAt: 'desc' }] }),
@@ -30,7 +30,7 @@ export class LearningPathService {
       const rows = lessons.filter((lesson: any) => lesson.domainId === link.domainId).sort((a: any, b: any) => lessonOrder(a.slug) - lessonOrder(b.slug))
       // Missing data must never produce a completed course or unlock promotion.
       const available = rows.length === 4 && new Set(rows.map((row: any) => lessonOrder(row.slug))).size === 4 && rows.every((row: any) => lessonOrder(row.slug) >= 0)
-      const lessonItems = rows.map((lesson: any) => ({ id: lesson.id, title: lesson.title, href: `/learn/lessons/${lesson.id}`, week: lessonOrder(lesson.slug) + 1, completed: done(byLesson.get(lesson.id)), estimatedMinutes: lesson.estimatedMinutes }))
+      const lessonItems = rows.map((lesson: any) => ({ id: lesson.id, title: lesson.title, href: `/learn/lessons/${lesson.id}`, week: lessonOrder(lesson.slug) + 1, completed: done(byLesson.get(lesson.id)), estimatedMinutes: lesson.estimatedMinutes, vocabularyCount: lesson._count?.vocabularies ?? 0 }))
       const completedLessons = lessonItems.filter((lesson: any) => lesson.completed).length
       const lessonsComplete = available && completedLessons === rows.length
       const exam = exams.find((exam: any) => exam.domainId === link.domainId && exam.topics.includes(`coverage-20261009-${link.domain.code.toLowerCase()}-${profile.level.code}`))

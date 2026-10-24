@@ -1,3 +1,4 @@
+import { LearningPathService } from './learning-path.service'
 import { ApivnLearningPlanner } from '../../infrastructure/ai/apivn-learning-planner'
 import { BadRequestException, ForbiddenException, Injectable } from '@nestjs/common'
 import { PrismaService } from '../../infrastructure/database/prisma.service'
@@ -12,7 +13,7 @@ type Task = { id: string; title: string; reason: string; href: string; action: s
 
 @Injectable()
 export class LearningAgendaService {
-  constructor(private readonly prisma: PrismaService, private readonly ai?: ApivnLearningPlanner) {}
+  constructor(private readonly prisma: PrismaService, private readonly ai?: ApivnLearningPlanner, private readonly learningPath?: LearningPathService) {}
   async getAgenda(learnerId: string) {
     const user = await this.prisma.user.findFirst({ where: { id: learnerId, status: 'active', userRoles: { some: { role: { code: 'learner', isActive: true } } } }, select: { id: true } })
     if (!user) throw new ForbiddenException('Chỉ học viên mới có kế hoạch học tập.')
@@ -79,6 +80,17 @@ export class LearningAgendaService {
     const goodScores = attempts.filter(a => a.scorePercent !== null).slice(0, 5)
     const retestSuggested = goodScores.length >= 3 && goodScores.every(a => a.scorePercent! >= 80) && profile.level.code !== 'advanced' && profile.level.code !== 'professional'
     const baseline = { configured: true, calculatedAt: now, date: period.label, source: 'rules', level: { code: profile.level.code, name: profile.level.name }, dailyMinutes: profile.dailyStudyTargetMinutes, goal, tasks, month: { label: `Tháng ${period.label.slice(5, 7)}/${period.label.slice(0, 4)}`, metrics: metrics(period.month, period.nextMonth, period.daysInMonth), focus: review?.l.title ?? next?.title ?? (hasVocab ? 'Duy trì học và ôn từ vựng theo chuyên ngành' : 'Củng cố kiến thức trước khi luyện đề') }, year: { label: `Năm ${period.label.slice(0, 4)}`, metrics: metrics(period.year, period.nextYear, period.daysInYear), certificates: hasCert ? profile.certGoals.filter(c => c.certificate.isActive).map(c => ({ name: c.certificate.name, href: `/learn/certifications/${c.certificateId}` })) : [] }, totalLessons: lessons.length, completedLessons: allCompleted, retestSuggested, lastAssessmentAt: latest?.submittedAt ?? null, explanation: 'Kế hoạch cập nhật theo bài đang học, bài đã hoàn thành, điểm Quiz và lịch ôn. Trình độ chỉ thay đổi sau kiểm tra lại hoặc khi bạn chỉnh hồ sơ.' }
+    const path = await this.learningPath?.getPath(learnerId)
+    if (path?.configured) {
+      // The same current-level chain drives both today's agenda and the full path.
+      const domain = path.domains.find((item: any) => item.state !== 'complete')
+      const core: Task[] = []
+      if (domain?.nextLesson) core.push({ id: domain.nextLesson.id, title: domain.nextLesson.title, reason: domain.name + ' · Bài tiếp theo trong chuỗi cốt lõi của cấp hiện tại.', href: domain.nextLesson.href, action: 'Học tiếp', status: 'todo', kind: 'lesson', minutes: domain.nextLesson.estimatedMinutes })
+      else if (domain?.available && domain.assessment) core.push({ id: domain.assessment.id, title: domain.name + ' · Tổng kết', reason: 'Đã học đủ bài. Đạt tổng kết để hoàn thành cấp ở ngành này.', href: domain.assessment.href, action: 'Làm tổng kết', status: 'todo', kind: 'quiz' })
+      else if (path.allCompleted) core.push({ id: 'core-complete', title: 'Đã hoàn thành chuỗi cốt lõi và tổng kết', reason: 'Mở lộ trình để chọn cấp tiếp theo hoặc kế hoạch ôn tập.', href: '/learn/plan', action: 'Chọn bước tiếp theo', status: 'done', kind: 'lesson' })
+      baseline.tasks = [...core, ...tasks.filter(task => task.kind === 'vocabulary' || task.id === 'review-words' || (hasCert && task.kind === 'quiz'))]
+      return baseline
+    }
     return this.ai ? this.ai.agenda(baseline) : baseline
   }
 }

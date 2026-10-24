@@ -2,7 +2,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import { ArrowRight, CalendarDays, Check, CheckCircle2, ChevronRight, Clock3, Flame, RefreshCw, Route, Target, Trophy, Zap } from 'lucide-react';
-import { WeeklyLearningPath, type WeekStep } from '@/shared/ui/WeeklyLearningPath';
+import { LearningPathJourney } from '@/shared/ui/LearningPathJourney';
 import { AppIcon } from '@/shared/ui/AppIcon';
 import { LearnerShell } from '@/shared/layout';
 import { apiClient } from '@/shared/api/api-client';
@@ -23,7 +23,6 @@ const colors: Record<string, { background: string; icon: string }> = {
 
 export default function LearnerProgressPage() {
   const [data, setData] = useState<ProgressPayload | null>(null);
-  const [weeklyPlan, setWeeklyPlan] = useState<{ steps: WeekStep[]; dailyMinutes: number } | null>(null);
   const [agenda, setAgenda] = useState<Agenda | null>(null);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -34,9 +33,8 @@ export default function LearnerProgressPage() {
   const load = useCallback(async () => {
     if (fetching.current) return;
     fetching.current = true; setRefreshing(true);
-    const [progress, plan, savedPlan] = await Promise.allSettled([apiClient.get<ProgressPayload>('/progress/me'), apiClient.get<Agenda>('/progress/me/agenda'), apiClient.get<{ plan?: { steps: WeekStep[]; dailyMinutes: number } }>('/placement-test/result')]);
+    const [progress, plan] = await Promise.allSettled([apiClient.get<ProgressPayload>('/progress/me'), apiClient.get<Agenda>('/progress/me/agenda')]);
     if (mounted.current) {
-      setWeeklyPlan(savedPlan.status === 'fulfilled' ? savedPlan.value.plan ?? null : null);
       if (progress.status === 'fulfilled') { setData(progress.value); setError(''); } else setError(progress.reason?.message ?? 'Không thể tải tiến độ.');
       if (plan.status === 'fulfilled') { setAgenda(plan.value); setAgendaError(''); } else setAgendaError(plan.reason?.message ?? 'Không thể tải kế hoạch.');
       setLoading(false); setRefreshing(false);
@@ -46,9 +44,9 @@ export default function LearnerProgressPage() {
   useEffect(() => {
     mounted.current = true; void load();
     const refresh = () => { if (!document.hidden) void load(); };
-    window.addEventListener('focus', refresh); window.addEventListener('techenglish:learning-updated', refresh); document.addEventListener('visibilitychange', refresh);
+    window.addEventListener('techenglish:learning-path-changed', refresh); window.addEventListener('focus', refresh); window.addEventListener('techenglish:learning-updated', refresh); document.addEventListener('visibilitychange', refresh);
     const timer = window.setInterval(refresh, 60000);
-    return () => { mounted.current = false; window.clearInterval(timer); window.removeEventListener('focus', refresh); window.removeEventListener('techenglish:learning-updated', refresh); document.removeEventListener('visibilitychange', refresh); };
+    return () => { mounted.current = false; window.clearInterval(timer); window.removeEventListener('techenglish:learning-path-changed', refresh); window.removeEventListener('focus', refresh); window.removeEventListener('techenglish:learning-updated', refresh); document.removeEventListener('visibilitychange', refresh); };
   }, [load]);
   if (loading) return <LearnerShell><LoadingSpinner /></LearnerShell>;
   if (!data && error) return <LearnerShell><p role="alert" className="rounded-2xl bg-red-50 p-6 text-red-700">{error}</p><button onClick={() => void load()} className="mt-3 text-primary">Thử lại</button></LearnerShell>;
@@ -65,9 +63,9 @@ export default function LearnerProgressPage() {
           <div className="mt-5 space-y-3">{agenda.tasks.map((task, i) => <article key={task.id} className={`flex items-start gap-3 rounded-xl border p-4 ${task.status === 'done' ? 'border-emerald-100 bg-emerald-50/60' : 'border-outline-variant bg-white'}`}><span className={`mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-xs font-bold ${task.status === 'done' ? 'bg-emerald-600 text-white' : 'bg-primary/10 text-primary'}`}>{task.status === 'done' ? <Check size={16} /> : i + 1}</span><div className="min-w-0 flex-1"><h3 className="text-sm font-bold leading-6">{task.title.replace(/\bQuiz\b/gi, 'bài kiểm tra')}</h3><p className="mt-1 text-xs leading-5 text-on-surface-variant">{task.reason.replace(/\bQuiz\b/gi, 'bài kiểm tra')}</p><div className="mt-3 flex flex-wrap items-center gap-3">{task.completedLessons?.length ? task.completedLessons.map(item => <Link key={item.id} href={item.href} className="rounded-lg px-3 py-2 text-xs font-bold text-emerald-700 hover:bg-emerald-100 hover:underline">Xem lại: {item.title}</Link>) : <Link href={task.href} className={`inline-flex items-center gap-1.5 rounded-lg px-3 py-2 text-xs font-bold ${task.status === 'done' ? 'text-emerald-700' : 'bg-primary text-white'}`}>{task.action.replace(/\bQuiz\b/gi, 'bài kiểm tra')}<ArrowRight size={14} /></Link>}{task.minutes && <span className="text-xs text-on-surface-variant">Khoảng {task.minutes} phút</span>}</div></div></article>)}{!agenda.tasks.length && <div className="rounded-xl bg-slate-50 p-4 text-sm leading-6">Chưa có bài học phù hợp được xuất bản. Bạn có thể xem chứng chỉ hoặc điều chỉnh mục tiêu trong hồ sơ.<Link href="/learn/certifications" className="mt-2 block font-semibold text-primary">Xem nội dung học →</Link></div>}</div>
           {!!agenda.tasks.length && !unfinished.length && <p className="mt-4 text-sm font-semibold text-emerald-700">Bạn đã hoàn thành mục tiêu hôm nay.</p>}
         </div>
-        <aside className="self-start rounded-2xl border border-violet-200 bg-violet-50/70 p-6 text-on-surface"><span className="flex h-11 w-11 items-center justify-center rounded-xl bg-white text-primary"><Route size={25} /></span><p className="mt-4 text-sm font-bold">Lộ trình hiện tại</p><div className="mt-3"><LevelBadge level={agenda.level} /></div><p className="mt-5 text-3xl font-bold text-primary">{agenda.completedLessons}<span className="text-sm font-normal text-on-surface-variant"> / {agenda.totalLessons} bài đã hoàn thành</span></p><p className="mt-2 text-xs leading-6 text-on-surface-variant">Các bài học phù hợp với mục tiêu của bạn.</p><div className="mt-4 h-2 overflow-hidden rounded-full bg-violet-200"><div className="h-full rounded-full bg-primary" style={{ width: `${agenda.totalLessons ? Math.min(100, agenda.completedLessons / agenda.totalLessons * 100) : 0}%` }} /></div><p className="mt-5 text-xs leading-6 text-on-surface-variant">Kế hoạch được cập nhật theo tiến độ và kết quả bài kiểm tra của bạn.</p><Link href="/onboarding/placement-test?next=/learn/progress" className="mt-5 inline-flex items-center gap-2 text-sm font-semibold text-primary">{agenda.retestSuggested ? 'Kiểm tra để chọn trình độ phù hợp' : 'Kiểm tra lại trình độ'}<ArrowRight size={15} /></Link></aside>
+        <aside className="self-start rounded-2xl border border-violet-200 bg-violet-50/70 p-6 text-on-surface"><span className="flex h-11 w-11 items-center justify-center rounded-xl bg-white text-primary"><Route size={25} /></span><p className="mt-4 text-sm font-bold">Thư viện phù hợp mục tiêu</p><div className="mt-3"><LevelBadge level={agenda.level} /></div><p className="mt-5 text-3xl font-bold text-primary">{agenda.completedLessons}<span className="text-sm font-normal text-on-surface-variant"> / {agenda.totalLessons} bài đã hoàn thành</span></p><p className="mt-2 text-xs leading-6 text-on-surface-variant">Tổng bài trong thư viện, gồm nhiều cấp. Tiến độ chuỗi cốt lõi hiện tại ở lịch học bên dưới.</p><div className="mt-4 h-2 overflow-hidden rounded-full bg-violet-200"><div className="h-full rounded-full bg-primary" style={{ width: `${agenda.totalLessons ? Math.min(100, agenda.completedLessons / agenda.totalLessons * 100) : 0}%` }} /></div><p className="mt-5 text-xs leading-6 text-on-surface-variant">Kế hoạch được cập nhật theo tiến độ và kết quả bài kiểm tra của bạn.</p><Link href="/onboarding/placement-test?next=/learn/progress" className="mt-5 inline-flex items-center gap-2 text-sm font-semibold text-primary">{agenda.retestSuggested ? 'Kiểm tra để chọn trình độ phù hợp' : 'Kiểm tra lại trình độ'}<ArrowRight size={15} /></Link></aside>
       </section>
-      {weeklyPlan && <section className="rounded-2xl border border-outline-variant bg-white p-5 sm:p-6"><h2 className="text-xl font-bold">Đường đi học tập của bạn</h2><p className="mt-2 text-sm text-on-surface-variant">Nội dung theo từng tuần · Dự kiến {weeklyPlan.dailyMinutes} phút mỗi ngày</p><WeeklyLearningPath steps={weeklyPlan.steps} /></section>}
+      <LearningPathJourney full />
       <div className="grid gap-5 md:grid-cols-2"><PeriodCard title="Tháng này" subtitle={agenda.month.label} metrics={agenda.month.metrics} icon="month"><p className="mt-4 border-t border-outline-variant pt-4 text-xs leading-6 text-on-surface-variant"><strong className="text-on-surface">Ưu tiên: </strong>{agenda.month.focus}</p></PeriodCard><PeriodCard title="Năm nay" subtitle={agenda.year.label} metrics={agenda.year.metrics} icon="year">{agenda.year.focus && <p className="mt-4 text-xs leading-6 text-on-surface-variant">{agenda.year.focus}</p>}{!!agenda.year.certificates.length && <div className="mt-4 border-t border-outline-variant pt-4"><p className="text-xs font-semibold">Chứng chỉ mục tiêu</p>{agenda.year.certificates.map(c => <Link key={c.href} href={c.href} className="mt-2 flex items-center justify-between gap-3 text-xs font-semibold text-primary"><span>{c.name}</span><ChevronRight size={15} className="shrink-0" /></Link>)}</div>}</PeriodCard></div>
       <p className="text-xs leading-5 text-on-surface-variant">Mục tiêu dự kiến theo nhịp học trong hồ sơ và nội dung đang có. Số phút là thời gian bạn dự định dành ra, chưa phải thời gian được đo. Cập nhật lúc {new Date(agenda.calculatedAt).toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' })}.</p>
     </> : !agendaError && <section className="rounded-2xl border border-outline-variant bg-white p-6"><h2 className="font-bold">Thiết lập mục tiêu để có kế hoạch ngày, tháng và năm</h2><Link href="/onboarding" className="mt-4 inline-block rounded-xl bg-primary px-4 py-2 text-sm font-bold text-white">Chọn mục tiêu học</Link></section>}

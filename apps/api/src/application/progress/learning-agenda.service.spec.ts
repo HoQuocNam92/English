@@ -4,7 +4,7 @@ import { LearningAgendaService, vietnamPeriods } from './learning-agenda.service
 const now = new Date(), yesterday = new Date(now.getTime() - 86400000)
 const topic = { id:'topic-1', code:'1.1', name:'Cloud Concepts', certificateId:'cert-1', order:1, certificateDomain:{order:1} }
 const lesson = (id:string, order=1) => ({ id, title:`Lesson ${id}`, estimatedMinutes:15, level:{code:'beginner',order:1}, domain:{name:'Cloud'}, certificationTopics:[{topicId:topic.id,topic:{...topic,order}}] })
-function fixture(overrides:any={}) {
+function fixture(overrides:any={}, path?:any) {
  const state={ goal:'certification', progress:[] as any[], attempts:[] as any[], vocab:[] as any[], lessons:[lesson('l1'),lesson('l2',2)], ...overrides }
  const queries:any[]=[]
  const prisma:any={
@@ -17,7 +17,7 @@ function fixture(overrides:any={}) {
  vocabularyProgress:{findMany:async(args:any)=>{queries.push(args);return state.vocab}},vocabulary:{count:async()=>100},
  placementAssessment:{findFirst:async(args:any)=>{queries.push(args);return null}},
  }
- return {service:new LearningAgendaService(prisma),state,queries}
+ return {service:new LearningAgendaService(prisma, undefined, path),state,queries}
 }
 test('Vietnam calendar handles late UTC hours and month/year boundaries',()=>{
  const p=vietnamPeriods(new Date('2026-12-31T18:00:00Z'))
@@ -71,4 +71,16 @@ test('completed agenda includes separate review links for every lesson, includin
  assert.deepEqual(done.completedLessons.map((item:any)=>item.id),['l1','l2'])
  assert.ok(done.completedLessons[0].href.endsWith('?lessonId=l1'))
  assert.ok(done.completedLessons[1].href.endsWith('?lessonId=l2'))
+})
+
+
+test('current core path overrides stale catalog recommendations and exposes assessment only after lessons', async () => {
+ const state:any={configured:true,allCompleted:false,domains:[{name:'Software',available:true,state:'in_progress',nextLesson:{id:'core-mid',title:'Intermediate core',href:'/learn/lessons/core-mid',estimatedMinutes:25},assessment:{id:'summary',href:'/learn/quiz/summary'}}]}
+ const {service}=fixture({goal:'vocabulary'}, {getPath:async()=>state})
+ let result:any=await service.getAgenda('A')
+ assert.equal(result.tasks[0].id,'core-mid');assert.equal(result.tasks.some((task:any)=>task.id==='l1'),false)
+ state.domains[0].nextLesson=null;state.domains[0].state='assessment_due'
+ result=await service.getAgenda('A');assert.equal(result.tasks[0].id,'summary')
+ state.domains[0].state='complete';state.allCompleted=true
+ result=await service.getAgenda('A');assert.equal(result.tasks[0].id,'core-complete');assert.equal(result.tasks[0].href,'/learn/plan')
 })
