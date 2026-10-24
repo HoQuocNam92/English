@@ -29,15 +29,26 @@ prefix="${IMAGE_PREFIX:-ghcr.io/hoquocnam92/english}"
 export API_IMAGE="$prefix-api:$sha"
 export WEB_IMAGE="$prefix-web:$sha"
 compose=(docker compose --env-file .env.compose)
-"${compose[@]}" config --quiet
-"${compose[@]}" pull db migrate api web
-"${compose[@]}" up -d --wait db
+# This script is streamed into bash over SSH. Container commands must never
+# consume that stream, otherwise the script can silently end after the backup.
+"${compose[@]}" config --quiet < /dev/null
+"${compose[@]}" pull db migrate api web < /dev/null
+"${compose[@]}" up -d --wait db < /dev/null
 
 mkdir -p "$HOME/techenglish-backups"
 backup="$HOME/techenglish-backups/$(date -u +%Y%m%dT%H%M%SZ)-$sha.dump"
-"${compose[@]}" exec -T db pg_dump -U techenglish -d techenglish -Fc > "$backup"
+"${compose[@]}" exec -T --interactive=false db pg_dump -U techenglish -d techenglish -Fc < /dev/null > "$backup"
 test -s "$backup"
-"${compose[@]}" run --rm --no-deps migrate
-"${compose[@]}" up -d --no-build --no-deps --wait api web
-"${compose[@]}" ps
+"${compose[@]}" run --rm --no-deps -T migrate < /dev/null
+"${compose[@]}" up -d --no-build --no-deps --wait api web < /dev/null
+for service in api web; do
+  container_id=$("${compose[@]}" ps -q "$service" < /dev/null)
+  expected="$prefix-$service:$sha"
+  actual=$(docker inspect --format '{{.Config.Image}}' "$container_id" < /dev/null)
+  [[ "$actual" == "$expected" ]] || {
+    echo "Wrong release for $service: expected $expected, got $actual" >&2
+    exit 1
+  }
+done
+"${compose[@]}" ps < /dev/null
 echo "Deployed $sha; database backup: $backup"
