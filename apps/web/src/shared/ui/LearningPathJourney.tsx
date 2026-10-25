@@ -6,7 +6,6 @@ import Link from 'next/link';
 import { useEffect, useRef, useState } from 'react';
 import { apiClient } from '@/shared/api/api-client';
 import { AppIcon } from './AppIcon';
-import { DailyLearningPath } from './DailyLearningPath';
 import { ContinuationPlans } from './ContinuationPlans';
 
 type PathLesson = { id: string; title: string; href: string; week: number; completed: boolean; estimatedMinutes: number; vocabularyCount: number; vocabularyReviewComplete?: boolean };
@@ -121,7 +120,6 @@ export function LearningPathJourney({ full = false, lessonId, onAvailability }: 
     {full && <>
       <div className="grid gap-3 sm:grid-cols-2">{path.domains.map(domain => <section key={domain.id} className="rounded-2xl border border-outline-variant bg-white p-4"><h3 className="font-bold">{domain.name}</h3><p className="mt-2 text-sm">{domain.completedLessons}/{domain.totalLessons} bài đã học</p><p className={`mt-1 text-sm font-semibold ${domain.state === 'complete' ? 'text-emerald-700' : 'text-on-surface-variant'}`}>{domain.state === 'complete' ? 'Đã hoàn thành cấp ở ngành này' : domain.state === 'assessment_due' ? 'Còn bài tổng kết' : domain.state === 'review_needed' ? 'Cần ôn và làm lại tổng kết' : domain.available ? 'Đang học' : 'Nội dung đang bổ sung'}</p></section>)}</div>
       <LearningTrail domains={path.domains} />
-      <details className="rounded-2xl border border-outline-variant bg-white p-4"><summary className="cursor-pointer font-bold text-primary">Xem lịch bài mới theo tuần và ngày</summary><div className="mt-4"><DailyLearningPath domains={path.domains} dailyMinutes={path.dailyMinutes} /></div></details>
     </>}
   </div>;
 }

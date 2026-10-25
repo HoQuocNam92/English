@@ -1,5 +1,4 @@
 import { buildLearningTrail } from '../../../../packages/shared-kernel/src/learning-trail.ts';
-import { buildWeeklyStudySchedule } from '../../../../packages/shared-kernel/src/weekly-study-schedule.ts';
 import { matchesFilterOption } from './utils/filter-options.ts';
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
@@ -12,7 +11,7 @@ import { runInNewContext } from 'node:vm';
 import { existsSync } from 'node:fs';
 import { learningMenu } from './learning-menu.ts';
 
-test('native journey uses live course progress, shared week/day schedule and explicit level confirmation', async () => {
+test('native journey uses the topic trail, omits calendar UI and requires level confirmation', async () => {
   const ts = createRequire(import.meta.url)('typescript');
   const source = readFileSync(new URL('../features/learning/LearningPathJourney.tsx', import.meta.url), 'utf8');
   const code = ts.transpileModule(source, { compilerOptions: { module: ts.ModuleKind.CommonJS, jsx: ts.JsxEmit.ReactJSX } }).outputText;
@@ -28,7 +27,6 @@ test('native journey uses live course progress, shared week/day schedule and exp
     '../../shared/ui/primitives': { Text: 'text', Button: 'button', controlStyles: { card: {} } },
     '../../shared/api/api-client': { api: { post: async (url, body) => { posts.push({ url, body }); return path; } } },
     '../../shared/navigation': { mobileRoute },
-    '../../../../../packages/shared-kernel/src/weekly-study-schedule': { buildWeeklyStudySchedule },
     '../../../../../packages/shared-kernel/src/learning-trail': { buildLearningTrail },
     './ContinuationPlans': { ContinuationPlans: 'continuation' },
     './LearningTrail': { LearningTrail: 'trail' },
@@ -38,7 +36,8 @@ test('native journey uses live course progress, shared week/day schedule and exp
   const nodes = tree => !tree || typeof tree !== 'object' ? [] : Array.isArray(tree) ? tree.flatMap(nodes) : [tree, ...nodes(tree.props?.children)];
   const render = () => { cursor = 0; return nodes(exports.LearningPathJourney({ full: true })); };
   let tree = render();
-  assert.ok(tree.some(node => node.type === 'text' && node.props.children === 'Lịch bài mới theo tuần'));
+  assert.ok(tree.some(node => node.type === 'trail'));
+  assert.equal(tree.some(node => node.type === 'text' && node.props.children === 'Lịch bài mới theo tuần'), false);
   tree.find(node => node.type === 'button' && node.props.children === 'Học bài tiếp theo').props.onPress();
   assert.equal(routes[0], '/lessons/lesson');
   assert.equal(posts.length, 0);

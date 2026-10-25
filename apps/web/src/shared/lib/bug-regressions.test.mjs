@@ -3,36 +3,6 @@ import assert from 'node:assert/strict';
 import { withoutEmptyQueryValues } from './request-query.ts';
 import { isEnglishSelection } from './english-selection.ts';
 import { formatAttemptDuration } from './attempt-duration.ts';
-import { buildWeeklyStudySchedule } from '../../../../../packages/shared-kernel/src/weekly-study-schedule.ts';
-
-test('weekly schedule nests seven individual days, splits long lessons across weeks and preserves total study time', () => {
-  const lesson = { id: 'long', title: 'Cloud', href: '/learn/lessons/long', completed: false, estimatedMinutes: 225, vocabularyCount: 8 };
-  const domain = { id: 'cloud', name: 'Cloud', available: true, lessons: [lesson], assessment: { id: 'exam', href: '/learn/quiz/exam', passed: false, passingScorePercent: 75 } };
-  const plan = buildWeeklyStudySchedule([domain], 30);
-  assert.deepEqual(plan.weeks.map(week => week.days.length), [7, 2]);
-  assert.deepEqual(plan.weeks[1].days.map(day => day.dayOfWeek), [1, 2]);
-  assert.equal(plan.weeks[1].days[0].part, 8);
-  assert.equal(plan.weeks[1].days[0].minutes, 15);
-  assert.equal(plan.days.reduce((sum, day) => sum + (day.minutes ?? 0), 0), 225);
-  assert.ok(plan.days.every(day => day.minutes === null || day.minutes <= 30));
-  assert.equal(plan.days.at(-1).assessment, true);
-  assert.equal(plan.days.at(-1).ready, false);
-  assert.equal(plan.weeks[0].topics, 1);
-  lesson.completed = true;
-  const completed = buildWeeklyStudySchedule([domain], 30);
-  assert.equal(completed.next.id, 'assessment:exam');
-  assert.equal(completed.next.ready, true);
-  assert.equal(completed.days.filter(day => day.completed).length, 8);
-});
-
-test('weekly schedule does not invent empty days or complete missing curricula', () => {
-  assert.deepEqual(buildWeeklyStudySchedule([], 30).weeks, []);
-  const domain = { id: 'cloud', name: 'Cloud', available: false, lessons: [], assessment: { id: 'exam', href: '/learn/quiz/exam', passed: false, passingScorePercent: 75 } };
-  const plan = buildWeeklyStudySchedule([domain], Number.NaN);
-  assert.equal(plan.budget, 30);
-  assert.equal(plan.days.length, 1);
-  assert.equal(plan.next.ready, false);
-});
 
 test('all filters omit empty identifiers while preserving pagination and selected exam', () => {
   assert.equal(withoutEmptyQueryValues('/exams?certificateId=&page=1&limit=20'), '/exams?page=1&limit=20');

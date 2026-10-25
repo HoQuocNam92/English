@@ -1,7 +1,7 @@
-import type { StudyDomain } from './weekly-study-schedule';
-
-export type TrailDomain = Omit<StudyDomain, 'lessons'> & {
-  lessons: (StudyDomain['lessons'][number] & { vocabularyReviewComplete?: boolean })[];
+export type TrailDomain = {
+  id: string; name: string; available: boolean;
+  lessons: { id: string; title: string; href: string; completed: boolean; estimatedMinutes: number; vocabularyCount: number; vocabularyReviewComplete?: boolean }[];
+  assessment: { id: string; href: string; passed: boolean; passingScorePercent: number } | null;
 };
 export function buildLearningTrail(domains: TrailDomain[]) {
   const stages = domains.map((domain, stageIndex) => {

@@ -68,6 +68,36 @@ test('missing or invalid game values never display NaN or negative XP and streak
   assert.equal(view.studyStreak, 0);
 });
 import { buildLearningTrail } from './learning-trail.ts';
+import { learningReport } from './learning-report.ts';
+
+test('learning report separates reading completion from assessment success and never uses game scores', () => {
+  const data = { summary: { completedLessons: 12, startedLessons: 15, studiedWords: 80 }, gamification: { totalXp: 99999 }, progress: [] };
+  const course = { configured: true, level: { name: 'Trung cấp' }, domains: [{ id: 'software', name: 'Software', state: 'review_needed', completedLessons: 4, totalLessons: 4, assessment: { passed: false, scorePercent: 50, passingScorePercent: 75 } }] };
+  const report = learningReport(data, course);
+  assert.equal(report.completedLessons, 12);
+  assert.equal(report.inProgressLessons, 3);
+  assert.equal(report.studiedWords, 80);
+  assert.equal(report.domains[0].percent, 100);
+  assert.equal(report.domains[0].resultLabel, 'Tổng kết chưa đạt');
+  assert.equal(report.domains[0].assessment.scorePercent, 50);
+  assert.equal('next' in report, false);
+  assert.equal('steps' in report, false);
+});
+
+test('learning report sorts real lesson history, excludes unstarted items and tolerates unavailable course data', () => {
+  const data = { progress: [
+    { id: 'old', resourceType: 'lesson', status: 'completed', completionPercent: 100, completedAt: '2026-10-20T00:00:00Z' },
+    { id: 'empty', resourceType: 'lesson', status: 'not_started', completionPercent: 0 },
+    { id: 'recent', resourceType: 'lesson', status: 'in_progress', completionPercent: 50, updatedAt: '2026-10-25T00:00:00Z' },
+    { id: 'domain', resourceType: 'domain', status: 'completed', completionPercent: 100 },
+  ] };
+  const report = learningReport(data, null);
+  assert.deepEqual(report.activities.map(item => item.id), ['recent', 'old']);
+  assert.equal(report.completedLessons, 1);
+  assert.equal(report.inProgressLessons, 1);
+  assert.deepEqual(report.domains, []);
+  assert.equal(report.levelName, undefined);
+});
 
 test('trail interleaves real lessons and word practice, gates future lessons and preserves earned checkpoints', () => {
   const first = { id: 'first', title: 'Requirements', href: '/learn/lessons/first', completed: false, estimatedMinutes: 20, vocabularyCount: 8 };
