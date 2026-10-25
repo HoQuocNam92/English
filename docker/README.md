@@ -50,7 +50,7 @@ docker compose --env-file .env.compose --profile mobile up -d --build
 docker compose --env-file .env.compose logs -f mobile
 ```
 
-Mở URL `exp://<IP-LAN>:8081` bằng Expo Go tương thích SDK 57 hoặc development client phù hợp. Image chứa snapshot mã nguồn; sửa code cần build lại mobile. Có thể chạy `pnpm --filter mobile dev` trên host để dùng hot reload.
+Mở URL `exp://<IP-LAN>:8081` bằng Expo Go tương thích SDK 58 hoặc development client phù hợp. Image chứa snapshot mã nguồn; sửa code cần build lại mobile. Có thể chạy `pnpm --filter mobile dev` trên host để dùng hot reload.
 
 Container này không tạo APK/IPA, không chạy Android emulator, và không thay thế App Store/Google Play.
 

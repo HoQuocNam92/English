@@ -1,4 +1,5 @@
 'use client';
+import { NotificationBell } from '@/shared/ui/NotificationBell';
 import { AppIcon } from '@/shared/ui/AppIcon';
 
 import React from 'react';
@@ -71,6 +72,7 @@ export function LearnerShell({ children }: LearnerShellProps) {
 
           {/* Right: Admin access + Avatar */}
           <div className="flex items-center gap-4">
+            <NotificationBell userId={session?.user.id} />
             {isAdminOrTeacher && (
               <Link
                 href="/admin/dashboard"

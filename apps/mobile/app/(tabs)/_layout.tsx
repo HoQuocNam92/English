@@ -31,30 +31,30 @@ export default function TabsLayout() {
         name="home"
         options={{
           title: 'Trang chủ',
-          tabBarIcon: ({ focused, color }) => <View style={{ width: 56, height: 32, alignItems: "center", justifyContent: "center", borderRadius: 16, backgroundColor: focused ? "#eeecff" : "transparent" }}><MaterialIcons name="home" size={23} color={color} /></View>
+          tabBarIcon: ({ focused }) => <View style={{ width: 56, height: 32, alignItems: "center", justifyContent: "center", borderRadius: 16, backgroundColor: focused ? "#eeecff" : "transparent" }}><MaterialIcons name="home" size={23} color={focused ? colors.primary : colors.outline} /></View>
         }}
       />
       <Tabs.Screen
         name="learning"
         options={{
           title: 'Học tập',
-          tabBarIcon: ({ focused, color }) => <View style={{ width: 56, height: 32, alignItems: "center", justifyContent: "center", borderRadius: 16, backgroundColor: focused ? "#eeecff" : "transparent" }}><MaterialIcons name="menu-book" size={23} color={color} /></View>,
+          tabBarIcon: ({ focused }) => <View style={{ width: 56, height: 32, alignItems: "center", justifyContent: "center", borderRadius: 16, backgroundColor: focused ? "#eeecff" : "transparent" }}><MaterialIcons name="menu-book" size={23} color={focused ? colors.primary : colors.outline} /></View>,
         }}
       />
       <Tabs.Screen name="practice" options={{ href: null }} />
-      <Tabs.Screen name="certificates" options={{ title: "Chứng chỉ", tabBarIcon: ({ focused, color }) => <View style={{ width: 56, height: 32, alignItems: "center", justifyContent: "center", borderRadius: 16, backgroundColor: focused ? "#eeecff" : "transparent" }}><MaterialIcons name="workspace-premium" size={23} color={color} /></View> }} />
+      <Tabs.Screen name="certificates" options={{ title: "Chứng chỉ", tabBarIcon: ({ focused }) => <View style={{ width: 56, height: 32, alignItems: "center", justifyContent: "center", borderRadius: 16, backgroundColor: focused ? "#eeecff" : "transparent" }}><MaterialIcons name="workspace-premium" size={23} color={focused ? colors.primary : colors.outline} /></View> }} />
       <Tabs.Screen
         name="progress"
         options={{
           title: 'Tiến độ',
-          tabBarIcon: ({ focused, color }) => <View style={{ width: 56, height: 32, alignItems: "center", justifyContent: "center", borderRadius: 16, backgroundColor: focused ? "#eeecff" : "transparent" }}><MaterialIcons name="trending-up" size={23} color={color} /></View>
+          tabBarIcon: ({ focused }) => <View style={{ width: 56, height: 32, alignItems: "center", justifyContent: "center", borderRadius: 16, backgroundColor: focused ? "#eeecff" : "transparent" }}><MaterialIcons name="trending-up" size={23} color={focused ? colors.primary : colors.outline} /></View>
         }}
       />
       <Tabs.Screen
         name="profile"
         options={{
           title: 'Cá nhân',
-          tabBarIcon: ({ focused, color }) => <View style={{ width: 56, height: 32, alignItems: "center", justifyContent: "center", borderRadius: 16, backgroundColor: focused ? "#eeecff" : "transparent" }}><MaterialIcons name="person" size={23} color={color} /></View>
+          tabBarIcon: ({ focused }) => <View style={{ width: 56, height: 32, alignItems: "center", justifyContent: "center", borderRadius: 16, backgroundColor: focused ? "#eeecff" : "transparent" }}><MaterialIcons name="person" size={23} color={focused ? colors.primary : colors.outline} /></View>
         }}
       />
     </Tabs>

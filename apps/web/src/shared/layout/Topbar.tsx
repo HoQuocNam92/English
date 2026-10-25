@@ -1,5 +1,6 @@
 'use client';
 import { RequiredMark } from '@/shared/ui/RequiredMark';
+import { NotificationBell } from '@/shared/ui/NotificationBell';
 import { AppIcon } from '@/shared/ui/AppIcon';
 
 import Link from 'next/link';
@@ -108,6 +109,7 @@ export function Topbar({ onToggleMobileMenu }: TopbarProps) {
 
       {/* Right actions */}
       <div className="flex items-center gap-3">
+            <NotificationBell userId={session?.user.id} />
         <div className="flex items-center gap-3">
           <div className="w-8 h-8 rounded-full bg-primary-container text-white font-bold text-xs flex items-center justify-center shadow-xs">
             {session?.user?.displayName ? session.user.displayName.charAt(0) : 'A'}

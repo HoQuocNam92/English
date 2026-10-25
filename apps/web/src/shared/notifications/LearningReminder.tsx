@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
+import { recordNotification } from '@/shared/ui/NotificationBell';
 import { Bell, X } from 'lucide-react';
 import { useAuth } from '@/features/auth/presentation';
 import { apiClient } from '@/shared/api/api-client';
@@ -22,7 +23,10 @@ export function LearningReminder() {
       busy = true;
       try {
         const pending = await apiClient.get<Reminder[]>('/notifications/pending');
-        if (active) setReminder(pending[0] ?? null);
+        if (active) {
+          setReminder(pending[0] ?? null);
+          if (pending[0]) recordNotification(pending[0].body, pending[0].title, `reminder:${pending[0].id}`);
+        }
       } catch { /* Retry on the next poll if the server is unavailable. */ }
       finally { busy = false; }
     };

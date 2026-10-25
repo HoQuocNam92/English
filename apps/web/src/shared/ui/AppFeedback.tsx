@@ -1,4 +1,5 @@
 'use client';
+import { recordNotification } from './NotificationBell';
 import { AppIcon } from '@/shared/ui/AppIcon';
 
 import * as React from 'react';
@@ -47,8 +48,12 @@ export function AppFeedbackProvider({ children }: { children: React.ReactNode })
       const detail = (event as CustomEvent<ToastDetail>).detail;
       if (automaticTimer.current) clearTimeout(automaticTimer.current);
       // Page-specific wording overrides the generic API completion for the same action.
-      if (detail.automatic) automaticTimer.current = setTimeout(() => setToast({ ...detail, id: Date.now() }), 200);
-      else setToast({ ...detail, id: Date.now() });
+      const display = () => {
+        setToast({ ...detail, id: Date.now() });
+        recordNotification(detail.message, detail.title ?? toastStyle[detail.kind ?? 'info'].defaultTitle);
+      };
+      if (detail.automatic) automaticTimer.current = setTimeout(display, 200);
+      else display();
     };
     const onConfirm = (event: Event) => setConfirmation((event as CustomEvent<ConfirmDetail>).detail);
     window.addEventListener(TOAST_EVENT, onToast);

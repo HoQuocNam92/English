@@ -1,7 +1,7 @@
 import { LearningPathJourney } from '../../src/features/learning/LearningPathJourney';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Text, TouchableOpacity } from '../../src/shared/ui/primitives';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, type ComponentRef } from 'react';
 import { View, StyleSheet, ScrollView, ActivityIndicator } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
@@ -32,7 +32,7 @@ export default function MobileTestResultScreen() {
   const [loading, setLoading] = useState(true);
   const [result, setResult] = useState<AttemptResult | null>(null);
   const [reviewPage, setReviewPage] = useState(1);
-  const scrollRef = useRef<ScrollView>(null);
+  const scrollRef = useRef<ComponentRef<typeof ScrollView>>(null);
   const reviewSectionY = useRef(0);
   const reviewPageSize = 10;
 

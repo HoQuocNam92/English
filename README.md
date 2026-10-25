@@ -29,7 +29,7 @@ Google OAuth, email khôi phục mật khẩu, tải ảnh, dịch AI và thông
 | --- | --- |
 | Web | Next.js 15, React 19, Tailwind CSS 4 |
 | API | NestJS 11, Prisma 5, PostgreSQL |
-| Mobile | Expo SDK 57, React Native 0.86 |
+| Mobile | Expo SDK 58, React Native 0.88 |
 | Workspace | Node.js 24, pnpm 12.8.1, TypeScript |
 | Triển khai | Docker Compose, GitHub Actions |
 

@@ -2,7 +2,7 @@ import { ClearFiltersButton } from './ClearFiltersButton';
 import { useTranslation } from './TranslationProvider';
 import React from 'react';
 import { Button as PaperButton, Chip, Searchbar, TouchableRipple } from 'react-native-paper';
-import { Text as NativeText, TextInput as NativeInput, TouchableOpacity as NativeButton, ScrollView, View, StyleSheet, type TextProps, type TextInputProps, type TouchableOpacityProps } from 'react-native';
+import { Text as NativeText, TextInput as NativeInput, TouchableOpacity as NativeButton, ScrollView, View, StyleSheet, type StyleProp, type ViewStyle, type TextProps, type TextInputProps, type TouchableOpacityProps } from 'react-native';
 import { colors, radius, typography } from '@techenglish/design-tokens';
 
 // Shared typography and touch targets. Screen-specific layouts stay in style props.
@@ -32,7 +32,7 @@ export const controlStyles = StyleSheet.create({
   card: { backgroundColor: colors.surfaceWhite, borderColor: '#e4e8f1', borderWidth: 1, borderRadius: 20, padding: 20 },
   footer: { paddingTop: 12, flexDirection: 'row', justifyContent: 'flex-end', flexWrap: 'wrap', gap: 10 },
 });
-export function Button({ children, style, activeOpacity, ...props }: TouchableOpacityProps & { mode?: 'contained' | 'outlined' | 'text' | 'tonal' }) {
+export function Button({ children, style, activeOpacity, ...props }: Omit<TouchableOpacityProps, 'style'> & { style?: StyleProp<ViewStyle>; mode?: 'contained' | 'outlined' | 'text' | 'tonal' }) {
   const items = React.Children.toArray(children);
   const labelStyle = { color: props.mode && props.mode !== 'contained' ? colors.primary : colors.onPrimary, fontSize: 15, fontWeight: '700' as const, textAlign: 'center' as const };
   const isText = (child: React.ReactNode) => typeof child === 'string' || typeof child === 'number';
