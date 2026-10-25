@@ -15,7 +15,7 @@ import { apiClient, ApiClientError } from '@/shared/api/api-client';
 import type { UserItem, PaginatedResponse } from '@/shared/api/api-client';
 
 const STATUS_OPTS = [
-  { value: '', label: 'Chưa xóa (mọi trạng thái)' },
+  { value: '', label: 'Tất cả trạng thái' },
   { value: 'active', label: 'Đang hoạt động' },
   { value: 'suspended', label: 'Đã khóa' },
   { value: 'inactive', label: 'Chưa kích hoạt' },
