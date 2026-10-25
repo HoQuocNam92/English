@@ -1,3 +1,4 @@
+import { LearningPathJourney } from '../../src/features/learning/LearningPathJourney';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Text, TouchableOpacity } from '../../src/shared/ui/primitives';
 import { useEffect, useRef, useState } from 'react';
@@ -66,7 +67,7 @@ export default function MobileTestResultScreen() {
     return (
       <View style={[styles.container, { justifyContent: 'center', alignItems: 'center' }]}>
         <Text style={{ color: '#191c1e' }}>Không tìm thấy kết quả</Text>
-        <TouchableOpacity style={styles.backHomeBtn} onPress={() => router.replace(certificateId && topicId ? `/certifications/topics/${topicId}?certificateId=${certificateId}` as any : '/(tabs)/learning')}>
+        <TouchableOpacity style={styles.backHomeBtn} onPress={() => router.replace(certificateId && topicId ? `/certifications/topics/${topicId}?certificateId=${certificateId}` as any : '/learning-plan')}>
           <Text style={styles.backHomeText}>Về trang chủ</Text>
         </TouchableOpacity>
       </View>
@@ -102,7 +103,7 @@ export default function MobileTestResultScreen() {
       
       {/* Header */}
       <View style={styles.header}>
-        <TouchableOpacity style={styles.headerIconBtn} onPress={() => router.replace(certificateId && topicId ? `/certifications/topics/${topicId}?certificateId=${certificateId}` as any : '/(tabs)/learning')}>
+        <TouchableOpacity style={styles.headerIconBtn} onPress={() => router.replace(certificateId && topicId ? `/certifications/topics/${topicId}?certificateId=${certificateId}` as any : '/learning-plan')}>
           <MaterialIcons name="close" size={24} color="#464555" />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>TechEnglish Pro</Text>
@@ -263,13 +264,14 @@ export default function MobileTestResultScreen() {
             )}
           </View>
         )}
+        {!certificateId && <LearningPathJourney />}
       </ScrollView>
 
       {/* Bottom Actions Fixed */}
       <View style={[styles.bottomFixedArea, { paddingBottom: insets.bottom + 16 }]}>
         <TouchableOpacity 
           style={styles.btnPrimary} 
-          onPress={() => router.replace(certificateId && topicId ? `/certifications/topics/${topicId}?certificateId=${certificateId}` as any : '/(tabs)/learning')}
+          onPress={() => router.replace(certificateId && topicId ? `/certifications/topics/${topicId}?certificateId=${certificateId}` as any : '/learning-plan')}
         >
           <Text style={styles.btnPrimaryText}>Quay lại luyện tập</Text>
         </TouchableOpacity>

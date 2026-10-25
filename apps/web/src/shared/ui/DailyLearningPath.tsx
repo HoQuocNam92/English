@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { buildWeeklyStudySchedule, type StudyDomain } from '../lib/weekly-study-schedule';
+import { buildWeeklyStudySchedule, type StudyDomain } from '../../../../../packages/shared-kernel/src/weekly-study-schedule';
 
 export function DailyLearningPath({ domains, dailyMinutes }: { domains: StudyDomain[]; dailyMinutes: number }) {
   const { budget, weeks, days, next } = buildWeeklyStudySchedule(domains, dailyMinutes);

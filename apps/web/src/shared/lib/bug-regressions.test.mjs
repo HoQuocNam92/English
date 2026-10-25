@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { withoutEmptyQueryValues } from './request-query.ts';
 import { isEnglishSelection } from './english-selection.ts';
 import { formatAttemptDuration } from './attempt-duration.ts';
-import { buildWeeklyStudySchedule } from './weekly-study-schedule.ts';
+import { buildWeeklyStudySchedule } from '../../../../../packages/shared-kernel/src/weekly-study-schedule.ts';
 
 test('weekly schedule nests seven individual days, splits long lessons across weeks and preserves total study time', () => {
   const lesson = { id: 'long', title: 'Cloud', href: '/learn/lessons/long', completed: false, estimatedMinutes: 225, vocabularyCount: 8 };

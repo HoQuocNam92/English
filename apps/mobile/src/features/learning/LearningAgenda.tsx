@@ -13,7 +13,7 @@ export function LearningAgenda() {
   useFocusEffect(useCallback(() => { void load(); }, [load]));
   if (!agenda?.configured && !loading && !error) return null;
   return <View style={[controlStyles.card, { gap: 14 }]}>
-<Text style={{ fontSize: 20, fontWeight: '700' }}>Kế hoạch học tập</Text><Button onPress={() => router.push('/learning-plan' as any)}>Xem lộ trình 4 tuần</Button>
+<Text style={{ fontSize: 20, fontWeight: '700' }}>Kế hoạch học tập</Text><Button onPress={() => router.push('/learning-plan' as any)}>Xem lộ trình tuần và ngày</Button>
     <Tabs items={[{ value: 'today', label: 'Hôm nay' }, { value: 'month', label: 'Tháng này' }, { value: 'year', label: 'Năm nay' }]} value={period} onChange={setPeriod} />
     {loading && <ActivityIndicator color={colors.primary} />}
     {error ? <><Text accessibilityRole="alert" style={{ color: colors.error }}>{error}</Text><Button onPress={load}>Thử lại</Button></> : agenda && !loading && <>
