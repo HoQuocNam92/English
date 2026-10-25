@@ -1,3 +1,5 @@
+import { LearningTrail } from './LearningTrail';
+import { buildLearningTrail } from '../../../../../packages/shared-kernel/src/learning-trail';
 import { useCallback, useRef, useState } from 'react';
 import { useFocusEffect, useRouter } from 'expo-router';
 import { ActivityIndicator, Alert, AppState, View } from 'react-native';
@@ -41,6 +43,7 @@ export function LearningPathJourney({ full = false, refreshKey = 0, onAvailabili
   };
   if (loading) return <ActivityIndicator accessibilityLabel="Đang tải lộ trình" />;
   if (!path) return error ? <View><Text accessibilityRole="alert">{error}</Text><Button onPress={load}>Thử lại</Button></View> : null;
+  const practiceStep = buildLearningTrail(path.domains).next;
   const domain = path.domains.find((item: any) => item.state !== 'complete');
   const schedule = buildWeeklyStudySchedule(path.domains, path.dailyMinutes);
   return <View style={{ gap: 16 }}>
@@ -48,6 +51,7 @@ export function LearningPathJourney({ full = false, refreshKey = 0, onAvailabili
       <Text style={{ fontSize: 21, fontWeight: '800' }}>Lộ trình · {path.level.name}</Text>
       <Text>{path.completedLessons}/{path.totalLessons} bài cốt lõi đã học. Hoàn thành cấp cần học đủ bài và đạt tổng kết của mọi ngành đã chọn.</Text>
       {!!error && <Text accessibilityRole="alert" style={{ color: '#b91c1c' }}>{error}</Text>}
+      {practiceStep?.kind === 'review' && <Button onPress={() => open(practiceStep.href)}>Luyện từ vừa học: {practiceStep.title}</Button>}
       {domain && <><Text style={{ fontWeight: '700' }}>{domain.name}</Text>{!domain.available ? <Text>Chuỗi bài đang được bổ sung. Bạn có thể ôn từ hoặc khám phá bài khác.</Text> : domain.nextLesson ? <><Text>{domain.nextLesson.title}</Text><Button onPress={() => open(domain.nextLesson.href)}>Học bài tiếp theo</Button></> : domain.assessment ? <><Text>{domain.state === 'review_needed' ? `Kết quả gần nhất: ${Math.round(domain.assessment.scorePercent ?? 0)}%. Ôn lại và làm lại tổng kết.` : 'Đã học đủ bài. Làm tổng kết để kiểm tra mức hiểu.'} Mức đạt: {domain.assessment.passingScorePercent}%.</Text><Button onPress={() => open(domain.assessment.href)}>{domain.state === 'review_needed' ? 'Làm lại tổng kết' : 'Làm tổng kết'}</Button><Button mode="outlined" onPress={() => open(domain.lessons[0].href)}>Ôn lại bài học</Button></> : <Text>Bài tổng kết đang được bổ sung; chưa thể chuyển cấp.</Text>}</>}
       {path.allCompleted && <Text style={{ color: '#047857', fontWeight: '700' }}>Đã học đủ bài và đạt tổng kết {path.level.name}.</Text>}
       {path.canAdvance && path.nextLevel && <Button disabled={saving} onPress={() => Alert.alert('Xác nhận chuyển cấp', `Học tiếp ${path.nextLevel.name}? Lịch sử học tập được giữ lại, các bài mới bắt đầu theo tiến độ riêng.`, [{ text: 'Ở lại ôn tập', style: 'cancel' }, { text: 'Xác nhận chuyển cấp', onPress: () => void advance() }])}>{saving ? 'Đang chuyển…' : `Học tiếp ${path.nextLevel.name}`}</Button>}
@@ -56,8 +60,9 @@ export function LearningPathJourney({ full = false, refreshKey = 0, onAvailabili
       {!full && <Button onPress={() => open('/learn/plan')}>Xem lộ trình theo tuần và ngày</Button>}
     </View>
     {path.allCompleted && path.finalLevel && <ContinuationPlans />}
+    {full && <LearningTrail domains={path.domains} />}
     {full && <View style={{ gap: 14 }}>
-      <Text style={{ fontSize: 21, fontWeight: '800' }}>Lộ trình theo tuần</Text>
+      <Text style={{ fontSize: 21, fontWeight: '800' }}>Lịch bài mới theo tuần</Text>
       <Text>{schedule.weeks.length} tuần · {schedule.days.length} ngày học · {path.totalLessons} chủ đề/bài học · {schedule.budget} phút/ngày dự kiến.</Text>
       <Text>Mỗi tuần tối đa 7 ngày học; tuần cuối có thể ngắn hơn. Bài dài chia nhiều buổi. Chỉ ghi nhận hoàn thành khi học xong cả bài.</Text>
       {schedule.next && <Text style={{ fontWeight: '700', color: '#3525cd' }}>Tiếp theo: Tuần {schedule.next.week} · Ngày {schedule.next.dayOfWeek} · {schedule.next.title}</Text>}

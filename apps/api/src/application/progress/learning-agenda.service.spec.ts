@@ -84,3 +84,16 @@ test('current core path overrides stale catalog recommendations and exposes asse
  state.domains[0].state='complete';state.allCompleted=true
  result=await service.getAgenda('A');assert.equal(result.tasks[0].id,'core-complete');assert.equal(result.tasks[0].href,'/learn/plan')
 })
+
+test('daily agenda prioritizes the same contextual review as the learning trail', async () => {
+ const learned:any={id:'first',title:'Requirements',completed:true,vocabularyCount:8,vocabularyReviewComplete:false}
+ const next:any={id:'second',title:'Documentation',completed:false,href:'/learn/lessons/second',estimatedMinutes:20}
+ const path:any={configured:true,allCompleted:false,domains:[{name:'Software',available:true,state:'in_progress',lessons:[learned,next],nextLesson:next}]}
+ const {service}=fixture({goal:'vocabulary'}, {getPath:async()=>path})
+ let result:any=await service.getAgenda('A')
+ assert.equal(result.tasks[0].href,'/learn/flashcards/first/practice')
+ assert.equal(result.tasks[0].kind,'review')
+ learned.vocabularyReviewComplete=true
+ result=await service.getAgenda('A')
+ assert.equal(result.tasks[0].id,'second')
+})

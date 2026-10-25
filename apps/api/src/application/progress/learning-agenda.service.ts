@@ -85,7 +85,10 @@ export class LearningAgendaService {
       // The same current-level chain drives both today's agenda and the full path.
       const domain = path.domains.find((item: any) => item.state !== 'complete')
       const core: Task[] = []
-      if (domain?.nextLesson) core.push({ id: domain.nextLesson.id, title: domain.nextLesson.title, reason: domain.name + ' · Bài tiếp theo trong chuỗi cốt lõi của cấp hiện tại.', href: domain.nextLesson.href, action: 'Học tiếp', status: 'todo', kind: 'lesson', minutes: domain.nextLesson.estimatedMinutes })
+      const firstUnread = domain?.lessons?.findIndex((lesson: any) => !lesson.completed) ?? -1
+      const reviewLesson = domain?.lessons?.slice(0, firstUnread < 0 ? undefined : firstUnread).find((lesson: any) => lesson.vocabularyCount > 0 && !lesson.vocabularyReviewComplete)
+      if (reviewLesson) core.push({ id: 'review-' + reviewLesson.id, title: 'Luyện từ: ' + reviewLesson.title, reason: 'Ôn từ của chủ đề vừa học trước khi tiếp tục. Hoạt động ôn bổ sung không thay thế bài tổng kết.', href: '/learn/flashcards/' + reviewLesson.id + '/practice', action: 'Luyện tập', status: 'todo', kind: 'review', minutes: Math.min(15, Math.max(5, reviewLesson.vocabularyCount)) })
+      else if (domain?.nextLesson) core.push({ id: domain.nextLesson.id, title: domain.nextLesson.title, reason: domain.name + ' · Bài tiếp theo trong chuỗi cốt lõi của cấp hiện tại.', href: domain.nextLesson.href, action: 'Học tiếp', status: 'todo', kind: 'lesson', minutes: domain.nextLesson.estimatedMinutes })
       else if (domain?.available && domain.assessment) core.push({ id: domain.assessment.id, title: domain.name + ' · Tổng kết', reason: 'Đã học đủ bài. Đạt tổng kết để hoàn thành cấp ở ngành này.', href: domain.assessment.href, action: 'Làm tổng kết', status: 'todo', kind: 'quiz' })
       else if (path.allCompleted) core.push({ id: 'core-complete', title: 'Đã hoàn thành chuỗi cốt lõi và tổng kết', reason: 'Mở lộ trình để chọn cấp tiếp theo hoặc kế hoạch ôn tập.', href: '/learn/plan', action: 'Chọn bước tiếp theo', status: 'done', kind: 'lesson' })
       baseline.tasks = [...core, ...tasks.filter(task => task.kind === 'vocabulary' || task.id === 'review-words' || (hasCert && task.kind === 'quiz'))]

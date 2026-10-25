@@ -1,3 +1,4 @@
+import { buildLearningTrail } from '../../../../packages/shared-kernel/src/learning-trail.ts';
 import { buildWeeklyStudySchedule } from '../../../../packages/shared-kernel/src/weekly-study-schedule.ts';
 import { matchesFilterOption } from './utils/filter-options.ts';
 import { test } from 'node:test';
@@ -28,14 +29,16 @@ test('native journey uses live course progress, shared week/day schedule and exp
     '../../shared/api/api-client': { api: { post: async (url, body) => { posts.push({ url, body }); return path; } } },
     '../../shared/navigation': { mobileRoute },
     '../../../../../packages/shared-kernel/src/weekly-study-schedule': { buildWeeklyStudySchedule },
+    '../../../../../packages/shared-kernel/src/learning-trail': { buildLearningTrail },
     './ContinuationPlans': { ContinuationPlans: 'continuation' },
+    './LearningTrail': { LearningTrail: 'trail' },
   };
   const exports = {};
   runInNewContext(code, { exports, require: name => { assert.ok(name in mocks, name); return mocks[name]; } });
   const nodes = tree => !tree || typeof tree !== 'object' ? [] : Array.isArray(tree) ? tree.flatMap(nodes) : [tree, ...nodes(tree.props?.children)];
   const render = () => { cursor = 0; return nodes(exports.LearningPathJourney({ full: true })); };
   let tree = render();
-  assert.ok(tree.some(node => node.type === 'text' && node.props.children === 'Lộ trình theo tuần'));
+  assert.ok(tree.some(node => node.type === 'text' && node.props.children === 'Lịch bài mới theo tuần'));
   tree.find(node => node.type === 'button' && node.props.children === 'Học bài tiếp theo').props.onPress();
   assert.equal(routes[0], '/lessons/lesson');
   assert.equal(posts.length, 0);

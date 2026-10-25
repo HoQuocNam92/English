@@ -67,3 +67,37 @@ test('missing or invalid game values never display NaN or negative XP and streak
   assert.equal(view.totalXp, 0);
   assert.equal(view.studyStreak, 0);
 });
+import { buildLearningTrail } from './learning-trail.ts';
+
+test('trail interleaves real lessons and word practice, gates future lessons and preserves earned checkpoints', () => {
+  const first = { id: 'first', title: 'Requirements', href: '/learn/lessons/first', completed: false, estimatedMinutes: 20, vocabularyCount: 8 };
+  const second = { ...first, id: 'second', title: 'Documentation', href: '/learn/lessons/second' };
+  const domain = { id: 'software', name: 'Software', available: true, lessons: [first, second], assessment: { id: 'exam', href: '/learn/quiz/exam', passed: false, passingScorePercent: 75 } };
+  let trail = buildLearningTrail([domain]);
+  assert.deepEqual(trail.steps.map(step => step.kind), ['lesson', 'review', 'lesson', 'review', 'checkpoint']);
+  assert.equal(trail.next.id, 'learn:first');
+  assert.equal(trail.steps[2].ready, false);
+  assert.equal(trail.steps[4].ready, false);
+  first.completed = true;
+  trail = buildLearningTrail([domain]);
+  assert.equal(trail.next.id, 'review:first');
+  assert.equal(trail.next.href, '/learn/flashcards/first/practice');
+  assert.equal(trail.steps[2].ready, true);
+  first.vocabularyReviewComplete = true;
+  trail = buildLearningTrail([domain]);
+  assert.equal(trail.next.id, 'learn:second');
+  second.completed = true;
+  trail = buildLearningTrail([domain]);
+  assert.equal(trail.steps[4].ready, true);
+  domain.assessment.passed = true;
+  trail = buildLearningTrail([domain]);
+  assert.equal(trail.stages[0].completed, true);
+  assert.equal(trail.next, null, 'optional word review must not erase a passed course');
+});
+
+test('trail never invents practice for empty vocabularies or unlocks an incomplete curriculum', () => {
+  const trail = buildLearningTrail([{ id: 'cloud', name: 'Cloud', available: false, lessons: [], assessment: { id: 'exam', href: '/learn/quiz/exam', passed: false, passingScorePercent: 75 } }]);
+  assert.equal(trail.next, null);
+  assert.equal(trail.steps.length, 1);
+  assert.equal(trail.steps[0].ready, false);
+});

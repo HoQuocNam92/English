@@ -2,6 +2,20 @@ import { test } from 'node:test'
 import { strict as assert } from 'node:assert'
 import { LearningPathService } from './learning-path.service'
 
+test('word review is counted only after completing the lesson and reviewing every linked word', async () => {
+  const f = fixture({ completed: true })
+  const original = f.db.lesson.findMany
+  let reviewAt = new Date('2026-10-23T02:00:00Z')
+  f.db.lesson.findMany = async (args: any) => (await original(args)).map((lesson: any) => ({ ...lesson, vocabularies: [{ vocabulary: { vocabProgress: [{ lastReviewAt: reviewAt }] } }] }))
+  let path = await f.service.getPath('learner'); if (!path.configured) return assert.fail('path')
+  assert.equal(path.domains[0].lessons[0].vocabularyCount, 1)
+  assert.equal(path.domains[0].lessons[0].vocabularyReviewComplete, false)
+  reviewAt = new Date('2026-10-24T04:00:00Z')
+  path = await f.service.getPath('learner'); if (!path.configured) return assert.fail('path')
+  assert.equal(path.domains[0].lessons[0].vocabularyReviewComplete, true)
+  assert.equal(path.canAdvance, false, 'review alone cannot unlock a level without assessment')
+})
+
 function fixture(options: { completed?: boolean; passed?: boolean; final?: boolean; oldAttempt?: boolean; missing?: boolean; secondDomain?: boolean } = {}) {
   const levels = ['beginner', 'intermediate', 'advanced', 'professional'].map(code => ({ id: code, code, name: code }))
   const profile: any = { userId: 'learner', onboardingCompleted: true, learningGoal: 'vocabulary', levelId: options.final ? 'professional' : 'intermediate', level: levels[options.final ? 3 : 1], domains: [{ domainId: 'd', domain: { code: 'SOFTWARE_ENG', name: 'Software', isActive: true } }] }

@@ -1,4 +1,6 @@
 'use client';
+import { LearningTrail } from './LearningTrail';
+import { buildLearningTrail } from '../../../../../packages/shared-kernel/src/learning-trail';
 
 import Link from 'next/link';
 import { useEffect, useRef, useState } from 'react';
@@ -7,7 +9,7 @@ import { AppIcon } from './AppIcon';
 import { DailyLearningPath } from './DailyLearningPath';
 import { ContinuationPlans } from './ContinuationPlans';
 
-type PathLesson = { id: string; title: string; href: string; week: number; completed: boolean; estimatedMinutes: number; vocabularyCount: number };
+type PathLesson = { id: string; title: string; href: string; week: number; completed: boolean; estimatedMinutes: number; vocabularyCount: number; vocabularyReviewComplete?: boolean };
 type PathDomain = {
   id: string; name: string; available: boolean; lessons: PathLesson[];
   completedLessons: number; totalLessons: number; nextLesson: PathLesson | null;
@@ -71,6 +73,7 @@ export function LearningPathJourney({ full = false, lessonId, onAvailability }: 
   if (loading) return <div role="status" className="rounded-2xl border border-outline-variant bg-white p-5 text-sm text-on-surface-variant">Đang tìm bước học tiếp theo…</div>;
   if (!path) return error ? <div role="alert" className="rounded-2xl border border-red-200 bg-red-50 p-5 text-sm text-red-700">{error}<button type="button" onClick={() => { setLoading(true); setReload(value => value + 1); }} className="ml-3 underline">Thử lại</button></div> : null;
 
+  const practiceStep = buildLearningTrail(path.domains).next;
   const focus = path.domains.find(domain => domain.lessons.some(lesson => lesson.id === lessonId));
   const actionDomain = focus && focus.state !== 'complete' ? focus : path.domains.find(domain => domain.state !== 'complete') ?? path.domains[0];
   const readAll = path.domains.every(domain => domain.available) && path.totalLessons > 0 && path.completedLessons === path.totalLessons;
@@ -85,6 +88,7 @@ export function LearningPathJourney({ full = false, lessonId, onAvailability }: 
       <progress aria-label="Tiến độ đọc bài trong chuỗi" max={100} value={percent} className="mt-4 h-2 w-full accent-primary" />
       {error && <p role="alert" className="mt-3 text-sm text-red-700">{error}</p>}
 
+      {practiceStep?.kind === 'review' && <div className="mt-4 rounded-xl border border-primary/20 bg-white p-4"><p className="mb-3 text-sm font-semibold">Bước luyện tập tiếp theo: {practiceStep.title}</p><Link href={practiceStep.href} className={actionClass}>Luyện từ vừa học →</Link></div>}
       {!path.allCompleted && actionDomain && <div className="mt-4 space-y-3">
         <p className="text-sm font-bold">{actionDomain.name}</p>
         {!actionDomain.available ? <p className="text-sm">Chuỗi bài đang được bổ sung. Bạn có thể ôn từ vựng hoặc khám phá các bài khác.</p>
@@ -106,7 +110,8 @@ export function LearningPathJourney({ full = false, lessonId, onAvailability }: 
 
     {full && <>
       <div className="grid gap-3 sm:grid-cols-2">{path.domains.map(domain => <section key={domain.id} className="rounded-2xl border border-outline-variant bg-white p-4"><h3 className="font-bold">{domain.name}</h3><p className="mt-2 text-sm">{domain.completedLessons}/{domain.totalLessons} bài đã học</p><p className={`mt-1 text-sm font-semibold ${domain.state === 'complete' ? 'text-emerald-700' : 'text-on-surface-variant'}`}>{domain.state === 'complete' ? 'Đã hoàn thành cấp ở ngành này' : domain.state === 'assessment_due' ? 'Còn bài tổng kết' : domain.state === 'review_needed' ? 'Cần ôn và làm lại tổng kết' : domain.available ? 'Đang học' : 'Nội dung đang bổ sung'}</p></section>)}</div>
-      <DailyLearningPath domains={path.domains} dailyMinutes={path.dailyMinutes} />
+      <LearningTrail domains={path.domains} />
+      <details className="rounded-2xl border border-outline-variant bg-white p-4"><summary className="cursor-pointer font-bold text-primary">Xem lịch bài mới theo tuần và ngày</summary><div className="mt-4"><DailyLearningPath domains={path.domains} dailyMinutes={path.dailyMinutes} /></div></details>
     </>}
   </div>;
 }
