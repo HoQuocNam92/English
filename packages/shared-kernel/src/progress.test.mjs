@@ -69,6 +69,21 @@ test('missing or invalid game values never display NaN or negative XP and streak
 });
 import { buildLearningTrail } from './learning-trail.ts';
 import { learningReport } from './learning-report.ts';
+import { selectedCertificates } from './selected-certificates.ts';
+
+test('home certificate paths contain only explicit selected goals, never the catalog defaults', () => {
+  const catalog = [{ id: 'aws', name: 'AWS' }, { id: 'azure', name: 'Azure' }];
+  assert.deepEqual(selectedCertificates(catalog, []), []);
+  assert.deepEqual(selectedCertificates(catalog, undefined), []);
+  assert.deepEqual(selectedCertificates(catalog, [{ certificateId: 'azure' }]).map(item => item.id), ['azure']);
+  assert.equal(selectedCertificates(catalog, [{ certificateId: 'azure' }, { certificate: catalog[1] }]).length, 1);
+});
+
+test('selected goals outside the first catalog page remain visible while inactive or mismatched goals do not', () => {
+  const goals = Array.from({ length: 5 }, (_, index) => ({ certificate: { id: `selected-${index}`, name: 'Selected' } }));
+  assert.equal(selectedCertificates([{ id: 'unselected' }], goals).length, 5);
+  assert.deepEqual(selectedCertificates([], [{ certificate: { id: 'inactive', isActive: false } }, { certificateId: 'wanted', certificate: { id: 'other' } }]), []);
+});
 
 test('learning report separates reading completion from assessment success and never uses game scores', () => {
   const data = { summary: { completedLessons: 12, startedLessons: 15, studiedWords: 80 }, gamification: { totalXp: 99999 }, progress: [] };

@@ -1,3 +1,4 @@
+import { selectedCertificates } from '../../../../packages/shared-kernel/src/selected-certificates';
 import { LearningAgenda } from '../../src/features/learning/LearningAgenda';
 import { LearningReminder } from '../../src/shared/notifications/LearningReminder';
 import { mobileRoute } from '../../src/shared/navigation';
@@ -82,10 +83,7 @@ export default function MobileHomeScreen() {
   const name = userData?.displayName || 'Bạn';
   const avatarLetter = name.charAt(0).toUpperCase();
 
-  const certificateGoalId = profileData?.certGoals?.[0]?.certificate?.id;
-  const firstCertificate = certificates.find((item: any) => item.id === certificateGoalId);
-  const certificateProgress = (progressData?.certProgress || []).find((item: any) => item.certificateId === firstCertificate?.id);
-  const progressPercent = Math.min(100, Math.max(0, Math.round(certificateProgress?.completionPercent ?? certificateProgress?.avgScore ?? 0)));
+  const chosenCertificates = selectedCertificates(certificates, profileData?.certGoals);
   const journeyConfigured = journey?.configured === true;
   const smartPath = journey?.targets?.learningPathMode !== 'self';
 
@@ -141,23 +139,26 @@ export default function MobileHomeScreen() {
               <MaterialIcons name="arrow-forward" size={18} color="#ffffff" />
             </TouchableOpacity>
           </View>
-        ) : firstCertificate ? (
-        <View style={styles.heroCard}>
+        ) : chosenCertificates.map(certificate => {
+          const certificateProgress = (progressData?.certProgress || []).find((item: any) => item.certificateId === certificate.id);
+          const progressPercent = Math.min(100, Math.max(0, Math.round(certificateProgress?.completionPercent ?? 0)));
+          return (
+        <View key={certificate.id} style={styles.heroCard}>
           <View style={styles.heroCardHeader}>
             <View style={styles.heroBadge}>
               <MaterialIcons name="workspace-premium" size={12} color="#ffffff" />
               <Text style={styles.heroBadgeText}>{progressPercent > 0 ? 'Đang ôn luyện' : 'Chứng chỉ mục tiêu'}</Text>
             </View>
-            <Text style={styles.heroTimeText}>{firstCertificate.code}</Text>
+            <Text style={styles.heroTimeText}>{certificate.code}</Text>
           </View>
-          <Text style={styles.heroTitle}>{firstCertificate.name}</Text>
+          <Text style={styles.heroTitle}>{certificate.name}</Text>
           <Text style={styles.heroSubtitle}>
-            {firstCertificate.provider || 'Chứng chỉ CNTT quốc tế'}
+            {certificate.provider || 'Chứng chỉ CNTT quốc tế'}
           </Text>
 
           <View style={styles.heroProgressContainer}>
             <View style={styles.heroProgressLabels}>
-              <Text style={styles.heroProgressLabelText}>Mức độ sẵn sàng</Text>
+              <Text style={styles.heroProgressLabelText}>Tiến độ học tập</Text>
               <Text style={styles.heroProgressValueText}>{progressPercent}%</Text>
             </View>
             <View style={styles.heroProgressBarBg}>
@@ -168,13 +169,13 @@ export default function MobileHomeScreen() {
           <TouchableOpacity
             style={styles.heroButton}
             activeOpacity={0.9}
-            onPress={() => router.push({ pathname: '/certifications/[id]', params: { id: firstCertificate.id, name: firstCertificate.name, code: firstCertificate.code, progress: String(progressPercent) } } as any)}
+            onPress={() => router.push({ pathname: '/certifications/[id]', params: { id: certificate.id, name: certificate.name, code: certificate.code, progress: String(progressPercent) } } as any)}
           >
             <Text style={styles.heroButtonText}>{progressPercent > 0 ? 'Tiếp tục ôn luyện' : 'Xem lộ trình'}</Text>
             <MaterialIcons name="arrow-forward" size={18} color={colors.primary} />
           </TouchableOpacity>
         </View>
-        ) : null}
+        ); })}
 
         {journeyConfigured && <View style={styles.dailyGoalCard}>
           <Text style={styles.sectionTitle}>Mục tiêu học tập hôm nay</Text>
@@ -231,7 +232,7 @@ export default function MobileHomeScreen() {
         <TouchableOpacity style={styles.recommendationCard} onPress={() => router.push('/certifications')}>
           <MaterialIcons name="workspace-premium" size={28} color={colors.primary} />
           <View style={{ flex: 1 }}>
-            <Text style={styles.recommendationTitle}>{firstCertificate ? 'Khám phá chứng chỉ' : 'Chọn chứng chỉ mục tiêu'}</Text>
+            <Text style={styles.recommendationTitle}>Khám phá chứng chỉ</Text>
             <Text style={styles.recommendationReason}>Học theo Chuyên ngành, Chủ đề và luyện thi thử.</Text>
           </View>
           <MaterialIcons name="chevron-right" size={24} color={colors.primary} />

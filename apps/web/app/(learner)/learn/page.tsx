@@ -1,6 +1,7 @@
 'use client';
 import { IconText, AppIcon } from '@/shared/ui/AppIcon';
 
+import { selectedCertificates } from '../../../../../packages/shared-kernel/src/selected-certificates';
 import { LevelBadge } from '@/shared/ui/LevelBadge';
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
@@ -74,7 +75,7 @@ export default function LearnerHomePage() {
   const displayName = data?.me?.displayName ?? data?.me?.user?.displayName ?? 'bạn';
   const profile = data?.profile;
   const progress = data?.progress;
-  const certificates: any[] = data?.certificates ?? [];
+  const certificates = selectedCertificates(data?.certificates ?? [], profile?.certGoals);
   const attempts: any[] = data?.attempts ?? [];
   const recommendations: any[] = (data?.recommendations ?? []).filter((item: any) => item.type !== 'lesson');
   const journey = data?.journey;
@@ -329,7 +330,7 @@ export default function LearnerHomePage() {
           </div>}
 
           {/* Lộ trình chứng chỉ — bài học chỉ xuất hiện sau khi chọn Topic trong chứng chỉ */}
-          {journeyConfigured ? <div>
+          {certificates.length > 0 && <div>
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-4">
               <h3 className="text-[20px] font-semibold text-on-surface" style={{ lineHeight: '28px' }}>
                 Lộ trình chứng chỉ
@@ -342,9 +343,9 @@ export default function LearnerHomePage() {
               )}
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              {certificates.length > 0 ? certificates.slice(0, 4).map((certificate: any) => {
+              {certificates.length > 0 ? certificates.map((certificate: any) => {
                 const certificateProgress = certificateProgressById.get(certificate.id) as any;
-                const progressPercent = Math.round(certificateProgress?.completionPercent ?? certificateProgress?.avgScore ?? 0);
+                const progressPercent = Math.min(100, Math.max(0, Math.round(certificateProgress?.completionPercent ?? 0)));
                 const domainNames = (certificate.domains ?? []).map((item: any) => item.domain?.name).filter(Boolean).join(' · ');
                 return (
                   <Link
@@ -365,7 +366,7 @@ export default function LearnerHomePage() {
                     <p className="mb-4 line-clamp-1 text-[12px] text-on-surface-variant">{domainNames || 'Chứng chỉ CNTT quốc tế'}</p>
                     <div className="mt-auto">
                       <div className="mb-1 flex items-center justify-between">
-                        <span className="text-[11px] font-bold uppercase tracking-wide text-on-surface-variant">Mức độ sẵn sàng</span>
+                        <span className="text-[11px] font-bold uppercase tracking-wide text-on-surface-variant">Tiến độ học tập</span>
                         <span className="text-[12px] font-bold text-primary">{progressPercent}%</span>
                       </div>
                       <div className="h-1.5 overflow-hidden rounded-full bg-surface-container-highest">
@@ -379,11 +380,6 @@ export default function LearnerHomePage() {
                 );
               }) : <p className="col-span-2 rounded-lg border border-outline-variant bg-surface-container p-6 text-sm text-on-surface-variant">Chưa có chứng chỉ đang hoạt động.</p>}
             </div>
-          </div> : <div className="rounded-xl border border-dashed border-outline-variant bg-surface-container-low p-6 text-center">
-            <span className="mb-2 block text-4xl" aria-hidden="true"><IconText>{"🏆"}</IconText></span>
-            <h3 className="text-base font-bold text-on-surface">Chọn chứng chỉ mục tiêu</h3>
-            <p className="mt-1 text-xs text-on-surface-variant"><IconText>{"Chọn chứng chỉ để học theo lộ trình Chuyên ngành → Chủ đề → Lesson và luyện đề."}</IconText></p>
-            <Link href="/learn/certifications" className="mt-4 inline-flex items-center gap-1 rounded-lg border border-primary px-4 py-2 text-sm font-bold text-primary">Xem chứng chỉ<span className="text-base" aria-hidden="true"><IconText>{"➡️"}</IconText></span></Link>
           </div>}
         </section>
 
