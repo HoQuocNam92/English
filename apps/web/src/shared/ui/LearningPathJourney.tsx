@@ -22,8 +22,8 @@ type Path = {
   nextLevel: { code: string; name: string } | null; finalLevel: boolean;
 };
 
-const actionClass = 'inline-flex min-h-11 items-center justify-center gap-2 rounded-xl bg-primary px-4 py-3 text-sm font-bold text-white transition hover:bg-primary/90 disabled:opacity-50';
-const secondaryClass = 'inline-flex min-h-11 items-center justify-center rounded-xl border border-outline-variant bg-white px-4 py-3 text-sm font-semibold text-primary hover:bg-primary/5';
+const actionClass = 'inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-xl bg-primary px-4 py-3 text-sm font-bold text-white shadow-sm transition hover:bg-primary/90 disabled:opacity-50 sm:w-auto';
+const secondaryClass = 'inline-flex min-h-11 w-full items-center justify-center rounded-xl border border-outline-variant bg-white px-4 py-3 text-sm font-semibold text-primary hover:bg-primary/5 sm:w-auto';
 
 export function LearningPathJourney({ full = false, lessonId, onAvailability }: { full?: boolean; lessonId?: string; onAvailability?: (available: boolean) => void }) {
   const [path, setPath] = useState<Path | null>(null);
@@ -83,18 +83,28 @@ export function LearningPathJourney({ full = false, lessonId, onAvailability }: 
     : readAll ? 'Đã học xong bài — tiếp tục kiểm tra tổng kết' : 'Bước học tiếp theo';
 
   return <div className="space-y-5">
-    <section aria-label="Tổng kết và bước học tiếp theo" className={`rounded-2xl border p-4 sm:p-6 ${path.allCompleted ? 'border-emerald-200 bg-emerald-50' : 'border-primary/20 bg-primary/5'}`}>
+    <section aria-label="Tổng kết và bước học tiếp theo" className={`rounded-3xl border p-4 shadow-sm sm:p-6 ${path.allCompleted ? 'border-emerald-200 bg-emerald-50' : 'border-outline-variant bg-white'}`}>
       <div className="flex items-start gap-3"><AppIcon className={`mt-1 text-2xl ${path.allCompleted ? 'text-emerald-700' : 'text-primary'}`}>{path.allCompleted ? 'workspace_premium' : 'route'}</AppIcon><div className="min-w-0"><p className="text-xs font-bold uppercase text-primary">Lộ trình · {path.level.name}</p><h2 className="mt-1 text-xl font-bold leading-7">{title}</h2><p className="mt-2 text-sm leading-6 text-on-surface-variant">{path.completedLessons}/{path.totalLessons} bài trong chuỗi cốt lõi đã học. Hoàn thành cấp cần học đủ bài và đạt bài luyện tập tổng kết của từng ngành đã chọn.</p></div></div>
-      <progress aria-label="Tiến độ đọc bài trong chuỗi" max={100} value={percent} className="mt-4 h-2 w-full accent-primary" />
+      <div className="mt-5 flex items-center justify-between gap-3 text-xs font-semibold text-on-surface-variant"><span>Tiến độ bài học</span><span className="text-primary">{path.completedLessons}/{path.totalLessons} bài · {percent}%</span></div>
+      <div role="progressbar" aria-label="Tiến độ đọc bài trong chuỗi" aria-valuemin={0} aria-valuemax={100} aria-valuenow={percent} className="mt-2 h-2 overflow-hidden rounded-full bg-slate-100"><div className="h-full rounded-full bg-primary transition-all" style={{ width: `${percent}%` }} /></div>
       {error && <p role="alert" className="mt-3 text-sm text-red-700">{error}</p>}
-
-      {practiceStep?.kind === 'review' && <div className="mt-4 rounded-xl border border-primary/20 bg-white p-4"><p className="mb-3 text-sm font-semibold">Bước luyện tập tiếp theo: {practiceStep.title}</p><Link href={practiceStep.href} className={actionClass}>Luyện từ vừa học →</Link></div>}
-      {!path.allCompleted && actionDomain && <div className="mt-4 space-y-3">
-        <p className="text-sm font-bold">{actionDomain.name}</p>
-        {!actionDomain.available ? <p className="text-sm">Chuỗi bài đang được bổ sung. Bạn có thể ôn từ vựng hoặc khám phá các bài khác.</p>
-          : actionDomain.nextLesson ? <><p className="text-sm leading-6">{actionDomain.nextLesson.title}</p><Link href={actionDomain.nextLesson.href} className={actionClass}>Học bài tiếp theo <AppIcon className="text-lg">arrow_forward</AppIcon></Link></>
-          : actionDomain.assessment ? <><p className="text-sm leading-6">{actionDomain.state === 'review_needed' ? `Kết quả gần nhất: ${Math.round(actionDomain.assessment.scorePercent ?? 0)}%. Ôn lại nội dung chưa vững rồi làm lại.` : 'Bạn đã học đủ bài của ngành này. Làm bài tổng kết để kiểm tra mức hiểu.'} Mức đạt: {actionDomain.assessment.passingScorePercent}%.</p><div className="flex flex-wrap gap-2"><Link href={actionDomain.assessment.href} className={actionClass}>{actionDomain.state === 'review_needed' ? 'Làm lại bài tổng kết' : 'Làm bài tổng kết'}</Link><Link href={actionDomain.lessons[0].href} className={secondaryClass}>Ôn lại bài học</Link></div></>
-          : <p className="text-sm leading-6">Bạn đã học đủ bài. Bài tổng kết đang được bổ sung; hãy tiếp tục ôn tập. Lộ trình chưa mở chuyển cấp.</p>}
+      {!path.allCompleted && <div className={`mt-6 grid gap-4 ${practiceStep?.kind === 'review' && actionDomain ? 'lg:grid-cols-[minmax(0,1.25fr)_minmax(0,1fr)]' : ''}`}>
+        {actionDomain && <div className="flex min-w-0 flex-col rounded-2xl border border-slate-200 bg-slate-50/70 p-4 sm:p-5">
+          <div className="flex flex-wrap items-center justify-between gap-2"><p className="text-xs font-bold uppercase tracking-wide text-on-surface-variant">{actionDomain.nextLesson ? 'Tiếp tục học' : 'Bài tổng kết'}</p>{actionDomain.state === 'review_needed' && <span className="rounded-full bg-amber-100 px-3 py-1 text-xs font-semibold text-amber-800">Cần củng cố</span>}</div>
+          <h3 className="mt-2 text-lg font-bold leading-7">{actionDomain.name}</h3>
+          {!actionDomain.available ? <p className="mt-3 text-sm leading-6 text-on-surface-variant">Chuỗi bài đang được bổ sung. Bạn có thể ôn từ vựng hoặc khám phá các bài khác.</p>
+            : actionDomain.nextLesson ? <><p className="mt-2 text-sm leading-6 text-on-surface-variant">{actionDomain.nextLesson.title}</p><div className="mt-auto pt-5"><Link href={actionDomain.nextLesson.href} className={actionClass}>Học bài tiếp theo <AppIcon className="text-lg">arrow_forward</AppIcon></Link></div></>
+            : actionDomain.assessment ? <>
+              <div className="my-4 grid grid-cols-2 gap-3"><div className="rounded-xl border border-slate-200 bg-white px-3 py-3"><p className="text-xs text-on-surface-variant">Kết quả gần nhất</p><p className="mt-1 text-2xl font-bold tabular-nums">{actionDomain.assessment.scorePercent === null ? 'Chưa làm' : `${Math.round(actionDomain.assessment.scorePercent)}%`}</p></div><div className="rounded-xl border border-slate-200 bg-white px-3 py-3"><p className="text-xs text-on-surface-variant">Mục tiêu đạt</p><p className="mt-1 text-2xl font-bold tabular-nums text-primary">{actionDomain.assessment.passingScorePercent}%</p></div></div>
+              <p className="text-sm leading-6 text-on-surface-variant">{actionDomain.state === 'review_needed' ? 'Ôn phần chưa vững rồi làm lại khi bạn sẵn sàng.' : 'Bạn đã học đủ bài. Làm tổng kết để kiểm tra mức hiểu.'}</p>
+              <div className="mt-auto flex flex-col gap-2 pt-5 sm:flex-row sm:flex-wrap"><Link href={actionDomain.assessment.href} className={actionClass}>{actionDomain.state === 'review_needed' ? 'Làm lại bài tổng kết' : 'Làm bài tổng kết'} <span aria-hidden="true">→</span></Link><Link href={actionDomain.lessons[0].href} className={secondaryClass}>Ôn lại bài học</Link></div>
+            </> : <p className="mt-3 text-sm leading-6 text-on-surface-variant">Bạn đã học đủ bài. Bài tổng kết đang được bổ sung; chưa thể chuyển cấp.</p>}
+        </div>}
+        {practiceStep?.kind === 'review' && <div className="flex min-w-0 flex-col items-start rounded-2xl border border-primary/15 bg-primary/5 p-4 sm:p-5">
+          <span className="mb-4 flex h-10 w-10 items-center justify-center rounded-xl bg-white text-primary"><AppIcon className="text-xl">style</AppIcon></span>
+          <p className="text-xs font-bold uppercase tracking-wide text-primary">Luyện tập bổ sung</p><h3 className="mt-2 text-lg font-bold leading-7">{practiceStep.title}</h3><p className="mt-2 text-sm leading-6 text-on-surface-variant">Ôn thuật ngữ bằng flashcards để nhớ chắc hơn trước khi tiếp tục.</p>
+          <div className="mt-auto w-full pt-5"><Link href={practiceStep.href} className={secondaryClass}>Luyện từ vừa học <span aria-hidden="true" className="ml-2">→</span></Link></div>
+        </div>}
       </div>}
 
       {path.allCompleted && <p className="mt-3 text-sm leading-6">Bạn đã học đủ chuỗi bài và đạt bài tổng kết. Đây là kết quả học tập trên nền tảng, không phải chứng chỉ nghề nghiệp.</p>}
@@ -103,7 +113,7 @@ export function LearningPathJourney({ full = false, lessonId, onAvailability }: 
           : <button type="button" onClick={() => setConfirm(true)} className={actionClass}>Học tiếp cấp {path.nextLevel.name} <AppIcon className="text-lg">arrow_forward</AppIcon></button>}
       </div>}
       {path.allCompleted && !path.finalLevel && !path.nextLevel && <p className="mt-3 text-sm">Nội dung cấp tiếp theo đang được bổ sung. Bạn có thể tiếp tục ôn tập.</p>}
-      <div className="mt-4 flex flex-wrap gap-2"><Link href="/learn/flashcards" className={secondaryClass}>Ôn flashcards</Link>{path.allCompleted && <><Link href="/learn/certifications" className={secondaryClass}>Khám phá chứng chỉ</Link><Link href="/learn/profile?tab=goals" className={secondaryClass}>Chọn thêm ngành học</Link></>}{!full && <Link href="/learn/plan" className={secondaryClass}>Xem toàn bộ lộ trình</Link>}</div>
+      <div className="mt-5 flex flex-wrap gap-3 border-t border-outline-variant/60 pt-4">{practiceStep?.kind !== 'review' && <Link href="/learn/flashcards" className={secondaryClass}>Ôn flashcards</Link>}{path.allCompleted && <><Link href="/learn/certifications" className={secondaryClass}>Khám phá chứng chỉ</Link><Link href="/learn/profile?tab=goals" className={secondaryClass}>Chọn thêm ngành học</Link></>}{!full && <Link href="/learn/plan" className={secondaryClass}>Xem toàn bộ lộ trình</Link>}</div>
     </section>
 
     {path.allCompleted && path.finalLevel && <ContinuationPlans />}
