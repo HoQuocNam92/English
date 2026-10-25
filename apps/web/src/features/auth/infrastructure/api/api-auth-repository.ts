@@ -9,6 +9,7 @@ const API_BASE = API_BASE_URL;
 
 function localizeLoginError(message: unknown, status: number): string {
   const raw = Array.isArray(message) ? message.join(', ') : String(message ?? '').trim();
+  if (raw.startsWith('Tài khoản đã bị khóa.')) return raw;
   const normalized = raw.toLowerCase();
   if (!raw && status === 401) return 'Email hoặc mật khẩu không chính xác.';
   if (/invalid credentials|bad credentials|unauthorized/.test(normalized)) return 'Email hoặc mật khẩu không chính xác. Vui lòng kiểm tra lại.';

@@ -10,15 +10,16 @@ import { ActionButton, ActionGroup } from '@/shared/ui/ActionButton';
 import { Dropdown } from '@/shared/ui/Dropdown';
 import * as React from 'react';
 import { StatusBadge } from '@/shared/ui/StatusBadge';
-import { Badge, confirmDialog, PageHeader, Pagination, SearchInput } from '@/shared/ui';
+import { Badge, Modal, confirmDialog, PageHeader, Pagination, SearchInput } from '@/shared/ui';
 import { apiClient, ApiClientError } from '@/shared/api/api-client';
 import type { UserItem, PaginatedResponse } from '@/shared/api/api-client';
 
 const STATUS_OPTS = [
-  { value: '', label: 'Tất cả trạng thái' },
+  { value: '', label: 'Chưa xóa (mọi trạng thái)' },
   { value: 'active', label: 'Đang hoạt động' },
   { value: 'suspended', label: 'Đã khóa' },
   { value: 'inactive', label: 'Chưa kích hoạt' },
+  { value: 'deleted', label: 'Đã xóa' },
 ];
 
 const CREATE_ROLE_OPTS = [
@@ -307,6 +308,7 @@ export default function AdminUsers({ createOnly = false }: { createOnly?: boolea
   const [actionError, setActionError] = React.useState<string | null>(null);
   const [successMessage, setSuccessMessage] = React.useState<string | null>(null);
   const [limit, setLimit] = React.useState(30);
+  const [suspendingUser, setSuspendingUser] = React.useState<UserItem | null>(null);
   const [editingUser, setEditingUser] = React.useState<UserItem | null>(null);
 
   const totalPages = Math.ceil(total / limit);
@@ -338,24 +340,28 @@ export default function AdminUsers({ createOnly = false }: { createOnly?: boolea
     const newStatus = user.status === 'active' ? 'suspended' : 'active';
     const validErr = validateStatusChange(user.status, newStatus);
     if (validErr) { setActionError(validErr); return; }
+    if (newStatus === 'suspended') { setSuspendingUser(user); return; }
 
-    if (!(await confirmDialog(`${newStatus === 'suspended' ? 'Khoá' : 'Mở khoá'} tài khoản ${user.email}?`, { title: 'Thay đổi trạng thái tài khoản', confirmLabel: newStatus === 'suspended' ? 'Khoá tài khoản' : 'Mở khoá', tone: newStatus === 'suspended' ? 'warning' : 'primary' }))) return;
+    if (!(await confirmDialog('Mở khóa tài khoản ' + user.email + '?', { title: 'Mở khóa tài khoản', confirmLabel: 'Mở khóa', tone: 'primary' }))) return;
 
     setActionLoading(user.id);
     setActionError(null);
     try {
-      if (newStatus === 'suspended') {
-        await apiClient.patch(`/users/${user.id}/suspend`, {});
-      } else {
-        await apiClient.patch(`/users/${user.id}/activate`, {});
-      }
-      // Optimistic update
-      setUsers((prev) => prev.map((u) => u.id === user.id ? { ...u, status: newStatus } : u));
+      await apiClient.patch(`/users/${user.id}/activate`, {});
+      await load();
     } catch (e) {
       setActionError(e instanceof ApiClientError ? e.message : 'Thao tác thất bại');
     } finally {
       setActionLoading(null);
     }
+  };
+
+  const handleRestore = async (user: UserItem) => {
+    if (!user.canRestore || !(await confirmDialog('Khôi phục ' + user.email + '? Tài khoản và tiến độ cũ được giữ nguyên. Người dùng cần đăng nhập lại.', { title: 'Khôi phục tài khoản đã xóa', confirmLabel: 'Khôi phục', tone: 'primary' }))) return;
+    setActionLoading(user.id); setActionError(null);
+    try { await apiClient.patch('/users/' + user.id + '/restore', {}); await load(); showToast('Đã khôi phục tài khoản.', 'success'); }
+    catch (cause) { setActionError(cause instanceof ApiClientError ? cause.message : 'Không thể khôi phục tài khoản'); }
+    finally { setActionLoading(null); }
   };
 
   const handleDelete = async (user: UserItem) => {
@@ -478,14 +484,17 @@ export default function AdminUsers({ createOnly = false }: { createOnly?: boolea
                     </td>
                     <td className="px-5 py-4">
                       <StatusBadge status={user.status} />
+                      {user.status === 'suspended' && <><p className="mt-2 max-w-xs whitespace-normal break-words text-xs text-on-surface-variant">Lý do: {user.suspensionReason || 'Chưa ghi nhận (tài khoản bị khóa từ trước)'}</p><button type="button" onClick={() => setSuspendingUser(user)} className="min-h-11 text-xs font-semibold text-primary">Cập nhật lý do khóa</button></>}
+                      {user.deletedAt && <p className="mt-2 text-xs text-on-surface-variant">Xóa ngày {new Date(user.deletedAt).toLocaleDateString('vi-VN')}{!user.canRestore && ' · Email đã giải phóng, không thể khôi phục'}</p>}
                     </td>
                     <td className="px-5 py-4 text-sm text-on-surface-variant">
                       {new Date(user.createdAt).toLocaleDateString('vi-VN')}
                     </td>
                     <td className="px-5 py-4 text-right">
                         <ActionGroup>
-                          <ActionButton action="edit" label="Chỉnh sửa người dùng" onClick={() => setEditingUser(user)} />
-                          {!user.roles?.includes('admin') && <ActionButton action={user.status === 'active' ? 'lock' : 'unlock'} loading={actionLoading === user.id} onClick={() => handleToggleStatus(user)} />}
+                          {user.deletedAt && <button type="button" disabled={!user.canRestore || actionLoading === user.id} onClick={() => void handleRestore(user)} className="min-h-11 rounded-xl border border-primary/30 px-3 py-2 text-sm font-bold text-primary disabled:opacity-40">Khôi phục</button>}
+                          {!user.deletedAt && <ActionButton action="edit" label="Chỉnh sửa người dùng" onClick={() => setEditingUser(user)} />}
+                          {!user.deletedAt && !user.roles?.includes('admin') && <ActionButton action={user.status === 'active' ? 'lock' : 'unlock'} loading={actionLoading === user.id} onClick={() => handleToggleStatus(user)} />}
                           {!user.roles?.includes('admin') && <ActionButton action="delete" disabled={actionLoading === user.id} onClick={() => handleDelete(user)} />}
                         </ActionGroup>
                     </td>
@@ -501,7 +510,28 @@ export default function AdminUsers({ createOnly = false }: { createOnly?: boolea
       </div>
 
 
+      {suspendingUser && <SuspendUserModal user={suspendingUser} onClose={() => setSuspendingUser(null)} onSaved={() => { setSuspendingUser(null); void load(); }} />}
       {editingUser && <EditUserModal key={editingUser.id} user={editingUser} onClose={() => setEditingUser(null)} onSaved={() => { setEditingUser(null); void load(); }} />}
     </main>
   );
+}
+
+function SuspendUserModal({ user, onClose, onSaved }: { user: UserItem; onClose: () => void; onSaved: () => void }) {
+  const [reason, setReason] = React.useState(user.suspensionReason ?? ''); const [saving, setSaving] = React.useState(false); const [error, setError] = React.useState('');
+  const submit = async (event: React.FormEvent) => {
+    event.preventDefault();
+    if (reason.trim().length < 3) { setError('Nhập lý do khóa ít nhất 3 ký tự.'); return; }
+    setSaving(true); setError('');
+    try { await apiClient.patch('/users/' + user.id + '/suspend', { reason: reason.trim() }); onSaved(); }
+    catch (cause) { setError(cause instanceof ApiClientError ? cause.message : 'Không thể khóa tài khoản.'); }
+    finally { setSaving(false); }
+  };
+  return <Modal open onClose={() => { if (!saving) onClose(); }}><form onSubmit={submit} className="space-y-4 p-5 sm:p-6">
+    <h2 className="text-xl font-bold">Khóa tài khoản</h2><p className="break-all text-sm">{user.email}</p>
+    <label className="block text-sm font-semibold" htmlFor="suspension-reason">Lý do khóa (bắt buộc)</label>
+    <textarea id="suspension-reason" autoFocus required minLength={3} maxLength={500} value={reason} onChange={event => setReason(event.target.value)} rows={4} className="w-full rounded-xl border border-outline-variant p-3" />
+    <p className="text-xs leading-5 text-on-surface-variant">Lý do này sẽ hiển thị khi người dùng đăng nhập trên web và app. Khóa giữ nguyên dữ liệu, chặn đăng nhập đến khi quản trị viên mở khóa.</p>
+    {!!error && <p role="alert" className="text-sm text-red-700">{error}</p>}
+    <div className="flex flex-wrap justify-end gap-3"><button type="button" disabled={saving} onClick={onClose} className="min-h-11 rounded-xl border px-4 py-2">Hủy</button><button disabled={saving} type="submit" className="min-h-11 rounded-xl bg-primary px-4 py-2 font-bold text-white disabled:opacity-50">{saving ? 'Đang khóa…' : 'Xác nhận khóa'}</button></div>
+  </form></Modal>;
 }

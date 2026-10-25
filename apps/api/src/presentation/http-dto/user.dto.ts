@@ -1,4 +1,4 @@
-import { IsEmail, IsString, IsOptional, IsEnum, MinLength } from 'class-validator'
+import { IsEmail, IsString, IsOptional, IsEnum, MinLength, MaxLength } from 'class-validator'
 import { ApiProperty, ApiPropertyOptional, PartialType } from '@nestjs/swagger'
 
 export class CreateUserDto {
@@ -27,5 +27,11 @@ export class UserQueryDto {
   @ApiPropertyOptional() @IsOptional() limit?: number
   @ApiPropertyOptional() @IsOptional() search?: string
   @ApiPropertyOptional() @IsOptional() role?: string
-  @ApiPropertyOptional({ enum: ['active', 'inactive', 'suspended'] }) @IsOptional() @IsString() status?: string
+  @ApiPropertyOptional({ enum: ['active', 'inactive', 'suspended', 'deleted'] }) @IsOptional() @IsEnum(['active', 'inactive', 'suspended', 'deleted']) status?: string
+}
+
+export class SuspendUserDto {
+  @ApiProperty({ description: 'Lý do khóa hiển thị cho người dùng', maxLength: 500 })
+  @IsString() @MinLength(3) @MaxLength(500)
+  reason: string
 }

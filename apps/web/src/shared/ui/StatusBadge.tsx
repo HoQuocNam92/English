@@ -1,5 +1,6 @@
 import { Badge } from './Badge';
 const states = {
+  deleted: ['Đã xóa', 'neutral'],
   active: ['Đang hoạt động', 'success'], published: ['Đã xuất bản', 'success'],
   passed: ['Đạt', 'success'], completed: ['Hoàn thành', 'success'],
   suspended: ['Đã khóa', 'destructive'], failed: ['Không đạt', 'destructive'],

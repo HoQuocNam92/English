@@ -1,3 +1,4 @@
+import { suspensionMessage } from './suspension-message'
 import { ACCOUNT_REUSE_DELAY_MS, deletedAccountMessage } from './account-deletion.policy'
 import { Injectable, UnauthorizedException, ConflictException, BadRequestException, NotFoundException, ServiceUnavailableException } from '@nestjs/common'
 import { JwtService } from '@nestjs/jwt'
@@ -47,7 +48,7 @@ export class AuthService {
     if (!user) throw new UnauthorizedException('Không tìm thấy tài khoản với email này')
     if (user.deletedAt) throw new UnauthorizedException(deletedAccountMessage(user.deletedAt))
     if (user.status === 'inactive') throw new UnauthorizedException('Tài khoản đã bị vô hiệu hóa hoặc chưa được kích hoạt')
-    if (user.status === 'suspended') throw new UnauthorizedException('Tài khoản đã bị khóa. Vui lòng liên hệ quản trị viên')
+    if (user.status === 'suspended') throw new UnauthorizedException(suspensionMessage(user))
 
     const valid = await bcrypt.compare(dto.password, user.passwordHash)
     if (!valid) throw new UnauthorizedException('Mật khẩu không chính xác')
@@ -154,6 +155,7 @@ export class AuthService {
         },
       })
     } else {
+      if (user.status === 'suspended' && !user.deletedAt) throw new UnauthorizedException(suspensionMessage(user))
       if (user.status !== 'active' || user.deletedAt) throw new UnauthorizedException('Tài khoản đã bị vô hiệu hóa')
       const full = profile.avatarUrl ? await this.getUserWithPermissions(user.id) : null
       if (profile.avatarUrl && !full?.userDetail?.avatarUrl) {
@@ -234,6 +236,7 @@ export class AuthService {
     }
 
     const full = await this.getUserWithPermissions(stored.userId)
+    if (full?.status === 'suspended' && !full.deletedAt) throw new UnauthorizedException(suspensionMessage(full))
     if (!full || full.status !== 'active' || full.deletedAt) throw new UnauthorizedException('Tài khoản không còn hoạt động hoặc phiên đăng nhập không hợp lệ')
 
     const payload = this.buildPayload(full)

@@ -1,3 +1,4 @@
+import { suspensionMessage } from '../../application/auth/suspension-message'
 import { Injectable, UnauthorizedException } from '@nestjs/common'
 import { PassportStrategy } from '@nestjs/passport'
 import { ExtractJwt, Strategy } from 'passport-jwt'
@@ -30,7 +31,8 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
         },
       },
     })
-    if (!user || user.status !== 'active') throw new UnauthorizedException('Phiên đăng nhập không hợp lệ hoặc tài khoản không còn hoạt động')
+    if (user?.status === 'suspended' && !user.deletedAt) throw new UnauthorizedException(suspensionMessage(user))
+    if (!user || user.status !== 'active' || user.deletedAt) throw new UnauthorizedException('Phiên đăng nhập không hợp lệ hoặc tài khoản không còn hoạt động')
 
     const roles = user.userRoles.map((ur) => ur.role.code)
     const permissions = [

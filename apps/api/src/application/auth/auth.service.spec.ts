@@ -6,6 +6,13 @@ import { GoogleCallbackGuard } from '../../infrastructure/auth/google-callback.g
 import { AuthController } from '../../presentation/auth.controller'
 import { UnauthorizedException } from '@nestjs/common'
 
+test('password and Google login expose the same saved suspension reason without allowing access', async () => {
+  const f = fixture({ id: 'locked', email: 'locked@gmail.com', deletedAt: null, status: 'suspended', suspensionReason: 'Spam nội dung' })
+  await assert.rejects(f.service.login({ email: 'locked@gmail.com', password: 'Password123!' }), /Lý do: Spam nội dung/)
+  await assert.rejects(f.service.findOrCreateGoogleUser({ googleId: 'google', email: 'locked@gmail.com', displayName: 'Locked' }), /Lý do: Spam nội dung/)
+  assert.equal(f.calls.length, 0)
+})
+
 function registrationFixture(age: number, status = 'inactive') {
   let old: any = { id: 'old-id', email: 'reuse@gmail.com', status, deletedAt: new Date(Date.now() - age) }
   let created: any = null

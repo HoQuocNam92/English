@@ -147,6 +147,7 @@ model User {
   passwordHash String     @map("password_hash") @db.VarChar(255)
   status       UserStatus @default(active)
   deletedAt    DateTime?  @map("deleted_at") @db.Timestamptz(6)
+  suspensionReason String? @map("suspension_reason") @db.VarChar(500)
   createdAt    DateTime   @default(now()) @map("created_at") @db.Timestamptz(6)
   updatedAt    DateTime   @updatedAt @map("updated_at") @db.Timestamptz(6)
 

@@ -243,6 +243,9 @@ export interface ExamItem {
 
 // Users
 export interface UserItem {
+  deletedAt?: string | null;
+  suspensionReason?: string | null;
+  canRestore?: boolean;
   id: string;
   email: string;
   status: string;

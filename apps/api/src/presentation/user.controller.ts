@@ -1,7 +1,7 @@
 import { Controller, Delete, Get, Post, Patch, Body, Param, Query, UseGuards, HttpCode, HttpStatus } from '@nestjs/common'
 import { ApiTags, ApiBearerAuth, ApiOperation } from '@nestjs/swagger'
 import { UsersService } from '../application/user/user.service'
-import { CreateUserDto, UpdateUserDto, UserQueryDto } from './http-dto/user.dto'
+import { CreateUserDto, UpdateUserDto, UserQueryDto, SuspendUserDto } from './http-dto/user.dto'
 import { UpdateProfileDto, ChangePasswordDto } from './http-dto/profile.dto'
 import { JwtAuthGuard } from '../infrastructure/auth/jwt-auth.guard'
 import { PermissionsGuard } from '../infrastructure/auth/permissions.guard'
@@ -66,8 +66,8 @@ export class UsersController {
   @RequirePermissions('users:manage')
   @HttpCode(HttpStatus.NO_CONTENT)
   @ApiOperation({ summary: 'Suspend user' })
-  suspend(@Param('id') id: string) {
-    return this.usersService.suspend(id)
+  suspend(@Param('id') id: string, @Body() dto: SuspendUserDto, @CurrentUser() actor: JwtPayload) {
+    return this.usersService.suspend(id, dto.reason, actor.sub)
   }
 
   @Patch(':id/activate')
@@ -76,6 +76,13 @@ export class UsersController {
   @ApiOperation({ summary: 'Activate user' })
   activate(@Param('id') id: string) {
     return this.usersService.activate(id)
+  }
+
+  @Patch(':id/restore')
+  @RequirePermissions('users:manage')
+  @ApiOperation({ summary: 'Restore a soft-deleted user whose email has not been released' })
+  restore(@Param('id') id: string) {
+    return this.usersService.restore(id)
   }
 
   @Delete(':id')

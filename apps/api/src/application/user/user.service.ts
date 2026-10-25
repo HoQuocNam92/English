@@ -12,7 +12,7 @@ export class UsersService {
     const { search, role, status } = params
     const skip = (page - 1) * limit
 
-    const where: any = { deletedAt: null }
+    const where: any = { deletedAt: status === 'deleted' ? { not: null } : null }
     if (search) {
       where.OR = [
         { email: { contains: search, mode: 'insensitive' } },
@@ -22,7 +22,7 @@ export class UsersService {
     if (role) {
       where.userRoles = { some: { role: { code: role } } }
     }
-    if (status) {
+    if (status && status !== 'deleted') {
       where.status = status
     }
 
@@ -104,9 +104,7 @@ export class UsersService {
 
   async update(id: string, dto: any) {
     await this.findOne(id)
-    if (dto.status !== undefined) {
-      await this.prisma.user.update({ where: { id }, data: { status: dto.status } })
-    }
+    if (dto.status !== undefined) throw new BadRequestException('Dùng chức năng khóa hoặc mở khóa riêng để thay đổi trạng thái tài khoản.')
     if (dto.displayName !== undefined || dto.avatarUrl !== undefined || dto.bio !== undefined
         || dto.phoneNumber !== undefined || dto.locale !== undefined || dto.timezone !== undefined) {
       await this.prisma.userDetail.upsert({
@@ -137,14 +135,39 @@ export class UsersService {
     return { success: true }
   }
 
-  async suspend(id: string) {
-    await this.findOne(id)
-    await this.prisma.user.update({ where: { id }, data: { status: 'suspended' } })
+  async suspend(id: string, reason: string, actorId?: string) {
+    const clean = typeof reason === 'string' ? reason.trim() : ''
+    if (clean.length < 3 || clean.length > 500) throw new BadRequestException('Nhập lý do khóa từ 3 đến 500 ký tự.')
+    if (id === actorId) throw new BadRequestException('Không thể khóa tài khoản đang đăng nhập')
+    const user = await this.findOne(id)
+    if (user.roles.includes('admin')) throw new BadRequestException('Không thể khóa tài khoản quản trị viên')
+    const now = new Date()
+    await this.prisma.$transaction([
+      this.prisma.user.update({ where: { id, deletedAt: null }, data: { status: 'suspended', suspensionReason: clean } }),
+      this.prisma.refreshToken.updateMany({ where: { userId: id, revokedAt: null }, data: { revokedAt: now } }),
+    ])
   }
 
   async activate(id: string) {
     await this.findOne(id)
-    await this.prisma.user.update({ where: { id }, data: { status: 'active' } })
+    await this.prisma.user.update({ where: { id, deletedAt: null }, data: { status: 'active', suspensionReason: null } })
+  }
+
+  async restore(id: string) {
+    try {
+      return await this.prisma.$transaction(async tx => {
+        const user = await tx.user.findUnique({ where: { id } })
+        if (!user?.deletedAt) throw new BadRequestException('Tài khoản không ở trạng thái đã xóa.')
+        if (user.email.endsWith('@deleted.invalid')) throw new ConflictException('Email cũ đã được giải phóng để đăng ký tài khoản mới. Không thể khôi phục danh tính cũ.')
+        const restored = await tx.user.updateMany({ where: { id, deletedAt: user.deletedAt, email: user.email, status: 'inactive' }, data: { status: 'active', deletedAt: null, suspensionReason: null } })
+        if (restored.count !== 1) throw new ConflictException('Tài khoản vừa thay đổi. Hãy tải lại danh sách.')
+        // Preserve passwords, roles and history; never revive revoked refresh tokens.
+        return { success: true }
+      }, { isolationLevel: 'Serializable' })
+    } catch (error) {
+      if (['P2002', 'P2034'].includes((error as any)?.code)) throw new ConflictException('Email hoặc tài khoản đang được xử lý bởi yêu cầu khác. Hãy tải lại danh sách.')
+      throw error
+    }
   }
 
   async softDelete(id: string, actorId: string) {
@@ -163,7 +186,10 @@ export class UsersService {
     return {
       id: user.id,
       email: user.email,
-      status: user.status,
+      status: user.deletedAt ? 'deleted' : user.status,
+      deletedAt: user.deletedAt ?? null,
+      suspensionReason: user.suspensionReason ?? null,
+      canRestore: !!user.deletedAt && !user.email.endsWith('@deleted.invalid'),
       displayName: user.userDetail?.displayName,
       avatarUrl: user.userDetail?.avatarUrl,
       phoneNumber: user.userDetail?.phoneNumber,
