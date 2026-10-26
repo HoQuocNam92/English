@@ -16,17 +16,18 @@ Chỉ bài `certification_review` đã xuất bản được hiển thị ở lu
 
 Hộp dịch được gắn ở root layout của web, hoạt động trên trang học, Quiz, trang công khai và admin. Chọn từ/cụm từ tiếng Anh để hiện nghĩa, Escape hoặc nút đóng để tắt. Nội dung đang nhập trong ô biểu mẫu không kích hoạt dịch.
 
-Backend ưu tiên nghĩa chính xác trong từ điển nội bộ, sau đó gọi APIVN nếu đã có key. Chỉ đoạn được chọn được gửi đến APIVN, không gửi toàn trang hoặc dữ liệu tài khoản. API key chỉ dùng ở backend. Có cache, gộp các request đang chạy cùng nội dung, timeout và giới hạn yêu cầu theo IP.
+Backend ưu tiên nghĩa chính xác trong từ điển nội bộ, sau đó gọi OpenAI nếu đã có key. Gửi đoạn được chọn và ngữ cảnh ngắn đến OpenAI, không gửi toàn trang hoặc dữ liệu tài khoản. API key chỉ dùng ở backend. Có cache, gộp các request đang chạy cùng nội dung, timeout và giới hạn yêu cầu theo IP.
 
 Điền vào `apps/api/.env`, sau đó khởi động lại API:
 
 ```dotenv
-APIVN_API_KEY=<điền key thật tại đây>
-APIVN_MODEL=gpt-6-luna
-APIVN_BASE_URL=https://apivn.vn/v1
+AI_PROVIDER=openai
+OPENAI_API_KEY=<điền key thật tại đây>
+OPENAI_MODEL=gpt-6-luna
+OPENAI_BASE_URL=https://api.openai.com/v1
 ```
 
-Nếu chưa điền key, các từ trong từ điển vẫn dịch được; đoạn chưa có nghĩa sẽ báo dịch tự động chưa khả dụng. Cấu hình gọi model được kiểm thử bằng provider giả lập; cần key thật để kiểm tra kết nối APIVN thực tế. Tham khảo [API APIVN](https://apivn.tech/docs).
+Nếu chưa điền key, các từ trong từ điển vẫn dịch được; đoạn chưa có nghĩa sẽ báo dịch tự động chưa khả dụng. Cấu hình gọi model được kiểm thử bằng provider giả lập; cần key thật để kiểm tra kết nối OpenAI thực tế. Tham khảo [OpenAI GPT-6 Luna](https://developers.openai.com/api/docs/models/gpt-6-luna).
 
 ## Dữ liệu mẫu và kiểm tra
 

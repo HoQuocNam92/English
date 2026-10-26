@@ -1,8 +1,37 @@
 import { test } from 'node:test'
 import { strict as assert } from 'node:assert'
 import { ApivnLearningPlanner } from './apivn-learning-planner'
+import { aiConnection } from './ai-connection'
 const catalog=[{id:'lesson-1',title:'Cloud knowledge',kind:'lesson',actionUrl:'/learn/lessons/lesson-1'}]
 const fallback={source:'rules',dailyMinutes:30,steps:[]}
+
+test('OpenAI settings keep its key and official URL separate from legacy APIVN configuration', () => {
+ const settings: Record<string,string> = { OPENAI_API_KEY: 'openai-key', APIVN_API_KEY: 'other-key', APIVN_BASE_URL: 'https://apivn.vn/v1' }
+ const config: any = { get: (key: string) => settings[key] }
+ const connection = aiConnection(config)!
+ assert.equal(connection.provider, 'openai'); assert.equal(connection.apiKey, 'openai-key')
+ assert.equal(connection.baseUrl, 'https://api.openai.com/v1'); assert.equal(connection.model, 'gpt-6-luna')
+ assert.equal(connection.requestOptions.reasoning_effort, 'none')
+ delete settings.OPENAI_API_KEY; settings.AI_PROVIDER = 'openai'
+ assert.equal(aiConnection(config)?.apiKey, undefined)
+ settings.AI_PROVIDER = 'invalid'
+ assert.equal(aiConnection(config), null)
+})
+
+test('learning plans call OpenAI Luna using only the configured OpenAI credential', async () => {
+ const original = global.fetch
+ global.fetch = (async (url: any, init: any) => {
+  assert.equal(String(url), 'https://api.openai.com/v1/chat/completions')
+  assert.equal(init.headers.Authorization, 'Bearer official-key')
+  const body = JSON.parse(init.body); assert.equal(body.model, 'gpt-6-luna'); assert.equal(body.reasoning_effort, 'none')
+  return { ok: true, json: async () => ({ choices: [{ message: { content: '{"summary":"Luyện tập hôm nay"}' } }] }) } as any
+ }) as any
+ try {
+  const settings: any = { AI_PROVIDER: 'openai', OPENAI_API_KEY: 'official-key' }
+  const ai = new ApivnLearningPlanner({ get: (key: string) => settings[key] } as any)
+  assert.deepEqual(await ai.json('instruction', { score: 80 }), { summary: 'Luyện tập hôm nay' })
+ } finally { global.fetch = original }
+})
 function planner() { return new ApivnLearningPlanner({get:(key:string)=>key==='APIVN_API_KEY'?'test-secret':key==='APIVN_MODEL'?'gpt-6-luna':undefined} as any) }
 test('APIVN call uses configured model and endpoint, deduplicates and caches matching analysis',async()=>{
  const original=global.fetch;let calls=0

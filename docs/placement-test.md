@@ -37,13 +37,13 @@ Giao diện `/onboarding/placement-test` hiển thị kết quả, giải thích
 
 `GET /progress/me/agenda` trả việc hôm nay và mục tiêu dự kiến theo tháng/năm, tính ngày theo UTC+7. Trang `/learn/progress` ưu tiên bài đang học dở, chủ đề có Quiz gần nhất dưới 70%, từ đến lịch ôn, và Quiz cho chủ đề đã hoàn thành toàn bộ bài. Từ mới và bài học được giới hạn theo nội dung đã xuất bản. Mục tiêu Quiz theo nhịp mỗi tuần đã chọn; số lượt thực tế được đếm trong đúng tháng/năm. Thời lượng học là mục tiêu đã chọn, không giả lập thời gian đã học.
 
-Kế hoạch này được APIVN/GPT-6-luna tối ưu từ các việc mà backend đã kiểm tra điều kiện; khi AI lỗi, trả về kế hoạch theo quy tắc và báo rõ nguồn. Nó tách khỏi bản lộ trình 4 tuần đã lưu sau kiểm tra. Hoàn thành bài, luyện Quiz, học từ hoặc kiểm tra lại phát sự kiện cập nhật; trang cũng tải lại khi quay về tab và mỗi phút. Sau ít nhất 3 điểm Quiz gần đây đều từ 80%, có thể gợi ý kiểm tra lại trình độ; không tự nâng level chỉ dựa trên số bài hay XP. Bài kiến thức được tính vào chuỗi học theo ngày Việt Nam.
+Kế hoạch này được OpenAI/GPT-6-luna tối ưu từ các việc mà backend đã kiểm tra điều kiện; khi AI lỗi, trả về kế hoạch theo quy tắc và báo rõ nguồn. Nó tách khỏi bản lộ trình 4 tuần đã lưu sau kiểm tra. Hoàn thành bài, luyện Quiz, học từ hoặc kiểm tra lại phát sự kiện cập nhật; trang cũng tải lại khi quay về tab và mỗi phút. Sau ít nhất 3 điểm Quiz gần đây đều từ 80%, có thể gợi ý kiểm tra lại trình độ; không tự nâng level chỉ dựa trên số bài hay XP. Bài kiến thức được tính vào chuỗi học theo ngày Việt Nam.
 
 `npm run test:agenda` kiểm tra điều kiện và việc thích ứng; kiểm thử DB dùng hai tài khoản tạm trong rollback, kiểm thử Brave kiểm tra ngày/tháng/năm, icon sáng, cập nhật sự kiện, và bố cục mobile.
 
-## AI APIVN đã bật
+## AI OpenAI
 
-Dùng `APIVN_API_KEY`, `APIVN_MODEL=gpt-6-luna` và `APIVN_BASE_URL=https://apivn.vn/v1` trong `apps/api/.env`. Không đưa key ra frontend. AI nhận điểm tổng hợp, phần cần củng cố, mục tiêu, thời lượng và tiến độ gắn với các nội dung có sẵn. Không gửi tên, email, mật khẩu hoặc userId trong nội dung phân tích.
+Dùng `AI_PROVIDER=openai`, `OPENAI_API_KEY`, `OPENAI_MODEL=gpt-6-luna` và `OPENAI_BASE_URL=https://api.openai.com/v1` trong `apps/api/.env`. Không đưa key ra frontend. AI nhận điểm tổng hợp, phần cần củng cố, mục tiêu, thời lượng và tiến độ gắn với các nội dung có sẵn. Không gửi tên, email, mật khẩu hoặc userId trong nội dung phân tích.
 
 AI hoạt động sau nộp bài kiểm tra, khi tạo/tối ưu lộ trình (`POST /placement-test/plan`), khi lấy kế hoạch ngày/tháng/năm và khi xếp hạng gợi ý trang chủ. Bản lộ trình 4 tuần được lưu vào DB. Nút **Tối ưu lộ trình bằng AI** tại `/learn/plan` cập nhật từ điểm kiểm tra và tiến độ mới, giữ kết quả kiểm tra cũ. Kế hoạch hôm nay cập nhật khi dữ liệu thay đổi.
 

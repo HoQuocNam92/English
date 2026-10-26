@@ -64,6 +64,24 @@ test('provider failure does not leak credentials or response body', async () => 
   } finally { global.fetch = originalFetch }
 })
 
+test('contextual translation uses official OpenAI Luna and returns an OpenAI source', async () => {
+  const original = global.fetch
+  global.fetch = (async (url: any, init: any) => {
+    assert.equal(String(url), 'https://api.openai.com/v1/chat/completions')
+    assert.equal(init.headers.Authorization, 'Bearer official-key')
+    const body = JSON.parse(init.body)
+    assert.equal(body.model, 'gpt-6-luna'); assert.equal(body.reasoning_effort, 'none')
+    assert.deepEqual(JSON.parse(body.messages[1].content), { text: 'bank', context: 'The river bank is steep.' })
+    return { ok: true, json: async () => ({ choices: [{ message: { content: '{"translation":"bờ sông","partOfSpeech":"danh từ"}' } }] }) } as any
+  }) as any
+  try {
+    const service = translationService({ findFirst: async () => ({ definitionVi: 'ngân hàng' }) }, { AI_PROVIDER: 'openai', OPENAI_API_KEY: 'official-key', APIVN_API_KEY: 'must-not-use' })
+    const result = await service.translate('bank', 'The river bank is steep.')
+    assert.equal(result.translation, 'bờ sông'); assert.equal(result.source, 'openai'); assert.equal(result.contextual, true)
+    assert.ok(!JSON.stringify(result).includes('official-key'))
+  } finally { global.fetch = original }
+})
+
 test('certificate progress counts lessons rather than vocabulary and isolates learners', async () => {
   const queries: any[] = []
   const service = new CertificationStudyService({
