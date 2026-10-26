@@ -202,6 +202,19 @@ export class ProgressService {
       ? ('completed' as ProgressStatus)
       : ((dto.status ?? 'in_progress') as ProgressStatus)
     const completedAt = resolvedStatus === 'completed' ? new Date() : null
+    // Opening a lesson records a start without overwriting completion from another tab.
+    if (resolvedStatus === 'in_progress' && dto.completionPercent === undefined) {
+      return this.prisma.$transaction(async db => {
+        const key = { learnerId, resourceType: dto.resourceType as ProgressResourceType, resourceId: dto.resourceId }
+        await db.learningProgress.upsert({
+          where: { learnerId_resourceType_resourceId: key },
+          create: { ...key, status: 'in_progress', startedAt: new Date() },
+          update: {},
+        })
+        await db.learningProgress.updateMany({ where: { ...key, status: 'not_started', completionPercent: { lt: 100 } }, data: { status: 'in_progress', startedAt: new Date() } })
+        return db.learningProgress.findUnique({ where: { learnerId_resourceType_resourceId: key } })
+      })
+    }
     return this.prisma.learningProgress.upsert({
       where: { learnerId_resourceType_resourceId: { learnerId, resourceType: dto.resourceType as ProgressResourceType, resourceId: dto.resourceId } },
       update: { status: resolvedStatus, completionPercent: dto.completionPercent, averageScorePercent: dto.averageScorePercent, completedAt },

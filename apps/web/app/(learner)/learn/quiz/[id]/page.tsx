@@ -84,13 +84,19 @@ export default function LearnerQuizTakingPage({ params }: { params: Promise<{ id
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
+      const target = e.target as HTMLElement;
+      if (!showSubmitModal && !submitting && !target.closest('input, textarea, select, [contenteditable="true"]') && ['ArrowRight', 'ArrowUp', 'ArrowLeft', 'ArrowDown'].includes(e.key)) {
+        e.preventDefault();
+        const delta = e.key === 'ArrowRight' || e.key === 'ArrowUp' ? 1 : -1;
+        setCurrentIdx(index => Math.max(0, Math.min((exam?.questions?.length ?? 1) - 1, index + delta)));
+      }
       if (e.key === 'Escape' && showSubmitModal && !submitting) {
         setShowSubmitModal(false);
       }
     };
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [showSubmitModal, submitting]);
+  }, [showSubmitModal, submitting, exam]);
 
   const handleSelect = (questionId: string, optId: string, isMultiple = false) => {
     setAnswers(prev => {

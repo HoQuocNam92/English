@@ -21,11 +21,13 @@ export default function LearnerLessonDetail({ params }: { params: Promise<{ id: 
 
   useEffect(() => {
     let current = true;
-    Promise.all([apiClient.get<Lesson>(`/lessons/${id}`), apiClient.get<any>('/progress/me').catch(() => null)]).then(([item, progress]) => {
+    Promise.all([apiClient.get<Lesson>(`/lessons/${id}`), apiClient.get<any>('/progress/me').catch(() => null)]).then(async ([item, progress]) => {
       if (!current) return;
       setLesson(item);
       const records = progress?.progress ?? progress?.history ?? [];
-      setCompleted(Array.isArray(records) && records.some((record: any) => record.resourceType === 'lesson' && record.resourceId === id && (record.status === 'completed' || record.completionPercent >= 100)));
+      const done = Array.isArray(records) && records.some((record: any) => record.resourceType === 'lesson' && record.resourceId === id && (record.status === 'completed' || record.completionPercent >= 100));
+      setCompleted(done);
+      if (!done) await apiClient.post('/progress/me', { resourceType: 'lesson', resourceId: id, status: 'in_progress' });
     }).catch(cause => { if (current) setError(cause?.message ?? 'Không thể tải bài học.'); }).finally(() => { if (current) setLoading(false); });
     return () => { current = false; };
   }, [id]);

@@ -83,6 +83,13 @@ export class VocabStudyService {
     })
     const dailyTarget = profile?.dailyVocabularyTarget ?? 10
     const remainingToday = filters?.continueLearning ? dailyTarget : Math.max(0, dailyTarget - studiedToday)
+    if (filters?.reviewOnly) newWords.sort((a, b) => {
+      const left = a.vocabProgress[0], right = b.vocabProgress[0]
+      return Number(right?.lastRating === 'hard') - Number(left?.lastRating === 'hard')
+        || (right?.wrongCount ?? 0) - (left?.wrongCount ?? 0)
+        || new Date(left?.nextReviewAt ?? 0).getTime() - new Date(right?.nextReviewAt ?? 0).getTime()
+        || a.id.localeCompare(b.id)
+    })
     const words = filters?.reviewOnly ? newWords : newWords.slice(0, remainingToday)
 
     return {

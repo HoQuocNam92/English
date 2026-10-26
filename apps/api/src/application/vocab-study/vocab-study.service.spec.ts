@@ -133,6 +133,20 @@ test('certificate progress never includes another learner progress', async () =>
   assert.deepEqual(result.topics, [{ topicId: 'topic', total: 1, studied: 0, due: 0 }])
 })
 
+test('review sessions prioritize hard and frequently missed words and retain the selected domain', async () => {
+  let query: any
+  const word = (id: string, rating: string, wrongCount: number) => ({ id, term: id, partsOfSpeech: [], examples: [], vocabProgress: [{ lastRating: rating, wrongCount, nextReviewAt: new Date(0) }] })
+  const service = new VocabStudyService({
+    vocabulary: { findMany: async (args: any) => { query = args; return [word('easy', 'easy', 0), word('hard', 'hard', 2), word('hardest', 'hard', 5)] } },
+    vocabularyProgress: { count: async () => 10 },
+    learnerProfile: { findUnique: async () => ({ dailyVocabularyTarget: 10 }) },
+  } as any)
+  const result = await service.getStudySession('learner', { reviewOnly: true, domainCode: 'CLOUD' })
+  assert.deepEqual(result.words.map(word => word.id), ['hardest', 'hard', 'easy'])
+  assert.equal(query.where.vocabProgress.some.learnerId, 'learner')
+  assert.deepEqual(query.where.OR[0], { domain: { code: 'CLOUD' } })
+})
+
 test('answer cannot create progress for an unseen word', async () => {
   const service = new VocabStudyService({ vocabularyProgress: { findUnique: async () => null } } as any)
   await assert.rejects(() => service.submitAnswer('user-B', 'unseen', true))

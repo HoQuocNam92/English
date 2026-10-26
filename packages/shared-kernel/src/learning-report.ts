@@ -1,4 +1,4 @@
-type Activity = { id: string; resourceType: string; title?: string; status: string; completionPercent: number; completedAt?: string | null; updatedAt?: string | null };
+type Activity = { id: string; resourceType: string; resourceId?: string; title?: string; status: string; completionPercent: number; completedAt?: string | null; updatedAt?: string | null };
 export type LearningReportPayload = {
   summary?: { completedLessons?: number; startedLessons?: number; studiedWords?: number };
   progress?: Activity[];

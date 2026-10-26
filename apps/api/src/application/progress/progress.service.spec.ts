@@ -2,6 +2,26 @@ import { test } from 'node:test'
 import { strict as assert } from 'node:assert'
 import { ProgressService } from './progress.service'
 
+test('opening a lesson starts it once and cannot reset a completed lesson from another tab', async () => {
+  let row: any = null
+  const db: any = { learningProgress: {
+    upsert: async ({ create, update }: any) => { if (!row) row = { ...create, completionPercent: 0 }; else Object.assign(row, update); return row },
+    updateMany: async ({ data }: any) => { if (row.status === 'not_started' && row.completionPercent < 100) Object.assign(row, data); return { count: 0 } },
+    findUnique: async () => row,
+  } }
+  db.user = { findFirst: async () => ({ learnerProfile: { id: 'profile' } }) }
+  db.lesson = { findUnique: async () => ({ id: 'lesson' }) }
+  db.$transaction = async (run: any) => run(db)
+  const service = new ProgressService(db)
+  const request: any = { resourceType: 'lesson', resourceId: 'lesson', status: 'in_progress' }
+  assert.equal((await service.upsertProgress('learner', request))?.status, 'in_progress')
+  row.status = 'completed'; row.completionPercent = 100; row.completedAt = new Date()
+  const completedAt = row.completedAt
+  await service.upsertProgress('learner', request)
+  assert.equal(row.status, 'completed'); assert.equal(row.completionPercent, 100)
+  assert.equal(row.completedAt, completedAt)
+})
+
 function fixture(goal: 'vocabulary' | 'certification' | 'both' | null, overrides: Record<string, any> = {}) {
   const profile = { learningGoal: goal, certGoals: goal === 'certification' || goal === 'both' ? [{ certificateId: 'cert-1', certificate: { code: 'AWS', name: 'AWS' } }] : [], dailyVocabularyTarget: 10, weeklyExamTarget: 2, level: { name: 'Intermediate', code: 'B1' } }
   const prisma = {

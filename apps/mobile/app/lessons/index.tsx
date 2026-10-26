@@ -6,10 +6,10 @@ import { filterLessons, type LessonProfile } from '../../../../packages/shared-k
 import { FilterSelect } from '../../src/shared/ui/FilterSelect';
 import { Button, Tabs } from '../../src/shared/ui/primitives';
 import { LearningActivities } from '../../src/features/learning/LearningActivities';
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { ScrollView, StyleSheet, View, useWindowDimensions } from 'react-native';
 import { MaterialIcons } from '../../src/shared/ui/AppIcon';
-import { useLocalSearchParams, useRouter } from 'expo-router';
+import { useFocusEffect, useLocalSearchParams, useRouter } from 'expo-router';
 import { api } from '../../src/shared/api/api-client';
 
 const TYPES: Record<string, { label: string; detail: string; action: string; icon: keyof typeof MaterialIcons.glyphMap }> = {
@@ -22,17 +22,18 @@ const TYPES: Record<string, { label: string; detail: string; action: string; ico
 export default function LessonList({ embedded = false }: { embedded?: boolean }) {
   const { height: windowHeight } = useWindowDimensions();
   const router = useRouter(); const params = useLocalSearchParams<{domainCode?: string; type?: string}>();
+  const [completedIds, setCompletedIds] = useState<string[]>([]);
   const [profile, setProfile] = useState<LessonProfile | null>(null); const [scope, setScope] = useState('path'); const [domainCode, setDomainCode] = useState(params.domainCode || ''); const [certificateId, setCertificateId] = useState(''); const [vocabulary, setVocabulary] = useState('all');
   const [items,setItems]=useState<any[]>([]); const [query,setQuery]=useState(''); const [type,setType]=useState(params.type && TYPES[params.type] ? params.type : ''); const [loading,setLoading]=useState(true); const [error,setError]=useState('');
   useEffect(() => { setType(params.type && TYPES[params.type] ? params.type : ''); }, [params.type]);
   const load=async()=>{setLoading(true);setError('');try{
- const [learner, results] = await Promise.all([api.get<LessonProfile>('/learner-profiles/me'), Promise.all(Object.keys(TYPES).map(async lessonType => {
+ const [learner, results, progress] = await Promise.all([api.get<LessonProfile>('/learner-profiles/me'), Promise.all(Object.keys(TYPES).map(async lessonType => {
   const all: any[] = []; let pages = 1;
   for (let page=1; page<=pages; page++) { const qs = new URLSearchParams({ limit:'100',status:'published',type:lessonType,page:String(page) }); const response = await api.get<any>(`/lessons?${qs}`); all.push(...(response.data ?? response ?? [])); pages = response.meta?.totalPages ?? 1; }
   return all;
- }))]); setProfile(learner); setItems(results.flat());
+ })), api.get<any>('/progress/me')]); setCompletedIds((progress?.progress ?? []).filter((p: any) => p.resourceType === 'lesson' && (p.status === 'completed' || p.completionPercent >= 100)).map((p: any) => p.resourceId)); setProfile(learner); setItems(results.flat());
  }catch(e:any){setError(e.message??'Không thể tải bài học');}finally{setLoading(false)}};
- useEffect(()=>{void load()},[]);
+ useFocusEffect(useCallback(()=>{void load()},[]));
  const filtered=useMemo(()=>filterLessons(items.filter(item => TYPES[item.type] && (!type || item.type === type)),profile,{ query, scope, domainCode, certificateId, vocabulary }),[items,profile,query,type,scope,domainCode,certificateId,vocabulary]);
  const domains = [...new Map(items.filter(item => item.domain).map(item => [item.domain.code, item.domain])).values()];
  const certificates = [...new Map(items.flatMap(item => item.certificates ?? []).map(link => [link.certificate.id, link.certificate])).values()];
@@ -57,7 +58,7 @@ export default function LessonList({ embedded = false }: { embedded?: boolean })
           {x.summary ? <Text numberOfLines={3} style={s.summary}>{x.summary}</Text> : null}
           <View style={s.metaRow}>{x.level?.name ? <View style={s.level}><Text style={s.levelText}>{x.level.name}</Text></View> : null}<View style={s.duration}><MaterialIcons name="schedule" size={16} color="#59657c" /><Text style={s.secondary}>{x.estimatedMinutes || 15} phút</Text></View></View>
           {Boolean(x.keyConcepts?.length) && <View style={s.concepts}>{x.keyConcepts?.slice(0, 3).map((concept: string, index: number) => <View key={`${index}-${concept}`} style={s.concept}><Text style={s.conceptText}>{concept}</Text></View>)}</View>}
-          <View style={s.cardFooter}><Text style={s.action}>{TYPES[x.type].action}</Text><View style={s.arrow}><MaterialIcons name="arrow-forward" size={20} color="#6054c8" /></View></View>
+          <View style={s.cardFooter}><Text style={s.action}>{completedIds.includes(x.id) ? '✓ Đã học · Xem lại bài' : TYPES[x.type].action}</Text><View style={s.arrow}><MaterialIcons name="arrow-forward" size={20} color="#6054c8" /></View></View>
         </Card.Content>
       </Card>)}
       {!filtered.length && <View style={s.state}><EmptyState icon="search" title="Chưa tìm thấy bài học" detail="Thử từ khóa khác hoặc mở rộng bộ lọc để khám phá thêm nội dung." />{scope === 'path' && <Button onPress={() => setScope('all')}>Xem tất cả bài học</Button>}</View>}

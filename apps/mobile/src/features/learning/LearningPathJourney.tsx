@@ -46,7 +46,7 @@ export function LearningPathJourney({ full = false, refreshKey = 0, onAvailabili
   return <View style={{ gap: 16 }}>
     <View style={[controlStyles.card, { gap: 12 }]}>
       <Text style={{ fontSize: 21, fontWeight: '800' }}>Lộ trình · {path.level.name}</Text>
-      <Text>{path.completedLessons}/{path.totalLessons} bài cốt lõi đã học. Hoàn thành cấp cần học đủ bài và đạt tổng kết của mọi ngành đã chọn.</Text>
+      <Text>Bạn đã học {path.completedLessons}/{path.totalLessons} bài học trong tổng số {path.domains.length} chuyên ngành đã chọn. Để chuyển cấp, hãy hoàn thành bài học và đạt điểm yêu cầu của bài tổng kết ở từng ngành.</Text>
       {!!error && <Text accessibilityRole="alert" style={{ color: '#b91c1c' }}>{error}</Text>}
       {domain && <View style={{ gap: 14, padding: 16, backgroundColor: '#f8fafc', borderWidth: 1, borderColor: '#e2e8f0', borderRadius: 18 }}>
         <Text style={{ fontSize: 12, fontWeight: '700', color: '#64748b' }}>{domain.nextLesson ? 'TIẾP TỤC HỌC' : 'BÀI TỔNG KẾT'}</Text>

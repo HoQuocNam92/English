@@ -14,6 +14,7 @@ export interface ContinuationPlan {
   objective: string;
   reason: string;
   durationDays: number;
+  refreshDate?: string;
   dailyMinutes: number;
   steps: ContinuationStep[];
 }

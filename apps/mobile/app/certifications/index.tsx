@@ -30,6 +30,7 @@ export default function MobileCertificationsScreen({ embedded = false }: { embed
   return <FeatureScreen title="Luyện thi chứng chỉ" subtitle="Tìm chứng chỉ hoặc bài kiểm tra và mở lộ trình học phù hợp." embedded={embedded} loading={loading} error={error} onRetry={load}>
     <ListTools search={search} onSearch={setSearch} placeholder="Tìm chứng chỉ hoặc bài kiểm tra…" filters={[{ value: '', label: 'Tất cả tiến độ' }, { value: 'started', label: 'Đã bắt đầu học' }, { value: 'new', label: 'Chưa bắt đầu' }]} value={filter} onFilter={setFilter} />
     <View style={{ gap: 16 }}>{filtered.map(cert => {
+      const percent = Math.round(progress.find(item => item.certificateId === cert.id)?.completionPercent ?? 0);
       const matchedExams = search.trim() ? (cert.exams ?? []).filter(exam => matchesFilterOption(exam.title, search)) : [];
       return <View key={cert.id} style={[controlStyles.card, { gap: 14 }]}>
         <Text style={{ fontSize: 13, color: '#3525cd', fontWeight: '700' }}>{cert.code}</Text>
@@ -38,7 +39,9 @@ export default function MobileCertificationsScreen({ embedded = false }: { embed
         {!!cert.description && <Text>{cert.description}</Text>}
         <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>{(cert.domains ?? []).map(item => item.domain && <Badge key={item.domain.id}>{item.domain.name}</Badge>)}</View>
         {matchedExams.length > 0 && <View style={{ gap: 10 }}><Text style={{ fontWeight: '700' }}>Bài kiểm tra phù hợp</Text>{matchedExams.map(exam => <Button key={exam.id} mode="outlined" icon="assignment" onPress={() => open(cert, exam.id)}>{exam.title}</Button>)}</View>}
-        <Button icon="route" onPress={() => open(cert, matchedExams.length === 1 ? matchedExams[0].id : undefined)}>{matchedExams.length === 1 ? 'Mở bài kiểm tra' : started(cert.id) ? 'Tiếp tục ôn' : 'Xem lộ trình'}</Button>
+        <Text>{started(cert.id) ? 'Đã bắt đầu' : 'Chưa học'} · {percent}% hoàn thành</Text>
+        <View accessibilityRole="progressbar" accessibilityValue={{ min: 0, max: 100, now: percent }} style={{ height: 8, borderRadius: 4, backgroundColor: '#e2e8f0', overflow: 'hidden' }}><View style={{ height: 8, width: `${percent}%`, backgroundColor: '#047857' }} /></View>
+        <Button style={started(cert.id) ? { backgroundColor: '#047857' } : undefined} icon="route" onPress={() => open(cert, matchedExams.length === 1 ? matchedExams[0].id : undefined)}>{matchedExams.length === 1 ? 'Mở bài kiểm tra' : started(cert.id) ? 'Tiếp tục ôn' : 'Xem lộ trình'}</Button>
       </View>;
     })}
     {!filtered.length && <EmptyState icon="workspace-premium" title={certificates.length ? 'Không có chứng chỉ phù hợp' : 'Chưa có chứng chỉ đang hoạt động'} detail="Thử đổi từ khóa hoặc xóa bộ lọc." />}</View>

@@ -4,6 +4,12 @@ import { PrismaService } from '../../infrastructure/database/prisma.service'
 import { LearningPathService } from './learning-path.service'
 
 const KIND = 'continuation-v1'
+export const refreshDate = (now = new Date()) => new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Ho_Chi_Minh', year: 'numeric', month: '2-digit', day: '2-digit' }).format(now)
+function dailyActive(record: any, plan: ContinuationPlan): ActiveContinuation {
+  const value = record.result
+  const sameDay = value.plan.refreshDate === plan.refreshDate
+  return { recordId: record.id, startedAt: value.startedAt, plan: sameDay ? value.plan : plan, completedStepIds: sameDay ? value.completedStepIds ?? [] : [] }
+}
 const schedule = (steps: Omit<ContinuationStep, 'day'>[], days: number): ContinuationStep[] => steps.map((step, index) => ({ ...step, day: steps.length === 1 ? 1 : 1 + Math.floor(index * (days - 1) / (steps.length - 1)) }))
 const contextKey = (path: any) => `${path.level.code}:${path.domains.map((domain: any) => domain.id).sort().join(',')}`
 
@@ -14,12 +20,20 @@ export function buildContinuationPlans(path: any, vocabulary: any[], lessons: an
   const due = vocabulary.filter(word => word.nextReviewAt && new Date(word.nextReviewAt) <= now)
   const weak = vocabulary.filter(word => word.lastRating === 'hard' || word.wrongCount > word.correctCount).sort((a, b) => b.wrongCount - a.wrongCount)
   const domains = [...path.domains].sort((a: any, b: any) => (a.assessment?.scorePercent ?? 100) - (b.assessment?.scorePercent ?? 100) || a.code.localeCompare(b.code))
-  const reviewSteps = Array.from({ length: 7 }, (_, index) => {
-    const domain = domains[index % domains.length]
+  const date = refreshDate(now)
+  const dayNumber = Math.floor(Date.parse(date) / 86400000)
+  const reviewSteps = Array.from({ length: Math.min(3, domains.length) }, (_, index) => {
+    const domain = domains[(dayNumber + index) % domains.length]
     const domainWeak = weak.filter(word => word.vocabulary.domainId === domain.id || word.vocabulary.domains?.some((link: any) => link.domainId === domain.id))
-    return { id: `review-${index + 1}`, title: `${domain.name} · Ôn từ và cách dùng`, description: domainWeak.length ? `Chú ý các từ còn yếu: ${domainWeak.slice(0, 4).map(word => word.vocabulary.term).join(', ')}. Ôn theo lịch flashcards hiện có.` : 'Ôn flashcards theo lịch đến hạn, đọc câu ví dụ và đối chiếu cách dùng. Nếu chưa đến hạn, có thể học thêm từ hoặc quay lại vào buổi gợi ý.', href: `/learn/flashcards/all/practice?domainCode=${encodeURIComponent(domain.code)}`, minutes, kind: 'vocabulary' as const }
+    return { id: `review-${date}-${index + 1}`, title: `${domain.name} · Ôn từ và cách dùng`, description: domainWeak.length ? `Chú ý các từ còn yếu: ${domainWeak.slice(0, 4).map(word => word.vocabulary.term).join(', ')}. Ôn theo lịch flashcards hiện có.` : 'Ôn flashcards theo lịch đến hạn, đọc câu ví dụ và đối chiếu cách dùng. Nếu chưa đến hạn, có thể học thêm từ hoặc quay lại vào buổi gợi ý.', href: `/learn/flashcards/review/practice?domainCode=${encodeURIComponent(domain.code)}`, minutes, kind: 'vocabulary' as const }
   })
-  const plans: ContinuationPlan[] = [{ id: 'review', kind: 'review', title: 'Ôn tập duy trì · 14 ngày', objective: 'Giữ vốn từ và củng cố cách dùng sau khi hoàn thành cấp cuối.', reason: vocabulary.length ? `Trong các từ đã theo dõi có ${due.length} từ đến hạn và ${weak.length} từ cần củng cố.` : 'Bạn đã hoàn thành bài học; bắt đầu ghi nhận việc học và ôn từ bằng flashcards.', durationDays: 14, dailyMinutes: minutes, steps: schedule(reviewSteps, 14) }]
+  const completedLessons = lessons.filter(lesson => lesson.completed).sort((a, b) => a.id.localeCompare(b.id))
+  const dailySteps: ContinuationStep[] = reviewSteps.map(step => ({ ...step, day: 1 }))
+  for (let index = 0; index < Math.min(3, completedLessons.length); index++) {
+    const lesson = completedLessons[(dayNumber + index) % completedLessons.length]
+    dailySteps.push({ id: `refresh-${date}-${lesson.id}`, day: 1, kind: 'lesson', title: `Ôn lại · ${lesson.title}`, description: 'Đọc lại nội dung đã học, tự giải thích các khái niệm và đối chiếu ví dụ.', href: `/learn/lessons/${lesson.id}`, minutes: lesson.estimatedMinutes })
+  }
+  const plans: ContinuationPlan[] = [{ id: 'review', kind: 'review', title: 'Daily Refresh · Ôn tập hằng ngày', objective: 'Mỗi ngày một vòng ôn mới từ kiến thức đã học. Kết quả khóa học và lịch sử ôn được giữ lại.', reason: `Ưu tiên ${due.length} từ đến hạn, ${weak.length} từ cần củng cố và luân phiên bài cũ theo ngày.`, durationDays: 1, refreshDate: date, dailyMinutes: minutes, steps: dailySteps }]
   const applications = [...lessons].sort((a: any, b: any) => Number(a.completed) - Number(b.completed) || a.title.localeCompare(b.title)).slice(0, 6)
   if (applications.length) plans.push({ id: 'application', kind: 'application', title: 'Vận dụng công việc · 14 ngày', objective: 'Đọc tài liệu và giải thích quyết định kỹ thuật bằng tiếng Anh theo ngành đã học.', reason: applications.some(lesson => !lesson.completed) ? 'Ưu tiên bài tình huống và tài liệu bạn chưa học, sau đó luyện lại phần đã hoàn thành.' : 'Các bài đã học được dùng lại để luyện diễn giải và vận dụng; đây là lịch thực hành lại.', durationDays: 14, dailyMinutes: minutes, steps: schedule(applications.map(lesson => ({ id: `apply-${lesson.id}`, title: `${lesson.completed ? 'Ôn và vận dụng' : 'Thực hành'} · ${lesson.title}`, description: 'Đọc phần tiếng Anh, tự tóm tắt vấn đề và quyết định, rồi đối chiếu phần giải thích. Ghi nhận buổi học sau khi thực hiện; không chỉ mở liên kết.', href: `/learn/lessons/${lesson.id}`, minutes: lesson.estimatedMinutes, kind: 'lesson' })), 14) })
   const certificates = new Map<string, any>()
@@ -50,6 +64,8 @@ export function buildContinuationPlans(path: any, vocabulary: any[], lessons: an
 export class ContinuationPlanService {
   constructor(private readonly prisma: PrismaService, private readonly learningPath: LearningPathService) {}
 
+  protected now(): Date { return new Date() }
+
   private async current(learnerId: string, db: any) {
     return db.placementAssessment.findFirst({ where: { learnerId, submittedAt: null, result: { path: ['kind'], equals: KIND } }, orderBy: [{ createdAt: 'desc' }, { id: 'desc' }] })
   }
@@ -60,16 +76,17 @@ export class ContinuationPlanService {
     const domainIds = path.domains.map(domain => domain.id)
     const [vocabulary, lessons, topics, exams, record] = await Promise.all([
       db.vocabularyProgress.findMany({ where: { learnerId, lastRating: { not: null }, vocabulary: { status: 'published', OR: [{ domainId: { in: domainIds } }, { domains: { some: { domainId: { in: domainIds } } } }] } }, select: { nextReviewAt: true, wrongCount: true, correctCount: true, lastRating: true, vocabulary: { select: { term: true, domainId: true, domains: { select: { domainId: true } } } } } }),
-      db.lesson.findMany({ where: { status: 'published', domainId: { in: domainIds }, level: { code: { in: ['advanced', 'professional'] } }, type: { in: ['technical_reading', 'api_documentation', 'system_design', 'case_study'] } }, select: { id: true, title: true, estimatedMinutes: true }, orderBy: { title: 'asc' } }),
+      db.lesson.findMany({ where: { status: 'published', domainId: { in: domainIds }, type: { in: ['terminology', 'technical_reading', 'api_documentation', 'system_design', 'case_study'] } }, select: { id: true, title: true, estimatedMinutes: true }, orderBy: { title: 'asc' } }),
       db.certificationTopic.findMany({ where: { certificateDomain: { certificate: { isActive: true } } }, include: { certificateDomain: { include: { certificate: true } }, lessons: { where: { lesson: { status: 'published', type: 'certification_review' } }, select: { lesson: { select: { id: true, title: true, estimatedMinutes: true, domainId: true } } } } }, orderBy: [{ certificateId: 'asc' }, { order: 'asc' }] }),
       db.exam.findMany({ where: { certificateId: { not: null }, status: 'published', kind: 'practice', questions: { some: {} } }, select: { id: true, certificateId: true, topics: true, durationMinutes: true } }),
       this.current(learnerId, db),
     ])
     const progress = await db.learningProgress.findMany({ where: { learnerId, resourceType: 'lesson', resourceId: { in: lessons.map((lesson: any) => lesson.id) } }, select: { resourceId: true, status: true, completionPercent: true } })
     const completed = new Set(progress.filter((p: any) => p.status === 'completed' || p.completionPercent >= 100).map((p: any) => p.resourceId))
-    const plans = buildContinuationPlans(path, vocabulary, lessons.map((lesson: any) => ({ ...lesson, completed: completed.has(lesson.id) })), topics, exams)
+    const plans = buildContinuationPlans(path, vocabulary, lessons.map((lesson: any) => ({ ...lesson, completed: completed.has(lesson.id) })), topics, exams, this.now())
     const value = record?.result as any
-    const active: ActiveContinuation | null = value?.context === contextKey(path) && value?.plan?.steps?.length && plans.some(plan => plan.id === value.plan.id) ? { recordId: record.id, startedAt: value.startedAt, completedStepIds: value.completedStepIds ?? [], plan: value.plan } : null
+    let active: ActiveContinuation | null = value?.context === contextKey(path) && value?.plan?.steps?.length && plans.some(plan => plan.id === value.plan.id) ? { recordId: record.id, startedAt: value.startedAt, completedStepIds: value.completedStepIds ?? [], plan: value.plan } : null
+    if (active?.plan.id === 'review') active = dailyActive(record, plans.find(plan => plan.id === 'review')!)
     return { eligible: true, plans, active, certificateMessage: plans.some(plan => plan.kind === 'certificate') ? undefined : 'Chưa có đủ bài kiến thức và bài luyện tập chứng chỉ phù hợp ngành đã chọn. Bạn có thể chọn hướng ôn tập hoặc vận dụng trước.' }
   }
 
@@ -80,7 +97,7 @@ export class ContinuationPlanService {
       if (!options.eligible) throw new BadRequestException('Cần hoàn thành cấp Chuyên nghiệp trước khi chọn lộ trình tiếp nối.')
       const plan = options.plans.find(plan => plan.id === planId)
       if (!plan?.steps.length) throw new BadRequestException('Lộ trình không còn khả dụng. Hãy tải lại gợi ý.')
-      if (options.active?.plan.id === planId && options.active.completedStepIds.length < options.active.plan.steps.length) return options
+      if (options.active?.plan.id === planId && (planId === 'review' || options.active.completedStepIds.length < options.active.plan.steps.length)) return options
       const path = await this.learningPath.getPath(learnerId, db)
       const startedAt = new Date().toISOString()
       const record = await db.placementAssessment.create({ data: {
@@ -97,8 +114,17 @@ export class ContinuationPlanService {
       const path = await this.learningPath.getPath(learnerId, db)
       if (!path.configured || !path.allCompleted || !path.finalLevel) throw new BadRequestException('Lộ trình tiếp nối không còn phù hợp với trạng thái học hiện tại.')
       const record = await this.current(learnerId, db)
-      const value = record?.result as any
+      const value = record ? structuredClone(record.result) as any : null
       if (record?.id !== recordId || value?.context !== contextKey(path)) throw new ConflictException('Bạn đã đổi lộ trình. Hãy tải lại trước khi ghi nhận buổi học.')
+      if (value.plan.id === 'review') {
+        const options = await this.getOptions(learnerId, db)
+        const today = options.active!
+        if (value.plan.refreshDate !== today.plan.refreshDate) {
+          value.history = [...(value.history ?? []), { date: value.plan.refreshDate ?? value.startedAt.slice(0, 10), plan: value.plan, completedStepIds: value.completedStepIds ?? [] }]
+          value.plan = today.plan
+          value.completedStepIds = []
+        }
+      }
       if (!value.plan.steps.some((step: ContinuationStep) => step.id === stepId)) throw new BadRequestException('Buổi học không thuộc lộ trình đã chọn.')
       const completedStepIds = [...new Set<string>([...(value.completedStepIds ?? []), stepId])]
       await db.placementAssessment.update({ where: { id: record.id }, data: { result: { ...value, completedStepIds } } })

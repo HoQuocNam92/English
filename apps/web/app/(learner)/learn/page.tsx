@@ -174,9 +174,6 @@ export default function LearnerHomePage() {
             <div className="z-10">
               <div className="flex justify-between items-start mb-4">
                 <div>
-                  <span className="inline-block px-2 py-1 bg-surface-container-low text-on-surface-variant text-[12px] font-bold rounded mb-2 border border-border-subtle uppercase tracking-[0.05em]">
-                    {journeyConfigured ? 'Mục tiêu hôm nay' : 'Thiết lập hành trình'}
-                  </span>
                   <h2 className="text-[24px] font-bold text-on-surface" style={{ lineHeight: '32px', letterSpacing: '-0.01em' }}>
                     {journeyConfigured ? 'Mục tiêu học tập hôm nay' : 'Bạn chưa thiết lập lộ trình học tập'}
                   </h2>
@@ -185,7 +182,7 @@ export default function LearnerHomePage() {
               </div>
               <p className="text-[14px] text-on-surface-variant mb-4">
                 {journeyConfigured
-                  ? `Hôm nay: ${journey.targets.vocabularyPerDay} từ vựng, ${journey.targets.minutesPerDay} phút học. Mục tiêu bài thi: ${journey.targets.examsPerWeek}/tuần, ${journey.targets.examsPerMonth}/tháng và ${journey.targets.examsPerYear}/năm.`
+                  ? `Hôm nay: ${journey.targets.vocabularyPerDay} từ vựng, ${journey.targets.minutesPerDay} phút học. Mục tiêu bài thi: ${journey.targets.examsPerWeek} bài/tuần, ${journey.targets.examsPerMonth} bài/tháng và ${journey.targets.examsPerYear} bài/năm.`
                   : 'Hãy thiết lập trình độ, chuyên ngành CNTT và chứng chỉ mục tiêu trong hồ sơ để TechEnglish Pro cá nhân hoá nội dung học tập tối ưu cho bạn.'}
               </p>
             </div>
@@ -403,7 +400,7 @@ export default function LearnerHomePage() {
                   </div>
                   <div className="flex shrink-0 flex-col items-end gap-1">
                     <span className="text-[14px] font-semibold text-primary">{a.score ?? a.correctCount}/{a.totalQuestions ?? 100}</span>
-                    <Link href={`/learn/quiz/result/${a.id}`} className="whitespace-nowrap text-sm font-semibold text-primary hover:underline">Xem kết quả</Link>
+                    <Link href={`/learn/quiz/result/${a.id}`} className="inline-flex min-h-11 items-center rounded-xl bg-primary px-4 py-2 text-sm font-semibold text-white">Xem kết quả</Link>
                   </div>
                 </div>
               )) : <p className="rounded bg-surface-container p-3 text-xs text-on-surface-variant">Bạn chưa có kết quả bài kiểm tra.</p>}

@@ -1,6 +1,6 @@
 import { test } from 'node:test'
 import { strict as assert } from 'node:assert'
-import { buildContinuationPlans, ContinuationPlanService } from './continuation-plan.service'
+import { buildContinuationPlans, ContinuationPlanService, refreshDate } from './continuation-plan.service'
 
 const path: any = { configured: true, allCompleted: true, finalLevel: true, level: { code: 'professional' }, dailyMinutes: 30, domains: [{ id: 'd', code: 'SOFTWARE_ENG', name: 'Software', assessment: { scorePercent: 80 } }] }
 function fixture(eligible = true) {
@@ -23,7 +23,7 @@ function fixture(eligible = true) {
 test('recommendations use real weak words and available lessons, without inventing empty certificate plans', () => {
   const plans = buildContinuationPlans(path, [{ nextReviewAt: new Date(0), lastRating: 'hard', wrongCount: 3, correctCount: 0, vocabulary: { term: 'Contract', domainId: 'd' } }], [{ id: 'real', title: 'Real case', estimatedMinutes: 20, completed: true }], [], [])
   assert.deepEqual(plans.map(plan => plan.id), ['review', 'application'])
-  assert.equal(plans[0].durationDays, 14); assert.equal(plans[0].steps.length, 7)
+  assert.equal(plans[0].durationDays, 1); assert.equal(plans[0].steps.length, 2)
   assert.match(plans[0].steps[0].description, /Contract/)
   assert.equal(plans[1].steps[0].href, '/learn/lessons/real')
   assert.match(plans[1].steps[0].title, /Ôn và vận dụng/)
@@ -55,14 +55,14 @@ test('selection persists in existing JSON, remains outside submitted assessments
 })
 test('completion is idempotent, rejects foreign tasks and stale tabs, and retains prior plan history', async () => {
   const f = fixture(); const chosen = await f.service.choose('learner', 'review'); const id = chosen.active!.recordId
-  await f.service.completeStep('learner', id, 'review-1')
-  const again = await f.service.completeStep('learner', id, 'review-1')
-  assert.deepEqual(again.completedStepIds, ['review-1'])
+  await f.service.completeStep('learner', id, chosen.active!.plan.steps[0].id)
+  const again = await f.service.completeStep('learner', id, chosen.active!.plan.steps[0].id)
+  assert.deepEqual(again.completedStepIds, [chosen.active!.plan.steps[0].id])
   await assert.rejects(() => f.service.completeStep('learner', id, 'invented'))
-  await assert.rejects(() => f.service.completeStep('other-user', id, 'review-2'))
+  await assert.rejects(() => f.service.completeStep('other-user', id, chosen.active!.plan.steps[0].id))
   await f.service.choose('learner', 'application')
-  await assert.rejects(() => f.service.completeStep('learner', id, 'review-2'))
-  assert.equal(f.records.length, 2); assert.deepEqual(f.records[0].result.completedStepIds, ['review-1'])
+  await assert.rejects(() => f.service.completeStep('learner', id, chosen.active!.plan.steps[0].id))
+  assert.equal(f.records.length, 2); assert.deepEqual(f.records[0].result.completedStepIds, [chosen.active!.plan.steps[0].id])
 })
 test('unavailable or client-supplied plan URLs cannot be selected', async () => {
   const f = fixture()
@@ -70,13 +70,37 @@ test('unavailable or client-supplied plan URLs cannot be selected', async () => 
   await assert.rejects(() => f.service.choose('learner', 'https://outside.invalid'))
   assert.equal(f.records.length, 0)
 })
-test('completed review cycle can restart without erasing its previous record', async () => {
-  const f = fixture(); const first = await f.service.choose('learner', 'review')
-  for (const step of first.active!.plan.steps) await f.service.completeStep('learner', first.active!.recordId, step.id)
-  const next = await f.service.choose('learner', 'review')
-  assert.notEqual(next.active!.recordId, first.active!.recordId)
-  assert.deepEqual(next.active!.completedStepIds, [])
-  assert.equal(f.records[0].result.completedStepIds.length, 7)
+test('Daily Refresh cannot restart today; rollover preserves yesterday and rejects stale tabs', async () => {
+  const f = fixture()
+  let now = new Date('2026-10-25T16:59:00Z')
+  ;(f.service as any).now = () => now
+  const first = await f.service.choose('learner', 'review')
+  const recordId = first.active!.recordId
+  const oldStep = first.active!.plan.steps[0].id
+  await f.service.completeStep('learner', recordId, oldStep)
+  const same = await f.service.choose('learner', 'review')
+  assert.equal(same.active!.recordId, recordId)
+  assert.deepEqual(same.active!.completedStepIds, [oldStep])
+  now = new Date('2026-10-25T17:00:00Z')
+  const tomorrow = await f.service.getOptions('learner')
+  assert.equal(tomorrow.active!.plan.refreshDate, '2026-10-26')
+  assert.deepEqual(tomorrow.active!.completedStepIds, [])
+  await assert.rejects(() => f.service.completeStep('learner', recordId, oldStep))
+  const newStep = tomorrow.active!.plan.steps[0].id
+  await f.service.completeStep('learner', recordId, newStep)
+  assert.deepEqual(f.records[0].result.history[0].completedStepIds, [oldStep])
+  assert.deepEqual((await f.service.getOptions('learner')).active!.completedStepIds, [newStep])
+})
+
+test('dates follow Vietnam midnight and daily lessons rotate using only completed published candidates', () => {
+  assert.equal(refreshDate(new Date('2026-10-25T16:59:59Z')), '2026-10-25')
+  assert.equal(refreshDate(new Date('2026-10-25T17:00:00Z')), '2026-10-26')
+  const lessons = Array.from({ length: 5 }, (_, index) => ({ id: `l${index}`, title: `Lesson ${index}`, completed: index !== 4, estimatedMinutes: 10 }))
+  const first = buildContinuationPlans(path, [], lessons, [], [], new Date('2026-10-25T12:00Z'))[0]
+  const next = buildContinuationPlans(path, [], lessons, [], [], new Date('2026-10-26T12:00Z'))[0]
+  assert.notDeepEqual(first.steps.map(s => s.href), next.steps.map(s => s.href))
+  assert.ok(first.steps.every(s => !s.href.includes('/lessons/l4')))
+  assert.match(first.steps[0].href, /flashcards\/review\/practice/)
 })
 test('a multi-topic exam is not placed before another topic prerequisite outside the selected schedule', () => {
   const certificate = { id: 'cert', name: 'Certificate', isActive: true }

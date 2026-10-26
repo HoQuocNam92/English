@@ -28,6 +28,7 @@ export default function VocabularyQuizPage({ params }: { params: Promise<{ id: s
   const [userAnswer, setUserAnswer] = useState('');
   const [selectedOption, setSelectedOption] = useState<string | null>(null);
   const [showResult, setShowResult] = useState(false);
+  const [responses, setResponses] = useState<Record<number, string>>({});
   const [quizResults, setQuizResults] = useState<{ vocabId: string; term: string; correct: boolean }[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -54,6 +55,7 @@ export default function VocabularyQuizPage({ params }: { params: Promise<{ id: s
       setSelectedOption(null);
       setShowResult(false);
       setQuizResults([]);
+      setResponses({});
       setPhase('quiz');
     } catch {
       setError('Không thể tải bài kiểm tra.');
@@ -73,6 +75,7 @@ export default function VocabularyQuizPage({ params }: { params: Promise<{ id: s
     if (choice !== undefined) setSelectedOption(choice);
     const isCorrect = ans.toLowerCase() === q.answer.toLowerCase();
     setShowResult(true);
+    setResponses(previous => ({ ...previous, [quizIdx]: ans }));
     const result = { vocabId: q.vocabularyId, term: q.answer, correct: isCorrect };
     setQuizResults(prev => [...prev, result]);
     try {
@@ -82,16 +85,33 @@ export default function VocabularyQuizPage({ params }: { params: Promise<{ id: s
     }
   };
 
+  const goToQuestion = (index: number) => {
+    const answer = responses[index];
+    setQuizIdx(index);
+    setUserAnswer(answer ?? '');
+    setSelectedOption(answer ?? null);
+    setShowResult(answer !== undefined);
+  };
+
   const nextQuestion = () => {
     if (quizIdx + 1 < questions.length) {
-      setQuizIdx(quizIdx + 1);
-      setUserAnswer('');
-      setSelectedOption(null);
-      setShowResult(false);
+      goToQuestion(quizIdx + 1);
     } else {
       setPhase('summary'); showToast('Bạn đã hoàn thành bài kiểm tra từ vựng.', 'success', 'Hoàn thành');
     }
   };
+
+  useEffect(() => {
+    const navigate = (event: KeyboardEvent) => {
+      if (phase !== 'quiz' || loading || error || (event.target as HTMLElement).closest('input, textarea, select, [contenteditable="true"]')) return;
+      if (!['ArrowRight', 'ArrowUp', 'ArrowLeft', 'ArrowDown'].includes(event.key)) return;
+      event.preventDefault();
+      if (event.key === 'ArrowRight' || event.key === 'ArrowUp') { if (showResult) nextQuestion(); }
+      else if (quizIdx > 0) goToQuestion(quizIdx - 1);
+    };
+    window.addEventListener('keydown', navigate);
+    return () => window.removeEventListener('keydown', navigate);
+  }, [phase, loading, error, quizIdx, showResult, responses, questions.length]);
 
   if (loading) return <LearnerShell><LoadingSpinner /></LearnerShell>;
   if (error || questions.length === 0) {

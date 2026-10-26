@@ -464,7 +464,7 @@ export default function FlashcardsScreen() {
             </TouchableOpacity>
           ))}
         </View>}
-        {isPreview && <Button onPress={() => router.back()}>Quay lại từ đã học</Button>}
+        {isPreview && <Button onPress={() => router.replace('/flashcards/history' as any)}>Quay lại từ đã học</Button>}
 
       </View>
     );
@@ -650,8 +650,8 @@ export default function FlashcardsScreen() {
             <Text style={styles.primaryBtnText}>{isReview ? 'Kiểm tra từ đến hạn' : 'Học thêm từ mới'}</Text>
           </TouchableOpacity>
 
-          <TouchableOpacity onPress={() => router.back()} style={[styles.textBtn]}>
-            <Text style={[styles.textBtnText, { color: colors.onSurfaceVariant }]}>Về trang chính</Text>
+          <TouchableOpacity onPress={() => router.replace(params.sourceLessonId || params.lessonId ? `/lessons/${params.sourceLessonId || params.lessonId}` as any : '/flashcards/words' as any)} style={[styles.textBtn]}>
+            <Text style={[styles.textBtnText, { color: colors.onSurfaceVariant }]}>{params.sourceLessonId || params.lessonId ? 'Về bài học' : 'Về trang từ vựng'}</Text>
           </TouchableOpacity>
         </View>
       </View>

@@ -24,7 +24,7 @@ export default function FlashcardPracticePage({ params }: { params: Promise<{ id
   const topicId = searchParams?.get('topicId') ?? '';
   const certificateId = searchParams?.get('certificateId') ?? '';
   const reviewOnly = searchParams?.get('reviewOnly') === 'true';
-  const returnUrl = certificateId ? `/learn/certifications/${certificateId}` : lessonId === 'review' ? '/learn/flashcards' : `/learn/flashcards/${lessonId}`;
+  const returnUrl = certificateId ? `/learn/certifications/${certificateId}` : sourceLessonId ? `/learn/lessons/${sourceLessonId}` : lessonId === 'review' || lessonId === 'all' ? '/learn/flashcards' : `/learn/lessons/${lessonId}`;
   const savingRef = React.useRef(false);
   const [saving, setSaving] = useState(false);
   const levelCode = searchParams?.get('levelCode') ?? '';
@@ -94,7 +94,7 @@ export default function FlashcardPracticePage({ params }: { params: Promise<{ id
         setIsFlipped(false);
         setIsFinished(false);
       } else if (lessonId === 'review') {
-        const res: any = await apiClient.get('/vocab-study/session?reviewOnly=true&onlyNew=false');
+        const res: any = await apiClient.get(`/vocab-study/session?${new URLSearchParams({ reviewOnly: 'true', onlyNew: 'false', ...(domainCode ? { domainCode } : {}), ...(levelCode ? { levelCode } : {}) })}`);
         if (!res || !res.words) {
           setError('Không thể tải danh sách từ cần ôn tập.');
           return;
@@ -251,6 +251,13 @@ export default function FlashcardPracticePage({ params }: { params: Promise<{ id
   // Keyboard navigation
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
+      if ((e.target as HTMLElement).closest('input, textarea, select, [contenteditable="true"]') || saving) return;
+      if (quizMode && ['ArrowRight', 'ArrowUp', 'ArrowLeft', 'ArrowDown'].includes(e.key)) {
+        e.preventDefault();
+        if (e.key === 'ArrowRight' || e.key === 'ArrowUp') { if (quizFeedback !== null) nextQuizQuestion(); }
+        else if (quizIndex > 0) goToQuizQuestion(quizIndex - 1);
+        return;
+      }
       if (quizMode || quizFailed || isFinished || loading || !currentWord) return;
       if (e.code === 'Space') {
         e.preventDefault();
@@ -268,7 +275,7 @@ export default function FlashcardPracticePage({ params }: { params: Promise<{ id
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [currentWord, isFinished, loading, quizMode, quizFailed, isFlipped, sessionResults, currentIdx, words]);
+  }, [currentWord, isFinished, loading, quizMode, quizFailed, isFlipped, sessionResults, currentIdx, words, saving, quizFeedback, quizIndex, quizQuestions, quizResponses]);
 
   // Stop studying list
   const handleStopStudying = async () => {
@@ -381,13 +388,13 @@ export default function FlashcardPracticePage({ params }: { params: Promise<{ id
               className="flex-1 py-3.5 rounded-xl bg-primary text-white text-xs font-bold hover:bg-indigo-700 transition-colors shadow-xs flex items-center justify-center gap-2"
             >
               <AppIcon className=" text-base">replay</AppIcon>
-              Học thêm từ mới
+              {lessonId === 'review' || reviewOnly ? 'Kiểm tra từ đến hạn' : 'Học thêm từ mới'}
             </button>
             <Link
               href={returnUrl}
               className="flex-1 py-3.5 rounded-xl border border-slate-200 bg-white text-slate-700 hover:bg-slate-50 text-xs font-bold transition-colors text-center"
             >
-              {certificateId ? 'Về chứng chỉ' : lessonId === 'review' ? 'Về trang Flashcards' : 'Về danh sách từ'}
+              {certificateId ? 'Về chứng chỉ' : lessonId === 'review' || lessonId === 'all' && !sourceLessonId ? 'Về trang từ vựng' : 'Về bài học'}
             </Link>
           </div>
         </div>
