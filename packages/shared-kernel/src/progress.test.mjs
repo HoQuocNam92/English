@@ -146,3 +146,14 @@ test('trail never invents practice for empty vocabularies or unlocks an incomple
   assert.equal(trail.steps.length, 1);
   assert.equal(trail.steps[0].ready, false);
 });
+
+test('certificate report hides unstarted goals and includes each independently studied certificate', () => {
+  const base = { certificateName: 'Certificate', totalLessons: 4, completedLessons: 0, examAttempts: 0, avgScore: null, completionPercent: 0 };
+  const report = learningReport({ certProgress: [
+    { ...base, certificateId: 'goal-only', hasStarted: false },
+    { ...base, certificateId: 'reading', hasStarted: true },
+    { ...base, certificateId: 'exam', examAttempts: 1 },
+    { ...base, certificateId: 'completed', completedLessons: 1 },
+  ] }, null);
+  assert.deepEqual(report.certificates.map(item => item.certificateId), ['reading', 'exam', 'completed']);
+});

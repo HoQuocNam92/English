@@ -182,16 +182,15 @@ Bảng này mô tả dữ liệu seed, không xác nhận tài khoản đang có
 
 ## Mobile
 
-Đặt `EXPO_PUBLIC_API_URL` theo môi trường chạy ứng dụng:
+Mobile mặc định gọi server `https://api.techenglish.click/api/v1`. Địa chỉ này được đặt trong `.env.local.example`, các profile EAS và cấu hình Compose. Nếu đã có `apps/mobile/.env.local`, đặt `EXPO_PUBLIC_API_URL=https://api.techenglish.click/api/v1` để tránh ghi đè bằng IP LAN cũ.
 
-- Android emulator: `http://10.0.2.2:8080/api/v1`.
-- Thiết bị thật: IP LAN của máy chạy API, ví dụ `http://192.168.1.10:8080/api/v1`.
+Chỉ khi chủ động kiểm thử API cục bộ mới đổi sang `http://10.0.2.2:8080/api/v1` trên Android emulator hoặc IP LAN của máy chạy API trên thiết bị thật.
 
 ```bash
 pnpm --filter mobile dev
 ```
 
-Máy tính và điện thoại phải kết nối được với nhau. Lệnh trên mở Expo Metro, không tạo APK/IPA. Đăng nhập Google native cần development build hoặc bản cài phù hợp; không hỗ trợ trong Expo Go. Xem [hướng dẫn Docker và mobile](docker/README.md) khi tạo bản cài.
+Khi chạy qua Expo Metro, điện thoại cần kết nối được với máy chạy Metro. API vẫn gọi server HTTPS. Lệnh trên không tạo APK/IPA. Thay địa chỉ API hoặc mã nguồn cần khởi động lại Metro với cache mới hoặc build lại ứng dụng đã cài. Đăng nhập Google native cần development build hoặc bản cài phù hợp; không hỗ trợ trong Expo Go. Xem [hướng dẫn Docker và mobile](docker/README.md) khi tạo bản cài.
 
 ## Kiểm thử và build
 

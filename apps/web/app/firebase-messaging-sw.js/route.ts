@@ -19,7 +19,13 @@ firebase.messaging().onBackgroundMessage(function(payload) {
 });
 self.addEventListener('notificationclick', function(event) {
   event.notification.close();
-  event.waitUntil(clients.openWindow((event.notification.data && event.notification.data.route) || '/learn'));
+  var route = event.notification.data && event.notification.data.route;
+  var target = new URL('/learn/plan', self.location.origin);
+  try {
+    var candidate = new URL(route || '/learn/plan', self.location.origin);
+    if (candidate.origin === self.location.origin && (candidate.pathname === '/learn' || candidate.pathname.startsWith('/learn/'))) target = candidate;
+  } catch (_) {}
+  event.waitUntil(clients.openWindow(target.href));
 });`;
   return new Response(source, { headers: { 'Content-Type': 'application/javascript; charset=utf-8', 'Service-Worker-Allowed': '/', 'Cache-Control': 'no-store' } });
 }

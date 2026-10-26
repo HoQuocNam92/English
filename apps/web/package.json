@@ -8,7 +8,7 @@
     "start": "next start",
     "lint": "next lint",
     "typecheck": "tsc --noEmit -p tsconfig.json",
-    "test": "node --test src/shared/lib/bug-regressions.test.mjs"
+    "test": "node --test src/shared/lib/*.test.mjs"
   },
   "dependencies": {
     "@techenglish/contracts": "workspace:*",

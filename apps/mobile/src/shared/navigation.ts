@@ -5,6 +5,11 @@ export function mobileRoute(href: string) {
   const query = new URLSearchParams(separator < 0 ? '' : withoutHash.slice(separator + 1));
   const route = pathname.replace(/^\/learn(?=\/|$)/, '').replace(/\/$/, '');
   const finish = (destination: string) => `${destination}${query.size ? `?${query}` : ''}`;
+  if (route === '/dashboard') return finish('/(tabs)/home');
+  if (route === '/reading-lab' || /^\/practice\/scenario\/[^/]+$/.test(route)) {
+    query.set('type', route === '/reading-lab' ? 'technical_reading' : 'case_study');
+    return finish('/lessons');
+  }
   const topic = route.match(/^\/certifications\/([^/]+)\/topics\/([^/]+)$/);
   if (topic) {
     query.set('certificateId', topic[1]);
@@ -30,4 +35,23 @@ export function mobileRoute(href: string) {
     return finish('/flashcards/words');
   }
   return finish(route || '/(tabs)/home');
+}
+
+/** Accept server web routes and known native learning routes only. */
+export function mobileNotificationRoute(value: unknown): string {
+  if (typeof value !== 'string' || !value.trim() || /[\\\u0000-\u0020]/.test(value)) return '/learning-plan';
+  let route = value;
+  if (/^https?:\/\//i.test(route)) {
+    try {
+      const url = new URL(route);
+      if (url.protocol !== 'https:' || !['techenglish.click', 'www.techenglish.click'].includes(url.hostname)) return '/learning-plan';
+      route = url.pathname + url.search;
+    } catch { return '/learning-plan'; }
+  }
+  if (route.startsWith('//')) return '/learning-plan';
+  const destination = mobileRoute(route);
+  const pathname = destination.split('?')[0];
+  if (!/^(?:\/\(tabs\)\/(?:home|learning|progress|practice|certificates)|\/learning-plan|\/placement-test|\/catalog|\/lessons(?:\/[^/]+)?|\/certifications(?:\/(?:topics\/)?[^/]+)?|\/quiz\/[^/]+|\/test-result\/[^/]+|\/flashcards(?:\/(?:dashboard|explore|history|words))?|\/profile\/(?:edit|history))$/.test(pathname) || /(?:^|\/)\.\.?(?:\/|$)/.test(pathname)) return '/learning-plan';
+  // Older server and local reminders point to Home, which may already be open.
+  return pathname === '/(tabs)/home' ? destination.replace('/(tabs)/home', '/learning-plan') : destination;
 }

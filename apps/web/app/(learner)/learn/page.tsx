@@ -118,7 +118,7 @@ export default function LearnerHomePage() {
           {'Chào '} {displayName}, {'hôm nay bạn muốn học gì?'}
         </h1>
         <p className="text-[14px] text-on-surface-variant mb-6">
-          {'Tiếp tục hành trình chinh phục tiếng Anh IT của bạn.'}
+          {'Học tiếng Anh chuyên ngành công nghệ thông tin theo mục tiêu của bạn.'}
         </p>
 
         {/* Stat Cards — 3 col */}
@@ -369,9 +369,7 @@ export default function LearnerHomePage() {
                         <span className="text-[11px] font-bold uppercase tracking-wide text-on-surface-variant">Tiến độ học tập</span>
                         <span className="text-[12px] font-bold text-primary">{progressPercent}%</span>
                       </div>
-                      <div className="h-1.5 overflow-hidden rounded-full bg-surface-container-highest">
-                        <div className="h-full rounded-full bg-primary" style={{ width: `${progressPercent}%` }} />
-                      </div>
+
                       <div className="content-card-footer content-card-actions text-[13px] font-bold text-primary">
                         Xem lộ trình <span className="text-[16px]" aria-hidden="true"><IconText>{"➡️"}</IconText></span>
                       </div>
@@ -395,17 +393,17 @@ export default function LearnerHomePage() {
               {attempts.length > 0 ? attempts.slice(0, 3).map((a: any) => (
                 <div
                   key={a.id}
-                  className="bg-surface-container border border-outline-variant rounded-lg p-2 flex items-center justify-between hover:shadow-[0_1px_3px_rgba(15,23,24,0.06)] transition-shadow"
+                  className="bg-surface-container border border-outline-variant rounded-lg p-3 flex items-center justify-between gap-3 hover:shadow-[0_1px_3px_rgba(15,23,24,0.06)] transition-shadow"
                 >
-                  <div>
+                  <div className="min-w-0 flex-1">
                     <h4 className="text-[14px] font-semibold text-on-surface">{a.exam?.title ?? a.examTitle ?? 'Bài kiểm tra'}</h4>
                     <p className="text-[12px] font-bold text-on-surface-variant uppercase tracking-[0.05em]">
                       {a.completedAt ? new Date(a.completedAt).toLocaleDateString('vi-VN') : ''}
                     </p>
                   </div>
-                  <div className="flex flex-col items-end">
+                  <div className="flex shrink-0 flex-col items-end gap-1">
                     <span className="text-[14px] font-semibold text-primary">{a.score ?? a.correctCount}/{a.totalQuestions ?? 100}</span>
-                    <Link href={`/learn/quiz/result/${a.id}`} className="text-[12px] font-bold text-primary hover:underline">Xem kết quả</Link>
+                    <Link href={`/learn/quiz/result/${a.id}`} className="whitespace-nowrap text-sm font-semibold text-primary hover:underline">Xem kết quả</Link>
                   </div>
                 </div>
               )) : <p className="rounded bg-surface-container p-3 text-xs text-on-surface-variant">Bạn chưa có kết quả bài kiểm tra.</p>}

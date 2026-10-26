@@ -124,6 +124,7 @@ export default function MobileProfileScreen() {
           {[
             ['article', 'Danh mục học tập', '/catalog'],
             ['history', 'Lịch sử học tập', '/profile/history'],
+            ['notifications', 'Thông báo', '/notifications'],
             ['school', 'Lộ trình học', '/learning-plan'],
             ['style', 'Tổng quan từ vựng', '/flashcards/dashboard'],
             ['history', 'Từ đã học', '/flashcards/history'],

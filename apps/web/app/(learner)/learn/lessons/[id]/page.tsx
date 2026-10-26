@@ -73,7 +73,7 @@ export default function LearnerLessonDetail({ params }: { params: Promise<{ id: 
             }`}
           >
             <AppIcon className="">check_circle</AppIcon>
-            {saving ? 'Đang lưu...' : completed ? 'Đã hoàn thành' : 'Đánh dấu hoàn thành'}
+            {saving ? 'Đang lưu...' : completed ? 'Đã hoàn thành' : 'Hoàn thành bài học'}
           </button>}
         </div>
         {completed && <div className="mt-5"><LearningPathJourney lessonId={id} /></div>}

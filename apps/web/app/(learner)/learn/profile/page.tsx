@@ -42,6 +42,7 @@ function LearnerProfileContent() {
   const [selectedDomains, setSelectedDomains] = useState<string[]>([]);
   const [learningGoal, setLearningGoal] = useState<'certification' | 'vocabulary' | 'both' | null>(null);
   const [certificateCode, setCertificateCode] = useState('');
+  const [showCertificates, setShowCertificates] = useState(false);
   const [selectedCareerGoals, setSelectedCareerGoals] = useState<string[]>([]);
   const [dailyVocabularyTarget, setDailyVocabularyTarget] = useState(10);
   const [weeklyExamTarget, setWeeklyExamTarget] = useState(2);
@@ -255,7 +256,7 @@ function LearnerProfileContent() {
             onClick={() => setActiveTab('goals')}
             className="ui-tab" aria-pressed={activeTab === 'goals'}
           >
-            <span className="sm:hidden">Mục tiêu</span><span className="hidden sm:inline">Mục tiêu & Trình độ học tập</span>
+            <span className="sm:hidden">Mục tiêu</span><span className="hidden sm:inline">Mục tiêu và trình độ học tập</span>
           </button>
           <button
             onClick={() => setActiveTab('history')}
@@ -333,7 +334,7 @@ function LearnerProfileContent() {
         {activeTab === 'goals' && (
           <form onSubmit={saveGoals} className="space-y-6 rounded-2xl border border-outline-variant/40 bg-surface-container-lowest p-6">
             <div>
-              <h2 className="text-lg font-bold text-on-surface">Mục tiêu & Trình độ học tập</h2>
+              <h2 className="text-lg font-bold text-on-surface">Mục tiêu và trình độ học tập</h2>
               <p className="text-xs text-on-surface-variant mt-1">Chỉ giữ những lựa chọn trực tiếp ảnh hưởng tới lộ trình của bạn.</p>
             </div>
 
@@ -342,7 +343,7 @@ function LearnerProfileContent() {
               <div className="grid gap-3 sm:grid-cols-3">
                 {[
                   { value: 'vocabulary', icon: 'translate', iconClass: 'icon-learning', title: 'Luyện từ vựng CNTT', description: 'Học từ vựng theo chuyên ngành.' },
-                  { value: 'certification', icon: 'workspace_premium', iconClass: 'icon-certificate', title: 'Luyện chứng chỉ', description: 'Học theo Chuyên ngành, Chủ đề và Quiz của chứng chỉ.' },
+                  { value: 'certification', icon: 'workspace_premium', iconClass: 'icon-certificate', title: 'Luyện chứng chỉ', description: 'Học kiến thức theo chủ đề và làm bài luyện tập cho chứng chỉ đã chọn.' },
                   { value: 'both', icon: 'route', iconClass: 'icon-progress', title: 'Cả hai', description: 'Kết hợp từ vựng CNTT và chứng chỉ mục tiêu.' },
                 ].map((goal) => {
                   const selected = learningGoal === goal.value;
@@ -423,13 +424,16 @@ function LearnerProfileContent() {
 
             {(learningGoal === 'certification' || learningGoal === 'both') && <div className="space-y-3">
               <label className="block text-sm font-bold text-on-surface">4. Chứng chỉ mục tiêu<RequiredMark /></label>
+              <button type="button" onClick={() => setShowCertificates(value => !value)} aria-expanded={showCertificates} className="ui-button ui-button-outline">{showCertificates ? 'Thu gọn danh sách' : certificateCode ? 'Đổi chứng chỉ mục tiêu' : 'Chọn chứng chỉ mục tiêu'}<AppIcon>expand_more</AppIcon></button>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                {certificates.map((cert: any) => {
+                {certificates.filter((cert: any) => showCertificates || !certificateCode || cert.code === certificateCode).map((cert: any) => {
                   const isSelected = certificateCode === cert.code;
                   return (
-                    <div
+                    <button
+                      type="button"
+                      aria-pressed={isSelected}
                       key={cert.code}
-                      onClick={() => setCertificateCode(isSelected ? '' : cert.code)}
+                      onClick={() => { setCertificateCode(cert.code); setShowCertificates(false); }}
                       className={`p-3.5 rounded-xl border cursor-pointer transition-all flex items-start justify-between ${
                         isSelected
                           ? 'border-primary bg-primary/5 ring-2 ring-primary/30'
@@ -438,12 +442,12 @@ function LearnerProfileContent() {
                     >
                       <div className="pr-3 min-w-0">
                         <span className="text-[11px] font-bold text-primary block uppercase tracking-wider">{cert.provider}</span>
-                        <h4 className="font-semibold text-xs text-on-surface truncate">{cert.name}</h4>
+                        <h4 className="font-semibold text-sm text-on-surface text-left">{cert.name}</h4>
                       </div>
                       <AppIcon className={` text-[18px] shrink-0 ${isSelected ? 'text-primary' : 'text-outline-variant'}`}>
                         {isSelected ? 'check_circle' : 'radio_button_unchecked'}
                       </AppIcon>
-                    </div>
+                    </button>
                   );
                 })}
               </div>
@@ -465,7 +469,7 @@ function LearnerProfileContent() {
                   <NumberInput type="number" min={1} max={200} value={dailyVocabularyTarget} onChange={(e) => setDailyVocabularyTarget(e.target.valueAsNumber)} className="mt-2 w-full rounded-lg border border-outline-variant px-3 py-2 text-sm font-bold text-on-surface" />
                 </label>
                 <label className="rounded-xl border border-outline-variant/60 bg-surface-bright p-3 text-xs font-semibold text-on-surface-variant">
-                  Bài Quiz mỗi tuần
+                  Bài luyện tập mỗi tuần
                   <NumberInput type="number" min={1} max={50} value={weeklyExamTarget} onChange={(e) => setWeeklyExamTarget(e.target.valueAsNumber)} className="mt-2 w-full rounded-lg border border-outline-variant px-3 py-2 text-sm font-bold text-on-surface" />
                 </label>
                 <label className="rounded-xl border border-outline-variant/60 bg-surface-bright p-3 text-xs font-semibold text-on-surface-variant">

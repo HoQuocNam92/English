@@ -1,6 +1,7 @@
 import { selectedCertificates } from '../../../../packages/shared-kernel/src/selected-certificates';
 import { LearningAgenda } from '../../src/features/learning/LearningAgenda';
 import { LearningReminder } from '../../src/shared/notifications/LearningReminder';
+import { NotificationBell } from '../../src/shared/notifications/NotificationBell';
 import { mobileRoute } from '../../src/shared/navigation';
 import { Text, TouchableOpacity } from '../../src/shared/ui/primitives';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -114,6 +115,7 @@ export default function MobileHomeScreen() {
             <Text style={styles.greetingSubtitle}>Sẵn sàng học bài mới chưa?</Text>
           </View>
         </View>
+        <NotificationBell />
       </View>
 
       <ScrollView contentContainerStyle={styles.contentContainer} showsVerticalScrollIndicator={false}>
@@ -161,9 +163,7 @@ export default function MobileHomeScreen() {
               <Text style={styles.heroProgressLabelText}>Tiến độ học tập</Text>
               <Text style={styles.heroProgressValueText}>{progressPercent}%</Text>
             </View>
-            <View style={styles.heroProgressBarBg}>
-              <View style={[styles.heroProgressBarFill, { width: `${progressPercent}%` }]} />
-            </View>
+
           </View>
 
           <TouchableOpacity
@@ -233,7 +233,7 @@ export default function MobileHomeScreen() {
           <MaterialIcons name="workspace-premium" size={28} color={colors.primary} />
           <View style={{ flex: 1 }}>
             <Text style={styles.recommendationTitle}>Khám phá chứng chỉ</Text>
-            <Text style={styles.recommendationReason}>Học theo Chuyên ngành, Chủ đề và luyện thi thử.</Text>
+            <Text style={styles.recommendationReason}>Học kiến thức theo chủ đề và luyện thi thử.</Text>
           </View>
           <MaterialIcons name="chevron-right" size={24} color={colors.primary} />
         </TouchableOpacity>

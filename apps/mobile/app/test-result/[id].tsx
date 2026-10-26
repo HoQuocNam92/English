@@ -18,7 +18,8 @@ interface AttemptResult {
   totalQuestions: number;
   correctAnswersCount: number;
   incorrectAnswersCount: number;
-  exam: { title: string; passingScorePercent: number };
+  exam: { id?: string; title: string; passingScorePercent: number; certificateId?: string };
+  scorePercent?: number; passed?: boolean;
   questionsSnapshot?: any[];
   performanceByDomain?: Array<{ key: string; name: string; scorePercent: number }>;
   performanceByTopic?: Array<{ key: string; name: string; scorePercent: number }>;
@@ -28,7 +29,7 @@ export default function MobileTestResultScreen() {
  const insets = useSafeAreaInsets();
   const { id, certificateId, topicId } = useLocalSearchParams<{ id: string; certificateId?: string; topicId?: string }>();
   const router = useRouter();
-  
+
   const [loading, setLoading] = useState(true);
   const [result, setResult] = useState<AttemptResult | null>(null);
   const [reviewPage, setReviewPage] = useState(1);
@@ -67,7 +68,7 @@ export default function MobileTestResultScreen() {
     return (
       <View style={[styles.container, { justifyContent: 'center', alignItems: 'center' }]}>
         <Text style={{ color: '#191c1e' }}>Không tìm thấy kết quả</Text>
-        <TouchableOpacity style={styles.backHomeBtn} onPress={() => router.replace(certificateId && topicId ? `/certifications/topics/${topicId}?certificateId=${certificateId}` as any : '/learning-plan')}>
+        <TouchableOpacity style={styles.backHomeBtn} onPress={() => router.replace(certificateId ? topicId ? `/certifications/topics/${topicId}?certificateId=${certificateId}` as any : `/certifications/${certificateId}?tab=exams` as any : '/learning-plan')}>
           <Text style={styles.backHomeText}>Về trang chủ</Text>
         </TouchableOpacity>
       </View>
@@ -78,12 +79,12 @@ export default function MobileTestResultScreen() {
   const radius = 60;
   const strokeWidth = 12;
   const circumference = 2 * Math.PI * radius;
-  // Calculate score relative to 10
-  const scoreBase10 = (result.score / 100) * 10;
-  const percent = scoreBase10 / 10;
+  // Display the same percentage scale as the web result.
+  const scorePercent = Math.max(0, Math.min(100, Math.round(result.scorePercent ?? result.score ?? 0)));
+  const percent = scorePercent / 100;
   const strokeDashoffset = circumference - percent * circumference;
-  
-  const isPassed = result.isPassed;
+
+  const isPassed = result.isPassed ?? result.passed;
   const primaryColor = isPassed ? '#16a34a' : '#ba1a1a';
   const bgColor = isPassed ? '#dcfce7' : '#ffdad6';
   const reviewQuestions = result.questionsSnapshot ?? [];
@@ -92,6 +93,8 @@ export default function MobileTestResultScreen() {
   const reviewStart = (safeReviewPage - 1) * reviewPageSize;
   const visibleReviewQuestions = reviewQuestions.slice(reviewStart, reviewStart + reviewPageSize);
 
+  const effectiveCertificateId = certificateId ?? result.exam?.certificateId;
+  const returnRoute = effectiveCertificateId ? topicId ? `/certifications/topics/${topicId}?certificateId=${effectiveCertificateId}` : `/certifications/${effectiveCertificateId}?tab=exams` : '/learning-plan';
   const changeReviewPage = (page: number) => {
     setReviewPage(page);
     requestAnimationFrame(() => scrollRef.current?.scrollTo({ y: Math.max(0, reviewSectionY.current - 12), animated: true }));
@@ -100,10 +103,10 @@ export default function MobileTestResultScreen() {
   return (
     <View style={[styles.container, { paddingTop: insets.top }]}>
       <StatusBar style="dark" />
-      
+
       {/* Header */}
       <View style={styles.header}>
-        <TouchableOpacity style={styles.headerIconBtn} onPress={() => router.replace(certificateId && topicId ? `/certifications/topics/${topicId}?certificateId=${certificateId}` as any : '/learning-plan')}>
+        <TouchableOpacity style={styles.headerIconBtn} onPress={() => router.replace(returnRoute as any)}>
           <MaterialIcons name="close" size={24} color="#464555" />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>TechEnglish Pro</Text>
@@ -137,14 +140,14 @@ export default function MobileTestResultScreen() {
               />
             </Svg>
             <View style={styles.scoreTextWrapper}>
-              <Text style={[styles.scoreValue, { color: primaryColor }]}>{scoreBase10.toFixed(1)}</Text>
-              <Text style={styles.scoreMax}>/ 10</Text>
+              <Text style={[styles.scoreValue, { color: primaryColor }]}>{scorePercent}</Text>
+              <Text style={styles.scoreMax}>%</Text>
             </View>
           </View>
-          
+
           <Text style={styles.statusTitle}>{isPassed ? 'Tuyệt vời!' : 'Cần cố gắng!'}</Text>
           <Text style={styles.statusSubtitle}>
-            {isPassed ? 'Bạn đã hoàn thành bài kiểm tra với kết quả rất tốt.' : 'Bạn chưa đạt điểm yêu cầu. Hãy ôn tập và thử lại nhé.'}
+            {isPassed ? 'Bạn đã đạt điểm yêu cầu của bài kiểm tra.' : 'Bạn chưa đạt điểm yêu cầu. Hãy ôn tập và thử lại nhé.'}
           </Text>
         </View>
 
@@ -178,12 +181,12 @@ export default function MobileTestResultScreen() {
             <MaterialIcons name="rule" size={20} color={colors.primary} />
             <View style={styles.detailContent}>
               <Text style={styles.detailLabel}>Điểm đạt yêu cầu</Text>
-              <Text style={styles.detailValue}>{(result.exam?.passingScorePercent || 70) / 10} / 10</Text>
+              <Text style={styles.detailValue}>{result.exam?.passingScorePercent ?? 70}%</Text>
             </View>
           </View>
         </View>
 
-        {[['Kết quả theo Chuyên ngành', result.performanceByDomain], ['Kết quả theo Chủ đề', result.performanceByTopic]].map(([title, items]: any) => items?.length ? (
+        {[['Kết quả theo chuyên ngành', result.performanceByDomain], ['Kết quả theo chủ đề', result.performanceByTopic]].map(([title, items]: any) => items?.length ? (
           <View key={title} style={styles.detailsCard}>
             <View style={styles.detailsHeader}><Text style={styles.detailsTitle}>{title}</Text></View>
             {items.map((item: any) => <View key={item.key} style={styles.detailRow}><MaterialIcons name={item.scorePercent < 70 ? 'warning' : 'check-circle'} size={20} color={item.scorePercent < 70 ? '#ba1a1a' : '#16a34a'} /><View style={styles.detailContent}><Text style={styles.detailLabel}>{item.name}</Text><Text style={[styles.detailValue, { color: item.scorePercent < 70 ? '#ba1a1a' : '#16a34a' }]}>{item.scorePercent}%</Text></View></View>)}
@@ -264,14 +267,14 @@ export default function MobileTestResultScreen() {
             )}
           </View>
         )}
-        {!certificateId && <LearningPathJourney />}
+        {!effectiveCertificateId && <LearningPathJourney />}
       </ScrollView>
 
       {/* Bottom Actions Fixed */}
       <View style={[styles.bottomFixedArea, { paddingBottom: insets.bottom + 16 }]}>
-        <TouchableOpacity 
-          style={styles.btnPrimary} 
-          onPress={() => router.replace(certificateId && topicId ? `/certifications/topics/${topicId}?certificateId=${certificateId}` as any : '/learning-plan')}
+        <TouchableOpacity
+          style={styles.btnPrimary}
+          onPress={() => router.replace(returnRoute as any)}
         >
           <Text style={styles.btnPrimaryText}>Quay lại luyện tập</Text>
         </TouchableOpacity>

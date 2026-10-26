@@ -40,7 +40,7 @@ export default function LandingPage() {
       <section className="bg-primary/5 py-16 sm:py-24">
         <div className="mx-auto max-w-6xl px-4 sm:px-6">
           <p className="text-xs font-bold uppercase tracking-wider text-primary">TechEnglish Pro</p>
-          <h1 className="mt-4 max-w-3xl text-4xl font-black leading-tight tracking-tight sm:text-5xl">Học tiếng Anh cho công việc công nghệ của bạn</h1>
+          <h1 className="mt-4 max-w-3xl text-4xl font-black leading-tight tracking-tight sm:text-5xl">Học tiếng Anh cho công việc công nghệ thông tin của bạn</h1>
           <p className="mt-6 max-w-2xl text-base leading-7 text-on-surface-variant">Rèn từ vựng chuyên ngành, đọc tài liệu kỹ thuật và luyện tập tình huống thực tế theo trình độ và mục tiêu học tập.</p>
           <div className="mt-8 flex flex-wrap gap-3">
             <Link href="/register" className="inline-flex min-h-11 items-center justify-center rounded-xl bg-primary px-6 py-3 text-sm font-bold text-white hover:bg-indigo-700">Bắt đầu học</Link>
@@ -54,12 +54,12 @@ export default function LandingPage() {
         <div className="mx-auto grid items-center gap-10 px-4 sm:px-6 md:grid-cols-2" style={{ maxWidth: '1152px' }}>
           <div>
             <p className="text-xs font-black uppercase tracking-[0.16em] text-primary">Về chúng tôi</p>
-            <h2 className="mt-3 text-3xl font-black tracking-tight text-on-surface">Tiếng Anh thực tế dành riêng cho người làm công nghệ</h2>
+            <h2 className="mt-3 text-3xl font-black tracking-tight text-on-surface">Tiếng Anh thực tế dành riêng cho người làm công nghệ thông tin</h2>
             <p className="mt-5 text-sm leading-7 text-on-surface-variant">
-              TechEnglish Pro giúp sinh viên và kỹ sư công nghệ học tiếng Anh ngay trong ngữ cảnh họ sử dụng mỗi ngày: tài liệu kỹ thuật, thuật ngữ chuyên ngành, tình huống công việc và chứng chỉ quốc tế.
+              TechEnglish Pro giúp sinh viên và kỹ sư công nghệ thông tin học tiếng Anh ngay trong ngữ cảnh họ sử dụng mỗi ngày: tài liệu kỹ thuật, thuật ngữ chuyên ngành, tình huống công việc và chứng chỉ quốc tế.
             </p>
             <p className="mt-3 text-sm leading-7 text-on-surface-variant">
-              Nội dung được tổ chức theo trình độ và chuyên ngành IT, kết hợp theo dõi tiến độ để mỗi người có một hành trình học rõ ràng, thực tế và phù hợp với mục tiêu nghề nghiệp.
+              Nội dung được tổ chức theo trình độ và chuyên ngành công nghệ thông tin, kết hợp theo dõi tiến độ để mỗi người có một hành trình học rõ ràng, thực tế và phù hợp với mục tiêu nghề nghiệp.
             </p>
           </div>
           <div className="grid grid-cols-1 min-[360px]:grid-cols-2 gap-4">
@@ -75,27 +75,6 @@ export default function LandingPage() {
                 <p className="mt-2 text-xs leading-5 text-on-surface-variant">{item.desc}</p>
               </article>
             ))}
-          </div>
-        </div>
-      </section>
-
-      <section className="bg-white py-16 sm:py-20">
-        <div className="mx-auto max-w-6xl px-4 sm:px-6">
-          <div>
-            <h2 className="text-2xl font-black">Một hành trình học rõ ràng</h2>
-            <div className="mt-7 grid gap-6 md:grid-cols-3">
-              {[
-                { title: 'Xác định điểm xuất phát', description: 'Đánh giá trình độ và chọn mục tiêu học phù hợp với nhu cầu của bạn.' },
-                { title: 'Học và luyện tập', description: 'Khám phá bài học chuyên ngành, ôn từ vựng và củng cố kiến thức qua bài tập.' },
-                { title: 'Theo dõi tiến bộ', description: 'Xem kết quả học tập để nhận biết phần đã nắm vững và nội dung cần ôn lại.' },
-              ].map((step, index) => (
-                <article key={step.title} className="rounded-2xl border border-outline-variant/40 p-6">
-                  <p className="text-sm font-black text-primary">0{index + 1}</p>
-                  <h3 className="mt-4 font-bold">{step.title}</h3>
-                  <p className="mt-2 text-sm leading-6 text-on-surface-variant">{step.description}</p>
-                </article>
-              ))}
-            </div>
           </div>
         </div>
       </section>

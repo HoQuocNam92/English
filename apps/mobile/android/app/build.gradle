@@ -88,12 +88,30 @@ android {
     compileSdk rootProject.ext.compileSdkVersion
 
     namespace 'com.techenglish.pro'
+    if (System.getProperty('os.name').toLowerCase().contains('windows')) {
+        externalNativeBuild {
+            cmake {
+                // Leave enough room for CMake's hashed generated object filenames.
+                buildStagingDirectory file("$rootDir/../../../artifacts/cxx")
+            }
+        }
+    }
     defaultConfig {
         applicationId 'com.techenglish.pro'
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
         versionCode 1
         versionName "1.0.0"
+
+        // Ninja on Windows cannot create the long generated Gesture Handler paths.
+        // Ask CMake to hash object paths before they reach the native tool limit.
+        if (System.getProperty('os.name').toLowerCase().contains('windows')) {
+            externalNativeBuild {
+                cmake {
+                    arguments '-DCMAKE_OBJECT_PATH_MAX=240'
+                }
+            }
+        }
 
         buildConfigField "String", "REACT_NATIVE_RELEASE_LEVEL", "\"${findProperty('reactNativeReleaseLevel') ?: 'stable'}\""
     }

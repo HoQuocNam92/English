@@ -128,7 +128,7 @@ export default function FlashcardsScreen() {
         const source = params.sourceLessonId || params.lessonId;
         const eligible = await api.get<any>(`/vocab-study/quiz-words${source ? `?sourceLessonId=${encodeURIComponent(source)}` : ''}`);
         const ids = (eligible.words ?? []).map((word: any) => word.id);
-        if (!ids.length) { setWords([]); setError('Hãy học từ vựng trước. Quiz chỉ kiểm tra những từ bạn đã học.'); return; }
+        if (!ids.length) { setWords([]); setError('Hãy học từ vựng trước. Bài kiểm tra chỉ gồm những từ bạn đã học.'); return; }
         const vocabulary = await Promise.all(ids.map((id: string) => api.get<VocabWord>(`/vocabulary/${id}`)));
         setWords(vocabulary); setMasteredSet(new Set()); setAllTimeResults([]); await startQuiz(ids); return;
       }
@@ -418,9 +418,9 @@ export default function FlashcardsScreen() {
 
         {/* Flip card */}
         <View style={styles.cardTouchArea}>
-          <TouchableOpacity activeOpacity={0.95} onPress={doFlip} style={styles.cardFlipArea}>
+          <TouchableOpacity activeOpacity={0.95} accessibilityLabel={flipped ? `${currentWord.definitionVi}. ${currentWord.definitionEn}. Chạm để xem từ.` : `${currentWord.term}. Chạm để xem nghĩa.`} onPress={doFlip} style={styles.cardFlipArea}>
             {/* Front */}
-            <Animated.View style={[styles.flipCard, { backgroundColor: colors.surface, borderColor: colors.outlineVariant, transform: [{ perspective: 1000 }, { rotateY: frontInterpolate }] }]}>
+            <Animated.View accessibilityElementsHidden={flipped} importantForAccessibility={flipped ? 'no-hide-descendants' : 'auto'} pointerEvents={flipped ? 'none' : 'auto'} style={[styles.flipCard, { backgroundColor: colors.surface, borderColor: colors.outlineVariant, opacity: flipAnim.interpolate({ inputRange: [0, 0.49, 0.5, 1], outputRange: [1, 1, 0, 0] }), transform: [{ perspective: 1000 }, { rotateY: frontInterpolate }] }]}>
             <Text style={[styles.termText, { color: colors.onSurface }]} numberOfLines={4} adjustsFontSizeToFit minimumFontScale={0.75}>{currentWord.term}</Text>
             {currentWord.pronunciationIpa ? (
               <Text style={[styles.ipaText, { color: colors.onSurfaceVariant }]}>{currentWord.pronunciationIpa}</Text>
@@ -434,7 +434,7 @@ export default function FlashcardsScreen() {
             </Animated.View>
 
             {/* Back */}
-            <Animated.View style={[styles.flipCard, styles.flipCardBack, { backgroundColor: colors.surface, borderColor: colors.outlineVariant, transform: [{ perspective: 1000 }, { rotateY: backInterpolate }] }]}>
+            <Animated.View accessibilityElementsHidden={!flipped} importantForAccessibility={flipped ? 'auto' : 'no-hide-descendants'} pointerEvents={flipped ? 'auto' : 'none'} style={[styles.flipCard, styles.flipCardBack, { backgroundColor: colors.surface, borderColor: colors.outlineVariant, opacity: flipAnim.interpolate({ inputRange: [0, 0.49, 0.5, 1], outputRange: [0, 0, 1, 1] }), transform: [{ perspective: 1000 }, { rotateY: backInterpolate }] }]}>
             <ScrollView style={{ width: '100%', flex: 1 }} contentContainerStyle={{ flexGrow: 1, justifyContent: 'center' }} nestedScrollEnabled>
             <Text style={[styles.defVi, { color: colors.onSurface }]}>{currentWord.definitionVi}</Text>
             <Text selectable style={[styles.defEn, { color: colors.onSurfaceVariant }]}>{currentWord.definitionEn}</Text>

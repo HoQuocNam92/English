@@ -1,4 +1,5 @@
 'use client';
+import { certificateProgressExplanation } from '../../../../../../../packages/shared-kernel/src/lesson-presentation';
 import { PaginatedList } from '@/shared/ui/PaginatedList';
 
 import { useEffect, useMemo, useState } from 'react';
@@ -85,6 +86,7 @@ export default function CertificationDetailPage() {
     return study?.total > 0 && study.completed < study.total;
   }) ?? domains.flatMap((domain: any) => domain.topics).find((topic: any) => topicProgress.some((item: any) => item.topicId === topic.id && item.total > 0));
   const publishedExams = (certificate.exams ?? []).filter((exam: any) => exam.status === 'published');
+  const completedLessonIds = new Set((progress?.progress ?? []).filter((item: any) => item.resourceType === 'lesson' && (item.status === 'completed' || item.completionPercent >= 100)).map((item: any) => item.resourceId));
   const tabs: { id: Tab; label: string; icon: typeof BookOpen; count: number }[] = [
     { id: 'learn', label: 'Lộ trình học', icon: BookOpen, count: totalCount },
     { id: 'exams', label: 'Bài kiểm tra', icon: FileQuestion, count: totalExams },
@@ -118,20 +120,20 @@ export default function CertificationDetailPage() {
 
         <div className="self-start rounded-2xl border border-violet-100 bg-violet-50/60 p-5">
           <div className="flex items-center justify-between gap-4"><span className="text-sm font-semibold text-slate-700">Tiến độ của bạn</span><span className="text-3xl font-bold tracking-tight text-primary">{completionPercent}<span className="ml-0.5 text-lg">%</span></span></div>
-          <div role="progressbar" aria-label="Tiến độ tổng thể" aria-valuenow={completionPercent} aria-valuemin={0} aria-valuemax={100} className="mt-4 h-2 overflow-hidden rounded-full bg-violet-100"><div className="h-full rounded-full bg-primary transition-[width] duration-300" style={{ width: `${completionPercent}%` }} /></div>
+
           <div className="mt-4 space-y-2.5 text-sm">
             <div className="flex items-center justify-between gap-4"><span className="flex items-center gap-2 text-slate-500"><BookOpen size={16} />Bài học</span><span className="font-semibold text-slate-800">{completedCount}<span className="font-normal text-slate-400"> / {totalCount}</span></span></div>
             <div className="flex items-center justify-between gap-4"><span className="flex items-center gap-2 text-slate-500"><FileQuestion size={16} />Bài kiểm tra</span><span className="font-semibold text-slate-800">{certProgress?.completedExams ?? 0}<span className="font-normal text-slate-400"> / {totalExams}</span></span></div>
           </div>
           <div className="mt-4 grid grid-cols-2 gap-4 border-t border-violet-100 pt-3"><div><p className="text-lg font-bold text-slate-800">{certProgress?.examAttempts ?? 0}</p><p className="mt-1 text-xs text-slate-500">Lượt thi hoàn thành</p></div><div><p className="text-lg font-bold text-slate-800">{certProgress?.avgScore == null ? '—' : `${certProgress.avgScore}%`}</p><p className="mt-1 text-xs text-slate-500">Điểm trung bình</p></div></div>
-          <details className="mt-4 text-xs text-slate-500"><summary className="w-fit cursor-pointer rounded focus-visible:outline-2 focus-visible:outline-primary">Cách tính tiến độ</summary><p className="mt-2 leading-5">Tính theo bài học và bài kiểm tra đã hoàn thành. Mỗi bài chỉ tính một lần, kể cả khi bạn làm lại.</p></details>
+          <details className="mt-4 text-xs text-slate-500"><summary className="w-fit cursor-pointer rounded focus-visible:outline-2 focus-visible:outline-primary">Cách tính tiến độ</summary><p className="mt-2 leading-5">{certificateProgressExplanation}</p></details>
         </div>
       </div>
     </section>
 
     <div className="border-b border-slate-200"><div role="tablist" aria-label="Nội dung chứng chỉ" className="flex gap-6">{tabs.map(({ id, label, icon: Icon, count }) => <button key={id} type="button" role="tab" id={`certificate-tab-${id}`} aria-selected={activeTab === id} aria-controls={`certificate-panel-${id}`} onClick={() => setActiveTab(id)} className={`relative flex items-center gap-2 rounded-none! border-b-2 px-1 py-4 text-sm font-semibold transition-colors ${activeTab === id ? 'border-primary text-primary' : 'border-transparent text-slate-500 hover:text-slate-800'}`}><Icon size={18} />{label}<span className={`rounded-md px-1.5 py-0.5 text-xs ${activeTab === id ? 'bg-violet-100 text-primary' : 'bg-slate-100 text-slate-500'}`}>{count}</span></button>)}</div></div>
     <div role="tabpanel" id={`certificate-panel-${activeTab}`} aria-labelledby={`certificate-tab-${activeTab}`}>
-      {activeTab === 'learn' ? <LearnTab topicProgress={topicProgress} certificateId={certificate.id} domains={domains} expanded={expanded} setExpanded={setExpanded} onExams={() => setActiveTab('exams')} hasExams={publishedExams.length > 0} /> : <ExamsTab exams={certificate.exams ?? []} examStates={examStates} selectedExamId={selectedExamId} onLearn={() => setActiveTab('learn')} />}
+      {activeTab === 'learn' ? <LearnTab topicProgress={topicProgress} certificateId={certificate.id} domains={domains} expanded={expanded} setExpanded={setExpanded} onExams={() => setActiveTab('exams')} hasExams={publishedExams.length > 0} /> : <ExamsTab completedLessonIds={completedLessonIds} exams={certificate.exams ?? []} examStates={examStates} selectedExamId={selectedExamId} onLearn={() => setActiveTab('learn')} />}
     </div>
   </div></LearnerShell>;
 }
@@ -165,7 +167,7 @@ function LearnTab({ topicProgress, certificateId, domains, expanded, setExpanded
   </section>;
 }
 
-function ExamsTab({ exams, examStates, selectedExamId, onLearn }: any) {
+function ExamsTab({ exams, examStates, selectedExamId, completedLessonIds }: any) {
   const publishedExams = exams.filter((exam: any) => exam.status === 'published').sort((a: any, b: any) =>
     Number(b.id === selectedExamId) - Number(a.id === selectedExamId) ||
     new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
@@ -177,15 +179,17 @@ function ExamsTab({ exams, examStates, selectedExamId, onLearn }: any) {
       {publishedExams.length ? publishedExams.map((exam: any) => {
         const state = examStates[exam.id];
         const attempt = state?.latestAttempt;
-        return <article key={exam.id} id={`exam-${exam.id}`} className={`flex min-w-0 scroll-mt-24 flex-col rounded-2xl border bg-white p-5 sm:p-6 ${exam.id === selectedExamId ? 'border-primary ring-2 ring-primary/15' : 'border-slate-200'}`}>
+        const requiredLessonId = state?.requiredLessonIds?.find((lessonId: string) => !completedLessonIds.has(lessonId));
+        return <article key={exam.id} id={`exam-${exam.id}`} className={`flex min-w-0 scroll-mt-24 flex-col rounded-2xl border bg-white p-5 sm:p-6 ${exam.id === selectedExamId ? 'border-primary ring-2 ring-primary/15' : attempt ? 'border-emerald-200 bg-emerald-50/40' : 'border-slate-200'}`}>
           {exam.id === selectedExamId && <p className="mb-3 text-xs font-bold text-primary">Bài kiểm tra bạn vừa chọn</p>}
-          <div className="flex items-start gap-3"><span className={`grid h-10 w-10 shrink-0 place-items-center rounded-xl ${attempt ? 'bg-emerald-50 text-emerald-600' : 'bg-violet-50 text-primary'}`}>{attempt ? <Trophy size={21} /> : <FileQuestion size={21} />}</span><div className="min-w-0"><p className="text-xs font-medium text-slate-500">{kindLabels[exam.kind] || 'Bài kiểm tra'}</p><h3 className="mt-1 text-base font-semibold leading-6 text-slate-900">{exam.title}</h3></div></div>
+          <div className="flex items-start gap-3"><span className={`grid h-10 w-10 shrink-0 place-items-center rounded-xl ${attempt ? 'bg-emerald-50 text-emerald-600' : 'bg-violet-50 text-primary'}`}>{attempt ? <Check size={21} /> : <FileQuestion size={21} />}</span><div className="min-w-0"><p className="text-xs font-medium text-slate-500">{kindLabels[exam.kind] || 'Bài kiểm tra'}</p><h3 className="mt-1 text-base font-semibold leading-6 text-slate-900">{exam.title}</h3></div></div>
+          {attempt && <p className="mt-3 flex items-center gap-2 text-sm font-semibold text-emerald-800"><Check size={16} />Đã làm bài</p>}
           <div className="mt-4 flex flex-wrap gap-x-4 gap-y-2 text-xs text-slate-500"><span className="flex items-center gap-1.5"><FileQuestion size={14} />{exam._count?.questions ?? 0} câu hỏi</span><span className="flex items-center gap-1.5"><Clock3 size={14} />{exam.durationMinutes} phút</span><span>Đạt từ {exam.passingScorePercent}%</span></div>
           <div className="mt-4 flex flex-wrap items-center justify-between gap-2 text-xs"><span className="text-slate-500">Đã làm {state?.usedAttempts ?? 0}/{state?.maxAttempts ?? exam.maxAttempts} lượt</span>{attempt && <span className="rounded-lg bg-violet-50 px-2 py-1 font-semibold text-primary">Kết quả gần nhất: {Math.round(attempt.scorePercent ?? 0)}%</span>}</div>
           {state?.reason && <p className="mt-4 rounded-xl bg-slate-50 px-3 py-2.5 text-xs leading-5 text-slate-500">{state.reason}</p>}
           <div className="mt-auto pt-5"><div className="flex flex-wrap gap-2 border-t border-slate-100 pt-4">
             {state?.canStart ? <Link href={`/learn/quiz/${exam.id}?certificateId=${encodeURIComponent(exam.certificateId)}`} className="ui-button ui-button-primary text-sm"><Play size={15} />{state.activeAttemptId ? 'Tiếp tục' : state.usedAttempts ? 'Làm lại' : 'Bắt đầu'}</Link> : <button type="button" disabled className="rounded-xl bg-slate-100 px-4 py-2.5 text-xs font-medium text-slate-400">{state?.unavailableLabel || (state?.remainingAttempts === 0 ? 'Hết lượt' : 'Chưa thể làm bài')}</button>}
-            {!state?.canStart && state?.requiredLessonIds?.length > 0 && <button type="button" onClick={onLearn} className="rounded-xl border border-slate-200 px-4 py-2.5 text-xs font-semibold text-primary hover:bg-violet-50">Học trước</button>}
+            {!state?.canStart && requiredLessonId && <Link href={`/learn/lessons/${encodeURIComponent(requiredLessonId)}?from=${encodeURIComponent(`/learn/certifications/${exam.certificateId}?tab=exams&examId=${exam.id}`)}`} className="ui-button ui-button-outline"><BookOpen size={16} />Học bài bắt buộc</Link>}
             {attempt && <Link href={`/learn/quiz/result/${attempt.id}`} className="inline-flex items-center gap-1.5 rounded-xl border border-slate-200 px-4 py-2.5 text-xs font-semibold text-slate-600 hover:bg-slate-50">Xem kết quả<ArrowUpRight size={14} /></Link>}
           </div></div>
         </article>;

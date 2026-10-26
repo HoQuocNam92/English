@@ -9,9 +9,20 @@ Kiểm tra nâng cấp ngày 25/10/2026: Expo Doctor đạt 19/19, `expo install
 --check` xác nhận dependency đúng phiên bản; typecheck web/mobile và 19 bài
 test hồi quy web/mobile đều đạt. Metro xuất bundle Android thành công.
 Các kết quả này chưa thay thế việc chạy thử APK trên thiết bị thật.
-Build APK local chưa được xác nhận: Gradle cần JDK 17 nhưng máy chỉ có
-JDK 25 của Android Studio; bước tự tải JDK 17 từ Foojay không tiến triển.
-Cài JDK 17 hoặc cung cấp toolchain đã có, rồi chạy lại `pnpm --filter mobile android`.
+Ngày 26/10/2026 đã build thành công APK release cho `arm64-v8a` bằng
+Temurin JDK 17 portable. APK đã qua kiểm tra tính toàn vẹn và chữ ký v2;
+bundle bên trong dùng `https://api.techenglish.click/api/v1`, không còn IP LAN cũ.
+Bản cài thử ở `artifacts/mobile-parity/TechEnglish-mobile-2026-10-26-arm64.apk`.
+APK dùng debug keystore hiện có của dự án; chưa chạy thử trên điện thoại thật.
+
+Trên Windows, cấu hình Gradle đặt thư mục CMake tại `artifacts/cxx` và giới hạn
+đường dẫn object ở 240 ký tự để tránh lỗi Ninja khi biên dịch Gesture Handler.
+Khi build local, đặt `JAVA_HOME` tới JDK 17, `ANDROID_HOME` tới Android SDK,
+thêm Node và Java vào `PATH`, rồi chạy từ `apps/mobile/android`:
+
+```sh
+gradlew.bat :app:assembleRelease -PreactNativeArchitectures=arm64-v8a --no-daemon
+```
 
 Chạy từ thư mục gốc workspace:
 

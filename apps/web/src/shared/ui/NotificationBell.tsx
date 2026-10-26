@@ -1,16 +1,19 @@
 'use client';
 
 import * as React from 'react';
+import { useRouter } from 'next/navigation';
+import { notificationRoute } from '@/shared/lib/notification-route';
 import { AppIcon } from './AppIcon';
 
-type Notice = { id: string; message: string; title: string; createdAt: number; read: boolean };
+type Notice = { id: string; message: string; title: string; createdAt: number; read: boolean; href?: string };
 const EVENT = 'techenglish:notification-history';
 
-export function recordNotification(message: string, title: string, id = crypto.randomUUID()) {
-  window.dispatchEvent(new CustomEvent(EVENT, { detail: { id, message, title, createdAt: Date.now(), read: false } }));
+export function recordNotification(message: string, title: string, id = crypto.randomUUID(), href?: string) {
+  window.dispatchEvent(new CustomEvent(EVENT, { detail: { id, message, title, createdAt: Date.now(), read: false, href } }));
 }
 
 export function NotificationBell({ userId }: { userId?: string }) {
+  const router = useRouter();
   const [items, setItems] = React.useState<Notice[]>([]);
   const [open, setOpen] = React.useState(false);
   const root = React.useRef<HTMLDivElement>(null);
@@ -64,7 +67,7 @@ export function NotificationBell({ userId }: { userId?: string }) {
     {open && <section id={panelId} aria-label="Lịch sử thông báo" className="absolute right-0 top-12 z-[60] w-[min(380px,calc(100vw-32px))] overflow-hidden rounded-2xl border border-outline-variant bg-surface-container-lowest shadow-xl max-sm:fixed max-sm:right-4 max-sm:top-16">
       <div className="flex items-center justify-between gap-3 border-b border-outline-variant/50 p-4"><h2 className="font-bold text-on-surface">Thông báo</h2>{unread > 0 && <button type="button" onClick={() => update(items.map(item => ({ ...item, read: true })))} className="text-xs font-semibold text-primary">Đọc tất cả</button>}</div>
       <div className="max-h-[60vh] overflow-y-auto">
-        {items.length === 0 ? <p className="p-8 text-center text-sm text-on-surface-variant">Chưa có thông báo nào.</p> : <ul>{items.map(item => <li key={item.id}><button type="button" onClick={() => update(items.map(n => n.id === item.id ? { ...n, read: true } : n))} className={`w-full border-b border-outline-variant/30 p-4 text-left hover:bg-surface-container-low ${!item.read ? 'bg-primary/5' : ''}`}>
+        {items.length === 0 ? <p className="p-8 text-center text-sm text-on-surface-variant">Chưa có thông báo nào.</p> : <ul>{items.map(item => <li key={item.id}><button type="button" onClick={() => { update(items.map(n => n.id === item.id ? { ...n, read: true } : n)); if (item.href || item.id.startsWith('reminder:')) { setOpen(false); router.push(notificationRoute(item.href)); } }} className={`w-full border-b border-outline-variant/30 p-4 text-left hover:bg-surface-container-low ${!item.read ? 'bg-primary/5' : ''}`}>
           <div className="flex items-center gap-2"><span className="flex-1 font-semibold text-sm text-on-surface">{item.title}</span>{!item.read && <span aria-label="Chưa đọc" className="h-2 w-2 rounded-full bg-primary" />}</div>
           <p className="mt-1 break-words text-sm text-on-surface-variant">{item.message}</p><time dateTime={new Date(item.createdAt).toISOString()} className="mt-2 block text-xs text-on-surface-variant">{new Date(item.createdAt).toLocaleString('vi-VN')}</time>
         </button></li>)}</ul>}

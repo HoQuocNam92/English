@@ -8,6 +8,7 @@
     ],
     "jsx": "preserve",
     "allowJs": false,
+    "allowImportingTsExtensions": true,
     "incremental": true,
     "plugins": [
       {

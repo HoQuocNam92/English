@@ -203,7 +203,7 @@ export default function LessonVocabularyDetailPage({ params }: { params: Promise
               className="px-3.5 py-1.5 rounded-xl border border-slate-200 bg-white text-slate-700 hover:text-primary hover:border-primary/40 text-xs font-bold flex items-center gap-1.5 transition-all shadow-xs"
             >
               <AppIcon className=" text-sm text-indigo-600">quiz</AppIcon>
-              <span>Kiểm tra trắc nghiệm (Quiz)</span>
+              <span>Kiểm tra trắc nghiệm</span>
             </Link>
           </div>
 

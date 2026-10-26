@@ -43,7 +43,7 @@ export default function VocabularyQuizPage({ params }: { params: Promise<{ id: s
       );
       const words = sessionRes?.words ?? [];
       if (!words.length) {
-        setError('Hãy học từ vựng trước. Quiz chỉ kiểm tra những từ bạn đã học.');
+        setError('Hãy học từ vựng trước. Bài kiểm tra chỉ gồm những từ bạn đã học.');
         return;
       }
       const ids = words.slice(0, 20).map((w: any) => w.id);

@@ -43,7 +43,7 @@ Không chạy seed demo trên production.
 
 ## Mobile trong Docker
 
-Điền IP LAN của máy Docker vào `MOBILE_LAN_HOST` và `EXPO_PUBLIC_API_URL`, ví dụ `192.168.1.10` và `http://192.168.1.10:8080/api/v1`. Điện thoại cùng mạng Wi-Fi; firewall cho phép 8080/8081. Android emulator có thể gọi API qua `http://10.0.2.2:8080/api/v1`.
+Giữ `EXPO_PUBLIC_API_URL=https://api.techenglish.click/api/v1` để mobile gọi API trên server. Điền IP LAN của máy Docker vào `MOBILE_LAN_HOST` để điện thoại tải bundle từ Metro; API không dùng IP này. Khi chạy Metro qua LAN, điện thoại và máy Docker cần kết nối được qua cổng 8081. Chỉ ghi đè API bằng địa chỉ LAN hoặc `http://10.0.2.2:8080/api/v1` khi chủ động kiểm thử backend cục bộ.
 
 ```bash
 docker compose --env-file .env.compose --profile mobile up -d --build

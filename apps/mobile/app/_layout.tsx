@@ -1,3 +1,6 @@
+import { NotificationNavigation } from '../src/shared/notifications/NotificationNavigation';
+import { NotificationHistoryProvider } from '../src/shared/notifications/NotificationHistoryProvider';
+import { Platform } from 'react-native';
 import { MobileUIProvider } from '../src/shared/ui/paper-theme';
 import { TranslationProvider } from '../src/shared/ui/TranslationProvider';
 import { Feather, MaterialIcons, MaterialCommunityIcons } from '@expo/vector-icons';
@@ -12,7 +15,7 @@ import Constants, { ExecutionEnvironment } from 'expo-constants';
 // Only set up notifications in dev builds / standalone builds
 const isExpoGo = Constants.executionEnvironment === ExecutionEnvironment.StoreClient;
 
-if (!isExpoGo) {
+if (!isExpoGo && Platform.OS !== 'web') {
   const Notifications = require('expo-notifications');
   Notifications.setNotificationHandler({
     handleNotification: async () => ({ shouldShowBanner: true, shouldShowList: true, shouldPlaySound: true, shouldSetBadge: false }),
@@ -26,14 +29,14 @@ export default function RootLayout() {
     <SafeAreaProvider>
       <ThemeProvider>
         <AuthProvider>
-            <TranslationProvider><MobileUIProvider><Stack
+            <NotificationHistoryProvider><TranslationProvider><MobileUIProvider><Stack
               screenOptions={{
                 headerShown: false,
                 contentStyle: {
                   backgroundColor: '#f7f9fb'
                 }
               }}
-            /></MobileUIProvider></TranslationProvider>
+            /><NotificationNavigation /></MobileUIProvider></TranslationProvider></NotificationHistoryProvider>
         </AuthProvider>
       </ThemeProvider>
     </SafeAreaProvider>

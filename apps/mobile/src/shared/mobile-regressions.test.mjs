@@ -207,6 +207,7 @@ test('native buttons wrap interpolated quiz labels and numbers in Text while pre
   const source = readFileSync(new URL('./ui/primitives.tsx', import.meta.url), 'utf8');
   const code = ts.transpileModule(source, { compilerOptions: { module: ts.ModuleKind.CommonJS, jsx: ts.JsxEmit.ReactJSX } }).outputText;
   const mocks = {
+    './AppIcon': { MaterialIcons: 'material-icon' },
     './ClearFiltersButton': { ClearFiltersButton: 'clear-filters' },
     './TranslationProvider': { useTranslation: () => () => {} },
     'react-native-paper': { Button: 'paper-button', TouchableRipple: 'paper-ripple', Chip: 'chip', Searchbar: 'searchbar' },
@@ -228,10 +229,15 @@ test('native buttons wrap interpolated quiz labels and numbers in Text while pre
   const longLabel = 'Làm Quiz · AWS Certified Developer: Associate · 20 câu';
   const longButton = exports.Button({ children: longLabel, disabled: true });
   assert.equal(longButton.type, 'paper-ripple');
-  assert.equal(longButton.props.children.props.children, longLabel);
-  assert.equal(longButton.props.children.props.numberOfLines, undefined);
+  const longText = longButton.props.children.props.children[1].props.children;
+  assert.equal(longText.props.children, longLabel);
+  assert.equal(longText.props.numberOfLines, undefined);
+  const iconButton = exports.Button({ children: 'Học bài bắt buộc', icon: 'menu-book' });
+  assert.equal(iconButton.props.icon({color:'blue',size:20}).props.name, 'menu-book');
   assert.equal(longButton.props.accessibilityState.disabled, true);
   const icon = React.createElement('icon', { name: 'quiz' });
+  const nativeAction = exports.TouchableOpacity({ children: [icon, React.createElement(exports.Text, null, 'Hoàn thành bài học')] });
+  assert.equal(nativeAction.props.accessibilityLabel, 'Hoàn thành bài học');
   const mixed = exports.Button({ children: [icon, 'Quiz ', 10] }).props.children;
   assert.equal(mixed[0].type, 'icon');
   assert.equal(mixed[1].type, exports.Text);

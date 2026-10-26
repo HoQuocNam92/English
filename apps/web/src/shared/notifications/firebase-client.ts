@@ -2,6 +2,8 @@
 
 import { getApp, getApps, initializeApp } from 'firebase/app';
 import { getMessaging, getToken, isSupported, onMessage } from 'firebase/messaging';
+import { notificationRoute } from '@/shared/lib/notification-route';
+import { recordNotification } from '@/shared/ui/NotificationBell';
 import { apiClient } from '@/shared/api/api-client';
 
 const config = {
@@ -25,7 +27,14 @@ export async function registerWebLearningNotifications({ requestPermission = tru
   if (!token) return false;
   await apiClient.post('/notifications/subscriptions', { token, platform: 'web' });
   onMessage(messaging, payload => {
-    if (Notification.permission === 'granted') new Notification(payload.notification?.title || 'TechEnglish Pro', { body: payload.notification?.body });
+    const title = payload.notification?.title || 'TechEnglish Pro';
+    const body = payload.notification?.body || 'Đến giờ học rồi!';
+    const href = notificationRoute(payload.data?.route);
+    recordNotification(body, title, payload.messageId, href);
+    if (Notification.permission === 'granted') {
+      const notice = new Notification(title, { body });
+      notice.onclick = () => { window.focus(); window.location.assign(href); notice.close(); };
+    }
   });
   return true;
 }

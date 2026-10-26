@@ -5,7 +5,7 @@ import { Text, TextInput, TouchableOpacity } from '../../src/shared/ui/primitive
 import { useState, useEffect } from 'react';
 import { useRouter } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
-import { StyleSheet, View, ScrollView, Alert, ActivityIndicator, Modal, Switch } from 'react-native';
+import { StyleSheet, View, ScrollView, Alert, ActivityIndicator, Modal, Switch, useWindowDimensions } from 'react-native';
 import { MaterialIcons } from '../../src/shared/ui/AppIcon';
 import * as ImagePicker from 'expo-image-picker';
 import { colors, spacing } from '@techenglish/design-tokens';
@@ -18,6 +18,8 @@ import { scheduleLearningReminder } from '../../src/shared/notifications/learnin
 
 export default function MobileEditProfileScreen() {
   const insets = useSafeAreaInsets();
+  const { width } = useWindowDimensions();
+  const compact = width < 480;
   const router = useRouter();
   const { fetchUser } = useAuth();
   const [displayName, setDisplayName] = useState('');
@@ -35,6 +37,7 @@ export default function MobileEditProfileScreen() {
   const [levelCode, setLevelCode] = useState('');
   const [domainCodes, setDomainCodes] = useState<string[]>([]);
   const [certificateCodes, setCertificateCodes] = useState<string[]>([]);
+  const [showCertificates, setShowCertificates] = useState(false);
   const [careerGoalCodes, setCareerGoalCodes] = useState<string[]>([]);
   const [levels, setLevels] = useState<any[]>([]);
   const [domains, setDomains] = useState<any[]>([]);
@@ -275,7 +278,7 @@ export default function MobileEditProfileScreen() {
               <TouchableOpacity style={[styles.modeCard, learningGoal === 'certification' && styles.modeCardActive]} onPress={() => setLearningGoal('certification')}>
                 <MaterialIcons name="workspace-premium" size={22} color={colors.primary} />
                 <Text style={styles.modeTitle}>Luyện chứng chỉ</Text>
-                <Text style={styles.modeDescription}>Chuyên ngành, Chủ đề và Quiz theo chứng chỉ.</Text>
+                <Text style={styles.modeDescription}>Học kiến thức theo chủ đề và làm bài luyện tập cho chứng chỉ đã chọn.</Text>
               </TouchableOpacity>
               <TouchableOpacity style={[styles.modeCard, learningGoal === 'vocabulary' && styles.modeCardActive]} onPress={() => setLearningGoal('vocabulary')}>
                 <MaterialIcons name="translate" size={22} color={colors.primary} />
@@ -288,15 +291,18 @@ export default function MobileEditProfileScreen() {
             <Text style={styles.modeTitle}>Kết hợp từ vựng và chứng chỉ</Text>
             <Text style={styles.modeDescription}>Học từ vựng CNTT cùng lộ trình chứng chỉ.</Text>
           </TouchableOpacity>
-          {renderChoiceGroup('2. Chuyên ngành CNTT', domains, domainCodes, code => toggleCode(code, domainCodes, setDomainCodes), false, true)}
-          {learningGoal !== 'vocabulary' && renderChoiceGroup('Chứng chỉ mục tiêu', certificates, certificateCodes, code => setCertificateCodes(current => current.includes(code) ? [] : [code]), true, true)}
-          {renderChoiceGroup('3. Trình độ tiếng Anh', levels, levelCode ? [levelCode] : [], setLevelCode, true, true)}
-          {renderChoiceGroup('4. Mục tiêu nghề nghiệp', careerGoals, careerGoalCodes, code => toggleCode(code, careerGoalCodes, setCareerGoalCodes))}
-          <Text style={styles.label}>5. Kế hoạch học</Text>
-          <View style={styles.targetRow}>
-            <View style={[styles.inputGroup, styles.targetItem]}><Text style={styles.label}>Từ/ngày<RequiredMark /></Text><TextInput style={styles.input} value={dailyVocabularyTarget} onChangeText={setDailyVocabularyTarget} keyboardType="number-pad" /></View>
-            <View style={[styles.inputGroup, styles.targetItem]}><Text style={styles.label}>Quiz/tuần<RequiredMark /></Text><TextInput style={styles.input} value={weeklyExamTarget} onChangeText={setWeeklyExamTarget} keyboardType="number-pad" /></View>
-            <View style={[styles.inputGroup, styles.targetItem]}><Text style={styles.label}>Phút/ngày<RequiredMark /></Text><TextInput style={styles.input} value={dailyStudyTargetMinutes} onChangeText={setDailyStudyTargetMinutes} keyboardType="number-pad" /></View>
+          {renderChoiceGroup('2. Trình độ tiếng Anh', levels, levelCode ? [levelCode] : [], setLevelCode, true, true)}
+          {renderChoiceGroup('3. Chuyên ngành CNTT', domains, domainCodes, code => toggleCode(code, domainCodes, setDomainCodes), false, true)}
+          {learningGoal !== 'vocabulary' && <View style={{ gap: 12 }}>
+            <TouchableOpacity accessibilityRole="button" accessibilityState={{ expanded: showCertificates }} onPress={() => setShowCertificates(value => !value)} style={[styles.choiceChip, { flexDirection: 'row', alignItems: 'center', gap: 8 }]}><MaterialIcons name={showCertificates ? 'expand-less' : 'expand-more'} size={20} color={colors.primary} /><Text style={styles.choiceChipTextActive}>{showCertificates ? 'Thu gọn danh sách' : certificateCodes.length ? 'Đổi chứng chỉ mục tiêu' : 'Chọn chứng chỉ mục tiêu'}</Text></TouchableOpacity>
+            {renderChoiceGroup('4. Chứng chỉ mục tiêu', certificates.filter(cert => showCertificates || !certificateCodes.length || certificateCodes.includes(cert.code)), certificateCodes, code => { setCertificateCodes([code]); setShowCertificates(false); }, true, true)}
+          </View>}
+          {renderChoiceGroup('Mục tiêu nghề nghiệp', careerGoals, careerGoalCodes, code => toggleCode(code, careerGoalCodes, setCareerGoalCodes))}
+          <Text style={styles.label}>{learningGoal === 'vocabulary' ? '4' : '5'}. Kế hoạch học</Text>
+          <View style={[styles.targetRow, compact && { flexDirection: 'column', gap: 12 }]}>
+            <View style={[styles.inputGroup, styles.targetItem]}><Text style={styles.label}>Từ vựng mỗi ngày<RequiredMark /></Text><TextInput accessibilityLabel="Từ vựng mỗi ngày" style={styles.input} value={dailyVocabularyTarget} onChangeText={setDailyVocabularyTarget} keyboardType="number-pad" /></View>
+            <View style={[styles.inputGroup, styles.targetItem]}><Text style={styles.label}>Bài luyện tập mỗi tuần<RequiredMark /></Text><TextInput accessibilityLabel="Bài luyện tập mỗi tuần" style={styles.input} value={weeklyExamTarget} onChangeText={setWeeklyExamTarget} keyboardType="number-pad" /></View>
+            <View style={[styles.inputGroup, styles.targetItem]}><Text style={styles.label}>Phút học mỗi ngày<RequiredMark /></Text><TextInput accessibilityLabel="Phút học mỗi ngày" style={styles.input} value={dailyStudyTargetMinutes} onChangeText={setDailyStudyTargetMinutes} keyboardType="number-pad" /></View>
           </View>
           <View style={styles.targetRow}><Text style={styles.label}>Nhắc học hằng ngày</Text><Switch accessibilityLabel="Nhắc học hằng ngày" value={reminderEnabled} onValueChange={setReminderEnabled} /></View>
           {reminderEnabled && <View style={styles.inputGroup}><Text style={styles.label}>Giờ nhắc học hằng ngày<RequiredMark /></Text><TouchableOpacity style={styles.timePickerField} onPress={openTimePicker}><MaterialIcons name="schedule" size={22} color={colors.primary} /><Text style={styles.timePickerValue}>{reminderTime}</Text><MaterialIcons name="keyboard-arrow-down" size={22} color="#777587" /></TouchableOpacity></View>}
@@ -409,6 +415,7 @@ const styles = StyleSheet.create({
   targetRow: { flexDirection: 'row', gap: spacing.xs },
   targetItem: { flex: 1 },
   choiceChip: {
+    maxWidth: '100%',
     borderWidth: 1,
     borderColor: '#c7c4d8',
     borderRadius: 18,
@@ -421,6 +428,7 @@ const styles = StyleSheet.create({
     borderColor: colors.primary,
   },
   choiceChipText: {
+    flexShrink: 1,
     fontSize: 13,
     color: '#464555',
   },

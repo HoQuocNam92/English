@@ -193,7 +193,7 @@ export default function FlashcardsDashboard({ activeTab }: { activeTab: TabType 
           </div>
           <div className="mt-2 flex justify-between text-[11px] text-slate-500"><span>{new Date(`${days[0].date}T12:00:00Z`).toLocaleDateString('vi-VN', { day: 'numeric', month: 'numeric' })}</span><span className="font-semibold text-primary">{activityEnd === today ? 'Hôm nay · ' : ''}{new Date(`${activityEnd}T12:00:00Z`).toLocaleDateString('vi-VN', { day: 'numeric', month: 'numeric' })}</span></div>
         </div>
-        <p className="mt-3 text-xs leading-5 text-slate-500">Mỗi ô là một ngày, từ trái sang phải. Màu càng đậm thì càng nhiều từ đã ôn; ô nhạt là chưa có hoạt động.</p>
+        <p className="mt-3 text-xs leading-5 text-slate-500">Mỗi ô là một ngày. Màu càng đậm, số từ đã ôn càng nhiều.</p>
       </div>
     );
   };
@@ -236,7 +236,7 @@ export default function FlashcardsDashboard({ activeTab }: { activeTab: TabType 
         <div className="flex items-start gap-3 p-4 rounded-2xl bg-primary/5 border border-primary/20 text-on-surface text-xs leading-relaxed">
           <AppIcon className=" text-primary text-base mt-0.5">info</AppIcon>
           <div>
-            Bạn có thể luyện tập flashcard hàng ngày theo thuật toán lặp lại ngắt quãng (SRS) để ghi nhớ từ vựng CNTT lâu dài.
+            Ôn từ vựng mỗi ngày. Hệ thống sẽ nhắc lại những từ bạn cần luyện thêm.
           </div>
         </div>
 

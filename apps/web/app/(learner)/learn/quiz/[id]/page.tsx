@@ -180,7 +180,7 @@ interface UnansweredQuestion {
           <div className="lg:col-span-8 space-y-6">
             <div className="p-8 rounded-2xl bg-surface-container-lowest border border-outline-variant/40 shadow-2xs space-y-6">
               <div className="flex justify-between items-center pb-3 border-b border-outline-variant/30">
-                <span className="text-xs font-bold text-primary">Câu hỏi #{currentIdx + 1} / {total}</span>
+                <span className="text-xs font-bold text-primary">Câu hỏi {currentIdx + 1} / {total}</span>
                 {isMultiple ? (
                   <span className="text-[11px] font-semibold text-purple-700 bg-purple-50 px-2.5 py-0.5 rounded-md border border-purple-200/60 flex items-center gap-1">
                     <AppIcon className=" text-[14px]">check_box</AppIcon>
@@ -271,7 +271,7 @@ interface UnansweredQuestion {
                     disabled={submitting}
                     className="min-h-11 px-6 py-2 bg-green-600 hover:bg-green-700 !text-white font-bold text-xs rounded-xl transition-all flex items-center gap-1 shadow-sm disabled:opacity-50 cursor-pointer"
                   >
-                    <span className="!text-white">Hoàn thành & Nộp bài</span>
+                    <span className="!text-white">Nộp bài</span>
                     <AppIcon className=" text-[16px] !text-white">check</AppIcon>
                   </button>
                 )}

@@ -2,7 +2,7 @@ type Activity = { id: string; resourceType: string; title?: string; status: stri
 export type LearningReportPayload = {
   summary?: { completedLessons?: number; startedLessons?: number; studiedWords?: number };
   progress?: Activity[];
-  certProgress?: { certificateId: string; certificateName: string; completedLessons: number; totalLessons: number; examAttempts: number; avgScore: number | null; completionPercent: number }[];
+  certProgress?: { certificateId: string; certificateName: string; completedLessons: number; totalLessons: number; examAttempts: number; avgScore: number | null; completionPercent: number; hasStarted?: boolean }[];
   recentAttempts?: { id: string; exam?: { title?: string }; passed?: boolean; scorePercent?: number | null }[];
 };
 export type CourseReportPayload = {
@@ -27,6 +27,6 @@ export function learningReport(data: LearningReportPayload, course: CourseReport
       const timestamp = (item: Activity) => { const date = Date.parse(item.completedAt ?? item.updatedAt ?? ''); return Number.isFinite(date) ? date : 0; };
       return timestamp(b) - timestamp(a);
     }).slice(0, 10),
-    certificates: data.certProgress ?? [], recentAttempts: (data.recentAttempts ?? []).slice(0, 5),
+    certificates: (data.certProgress ?? []).filter(cert => cert.hasStarted || cert.completedLessons > 0 || cert.examAttempts > 0 || cert.completionPercent > 0), recentAttempts: (data.recentAttempts ?? []).slice(0, 5),
   };
 }

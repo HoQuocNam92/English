@@ -1,12 +1,13 @@
 import { useCallback, useState } from 'react';
 import { useFocusEffect, useRouter } from 'expo-router';
 import { AppState, View } from 'react-native';
+import { mobileNotificationRoute } from '../navigation';
 import { api } from '../api/api-client';
 import { useAuth } from '../store/auth-context';
 import { useTheme } from '../store/theme-context';
 import { Button, Text, controlStyles } from '../ui/primitives';
 
-type Reminder = { id: string; title: string; body: string };
+type Reminder = { id: string; title: string; body: string; route?: string };
 
 export function LearningReminder() {
   const { user } = useAuth();
@@ -51,10 +52,10 @@ export function LearningReminder() {
     try {
       await api.patch(`/notifications/${reminder.id}/read`, {});
       setReminder(null);
-      if (startLearning) router.push('/(tabs)/learning');
+
     } catch {
       setError('Chưa đóng được nhắc học. Vui lòng thử lại.');
-    } finally { setSaving(false); }
+    } finally { setSaving(false); if (startLearning) router.push(mobileNotificationRoute(reminder.route) as any); }
   };
 
   if (!reminder) return null;

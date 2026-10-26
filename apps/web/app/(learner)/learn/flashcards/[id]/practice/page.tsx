@@ -311,7 +311,7 @@ export default function FlashcardPracticePage({ params }: { params: Promise<{ id
     );
   }
 
-  if (quizFailed) return <LearnerShell><div className="mx-auto max-w-xl space-y-4 px-4 py-10 text-center"><p>Tiến độ học đã lưu. Chưa tải được Quiz sau phiên học.</p><button disabled={saving} onClick={() => void startQuiz(sessionResults)} className="rounded-xl bg-primary px-4 py-3 text-white">Thử tải Quiz lại</button><Link href={returnUrl} className="block text-primary">Về bài học</Link></div></LearnerShell>;
+  if (quizFailed) return <LearnerShell><div className="mx-auto max-w-xl space-y-4 px-4 py-10 text-center"><p>Tiến độ học đã lưu. Chưa tải được bài kiểm tra sau phiên học.</p><button disabled={saving} onClick={() => void startQuiz(sessionResults)} className="rounded-xl bg-primary px-4 py-3 text-white">Tải lại bài kiểm tra</button><Link href={returnUrl} className="block text-primary">Về bài học</Link></div></LearnerShell>;
 
   if (quizMode && quizQuestions.length > 0) {
     const question = quizQuestions[quizIndex];
@@ -543,7 +543,7 @@ export default function FlashcardPracticePage({ params }: { params: Promise<{ id
                   </button>
                 </div>
                 <span className="text-xs font-bold text-slate-600 uppercase tracking-wider">
-                  Mặt sau
+                  Nghĩa và ví dụ
                 </span>
               </div>
 

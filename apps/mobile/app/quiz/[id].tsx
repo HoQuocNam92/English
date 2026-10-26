@@ -121,7 +121,7 @@ export default function MobileQuizScreen() {
 
     try {
       await api.post(`/exams/attempts/${attemptId}/submit`, { answers: formattedAnswers });
-      router.replace(`/test-result/${attemptId}${certificateId && topicId ? `?certificateId=${certificateId}&topicId=${topicId}` : ''}` as any);
+      router.replace(`/test-result/${attemptId}${certificateId ? `?certificateId=${encodeURIComponent(certificateId)}${topicId ? `&topicId=${encodeURIComponent(topicId)}` : ''}` : ''}` as any);
     } catch (error) {
       submitInFlight.current = false;
       Alert.alert('Không thể nộp bài', error instanceof Error ? error.message : 'Vui lòng thử lại.');

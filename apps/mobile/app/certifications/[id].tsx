@@ -1,333 +1,99 @@
-import { Tabs } from '../../src/shared/ui/primitives';
-import { Text, TouchableOpacity } from '../../src/shared/ui/primitives';
-import { useCallback, useMemo, useState } from 'react';
-import { useLocalSearchParams, useRouter, useFocusEffect } from 'expo-router';
-import { StatusBar } from 'expo-status-bar';
-import { MaterialIcons } from '../../src/shared/ui/AppIcon';
-import { ScrollView, StyleSheet, View, ActivityIndicator } from 'react-native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { useTheme } from '../../src/shared/store/theme-context';
+import { useCallback, useEffect, useRef, useState } from 'react';
+import { useFocusEffect, useLocalSearchParams, useRouter } from 'expo-router';
+import { AppState, View } from 'react-native';
+import { certificateProgressExplanation } from '../../../../packages/shared-kernel/src/lesson-presentation';
+import { FeatureScreen, EmptyState } from '../../src/shared/ui/FeatureScreen';
+import { Badge, Button, Tabs, Text, controlStyles } from '../../src/shared/ui/primitives';
 import { api } from '../../src/shared/api/api-client';
 
-type Tab = 'learn' | 'exam';
-type TopicStatus = 'done' | 'current' | 'todo';
-
-interface Topic {
-  id: string;
-  completed: number;
-  total: number;
-  name: string;
-  status: TopicStatus;
-  practiceExamId?: string;
-  questionCount: number;
-}
-
-interface Domain {
-  id: string;
-  number: number;
-  name: string;
-  progress: number;
-  weightPercent: number;
-  topics: Topic[];
-}
-
-const TABS: { id: Tab; label: string; icon: keyof typeof MaterialIcons.glyphMap }[] = [
-  { id: 'learn', label: 'Học', icon: 'menu-book' },
-  { id: 'exam', label: 'Bài kiểm tra', icon: 'assignment' },
-];
-
+type Tab = 'learn' | 'exams';
+const kindLabels: Record<string, string> = { practice: 'Luyện tập chủ đề', domain_test: 'Kiểm tra chuyên ngành', mock_exam: 'Thi thử chứng chỉ', scenario_assessment: 'Tình huống thực tế' };
 export default function CertificationDetailScreen() {
+  const params = useLocalSearchParams<{ id: string; tab?: string; examId?: string }>();
   const router = useRouter();
-  const params = useLocalSearchParams<{ id: string; code?: string; name?: string; progress?: string }>();
-  const { colors, isDark } = useTheme();
-  const insets = useSafeAreaInsets();
-  const [tab, setTab] = useState<Tab>('learn');
-  const [expandedDomains, setExpandedDomains] = useState<number[]>([]);
-  const [certificateData, setCertificateData] = useState<any>(null);
-  const [examStates, setExamStates] = useState<Record<string, any>>({});
-  const [studyProgress, setStudyProgress] = useState<any>(null);
-  const [progressData, setProgressData] = useState<any>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
-
+  const [tab, setTab] = useState<Tab>(params.tab === 'exams' || params.examId ? 'exams' : 'learn');
+  const [expanded, setExpanded] = useState<string[]>([]); const [showFormula, setShowFormula] = useState(false);
+  const [certificate, setCertificate] = useState<any>(null); const [progress, setProgress] = useState<any>(null);
+  const [studyProgress, setStudyProgress] = useState<any>(null); const [examStates, setExamStates] = useState<Record<string, any>>({});
+  const [loading, setLoading] = useState(true); const [error, setError] = useState(''); const sequence = useRef(0);
+  useEffect(() => { if (params.tab === 'exams' || params.examId) setTab('exams'); }, [params.tab, params.examId]);
+  const load = useCallback(async () => {
+    const request = ++sequence.current;
+    try {
+      const [catalog, activity, study] = await Promise.all([api.get<any>(`/certificates/${params.id}`), api.get<any>('/progress/me'), api.get<any>(`/certification-study/certificates/${params.id}/progress`)]);
+      const cert = catalog?.data ?? catalog;
+      const states = await Promise.all((cert?.exams ?? []).filter((exam: any) => exam.status === 'published').map(async (exam: any) => [exam.id, await api.get(`/exams/${exam.id}/eligibility`)]));
+      if (request !== sequence.current) return;
+      setCertificate(cert); setProgress(activity); setStudyProgress(study); setExamStates(Object.fromEntries(states)); setError('');
+    } catch (cause: any) { if (request === sequence.current) setError(cause?.message || 'Không thể tải dữ liệu chứng chỉ.'); }
+    finally { if (request === sequence.current) setLoading(false); }
+  }, [params.id]);
   useFocusEffect(useCallback(() => {
-    let cancelled = false;
-    setLoading(true); setError('');
-    Promise.all([api.get<any>(`/certificates/${params.id}`), api.get<any>('/progress/me'), api.get<any>(`/certification-study/certificates/${params.id}/progress`)])
-      .then(async ([certificateResult, progressResult, studyResult]) => {
-        const cert = (certificateResult as any)?.data ?? certificateResult;
-        const states = await Promise.all((cert?.exams ?? []).filter((exam: any) => exam.status === 'published').map(async (exam: any) => [exam.id, await api.get<any>(`/exams/${exam.id}/eligibility`)]));
-        if (cancelled) return;
-        setExamStates(Object.fromEntries(states));
-        setCertificateData(cert);
-        setProgressData(progressResult);
-        setStudyProgress(studyResult);
-        setExpandedDomains((cert?.domains ?? []).slice(0, 2).map((_: any, index: number) => index + 1));
-      })
-      .catch((cause) => { if (!cancelled) setError(cause?.message || 'Không thể tải dữ liệu chứng chỉ'); })
-      .finally(() => { if (!cancelled) setLoading(false); });
-    return () => { cancelled = true; };
-  }, [params.id]));
-
-  const domains: Domain[] = useMemo(() => (certificateData?.domains ?? []).map((item: any, index: number) => {
-    const domain = item.domain;
-    const topics = (item.certificationTopics ?? []).map((topic: any) => {
-      const practiceExam = (certificateData?.exams ?? []).find((exam: any) => exam.kind === 'practice' && (exam.topics ?? []).includes(topic.code));
-      const study = studyProgress?.topics?.find((item: any) => item.topicId === topic.id);
-      return { id: topic.id, name: topic.name, status: study?.total > 0 && study.completed === study.total ? 'done' as const : study?.started ? 'current' as const : 'todo' as const, completed: study?.completed ?? 0, total: study?.total ?? 0, practiceExamId: practiceExam?.id, questionCount: Number(topic._count?.questions ?? 0) };
-    });
-    return { id: domain.id, number: index + 1, name: domain.name, weightPercent: Number(item.weightPercent ?? 0), progress: topics.reduce((sum: number, topic: Topic) => sum + topic.total, 0) ? Math.round(topics.reduce((sum: number, topic: Topic) => sum + topic.completed, 0) / topics.reduce((sum: number, topic: Topic) => sum + topic.total, 0) * 100) : 0, topics };
-  }), [certificateData, studyProgress]);
-
-  const certificate = useMemo(() => ({
-    name: certificateData?.name || params.name || 'Chứng chỉ',
-    code: certificateData?.code || params.code || '',
-    provider: certificateData?.provider || '',
-    description: certificateData?.description || 'Luyện tiếng Anh chuyên ngành theo nội dung chứng chỉ.',
-    progress: Math.round((progressData?.certProgress ?? []).find((item: any) => item.certificateId === certificateData?.id)?.completionPercent ?? 0),
-  }), [certificateData, params.code, params.name, params.progress, progressData]);
-
-  const certProgress = (progressData?.certProgress ?? []).find((item: any) => item.certificateId === certificateData?.id);
-  const totalLessons = certProgress?.totalLessons ?? new Set((studyProgress?.topics ?? []).flatMap((topic: any) => (topic.lessons ?? []).map((lesson: any) => lesson.id))).size;
-  const totalExams = certProgress?.totalExams ?? (certificateData?.exams ?? []).filter((exam: any) => exam.status === 'published' && exam._count?.questions > 0).length;
-
-  const toggleDomain = (number: number) => {
-    setExpandedDomains((current) => current.includes(number)
-      ? current.filter((value) => value !== number)
-      : [...current, number]);
-  };
-
-  const openQuiz = (topic: Topic) => {
-    router.push(`/certifications/topics/${topic.id}?certificateId=${params.id}` as any);
-  };
-
-  if (loading) return <View style={[styles.screen, { backgroundColor: colors.background, alignItems: 'center', justifyContent: 'center' }]}><ActivityIndicator size="large" color={colors.primary} /></View>;
-  if (error || !certificateData) return <View style={[styles.screen, { backgroundColor: colors.background, alignItems: 'center', justifyContent: 'center', padding: 24 }]}><Text style={{ color: colors.error }}>{error || 'Không tìm thấy chứng chỉ'}</Text></View>;
-
-  return (
-    <View style={[styles.screen, { backgroundColor: colors.background, paddingTop: insets.top }]}>
-      <StatusBar style={isDark ? 'light' : 'dark'} />
-      <View style={[styles.topBar, { backgroundColor: colors.surfaceContainerLowest, borderBottomColor: colors.border }]}>
-        <TouchableOpacity onPress={() => router.back()} style={styles.iconButton} accessibilityLabel="Quay lại">
-          <MaterialIcons name="arrow-back" size={24} color={colors.onSurface} />
-        </TouchableOpacity>
-        <Text style={[styles.topBarTitle, { color: colors.onSurface }]} numberOfLines={1}>Chi tiết chứng chỉ</Text>
-
+    void load();
+    const refresh = () => { if (AppState.currentState === 'active') void load(); };
+    const subscription = AppState.addEventListener('change', refresh); const timer = setInterval(refresh, 60000);
+    return () => { ++sequence.current; subscription.remove(); clearInterval(timer); };
+  }, [load]));
+  const activity = (progress?.certProgress ?? []).find((item: any) => item.certificateId === certificate?.id);
+  const topics = studyProgress?.topics ?? [];
+  const domains = (certificate?.domains ?? []).map((item: any) => ({ ...item.domain, weightPercent: item.weightPercent, topics: (item.certificationTopics ?? []).map((topic: any) => ({ ...topic, study: topics.find((entry: any) => entry.topicId === topic.id) })) }));
+  const allTopics = domains.flatMap((domain: any) => domain.topics);
+  const nextTopic = allTopics.find((topic: any) => topic.study?.total > 0 && topic.study.completed < topic.study.total) ?? allTopics.find((topic: any) => topic.study?.total > 0);
+  const totalLessons = activity?.totalLessons ?? new Set(topics.flatMap((topic: any) => (topic.lessons ?? []).map((lesson: any) => lesson.id))).size;
+  const publishedExams = (certificate?.exams ?? []).filter((exam: any) => exam.status === 'published').sort((a: any, b: any) => Number(b.id === params.examId) - Number(a.id === params.examId) || new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+  const totalExams = activity?.totalExams ?? publishedExams.filter((exam: any) => exam._count?.questions > 0).length;
+  const completeIds = new Set((progress?.progress ?? []).filter((item: any) => item.resourceType === 'lesson' && (item.status === 'completed' || item.completionPercent >= 100)).map((item: any) => item.resourceId));
+  const percent = Math.min(100, Math.max(0, Math.round(activity?.completionPercent ?? 0)));
+  const openTopic = (topicId: string) => router.push(`/certifications/topics/${topicId}?certificateId=${params.id}` as any);
+  return <FeatureScreen title={certificate?.name ?? 'Chi tiết chứng chỉ'} loading={loading} error={!certificate ? error : ''} onRetry={load}>
+    {certificate && <View style={{ gap: 20 }}>
+      {!!error && <View style={{ gap: 10 }}><Text accessibilityRole="alert" style={{ color: '#b91c1c' }}>{error}</Text><Button mode="outlined" icon="refresh" onPress={load}>Thử lại</Button></View>}
+      <View style={[controlStyles.card, { gap: 14 }]}>
+        <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}><Badge>{certificate.code}</Badge><Badge tone={activity?.hasStarted || percent > 0 ? 'success' : 'muted'}>{activity?.hasStarted || percent > 0 ? 'Đang ôn luyện' : 'Chưa bắt đầu'}</Badge></View>
+        <Text style={{ fontSize: 22, fontWeight: '700' }}>{certificate.name}</Text><Text>{certificate.provider}</Text>
+        {!!certificate.description && <Text>{certificate.description}</Text>}
+        <Text>{domains.length} chuyên ngành · {totalLessons} bài học · {totalExams} bài kiểm tra</Text>
+        {nextTopic ? <Button icon="play-arrow" onPress={() => openTopic(nextTopic.id)}>{activity?.hasStarted ? 'Tiếp tục học' : 'Bắt đầu học'}</Button> : publishedExams.length > 0 ? <Button icon="assignment" onPress={() => setTab('exams')}>Làm bài kiểm tra</Button> : <Text>Nội dung đang được cập nhật.</Text>}
+        <Text style={{ fontWeight: '700', fontSize: 18 }}>Tiến độ của bạn {percent}%</Text>
+        <Text>Bài học: {activity?.completedLessons ?? 0}/{totalLessons}</Text><Text>Bài kiểm tra: {activity?.completedExams ?? 0}/{totalExams}</Text>
+        <Text>{activity?.examAttempts ?? 0} lượt thi hoàn thành · Điểm trung bình: {activity?.avgScore == null ? 'Chưa có' : `${activity.avgScore}%`}</Text>
+        <Button mode="text" icon={showFormula ? 'expand-less' : 'expand-more'} accessibilityState={{ expanded: showFormula }} onPress={() => setShowFormula(value => !value)}>Cách tính tiến độ</Button>
+        {showFormula && <Text>{certificateProgressExplanation}</Text>}
       </View>
-
-      <ScrollView stickyHeaderIndices={[1]} showsVerticalScrollIndicator={false} contentContainerStyle={styles.scrollContent}>
-        <View style={[styles.hero, { backgroundColor: colors.surfaceContainerLowest, borderBottomColor: colors.border }]}>
-          <View style={styles.identityRow}>
-            <View style={[styles.awsLogo, { backgroundColor: /^aws(?:$|[-\s])/i.test(certificate.code) || /^aws$|amazon web services/i.test(certificate.provider) ? '#ff9900' : colors.primaryContainer }]}>{/^aws(?:$|[-\s])/i.test(certificate.code) || /^aws$|amazon web services/i.test(certificate.provider) ? <Text style={styles.awsLogoText}>aws</Text> : <MaterialIcons name="school" size={28} color={colors.primary} />}</View>
-            <View style={styles.identityText}>
-              <View style={styles.badgeRow}>
-                <View style={[styles.badge, { backgroundColor: colors.primaryContainer }]}><Text style={[styles.badgeText, { color: colors.primary }]}>{certProgress?.hasStarted || certificate.progress > 0 ? 'ĐANG ÔN LUYỆN' : 'CHƯA BẮT ĐẦU'}</Text></View>
-                <Text style={[styles.code, { color: colors.onSurfaceVariant }]}>{certificate.code}</Text>
-              </View>
-              <Text style={[styles.title, { color: colors.onSurface }]}>{certificate.name}</Text>
-            </View>
-          </View>
-          <Text style={[styles.heroDescription, { color: colors.onSurfaceVariant }]}>{certificate.description}</Text>
-          <View style={styles.progressHeader}>
-            <Text style={[styles.progressLabel, { color: colors.onSurface }]}>Tiến độ tổng thể</Text>
-            <Text style={[styles.progressValue, { color: colors.primary }]}>{certificate.progress}%</Text>
-          </View>
-          <View style={[styles.progressTrack, { backgroundColor: colors.surfaceContainerHigh }]}>
-            <View style={[styles.progressFill, { width: `${certificate.progress}%`, backgroundColor: colors.primary }]} />
-          </View>
-          <Text style={[styles.progressCaption, { color: colors.onSurfaceVariant }]}>{certProgress?.completedLessons ?? 0}/{totalLessons} bài học · {certProgress?.completedExams ?? 0}/{totalExams} bài kiểm tra hoàn thành</Text>
-          <Text style={[styles.progressCaption, { color: colors.onSurfaceVariant }]}>{certProgress?.examAttempts ?? 0} lượt thi đã hoàn thành · Mỗi bài chỉ tính tiến độ một lần.</Text>
-        </View>
-
-        <View style={{ padding: 16, backgroundColor: colors.surface }}><Tabs items={TABS.map(item => ({ value: item.id, label: item.label }))} value={tab} onChange={value => setTab(value as Tab)} /></View>
-
-        <View style={styles.content}>
-          {tab === 'learn' && (
-            <LearnContent
-              colors={colors}
-              expandedDomains={expandedDomains}
-              onToggle={toggleDomain}
-              onOpenQuiz={openQuiz}
-              domains={domains}
-              certProgress={certProgress}
-            />
-          )}
-          {tab === 'exam' && <ExamContent colors={colors} exams={certificateData.exams ?? []} examStates={examStates} router={router} onLearn={() => setTab('learn')} />}
-        </View>
-      </ScrollView>
-    </View>
-  );
-}
-
-function LearnContent({ colors, expandedDomains, onToggle, onOpenQuiz, domains, certProgress }: any) {
-  return (
-    <View>
-      <Text style={[styles.eyebrow, { color: colors.primary }]}>YOUR LEARNING PATH</Text>
-      <Text style={[styles.sectionTitle, { color: colors.onSurface }]}>Lộ trình theo nội dung kỳ thi</Text>
-      <Text style={[styles.sectionDescription, { color: colors.onSurfaceVariant }]}>Học kiến thức từng chủ đề, sau đó làm Quiz để củng cố.</Text>
-
-      <View style={styles.domainList}>
-        {domains.map((domain: Domain) => {
-          const expanded = expandedDomains.includes(domain.number);
-          return (
-            <View key={domain.number} style={[styles.domainCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
-              <TouchableOpacity style={styles.domainHeader} onPress={() => onToggle(domain.number)} activeOpacity={0.75}>
-                <View style={[styles.domainNumber, { backgroundColor: colors.primaryContainer }]}><Text style={[styles.domainNumberText, { color: colors.primary }]}>{domain.number}</Text></View>
-                <View style={styles.domainMeta}>
-                  <View style={styles.domainTitleRow}>
-                    <Text style={[styles.domainTitle, { color: colors.onSurface }]} numberOfLines={2}>Chuyên ngành {domain.number} — {domain.name}</Text>
-                    <Text style={[styles.domainPercent, { color: colors.primary }]}>{domain.progress}%</Text>
-                  </View>
-                  <View style={styles.miniProgressRow}>
-                    <View style={[styles.miniTrack, { backgroundColor: colors.surfaceContainerHigh }]}><View style={[styles.miniFill, { width: `${domain.progress}%`, backgroundColor: colors.primary }]} /></View>
-                    <Text style={[styles.weight, { color: colors.onSurfaceVariant }]}>{domain.weightPercent}% bài thi</Text>
-                  </View>
-                </View>
-                <MaterialIcons name={expanded ? 'expand-less' : 'expand-more'} size={22} color={colors.onSurfaceVariant} />
-              </TouchableOpacity>
-
-              {expanded && (
-                <View style={[styles.topicList, { borderTopColor: colors.border }]}>
-                  {domain.topics.map((topic: Topic) => (
-                    <View key={topic.name} style={[styles.topicRow, { borderBottomColor: colors.border }]}>
-                      <View style={[styles.topicStatus, { borderColor: colors.outlineVariant, backgroundColor: 'transparent' }]}>
-                        <View style={[styles.statusDot, { backgroundColor: colors.outline }]} />
-                      </View>
-                      <View style={[styles.topicTextWrap]}>
-                        <Text style={[styles.topicName, { color: colors.onSurface }]}>{topic.name}</Text>
-                        <Text style={[styles.topicMeta, { color: colors.onSurfaceVariant }]}>{topic.completed}/{topic.total} bài học hoàn thành</Text>
-                      </View>
-                      <TouchableOpacity onPress={() => onOpenQuiz(topic)} style={[styles.topicQuizButton, { backgroundColor: colors.primary }]}>
-                        <MaterialIcons name="play-arrow" size={16} color={'#fff'} />
-                        <Text style={[styles.topicQuizText, { color: '#fff' }]}>Học</Text>
-                      </TouchableOpacity>
-                    </View>
-                  ))}
-                </View>
-              )}
-            </View>
-          );
-        })}
-        {!domains.length && <Text style={[styles.sectionDescription, { color: colors.onSurfaceVariant }]}>Chứng chỉ chưa được cấu hình chuyên ngành.</Text>}
-      </View>
-      <View style={[styles.practiceCard, { backgroundColor: colors.card, borderColor: colors.border, marginTop: 16 }]}>
-        <View style={styles.practiceText}><Text style={[styles.practiceTitle, { color: colors.onSurface }]}>Kết quả thực tế</Text><Text style={[styles.practiceDetail, { color: colors.onSurfaceVariant }]}>{certProgress?.examAttempts ?? 0} lượt thi · Điểm TB {certProgress?.avgScore == null ? '—' : `${certProgress.avgScore}%`}</Text></View>
-      </View>
-    </View>
-  );
-}
-
-
-
-function ExamContent({ colors, exams, examStates, router, onLearn }: any) {
-  const publishedExams = exams.filter((exam: any) => exam.status === 'published');
-  const kindLabels: Record<string, string> = { practice: 'Luyện tập chủ đề', domain_test: 'Kiểm tra chuyên ngành', mock_exam: 'Thi thử chứng chỉ', scenario_assessment: 'Tình huống thực tế' };
-  return (
-    <View>
-      <Text style={[styles.eyebrow, { color: colors.primary }]}>BÀI KIỂM TRA</Text>
-      <Text style={[styles.sectionTitle, { color: colors.onSurface }]}>Luyện tập và kiểm tra kiến thức</Text>
-      <Text style={[styles.sectionDescription, { color: colors.onSurfaceVariant }]}>Các bài đã xuất bản của chứng chỉ, gồm luyện tập chủ đề, kiểm tra chuyên ngành và thi thử.</Text>
-      <View style={styles.examList}>
+      <Tabs items={[{ value: 'learn', label: `Lộ trình học (${totalLessons})` }, { value: 'exams', label: `Bài kiểm tra (${totalExams})` }]} value={tab} onChange={value => setTab(value as Tab)} />
+      {tab === 'learn' ? <View style={{ gap: 16 }}>
+        <Text style={{ fontSize: 22, fontWeight: '700' }}>Lộ trình học</Text><Text>Chọn chuyên ngành và học lần lượt theo từng chủ đề.</Text>
+        {domains.map((domain: any) => <View key={domain.id} style={[controlStyles.card, { gap: 14 }]}>
+          <Button mode="outlined" icon={expanded.includes(domain.id) ? 'expand-less' : 'expand-more'} accessibilityState={{ expanded: expanded.includes(domain.id) }} onPress={() => setExpanded(current => current.includes(domain.id) ? current.filter(id => id !== domain.id) : [...current, domain.id])}>{domain.name}</Button>
+          <Text>{domain.topics.length} chủ đề{Number(domain.weightPercent) > 0 ? ` · Tỷ trọng bài thi: ${domain.weightPercent}%` : ''}</Text>
+          {expanded.includes(domain.id) && (domain.topics.length ? domain.topics.map((topic: any) => {
+            const study = topic.study; const done = study?.total > 0 && study.completed === study.total;
+            return <View key={topic.id} style={{ gap: 10, borderTopWidth: 1, borderTopColor: '#e2e8f0', paddingTop: 14 }}><Text style={{ fontWeight: '700' }}>{topic.name}</Text><Text>{study?.total > 0 ? `${study.completed}/${study.total} bài học hoàn thành` : 'Bài học đang được cập nhật'}</Text>{done && <Badge tone="success">✓ Đã hoàn thành</Badge>}<Button icon={done ? 'replay' : 'menu-book'} mode="outlined" onPress={() => openTopic(topic.id)}>{done ? 'Ôn lại' : study?.started ? 'Học tiếp' : 'Xem chủ đề'}</Button></View>;
+          }) : <Text>Chưa có chủ đề học trong chuyên ngành này.</Text>)}
+        </View>)}
+        {!domains.length && <EmptyState icon="menu-book" title="Chuyên ngành đang được cập nhật" detail="Bạn có thể xem các bài kiểm tra đã xuất bản." />}
+        {publishedExams.length > 0 && <Button icon="assignment" mode="outlined" onPress={() => setTab('exams')}>Xem bài kiểm tra</Button>}
+      </View> : <View style={{ gap: 16 }}>
+        <Text style={{ fontSize: 22, fontWeight: '700' }}>Luyện tập và kiểm tra</Text><Text>Luyện tập sau khi học kiến thức, hoặc làm bài kiểm tra chuyên ngành và thi thử độc lập.</Text>
         {publishedExams.map((exam: any) => {
-          const state = examStates[exam.id];
-          const attempt = state?.latestAttempt;
-          const canStart = Boolean(state?.canStart);
-          const actionLabel = state?.activeAttemptId ? 'Tiếp tục' : state?.usedAttempts ? 'Làm lại' : 'Bắt đầu';
-          return (
-          <View key={exam.id} style={[styles.examCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
-            <View style={[styles.examIcon, { backgroundColor: attempt ? colors.primary : colors.surfaceContainerLow }]}>
-              <MaterialIcons name={attempt ? 'emoji-events' : 'assignment'} size={25} color={attempt ? '#fff' : colors.primary} />
-            </View>
-            <View style={styles.examInfo}>
-              <Text style={[styles.examTitle, { color: colors.onSurface }]}>{exam.title}</Text>
-              <Text style={[styles.examMeta, { color: colors.primary }]}>{kindLabels[exam.kind] || 'Bài kiểm tra'}</Text>
-              <Text style={[styles.examMeta, { color: colors.onSurfaceVariant }]}>{exam._count?.questions ?? 0} câu hỏi · {exam.durationMinutes} phút</Text>
-              <Text style={[styles.examMeta, { color: colors.onSurfaceVariant }]}>Đã dùng {state?.usedAttempts ?? 0}/{state?.maxAttempts ?? exam.maxAttempts} lượt · Còn {state?.remainingAttempts ?? 0} lượt</Text>
-              {state?.reason && <Text style={[styles.examMeta, { color: colors.onSurfaceVariant }]}>{state.reason}</Text>}
-              {exam.kind !== 'practice' && <Text style={[styles.examMeta, { color: colors.onSurfaceVariant }]}>Có thể kiểm tra độc lập, không yêu cầu hoàn thành bài học.</Text>}
-              {attempt && <Text style={[styles.examScore, { color: colors.primary }]}>Điểm: {Math.round(attempt.scorePercent ?? 0)}%</Text>}
-            </View>
-            <View style={{ gap: 8 }}>
-              <TouchableOpacity disabled={!canStart} accessibilityState={{ disabled: !canStart }} onPress={() => router.push(`/quiz/${exam.id}`)} style={[styles.examButton, { backgroundColor: colors.primary, borderColor: colors.primary, opacity: canStart ? 1 : 0.45 }]}>
-                <Text style={[styles.examButtonText, { color: '#fff' }]}>{canStart ? actionLabel : state?.unavailableLabel || (state?.remainingAttempts === 0 ? 'Hết lượt' : 'Chưa thể làm bài')}</Text>
-              </TouchableOpacity>
-              {attempt && <TouchableOpacity onPress={() => router.push(`/test-result/${attempt.id}`)} style={[styles.examButton, { borderColor: colors.primary }]}><Text style={[styles.examButtonText, { color: colors.primary }]}>Xem lại</Text></TouchableOpacity>}
-              {!canStart && state?.requiredLessonIds?.length > 0 && <TouchableOpacity onPress={onLearn}><Text style={{ color: colors.primary, textAlign: 'center' }}>Học trước</Text></TouchableOpacity>}
-            </View>
-          </View>
-        );})}
-        {!publishedExams.length && <Text style={[styles.sectionDescription, { color: colors.onSurfaceVariant }]}>Chưa có bài kiểm tra nào được xuất bản cho chứng chỉ này.</Text>}
-      </View>
-    </View>
-  );
+          const state = examStates[exam.id]; const attempt = state?.latestAttempt;
+          const requiredLesson = state?.requiredLessonIds?.find((lessonId: string) => !completeIds.has(lessonId));
+          const selected = exam.id === params.examId;
+          return <View key={exam.id} style={[controlStyles.card, { gap: 12, backgroundColor: attempt ? '#ecfdf5' : '#fff', borderColor: selected ? '#3525cd' : attempt ? '#a7f3d0' : '#e2e8f0', borderWidth: selected ? 2 : 1 }]}>
+            {selected && <Badge>Bài kiểm tra bạn vừa chọn</Badge>}
+            <Text>{kindLabels[exam.kind] ?? 'Bài kiểm tra'}</Text><Text style={{ fontWeight: '700', fontSize: 18 }}>{exam.title}</Text>
+            {attempt && <Badge tone="success">✓ Đã làm bài</Badge>}
+            <Text>{exam._count?.questions ?? 0} câu hỏi · {exam.durationMinutes} phút · Đạt từ {exam.passingScorePercent}%</Text>
+            <Text>Đã làm {state?.usedAttempts ?? 0}/{state?.maxAttempts ?? exam.maxAttempts} lượt</Text>
+            {attempt && <Text>Kết quả gần nhất: {attempt.scorePercent == null ? 'Chờ chấm' : `${Math.round(attempt.scorePercent)}%`}</Text>}
+            {!!state?.reason && <Text>{state.reason}</Text>}
+            <Button icon={attempt ? 'replay' : 'play-arrow'} disabled={!state?.canStart} onPress={() => router.push(`/quiz/${exam.id}?certificateId=${params.id}` as any)}>{state?.canStart ? state.activeAttemptId ? 'Tiếp tục' : state.usedAttempts ? 'Làm lại' : 'Bắt đầu' : state?.unavailableLabel || 'Chưa thể làm bài'}</Button>
+            {!state?.canStart && requiredLesson && <Button icon="menu-book" mode="outlined" onPress={() => router.push(`/lessons/${requiredLesson}?from=${encodeURIComponent(`/certifications/${params.id}?tab=exams&examId=${exam.id}`)}` as any)}>Học bài bắt buộc</Button>}
+            {attempt && <Button icon="assignment" mode="outlined" onPress={() => router.push(`/test-result/${attempt.id}?certificateId=${params.id}` as any)}>Xem kết quả</Button>}
+          </View>;
+        })}
+        {!publishedExams.length && <EmptyState icon="assignment" title="Chưa có bài kiểm tra" detail="Chứng chỉ chưa có bài kiểm tra được xuất bản." />}
+      </View>}
+    </View>}
+  </FeatureScreen>;
 }
-
-const styles = StyleSheet.create({
-  screen: { flex: 1 },
-  topBar: { height: 58, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 12, borderBottomWidth: 1 },
-  iconButton: { width: 42, height: 42, alignItems: 'center', justifyContent: 'center' },
-  topBarTitle: { flex: 1, textAlign: 'center', fontSize: 17, fontWeight: '700' },
-  scrollContent: { paddingBottom: 40 },
-  hero: { padding: 18, borderBottomWidth: 1 },
-  identityRow: { flexDirection: 'row', alignItems: 'flex-start', gap: 12 },
-  awsLogo: { width: 52, height: 52, borderRadius: 13, backgroundColor: '#ff9900', alignItems: 'center', justifyContent: 'center' },
-  awsLogoText: { color: '#232f3e', fontSize: 19, fontWeight: '900' },
-  identityText: { flex: 1 },
-  badgeRow: { flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 5 },
-  badge: { borderRadius: 999, paddingHorizontal: 9, paddingVertical: 4 },
-  badgeText: { fontSize: 10, fontWeight: '800', letterSpacing: 0.4 },
-  code: { fontSize: 12, fontWeight: '700' },
-  title: { fontSize: 21, lineHeight: 27, fontWeight: '800', letterSpacing: -0.3 },
-  heroDescription: { fontSize: 13, lineHeight: 19, marginTop: 12 },
-  progressHeader: { flexDirection: 'row', alignItems: 'flex-end', justifyContent: 'space-between', marginTop: 18, marginBottom: 7 },
-  progressLabel: { fontSize: 13, fontWeight: '700' },
-  progressValue: { fontSize: 21, fontWeight: '800' },
-  progressTrack: { height: 8, borderRadius: 99, overflow: 'hidden' },
-  progressFill: { height: '100%', borderRadius: 99 },
-  progressCaption: { fontSize: 11, marginTop: 6 },
-  tabs: { flexDirection: 'row', borderBottomWidth: 1, zIndex: 10 },
-  tab: { flex: 1, minHeight: 56, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6, position: 'relative' },
-  tabText: { fontSize: 13, fontWeight: '700' },
-  activeLine: { height: 3, borderRadius: 2, position: 'absolute', left: 18, right: 18, bottom: 0 },
-  content: { padding: 16 },
-  eyebrow: { fontSize: 11, fontWeight: '800', letterSpacing: 1.1 },
-  sectionTitle: { fontSize: 22, fontWeight: '800', marginTop: 4 },
-  sectionDescription: { fontSize: 13, lineHeight: 19, marginTop: 6 },
-  domainList: { gap: 12, marginTop: 18 },
-  domainCard: { borderRadius: 14, borderWidth: 1, overflow: 'hidden' },
-  domainHeader: { flexDirection: 'row', alignItems: 'center', gap: 10, padding: 14 },
-  domainNumber: { width: 36, height: 36, borderRadius: 10, alignItems: 'center', justifyContent: 'center' },
-  domainNumberText: { fontSize: 14, fontWeight: '800' },
-  domainMeta: { flex: 1 },
-  domainTitleRow: { flexDirection: 'row', alignItems: 'flex-start', gap: 8 },
-  domainTitle: { flex: 1, fontSize: 14, lineHeight: 19, fontWeight: '700' },
-  domainPercent: { fontSize: 13, fontWeight: '800' },
-  miniProgressRow: { flexDirection: 'row', alignItems: 'center', gap: 8, marginTop: 7 },
-  miniTrack: { flex: 1, height: 5, borderRadius: 99, overflow: 'hidden' },
-  miniFill: { height: '100%', borderRadius: 99 },
-  weight: { fontSize: 10 },
-  topicList: { borderTopWidth: 1, paddingHorizontal: 14 },
-  topicRow: { minHeight: 64, flexDirection: 'row', alignItems: 'center', gap: 10, borderBottomWidth: StyleSheet.hairlineWidth },
-  mutedTopic: { opacity: 0.72 },
-  topicStatus: { width: 26, height: 26, borderRadius: 13, borderWidth: 1.5, alignItems: 'center', justifyContent: 'center' },
-  statusDot: { width: 7, height: 7, borderRadius: 4 },
-  topicTextWrap: { flex: 1, paddingVertical: 9 },
-  topicName: { fontSize: 13, lineHeight: 18, fontWeight: '700' },
-  topicMeta: { fontSize: 10, marginTop: 3 },
-  continueText: { fontSize: 10, fontWeight: '800' },
-  topicQuizButton: { minWidth: 64, height: 34, paddingHorizontal: 10, borderRadius: 9, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 3 },
-  topicQuizText: { fontSize: 11, fontWeight: '800' },
-  practiceCard: { minHeight: 82, borderRadius: 14, borderWidth: 1, padding: 14, flexDirection: 'row', alignItems: 'center', gap: 12 },
-  practiceText: { flex: 1 },
-  practiceTitle: { fontSize: 15, fontWeight: '700' },
-  practiceDetail: { fontSize: 12, marginTop: 4 },
-  examList: { gap: 12, marginTop: 18 },
-  examCard: { borderRadius: 14, borderWidth: 1, padding: 14, flexDirection: 'row', alignItems: 'center', gap: 11 },
-  examIcon: { width: 45, height: 45, borderRadius: 12, alignItems: 'center', justifyContent: 'center' },
-  examInfo: { flex: 1 },
-  examTitle: { fontSize: 14, fontWeight: '800' },
-  examMeta: { fontSize: 11, marginTop: 4 },
-  examScore: { fontSize: 12, fontWeight: '800', marginTop: 4 },
-  examButton: { borderWidth: 1, borderRadius: 9, paddingHorizontal: 12, paddingVertical: 9 },
-  examButtonText: { fontSize: 11, fontWeight: '800' },
-});

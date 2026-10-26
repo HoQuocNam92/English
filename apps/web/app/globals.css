@@ -1093,3 +1093,9 @@ button, input, select, textarea { font-family: inherit; }
 .ui-control[aria-invalid='true']:focus {
   box-shadow: 0 0 0 3px color-mix(in srgb, var(--error, #dc2626) 14%, transparent) !important;
 }
+
+/* Reading labels remain legible on narrow screens and projectors. */
+.lesson-content { min-width: 0; overflow-wrap: break-word; }
+.lesson-content :is(h1, h2, h3) { text-wrap: pretty; }
+.lesson-content .uppercase { text-transform: none; letter-spacing: normal; }
+.ui-button { white-space: nowrap; font-size: 14px; line-height: 1.4; }
