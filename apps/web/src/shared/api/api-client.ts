@@ -128,7 +128,16 @@ async function request<T>(path: string, options: RequestInit = {}, canRetry = tr
     );
   }
 
-  const data = res.status === 204 ? undefined : localizeLevelFields(await res.json() as T, /^\/levels(?:[/?]|$)/.test(path));
+  let data: T | undefined;
+  if (res.status !== 204) {
+    const text = await res.text();
+    const nullablePlan = path.split('?')[0] === '/placement-test/result' && (!options.method || options.method === 'GET');
+    try {
+      data = localizeLevelFields(!text.trim() && nullablePlan ? null : JSON.parse(text), /^\/levels(?:[/?]|$)/.test(path));
+    } catch {
+      throw new ApiClientError('Máy chủ trả về dữ liệu không hợp lệ. Vui lòng thử lại.', res.status);
+    }
+  }
   let body: unknown;
   try { body = typeof options.body === 'string' ? JSON.parse(options.body) : undefined; } catch { body = undefined; }
   const message = /^\/notifications\/[^/]+\/read$/.test(path) ? null : mutationSuccessMessage(path, options.method ?? 'GET', body);

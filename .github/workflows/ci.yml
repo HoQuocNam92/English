@@ -52,6 +52,7 @@ jobs:
       - run: pnpm --filter @techenglish/api test:learning-path
       - run: pnpm --filter @techenglish/api test:certification
       - run: pnpm --filter @techenglish/api test:learning-ai
+      - run: pnpm --filter @techenglish/api test:placement
       - run: pnpm --filter @techenglish/api test:bug-regressions
       - run: pnpm --filter @techenglish/shared-kernel test
       - run: pnpm --filter @techenglish/api build

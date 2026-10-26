@@ -87,8 +87,10 @@ export async function apiRequest<T>(
     }
 
     if (res.status === 204) return undefined as T;
+    const text = await res.text();
+    if (!text.trim() && path.split('?')[0] === '/placement-test/result' && (!options.method || options.method === 'GET')) return null as T;
     try {
-      return await res.json() as T;
+      return JSON.parse(text) as T;
     } catch {
       throw new ApiError(res.status, 'Máy chủ trả về dữ liệu không hợp lệ. Vui lòng thử lại.');
     }
