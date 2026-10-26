@@ -248,8 +248,6 @@ Xem [tài liệu kiểm thử](docs/testing/README.md) và [kết quả kiểm t
 - [Ghi chú dữ liệu câu hỏi từ vựng](apps/api/prisma/data/vocabulary-quiz-notes.md).
 - Hồ sơ luận văn: `docs/thesis/`.
 
-## Tác giả và giấy phép
+## Tác giả
 
-Hồ Quốc Nam — Đại học Công nghiệp TP.HCM (IUH).
-
-Private — All rights reserved.
+Hồ Quốc Nam
