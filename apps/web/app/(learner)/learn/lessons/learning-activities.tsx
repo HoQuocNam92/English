@@ -1,7 +1,7 @@
 'use client';
 import { AppIcon } from '@/shared/ui/AppIcon';
 
-import Link from 'next/link';
+import { AttemptResultLink } from '@/shared/ui/AttemptResultLink';
 import { useState, useEffect } from 'react';
 import { apiClient } from '@/shared/api/api-client';
 
@@ -43,9 +43,9 @@ export function LearningActivities() {
           <h2 className="text-[24px] leading-[32px] tracking-[-0.01em] font-bold text-on-background mb-6">Hoạt động gần đây</h2>
           <div className="bg-surface-white rounded-xl border border-border-subtle overflow-hidden">
             {!recentActivities.length && <p className="p-6 text-center text-[14px] text-on-surface-variant">Chưa có hoạt động học nào được ghi nhận.</p>}
-            {recentActivities.map((activity: any) => <div key={activity.id} className="flex items-center justify-between border-b border-border-subtle p-4 last:border-b-0 hover:bg-surface-container-low">
-              <div className="flex min-w-0 items-center gap-4"><div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-full ${activity.passed ? 'bg-green-100 text-green-700' : 'bg-blue-100 text-blue-700'}`}><AppIcon className="">{activity.passed ? 'check_circle' : 'quiz'}</AppIcon></div><div className="min-w-0"><h4 className="truncate text-[14px] font-semibold">{activity.exam?.title || 'Bài thi chứng chỉ'}</h4><p className="text-[12px] text-on-surface-variant">Lần thi ngày {new Date(activity.startedAt).toLocaleDateString('vi-VN')}</p></div></div>
-              <div className="ml-4 flex shrink-0 items-center gap-4"><strong className="text-primary">{Math.round(activity.scorePercent ?? 0)}%</strong><Link href={`/learn/quiz/result/${activity.id}`} className="rounded-lg border border-border-subtle px-4 py-2 text-[14px] font-semibold">Xem kết quả</Link></div>
+            {recentActivities.map((activity: any) => <div key={activity.id} className="flex flex-wrap items-center justify-between gap-3 border-b border-border-subtle p-4 last:border-b-0 hover:bg-surface-container-low">
+              <div className="flex min-w-48 flex-1 items-center gap-4"><div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-full ${activity.passed ? 'bg-green-100 text-green-700' : 'bg-blue-100 text-blue-700'}`}><AppIcon className="">{activity.passed ? 'check_circle' : 'quiz'}</AppIcon></div><div className="min-w-0"><h4 className="truncate text-[14px] font-semibold">{activity.exam?.title || 'Bài thi chứng chỉ'}</h4><p className="text-[12px] text-on-surface-variant">Lần thi ngày {new Date(activity.startedAt).toLocaleDateString('vi-VN')}</p></div></div>
+              <div className="ml-auto flex shrink-0 items-center gap-4"><strong className="text-primary">{Math.round(activity.scorePercent ?? 0)}%</strong><AttemptResultLink attemptId={activity.id} /></div>
             </div>)}
           </div>
         </section>

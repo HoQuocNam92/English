@@ -8,6 +8,7 @@ import Link from 'next/link';
 import { LearnerShell } from '@/shared/layout';
 import { apiClient } from '@/shared/api/api-client';
 import { LoadingSpinner } from '@/shared/ui';
+import { AttemptResultLink } from '@/shared/ui/AttemptResultLink';
 
 export default function LearnerHomePage() {
   const [data, setData] = useState<any>(null);
@@ -102,7 +103,7 @@ export default function LearnerHomePage() {
       timestamp: time ? new Date(time).getTime() : 0,
       when: formatRelativeDate(time),
       done: true,
-      link: `/learn/quiz/${a.examId ?? ''}`,
+      link: `/learn/quiz/result/${a.id}`,
     };
   });
 
@@ -400,7 +401,7 @@ export default function LearnerHomePage() {
                   </div>
                   <div className="flex shrink-0 flex-col items-end gap-1">
                     <span className="text-[14px] font-semibold text-primary">{a.score ?? a.correctCount}/{a.totalQuestions ?? 100}</span>
-                    <Link href={`/learn/quiz/result/${a.id}`} className="inline-flex min-h-11 items-center rounded-xl bg-primary px-4 py-2 text-sm font-semibold text-white">Xem kết quả</Link>
+                    <AttemptResultLink attemptId={a.id} />
                   </div>
                 </div>
               )) : <p className="rounded bg-surface-container p-3 text-xs text-on-surface-variant">Bạn chưa có kết quả bài kiểm tra.</p>}

@@ -58,7 +58,7 @@ export default function LessonList({ embedded = false }: { embedded?: boolean })
           {x.summary ? <Text numberOfLines={3} style={s.summary}>{x.summary}</Text> : null}
           <View style={s.metaRow}>{x.level?.name ? <View style={s.level}><Text style={s.levelText}>{x.level.name}</Text></View> : null}<View style={s.duration}><MaterialIcons name="schedule" size={16} color="#59657c" /><Text style={s.secondary}>{x.estimatedMinutes || 15} phút</Text></View></View>
           {Boolean(x.keyConcepts?.length) && <View style={s.concepts}>{x.keyConcepts?.slice(0, 3).map((concept: string, index: number) => <View key={`${index}-${concept}`} style={s.concept}><Text style={s.conceptText}>{concept}</Text></View>)}</View>}
-          <View style={s.cardFooter}><Text style={s.action}>{completedIds.includes(x.id) ? '✓ Đã học · Xem lại bài' : TYPES[x.type].action}</Text><View style={s.arrow}><MaterialIcons name="arrow-forward" size={20} color="#6054c8" /></View></View>
+          <View style={s.cardFooter}><Text style={[s.action, completedIds.includes(x.id) && { color: '#047857' }]}>{completedIds.includes(x.id) ? '✓ Đã học · Xem lại bài' : TYPES[x.type].action}</Text><View style={[s.arrow, completedIds.includes(x.id) && { backgroundColor: '#ecfdf5' }]}><MaterialIcons name="arrow-forward" size={20} color={completedIds.includes(x.id) ? '#047857' : '#6054c8'} /></View></View>
         </Card.Content>
       </Card>)}
       {!filtered.length && <View style={s.state}><EmptyState icon="search" title="Chưa tìm thấy bài học" detail="Thử từ khóa khác hoặc mở rộng bộ lọc để khám phá thêm nội dung." />{scope === 'path' && <Button onPress={() => setScope('all')}>Xem tất cả bài học</Button>}</View>}
