@@ -327,13 +327,13 @@ const styles = StyleSheet.create({
     color: colors.primary
   },
   errorText: {
-    color: '#ef4444',
+    color: '#dc2626',
     fontSize: 14,
     textAlign: 'center',
     marginBottom: spacing.xs
   },
   errorTextSmall: {
-    color: '#ef4444',
+    color: '#dc2626',
     fontSize: 12,
     marginTop: 2,
     marginLeft: 4

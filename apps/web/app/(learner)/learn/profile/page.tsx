@@ -281,7 +281,7 @@ function LearnerProfileContent() {
                 </div>
               </div>
               <label className="block text-xs font-semibold">Giới thiệu<textarea rows={3} value={form.bio} onChange={(e) => setForm({ ...form, bio: e.target.value })} className="mt-1 w-full rounded-xl border border-outline-variant/60 bg-surface-bright px-3.5 py-2.5" /></label>
-              <div className="flex justify-end"><button disabled={savingInfo} className="rounded-xl bg-primary px-6 py-2.5 text-xs font-bold text-white disabled:opacity-50">{savingInfo ? 'Đang lưu...' : 'Lưu thay đổi'}</button></div>
+              <div className="flex justify-end"><button disabled={savingInfo} className="rounded-xl bg-primary px-6 py-2.5 text-xs font-bold text-white disabled:opacity-70">{savingInfo ? 'Đang lưu...' : 'Lưu thay đổi'}</button></div>
             </form>
             <form onSubmit={changePassword} noValidate className="space-y-4 rounded-2xl border border-outline-variant/40 bg-surface-container-lowest p-6">
               <h2 className="font-bold text-on-surface">Đổi mật khẩu</h2>
@@ -325,7 +325,7 @@ function LearnerProfileContent() {
                   }}
                 />
               </div>
-              <div className="flex justify-end"><button disabled={savingPassword} className="rounded-xl bg-primary px-6 py-2.5 text-xs font-bold text-white disabled:opacity-50">{savingPassword ? 'Đang cập nhật...' : 'Cập nhật mật khẩu'}</button></div>
+              <div className="flex justify-end"><button disabled={savingPassword} className="rounded-xl bg-primary px-6 py-2.5 text-xs font-bold text-white disabled:opacity-70">{savingPassword ? 'Đang cập nhật...' : 'Cập nhật mật khẩu'}</button></div>
             </form>
           </div>
         )}
@@ -485,7 +485,7 @@ function LearnerProfileContent() {
                 <input type="checkbox" checked={reminderEnabled} onChange={(e) => setReminderEnabled(e.target.checked)} className="h-4 w-4 rounded text-primary" />
                 Nhắc tôi học mỗi ngày
               </label>
-              <input type="time" value={reminderTime} disabled={!reminderEnabled} onChange={(e) => setReminderTime(e.target.value)} className="rounded-lg border border-outline-variant bg-surface-bright px-3 py-2 text-sm font-bold disabled:opacity-50" />
+              <input type="time" value={reminderTime} disabled={!reminderEnabled} onChange={(e) => setReminderTime(e.target.value)} className="rounded-lg border border-outline-variant bg-surface-bright px-3 py-2 text-sm font-bold disabled:opacity-65" />
             </div>
 
             <WebPushSettings enabled={reminderEnabled && !loading} />
@@ -494,7 +494,7 @@ function LearnerProfileContent() {
               <button
                 type="submit"
                 disabled={savingGoals}
-                className="rounded-xl bg-primary px-6 py-2.5 text-xs font-bold text-white disabled:opacity-50 hover:bg-primary/90 shadow-xs transition-colors"
+                className="rounded-xl bg-primary px-6 py-2.5 text-xs font-bold text-white disabled:opacity-70 hover:bg-primary/90 shadow-xs transition-colors"
               >
                 {savingGoals ? 'Đang lưu mục tiêu...' : 'Lưu thay đổi mục tiêu'}
               </button>
@@ -575,7 +575,7 @@ function LearnerProfileContent() {
                                 {percent}%
                               </span>
                               {dateStr && (
-                                <span className="text-xs text-on-surface-variant/70">
+                                <span className="text-xs text-on-surface-variant/75">
                                   • Cập nhật {formatRelativeDate(dateStr)}
                                 </span>
                               )}

@@ -352,14 +352,14 @@ function VocabularyModal({ mode, initial, domains, levels, onClose, onSuccess, p
               type="button"
               onClick={onClose}
               disabled={submitting}
-              className="px-5 py-2 rounded-xl text-sm border border-outline-variant text-on-surface hover:bg-surface-container transition-colors disabled:opacity-50"
+              className="px-5 py-2 rounded-xl text-sm border border-outline-variant text-on-surface hover:bg-surface-container transition-colors disabled:opacity-100"
             >
               Hủy
             </button>
             <button
               type="submit"
               disabled={submitting}
-              className="flex items-center gap-2 px-5 py-2 rounded-xl text-sm bg-primary text-white font-medium hover:opacity-90 transition-opacity disabled:opacity-60"
+              className="flex items-center gap-2 px-5 py-2 rounded-xl text-sm bg-primary text-white font-medium hover:opacity-90 transition-opacity disabled:opacity-65"
             >
               {submitting && (
                 <span className="inline-block w-4 h-4 border-2 border-on-primary/40 border-t-on-primary rounded-full animate-spin" />
@@ -430,7 +430,7 @@ function DeleteDialog({ item, onClose, onSuccess }: DeleteDialogProps) {
             type="button"
             onClick={onClose}
             disabled={deleting}
-            className="px-4 py-2 rounded-xl text-sm border border-outline-variant text-on-surface hover:bg-surface-container transition-colors disabled:opacity-50"
+            className="px-4 py-2 rounded-xl text-sm border border-outline-variant text-on-surface hover:bg-surface-container transition-colors disabled:opacity-65"
           >
             Hủy
           </button>
@@ -438,7 +438,7 @@ function DeleteDialog({ item, onClose, onSuccess }: DeleteDialogProps) {
             type="button"
             onClick={handleDelete}
             disabled={deleting}
-            className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm bg-error text-on-error font-medium hover:opacity-90 transition-opacity disabled:opacity-60"
+            className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm bg-error text-on-error font-medium hover:opacity-90 transition-opacity disabled:opacity-75"
           >
             {deleting && (
               <span className="inline-block w-4 h-4 border-2 border-on-error/40 border-t-on-error rounded-full animate-spin" />
@@ -600,8 +600,8 @@ export default function AdminLearningContent({ createOnly = false }: { createOnl
 
       {!loading && items.length > 0 && (
         <BulkSelectionBar pageCount={items.length} selectedCount={selectedIds.size} allPageSelected={items.every((item) => selectedIds.has(item.id))} onSelectPage={(selected) => setSelectedIds((current) => { const next = new Set(current); items.forEach((item) => selected ? next.add(item.id) : next.delete(item.id)); return next; })}>
-        <button type="button" disabled={bulkBusy || loading || selectedIds.size === 0} onClick={() => void bulkUpdate('published')} className="rounded-lg border border-emerald-600 bg-white px-3 py-2 text-xs font-bold text-emerald-700 disabled:opacity-50">Xuất bản</button>
-        <button type="button" disabled={bulkBusy || loading || selectedIds.size === 0} onClick={() => void bulkUpdate('draft')} className="rounded-lg border border-amber-500 bg-white px-3 py-2 text-xs font-bold text-amber-700 disabled:opacity-50">Chuyển về bản nháp</button>
+        <button type="button" disabled={bulkBusy || loading || selectedIds.size === 0} onClick={() => void bulkUpdate('published')} className="rounded-lg border border-emerald-600 bg-white px-3 py-2 text-xs font-bold text-emerald-700 disabled:opacity-85">Xuất bản</button>
+        <button type="button" disabled={bulkBusy || loading || selectedIds.size === 0} onClick={() => void bulkUpdate('draft')} className="rounded-lg border border-amber-500 bg-white px-3 py-2 text-xs font-bold text-amber-700 disabled:opacity-90">Chuyển về bản nháp</button>
       </BulkSelectionBar>
       )}
 

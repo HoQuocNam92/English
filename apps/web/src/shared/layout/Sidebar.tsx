@@ -104,7 +104,7 @@ function NavGroup({ group, isAdmin, isCollapsed }: { group: NavigationGroup; isA
       {isCollapsed ? (
         <div className="my-2 mx-2 border-t border-outline-variant/30" />
       ) : (
-        <p className="px-3.5 mb-1.5 text-[10px] font-bold uppercase tracking-[0.12em] text-on-surface-variant/55">
+        <p className="px-3.5 mb-1.5 text-[10px] font-bold uppercase tracking-[0.12em] text-on-surface-variant/75">
           {group.group}
         </p>
       )}

@@ -75,7 +75,7 @@ export default function StructureForm({ certificateId, mode, initialDomainId }: 
     {!loading && !domains.length && <p className="text-sm text-on-surface-variant">{mode === 'topic' ? 'Chứng chỉ chưa có chuyên ngành. Hãy thêm chuyên ngành trước.' : 'Không còn chuyên ngành để thêm vào chứng chỉ.'}</p>}
     <div className="flex justify-end gap-3 border-t border-outline-variant/40 pt-4">
       <button type="button" disabled={saving} onClick={() => router.push(backHref)} className="h-10 rounded-xl border border-outline-variant px-4 text-sm font-medium">Hủy</button>
-      <button disabled={saving || loading || !domains.length} className="h-10 rounded-xl bg-primary px-5 text-sm font-semibold text-white disabled:opacity-50">{saving ? 'Đang lưu...' : 'Lưu'}</button>
+      <button disabled={saving || loading || !domains.length} className="h-10 rounded-xl bg-primary px-5 text-sm font-semibold text-white disabled:opacity-65">{saving ? 'Đang lưu...' : 'Lưu'}</button>
     </div>
   </form></CreatePage>;
 }

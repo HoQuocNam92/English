@@ -185,7 +185,7 @@ export function Topbar({ onToggleMobileMenu }: TopbarProps) {
                 );
               })}
               {passwordMessage ? <p role="status" className={`rounded-xl px-3 py-2 text-sm ${passwordMessage.includes('thành công') ? 'bg-emerald-50 text-emerald-700' : 'bg-red-50 text-red-700'}`}>{passwordMessage}</p> : null}
-              <div className="flex justify-end gap-2 pt-1"><button type="button" onClick={() => setPasswordOpen(false)} className="h-10 rounded-xl border border-outline-variant px-4 text-sm font-bold text-on-surface-variant hover:bg-surface-container-low">Hủy</button><button type="submit" disabled={passwordSaving} className="h-10 rounded-xl bg-primary px-4 text-sm font-bold text-white disabled:opacity-60">{passwordSaving ? 'Đang lưu...' : 'Cập nhật mật khẩu'}</button></div>
+              <div className="flex justify-end gap-2 pt-1"><button type="button" onClick={() => setPasswordOpen(false)} className="h-10 rounded-xl border border-outline-variant px-4 text-sm font-bold text-on-surface-variant hover:bg-surface-container-low">Hủy</button><button type="submit" disabled={passwordSaving} className="h-10 rounded-xl bg-primary px-4 text-sm font-bold text-white disabled:opacity-70">{passwordSaving ? 'Đang lưu...' : 'Cập nhật mật khẩu'}</button></div>
             </form>
           </section>
         </div>

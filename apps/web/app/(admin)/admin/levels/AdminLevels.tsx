@@ -290,7 +290,7 @@ export default function AdminLevels({ createOnly = false }: { createOnly?: boole
               <button
                 type="submit"
                 disabled={saving}
-                className="px-5 py-2 rounded-xl bg-primary text-sm font-bold !text-white shadow-sm hover:opacity-95 transition-opacity disabled:opacity-50"
+                className="px-5 py-2 rounded-xl bg-primary text-sm font-bold !text-white shadow-sm hover:opacity-95 transition-opacity disabled:opacity-65"
               >
                 {saving ? 'Đang lưu…' : isEditMode ? 'Lưu thay đổi' : 'Tạo cấp độ'}
               </button>
@@ -362,8 +362,8 @@ export default function AdminLevels({ createOnly = false }: { createOnly?: boole
           onSelectPage={checked => setSelectedIds(checked ? selectionPage.items.map(level => level.id) : [])}
           selectionLabel="Chọn trang này"
         >
-          <button type="button" disabled={bulkBusy || loading || selectedIds.length === 0} onClick={() => void bulkChangeActivity(true)} className="rounded-lg border border-emerald-600 bg-white px-3 py-2 text-xs font-bold text-emerald-700 disabled:opacity-50">Kích hoạt</button>
-          <button type="button" disabled={bulkBusy || loading || selectedIds.length === 0} onClick={() => void bulkChangeActivity(false)} className="rounded-lg border border-amber-500 bg-white px-3 py-2 text-xs font-bold text-amber-700 disabled:opacity-50">Ngừng hoạt động</button>
+          <button type="button" disabled={bulkBusy || loading || selectedIds.length === 0} onClick={() => void bulkChangeActivity(true)} className="rounded-lg border border-emerald-600 bg-white px-3 py-2 text-xs font-bold text-emerald-700 disabled:opacity-85">Kích hoạt</button>
+          <button type="button" disabled={bulkBusy || loading || selectedIds.length === 0} onClick={() => void bulkChangeActivity(false)} className="rounded-lg border border-amber-500 bg-white px-3 py-2 text-xs font-bold text-amber-700 disabled:opacity-90">Ngừng hoạt động</button>
         </BulkSelectionBar>
 
         {loading ? (
@@ -511,7 +511,7 @@ export default function AdminLevels({ createOnly = false }: { createOnly?: boole
                       type="button"
                       onClick={handleQuickDeactivate}
                       disabled={deleting}
-                      className="px-4 py-2 rounded-xl bg-amber-600 text-sm font-bold !text-white shadow-sm hover:bg-amber-700"
+                      className="px-4 py-2 rounded-xl bg-amber-700 text-sm font-bold !text-white shadow-sm hover:bg-amber-700"
                     >
                       {deleting ? 'Đang cập nhật…' : 'Ngừng hoạt động cấp độ'}
                     </button>

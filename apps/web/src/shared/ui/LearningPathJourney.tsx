@@ -21,7 +21,7 @@ type Path = {
   nextLevel: { code: string; name: string } | null; finalLevel: boolean;
 };
 
-const actionClass = 'inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-xl bg-primary px-4 py-3 text-sm font-bold text-white shadow-sm transition hover:bg-primary/90 disabled:opacity-50 sm:w-auto';
+const actionClass = 'inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-xl bg-primary px-4 py-3 text-sm font-bold text-white shadow-sm transition hover:bg-primary/90 disabled:opacity-70 sm:w-auto';
 const secondaryClass = 'inline-flex min-h-11 w-full items-center justify-center rounded-xl border border-outline-variant bg-white px-4 py-3 text-sm font-semibold text-primary hover:bg-primary/5 sm:w-auto';
 
 export function LearningPathJourney({ full = false, lessonId, onAvailability }: { full?: boolean; lessonId?: string; onAvailability?: (available: boolean) => void }) {

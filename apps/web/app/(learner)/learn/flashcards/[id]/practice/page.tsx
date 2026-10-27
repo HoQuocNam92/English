@@ -337,10 +337,10 @@ export default function FlashcardPracticePage({ params }: { params: Promise<{ id
 
       </div>
       <div className="flex items-center gap-3">
-        <button type="button" disabled={saving || quizIndex === 0} onClick={() => goToQuizQuestion(quizIndex - 1)} className="rounded-xl border border-primary px-5 py-3 text-sm font-bold text-primary disabled:opacity-40">Trước đó</button>
-        <button type="button" disabled={saving || quizFeedback === null} onClick={nextQuizQuestion} className="ml-auto rounded-xl bg-primary px-5 py-3 text-sm font-bold text-white disabled:opacity-40">{quizIndex + 1 >= quizQuestions.length ? 'Hoàn thành' : 'Tiếp tục'}</button>
+        <button type="button" disabled={saving || quizIndex === 0} onClick={() => goToQuizQuestion(quizIndex - 1)} className="rounded-xl border border-primary px-5 py-3 text-sm font-bold text-primary disabled:opacity-70">Trước đó</button>
+        <button type="button" disabled={saving || quizFeedback === null} onClick={nextQuizQuestion} className="ml-auto rounded-xl bg-primary px-5 py-3 text-sm font-bold text-white disabled:opacity-65">{quizIndex + 1 >= quizQuestions.length ? 'Hoàn thành' : 'Tiếp tục'}</button>
       </div>
-      {quizFeedback === null && <div className={`grid gap-3 ${question.type === 'fill_blank' ? 'sm:grid-cols-2' : 'grid-cols-1'}`}>{question.type === 'fill_blank' && <button type="button" onClick={() => void submitQuizAnswer()} disabled={saving || !quizAnswer.trim()} className="w-full rounded-xl bg-primary py-3 text-sm font-bold text-white disabled:opacity-50">Kiểm tra đáp án</button>}<button type="button" onClick={markQuizWordMastered} disabled={saving} className="w-full rounded-xl border border-primary py-3 text-sm font-bold text-primary">Đã biết</button></div>}
+      {quizFeedback === null && <div className={`grid gap-3 ${question.type === 'fill_blank' ? 'sm:grid-cols-2' : 'grid-cols-1'}`}>{question.type === 'fill_blank' && <button type="button" onClick={() => void submitQuizAnswer()} disabled={saving || !quizAnswer.trim()} className="w-full rounded-xl bg-primary py-3 text-sm font-bold text-white disabled:opacity-65">Kiểm tra đáp án</button>}<button type="button" onClick={markQuizWordMastered} disabled={saving} className="w-full rounded-xl border border-primary py-3 text-sm font-bold text-primary">Đã biết</button></div>}
     </div></LearnerShell>;
   }
 
@@ -370,11 +370,11 @@ export default function FlashcardPracticePage({ params }: { params: Promise<{ id
               <div className="text-[11px] font-bold text-slate-600 mt-0.5">Tổng lượt ôn</div>
             </div>
             <div className="bg-white border border-slate-200 rounded-2xl p-4">
-              <div className="text-2xl font-black text-emerald-600">{masteredCount}</div>
+              <div className="text-2xl font-black text-emerald-700">{masteredCount}</div>
               <div className="text-[11px] font-bold text-emerald-700 mt-0.5">Dễ / Đã biết</div>
             </div>
             <div className="bg-white border border-slate-200 rounded-2xl p-4">
-              <div className="text-2xl font-black text-amber-600">{hardCount}</div>
+              <div className="text-2xl font-black text-amber-700">{hardCount}</div>
               <div className="text-[11px] font-bold text-amber-700 mt-0.5">Từ khó cần ôn</div>
             </div>
           </div>
@@ -608,7 +608,7 @@ export default function FlashcardPracticePage({ params }: { params: Promise<{ id
               type="button"
               disabled={saving}
               onClick={() => handleRate('easy')}
-              className="flex flex-col items-center justify-center p-2.5 rounded-xl hover:bg-emerald-50 text-emerald-600 transition-colors group"
+              className="flex flex-col items-center justify-center p-2.5 rounded-xl hover:bg-emerald-50 text-emerald-700 transition-colors group"
             >
               <AppIcon className=" text-2xl group-hover:scale-110 transition-transform">
                 sentiment_satisfied
@@ -621,7 +621,7 @@ export default function FlashcardPracticePage({ params }: { params: Promise<{ id
               type="button"
               disabled={saving}
               onClick={() => handleRate('medium')}
-              className="flex flex-col items-center justify-center p-2.5 rounded-xl hover:bg-amber-50 text-amber-600 transition-colors group"
+              className="flex flex-col items-center justify-center p-2.5 rounded-xl hover:bg-amber-50 text-amber-700 transition-colors group"
             >
               <AppIcon className=" text-2xl group-hover:scale-110 transition-transform">
                 sentiment_neutral

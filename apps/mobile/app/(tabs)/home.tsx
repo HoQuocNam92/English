@@ -73,7 +73,7 @@ export default function MobileHomeScreen() {
   if (error) {
     return (
       <View style={[styles.container, { justifyContent: 'center', alignItems: 'center' }]}>
-        <Text style={{ color: '#ef4444', marginBottom: 16 }}>{error}</Text>
+        <Text style={{ color: '#dc2626', marginBottom: 16 }}>{error}</Text>
         <TouchableOpacity style={[styles.continueButton, { paddingHorizontal: 24 }]} onPress={fetchHomeData}>
           <Text style={styles.continueButtonText}>Thử lại</Text>
         </TouchableOpacity>
@@ -337,7 +337,7 @@ const styles = StyleSheet.create({
   heroBadgeText: {
     fontSize: 11,
     fontWeight: '600',
-    color: 'rgba(255,255,255,0.8)',
+    color: '#ffffff',
     textTransform: 'uppercase',
     letterSpacing: 0.5,
   },

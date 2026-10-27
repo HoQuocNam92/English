@@ -118,7 +118,7 @@ export default function LearnerQuizTakingPage({ params }: { params: Promise<{ id
   };
 
   if (loading) return <LearnerShell><LoadingSpinner /></LearnerShell>;
-  if (error || !exam) return <LearnerShell><div className="p-8 text-center text-red-500">{error}</div></LearnerShell>;
+  if (error || !exam) return <LearnerShell><div className="p-8 text-center text-red-600">{error}</div></LearnerShell>;
 
   const questions = exam.questions || [];
   const qItem = questions[currentIdx];
@@ -173,7 +173,7 @@ interface UnansweredQuestion {
             <button
               onClick={handleRequestSubmit}
               disabled={submitting}
-              className="min-h-11 px-5 py-2 bg-primary hover:bg-indigo-700 !text-white font-bold text-xs rounded-xl transition-all shadow-sm disabled:opacity-50 cursor-pointer"
+              className="min-h-11 px-5 py-2 bg-primary hover:bg-indigo-700 !text-white font-bold text-xs rounded-xl transition-all shadow-sm disabled:opacity-70 cursor-pointer"
             >
               {submitting ? 'Đang nộp...' : 'Nộp bài thi'}
             </button>
@@ -257,7 +257,7 @@ interface UnansweredQuestion {
                 <button
                   disabled={currentIdx === 0}
                   onClick={() => setCurrentIdx(currentIdx - 1)}
-                  className="min-h-11 px-4 py-2 border border-outline-variant rounded-xl text-xs font-semibold text-on-surface hover:bg-surface-container disabled:opacity-40 transition-colors flex items-center gap-1 cursor-pointer disabled:cursor-not-allowed"
+                  className="min-h-11 px-4 py-2 border border-outline-variant rounded-xl text-xs font-semibold text-on-surface hover:bg-surface-container disabled:opacity-65 transition-colors flex items-center gap-1 cursor-pointer disabled:cursor-not-allowed"
                 >
                   <AppIcon className=" text-[16px]">arrow_back</AppIcon>
                   <span>Câu trước</span>
@@ -275,7 +275,7 @@ interface UnansweredQuestion {
                   <button
                     onClick={handleRequestSubmit}
                     disabled={submitting}
-                    className="min-h-11 px-6 py-2 bg-green-600 hover:bg-green-700 !text-white font-bold text-xs rounded-xl transition-all flex items-center gap-1 shadow-sm disabled:opacity-50 cursor-pointer"
+                    className="min-h-11 px-6 py-2 bg-green-700 hover:bg-green-700 !text-white font-bold text-xs rounded-xl transition-all flex items-center gap-1 shadow-sm disabled:opacity-90 cursor-pointer"
                   >
                     <span className="!text-white">Nộp bài</span>
                     <AppIcon className=" text-[16px] !text-white">check</AppIcon>
@@ -401,7 +401,7 @@ interface UnansweredQuestion {
                     type="button"
                     onClick={executeSubmit}
                     disabled={submitting}
-                    className="py-2.5 px-4 rounded-xl border border-amber-300 bg-amber-50 hover:bg-amber-100 text-amber-900 font-bold text-xs flex items-center justify-center gap-1.5 transition-colors disabled:opacity-50 cursor-pointer"
+                    className="py-2.5 px-4 rounded-xl border border-amber-300 bg-amber-50 hover:bg-amber-100 text-amber-900 font-bold text-xs flex items-center justify-center gap-1.5 transition-colors disabled:opacity-70 cursor-pointer"
                   >
                     {submitting ? (
                       <>
@@ -447,7 +447,7 @@ interface UnansweredQuestion {
                     type="button"
                     onClick={executeSubmit}
                     disabled={submitting}
-                    className="flex-1 py-2.5 px-4 rounded-xl bg-green-600 hover:bg-green-700 text-white font-bold text-xs flex items-center justify-center gap-1.5 transition-colors shadow-xs disabled:opacity-50 cursor-pointer"
+                    className="flex-1 py-2.5 px-4 rounded-xl bg-green-700 hover:bg-green-700 text-white font-bold text-xs flex items-center justify-center gap-1.5 transition-colors shadow-xs disabled:opacity-90 cursor-pointer"
                   >
                     {submitting ? (
                       <>

@@ -299,7 +299,7 @@ export default function FlashcardsDashboard({ activeTab }: { activeTab: TabType 
                   <div className="text-xs font-bold text-slate-500 mt-1">Đã học</div>
                 </div>
                 <div>
-                  <div className="text-3xl lg:text-4xl font-black text-emerald-600">
+                  <div className="text-3xl lg:text-4xl font-black text-emerald-700">
                     {dashboardData.stats.remembered}
                   </div>
                   <div className="text-xs font-bold text-emerald-700 mt-1">Đã nhớ</div>
@@ -423,7 +423,7 @@ export default function FlashcardsDashboard({ activeTab }: { activeTab: TabType 
                             {item.needsReviewCount > 0 && <span className="w-2 h-2 rounded-full bg-primary animate-pulse inline-block" />}
                             Cần ôn tập: {item.needsReviewCount}
                           </span>
-                          <span className="text-emerald-600 font-bold">
+                          <span className="text-emerald-700 font-bold">
                             Đã nhớ: {item.rememberedCount}
                           </span>
                         </div>

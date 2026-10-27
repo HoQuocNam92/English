@@ -590,7 +590,7 @@ export default function TestBuilderPage() {
                   type="button"
                   onClick={handleSelectAllFiltered}
                   disabled={matchingQuestions.length === 0 || matchingSelectedCount === matchingQuestions.length}
-                  className="px-2.5 py-1 rounded-lg border border-slate-200 bg-white text-[11px] font-bold text-slate-700 hover:bg-slate-50 hover:text-primary disabled:opacity-40 disabled:pointer-events-none transition-colors shadow-2xs"
+                  className="px-2.5 py-1 rounded-lg border border-slate-200 bg-white text-[11px] font-bold text-slate-700 hover:bg-slate-50 hover:text-primary disabled:opacity-70 disabled:pointer-events-none transition-colors shadow-2xs"
                 >
                   Chọn tất cả
                 </button>
@@ -598,7 +598,7 @@ export default function TestBuilderPage() {
                   type="button"
                   onClick={handleDeselectFiltered}
                   disabled={matchingSelectedCount === 0}
-                  className="px-2.5 py-1 rounded-lg border border-slate-200 bg-white text-[11px] font-bold text-slate-700 hover:bg-slate-50 hover:text-error disabled:opacity-40 disabled:pointer-events-none transition-colors shadow-2xs"
+                  className="px-2.5 py-1 rounded-lg border border-slate-200 bg-white text-[11px] font-bold text-slate-700 hover:bg-slate-50 hover:text-error disabled:opacity-70 disabled:pointer-events-none transition-colors shadow-2xs"
                 >
                   Bỏ chọn
                 </button>
@@ -615,7 +615,7 @@ export default function TestBuilderPage() {
                     <AppIcon className=" text-[24px]">search_off</AppIcon>
                   </div>
                   <p className="text-sm font-semibold text-slate-700">Không tìm thấy câu hỏi phù hợp</p>
-                  <p className="text-xs text-slate-400 mt-1 max-w-xs">
+                  <p className="text-xs text-slate-500 mt-1 max-w-xs">
                     Thử thay đổi từ khóa, kỹ năng hoặc chuyên ngành và cấp độ của bài thi.
                   </p>
                   {(qSearch || qFilterSkill || qOnlySelected) && (
@@ -667,7 +667,7 @@ export default function TestBuilderPage() {
           <button
             type="submit"
             disabled={saving}
-            className="flex items-center gap-2 px-6 py-2.5 rounded-xl bg-primary text-white text-sm font-bold shadow-sm hover:opacity-90 disabled:opacity-50 transition-all cursor-pointer"
+            className="flex items-center gap-2 px-6 py-2.5 rounded-xl bg-primary text-white text-sm font-bold shadow-sm hover:opacity-90 disabled:opacity-65 transition-all cursor-pointer"
           >
             {saving ? (
               <AppIcon className="animate-spin  text-[18px]">progress_activity</AppIcon>
@@ -685,7 +685,7 @@ export default function TestBuilderPage() {
                 setStatus('published');
                 void handleSubmit(undefined, 'published');
               }}
-              className="flex items-center gap-2 px-6 py-2.5 rounded-xl bg-emerald-600 text-white text-sm font-bold shadow-sm hover:bg-emerald-700 disabled:opacity-50 transition-all cursor-pointer"
+              className="flex items-center gap-2 px-6 py-2.5 rounded-xl bg-emerald-700 text-white text-sm font-bold shadow-sm hover:bg-emerald-700 disabled:opacity-85 transition-all cursor-pointer"
             >
               {saving ? (
                 <AppIcon className="animate-spin  text-[18px]">progress_activity</AppIcon>

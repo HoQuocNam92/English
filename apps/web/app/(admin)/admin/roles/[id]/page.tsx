@@ -163,7 +163,7 @@ export default function RoleDetailPage() {
               <AppIcon className=" text-primary">lock</AppIcon>
               Nhóm này được làm gì? ({role.permissions?.length || 0})
             </h2>
-            <button disabled={busy === 'permissions'} onClick={() => editingPermissions ? void savePermissions() : beginPermissionEdit()} className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-semibold text-primary border border-outline-variant hover:bg-surface-container-low transition-colors disabled:opacity-50">
+            <button disabled={busy === 'permissions'} onClick={() => editingPermissions ? void savePermissions() : beginPermissionEdit()} className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-semibold text-primary border border-outline-variant hover:bg-surface-container-low transition-colors disabled:opacity-70">
               <AppIcon className=" text-[18px]">edit</AppIcon>
               {busy === 'permissions' ? 'Đang lưu…' : editingPermissions ? 'Hoàn tất' : 'Chọn quyền'}
             </button>
@@ -194,7 +194,7 @@ export default function RoleDetailPage() {
           </div>
           {assigningUser && <div className="mb-4 max-h-64 space-y-2 overflow-y-auto rounded-xl bg-surface-container-low/60 p-3">
             <p className="px-1 pb-1 text-xs text-on-surface-variant">Chọn người cần đưa vào nhóm “{roleLabel(role.code, role.name)}”. Người đó sẽ có tất cả quyền ở cột bên trái.</p>
-            {allUsers.filter((candidate) => !users.some((assigned) => (assigned.id ?? assigned.userId) === candidate.id)).map((candidate) => <div key={candidate.id} className="flex items-center justify-between gap-3 rounded-lg bg-white p-3"><div className="min-w-0"><p className="truncate text-sm font-semibold">{candidate.displayName ?? candidate.email}</p><p className="truncate text-xs text-on-surface-variant">{candidate.email}</p></div><button disabled={busy === candidate.id} onClick={() => void assignUser(candidate.id)} className="shrink-0 rounded-lg bg-primary px-3 py-1.5 text-xs font-semibold !text-white disabled:opacity-50">Gán</button></div>)}
+            {allUsers.filter((candidate) => !users.some((assigned) => (assigned.id ?? assigned.userId) === candidate.id)).map((candidate) => <div key={candidate.id} className="flex items-center justify-between gap-3 rounded-lg bg-white p-3"><div className="min-w-0"><p className="truncate text-sm font-semibold">{candidate.displayName ?? candidate.email}</p><p className="truncate text-xs text-on-surface-variant">{candidate.email}</p></div><button disabled={busy === candidate.id} onClick={() => void assignUser(candidate.id)} className="shrink-0 rounded-lg bg-primary px-3 py-1.5 text-xs font-semibold !text-white disabled:opacity-70">Gán</button></div>)}
           </div>}
 
           {users.length === 0 ? (
@@ -215,7 +215,7 @@ export default function RoleDetailPage() {
                     <p className="text-sm font-bold text-on-surface">{u.userDetail?.displayName || u.displayName || 'Chưa cập nhật tên'}</p>
                     <p className="text-xs text-on-surface-variant mt-0.5">{u.email}</p>
                   </div>
-                  <button disabled={busy === userId} onClick={() => void revokeUser(userId)} className="rounded-lg px-2 py-1 text-xs font-semibold text-error hover:bg-error-container disabled:opacity-50">Gỡ</button>
+                  <button disabled={busy === userId} onClick={() => void revokeUser(userId)} className="rounded-lg px-2 py-1 text-xs font-semibold text-error hover:bg-error-container disabled:opacity-75">Gỡ</button>
                 </div>
               )})}
             </div>

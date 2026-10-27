@@ -48,7 +48,7 @@ export const lightColors: ThemeColors = {
   outline: palette.outline,
   outlineVariant: '#e4e8f1',
   error: palette.error,
-  success: iconColors.success,
+  success: '#15803d',
   card: palette.surfaceWhite,
   border: '#e4e8f1',
   text: palette.text,

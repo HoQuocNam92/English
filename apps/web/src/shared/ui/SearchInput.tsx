@@ -147,7 +147,7 @@ export function SearchInput({
 
             {isNearLimit && (
               <span className={`text-[10px] font-mono font-medium px-1 rounded ${
-                charCount >= maxLength ? 'text-red-600 bg-red-100' : 'text-on-surface-variant bg-surface-container'
+                charCount >= maxLength ? 'text-red-700 bg-red-100' : 'text-on-surface-variant bg-surface-container'
               }`}>
                 {charCount}/{maxLength}
               </span>

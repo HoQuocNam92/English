@@ -26,6 +26,7 @@ export default function MobileChangePasswordScreen() {
     { label: 'Không quá 72 ký tự', ok: newPassword.length <= 72 },
   ];
   const allRulesMet = rules.every(r => r.ok);
+  const saveDisabled = saving || !allRulesMet || !currentPassword || newPassword !== confirmPassword;
 
   const handleUpdate = async () => {
     if (saving) return;
@@ -141,11 +142,11 @@ export default function MobileChangePasswordScreen() {
 
       <View style={styles.bottomBar}>
         <TouchableOpacity
-          style={[styles.saveBtn, (!allRulesMet || !currentPassword || newPassword !== confirmPassword || saving) && styles.saveBtnDisabled]}
+          style={[styles.saveBtn, saveDisabled && styles.saveBtnDisabled]}
           onPress={handleUpdate}
-          disabled={saving || !allRulesMet || !currentPassword || newPassword !== confirmPassword}
+          disabled={saveDisabled}
         >
-          {saving ? <ActivityIndicator color="#fff" /> : <Text style={styles.saveBtnText}>Cập nhật mật khẩu</Text>}
+          {saving ? <ActivityIndicator color="#fff" /> : <Text style={[styles.saveBtnText, saveDisabled && { color: colors.mutedText }]}>Cập nhật mật khẩu</Text>}
         </TouchableOpacity>
       </View>
     </View>
@@ -266,7 +267,7 @@ const styles = StyleSheet.create({
   },
   errorText: {
     fontSize: 12,
-    color: '#ef4444',
+    color: '#dc2626',
     marginTop: 4,
     marginLeft: 4
   }

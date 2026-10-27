@@ -40,7 +40,7 @@ export default function LearnerQuizResultPage({ params }: { params: Promise<{ id
   }, [attemptId]);
 
   if (loading) return <LearnerShell><LoadingSpinner /></LearnerShell>;
-  if (error || !attempt) return <LearnerShell><div className="p-8 text-center text-red-500">{error || 'Not found'}</div></LearnerShell>;
+  if (error || !attempt) return <LearnerShell><div className="p-8 text-center text-red-600">{error || 'Not found'}</div></LearnerShell>;
 
   const rawScore = Number(attempt.scorePercent ?? attempt.score ?? 0);
   const scorePercent = Math.min(100, Math.max(0, Math.round(Number.isFinite(rawScore) ? rawScore : 0)));

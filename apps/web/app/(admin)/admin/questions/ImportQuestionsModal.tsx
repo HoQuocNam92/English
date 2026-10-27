@@ -535,7 +535,7 @@ export function ImportQuestionsModal({
                     type="button"
                     onClick={() => fileInputRef.current?.click()}
                     disabled={submitting}
-                    className="inline-flex items-center gap-1.5 rounded-lg border border-primary/30 bg-primary/10 px-2.5 py-1 text-xs font-semibold text-primary hover:bg-primary/20 transition-colors disabled:opacity-50"
+                    className="inline-flex items-center gap-1.5 rounded-lg border border-primary/30 bg-primary/10 px-2.5 py-1 text-xs font-semibold text-primary hover:bg-primary/20 transition-colors disabled:opacity-75"
                   >
                     <AppIcon className=" text-[16px]">add</AppIcon>
                     Thêm file khác
@@ -545,7 +545,7 @@ export function ImportQuestionsModal({
                       type="button"
                       onClick={handleClearAllFiles}
                       disabled={submitting}
-                      className="inline-flex items-center gap-1 rounded-lg px-2.5 py-1 text-xs font-medium text-error hover:bg-error/10 transition-colors disabled:opacity-50"
+                      className="inline-flex items-center gap-1 rounded-lg px-2.5 py-1 text-xs font-medium text-error hover:bg-error/10 transition-colors disabled:opacity-75"
                     >
                       <AppIcon className=" text-[16px]">delete_sweep</AppIcon>
                       Xóa tất cả
@@ -711,7 +711,7 @@ export function ImportQuestionsModal({
                         disabled={
                           displayedValidRows.length === 0 || isAllDisplayedSelected
                         }
-                        className="rounded-lg border border-outline-variant px-2.5 py-1 text-xs font-medium text-on-surface hover:bg-surface-container disabled:opacity-40 disabled:cursor-not-allowed"
+                        className="rounded-lg border border-outline-variant px-2.5 py-1 text-xs font-medium text-on-surface hover:bg-surface-container disabled:opacity-65 disabled:cursor-not-allowed"
                         title="Chọn tất cả các câu hợp lệ đang hiển thị"
                       >
                         Chọn tất cả
@@ -722,7 +722,7 @@ export function ImportQuestionsModal({
                         disabled={
                           !displayedValidRows.some((r) => selectedRowKeys.has(r.rowKey))
                         }
-                        className="rounded-lg border border-outline-variant px-2.5 py-1 text-xs font-medium text-on-surface hover:bg-surface-container disabled:opacity-40 disabled:cursor-not-allowed"
+                        className="rounded-lg border border-outline-variant px-2.5 py-1 text-xs font-medium text-on-surface hover:bg-surface-container disabled:opacity-65 disabled:cursor-not-allowed"
                         title="Bỏ chọn các câu đang hiển thị"
                       >
                         Bỏ chọn
@@ -1100,7 +1100,7 @@ export function ImportQuestionsModal({
               type="button"
               onClick={onClose}
               disabled={submitting}
-              className="rounded-xl border border-outline-variant px-4 py-2 text-sm font-semibold text-on-surface hover:bg-surface-container disabled:opacity-50"
+              className="rounded-xl border border-outline-variant px-4 py-2 text-sm font-semibold text-on-surface hover:bg-surface-container disabled:opacity-65"
             >
               Hủy
             </button>
@@ -1108,7 +1108,7 @@ export function ImportQuestionsModal({
               type="button"
               onClick={() => void handleImport()}
               disabled={submitting || allUnifiedRows.length === 0 || selectedCount === 0}
-              className="inline-flex items-center gap-2 rounded-xl bg-primary px-5 py-2 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-primary/90 disabled:cursor-not-allowed disabled:opacity-50"
+              className="inline-flex items-center gap-2 rounded-xl bg-primary px-5 py-2 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-primary/90 disabled:cursor-not-allowed disabled:opacity-65"
             >
               {submitting ? (
                 <>

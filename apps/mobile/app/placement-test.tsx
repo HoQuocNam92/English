@@ -47,7 +47,7 @@ export default function PlacementTestScreen() {
     finally { busy.current = false; setSubmitting(false); }
   };
   const question = questions[index];
-  const button = (label: string, action: () => void, disabled = false) => <TouchableOpacity accessibilityRole="button" disabled={disabled} onPress={action} style={[s.button, { backgroundColor: colors.primary, opacity: disabled ? 0.45 : 1 }]}><Text style={s.buttonText}>{label}</Text></TouchableOpacity>;
+  const button = (label: string, action: () => void, disabled = false) => <TouchableOpacity accessibilityRole="button" disabled={disabled} onPress={action} style={[s.button, { backgroundColor: colors.primary, opacity: disabled ? 0.8 : 1 }]}><Text style={s.buttonText}>{label}</Text></TouchableOpacity>;
   return <FeatureScreen title="Kiểm tra trình độ" subtitle="Khoảng 5 phút · Điều chỉnh lộ trình học" loading={loading} error={error} onRetry={load}>
     {result ? <View style={s.section}>
       <PlacementPlan result={result} />

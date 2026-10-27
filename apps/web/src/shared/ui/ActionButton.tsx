@@ -8,15 +8,15 @@ import { cn } from '@/shared/lib/cn';
 
 const actions = {
   export: { label: 'Xuất dữ liệu', icon: 'download', tone: 'text-primary hover:bg-primary/10' },
-  view: { label: 'Xem chi tiết', icon: 'visibility', tone: 'text-on-surface-variant hover:bg-surface-container' },
+  view: { label: 'Xem chi tiết', icon: 'visibility', tone: 'text-on-surface-variant hover:bg-surface-container disabled:opacity-80' },
   edit: { label: 'Chỉnh sửa', icon: 'edit', tone: 'text-primary hover:bg-primary/10' },
-  publish: { label: 'Xuất bản', icon: 'publish', tone: 'text-emerald-700 hover:bg-emerald-50' },
-  archive: { label: 'Lưu trữ', icon: 'archive', tone: 'text-amber-700 hover:bg-amber-50' },
-  draft: { label: 'Chuyển về bản nháp', icon: 'edit_note', tone: 'text-amber-700 hover:bg-amber-50' },
-  lock: { label: 'Khóa', icon: 'lock', tone: 'text-amber-700 hover:bg-amber-50' },
-  unlock: { label: 'Mở khóa', icon: 'lock_open', tone: 'text-emerald-700 hover:bg-emerald-50' },
-  remove: { label: 'Gỡ khỏi nhóm', icon: 'person_remove', tone: 'text-error hover:bg-error-container' },
-  delete: { label: 'Xóa', icon: 'delete', tone: 'text-error hover:bg-error-container' },
+  publish: { label: 'Xuất bản', icon: 'publish', tone: 'text-emerald-700 hover:bg-emerald-50 disabled:opacity-90' },
+  archive: { label: 'Lưu trữ', icon: 'archive', tone: 'text-amber-700 hover:bg-amber-50 disabled:opacity-90' },
+  draft: { label: 'Chuyển về bản nháp', icon: 'edit_note', tone: 'text-amber-700 hover:bg-amber-50 disabled:opacity-90' },
+  lock: { label: 'Khóa', icon: 'lock', tone: 'text-amber-700 hover:bg-amber-50 disabled:opacity-90' },
+  unlock: { label: 'Mở khóa', icon: 'lock_open', tone: 'text-emerald-700 hover:bg-emerald-50 disabled:opacity-90' },
+  remove: { label: 'Gỡ khỏi nhóm', icon: 'person_remove', tone: 'text-error hover:bg-error-container disabled:opacity-90' },
+  delete: { label: 'Xóa', icon: 'delete', tone: 'text-error hover:bg-error-container disabled:opacity-90' },
 } as const;
 
 export interface ActionButtonProps extends Omit<React.ButtonHTMLAttributes<HTMLButtonElement>, 'children'> {
@@ -107,7 +107,7 @@ export function ActionButton({ action, href, loading = false, label, showLabel =
   const text = label ?? config.label;
   const blocked = disabled || loading;
   const classes = cn(
-    'inline-flex shrink-0 items-center justify-center gap-2 rounded-lg text-xs font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50',
+    'inline-flex shrink-0 items-center justify-center gap-2 rounded-lg text-xs font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-65',
     showLabel ? 'h-auto min-h-8 whitespace-normal px-2.5 py-2' : 'h-8 w-8 whitespace-nowrap',
     config.tone,
     className,

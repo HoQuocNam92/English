@@ -5,7 +5,7 @@ import Link from 'next/link';
 import type { ActiveContinuation, ContinuationOptions } from '@techenglish/contracts';
 import { apiClient } from '@/shared/api/api-client';
 
-const button = 'inline-flex min-h-11 items-center justify-center rounded-xl bg-primary px-4 py-2.5 text-sm font-bold text-white disabled:opacity-50';
+const button = 'inline-flex min-h-11 items-center justify-center rounded-xl bg-primary px-4 py-2.5 text-sm font-bold text-white disabled:opacity-70';
 
 export function ContinuationPlans() {
   const [options, setOptions] = useState<ContinuationOptions | null>(null);
@@ -58,7 +58,7 @@ export function ContinuationPlans() {
       {nextStep && <div className="rounded-xl border border-primary/20 bg-white p-4"><p className="text-xs font-bold text-primary">Buổi tiếp theo · {active.plan.refreshDate ? 'Hôm nay' : `Ngày ${nextStep.day}`}</p><p className="mt-1 text-sm font-bold leading-6">{nextStep.title}</p><Link href={nextStep.href} className={`${button} mt-3`}>Tiếp tục buổi học này</Link></div>}
       <ol className="space-y-3">{active.plan.steps.map(step => {
         const done = active.completedStepIds.includes(step.id);
-        return <li key={step.id} className="rounded-xl border border-outline-variant bg-white p-4"><p className="text-xs font-bold text-primary">{active.plan.refreshDate ? 'Hôm nay' : `Ngày ${step.day}`} · Khoảng {step.minutes} phút{done ? ' · Đã ghi nhận' : ''}</p><h4 className="mt-1 text-sm font-bold leading-6">{step.title}</h4><p className="mt-2 text-sm leading-6 text-on-surface-variant">{step.description}</p><div className="mt-3 flex flex-wrap gap-2"><Link href={step.href} className={button}>{done ? 'Mở lại nội dung' : 'Mở nội dung học'}</Link><button type="button" disabled={done || busy} onClick={() => void complete(step.id)} className="min-h-11 rounded-xl border border-outline-variant px-3 py-2 text-sm font-semibold disabled:opacity-50">{done ? 'Đã thực hiện buổi này' : 'Xác nhận đã thực hiện'}</button></div></li>;
+        return <li key={step.id} className="rounded-xl border border-outline-variant bg-white p-4"><p className="text-xs font-bold text-primary">{active.plan.refreshDate ? 'Hôm nay' : `Ngày ${step.day}`} · Khoảng {step.minutes} phút{done ? ' · Đã ghi nhận' : ''}</p><h4 className="mt-1 text-sm font-bold leading-6">{step.title}</h4><p className="mt-2 text-sm leading-6 text-on-surface-variant">{step.description}</p><div className="mt-3 flex flex-wrap gap-2"><Link href={step.href} className={button}>{done ? 'Mở lại nội dung' : 'Mở nội dung học'}</Link><button type="button" disabled={done || busy} onClick={() => void complete(step.id)} className="min-h-11 rounded-xl border border-outline-variant px-3 py-2 text-sm font-semibold disabled:opacity-65">{done ? 'Đã thực hiện buổi này' : 'Xác nhận đã thực hiện'}</button></div></li>;
       })}</ol>
       {finished && <p role="status" className="text-sm font-semibold text-emerald-700">Bạn đã ghi nhận đủ các buổi. Daily Refresh sẽ có vòng ôn mới vào ngày mai. Bạn vẫn có thể mở lại nội dung hoặc chọn hướng khác.</p>}
     </div>}

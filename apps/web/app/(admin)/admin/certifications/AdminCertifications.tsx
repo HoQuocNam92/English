@@ -173,8 +173,8 @@ export default function AdminCertifications({ createOnly = false }: { createOnly
         onSelectPage={checked => setSelectedIds(checked ? selectionPage.items.map(cert => cert.id) : [])}
         selectionLabel="Chọn trang này"
       >
-        <button type="button" disabled={bulkBusy || loading || selectedIds.length === 0} onClick={() => void bulkChangePublication(true)} className="rounded-lg border border-emerald-600 bg-white px-3 py-2 text-xs font-bold text-emerald-700 disabled:opacity-50">Xuất bản</button>
-        <button type="button" disabled={bulkBusy || loading || selectedIds.length === 0} onClick={() => void bulkChangePublication(false)} className="rounded-lg border border-amber-500 bg-white px-3 py-2 text-xs font-bold text-amber-700 disabled:opacity-50">Chuyển về bản nháp</button>
+        <button type="button" disabled={bulkBusy || loading || selectedIds.length === 0} onClick={() => void bulkChangePublication(true)} className="rounded-lg border border-emerald-600 bg-white px-3 py-2 text-xs font-bold text-emerald-700 disabled:opacity-85">Xuất bản</button>
+        <button type="button" disabled={bulkBusy || loading || selectedIds.length === 0} onClick={() => void bulkChangePublication(false)} className="rounded-lg border border-amber-500 bg-white px-3 py-2 text-xs font-bold text-amber-700 disabled:opacity-90">Chuyển về bản nháp</button>
       </BulkSelectionBar>
 
       <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-2 gap-lg">
@@ -291,6 +291,6 @@ function CertificateModal({ open, initial, onClose, onSaved, page = false }: { p
       <label className="flex items-center gap-2 text-sm font-medium sm:col-span-2"><input type="checkbox" className="accent-primary" checked={form.isActive} onChange={e => setForm({...form, isActive:e.target.checked})} />Hiển thị trong hệ thống</label>
       {error && <div className="rounded-xl bg-error-container p-3 text-sm text-on-error-container sm:col-span-2">{error}</div>}
     </div>
-    <div className="flex justify-end gap-3 border-t border-outline-variant/50 bg-surface-container-low/50 px-6 py-4"><button type="button" onClick={onClose} className="h-10 rounded-xl border border-outline-variant px-4 text-sm font-semibold">Huỷ</button><button disabled={saving} className="h-10 rounded-xl bg-primary px-5 text-sm font-semibold text-white disabled:opacity-50">{saving ? 'Đang lưu...' : initial ? 'Lưu thay đổi' : 'Thêm chứng chỉ'}</button></div>
+    <div className="flex justify-end gap-3 border-t border-outline-variant/50 bg-surface-container-low/50 px-6 py-4"><button type="button" onClick={onClose} className="h-10 rounded-xl border border-outline-variant px-4 text-sm font-semibold">Huỷ</button><button disabled={saving} className="h-10 rounded-xl bg-primary px-5 text-sm font-semibold text-white disabled:opacity-65">{saving ? 'Đang lưu...' : initial ? 'Lưu thay đổi' : 'Thêm chứng chỉ'}</button></div>
   </form></FormSurface>;
 }

@@ -140,7 +140,7 @@ export default function MobileTestResultScreen() {
               />
             </Svg>
             <View style={styles.scoreTextWrapper}>
-              <Text style={[styles.scoreValue, { color: primaryColor }]}>{scorePercent}</Text>
+              <Text style={[styles.scoreValue, { color: isPassed ? '#15803d' : primaryColor }]}>{scorePercent}</Text>
               <Text style={styles.scoreMax}>%</Text>
             </View>
           </View>
@@ -189,7 +189,7 @@ export default function MobileTestResultScreen() {
         {[['Kết quả theo chuyên ngành', result.performanceByDomain], ['Kết quả theo chủ đề', result.performanceByTopic]].map(([title, items]: any) => items?.length ? (
           <View key={title} style={styles.detailsCard}>
             <View style={styles.detailsHeader}><Text style={styles.detailsTitle}>{title}</Text></View>
-            {items.map((item: any) => <View key={item.key} style={styles.detailRow}><MaterialIcons name={item.scorePercent < 70 ? 'warning' : 'check-circle'} size={20} color={item.scorePercent < 70 ? '#ba1a1a' : '#16a34a'} /><View style={styles.detailContent}><Text style={styles.detailLabel}>{item.name}</Text><Text style={[styles.detailValue, { color: item.scorePercent < 70 ? '#ba1a1a' : '#16a34a' }]}>{item.scorePercent}%</Text></View></View>)}
+            {items.map((item: any) => <View key={item.key} style={styles.detailRow}><MaterialIcons name={item.scorePercent < 70 ? 'warning' : 'check-circle'} size={20} color={item.scorePercent < 70 ? '#ba1a1a' : '#16a34a'} /><View style={styles.detailContent}><Text style={styles.detailLabel}>{item.name}</Text><Text style={[styles.detailValue, { color: item.scorePercent < 70 ? '#ba1a1a' : '#15803d' }]}>{item.scorePercent}%</Text></View></View>)}
           </View>
         ) : null)}
 
@@ -211,7 +211,7 @@ export default function MobileTestResultScreen() {
                   <View style={styles.reviewHeader}>
                     <View style={[styles.reviewBadge, { backgroundColor: isCorrect ? '#dcfce7' : '#ffdad6' }]}>
                       <MaterialIcons name={isCorrect ? 'check' : 'close'} size={14} color={isCorrect ? '#16a34a' : '#ba1a1a'} />
-                      <Text style={[styles.reviewBadgeText, { color: isCorrect ? '#16a34a' : '#ba1a1a' }]}>
+                      <Text style={[styles.reviewBadgeText, { color: isCorrect ? '#15803d' : '#ba1a1a' }]}>
                         {isCorrect ? 'Đúng' : 'Sai'}
                       </Text>
                     </View>
@@ -223,13 +223,13 @@ export default function MobileTestResultScreen() {
                   <View style={styles.reviewAnswers}>
                     <View style={styles.reviewAnswerRow}>
                       <Text style={styles.reviewAnswerLabel}>Bạn đã chọn:</Text>
-                      <Text style={[styles.reviewAnswerValue, { color: isCorrect ? '#16a34a' : '#ba1a1a' }]}>
+                      <Text style={[styles.reviewAnswerValue, { color: isCorrect ? '#15803d' : '#ba1a1a' }]}>
                         {q.type === 'short_answer' ? q.userTextAnswer ?? (isCorrect ? 'Câu trả lời đúng' : 'Câu trả lời chưa đúng') : selectedOpts.length ? selectedOpts.map((o: any) => o.text).join(', ') : 'Không chọn'}
                       </Text>
                     </View>
                     <View style={styles.reviewAnswerRow}>
                       <Text style={styles.reviewAnswerLabel}>Đáp án đúng:</Text>
-                      <Text style={[styles.reviewAnswerValue, { color: '#16a34a' }]}>
+                      <Text style={[styles.reviewAnswerValue, { color: '#15803d' }]}>
                         {q.type === 'short_answer' ? (q.acceptedAnswers ?? []).join(' / ') || 'Xem phần giải thích' : correctOpts.length ? correctOpts.map((o: any) => o.text).join(', ') : '—'}
                       </Text>
                     </View>
@@ -606,7 +606,7 @@ const styles = StyleSheet.create({
     fontWeight: '700',
   },
   reviewPageButtonTextDisabled: {
-    color: '#a8a6b1',
+    color: '#64748b',
   },
   reviewPageStatus: {
     color: '#464555',

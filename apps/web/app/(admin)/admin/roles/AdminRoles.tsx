@@ -243,7 +243,7 @@ export default function AdminRoles({ createKind }: { createKind?: 'role' | 'perm
             <div className="rounded-lg bg-primary/5 p-3 text-sm text-primary sm:col-span-2">Người có quyền này sẽ được: <strong>{permissionLabel(permissionForm)}</strong></div>
             {permissionError && <div className="rounded-lg bg-error-container p-3 text-sm text-on-error-container sm:col-span-2"><strong>Không thể tạo quyền:</strong> {permissionError}</div>}
           </div>
-          <div className="flex justify-end gap-3 border-t border-outline-variant/20 px-6 py-4"><button type="button" onClick={closePermission} className="h-10 cursor-pointer rounded-xl px-4 text-sm font-semibold">Huỷ</button><button type="submit" disabled={savingPermission} className="h-10 cursor-pointer rounded-xl bg-primary px-5 text-sm font-semibold !text-white disabled:opacity-50">{savingPermission ? 'Đang lưu...' : editingPermission ? 'Lưu thay đổi' : 'Tạo quyền'}</button></div>
+          <div className="flex justify-end gap-3 border-t border-outline-variant/20 px-6 py-4"><button type="button" onClick={closePermission} className="h-10 cursor-pointer rounded-xl px-4 text-sm font-semibold">Huỷ</button><button type="submit" disabled={savingPermission} className="h-10 cursor-pointer rounded-xl bg-primary px-5 text-sm font-semibold !text-white disabled:opacity-65">{savingPermission ? 'Đang lưu...' : editingPermission ? 'Lưu thay đổi' : 'Tạo quyền'}</button></div>
         </form>
       </FormSurface>);
   const roleFormView = (<FormSurface page={Boolean(createKind)} open={roleModal} onClose={closeRole} maxWidth="max-w-lg">
@@ -256,7 +256,7 @@ export default function AdminRoles({ createKind }: { createKind?: 'role' | 'perm
             <div className="rounded-lg bg-primary/5 p-3 text-sm text-primary">Role mới chưa có quyền và người dùng. Sau khi tạo, chọn <strong>“Quản lý người dùng và quyền hạn”</strong> để cấu hình.</div>
             {roleError && <div className="rounded-lg bg-error-container p-3 text-sm text-on-error-container">{roleError}</div>}
           </div>
-          <div className="flex justify-end gap-3 border-t border-outline-variant/20 px-6 py-4"><button type="button" onClick={closeRole} className="h-10 rounded-xl px-4 text-sm font-semibold">Huỷ</button><button type="submit" disabled={savingRole} className="h-10 rounded-xl bg-primary px-5 text-sm font-semibold !text-white disabled:opacity-50">{savingRole ? 'Đang tạo...' : 'Tạo vai trò'}</button></div>
+          <div className="flex justify-end gap-3 border-t border-outline-variant/20 px-6 py-4"><button type="button" onClick={closeRole} className="h-10 rounded-xl px-4 text-sm font-semibold">Huỷ</button><button type="submit" disabled={savingRole} className="h-10 rounded-xl bg-primary px-5 text-sm font-semibold !text-white disabled:opacity-65">{savingRole ? 'Đang tạo...' : 'Tạo vai trò'}</button></div>
         </form>
       </FormSurface>);
   const visiblePermissions = permissions.filter(item => matchesSearch(search, item.code, item.name, item.resource) && (!filter || item.resource === filter));

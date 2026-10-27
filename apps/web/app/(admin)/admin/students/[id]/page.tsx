@@ -371,7 +371,7 @@ export default function AdminStudentDetailPage({
                           <div className="flex flex-col items-end">
                             <span
                               className={`text-base font-bold ${
-                                isPassed ? 'text-green-600' : 'text-error'
+                                isPassed ? 'text-green-700' : 'text-error'
                               }`}
                             >
                               {score} <span className="text-xs text-on-surface-variant font-normal">/ 100</span>
@@ -407,7 +407,7 @@ export default function AdminStudentDetailPage({
             <fieldset className="mt-5"><legend className="text-sm font-bold">Chuyên ngành CNTT quan tâm</legend><div className="mt-2 grid gap-2 rounded-xl border border-outline-variant p-4 sm:grid-cols-2">{goalOptions.domains.map(item => <label key={item.id} className="flex items-center gap-2 text-sm"><input type="checkbox" checked={goalForm.domainCodes.includes(item.code)} onChange={event => setGoalForm(current => ({ ...current, domainCodes: event.target.checked ? [...current.domainCodes, item.code] : current.domainCodes.filter(code => code !== item.code) }))} className="accent-primary" />{item.name}</label>)}</div></fieldset>
             <fieldset className="mt-5"><legend className="text-sm font-bold">Mục tiêu nghề nghiệp</legend><div className="mt-2 grid gap-2 rounded-xl border border-outline-variant p-4 sm:grid-cols-2">{goalOptions.careerGoals.map(item => <label key={item.id} className="flex items-center gap-2 text-sm"><input type="checkbox" checked={goalForm.careerGoalCodes.includes(item.code)} onChange={event => setGoalForm(current => ({ ...current, careerGoalCodes: event.target.checked ? [...current.careerGoalCodes, item.code] : current.careerGoalCodes.filter(code => code !== item.code) }))} className="accent-primary" />{item.name}</label>)}</div></fieldset>
             <fieldset className="mt-5"><legend className="text-sm font-bold">Mục tiêu chứng chỉ</legend><div className="mt-2 grid gap-2 rounded-xl border border-outline-variant p-4 sm:grid-cols-2">{goalOptions.certificates.map(item => <label key={item.id} className="flex items-center gap-2 text-sm"><input type="checkbox" checked={goalForm.certificateCodes.includes(item.code)} onChange={event => setGoalForm(current => ({ ...current, certificateCodes: event.target.checked ? [...current.certificateCodes, item.code] : current.certificateCodes.filter(code => code !== item.code) }))} className="accent-primary" />{item.code} - {item.name}</label>)}</div></fieldset>
-            <div className="mt-6 flex justify-end gap-3"><button type="button" onClick={() => setEditingGoals(false)} className="rounded-xl border border-outline-variant px-4 py-2.5 text-sm font-bold">Hủy</button><button type="button" disabled={savingGoals} onClick={() => void saveGoals()} className="rounded-xl bg-primary px-5 py-2.5 text-sm font-bold text-white disabled:opacity-60">{savingGoals ? 'Đang lưu...' : 'Lưu hồ sơ'}</button></div>
+            <div className="mt-6 flex justify-end gap-3"><button type="button" onClick={() => setEditingGoals(false)} className="rounded-xl border border-outline-variant px-4 py-2.5 text-sm font-bold">Hủy</button><button type="button" disabled={savingGoals} onClick={() => void saveGoals()} className="rounded-xl bg-primary px-5 py-2.5 text-sm font-bold text-white disabled:opacity-70">{savingGoals ? 'Đang lưu...' : 'Lưu hồ sơ'}</button></div>
           </div>
         </div>
       )}

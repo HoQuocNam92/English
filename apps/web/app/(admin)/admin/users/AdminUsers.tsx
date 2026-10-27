@@ -234,14 +234,14 @@ function CreateUserModal({ onClose, onCreated, page = false }: CreateUserModalPr
               type="button"
               onClick={onClose}
               disabled={submitting}
-              className="px-4 py-2 rounded-xl text-sm border border-outline-variant text-on-surface hover:bg-surface-container transition-colors disabled:opacity-50"
+              className="px-4 py-2 rounded-xl text-sm border border-outline-variant text-on-surface hover:bg-surface-container transition-colors disabled:opacity-65"
             >
               Huỷ
             </button>
             <button
               type="submit"
               disabled={submitting}
-              className="px-4 py-2 rounded-xl text-sm bg-primary text-white hover:opacity-90 transition-opacity disabled:opacity-50 flex items-center gap-2"
+              className="px-4 py-2 rounded-xl text-sm bg-primary text-white hover:opacity-90 transition-opacity disabled:opacity-70 flex items-center gap-2"
             >
               {submitting && (
                 <span className="w-3.5 h-3.5 border-2 border-on-primary/40 border-t-on-primary rounded-full animate-spin" />
@@ -286,7 +286,7 @@ function EditUserModal({ user, onClose, onSaved }: { user: UserItem; onClose: ()
       {error && <p role="alert" className="text-sm text-error">{error}</p>}
       <div className="flex justify-end gap-3 border-t border-outline-variant/30 pt-4">
         <button type="button" disabled={saving} onClick={close} className="rounded-xl border border-outline-variant px-4 py-2 text-sm font-semibold">Hủy</button>
-        <button type="submit" disabled={saving} className="rounded-xl bg-primary px-4 py-2 text-sm font-semibold text-on-primary disabled:opacity-50">{saving ? 'Đang lưu...' : 'Lưu thay đổi'}</button>
+        <button type="submit" disabled={saving} className="rounded-xl bg-primary px-4 py-2 text-sm font-semibold text-on-primary disabled:opacity-65">{saving ? 'Đang lưu...' : 'Lưu thay đổi'}</button>
       </div>
     </form>
   </FormSurface>;
@@ -492,7 +492,7 @@ export default function AdminUsers({ createOnly = false }: { createOnly?: boolea
                     </td>
                     <td className="px-5 py-4 text-right">
                         <ActionGroup>
-                          {user.deletedAt && <button type="button" disabled={!user.canRestore || actionLoading === user.id} onClick={() => void handleRestore(user)} className="min-h-11 rounded-xl border border-primary/30 px-3 py-2 text-sm font-bold text-primary disabled:opacity-40">Khôi phục</button>}
+                          {user.deletedAt && <button type="button" disabled={!user.canRestore || actionLoading === user.id} onClick={() => void handleRestore(user)} className="min-h-11 rounded-xl border border-primary/30 px-3 py-2 text-sm font-bold text-primary disabled:opacity-70">Khôi phục</button>}
                           {!user.deletedAt && <ActionButton action="edit" label="Chỉnh sửa người dùng" onClick={() => setEditingUser(user)} />}
                           {!user.deletedAt && !user.roles?.includes('admin') && <ActionButton action={user.status === 'active' ? 'lock' : 'unlock'} loading={actionLoading === user.id} onClick={() => handleToggleStatus(user)} />}
                           {!user.roles?.includes('admin') && <ActionButton action="delete" disabled={actionLoading === user.id} onClick={() => handleDelete(user)} />}
@@ -532,6 +532,6 @@ function SuspendUserModal({ user, onClose, onSaved }: { user: UserItem; onClose:
     <textarea id="suspension-reason" autoFocus required minLength={3} maxLength={500} value={reason} onChange={event => setReason(event.target.value)} rows={4} className="w-full rounded-xl border border-outline-variant p-3" />
     <p className="text-xs leading-5 text-on-surface-variant">Lý do này sẽ hiển thị khi người dùng đăng nhập trên web và app. Khóa giữ nguyên dữ liệu, chặn đăng nhập đến khi quản trị viên mở khóa.</p>
     {!!error && <p role="alert" className="text-sm text-red-700">{error}</p>}
-    <div className="flex flex-wrap justify-end gap-3"><button type="button" disabled={saving} onClick={onClose} className="min-h-11 rounded-xl border px-4 py-2">Hủy</button><button disabled={saving} type="submit" className="min-h-11 rounded-xl bg-primary px-4 py-2 font-bold text-white disabled:opacity-50">{saving ? 'Đang khóa…' : 'Xác nhận khóa'}</button></div>
+    <div className="flex flex-wrap justify-end gap-3"><button type="button" disabled={saving} onClick={onClose} className="min-h-11 rounded-xl border px-4 py-2">Hủy</button><button disabled={saving} type="submit" className="min-h-11 rounded-xl bg-primary px-4 py-2 font-bold text-white disabled:opacity-65">{saving ? 'Đang khóa…' : 'Xác nhận khóa'}</button></div>
   </form></Modal>;
 }

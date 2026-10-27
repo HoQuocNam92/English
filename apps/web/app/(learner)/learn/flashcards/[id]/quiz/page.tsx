@@ -158,7 +158,7 @@ export default function VocabularyQuizPage({ params }: { params: Promise<{ id: s
                   {r.correct ? 'check_circle' : 'cancel'}
                 </AppIcon>
                 <span className="flex-1 font-semibold text-slate-800">{r.term}</span>
-                <span className={`text-xs font-bold ${r.correct ? 'text-green-600' : 'text-red-500'}`}>
+                <span className={`text-xs font-bold ${r.correct ? 'text-green-700' : 'text-red-600'}`}>
                   {r.correct ? 'Đúng' : 'Sai'}
                 </span>
               </div>
@@ -268,7 +268,7 @@ export default function VocabularyQuizPage({ params }: { params: Promise<{ id: s
           <button
             disabled={currentQ.type === 'fill_blank' ? !userAnswer.trim() : !selectedOption}
             onClick={() => void submitAnswer()}
-            className="w-full py-4 rounded-xl text-sm font-black bg-primary hover:bg-indigo-700 !text-white transition-colors disabled:opacity-40 shadow-sm"
+            className="w-full py-4 rounded-xl text-sm font-black bg-primary hover:bg-indigo-700 !text-white transition-colors disabled:opacity-65 shadow-sm"
           >
             Kiểm tra
           </button>

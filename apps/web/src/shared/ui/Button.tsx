@@ -3,18 +3,18 @@ import { cva, type VariantProps } from 'class-variance-authority';
 import { cn } from '@/shared/lib/cn';
 
 export const buttonVariants = cva(
-  'inline-flex min-h-11 items-center justify-center text-center whitespace-nowrap leading-5 gap-2 rounded-xl border px-4 py-2 text-sm font-semibold transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/20 disabled:pointer-events-none disabled:opacity-60 shadow-2xs [&_svg]:shrink-0',
+  'inline-flex min-h-11 items-center justify-center text-center whitespace-nowrap leading-5 gap-2 rounded-xl border px-4 py-2 text-sm font-semibold transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/20 disabled:pointer-events-none shadow-2xs [&_svg]:shrink-0',
   {
     variants: {
       variant: {
-        default: 'border-primary bg-primary !text-white hover:bg-indigo-700 shadow-xs',
-        primary: 'border-primary bg-primary !text-white hover:bg-indigo-700 shadow-xs',
-        danger: 'border-red-600 bg-red-600 !text-white hover:bg-red-700 shadow-xs',
-        destructive: 'border-red-600 bg-red-600 !text-white hover:bg-red-700 shadow-xs',
-        outline: 'border-outline-variant bg-white text-on-surface hover:bg-surface-container-low',
-        secondary: 'border-slate-300 bg-white text-slate-800 hover:bg-slate-50',
-        ghost: 'border-transparent bg-transparent text-primary hover:bg-indigo-50 shadow-none',
-        link: 'text-primary underline-offset-4 hover:underline'
+        default: 'border-primary bg-primary !text-white hover:bg-indigo-700 shadow-xs disabled:opacity-80',
+        primary: 'border-primary bg-primary !text-white hover:bg-indigo-700 shadow-xs disabled:opacity-80',
+        danger: 'border-red-600 bg-red-600 !text-white hover:bg-red-700 shadow-xs disabled:opacity-95',
+        destructive: 'border-red-600 bg-red-600 !text-white hover:bg-red-700 shadow-xs disabled:opacity-95',
+        outline: 'border-outline-variant bg-white text-on-surface hover:bg-surface-container-low disabled:opacity-60',
+        secondary: 'border-slate-300 bg-white text-slate-800 hover:bg-slate-50 disabled:opacity-60',
+        ghost: 'border-transparent bg-transparent text-primary hover:bg-indigo-50 shadow-none disabled:opacity-70',
+        link: 'text-primary underline-offset-4 hover:underline disabled:opacity-70'
       },
       size: {
         default: '',

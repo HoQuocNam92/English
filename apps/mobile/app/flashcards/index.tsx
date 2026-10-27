@@ -458,9 +458,9 @@ export default function FlashcardsScreen() {
             ['hard', 'sentiment-dissatisfied', 'Khó', '#dc2626'],
             ['mastered', 'fast-forward', 'Đã biết', '#64748b'],
           ] as const).map(([rating, icon, label, color]) => (
-            <TouchableOpacity key={rating} disabled={saving} style={[styles.ratingButton, saving && { opacity: 0.5 }]} onPress={() => rateWord(rating)}>
+            <TouchableOpacity key={rating} disabled={saving} style={[styles.ratingButton, saving && { backgroundColor: colors.surfaceContainer }]} onPress={() => rateWord(rating)}>
               <MaterialIcons name={icon} size={22} color={color} />
-              <Text style={[styles.ratingText, { color }]}>{label}</Text>
+              <Text style={[styles.ratingText, { color: rating === 'easy' ? '#047857' : rating === 'medium' ? '#b45309' : color }]}>{label}</Text>
             </TouchableOpacity>
           ))}
         </View>}
@@ -579,12 +579,12 @@ export default function FlashcardsScreen() {
           })}
         </View>}
         <View style={{ flexDirection: 'row', justifyContent: 'space-between', gap: 12 }}>
-          <TouchableOpacity disabled={quizIndex === 0 || saving} onPress={() => navigateQuiz(quizIndex - 1)} style={[styles.secondaryBtn, styles.quizNavButton, { borderColor: colors.primary, opacity: quizIndex === 0 ? 0.5 : 1 }]}><MaterialIcons name="arrow-back" size={18} color={colors.primary} /><Text style={[styles.secondaryBtnText, { color: colors.primary }]}>Trước đó</Text></TouchableOpacity>
-          <TouchableOpacity disabled={!showResult || saving} onPress={nextQuizQuestion} style={[styles.primaryBtn, styles.quizNavButton, { backgroundColor: colors.primary, opacity: !showResult ? 0.5 : 1 }]}><Text style={styles.primaryBtnText}>{quizIndex + 1 === questions.length ? 'Hoàn thành' : 'Tiếp tục'}</Text><MaterialIcons name="arrow-forward" size={18} color="#fff" /></TouchableOpacity>
+          <TouchableOpacity disabled={quizIndex === 0 || saving} onPress={() => navigateQuiz(quizIndex - 1)} style={[styles.secondaryBtn, styles.quizNavButton, { borderColor: colors.primary, opacity: quizIndex === 0 ? 0.8 : 1 }]}><MaterialIcons name="arrow-back" size={18} color={colors.primary} /><Text style={[styles.secondaryBtnText, { color: colors.primary }]}>Trước đó</Text></TouchableOpacity>
+          <TouchableOpacity disabled={!showResult || saving} onPress={nextQuizQuestion} style={[styles.primaryBtn, styles.quizNavButton, { backgroundColor: colors.primary, opacity: !showResult ? 0.8 : 1 }]}><Text style={styles.primaryBtnText}>{quizIndex + 1 === questions.length ? 'Hoàn thành' : 'Tiếp tục'}</Text><MaterialIcons name="arrow-forward" size={18} color="#fff" /></TouchableOpacity>
         </View>
         {/* Action button */}
         {!showResult && <View style={styles.quizActions}>
-          {currentQuestion.type === 'fill_blank' && <TouchableOpacity disabled={saving || !userAnswer.trim()} onPress={() => void submitQuizAnswer()} style={[styles.primaryBtn, { flex: 1, backgroundColor: colors.primary, opacity: !userAnswer.trim() ? 0.5 : 1 }]}><Text style={styles.primaryBtnText}>Kiểm tra</Text></TouchableOpacity>}
+          {currentQuestion.type === 'fill_blank' && <TouchableOpacity disabled={saving || !userAnswer.trim()} onPress={() => void submitQuizAnswer()} style={[styles.primaryBtn, { flex: 1, backgroundColor: colors.primary, opacity: !userAnswer.trim() ? 0.8 : 1 }]}><Text style={styles.primaryBtnText}>Kiểm tra</Text></TouchableOpacity>}
           <TouchableOpacity disabled={saving} onPress={markQuizWordMastered} style={[styles.secondaryBtn, { flex: 1, borderColor: colors.primary }]}><MaterialIcons name="done-all" size={20} color={colors.primary} /><Text style={[styles.secondaryBtnText, { color: colors.primary }]}>Đã biết</Text></TouchableOpacity>
         </View>}
       </KeyboardAvoidingView>

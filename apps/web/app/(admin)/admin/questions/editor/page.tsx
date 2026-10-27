@@ -386,7 +386,7 @@ export default function QuestionEditorPage() {
           <button
             type="submit"
             disabled={saving}
-            className="flex items-center gap-2 px-6 py-2.5 rounded-xl bg-primary text-white text-sm font-semibold hover:opacity-90 disabled:opacity-50 transition-opacity"
+            className="flex items-center gap-2 px-6 py-2.5 rounded-xl bg-primary text-white text-sm font-semibold hover:opacity-90 disabled:opacity-70 transition-opacity"
           >
             {saving ? (
               <AppIcon className="animate-spin  text-[16px]">progress_activity</AppIcon>

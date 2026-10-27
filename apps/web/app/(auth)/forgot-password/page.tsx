@@ -112,7 +112,7 @@ export default function ForgotPasswordPage() {
                 <button
                   type="submit"
                   disabled={submitting || !email}
-                  className="w-full h-12 bg-primary text-white rounded-xl font-bold text-sm flex items-center justify-center gap-2 hover:opacity-90 active:scale-[0.99] transition-all disabled:opacity-50 cursor-pointer"
+                  className="w-full h-12 bg-primary text-white rounded-xl font-bold text-sm flex items-center justify-center gap-2 hover:opacity-90 active:scale-[0.99] transition-all disabled:opacity-70 cursor-pointer"
                 >
                   {submitting ? (
                     <AppIcon className="animate-spin  text-[18px]">progress_activity</AppIcon>

@@ -150,8 +150,8 @@ export default function AdminTestsPage() {
 
       {/* Cards */}
       <BulkSelectionBar pageCount={items.length} selectedCount={selectedIds.size} allPageSelected={items.length > 0 && items.every((item) => selectedIds.has(item.id))} onSelectPage={(selected) => setSelectedIds((current) => { const next = new Set(current); items.forEach((item) => selected ? next.add(item.id) : next.delete(item.id)); return next; })}>
-        <button type="button" disabled={bulkBusy || loading || selectedIds.size === 0} onClick={() => void bulkUpdateStatus('published')} className="rounded-lg border border-emerald-600 bg-white px-3 py-2 text-xs font-bold text-emerald-700 disabled:opacity-50">Xuất bản</button>
-        <button type="button" disabled={bulkBusy || loading || selectedIds.size === 0} onClick={() => void bulkUpdateStatus('draft')} className="rounded-lg border border-amber-500 bg-white px-3 py-2 text-xs font-bold text-amber-700 disabled:opacity-50">Chuyển về bản nháp</button>
+        <button type="button" disabled={bulkBusy || loading || selectedIds.size === 0} onClick={() => void bulkUpdateStatus('published')} className="rounded-lg border border-emerald-600 bg-white px-3 py-2 text-xs font-bold text-emerald-700 disabled:opacity-85">Xuất bản</button>
+        <button type="button" disabled={bulkBusy || loading || selectedIds.size === 0} onClick={() => void bulkUpdateStatus('draft')} className="rounded-lg border border-amber-500 bg-white px-3 py-2 text-xs font-bold text-amber-700 disabled:opacity-90">Chuyển về bản nháp</button>
       </BulkSelectionBar>
       <div className="mt-4 grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
         {loading ? (

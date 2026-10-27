@@ -134,7 +134,7 @@ export function ExamAttemptDetailModal({ attemptId, onClose }: ExamAttemptDetail
                 <div>
                   <span className="text-xs text-on-surface-variant uppercase font-semibold">Điểm số</span>
                   <div className="mt-1 flex items-baseline gap-2">
-                    <span className={`text-xl font-black ${isPassed ? 'text-green-600' : 'text-error'}`}>
+                    <span className={`text-xl font-black ${isPassed ? 'text-green-700' : 'text-error'}`}>
                       {scorePercent} / 100
                     </span>
                     <span
@@ -248,10 +248,10 @@ export function ExamAttemptDetailModal({ attemptId, onClose }: ExamAttemptDetail
                                     className={`w-5 h-5 rounded-full border flex items-center justify-center text-[10px] font-bold ${
                                       isSelected
                                         ? isOptCorrect
-                                          ? 'border-green-600 bg-green-600 text-white'
+                                          ? 'border-green-600 bg-green-700 text-white'
                                           : 'border-red-600 bg-red-600 text-white'
                                         : isOptCorrect
-                                        ? 'border-green-600 text-green-600'
+                                        ? 'border-green-600 text-green-700'
                                         : 'border-outline-variant text-on-surface-variant'
                                     }`}
                                   >
