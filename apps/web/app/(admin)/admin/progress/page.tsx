@@ -1,5 +1,5 @@
 'use client';
-import { ResultCount } from '@/shared/ui/ResultCount';
+
 import { ClearFiltersButton } from '@/shared/ui/ClearFiltersButton';
 import { AppIcon } from '@/shared/ui/AppIcon';
 
@@ -88,7 +88,7 @@ export default function AdminProgressPage() {
         </div>
       </div>
 
-      <ResultCount total={total} unit="học viên" loading={loading} error={Boolean(error)} filtered={Boolean(search || Object.values(filters).some(Boolean))} />
+
 
       {error && (
         <div className="mt-4 p-3 rounded-xl bg-error-container text-on-error-container text-sm flex items-center gap-2">

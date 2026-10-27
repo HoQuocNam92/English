@@ -1,7 +1,7 @@
 'use client';
 import { RichText } from '@/shared/ui/RichText';
 import { RichTextEditor } from '@/shared/ui/RichTextEditor';
-import { ResultCount } from '@/shared/ui/ResultCount';
+
 import { RequiredMark } from '@/shared/ui/RequiredMark';
 import { PaginatedTable } from '@/shared/ui/PaginatedTable';
 import { AppIcon } from '@/shared/ui/AppIcon';
@@ -59,7 +59,7 @@ export default function CareerGoals({ createOnly = false }: { createOnly?: boole
   return <main className="flex-1 p-margin">
     <PageHeader title="Mục tiêu nghề nghiệp" icon="work_outline" iconClassName="from-amber-500 to-orange-600" action={<button type="button" onClick={() => router.push('/admin/career-goals/new')} className="inline-flex h-10 items-center gap-2 rounded-xl bg-primary px-4 text-sm font-semibold text-white"><AppIcon aria-hidden="true" className="" style={{ fontSize: 18 }}>add</AppIcon>Thêm mục tiêu</button>} />
     <ListTools search={search} onSearch={setSearch} filter={filter} onFilter={setFilter} options={[{value:'',label:'Tất cả mục tiêu'},{value:'assigned',label:'Đã có học viên'},{value:'empty',label:'Chưa có học viên'}]} />
-    <ResultCount total={visible.length} unit="mục tiêu nghề nghiệp" loading={loading} error={Boolean(error)} filtered={Boolean(search || filter)} />
+
     {error && <div className="mt-5 rounded-xl bg-error-container p-3 text-sm text-on-error-container">{error}</div>}
     {form.id && <section className="mt-6 rounded-2xl border border-outline-variant bg-white">{goalForm}</section>}
     <div className="mt-5 overflow-hidden rounded-2xl border border-outline-variant bg-white">

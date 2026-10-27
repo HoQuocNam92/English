@@ -1,5 +1,5 @@
 'use client';
-import { ResultCount } from '@/shared/ui/ResultCount';
+
 import { ClearFiltersButton } from '@/shared/ui/ClearFiltersButton';
 import { AppIcon } from '@/shared/ui/AppIcon';
 import { ActionButton, ActionGroup } from '@/shared/ui/ActionButton';
@@ -125,7 +125,7 @@ export default function AdminStudentsPage() {
         </div>
       </div>
 
-      <ResultCount total={total} unit="học viên" loading={loading} error={Boolean(error)} filtered={Boolean(search || status || domainId || certificateId)} />
+
       <div className="bg-surface-container-lowest rounded-xl border border-outline-variant overflow-hidden shadow-[0_1px_3px_rgba(15,23,24,0.06)]">
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse">

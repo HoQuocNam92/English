@@ -1,7 +1,7 @@
 'use client';
 import { RichTextEditor } from '@/shared/ui/RichTextEditor';
 import { RichText } from '@/shared/ui/RichText';
-import { ResultCount } from '@/shared/ui/ResultCount';
+
 import { FilterPanel } from '@/shared/ui/FilterPanel';
 import { ClearFiltersButton } from '@/shared/ui/ClearFiltersButton';
 import { AppIcon } from '@/shared/ui/AppIcon';
@@ -596,7 +596,7 @@ export default function AdminLearningContent({ createOnly = false }: { createOnl
         </div>
       </FilterPanel>
 
-      <ResultCount total={total} unit="thuật ngữ IT" loading={loading} error={Boolean(error)} filtered={Boolean(search || domainCode || status)} />
+
 
       {!loading && items.length > 0 && (
         <BulkSelectionBar pageCount={items.length} selectedCount={selectedIds.size} allPageSelected={items.every((item) => selectedIds.has(item.id))} onSelectPage={(selected) => setSelectedIds((current) => { const next = new Set(current); items.forEach((item) => selected ? next.add(item.id) : next.delete(item.id)); return next; })}>

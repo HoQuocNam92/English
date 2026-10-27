@@ -1,6 +1,6 @@
 'use client';
 import { RichTextEditor } from '@/shared/ui/RichTextEditor';
-import { ResultCount } from '@/shared/ui/ResultCount';
+
 import { Input } from '@/shared/ui/Input';
 import { ClearFiltersButton } from '@/shared/ui/ClearFiltersButton';
 import { Pagination } from '@/shared/ui/Pagination';
@@ -165,7 +165,7 @@ export default function AdminCertifications({ createOnly = false }: { createOnly
         <ClearFiltersButton className="justify-self-start" onClick={clearFilters} />
       </div>
 
-      <ResultCount total={filteredCerts.length} unit="chứng chỉ" loading={loading} error={Boolean(error)} filtered={Boolean(search || domainFilter || categoryFilter || providerFilter || statusFilter)} />
+
       {successMessage && <div role="status" className="rounded-xl border border-emerald-200 bg-emerald-50 p-3 text-sm text-emerald-800">{successMessage}</div>}
       <BulkSelectionBar
         pageCount={selectionPage.items.length}

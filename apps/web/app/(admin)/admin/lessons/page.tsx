@@ -1,6 +1,6 @@
 'use client';
 import { RichText } from '@/shared/ui/RichText';
-import { ResultCount } from '@/shared/ui/ResultCount';
+
 import { FilterPanel } from '@/shared/ui/FilterPanel';
 import { ClearFiltersButton } from '@/shared/ui/ClearFiltersButton';
 import { AppIcon } from '@/shared/ui/AppIcon';
@@ -86,7 +86,7 @@ export default function LessonsPage() {
       <ClearFiltersButton onClick={() => { setSearchInput(''); setSearch(''); setType(''); setStatus(''); setPage(1); setSelectedIds(new Set()); }} />
       </div>
     </FilterPanel>
-      <ResultCount total={total} unit="bài học" loading={loading} error={Boolean(error)} filtered={Boolean(search || type || status)} />
+
     {error && <div className="mt-4 rounded-xl bg-error-container p-3 text-sm text-on-error-container">{error}</div>}
     {successMessage && <div className="mt-4 rounded-xl bg-emerald-50 p-3 text-sm text-emerald-800">{successMessage}</div>}
     <BulkSelectionBar pageCount={items.length} selectedCount={selectedIds.size} allPageSelected={items.length > 0 && items.every((item) => selectedIds.has(item.id))} onSelectPage={(selected) => setSelectedIds((current) => { const next = new Set(current); items.forEach((item) => selected ? next.add(item.id) : next.delete(item.id)); return next; })}>

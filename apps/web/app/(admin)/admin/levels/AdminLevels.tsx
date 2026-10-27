@@ -1,7 +1,7 @@
 'use client';
 import { RichTextEditor } from '@/shared/ui/RichTextEditor';
 import { RichText } from '@/shared/ui/RichText';
-import { ResultCount } from '@/shared/ui/ResultCount';
+
 import { Input } from '@/shared/ui/Input';
 import { SummaryStat } from '@/shared/ui/SummaryStat';
 import { Pagination } from '@/shared/ui/Pagination';
@@ -351,11 +351,11 @@ export default function AdminLevels({ createOnly = false }: { createOnly?: boole
       </div>
 
       <ListTools search={search} onSearch={setSearch} filter={filter} onFilter={setFilter} options={[{value:'',label:'Tất cả trạng thái'},{value:'active',label:'Đang hoạt động'},{value:'inactive',label:'Ngừng hoạt động'}]} />
-      <ResultCount total={visibleLevels.length} unit="cấp độ" loading={loading} error={Boolean(error)} filtered={Boolean(search || filter)} />
+
 
       {/* Level Cards Grid */}
       <section className="space-y-4" aria-labelledby="levels-list-title">
-        <h2 id="levels-list-title" className="text-lg font-semibold text-on-surface">Danh sách cấp độ ({visibleLevels.length})</h2>
+        <h2 id="levels-list-title" className="text-lg font-semibold text-on-surface">Danh sách cấp độ</h2>
         <BulkSelectionBar
           pageCount={selectionPage.items.length}
           selectedCount={selectedIds.length}

@@ -162,7 +162,7 @@ export default function RoleDetailPage() {
           <div className="flex items-center justify-between mb-6 pb-4 border-b border-outline-variant">
             <h2 className="text-lg font-bold text-on-surface flex items-center gap-2">
               <AppIcon className=" text-primary">lock</AppIcon>
-              Nhóm này được làm gì? ({role.permissions?.length || 0})
+              Nhóm này được làm gì?
             </h2>
             <button disabled={busy === 'permissions'} onClick={() => editingPermissions ? void savePermissions() : beginPermissionEdit()} className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-semibold text-primary border border-outline-variant hover:bg-surface-container-low transition-colors disabled:opacity-70">
               <AppIcon className=" text-[18px]">edit</AppIcon>
@@ -186,7 +186,7 @@ export default function RoleDetailPage() {
           <div className="flex items-center justify-between mb-6 pb-4 border-b border-outline-variant">
             <h2 className="text-lg font-bold text-on-surface flex items-center gap-2">
               <AppIcon className=" text-primary">group</AppIcon>
-              Những người thuộc nhóm này ({users.length})
+              Những người thuộc nhóm này
             </h2>
             <button onClick={() => setAssigningUser((value) => !value)} className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-semibold text-white bg-primary hover:bg-primary/90 transition-colors">
               <AppIcon className=" text-[18px]">person_add</AppIcon>

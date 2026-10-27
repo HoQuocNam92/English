@@ -1,7 +1,7 @@
 'use client';
 import { RichTextEditor } from '@/shared/ui/RichTextEditor';
 import { RichText } from '@/shared/ui/RichText';
-import { ResultCount } from '@/shared/ui/ResultCount';
+
 import { SummaryStat } from '@/shared/ui/SummaryStat';
 import { RequiredMark } from '@/shared/ui/RequiredMark';
 import { PaginatedList } from '@/shared/ui/PaginatedList';
@@ -280,7 +280,7 @@ export default function AdminRoles({ createKind }: { createKind?: 'role' | 'perm
       </div>
 
       <ListTools search={search} onSearch={setSearch} filter={filter} onFilter={setFilter} options={activeTab === 'roles' ? [{value:'',label:'Tất cả vai trò'},{value:'assigned',label:'Đã có người dùng'},{value:'empty',label:'Chưa có người dùng'}] : [{value:'',label:'Tất cả tài nguyên'},...Array.from(new Set(permissions.map(item=>item.resource))).map(resource=>({value:resource,label:resourceLabel(resource)}))]} />
-      <ResultCount total={activeTab === 'roles' ? visibleRoles.length : visiblePermissions.length} unit={activeTab === 'roles' ? 'vai trò' : 'quyền hạn'} loading={loading} error={Boolean(error)} filtered={Boolean(search || filter)} />
+
       {/* Summary stats */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-md mb-xl">
         {[
@@ -316,7 +316,7 @@ export default function AdminRoles({ createKind }: { createKind?: 'role' | 'perm
 
       {/* Permissions table */}
       {activeTab === 'permissions' && <div>
-        <div className="mb-4 flex items-center justify-between gap-4"><div><h2 className="text-lg font-bold text-on-surface">Danh sách công việc có thể cấp {!loading && <span className="ml-2 text-sm text-on-surface-variant font-normal">({permissions.length})</span>}</h2><p className="mt-1 text-sm text-on-surface-variant">Ví dụ: “Thêm bài học”, “Xóa bài học”, “Xem báo cáo”.</p></div><button type="button" onClick={openCreatePermission} className="inline-flex h-10 cursor-pointer items-center gap-2 rounded-xl bg-primary px-4 text-sm font-semibold !text-white"><AppIcon className=" text-[18px]">add</AppIcon>Thêm việc mới</button></div>
+        <div className="mb-4 flex items-center justify-between gap-4"><div><h2 className="text-lg font-bold text-on-surface">Danh sách công việc có thể cấp</h2><p className="mt-1 text-sm text-on-surface-variant">Ví dụ: “Thêm bài học”, “Xóa bài học”, “Xem báo cáo”.</p></div><button type="button" onClick={openCreatePermission} className="inline-flex h-10 cursor-pointer items-center gap-2 rounded-xl bg-primary px-4 text-sm font-semibold !text-white"><AppIcon className=" text-[18px]">add</AppIcon>Thêm việc mới</button></div>
         {loading ? (
           <div className="bg-white border border-outline-variant rounded-xl shadow-sm p-6">
             <div className="p-6 space-y-4">

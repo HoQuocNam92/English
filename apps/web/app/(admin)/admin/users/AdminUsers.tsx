@@ -1,5 +1,5 @@
 'use client';
-import { ResultCount } from '@/shared/ui/ResultCount';
+
 import { ClearFiltersButton } from '@/shared/ui/ClearFiltersButton';
 import { showToast } from '@/shared/ui/AppFeedback';
 import { AppIcon } from '@/shared/ui/AppIcon';
@@ -441,7 +441,7 @@ export default function AdminUsers({ createOnly = false }: { createOnly?: boolea
           </div>
         </div>
 
-        <ResultCount total={total} unit="người dùng" loading={loading} error={Boolean(error)} filtered={Boolean(search || roleFilter || statusFilter)} className="px-5" />
+
         {/* Data Table */}
         <div className="overflow-x-auto w-full">
           <table className="w-full min-w-[1000px] table-fixed text-left border-collapse">

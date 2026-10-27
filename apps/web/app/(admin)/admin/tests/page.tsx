@@ -1,6 +1,6 @@
 'use client';
 import { RichText } from '@/shared/ui/RichText';
-import { ResultCount } from '@/shared/ui/ResultCount';
+
 import { FilterPanel } from '@/shared/ui/FilterPanel';
 import { ClearFiltersButton } from '@/shared/ui/ClearFiltersButton';
 import { AppIcon } from '@/shared/ui/AppIcon';
@@ -138,7 +138,7 @@ export default function AdminTestsPage() {
         </div>
       </FilterPanel>
 
-      <ResultCount total={total} unit="đề thi" loading={loading} error={Boolean(error)} filtered={Boolean(search || status || Object.values(filters).some(Boolean))} />
+
 
       {successMessage && <div className="mt-4 rounded-xl bg-emerald-50 p-3 text-sm text-emerald-800">{successMessage}</div>}
 

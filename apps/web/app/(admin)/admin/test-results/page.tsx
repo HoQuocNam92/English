@@ -1,5 +1,5 @@
 'use client';
-import { ResultCount } from '@/shared/ui/ResultCount';
+
 import { FilterPanel } from '@/shared/ui/FilterPanel';
 import { SummaryStat } from '@/shared/ui/SummaryStat';
 import { ClearFiltersButton } from '@/shared/ui/ClearFiltersButton';
@@ -122,7 +122,7 @@ export default function AdminTestResultsPage() {
           <ClearFiltersButton onClick={() => { setSearchInput(''); setSearch(''); setStatus(''); setPage(1); }} />
         </div>
       </FilterPanel>
-      <ResultCount total={total} unit="lượt làm bài" loading={loading} error={Boolean(error)} filtered={Boolean(search || status)} />
+
 
       {error && (
         <div className="mb-xl p-3 rounded-xl bg-error-container text-on-error-container text-sm flex items-center gap-2">

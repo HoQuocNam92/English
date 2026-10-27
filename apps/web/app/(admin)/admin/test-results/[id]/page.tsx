@@ -156,7 +156,7 @@ export default function AdminTestResultDetailPage({
           <div className="bg-surface-container-lowest rounded-xl border border-outline-variant p-6 space-y-4 shadow-xs">
             <div className="flex items-center justify-between border-b border-outline-variant pb-4">
               <h3 className="font-headline-h3 text-headline-h3 text-on-surface">
-                Chi tiết bài làm ({questions.length} câu hỏi)
+                Chi tiết bài làm
               </h3>
               <span className="text-sm text-on-surface-variant font-medium">
                 Số câu đạt: <strong className="text-on-surface">{correctCount}</strong> / {totalCount}

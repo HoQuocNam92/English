@@ -168,7 +168,7 @@ export function ExamAttemptDetailModal({ attemptId, onClose }: ExamAttemptDetail
               <div className="space-y-4">
                 <div className="flex items-center justify-between">
                   <h3 className="font-headline-h3 text-headline-h3 text-on-surface">
-                    Chi tiết bài làm ({questions.length} câu hỏi)
+                    Chi tiết bài làm
                   </h3>
                   <span className="text-xs text-on-surface-variant">
                     Số câu đạt: {correctCount} / {totalCount}
