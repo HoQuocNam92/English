@@ -1,5 +1,6 @@
 import { AppIcon } from '@/shared/ui/AppIcon';
 import { CONTENT_TYPES } from '@/shared/lib/admin-content-types';
+import { RichText } from '@/shared/ui/RichText';
 
 export type ContentPreviewItem = {
   title: string; summary: string; type: string; keyConcepts?: string[];
@@ -12,7 +13,7 @@ export function ContentPreview({ item }: { item: ContentPreviewItem }) {
   const concepts = item.keyConcepts ?? [];
   const tags = <div className="mt-3 flex flex-wrap gap-2">{concepts.map((word, index) => <span key={`${index}-${word}`} className="rounded-lg bg-surface-container-low px-3 py-1.5 text-sm text-on-surface">{word}</span>)}{!concepts.length && <p className="text-sm text-on-surface-variant">Chưa bổ sung {category?.conceptsLabel.toLocaleLowerCase('vi') ?? 'khái niệm'}.</p>}</div>;
   const title = <h2 className="text-lg font-bold text-on-surface">{item.title}</h2>;
-  const summary = <p className="mt-2 whitespace-pre-line text-sm leading-6 text-on-surface-variant">{item.summary}</p>;
+  const summary = <p className="mt-2 whitespace-pre-line text-sm leading-6 text-on-surface-variant"><RichText text={item.summary} /></p>;
   const label = (text: string) => <h3 className="text-xs font-bold uppercase tracking-wide text-on-surface-variant">{text}</h3>;
 
   if (item.type === 'terminology') return <div>{title}{summary}<div className="mt-5 border-t border-outline-variant/40 pt-4">{label('Thuật ngữ trọng tâm')}{tags}</div></div>;

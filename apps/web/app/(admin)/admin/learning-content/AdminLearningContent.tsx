@@ -1,4 +1,6 @@
 'use client';
+import { RichTextEditor } from '@/shared/ui/RichTextEditor';
+import { RichText } from '@/shared/ui/RichText';
 import { ResultCount } from '@/shared/ui/ResultCount';
 import { FilterPanel } from '@/shared/ui/FilterPanel';
 import { ClearFiltersButton } from '@/shared/ui/ClearFiltersButton';
@@ -315,10 +317,9 @@ function VocabularyModal({ mode, initial, domains, levels, onClose, onSuccess, p
           </div>
 
           <Field label="Định nghĩa tiếng Anh" required error={errors.definitionEn}>
-            <textarea
-              rows={3}
+            <RichTextEditor aria-label="Định nghĩa tiếng Anh" maxLength={1000}
               value={form.definitionEn}
-              onChange={set('definitionEn')}
+              onChange={value => setForm(current => ({ ...current, definitionEn: value }))}
               placeholder="English definition..."
               aria-invalid={Boolean(errors.definitionEn)}
               className={`${inputCls} resize-none ${errors.definitionEn ? inputErrCls : ''}`}
@@ -326,10 +327,9 @@ function VocabularyModal({ mode, initial, domains, levels, onClose, onSuccess, p
           </Field>
 
           <Field label="Định nghĩa tiếng Việt" required error={errors.definitionVi}>
-            <textarea
-              rows={3}
+            <RichTextEditor aria-label="Định nghĩa tiếng Việt" maxLength={1000}
               value={form.definitionVi}
-              onChange={set('definitionVi')}
+              onChange={value => setForm(current => ({ ...current, definitionVi: value }))}
               placeholder="Định nghĩa tiếng Việt..."
               aria-invalid={Boolean(errors.definitionVi)}
               className={`${inputCls} resize-none ${errors.definitionVi ? inputErrCls : ''}`}
@@ -662,9 +662,9 @@ export default function AdminLearningContent({ createOnly = false }: { createOnl
 
                 {/* Definitions */}
                 <div className="mt-3 space-y-1.5 text-xs">
-                  <p className="text-on-surface leading-relaxed font-normal">{v.definitionEn}</p>
+                  <p className="text-on-surface leading-relaxed font-normal"><RichText text={v.definitionEn} /></p>
                   {v.definitionVi && (
-                    <p className="text-on-surface-variant italic leading-relaxed">{v.definitionVi}</p>
+                    <p className="text-on-surface-variant italic leading-relaxed"><RichText text={v.definitionVi} /></p>
                   )}
                 </div>
 

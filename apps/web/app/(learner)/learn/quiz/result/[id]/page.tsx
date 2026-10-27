@@ -1,4 +1,5 @@
 'use client';
+import { RichText } from '@/shared/ui/RichText';
 import { IconText, AppIcon } from '@/shared/ui/AppIcon';
 
 import * as React from 'react';
@@ -136,7 +137,7 @@ export default function LearnerQuizResultPage({ params }: { params: Promise<{ id
                     <span className="text-xs text-outline font-semibold">Câu #{questionNumber}</span>
                   </div>
 
-                  <h4 className="text-xs lg:text-sm font-bold text-on-surface leading-relaxed whitespace-pre-wrap">{q.prompt}</h4>
+                  <h4 className="text-xs lg:text-sm font-bold text-on-surface leading-relaxed whitespace-pre-wrap"><RichText text={q.prompt} /></h4>
 
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs p-3 rounded-lg bg-surface-container-low">
                     <div>
@@ -156,7 +157,7 @@ export default function LearnerQuizResultPage({ params }: { params: Promise<{ id
                   {q.explanation && (
                     <div className="p-3.5 rounded-lg bg-purple-50/80 border border-purple-200 text-xs space-y-1 mt-2">
                       <span className="font-bold text-ai-accent"><IconText>{"💡 Giải thích kiến thức:"}</IconText></span>
-                      <p className="text-on-surface leading-relaxed m-0">{q.explanation}</p>
+                      <p className="text-on-surface leading-relaxed m-0"><RichText text={q.explanation} /></p>
                     </div>
                   )}
                 </div>

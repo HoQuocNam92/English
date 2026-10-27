@@ -3,6 +3,7 @@ import { Text, Badge, Button } from '../../shared/ui/primitives';
 import React, { useMemo, useState } from 'react';
 import { Alert, Linking, ScrollView, StyleSheet, View, useWindowDimensions } from 'react-native';
 import { MaterialIcons } from '../../shared/ui/AppIcon';
+import { isRichText } from '../../../../../packages/shared-kernel/src/rich-text';
 
 const textOf = (value: any) => {
   if (typeof value === 'string') return value;
@@ -15,6 +16,7 @@ function sectionText(section: any) {
   return lessonReadingText(section.title, textOf(section.content), typeof section.content?.url === 'string' ? section.content.url : undefined);
 }
 function LessonText({ text, style }: { text: string; style?: any }) {
+  if (isRichText(text)) return <Text selectable style={style}>{text}</Text>;
   return <Text selectable style={style}>{text.split(/(https?:\/\/[^\s<>]+)/g).map((part, index) => {
     if (!/^https?:\/\//.test(part)) return part;
     const url = part.replace(/[.,;]+$/, '');

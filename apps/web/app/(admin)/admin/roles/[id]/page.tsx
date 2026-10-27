@@ -1,4 +1,5 @@
 'use client';
+import { RichText } from '@/shared/ui/RichText';
 import { AppIcon } from '@/shared/ui/AppIcon';
 
 import * as React from 'react';
@@ -150,7 +151,7 @@ export default function RoleDetailPage() {
             )}
           </div>
           {role.description && (
-            <p className="text-sm text-on-surface-variant mt-1">{role.description}</p>
+            <p className="text-sm text-on-surface-variant mt-1"><RichText text={role.description} /></p>
           )}
         </div>
       </div>

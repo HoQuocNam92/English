@@ -1,4 +1,6 @@
 'use client';
+import { RichTextEditor } from '@/shared/ui/RichTextEditor';
+import { RichText } from '@/shared/ui/RichText';
 import { ResultCount } from '@/shared/ui/ResultCount';
 import { SummaryStat } from '@/shared/ui/SummaryStat';
 import { RequiredMark } from '@/shared/ui/RequiredMark';
@@ -60,7 +62,7 @@ function RoleCard({
         </div>
 
         {role.description && (
-          <p className="text-sm text-on-surface-variant">{role.description}</p>
+          <p className="text-sm text-on-surface-variant"><RichText text={role.description} /></p>
         )}
 
         {/* Stats */}
@@ -239,7 +241,7 @@ export default function AdminRoles({ createKind }: { createKind?: 'role' | 'perm
             <label className="text-sm font-semibold">Áp dụng cho<RequiredMark /><Dropdown required value={permissionForm.resource} onChange={e => setPermissionForm({...permissionForm, resource:e.target.value})} className="mt-2 h-11 w-full rounded-xl border border-outline-variant/50 bg-white px-3"><option value="">Chọn đối tượng</option>{PERMISSION_RESOURCES.map(([value, label]) => <option key={value} value={value}>{label}</option>)}</Dropdown></label>
             <label className="text-sm font-semibold">Được làm gì?<RequiredMark /><Dropdown required value={permissionForm.action} onChange={e => setPermissionForm({...permissionForm, action:e.target.value})} className="mt-2 h-11 w-full rounded-xl border border-outline-variant/50 bg-white px-3">{PERMISSION_ACTIONS.map(([value, label]) => <option key={value} value={value}>{label}</option>)}</Dropdown></label>
             <label className="text-sm font-semibold sm:col-span-2">Tên hiển thị <span className="font-normal text-on-surface-variant">(không bắt buộc)</span><input value={permissionForm.name} onChange={e => setPermissionForm({...permissionForm, name:e.target.value})} className="mt-2 h-11 w-full rounded-xl border border-outline-variant/50 px-3" placeholder={permissionLabel(permissionForm)} /></label>
-            <label className="text-sm font-semibold sm:col-span-2">Mô tả<textarea value={permissionForm.description} onChange={e => setPermissionForm({...permissionForm, description:e.target.value})} className="mt-2 min-h-20 w-full rounded-xl border border-outline-variant/50 p-3" /></label>
+            <div className="text-sm font-semibold sm:col-span-2">Mô tả<RichTextEditor aria-label="Mô tả quyền" maxLength={500} value={permissionForm.description} onChange={value => setPermissionForm({...permissionForm, description:value})} className="mt-2" /></div>
             <div className="rounded-lg bg-primary/5 p-3 text-sm text-primary sm:col-span-2">Người có quyền này sẽ được: <strong>{permissionLabel(permissionForm)}</strong></div>
             {permissionError && <div className="rounded-lg bg-error-container p-3 text-sm text-on-error-container sm:col-span-2"><strong>Không thể tạo quyền:</strong> {permissionError}</div>}
           </div>
@@ -252,7 +254,7 @@ export default function AdminRoles({ createKind }: { createKind?: 'role' | 'perm
           <div className="grid gap-4 p-6">
             <label className="text-sm font-semibold">Tên vai trò<RequiredMark /><input required minLength={2} maxLength={100} value={roleForm.name} onChange={e => { const name = e.target.value; setRoleForm(current => ({ ...current, name, code: roleCodeFromName(name) })); }} className="mt-2 h-11 w-full rounded-xl border border-outline-variant/50 px-3" placeholder="Ví dụ: Người duyệt nội dung" /></label>
             <label className="text-sm font-semibold">Mã role<RequiredMark /><input required pattern="[a-z0-9_]+" minLength={2} maxLength={50} value={roleForm.code} onChange={e => setRoleForm({...roleForm, code: roleCodeFromName(e.target.value)})} className="mt-2 h-11 w-full rounded-xl border border-outline-variant/50 px-3" placeholder="content_reviewer" /><span className="mt-1 block text-xs font-normal text-on-surface-variant">Chỉ dùng chữ thường, số và dấu gạch dưới; mã không đổi sau khi tạo.</span></label>
-            <label className="text-sm font-semibold">Mô tả nhiệm vụ<RequiredMark /><textarea required minLength={5} maxLength={500} value={roleForm.description} onChange={e => setRoleForm({...roleForm, description:e.target.value})} className="mt-2 min-h-24 w-full rounded-xl border border-outline-variant/50 p-3" placeholder="Mô tả phạm vi trách nhiệm của nhóm..." /></label>
+            <div className="text-sm font-semibold">Mô tả nhiệm vụ<RequiredMark /><RichTextEditor aria-label="Mô tả nhiệm vụ" required minLength={5} maxLength={500} value={roleForm.description} onChange={value => setRoleForm({...roleForm, description:value})} className="mt-2" placeholder="Mô tả phạm vi trách nhiệm của nhóm..." /></div>
             <div className="rounded-lg bg-primary/5 p-3 text-sm text-primary">Role mới chưa có quyền và người dùng. Sau khi tạo, chọn <strong>“Quản lý người dùng và quyền hạn”</strong> để cấu hình.</div>
             {roleError && <div className="rounded-lg bg-error-container p-3 text-sm text-on-error-container">{roleError}</div>}
           </div>

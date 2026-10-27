@@ -1,4 +1,5 @@
 'use client';
+import { RichText } from '@/shared/ui/RichText';
 import { AppIcon, IconText } from '@/shared/ui/AppIcon';
 
 import * as React from 'react';
@@ -200,7 +201,7 @@ interface UnansweredQuestion {
               </div>
 
               <h3 className="text-base lg:text-lg font-bold text-on-surface leading-relaxed whitespace-pre-wrap">
-                {q.prompt}
+                <RichText text={q.prompt} />
               </h3>
 
               {/* Options */}

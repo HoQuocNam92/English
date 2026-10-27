@@ -1,4 +1,5 @@
 'use client';
+import { RichText } from '@/shared/ui/RichText';
 import { ResultCount } from '@/shared/ui/ResultCount';
 import { FilterPanel } from '@/shared/ui/FilterPanel';
 import { ClearFiltersButton } from '@/shared/ui/ClearFiltersButton';
@@ -178,7 +179,7 @@ export default function AdminTestsPage() {
                 </div>
 
                 <div className="mb-3 min-h-10">
-                  {exam.description && <p className="text-xs text-on-surface-variant line-clamp-2 leading-relaxed">{exam.description}</p>}
+                  {exam.description && <p className="text-xs text-on-surface-variant line-clamp-2 leading-relaxed"><RichText text={exam.description} /></p>}
                 </div>
 
                 {/* Meta */}

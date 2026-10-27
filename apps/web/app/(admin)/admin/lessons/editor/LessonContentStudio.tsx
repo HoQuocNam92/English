@@ -1,4 +1,6 @@
 'use client';
+import { RichTextEditor } from '@/shared/ui/RichTextEditor';
+import { richTextToPlainText } from '../../../../../../../packages/shared-kernel/src/rich-text';
 import { RequiredMark } from '@/shared/ui/RequiredMark';
 import { AppIcon } from '@/shared/ui/AppIcon';
 
@@ -16,7 +18,8 @@ const inputClass = 'mt-1.5 w-full rounded-xl border border-outline-variant bg-wh
 const textareaClass = `${inputClass} min-h-28 resize-y leading-6`;
 
 function Field({ label, value, onChange, placeholder, multiline = false, mono = false }: { label: string; value?: string; onChange: (value: string) => void; placeholder?: string; multiline?: boolean; mono?: boolean }) {
-  return <label className="text-sm font-bold text-on-surface">{label}{multiline ? <textarea value={value ?? ''} onChange={event => onChange(event.target.value)} placeholder={placeholder} className={`${textareaClass} ${mono ? 'font-mono' : ''}`} /> : <input value={value ?? ''} onChange={event => onChange(event.target.value)} placeholder={placeholder} className={`${inputClass} ${mono ? 'font-mono' : ''}`} />}</label>;
+  if (multiline && !mono) return <div className="text-sm font-bold text-on-surface">{label}<RichTextEditor aria-label={label} value={value ?? ''} onChange={onChange} placeholder={placeholder} className="mt-1.5" /></div>;
+  return <label className="text-sm font-bold text-on-surface">{label}{multiline ? <textarea value={value ?? ''} onChange={event => onChange(event.target.value)} placeholder={placeholder} className={`${textareaClass} font-mono`} /> : <input value={value ?? ''} onChange={event => onChange(event.target.value)} placeholder={placeholder} className={inputClass} />}</label>;
 }
 
 function SelectField({ label, value, options, onChange }: { label: string; value?: string; options: string[]; onChange: (value: string) => void }) {
@@ -80,7 +83,7 @@ export function hydrateStudioSections(type: string, rawSections: any[], concepts
 
 export function hasStudioContent(section: StudioSection) {
   const structuralFields = new Set(['method', 'path', 'auth', 'language', 'status', 'errorCodes', 'partOfSpeech', 'sourceLabel']);
-  return Object.entries(section.content).some(([key, value]) => !structuralFields.has(key) && value.trim().length > 0);
+  return Object.entries(section.content).some(([key, value]) => !structuralFields.has(key) && richTextToPlainText(value).length > 0);
 }
 
 function SectionShell({ eyebrow, icon, title, description, children, onRemove, removable }: { eyebrow: string; icon: string; title: string; description: string; children: React.ReactNode; onRemove?: () => void; removable?: boolean }) {

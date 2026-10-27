@@ -1,4 +1,5 @@
 'use client';
+import { RichText } from '@/shared/ui/RichText';
 import { ResultCount } from '@/shared/ui/ResultCount';
 import { loadAllPages } from '@/shared/lib/load-all-pages';
 import { ClearFiltersButton } from '@/shared/ui/ClearFiltersButton';
@@ -287,8 +288,8 @@ export default function AdminQuestionsPage() {
               const isExpanded = expanded === q.id;
               return <React.Fragment key={q.id}>
                 <tr>
-                  <td><input type="checkbox" aria-label={`Chọn câu hỏi ${q.prompt}`} checked={selectedIds.has(q.id)} onChange={() => setSelectedIds((current) => { const next = new Set(current); if (next.has(q.id)) next.delete(q.id); else next.add(q.id); return next; })} className="h-4 w-4 accent-primary" /></td>
-                  <td className="max-w-[360px]"><button type="button" aria-expanded={isExpanded} onClick={() => setExpanded(isExpanded ? null : q.id)} className="text-left text-sm font-semibold text-on-surface hover:text-primary"><span className="mr-2 text-xs text-on-surface-variant">{(page - 1) * limit + idx + 1}.</span>{q.prompt}</button></td>
+                  <td><input type="checkbox" aria-label={`Chọn câu hỏi $<RichText text={q.prompt} />`} checked={selectedIds.has(q.id)} onChange={() => setSelectedIds((current) => { const next = new Set(current); if (next.has(q.id)) next.delete(q.id); else next.add(q.id); return next; })} className="h-4 w-4 accent-primary" /></td>
+                  <td className="max-w-[360px]"><button type="button" aria-expanded={isExpanded} onClick={() => setExpanded(isExpanded ? null : q.id)} className="text-left text-sm font-semibold text-on-surface hover:text-primary"><span className="mr-2 text-xs text-on-surface-variant">{(page - 1) * limit + idx + 1}.</span><RichText text={q.prompt} /></button></td>
                   <td><p>{qType.label}</p><p className="mt-1 text-xs text-on-surface-variant">{SKILLS[q.skill] ?? q.skill}</p></td>
                   <td>{q.domain?.name ?? '—'}</td><td><LevelBadge level={q.level} /></td>
                   <td>{q.examQuestions?.length ?? 0}</td>
@@ -327,7 +328,7 @@ export default function AdminQuestionsPage() {
                       {q.context && (
                         <div className="bg-surface-container rounded-xl p-3.5 border border-outline-variant/20">
                           <p className="text-xs font-semibold text-on-surface-variant mb-1">Ngữ cảnh bài tập:</p>
-                          <p className="text-sm leading-6 text-on-surface whitespace-pre-wrap">{q.context}</p>
+                          <p className="text-sm leading-6 text-on-surface whitespace-pre-wrap"><RichText text={q.context} /></p>
                         </div>
                       )}
 
@@ -363,7 +364,7 @@ export default function AdminQuestionsPage() {
                       {q.explanation && (
                         <div className="bg-blue-50 border border-blue-200 rounded-xl p-3.5">
                           <p className="text-xs font-semibold text-blue-700 mb-1">Giải thích chi tiết:</p>
-                          <p className="text-sm text-blue-950 leading-relaxed">{q.explanation}</p>
+                          <p className="text-sm text-blue-950 leading-relaxed"><RichText text={q.explanation} /></p>
                         </div>
                       )}
                     </div></td></tr>

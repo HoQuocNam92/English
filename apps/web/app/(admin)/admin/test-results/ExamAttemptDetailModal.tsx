@@ -1,4 +1,5 @@
 'use client';
+import { RichText } from '@/shared/ui/RichText';
 import { formatAttemptDuration } from '@/shared/lib/attempt-duration';
 import { AppIcon } from '@/shared/ui/AppIcon';
 
@@ -205,7 +206,7 @@ export function ExamAttemptDetailModal({ attemptId, onClose }: ExamAttemptDetail
                               {idx + 1}
                             </span>
                             <p className="font-semibold text-on-surface text-sm leading-relaxed">
-                              {q.title || q.content || `Câu hỏi ${idx + 1}`}
+                              <RichText text={q.title || q.content || `Câu hỏi ${idx + 1}`} />
                             </p>
                           </div>
                           <span
@@ -285,7 +286,7 @@ export function ExamAttemptDetailModal({ attemptId, onClose }: ExamAttemptDetail
                             </AppIcon>
                             <div>
                               <strong className="text-on-surface font-medium">Giải thích: </strong>
-                              {q.explanation}
+                              <RichText text={q.explanation} />
                             </div>
                           </div>
                         )}

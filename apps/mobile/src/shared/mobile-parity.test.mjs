@@ -5,6 +5,7 @@ import { createRequire } from 'node:module';
 import { runInNewContext } from 'node:vm';
 import { mobileNotificationRoute } from './navigation.ts';
 import * as lessonPresentation from '../../../../packages/shared-kernel/src/lesson-presentation.ts';
+import * as richText from '../../../../packages/shared-kernel/src/rich-text.ts';
 import { matchesFilterOption } from './utils/filter-options.ts';
 
 const require = createRequire(import.meta.url);
@@ -161,6 +162,7 @@ test('native lesson guidance and source links use the same presentation as web',
     { id: 'ref', title: 'Nguồn khái niệm và phạm vi bài học', type: 'rich_text', content: { text: 'Tham khảo https://example.org/guide' } },
   ] };
   const harness = mount('../features/lessons/LessonExperience.tsx', {
+    '../../../../../packages/shared-kernel/src/rich-text': richText,
     '../../../../../packages/shared-kernel/src/lesson-presentation': lessonPresentation,
     '../../shared/ui/primitives': ui,
     'react-native': { View: 'view', ScrollView: 'scroll', StyleSheet: { create: value => value }, useWindowDimensions: () => ({ width: 390 }), Linking: { openURL: async url => { links.push(url); } }, Alert: { alert() {} } },

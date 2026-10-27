@@ -1,4 +1,5 @@
 'use client';
+import { RichTextEditor } from '@/shared/ui/RichTextEditor';
 import { RequiredMark } from '@/shared/ui/RequiredMark';
 import Link from 'next/link';
 
@@ -47,7 +48,7 @@ export default function LessonEditorPage() {
       {error && <div className="rounded-xl bg-error-container p-3 text-sm text-on-error-container">{error}</div>}
       <section className="grid gap-4 rounded-2xl bg-surface-container-lowest p-6 shadow-sm md:grid-cols-2">
         <label className="md:col-span-2 text-sm font-semibold">Tên {category?.item ?? 'bài học'}<RequiredMark /><input required value={form.title} onChange={e => field('title', e.target.value)} maxLength={200} className="mt-1.5 w-full rounded-xl border border-outline-variant bg-surface-container-low px-4 py-2.5 font-normal" /></label>
-        <label className="md:col-span-2 text-sm font-semibold">{category?.summaryLabel ?? 'Tóm tắt'}<RequiredMark /><textarea required value={form.summary} onChange={e => field('summary', e.target.value)} maxLength={1000} rows={3} className="mt-1.5 w-full rounded-xl border border-outline-variant bg-surface-container-low px-4 py-2.5 font-normal" /></label>
+        <div className="md:col-span-2 text-sm font-semibold">{category?.summaryLabel ?? 'Tóm tắt'}<RequiredMark /><RichTextEditor aria-label={category?.summaryLabel ?? 'Tóm tắt'} required value={form.summary} onChange={value => field('summary', value)} maxLength={1000} className="mt-1.5" /></div>
         <label className="text-sm font-semibold">Loại nội dung<RequiredMark /><Dropdown required value={form.type} onChange={e => { const nextType = e.target.value; field('type', nextType); if (!lessonId || sections.every(section => !hasStudioContent(section))) setSections(createStudioTemplate(nextType)); }} className="mt-1.5 w-full rounded-xl border border-outline-variant bg-surface-container-low px-3 py-2.5 font-normal">{LESSON_TYPES.map(([value,label]) => <option key={value} value={value}>{label}</option>)}</Dropdown></label>
         <label className="text-sm font-semibold">Trạng thái<Dropdown value={form.status} onChange={e => field('status', e.target.value)} className="mt-1.5 w-full rounded-xl border border-outline-variant bg-surface-container-low px-3 py-2.5 font-normal"><option value="draft">Bản nháp</option><option value="published">Đã xuất bản</option></Dropdown></label>
         <label className="text-sm font-semibold">Chuyên ngành<RequiredMark /><Dropdown required value={form.domainId} onChange={e => field('domainId', e.target.value)} className="mt-1.5 w-full rounded-xl border border-outline-variant bg-surface-container-low px-3 py-2.5 font-normal"><option value="">Chọn chuyên ngành</option>{options.domains.map(x => <option key={x.id} value={x.id}>{x.name}</option>)}</Dropdown></label>

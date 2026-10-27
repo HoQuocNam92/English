@@ -1,4 +1,5 @@
 'use client';
+import { RichText } from '@/shared/ui/RichText';
 import { usePronunciation } from '@/shared/lib/use-pronunciation';
 import { AppIcon, IconText } from '@/shared/ui/AppIcon';
 
@@ -561,11 +562,11 @@ export default function FlashcardPracticePage({ params }: { params: Promise<{ id
                     Định nghĩa:
                   </div>
                   <div data-learning-content className="text-base font-bold text-slate-900 mt-1">
-                    {currentWord.definitionVi || 'Chưa có định nghĩa tiếng Việt'}
+                    <RichText text={currentWord.definitionVi || 'Chưa có định nghĩa tiếng Việt'} />
                   </div>
                   {currentWord.definitionEn && (
                     <div data-learning-content className="text-xs text-slate-500 mt-0.5">
-                      {currentWord.definitionEn}
+                      <RichText text={currentWord.definitionEn} />
                     </div>
                   )}
                 </div>
@@ -700,7 +701,7 @@ export default function FlashcardPracticePage({ params }: { params: Promise<{ id
                   skippedWords.map((w, idx) => (
                     <div key={idx} className="pt-2 flex justify-between items-center">
                       <span className="font-bold text-slate-800">{w.term}</span>
-                      <span className="text-slate-500">{w.definitionVi}</span>
+                      <span className="text-slate-500"><RichText text={w.definitionVi} /></span>
                     </div>
                   ))
                 )}

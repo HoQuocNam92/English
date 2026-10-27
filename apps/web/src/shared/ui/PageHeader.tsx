@@ -1,4 +1,5 @@
 import { AppIcon } from '@/shared/ui/AppIcon';
+import { RichText } from './RichText';
 import * as React from 'react';
 import { cn } from '@/shared/lib/cn';
 
@@ -33,7 +34,7 @@ export function PageHeader({ eyebrow, title, description, action, icon, iconClas
         <div className="grid min-w-0 gap-1">
           {eyebrow ? <span className="text-sm font-semibold text-primary">{eyebrow}</span> : null}
           <h1 className="m-0 break-words text-2xl font-bold leading-8 sm:text-3xl sm:leading-[38px] text-foreground">{title}</h1>
-          {description ? <p className="m-0 text-sm leading-5 text-muted-foreground">{description}</p> : null}
+          {description ? <p className="m-0 text-sm leading-5 text-muted-foreground"><RichText text={description} /></p> : null}
         </div>
       </div>
       {action ? <div>{action}</div> : null}

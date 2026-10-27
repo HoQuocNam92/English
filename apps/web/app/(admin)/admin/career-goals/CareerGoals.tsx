@@ -1,4 +1,6 @@
 'use client';
+import { RichText } from '@/shared/ui/RichText';
+import { RichTextEditor } from '@/shared/ui/RichTextEditor';
 import { ResultCount } from '@/shared/ui/ResultCount';
 import { RequiredMark } from '@/shared/ui/RequiredMark';
 import { PaginatedTable } from '@/shared/ui/PaginatedTable';
@@ -48,7 +50,7 @@ export default function CareerGoals({ createOnly = false }: { createOnly?: boole
       <h1 className="text-xl font-bold">{form.id ? 'Chỉnh sửa mục tiêu nghề nghiệp' : 'Thêm mục tiêu nghề nghiệp'}</h1>
       <label className="block text-sm font-medium">Mã mục tiêu<RequiredMark /><input required value={form.code} onChange={e => setForm(current => ({ ...current, code: e.target.value }))} placeholder="CLOUD" className="mt-2 h-11 w-full rounded-xl border border-outline-variant px-3 uppercase" /></label>
       <label className="block text-sm font-medium">Tên mục tiêu nghề nghiệp<RequiredMark /><input required value={form.name} onChange={e => setForm(current => ({ ...current, name: e.target.value }))} className="mt-2 h-11 w-full rounded-xl border border-outline-variant px-3" /></label>
-      <label className="block text-sm font-medium">Mô tả<textarea value={form.description} onChange={e => setForm(current => ({ ...current, description: e.target.value }))} className="mt-2 min-h-24 w-full rounded-xl border border-outline-variant p-3" /></label>
+      <div className="block text-sm font-medium">Mô tả<RichTextEditor aria-label="Mô tả mục tiêu" maxLength={1000} value={form.description} onChange={value => setForm(current => ({ ...current, description: value }))} className="mt-2" /></div>
       {error && <p role="alert" className="rounded-xl bg-error-container p-3 text-sm text-on-error-container">{error}</p>}
       <div className="flex justify-end gap-3 border-t border-outline-variant/40 pt-4"><button type="button" disabled={saving} onClick={() => createOnly ? router.push('/admin/career-goals') : setForm({ id: '', code: '', name: '', description: '' })} className="h-10 rounded-xl border border-outline-variant px-4 text-sm font-medium">Hủy</button><button disabled={saving} className="h-10 rounded-xl bg-primary px-5 text-sm font-semibold text-white disabled:opacity-65">{saving ? 'Đang lưu...' : form.id ? 'Lưu thay đổi' : 'Thêm mục tiêu'}</button></div>
     </form>);
@@ -62,7 +64,7 @@ export default function CareerGoals({ createOnly = false }: { createOnly?: boole
     {form.id && <section className="mt-6 rounded-2xl border border-outline-variant bg-white">{goalForm}</section>}
     <div className="mt-5 overflow-hidden rounded-2xl border border-outline-variant bg-white">
       <PaginatedTable enabled={!loading && visible.length > 0}><table className="w-full text-left text-sm"><thead className="bg-white"><tr><th className="p-4">Mã</th><th className="p-4">Mục tiêu nghề nghiệp</th><th className="p-4">Học viên</th><th className="p-4">Nhóm</th><th className="p-4 text-right">Thao tác</th></tr></thead><tbody className="divide-y divide-outline-variant/40">
-        {loading ? <tr><td colSpan={5} className="p-10 text-center">Đang tải...</td></tr> : visible.length ? visible.map(item => <tr key={item.id}><td className="p-4 text-sm font-medium text-primary">{item.code}</td><td className="p-4"><strong>{item.name}</strong><p className="mt-1 text-xs text-on-surface-variant">{item.description || 'Chưa có mô tả'}</p></td><td className="p-4">{item._count?.profileGoals ?? 0}</td><td className="p-4">{item._count?.learnerGroups ?? 0}</td><td className="p-4 text-right"><ActionGroup><ActionButton action="edit" type="button" onClick={() => setForm({ id: item.id, code: item.code, name: item.name, description: item.description ?? '' })} /></ActionGroup></td></tr>) : <tr><td colSpan={5} className="p-10 text-center text-on-surface-variant">Không có mục tiêu phù hợp.</td></tr>}
+        {loading ? <tr><td colSpan={5} className="p-10 text-center">Đang tải...</td></tr> : visible.length ? visible.map(item => <tr key={item.id}><td className="p-4 text-sm font-medium text-primary">{item.code}</td><td className="p-4"><strong>{item.name}</strong><p className="mt-1 text-xs text-on-surface-variant"><RichText text={item.description || 'Chưa có mô tả'} /></p></td><td className="p-4">{item._count?.profileGoals ?? 0}</td><td className="p-4">{item._count?.learnerGroups ?? 0}</td><td className="p-4 text-right"><ActionGroup><ActionButton action="edit" type="button" onClick={() => setForm({ id: item.id, code: item.code, name: item.name, description: item.description ?? '' })} /></ActionGroup></td></tr>) : <tr><td colSpan={5} className="p-10 text-center text-on-surface-variant">Không có mục tiêu phù hợp.</td></tr>}
       </tbody></table></PaginatedTable>
     </div>
   </main>;

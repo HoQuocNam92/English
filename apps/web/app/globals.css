@@ -1,5 +1,14 @@
 @import "tailwindcss";
 
+.rich-text-editor { border-radius: 0.75rem; background: white; }
+.rich-text-editor .ql-toolbar.ql-snow { border-color: #cbd5e1; border-radius: 0.75rem 0.75rem 0 0; font-family: inherit; }
+.rich-text-editor .ql-container.ql-snow { border-color: #cbd5e1; border-radius: 0 0 0.75rem 0.75rem; font-family: inherit; font-size: 14px; }
+.rich-text-editor .ql-editor { min-height: 140px; line-height: 1.75; overflow-wrap: anywhere; }
+.rich-text-editor:focus-within .ql-toolbar, .rich-text-editor:focus-within .ql-container { border-color: var(--primary, #4f46e5); }
+.rich-text-editor .ql-tooltip { z-index: 30; left: 0 !important; max-width: 100%; white-space: normal; }
+.rich-text-editor .ql-tooltip input { max-width: 100%; }
+.rich-text [data-list] { display: list-item; }
+
 @font-face {
   font-family: 'Inter';
   src: url('/fonts/Inter.ttf') format('truetype');

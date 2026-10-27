@@ -1,4 +1,5 @@
 'use client';
+import { RichTextEditor } from '@/shared/ui/RichTextEditor';
 import { ResultCount } from '@/shared/ui/ResultCount';
 import { Input } from '@/shared/ui/Input';
 import { ClearFiltersButton } from '@/shared/ui/ClearFiltersButton';
@@ -287,7 +288,7 @@ function CertificateModal({ open, initial, onClose, onSaved, page = false }: { p
       <Input label="Số câu trong đề thật" type="number" min="1" step="1" value={form.examQuestionCount} error={fieldErrors.examQuestionCount} onChange={e => { setForm({...form, examQuestionCount:e.target.value}); setFieldErrors(old => ({...old, examQuestionCount: ''})); }} placeholder="65" />
       <Input label="Điểm chuẩn quy đổi" containerClassName="sm:col-span-2" type="number" min="0" step="1" value={form.passingScaledScore} error={fieldErrors.passingScaledScore} onChange={e => { setForm({...form, passingScaledScore:e.target.value}); setFieldErrors(old => ({...old, passingScaledScore: ''})); }} placeholder="700" />
       <label className="text-sm font-semibold sm:col-span-2">Liên kết kỳ thi<input className={cls} value={form.examUrl} onChange={e => setForm({...form, examUrl:e.target.value})} placeholder="https://..." /></label>
-      <label className="text-sm font-semibold sm:col-span-2">Mô tả<textarea className="mt-2 min-h-24 w-full rounded-xl border border-outline-variant/70 bg-white p-3 text-sm outline-none focus:border-primary focus:ring-4 focus:ring-primary/10" value={form.description} onChange={e => setForm({...form, description:e.target.value})} /></label>
+      <div className="text-sm font-semibold sm:col-span-2">Mô tả<RichTextEditor aria-label="Mô tả chứng chỉ" maxLength={1000} className="mt-2" value={form.description} onChange={value => setForm({...form, description:value})} /></div>
       <label className="flex items-center gap-2 text-sm font-medium sm:col-span-2"><input type="checkbox" className="accent-primary" checked={form.isActive} onChange={e => setForm({...form, isActive:e.target.checked})} />Hiển thị trong hệ thống</label>
       {error && <div className="rounded-xl bg-error-container p-3 text-sm text-on-error-container sm:col-span-2">{error}</div>}
     </div>

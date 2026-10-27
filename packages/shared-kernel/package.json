@@ -9,6 +9,9 @@
   "types": "./src/index.ts",
   "scripts": {
     "typecheck": "tsc --noEmit -p tsconfig.json",
-    "test": "node --test src/progress.test.mjs"
+    "test": "node --test src/progress.test.mjs src/rich-text.test.mjs"
+  },
+  "dependencies": {
+    "htmlparser2": "10.0.0"
   }
 }

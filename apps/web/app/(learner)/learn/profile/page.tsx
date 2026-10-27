@@ -1,4 +1,5 @@
 'use client';
+import { RichText } from '@/shared/ui/RichText';
 import { RequiredMark } from '@/shared/ui/RequiredMark';
 import { NumberInput } from '@/shared/ui/NumberInput';
 import { PaginatedList } from '@/shared/ui/PaginatedList';
@@ -349,7 +350,7 @@ function LearnerProfileContent() {
                   const selected = learningGoal === goal.value;
                   return <button key={goal.value} type="button" onClick={() => setLearningGoal(goal.value as 'certification' | 'vocabulary' | 'both')} className={`rounded-xl border p-4 text-left transition-all ${selected ? 'border-primary bg-primary/5 ring-2 ring-primary/20' : 'border-outline-variant/60 bg-surface-bright hover:border-primary/40'}`}>
                     <span className="flex items-center gap-2 text-sm font-bold text-on-surface"><AppIcon className={` ${goal.iconClass}`}>{goal.icon}</AppIcon>{goal.title}<AppIcon className={`ml-auto  ${selected ? 'icon-success' : 'text-outline-variant'}`}>{selected ? 'check_circle' : 'radio_button_unchecked'}</AppIcon></span>
-                    <span className="mt-2 block text-xs leading-relaxed text-on-surface-variant">{goal.description}</span>
+                    <span className="mt-2 block text-xs leading-relaxed text-on-surface-variant"><RichText text={goal.description} /></span>
                   </button>;
                 })}
               </div>
@@ -381,7 +382,7 @@ function LearnerProfileContent() {
                           {isSelected ? 'check_circle' : 'radio_button_unchecked'}
                         </AppIcon>
                       </div>
-                      <p className="text-xs text-on-surface-variant line-clamp-2">{lvl.description}</p>
+                      <p className="text-xs text-on-surface-variant line-clamp-2"><RichText text={lvl.description} /></p>
                     </div>
                   );
                 })}
@@ -457,7 +458,7 @@ function LearnerProfileContent() {
               <label className="block text-sm font-bold text-on-surface">Mục tiêu nghề nghiệp</label>
               <p className="text-xs text-on-surface-variant">Chọn một hoặc nhiều định hướng để hệ thống ưu tiên nội dung phù hợp.</p>
               <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-                {careerGoals.map((goal:any) => { const selected=selectedCareerGoals.includes(goal.code); return <button key={goal.code} type="button" onClick={()=>toggleCareerGoal(goal.code)} className={`rounded-xl border p-4 text-left transition-all ${selected?'border-primary bg-primary/5 ring-2 ring-primary/20':'border-outline-variant/60 bg-surface-bright hover:border-primary/40'}`}><span className="flex items-center gap-2 text-sm font-bold"><AppIcon className=" text-[19px] text-primary">work</AppIcon>{goal.name}<AppIcon className={` ml-auto text-[18px] ${selected?'text-primary':'text-outline'}`}>{selected?'check_circle':'radio_button_unchecked'}</AppIcon></span><span className="mt-2 block text-xs leading-5 text-on-surface-variant">{goal.description||'Định hướng nghề nghiệp CNTT'}</span></button>; })}
+                {careerGoals.map((goal:any) => { const selected=selectedCareerGoals.includes(goal.code); return <button key={goal.code} type="button" onClick={()=>toggleCareerGoal(goal.code)} className={`rounded-xl border p-4 text-left transition-all ${selected?'border-primary bg-primary/5 ring-2 ring-primary/20':'border-outline-variant/60 bg-surface-bright hover:border-primary/40'}`}><span className="flex items-center gap-2 text-sm font-bold"><AppIcon className=" text-[19px] text-primary">work</AppIcon>{goal.name}<AppIcon className={` ml-auto text-[18px] ${selected?'text-primary':'text-outline'}`}>{selected?'check_circle':'radio_button_unchecked'}</AppIcon></span><span className="mt-2 block text-xs leading-5 text-on-surface-variant"><RichText text={goal.description||'Định hướng nghề nghiệp CNTT'} /></span></button>; })}
               </div>
             </div>
 

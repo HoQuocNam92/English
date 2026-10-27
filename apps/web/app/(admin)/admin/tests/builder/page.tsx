@@ -1,4 +1,6 @@
 'use client';
+import { RichTextEditor } from '@/shared/ui/RichTextEditor';
+import { RichText } from '@/shared/ui/RichText';
 import { matchesExamScope } from '@/shared/lib/exam-question-scope';
 import { RequiredMark } from '@/shared/ui/RequiredMark';
 import { loadAllPages } from '@/shared/lib/load-all-pages';
@@ -314,10 +316,9 @@ export default function TestBuilderPage() {
             {/* Description */}
             <div>
               <label className="block text-sm font-semibold text-slate-900 mb-1.5">Mô tả</label>
-              <textarea
+              <RichTextEditor aria-label="Mô tả bài thi"
                 value={description}
-                onChange={e => setDescription(e.target.value)}
-                rows={3}
+                onChange={setDescription}
                 maxLength={1000}
                 placeholder="Mô tả ngắn gọn về nội dung và mục tiêu bài thi..."
                 className="w-full rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-sm font-medium text-slate-900 placeholder:text-slate-400 shadow-2xs focus:outline-none focus:border-primary focus:ring-4 focus:ring-primary/10 resize-none transition-all"
@@ -642,7 +643,7 @@ export default function TestBuilderPage() {
                       />
                       <div className="flex-1 min-w-0">
                         <p className={`text-sm leading-snug line-clamp-2 ${selected ? 'font-bold text-slate-900' : 'font-medium text-slate-800'}`}>
-                          {q.prompt}
+                          <RichText text={q.prompt} />
                         </p>
                         <div className="flex flex-wrap items-center gap-2 mt-2">
                           <span className="inline-flex items-center px-2 py-0.5 rounded-md text-[11px] font-semibold bg-slate-100 text-slate-600">

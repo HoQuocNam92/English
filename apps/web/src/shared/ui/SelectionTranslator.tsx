@@ -1,4 +1,5 @@
 'use client';
+import { RichText } from '@/shared/ui/RichText';
 
 import { useEffect, useRef, useState } from 'react';
 import { usePathname } from 'next/navigation';
@@ -79,6 +80,6 @@ export function SelectionTranslator() {
     <p className="mt-2 line-clamp-3 text-sm font-bold">{selection.text}</p>
     {!loading && result?.translation && <div className="mt-1 flex flex-wrap items-center gap-2 text-xs text-slate-500">{result.partOfSpeech && <span>{result.partOfSpeech}</span>}{result.pronunciationIpa && <span>{result.pronunciationIpa}</span>}<button aria-label="Nghe phát âm" disabled={speaking} onClick={() => void pronounce()} className="inline-flex items-center gap-1 text-primary"><Volume2 size={15} />{speaking ? 'Đang phát…' : 'Nghe'}</button></div>}
     {speechError && <p role="alert" className="mt-2 text-xs text-red-600">{speechError}</p>}
-    <div aria-live="polite" className="mt-3 text-sm leading-6">{loading ? 'Đang dịch…' : error ? <><p className="text-red-600">{error}</p><button onClick={() => void translate(selection)} className="mt-2 inline-flex items-center gap-1 font-semibold text-primary"><RotateCcw size={14} />Thử lại</button></> : <><p>{result?.translation ?? result?.message}</p>{result?.definitionEn && <p className="mt-2 text-xs text-slate-500">{result.definitionEn}</p>}{result?.translation && <p className="mt-2 text-[10px] text-slate-500">{result.source === 'dictionary' ? 'Nghĩa từ điển chuyên ngành' : result.contextual ? 'Nghĩa theo ngữ cảnh · AI' : 'Nghĩa tham khảo · AI'}</p>}</>}</div>
+    <div aria-live="polite" className="mt-3 text-sm leading-6">{loading ? 'Đang dịch…' : error ? <><p className="text-red-600">{error}</p><button onClick={() => void translate(selection)} className="mt-2 inline-flex items-center gap-1 font-semibold text-primary"><RotateCcw size={14} />Thử lại</button></> : <><p><RichText text={result?.translation ?? result?.message} /></p>{result?.definitionEn && <p className="mt-2 text-xs text-slate-500"><RichText text={result.definitionEn} /></p>}{result?.translation && <p className="mt-2 text-[10px] text-slate-500">{result.source === 'dictionary' ? 'Nghĩa từ điển chuyên ngành' : result.contextual ? 'Nghĩa theo ngữ cảnh · AI' : 'Nghĩa tham khảo · AI'}</p>}</>}</div>
   </div>;
 }

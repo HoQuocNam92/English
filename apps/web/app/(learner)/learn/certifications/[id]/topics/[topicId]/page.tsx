@@ -1,4 +1,5 @@
 'use client';
+import { RichText } from '@/shared/ui/RichText';
 import { BackButton } from '@/shared/ui/BackButton';
 
 import { use, useCallback, useEffect, useRef, useState } from 'react';
@@ -73,7 +74,7 @@ export default function CertificateTopicStudy({ params }: { params: Promise<{ id
   if (!topic) return <LearnerShell><div className="p-8 text-center"><p>{error}</p><Link href={`/learn/certifications/${id}`} className="text-primary">Về chứng chỉ</Link></div></LearnerShell>;
   return <LearnerShell><main className="w-full space-y-6 py-6 pb-16">
     <BackButton fallbackHref={`/learn/certifications/${id}`}>{topic.certificate.name}</BackButton>
-    <header className="rounded-2xl border border-outline-variant bg-white p-6"><p className="text-xs font-bold uppercase text-primary">{topic.domain.name} · Chủ đề {topic.code}</p><h1 className="mt-2 text-2xl font-bold">{topic.name}</h1>{topic.description && <p className="mt-2 text-sm leading-6 text-on-surface-variant">{topic.description}</p>}<div className="mt-4 flex flex-wrap gap-4 text-sm"><span className="flex items-center gap-2"><BookOpen size={16} />{completed}/{topic.lessons.length} bài học hoàn thành</span></div></header>
+    <header className="rounded-2xl border border-outline-variant bg-white p-6"><p className="text-xs font-bold uppercase text-primary">{topic.domain.name} · Chủ đề {topic.code}</p><h1 className="mt-2 text-2xl font-bold">{topic.name}</h1>{topic.description && <p className="mt-2 text-sm leading-6 text-on-surface-variant"><RichText text={topic.description} /></p>}<div className="mt-4 flex flex-wrap gap-4 text-sm"><span className="flex items-center gap-2"><BookOpen size={16} />{completed}/{topic.lessons.length} bài học hoàn thành</span></div></header>
     {canPractice && primaryQuiz && <section className="flex flex-wrap items-center justify-between gap-4 rounded-2xl border border-emerald-200 bg-emerald-50 p-5"><div><h2 className="font-bold text-emerald-800">Đã hoàn thành kiến thức chủ đề</h2><p className="mt-1 text-sm text-emerald-700">Làm bài luyện tập để kiểm tra những gì bạn vừa học.</p></div><Link href={quizHref} className="inline-flex items-center gap-2 rounded-xl bg-primary px-5 py-3 text-sm font-bold text-white transition-colors hover:bg-primary/90 focus-visible:ring-2 focus-visible:ring-primary"><FileQuestion size={18} />Làm bài luyện tập · {primaryQuiz._count.questions} câu</Link></section>}
     {error && <p role="alert" className="rounded-xl bg-red-50 p-4 text-sm text-red-700">{error}</p>}
     <div className="grid items-start gap-6 lg:grid-cols-[250px_minmax(0,1fr)]">

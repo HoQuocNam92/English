@@ -1,4 +1,5 @@
 'use client';
+import { RichTextEditor } from '@/shared/ui/RichTextEditor';
 import { RequiredMark } from '@/shared/ui/RequiredMark';
 
 import * as React from 'react';
@@ -70,7 +71,7 @@ export default function StructureForm({ certificateId, mode, initialDomainId }: 
     {mode === 'domain' ? <label className="block text-sm font-medium">Trọng số trong đề thi (%)<input type="number" min="0" max="100" step="0.1" value={form.weightPercent} onChange={event => setForm(current => ({ ...current, weightPercent: event.target.value }))} className={inputClass} /></label> : <>
       <label className="block text-sm font-medium">Mã chủ đề<RequiredMark /><input required value={form.code} onChange={event => setForm(current => ({ ...current, code: event.target.value }))} className={inputClass} placeholder="D1-T1" /></label>
       <label className="block text-sm font-medium">Tên chủ đề<RequiredMark /><input required value={form.name} onChange={event => setForm(current => ({ ...current, name: event.target.value }))} className={inputClass} /></label>
-      <label className="block text-sm font-medium">Mô tả<textarea value={form.description} onChange={event => setForm(current => ({ ...current, description: event.target.value }))} className="mt-2 min-h-24 w-full rounded-xl border border-outline-variant p-3" /></label>
+      <div className="block text-sm font-medium">Mô tả<RichTextEditor aria-label="Mô tả chủ đề chứng chỉ" maxLength={1000} value={form.description} onChange={value => setForm(current => ({ ...current, description: value }))} className="mt-2" /></div>
     </>}
     {!loading && !domains.length && <p className="text-sm text-on-surface-variant">{mode === 'topic' ? 'Chứng chỉ chưa có chuyên ngành. Hãy thêm chuyên ngành trước.' : 'Không còn chuyên ngành để thêm vào chứng chỉ.'}</p>}
     <div className="flex justify-end gap-3 border-t border-outline-variant/40 pt-4">

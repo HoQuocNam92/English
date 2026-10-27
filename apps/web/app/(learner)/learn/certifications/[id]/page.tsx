@@ -1,4 +1,5 @@
 'use client';
+import { RichText } from '@/shared/ui/RichText';
 import { certificateProgressExplanation } from '../../../../../../../packages/shared-kernel/src/lesson-presentation';
 import { PaginatedList } from '@/shared/ui/PaginatedList';
 
@@ -106,7 +107,7 @@ export default function CertificationDetailPage() {
             <div className="grid h-14 w-14 shrink-0 place-items-center rounded-2xl bg-violet-100 text-primary"><Award size={29} strokeWidth={1.7} /></div>
             <div className="min-w-0"><h1 className="text-2xl font-bold leading-tight tracking-tight text-slate-900 sm:text-3xl">{certificate.name}</h1>{certificate.provider && <p className="mt-2 text-sm text-slate-500">{certificate.provider}</p>}</div>
           </div>
-          <p className="mt-4 max-w-xl text-sm leading-6 text-slate-600">{certificate.description || 'Ôn kiến thức, luyện câu hỏi và theo dõi quá trình học của bạn trong cùng một lộ trình.'}</p>
+          <p className="mt-4 max-w-xl text-sm leading-6 text-slate-600"><RichText text={certificate.description || 'Ôn kiến thức, luyện câu hỏi và theo dõi quá trình học của bạn trong cùng một lộ trình.'} /></p>
           <div className="mt-4 flex flex-wrap gap-x-5 gap-y-2 text-xs font-medium text-slate-500">
             <span className="inline-flex items-center gap-1.5"><Layers3 size={15} />{domains.length} chuyên ngành</span>
             <span className="inline-flex items-center gap-1.5"><BookOpen size={15} />{totalCount} bài học</span>

@@ -1,4 +1,6 @@
 'use client';
+import { RichTextEditor } from '@/shared/ui/RichTextEditor';
+import { RichText } from '@/shared/ui/RichText';
 import { ResultCount } from '@/shared/ui/ResultCount';
 import { Input } from '@/shared/ui/Input';
 import { SummaryStat } from '@/shared/ui/SummaryStat';
@@ -260,10 +262,9 @@ export default function AdminLevels({ createOnly = false }: { createOnly?: boole
                 <label className="block text-xs font-bold text-on-surface mb-1">
                   Mô tả cấp độ
                 </label>
-                <textarea
-                  rows={3}
+                <RichTextEditor aria-label="Mô tả cấp độ" maxLength={1000}
                   value={description}
-                  onChange={(e) => setDescription(e.target.value)}
+                  onChange={setDescription}
                   placeholder="Mô tả đối tượng người học, mục tiêu và phạm vi kiến thức..."
                   className="w-full px-3.5 py-2 rounded-xl border border-outline-variant bg-surface-container-lowest text-sm focus:outline-hidden focus:border-primary"
                 />
@@ -439,7 +440,7 @@ export default function AdminLevels({ createOnly = false }: { createOnly?: boole
                     </div>
 
                     <p className="text-sm text-on-surface-variant leading-relaxed mb-4 min-h-[40px]">
-                      {lvl.description || <span className="italic text-outline">Chưa có mô tả chi tiết cho cấp độ này.</span>}
+                      <RichText text={lvl.description || <span className="italic text-outline">Chưa có mô tả chi tiết cho cấp độ này.</span>} />
                     </p>
                   </div>
 

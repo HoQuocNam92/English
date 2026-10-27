@@ -5,6 +5,7 @@ import React from 'react';
 import { Button as PaperButton, Chip, Searchbar, TouchableRipple } from 'react-native-paper';
 import { Text as NativeText, TextInput as NativeInput, TouchableOpacity as NativeButton, ScrollView, View, StyleSheet, type StyleProp, type ViewStyle, type TextProps, type TextInputProps, type TouchableOpacityProps } from 'react-native';
 import { colors, radius, typography } from '@techenglish/design-tokens';
+import { renderRichTextChildren, richTextToPlainText } from './rich-text';
 
 // Shared typography and touch targets. Screen-specific layouts stay in style props.
 const TextDepth = React.createContext(false);
@@ -15,12 +16,13 @@ export function Text({ style, children, focusable, ...props }: AppTextProps) {
   const resolved = StyleSheet.flatten(style);
   const fontSize = !nested ? Math.max(13, resolved?.fontSize ?? 15) : resolved?.fontSize;
   const lineHeight = fontSize ? Math.max(resolved?.lineHeight ?? 0, Math.ceil(fontSize * 1.45)) : undefined;
-  const text = plainText(children);
+  const isCode = resolved?.fontFamily === 'monospace';
+  const text = isCode ? plainText(children) : richTextToPlainText(plainText(children));
   const nativeProps = { ...props, ...(focusable === undefined ? {} : { focusable }) } as TextProps;
   return <NativeText {...nativeProps} onLongPress={props.onLongPress ?? (props.selectable && text.trim() ? () => translate(text) : undefined)} style={[
     !nested && { fontFamily: typography.fontFamily, fontSize: typography.body.fontSize, lineHeight: typography.body.lineHeight, color: colors.text },
     style, { fontSize, lineHeight },
-  ]}><TextDepth.Provider value={true}>{children}</TextDepth.Provider></NativeText>;
+  ]}><TextDepth.Provider value={true}>{isCode ? children : renderRichTextChildren(children)}</TextDepth.Provider></NativeText>;
 }
 export const TextInput = React.forwardRef<React.ElementRef<typeof NativeInput>, TextInputProps>(function TextInput({ style, ...props }, ref) {
   return <NativeInput ref={ref} placeholderTextColor={colors.outline} {...props} style={[{ fontFamily: typography.fontFamily, fontSize: 15, color: colors.text, minWidth: 0, minHeight: 48 }, style]} />;

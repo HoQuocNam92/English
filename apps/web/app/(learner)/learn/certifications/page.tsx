@@ -1,4 +1,5 @@
 'use client';
+import { RichText } from '@/shared/ui/RichText';
 import { ClearFiltersButton } from '@/shared/ui/ClearFiltersButton';
 import { PaginatedList } from '@/shared/ui/PaginatedList';
 
@@ -50,7 +51,7 @@ export default function CertificationsPage() {
       return <article key={certificate.id} className="content-card relative flex flex-col overflow-hidden rounded-xl border border-outline-variant bg-surface-container-lowest p-6 shadow-sm">
 
         <div className="mt-2 flex items-start justify-between gap-4"><div><span className="text-xs font-bold uppercase tracking-wide text-primary">{certificate.code}</span><h2 className="mt-1 text-[20px] font-bold text-on-surface">{certificate.name}</h2><p className="mt-1 text-xs font-semibold text-on-surface-variant">{certificate.provider}</p></div></div>
-        <p className="mt-4 line-clamp-2 text-sm leading-6 text-on-surface-variant">{certificate.description}</p>
+        <p className="mt-4 line-clamp-2 text-sm leading-6 text-on-surface-variant"><RichText text={certificate.description} /></p>
         <div className="mt-4 flex flex-wrap gap-2">{domains.map((name: string) => <span key={name} className="rounded-full bg-primary/10 px-2.5 py-1 text-xs font-semibold text-primary">{name}</span>)}</div>
         {matchedExams.length > 0 && <div className="mt-4 rounded-xl bg-primary/5 p-3 text-sm"><p className="font-semibold text-on-surface">Bài kiểm tra phù hợp</p>{matchedExams.map((exam: { id: string; title: string }) => <Link key={exam.id} href={`/learn/certifications/${certificate.id}?tab=exams&examId=${encodeURIComponent(exam.id)}`} className="mt-2 block font-medium text-primary underline">{exam.title} → Mở bài kiểm tra</Link>)}</div>}
         <div className="mt-4"><p className="text-sm font-semibold">{itemProgress?.hasStarted ? 'Đã bắt đầu' : 'Chưa học'} · {percent}% hoàn thành</p><div role="progressbar" aria-label={`Tiến độ ${certificate.name}`} aria-valuemin={0} aria-valuemax={100} aria-valuenow={percent} className="mt-2 h-2 overflow-hidden rounded-full bg-slate-100"><div className="h-full bg-primary" style={{ width: `${percent}%` }} /></div></div>

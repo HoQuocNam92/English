@@ -1,4 +1,6 @@
 'use client';
+import { RichTextEditor } from '@/shared/ui/RichTextEditor';
+import { richTextToPlainText } from '../../../../../../../packages/shared-kernel/src/rich-text';
 import { RequiredMark } from '@/shared/ui/RequiredMark';
 import { BackButton } from '@/shared/ui/BackButton';
 import { AppIcon } from '@/shared/ui/AppIcon';
@@ -108,8 +110,8 @@ export default function QuestionEditorPage() {
 
   const validate = (): boolean => {
     const errs: Record<string, string> = {};
-    if (!prompt.trim()) errs.prompt = 'Nội dung câu hỏi không được để trống';
-    else if (prompt.trim().length < 10) errs.prompt = 'Nội dung câu hỏi phải có ít nhất 10 ký tự';
+    if (!richTextToPlainText(prompt)) errs.prompt = 'Nội dung câu hỏi không được để trống';
+    else if (richTextToPlainText(prompt).length < 10) errs.prompt = 'Nội dung câu hỏi phải có ít nhất 10 ký tự';
     else if (prompt.trim().length > 1000) errs.prompt = 'Câu hỏi tối đa 1000 ký tự';
     if (!domainId) errs.domainId = 'Vui lòng chọn chuyên ngành';
     if (!levelId) errs.levelId = 'Vui lòng chọn cấp độ';
@@ -225,10 +227,9 @@ export default function QuestionEditorPage() {
           <label className="block text-sm font-semibold text-on-surface mb-1">
             Nội dung câu hỏi <span className="text-error">*</span>
           </label>
-          <textarea
+          <RichTextEditor aria-label="Nội dung câu hỏi"
             value={prompt}
-            onChange={e => setPrompt(e.target.value)}
-            rows={3}
+            onChange={setPrompt}
             maxLength={1000}
             placeholder="Ví dụ: What does 'autoscaling' mean in cloud computing?"
             className="w-full rounded-xl border border-outline-variant px-4 py-2.5 text-sm text-on-surface bg-surface-container-low focus:outline-none focus:border-primary resize-none"
@@ -240,10 +241,9 @@ export default function QuestionEditorPage() {
         {/* Context */}
         <div>
           <label className="block text-sm font-semibold text-on-surface mb-1">Đoạn văn ngữ cảnh (tuỳ chọn)</label>
-          <textarea
+          <RichTextEditor aria-label="Đoạn văn ngữ cảnh"
             value={context}
-            onChange={e => setContext(e.target.value)}
-            rows={4}
+            onChange={setContext}
             maxLength={2000}
             placeholder="Dán đoạn văn tiếng Anh để học viên đọc trước khi trả lời..."
             className="w-full rounded-xl border border-outline-variant px-4 py-2.5 text-sm text-on-surface bg-surface-container-low focus:outline-none focus:border-primary resize-none"
@@ -371,10 +371,9 @@ export default function QuestionEditorPage() {
         {/* Global explanation */}
         <div>
           <label className="block text-sm font-semibold text-on-surface mb-1">Giải thích chung (hiện sau khi trả lời)</label>
-          <textarea
+          <RichTextEditor aria-label="Giải thích chung"
             value={explanation}
-            onChange={e => setExplanation(e.target.value)}
-            rows={3}
+            onChange={setExplanation}
             maxLength={1000}
             placeholder="Giải thích tổng quát để học viên hiểu sâu hơn..."
             className="w-full rounded-xl border border-outline-variant px-4 py-2.5 text-sm text-on-surface bg-surface-container-low focus:outline-none focus:border-primary resize-none"

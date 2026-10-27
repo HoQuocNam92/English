@@ -4,6 +4,7 @@ import { colors, radius } from '@techenglish/design-tokens';
 import { MaterialIcons } from './AppIcon';
 import * as Speech from 'expo-speech';
 import { api } from '../api/api-client';
+import { renderRichTextChildren } from './rich-text';
 
 const TranslationContext = createContext<(context: string) => void>(() => {});
 export const useTranslation = () => useContext(TranslationContext);
@@ -29,7 +30,7 @@ export function TranslationProvider({ children }: { children: React.ReactNode })
       <Text style={[font, { marginTop: 12, fontWeight: '600' }]}>Từ/cụm từ cần dịch</Text><TextInput accessibilityLabel="Từ hoặc cụm từ cần dịch" value={text} onChangeText={value => { request.current++; setText(value); setResult(null); setLoading(false); }} maxLength={120} autoCapitalize="none" style={[font, { minHeight: 44, borderColor: colors.outlineVariant, borderWidth: 1, borderRadius: radius.control, padding: 12, marginTop: 8 }]} />
       <TouchableOpacity accessibilityRole="button" disabled={loading} onPress={translate} style={[button, { marginTop: 12, opacity: loading ? 0.8 : 1 }]}><Text style={[font, { color: colors.onPrimary, fontWeight: '700' }]}>Dịch</Text></TouchableOpacity>
       {loading && <ActivityIndicator color={colors.primary} style={{ marginTop: 12 }} />}{error && <Text accessibilityRole="alert" style={[font, { color: colors.error, marginTop: 12 }]}>{error}</Text>}
-      {result && <View style={{ gap: 8, marginTop: 12 }}><Text style={font}>{result.translation ?? result.message}</Text>{result.pronunciationIpa && <Text style={font}>{result.pronunciationIpa}</Text>}{result.partOfSpeech && <Text style={font}>{result.partOfSpeech}</Text>}{result.definitionEn && <Text style={font}>{result.definitionEn}</Text>}<TouchableOpacity accessibilityRole="button" accessibilityLabel="Nghe phát âm" onPress={() => { void Speech.stop().then(() => Speech.speak(text, { language: 'en-US', rate: 0.8, onError: () => setError('Chưa phát được giọng tiếng Anh. Kiểm tra dịch vụ đọc trên điện thoại.') })); }} style={button}><Text style={[font, { color: colors.onPrimary }]}>Nghe phát âm</Text></TouchableOpacity></View>}
+      {result && <View style={{ gap: 8, marginTop: 12 }}><Text style={font}>{renderRichTextChildren(result.translation ?? result.message)}</Text>{result.pronunciationIpa && <Text style={font}>{result.pronunciationIpa}</Text>}{result.partOfSpeech && <Text style={font}>{result.partOfSpeech}</Text>}{result.definitionEn && <Text style={font}>{renderRichTextChildren(result.definitionEn)}</Text>}<TouchableOpacity accessibilityRole="button" accessibilityLabel="Nghe phát âm" onPress={() => { void Speech.stop().then(() => Speech.speak(text, { language: 'en-US', rate: 0.8, onError: () => setError('Chưa phát được giọng tiếng Anh. Kiểm tra dịch vụ đọc trên điện thoại.') })); }} style={button}><Text style={[font, { color: colors.onPrimary }]}>Nghe phát âm</Text></TouchableOpacity></View>}
       </ScrollView>
     </View></View>
   </Modal></TranslationContext.Provider>;
