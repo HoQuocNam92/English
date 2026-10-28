@@ -134,7 +134,7 @@ test('native notification taps wait for authentication and navigate on cold and 
   const harness = mount('./notifications/NotificationNavigation.tsx', {
     'react-native': { Platform: { OS: 'android' } },
     'expo-router': { useRouter: () => ({ push: route => routes.push(route) }), useRootNavigationState: () => ({ key: 'ready' }), usePathname: () => pathname },
-    'expo-constants': { default: { executionEnvironment: 'standalone' }, ExecutionEnvironment: { StoreClient: 'expoGo' } },
+    './native-notifications': { getNativeNotifications: () => notifications },
     '../store/auth-context': { useAuth: () => ({ isLoggedIn: loggedIn, isLoading: false, user: loggedIn ? { id: 'u1' } : null }) },
     '../navigation': { mobileNotificationRoute }, 'expo-notifications': notifications,
     './NotificationHistoryProvider': { useNotificationHistory: () => ({ recordNative }) },

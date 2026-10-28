@@ -1,22 +1,15 @@
 import { Platform } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as Device from 'expo-device';
-import Constants, { ExecutionEnvironment } from 'expo-constants';
+import { getNativeNotifications } from './native-notifications';
 import { api } from '../api/api-client';
 
 const STORAGE_KEY = 'learning_reminder_notification_id';
 
-function getNotifications() {
-  if (Constants.executionEnvironment === ExecutionEnvironment.StoreClient) {
-    return null; // expo-notifications not available in Expo Go SDK 53+
-  }
-  return require('expo-notifications') as typeof import('expo-notifications');
-}
-
 export async function scheduleLearningReminder(time: string | null) {
   if (!Device.isDevice || Platform.OS === 'web') return false;
 
-  const Notifications = getNotifications();
+  const Notifications = getNativeNotifications();
   if (!Notifications) return false;
 
   const previousId = await AsyncStorage.getItem(STORAGE_KEY);

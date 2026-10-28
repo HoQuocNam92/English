@@ -1,7 +1,6 @@
 import { useEffect, useState } from 'react';
-import { Platform } from 'react-native';
 import { usePathname, useRootNavigationState, useRouter } from 'expo-router';
-import Constants, { ExecutionEnvironment } from 'expo-constants';
+import { getNativeNotifications } from './native-notifications';
 import { useAuth } from '../store/auth-context';
 import { mobileNotificationRoute } from '../navigation';
 import { useNotificationHistory } from './NotificationHistoryProvider';
@@ -16,8 +15,8 @@ export function NotificationNavigation() {
   const [pendingRoute, setPendingRoute] = useState<string | null>(null);
   const [pendingNotification, setPendingNotification] = useState<Notification | null>(null);
   useEffect(() => {
-    if (Platform.OS === 'web' || Constants.executionEnvironment === ExecutionEnvironment.StoreClient) return;
-    const notifications = require('expo-notifications') as typeof import('expo-notifications');
+    const notifications = getNativeNotifications();
+    if (!notifications) return;
     let active = true;
     let received = false;
     const foreground = notifications.addNotificationReceivedListener(notification => { void recordNative(notification); });
@@ -39,8 +38,7 @@ export function NotificationNavigation() {
     if (!pendingRoute || isLoading || !isLoggedIn || !navigation?.key || ['/', '/login', '/register'].includes(pathname)) return;
     router.push(pendingRoute as any);
     setPendingRoute(null);
-    const notifications = require('expo-notifications') as typeof import('expo-notifications');
-    void notifications.clearLastNotificationResponseAsync().catch(() => undefined);
+    void getNativeNotifications()?.clearLastNotificationResponseAsync().catch(() => undefined);
   }, [pendingRoute, isLoggedIn, isLoading, navigation?.key, pathname, router]);
   return null;
 }

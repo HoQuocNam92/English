@@ -1,6 +1,6 @@
 import { NotificationNavigation } from '../src/shared/notifications/NotificationNavigation';
 import { NotificationHistoryProvider } from '../src/shared/notifications/NotificationHistoryProvider';
-import { Platform } from 'react-native';
+import { useEffect } from 'react';
 import { MobileUIProvider } from '../src/shared/ui/paper-theme';
 import { TranslationProvider } from '../src/shared/ui/TranslationProvider';
 import { MaterialIcons, MaterialCommunityIcons } from '@expo/vector-icons';
@@ -10,21 +10,15 @@ import { Stack } from 'expo-router';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { AuthProvider } from '../src/shared/store/auth-context';
 import { ThemeProvider } from '../src/shared/store/theme-context';
-import Constants, { ExecutionEnvironment } from 'expo-constants';
-
-// expo-notifications push was removed from Expo Go in SDK 53+
-// Only set up notifications in dev builds / standalone builds
-const isExpoGo = Constants.executionEnvironment === ExecutionEnvironment.StoreClient;
-
-if (!isExpoGo && Platform.OS !== 'web') {
-  const Notifications = require('expo-notifications');
-  Notifications.setNotificationHandler({
-    handleNotification: async () => ({ shouldShowBanner: true, shouldShowList: true, shouldPlaySound: true, shouldSetBadge: false }),
-  });
-}
+import { getNativeNotifications } from '../src/shared/notifications/native-notifications';
 
 export default function RootLayout() {
   const [fontsLoaded, fontError] = useFonts({ ...interFonts, ...MaterialIcons.font, ...MaterialCommunityIcons.font });
+  useEffect(() => {
+    getNativeNotifications()?.setNotificationHandler({
+      handleNotification: async () => ({ shouldShowBanner: true, shouldShowList: true, shouldPlaySound: true, shouldSetBadge: false }),
+    });
+  }, []);
   if (!fontsLoaded && !fontError) return null;
   return (
     <SafeAreaProvider>
