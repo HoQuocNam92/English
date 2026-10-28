@@ -1,3 +1,7 @@
+'use client';
+
+import { usePathname } from 'next/navigation';
+import { adminPageAppearance } from '@/shared/lib/admin-page-appearance';
 import { AppIcon } from '@/shared/ui/AppIcon';
 import { RichText } from './RichText';
 import * as React from 'react';
@@ -26,11 +30,13 @@ const resolveHeaderIcon = (title: string) => {
 };
 
 export function PageHeader({ eyebrow, title, description, action, icon, iconClassName, className, ...props }: PageHeaderProps) {
+  const pathname = usePathname();
+  const appearance = adminPageAppearance(pathname ?? '', icon, title);
   const [resolvedIcon, resolvedColor] = resolveHeaderIcon(title);
   return (
     <header className={cn('flex flex-wrap items-start justify-between gap-4', className)} {...props}>
       <div className="flex min-w-0 max-w-3xl flex-1 items-start gap-3 sm:gap-4">
-        <AppIcon className={cn(' !flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br text-center text-[25px] !leading-none !text-white shadow-sm', iconClassName ?? resolvedColor)}>{icon ?? resolvedIcon}</AppIcon>
+        <AppIcon style={appearance ? { backgroundColor: appearance.color } : undefined} className={cn(' !flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl text-center text-[25px] !leading-none !text-white shadow-sm', !appearance && ['bg-gradient-to-br', iconClassName ?? resolvedColor])}>{appearance?.icon ?? icon ?? resolvedIcon}</AppIcon>
         <div className="grid min-w-0 gap-1">
           {eyebrow ? <span className="text-sm font-semibold text-primary">{eyebrow}</span> : null}
           <h1 className="m-0 break-words text-2xl font-bold leading-8 sm:text-3xl sm:leading-[38px] text-foreground">{title}</h1>

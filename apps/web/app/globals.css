@@ -773,15 +773,6 @@ body {
 }
 .app-icon > svg { flex-shrink: 0; }
 
-/* A consistent, lively icon palette across navigation instead of one flat grey. */
-[class*="nav-icon-"] { filter: saturate(1.08); }
-.nav-icon-dashboard, .nav-icon-insights, .nav-icon-analytics { color: #2563eb; }
-.nav-icon-manage_accounts, .nav-icon-groups, .nav-icon-badge { color: #0d9488; }
-.nav-icon-admin_panel_settings, .nav-icon-workspace_premium { color: #7c3aed; }
-.nav-icon-menu_book, .nav-icon-auto_stories { color: #ea580c; }
-.nav-icon-stairs { color: #0891b2; }
-.nav-icon-help, .nav-icon-quiz, .nav-icon-fact_check { color: #db2777; }
-
 /* Semantic icon colors shared by learner pages and common controls. */
 .icon-home { color: var(--icon-home); }
 .icon-learning { color: var(--icon-learning); }

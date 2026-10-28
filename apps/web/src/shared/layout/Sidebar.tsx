@@ -6,6 +6,7 @@ import { useEffect, useState } from 'react';
 import { usePathname, useSearchParams } from 'next/navigation';
 import { combinedNavigation, teacherNavigation, type NavigationGroup, type NavigationItem } from './navigation';
 import { useAuth } from '@/features/auth/presentation';
+import { adminIconColor } from '@/shared/lib/admin-page-appearance';
 
 function NavItem({ item, isCollapsed }: { item: NavigationItem; isCollapsed?: boolean }) {
   const pathname = usePathname();
@@ -41,9 +42,7 @@ function NavItem({ item, isCollapsed }: { item: NavigationItem; isCollapsed?: bo
             : 'text-on-surface-variant hover:bg-surface-container-low hover:text-on-surface'
         }`}
       >
-        <AppIcon className={` text-[20px] transition-colors ${
-            isActive || childIsActive ? 'text-primary ' : `nav-icon-${item.icon} group-hover:scale-110`
-          }`}>
+        <AppIcon style={{ color: adminIconColor(item.icon) }} className="text-[20px] transition-transform group-hover:scale-110">
           {item.icon}
         </AppIcon>
         {item.badge ? (
@@ -71,9 +70,7 @@ function NavItem({ item, isCollapsed }: { item: NavigationItem; isCollapsed?: bo
             : 'text-on-surface-variant hover:bg-surface-container-low hover:text-on-surface'
       }`}
         >
-          <AppIcon className={` transition-colors ${level === 2 ? 'text-[16px]' : level === 1 ? 'text-[18px]' : 'text-[20px]'} ${
-              isActive ? 'text-primary ' : `nav-icon-${item.icon} group-hover:scale-110`
-            }`}>
+          <AppIcon style={{ color: adminIconColor(item.icon) }} className={`transition-transform group-hover:scale-110 ${level === 2 ? 'text-[16px]' : level === 1 ? 'text-[18px]' : 'text-[20px]'}`}>
             {item.icon}
           </AppIcon>
           <span className="truncate">{item.label}</span>
