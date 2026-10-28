@@ -21,6 +21,6 @@ export function localizeLevelFields<T>(value: T, levelContext = false): T {
     if (typeof item === 'string' && (key === 'level' || key === 'levelName' || (key === 'name' && levelContext))) {
       return [key, levelLabel(item)];
     }
-    return [key, localizeLevelFields(item, key === 'level' || key === 'levels' || (levelContext && key === 'data'))];
+    return [key, localizeLevelFields(item, key === 'level' || key === 'levels' || key === 'nextLevel' || (levelContext && key === 'data'))];
   })) as T;
 }
