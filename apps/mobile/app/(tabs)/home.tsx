@@ -1,480 +1,66 @@
-import { selectedCertificates } from '../../../../packages/shared-kernel/src/selected-certificates';
-import { LearningAgenda } from '../../src/features/learning/LearningAgenda';
-import { LearningReminder } from '../../src/shared/notifications/LearningReminder';
-import { NotificationBell } from '../../src/shared/notifications/NotificationBell';
-import { mobileRoute } from '../../src/shared/navigation';
-import { Text, TouchableOpacity } from '../../src/shared/ui/primitives';
+import { useCallback, useRef, useState } from 'react';
+import { useFocusEffect, useRouter } from 'expo-router';
+import { ActivityIndicator, ScrollView, StyleSheet, View, useWindowDimensions } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { useState, useCallback } from 'react';
-import { useRouter, useFocusEffect } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
-import { StyleSheet, View, ScrollView, ActivityIndicator } from 'react-native';
-import { MaterialIcons } from '../../src/shared/ui/AppIcon';
-import { colors, spacing } from '@techenglish/design-tokens';
 import { api } from '../../src/shared/api/api-client';
+import { Text, Button, TouchableOpacity } from '../../src/shared/ui/primitives';
+import { MaterialIcons } from '../../src/shared/ui/AppIcon';
+import { NotificationBell } from '../../src/shared/notifications/NotificationBell';
+import { homeSummary } from '../../src/shared/utils/home-summary';
+import { selectedCertificates } from '../../../../packages/shared-kernel/src/selected-certificates';
 
+type HomeData = { profile: any; journey: any; attempts: any[]; reviewWords: any[]; reviewUnavailable: boolean; attemptsUnavailable: boolean; certificates: any[] };
+const list = (response: any): any[] => Array.isArray(response?.data) ? response.data : Array.isArray(response) ? response : [];
 export default function MobileHomeScreen() {
-  const router = useRouter();
-  const insets = useSafeAreaInsets();
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState('');
-  const [userData, setUserData] = useState<any>(null);
-  const [profileData, setProfileData] = useState<any>(null);
-  const [progressData, setProgressData] = useState<any>(null);
-  const [certificates, setCertificates] = useState<any[]>([]);
-  const [journey, setJourney] = useState<any>(null);
-  const [recommendations, setRecommendations] = useState<any[]>([]);
-
-  const fetchHomeData = async () => {
-    setIsLoading(true);
-    setError('');
-    try {
-      const [meRes, profRes, progRes, journeyRes, recommendationsRes, certificatesRes] = await Promise.allSettled([
-        api.get<any>('/auth/me'),
-        api.get<any>('/learner-profiles/me'),
-        api.get<any>('/progress/me'),
-        api.get<any>('/learner-profiles/me/journey'),
-        api.get<any>('/recommendations/me'),
-        api.get<any>('/certificates'),
-      ]);
-
-      if (meRes.status === 'rejected') throw meRes.reason;
-      if (meRes.status === 'fulfilled') setUserData(meRes.value);
-      setProfileData(profRes.status === 'fulfilled' ? profRes.value : null);
-      setProgressData(progRes.status === 'fulfilled' ? progRes.value : null);
-      setJourney(journeyRes.status === 'fulfilled' ? journeyRes.value : null);
-      if (recommendationsRes.status === 'fulfilled') {
-        const items = recommendationsRes.value?.recommendations ?? [];
-        setRecommendations(Array.isArray(items) ? items.filter((item: any) => item.type !== 'lesson') : []);
-      }
-      if (certificatesRes.status === 'fulfilled') {
-        const items = certificatesRes.value?.data || certificatesRes.value || [];
-        setCertificates(Array.isArray(items) ? items : []);
-      }
-    } catch (err: any) {
-      setError(err.message || 'Không thể tải dữ liệu');
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  useFocusEffect(useCallback(() => {
-    fetchHomeData();
-  }, []));
-
-  if (isLoading) {
-    return (
-      <View style={[styles.container, { justifyContent: 'center', alignItems: 'center' }]}>
-        <ActivityIndicator size="large" color={colors.primary} />
+  const router = useRouter(); const insets = useSafeAreaInsets(); const { width } = useWindowDimensions();
+  const [data, setData] = useState<HomeData | null>(null); const [error, setError] = useState(''); const request = useRef(0);
+  const load = useCallback(async () => {
+    const current = ++request.current; setError('');
+    const results = await Promise.allSettled([
+      api.get<any>('/learner-profiles/me'), api.get<any>('/learner-profiles/me/journey'),
+      api.get<any>('/exams/attempts/my?limit=2'), api.get<any>('/vocab-study/session?reviewOnly=true&onlyNew=false'), api.get<any>('/certificates?activeOnly=true'),
+    ]);
+    if (request.current !== current) return;
+    const failure = results.slice(0, 2).find(result => result.status === 'rejected' && result.reason?.statusCode !== 404);
+    if (failure?.status === 'rejected') { setError(failure.reason?.message || 'Không thể tải trang chủ.'); return; }
+    const get = (index: number) => results[index].status === 'fulfilled' ? results[index].value : null;
+    setData({ profile: get(0), journey: get(1), attempts: list(get(2)), reviewWords: get(3)?.words ?? [], reviewUnavailable: results[3].status === 'rejected', attemptsUnavailable: results[2].status === 'rejected', certificates: list(get(4)) });
+  }, []);
+  useFocusEffect(useCallback(() => { void load(); return () => { ++request.current; }; }, [load]));
+  const summary = homeSummary(data?.journey);
+  const profile = data?.profile;
+  const domains = Array.from(new Set<string>((profile?.domains ?? []).map((item: any) => item.domain?.name).filter(Boolean)));
+  const certificates = selectedCertificates(data?.certificates ?? [], profile?.certGoals);
+  const study = () => router.push('/flashcards' as any);
+  const review = () => router.push('/flashcards?mode=review' as any);
+  const configure = () => router.push('/profile/edit' as any);
+  const reviewWords = data?.reviewWords ?? [];
+  return <View style={s.root}>
+    <StatusBar style="dark" />
+    <View style={[s.header, { paddingTop: insets.top + 10 }]}><View style={s.logo}><MaterialIcons name="terminal" size={23} color="#fff" /></View><Text style={s.brand}>TechEnglish Pro</Text><NotificationBell /></View>
+    {!data ? <View style={s.loading}>{error ? <><Text accessibilityRole="alert">{error}</Text><Button onPress={load}>Thử lại</Button></> : <ActivityIndicator color="#3525cd" />}</View> : <ScrollView contentContainerStyle={[s.content, { paddingBottom: insets.bottom + 24 }]}>
+      {!!error && <View style={s.card}><Text accessibilityRole="alert">{error}</Text><Button mode="text" onPress={load}>Thử lại</Button></View>}
+      <View style={[s.columns, width >= 850 && { flexDirection: 'row', alignItems: 'flex-start' }]}>
+        <View style={[s.main, width >= 850 && { flex: 1.8 }]}>
+          <View style={s.hero}><Text style={s.eyebrow}>TIẾP TỤC HỌC</Text><Text accessibilityRole="header" style={s.heroTitle}>{summary.title}</Text><Text style={s.heroDetail}>{data.attempts[0] ? `Gần nhất: ${data.attempts[0].exam?.title ?? data.attempts[0].examTitle ?? 'Bài kiểm tra'}` : 'Mỗi ngày một chút, tiến gần hơn đến mục tiêu của bạn.'}</Text><View style={s.actions}><TouchableOpacity onPress={!summary.configured ? configure : summary.complete ? () => router.push('/flashcards/dashboard' as any) : study} style={s.heroButton}><MaterialIcons name="play-arrow" size={17} color="#3525cd" /><Text style={s.heroButtonText}>{!summary.configured ? 'Thiết lập mục tiêu' : summary.complete ? 'Khám phá từ vựng' : 'Học tiếp'}</Text></TouchableOpacity>{summary.configured && summary.wordsLeft > 0 && <TouchableOpacity onPress={study} style={s.heroSecondary}><Text style={s.heroSecondaryText}>Học {summary.wordsLeft} từ còn lại</Text></TouchableOpacity>}</View></View>
+          <View style={s.card}><View style={s.sectionHeader}><View style={{ flex: 1 }}><Text accessibilityRole="header" style={s.title}>Mục tiêu hôm nay</Text><Text style={s.caption}>{summary.configured ? `Mục tiêu bài thi: ${summary.targets.examsPerWeek} bài mỗi tuần` : 'Thiết lập mục tiêu phù hợp với lịch học của bạn.'}</Text></View><TouchableOpacity accessibilityLabel="Điều chỉnh mục tiêu" onPress={configure} style={s.smallButton}><MaterialIcons name="settings" size={16} color="#3525cd" /><Text style={s.link}>{summary.configured ? 'Điều chỉnh' : 'Thiết lập'}</Text></TouchableOpacity></View>
+            {summary.configured ? <><View style={s.metricGrid}>{summary.metrics.map((metric, index) => <View key={metric.label} style={[s.metric, index === 2 && { flexBasis: '100%' }]}><Text style={s.caption}>{metric.label}</Text><Text><Text style={s.metricValue}>{metric.value}</Text><Text style={s.caption}>/{metric.target} {metric.unit}</Text></Text><View accessibilityRole="progressbar" accessibilityLabel={metric.label} accessibilityValue={{ min: 0, max: 100, now: metric.percent }} style={s.track}><View style={[s.fill, { width: `${metric.percent}%` }]} /></View><View style={s.metricFoot}><Text style={s.link}>{metric.percent}%</Text><Text style={s.caption}>{metric.value >= metric.target ? 'Đã đạt mục tiêu' : `Còn ${Math.max(0, metric.target - metric.value)} ${metric.unit}`}</Text></View></View>)}</View><TouchableOpacity onPress={() => router.push('/(tabs)/progress' as any)}><Text style={s.caption}>Mục tiêu dài hạn ({summary.targets.examsPerMonth} bài/tháng, {summary.targets.examsPerYear} bài/năm) xem tại <Text style={s.link}>Tiến độ</Text>.</Text></TouchableOpacity>{summary.targets.reminderEnabled && summary.targets.reminderTime && <Text style={s.link}>Nhắc học lúc {summary.targets.reminderTime} mỗi ngày</Text>}</> : <Button onPress={configure}>Thiết lập lộ trình học tập</Button>}
+          </View>
+          <View style={s.card}><View style={s.sectionHeader}><Text accessibilityRole="header" style={[s.title, { flex: 1 }]}>Từ cần ôn hôm nay</Text>{reviewWords.length > 0 && <TouchableOpacity onPress={review} style={s.smallButton}><Text style={s.link}>Ôn tập ngay</Text><MaterialIcons name="arrow-forward" size={16} color="#3525cd" /></TouchableOpacity>}</View>{reviewWords.length ? <View style={s.metricGrid}>{reviewWords.slice(0, 4).map(word => <TouchableOpacity key={word.id} onPress={review} style={s.word}><Text style={{ fontWeight: '700' }}>{word.term}</Text><Text style={s.caption}>{word.definitionVi || word.definitionEn}</Text></TouchableOpacity>)}</View> : <View style={s.inset}><Text style={s.caption}>{data.reviewUnavailable ? 'Chưa tải được danh sách từ cần ôn. Bạn có thể mở phần ôn tập để thử lại.' : 'Hôm nay chưa có từ đến hạn ôn. Tiếp tục học từ mới để duy trì tiến độ nhé.'}</Text><Button mode="text" onPress={data.reviewUnavailable ? review : study}>{data.reviewUnavailable ? 'Mở ôn tập' : 'Khám phá từ vựng'}</Button></View>}</View>
+          {certificates.length > 0 && <View style={s.card}><Text accessibilityRole="header" style={s.title}>Lộ trình chứng chỉ</Text>{certificates.map(cert => <Button key={cert.id} mode="outlined" icon="route" onPress={() => router.push(`/certifications/${cert.id}` as any)}>{cert.name}</Button>)}</View>}
+        </View>
+        <View style={[s.main, width >= 850 && { flex: 1 }]}>
+          <View style={s.card}><Text accessibilityRole="header" style={s.title}>Hồ sơ học tập</Text>{[{ label: 'Trình độ', value: profile?.level?.name }, { label: 'Chuyên ngành CNTT', value: domains.join(', ') }, { label: 'Mục tiêu chứng chỉ', value: profile?.certGoals?.map((item: any) => item.certificate?.name).filter(Boolean).join(', ') }].map(item => <View key={item.label} style={s.profileRow}><Text style={[s.caption, { flex: 1 }]}>{item.label}</Text><Text style={s.profileValue}>{item.value || 'Chưa thiết lập'}</Text></View>)}<Button mode="outlined" onPress={configure}>Cập nhật hồ sơ</Button></View>
+          <View style={s.card}><View style={s.sectionHeader}><Text accessibilityRole="header" style={[s.title, { flex: 1 }]}>Kết quả kiểm tra gần đây</Text><TouchableOpacity onPress={() => router.push('/(tabs)/progress' as any)}><Text style={s.link}>Tất cả</Text></TouchableOpacity></View>{data.attempts.length ? data.attempts.slice(0, 2).map(attempt => <View key={attempt.id} style={s.inset}><View style={s.sectionHeader}><Text style={{ flex: 1, fontWeight: '600' }}>{attempt.exam?.title ?? attempt.examTitle ?? 'Bài kiểm tra'}</Text><Text style={s.score}>{attempt.scorePercent != null ? `${Math.round(attempt.scorePercent)}%` : attempt.score != null ? `${attempt.score}/${attempt.totalQuestions ?? 100}` : 'Chưa chấm'}</Text></View><View style={s.actions}><Button mode="outlined" onPress={() => router.push(`/test-result/${attempt.id}` as any)}>Xem kết quả</Button>{(attempt.exam?.id || attempt.examId) && <Button onPress={() => router.push(`/quiz/${attempt.exam?.id ?? attempt.examId}` as any)}>Làm lại</Button>}</View></View>) : <View style={s.inset}><Text style={s.caption}>{data.attemptsUnavailable ? 'Chưa tải được kết quả kiểm tra. Vui lòng thử lại.' : 'Bạn chưa có kết quả kiểm tra.'}</Text><Button mode="text" onPress={data.attemptsUnavailable ? load : () => router.push('/(tabs)/certificates' as any)}>{data.attemptsUnavailable ? 'Thử lại' : 'Khám phá bài thi'}</Button></View>}</View>
+        </View>
       </View>
-    );
-  }
-
-  if (error) {
-    return (
-      <View style={[styles.container, { justifyContent: 'center', alignItems: 'center' }]}>
-        <Text style={{ color: '#dc2626', marginBottom: 16 }}>{error}</Text>
-        <TouchableOpacity style={[styles.continueButton, { paddingHorizontal: 24 }]} onPress={fetchHomeData}>
-          <Text style={styles.continueButtonText}>Thử lại</Text>
-        </TouchableOpacity>
-      </View>
-    );
-  }
-
-  const name = userData?.displayName || 'Bạn';
-  const avatarLetter = name.charAt(0).toUpperCase();
-
-  const chosenCertificates = selectedCertificates(certificates, profileData?.certGoals);
-  const journeyConfigured = journey?.configured === true;
-  const smartPath = journey?.targets?.learningPathMode !== 'self';
-
-  const openRecommendation = (item: any) => {
-    router.push(mobileRoute(String(item?.actionUrl || '/learn')) as any);
-  };
-
-  return (
-    <View style={styles.container}>
-      <StatusBar style="dark" />
-
-      {/* Top Header Fixed */}
-      <View style={[styles.headerContainer, { paddingTop: insets.top + 16 }]}>
-        <View style={styles.headerLeft}>
-          <View style={styles.avatarBoxSmall}>
-            <Text style={styles.avatarTextSmall}>{avatarLetter}</Text>
-          </View>
-          <View style={{ flex: 1 }}>
-            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
-              <Text style={styles.greetingTitle}>Chào {name}</Text>
-              <Text style={{ fontSize: 16 }}>👋</Text>
-              {profileData?.level?.name ? (
-                <View style={styles.userLevelBadge}>
-                  <Text style={styles.userLevelBadgeText}>{profileData.level.name}</Text>
-                </View>
-              ) : null}
-            </View>
-            <Text style={styles.greetingSubtitle}>Sẵn sàng học bài mới chưa?</Text>
-          </View>
-        </View>
-        <NotificationBell />
-      </View>
-
-      <ScrollView contentContainerStyle={styles.contentContainer} showsVerticalScrollIndicator={false}>
-
-        <View style={styles.profileSummary}>
-          <View style={styles.summaryHeader}><Text style={styles.summaryTitle}>Hồ sơ học tập</Text><TouchableOpacity accessibilityLabel="Chỉnh sửa mục tiêu học tập" onPress={() => router.push('/profile/edit')}><MaterialIcons name="edit" size={20} color={colors.primary} /></TouchableOpacity></View>
-          {[
-            { label: 'Trình độ', value: profileData?.level?.name, icon: 'school' },
-            { label: 'Chuyên ngành', value: profileData?.domains?.map((item: any) => item.domain?.name).filter(Boolean).join(', '), icon: 'language' },
-            { label: 'Mục tiêu', value: profileData?.certGoals?.map((item: any) => item.certificate?.name).filter(Boolean).join(', '), icon: 'workspace-premium' },
-          ].map(item => <View key={item.label} style={styles.summaryRow}><MaterialIcons name={item.icon as keyof typeof MaterialIcons.glyphMap} size={20} color="#6054c8" /><View style={{ flex: 1 }}><Text style={styles.summaryLabel}>{item.label}</Text><Text style={styles.summaryValue}>{item.value || 'Chưa thiết lập'}</Text></View></View>)}
-        </View>
-
-        <LearningReminder />
-        <LearningAgenda />
-        {!journeyConfigured ? (
-          <View style={styles.setupCard}>
-            <View style={styles.setupIcon}><MaterialIcons name="route" size={26} color={colors.primary} /></View>
-            <Text style={styles.setupTitle}>Bạn chưa thiết lập lộ trình học tập</Text>
-            <Text style={styles.setupDescription}>Thiết lập trình độ, chuyên ngành CNTT và mục tiêu học để cá nhân hóa lộ trình.</Text>
-            <TouchableOpacity style={styles.setupButton} onPress={() => router.push('/profile/edit' as any)}>
-              <Text style={styles.setupButtonText}>Thiết lập lộ trình</Text>
-              <MaterialIcons name="arrow-forward" size={18} color="#ffffff" />
-            </TouchableOpacity>
-          </View>
-        ) : chosenCertificates.map(certificate => {
-          const certificateProgress = (progressData?.certProgress || []).find((item: any) => item.certificateId === certificate.id);
-          const progressPercent = Math.min(100, Math.max(0, Math.round(certificateProgress?.completionPercent ?? 0)));
-          return (
-        <View key={certificate.id} style={styles.heroCard}>
-          <View style={styles.heroCardHeader}>
-            <View style={styles.heroBadge}>
-              <MaterialIcons name="workspace-premium" size={12} color="#ffffff" />
-              <Text style={styles.heroBadgeText}>{progressPercent > 0 ? 'Đang ôn luyện' : 'Chứng chỉ mục tiêu'}</Text>
-            </View>
-            <Text style={styles.heroTimeText}>{certificate.code}</Text>
-          </View>
-          <Text style={styles.heroTitle}>{certificate.name}</Text>
-          <Text style={styles.heroSubtitle}>
-            {certificate.provider || 'Chứng chỉ CNTT quốc tế'}
-          </Text>
-
-          <View style={styles.heroProgressContainer}>
-            <View style={styles.heroProgressLabels}>
-              <Text style={styles.heroProgressLabelText}>Tiến độ học tập</Text>
-              <Text style={styles.heroProgressValueText}>{progressPercent}%</Text>
-            </View>
-
-          </View>
-
-          <TouchableOpacity
-            style={styles.heroButton}
-            activeOpacity={0.9}
-            onPress={() => router.push({ pathname: '/certifications/[id]', params: { id: certificate.id, name: certificate.name, code: certificate.code, progress: String(progressPercent) } } as any)}
-          >
-            <Text style={styles.heroButtonText}>{progressPercent > 0 ? 'Tiếp tục ôn luyện' : 'Xem lộ trình'}</Text>
-            <MaterialIcons name="arrow-forward" size={18} color={colors.primary} />
-          </TouchableOpacity>
-        </View>
-        ); })}
-
-        {journeyConfigured && <View style={styles.dailyGoalCard}>
-          <Text style={styles.sectionTitle}>Mục tiêu học tập hôm nay</Text>
-          {[
-            { label: 'Từ vựng hôm nay', value: journey.progress?.vocabularyToday, target: journey.targets?.vocabularyPerDay, percent: journey.progress?.vocabularyPercent },
-            { label: 'Phút học hôm nay', value: journey.progress?.studyMinutesToday, target: journey.targets?.minutesPerDay, percent: journey.progress?.studyMinutesPercent },
-            { label: 'Bài thi tuần này', value: journey.progress?.examsWeek, target: journey.targets?.examsPerWeek, percent: journey.progress?.examWeekPercent },
-          ].map(goal => <View key={goal.label} style={{ marginTop: 12 }}>
-            <View style={styles.dailyGoalHeader}>
-              <Text style={styles.dailyGoalDesc}>{goal.label}: {goal.value ?? 0}/{goal.target ?? 0}</Text>
-              <Text style={styles.dailyGoalBadgeText}>{Math.round(goal.percent ?? 0)}%</Text>
-            </View>
-            <View style={[styles.heroProgressBarBg, { backgroundColor: '#e6e8ea' }]}>
-              <View style={[styles.heroProgressBarFill, { backgroundColor: colors.primary, width: `${Math.min(100, Math.max(0, goal.percent ?? 0))}%` }]} />
-            </View>
-          </View>)}
-          {journey.targets?.reminderEnabled && journey.targets?.reminderTime && <Text style={[styles.dailyGoalDesc, { marginTop: 12 }]}>Nhắc học lúc {journey.targets.reminderTime} mỗi ngày</Text>}
-          <TouchableOpacity style={styles.setupButton} onPress={() => router.push('/profile/edit')}>
-            <Text style={styles.setupButtonText}>Điều chỉnh mục tiêu</Text>
-          </TouchableOpacity>
-        </View>}
-
-        {journeyConfigured && smartPath && recommendations.length > 0 && (
-          <View style={styles.sectionContainer}>
-            <View style={styles.sectionHeader}><Text style={styles.sectionTitle}>Gợi ý dành cho bạn</Text></View>
-            <View style={{ gap: spacing.sm }}>
-              {recommendations.slice(0, 3).map((item: any) => (
-                <TouchableOpacity key={item.id} style={styles.recommendationCard} onPress={() => openRecommendation(item)}>
-                  <View style={styles.recommendationIcon}><MaterialIcons name={item.type === 'exam' ? 'quiz' : item.type === 'vocab' ? 'style' : 'auto-stories'} size={20} color={colors.primary} /></View>
-                  <View style={{ flex: 1 }}><Text style={styles.recommendationTitle} numberOfLines={2}>{item.title}</Text><Text style={styles.recommendationReason} numberOfLines={2}>{item.reason}</Text></View>
-                  <MaterialIcons name="arrow-forward-ios" size={16} color="#777587" />
-                </TouchableOpacity>
-              ))}
-            </View>
-          </View>
-        )}
-
-        <View style={styles.sectionContainer}>
-          <View style={styles.sectionHeader}><Text style={styles.sectionTitle}>Kết quả kiểm tra gần đây</Text></View>
-          <View style={{ gap: spacing.sm }}>
-            {(progressData?.recentAttempts ?? []).slice(0, 3).map((attempt: any) => (
-              <TouchableOpacity key={attempt.id} style={styles.recommendationCard} onPress={() => router.push(`/test-result/${attempt.id}` as any)}>
-                <MaterialIcons name="assignment" size={24} color={colors.primary} />
-                <View style={{ flex: 1 }}>
-                  <Text style={styles.recommendationTitle}>{attempt.exam?.title ?? 'Bài thi chứng chỉ'}</Text>
-                  <Text style={styles.recommendationReason}>{new Date(attempt.submittedAt || attempt.startedAt).toLocaleDateString('vi-VN')} · Xem kết quả</Text>
-                </View>
-                <Text style={styles.dailyGoalBadgeText}>{attempt.scorePercent == null ? 'Chờ chấm' : `${Math.round(attempt.scorePercent)}%`}</Text>
-              </TouchableOpacity>
-            ))}
-            {progressData && !progressData.recentAttempts?.length && <Text style={styles.dailyGoalDesc}>Bạn chưa có kết quả bài kiểm tra.</Text>}
-          </View>
-        </View>
-        <TouchableOpacity style={styles.recommendationCard} onPress={() => router.push('/certifications')}>
-          <MaterialIcons name="workspace-premium" size={28} color={colors.primary} />
-          <View style={{ flex: 1 }}>
-            <Text style={styles.recommendationTitle}>Khám phá chứng chỉ</Text>
-            <Text style={styles.recommendationReason}>Học kiến thức theo chủ đề và luyện thi thử.</Text>
-          </View>
-          <MaterialIcons name="chevron-right" size={24} color={colors.primary} />
-        </TouchableOpacity>
-
-
-      </ScrollView>
-    </View>
-  );
+    </ScrollView>}
+  </View>;
 }
-
-const styles = StyleSheet.create({
-  profileSummary: { backgroundColor: '#ffffff', borderWidth: 1, borderColor: '#e4e8f1', borderRadius: 22, paddingHorizontal: 20, paddingBottom: 20, gap: 14 },
-  summaryHeader: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 12 }, summaryTitle: { fontSize: 19, fontWeight: '700', color: '#17213a' }, summaryRow: { flexDirection: 'row', gap: 12, alignItems: 'center' }, summaryLabel: { fontSize: 13, color: '#59657c' }, summaryValue: { fontSize: 15, fontWeight: '600', color: '#17213a', marginTop: 2 },
-  container: {
-    flex: 1,
-    backgroundColor: '#f7f8fc'
-  },
-  headerContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingHorizontal: spacing.md,
-    paddingTop: 60,
-    paddingBottom: spacing.md,
-    backgroundColor: '#ffffff',
-    borderBottomWidth: 1,
-    borderBottomColor: '#e0e3e5',
-    elevation: 0,
-    shadowColor: '#0f1718',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0,
-    shadowRadius: 3,
-  },
-  headerLeft: {
-    flex: 1,
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: spacing.sm,
-  },
-  avatarBoxSmall: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: colors.primary,
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderWidth: 1,
-    borderColor: '#DDD6FE',
-  },
-  avatarTextSmall: {
-    color: '#ffffff',
-    fontSize: 16,
-    fontWeight: '800'
-  },
-  greetingTitle: {
-    fontSize: 18,
-    fontWeight: '700',
-    color: '#191c1e',
-  },
-  greetingSubtitle: {
-    fontSize: 14,
-    color: '#464555',
-    marginTop: 2,
-  },
-  contentContainer: {
-    padding: spacing.md,
-    paddingBottom: 80,
-    gap: spacing.lg
-  },
-  heroCard: {
-    backgroundColor: '#4F46E5', // Fallback for gradient
-    borderRadius: 12,
-    padding: spacing.md,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.1,
-    shadowRadius: 6,
-    elevation: 4,
-  },
-  setupCard: { backgroundColor: '#ffffff', borderWidth: 1, borderColor: '#ddd6fe', borderRadius: 20, padding: spacing.lg, alignItems: 'center' },
-  setupIcon: { width: 52, height: 52, borderRadius: 26, backgroundColor: '#ede9fe', alignItems: 'center', justifyContent: 'center', marginBottom: spacing.sm },
-  setupTitle: { fontSize: 18, fontWeight: '800', color: '#191c1e', textAlign: 'center' },
-  setupDescription: { marginTop: 8, fontSize: 14, lineHeight: 19, color: '#5f5d6d', textAlign: 'center' },
-  setupButton: { marginTop: spacing.md, minHeight: 44, paddingHorizontal: spacing.md, borderRadius: 10, backgroundColor: colors.primary, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8 },
-  setupButtonText: { color: '#ffffff', fontSize: 14, fontWeight: '700' },
-  heroCardHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: spacing.xs,
-  },
-  heroBadge: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: 'rgba(255,255,255,0.1)',
-    paddingHorizontal: 8,
-    paddingVertical: 2,
-    borderRadius: 12,
-    gap: 4,
-  },
-  heroBadgeText: {
-    fontSize: 11,
-    fontWeight: '600',
-    color: '#ffffff',
-    textTransform: 'uppercase',
-    letterSpacing: 0.5,
-  },
-  heroTimeText: {
-    fontSize: 14,
-    fontWeight: '500',
-    color: 'rgba(255,255,255,0.9)',
-  },
-  heroTitle: {
-    fontSize: 18,
-    fontWeight: '700',
-    color: '#ffffff',
-    marginBottom: 4,
-  },
-  heroSubtitle: {
-    fontSize: 14,
-    color: 'rgba(255,255,255,0.8)',
-    marginBottom: spacing.sm,
-  },
-  heroProgressContainer: {
-    marginBottom: spacing.md,
-  },
-  heroProgressLabels: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 4,
-  },
-  heroProgressLabelText: {
-    fontSize: 14,
-    color: 'rgba(255,255,255,0.8)',
-  },
-  heroProgressValueText: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: '#ffffff',
-  },
-  heroProgressBarBg: {
-    height: 8,
-    backgroundColor: 'rgba(255,255,255,0.2)',
-    borderRadius: 4,
-    overflow: 'hidden',
-  },
-  heroProgressBarFill: {
-    height: '100%',
-    backgroundColor: '#ffffff',
-    borderRadius: 4,
-  },
-  heroButton: {
-    backgroundColor: '#ffffff',
-    height: 44,
-    borderRadius: 8,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: spacing.xs,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.05,
-    shadowRadius: 2,
-    elevation: 0,
-  },
-  heroButtonText: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: colors.primary,
-  },
-  dailyGoalCard: {
-    backgroundColor: '#ffffff',
-    borderWidth: 1,
-    borderColor: '#E0E3E5',
-    borderRadius: 12,
-    padding: spacing.md,
-    shadowColor: '#0f1718',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0,
-    shadowRadius: 3,
-    elevation: 0,
-  },
-  dailyGoalHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: spacing.sm,
-  },
-  dailyGoalBadgeText: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: colors.primary,
-  },
-  dailyGoalDesc: {
-    fontSize: 14,
-    color: '#464555',
-    flex: 1,
-  },
-  sectionContainer: {
-    width: '100%',
-  },
-  sectionHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: spacing.sm,
-  },
-  sectionTitle: {
-    fontSize: 16,
-    fontWeight: '700',
-    color: '#191c1e',
-  },
-  recommendationCard: { minHeight: 84, flexDirection: 'row', alignItems: 'center', gap: spacing.sm, padding: spacing.sm, borderWidth: 1, borderColor: '#ddd6fe', borderRadius: 12, backgroundColor: '#ffffff' },
-  recommendationIcon: { width: 40, height: 40, borderRadius: 10, backgroundColor: '#ede9fe', alignItems: 'center', justifyContent: 'center' },
-  recommendationTitle: { fontSize: 14, fontWeight: '700', color: '#191c1e' },
-  recommendationReason: { marginTop: 3, fontSize: 11, lineHeight: 16, color: '#5f5d6d' },
-  continueButton: {
-    backgroundColor: colors.primary,
-    height: 44,
-    borderRadius: 10,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginTop: spacing.xs
-  },
-  continueButtonText: {
-    color: colors.onPrimary,
-    fontSize: 14,
-    fontWeight: '700'
-  },
-  userLevelBadge: {
-    backgroundColor: '#EDE7F6',
-    paddingHorizontal: 8,
-    paddingVertical: 2,
-    borderRadius: 6,
-  },
-  userLevelBadgeText: {
-    fontSize: 11,
-    fontWeight: '700',
-    color: colors.primary,
-  },
+const s = StyleSheet.create({
+  root: { flex: 1, backgroundColor: '#f7f8fc' }, header: { flexDirection: 'row', alignItems: 'center', gap: 10, backgroundColor: '#fff', borderBottomWidth: 1, borderBottomColor: '#e4e1ef', paddingHorizontal: 20, paddingBottom: 12 }, logo: { backgroundColor: '#3525cd', width: 36, height: 36, borderRadius: 12, alignItems: 'center', justifyContent: 'center' }, brand: { flex: 1, color: '#3525cd', fontSize: 18, fontWeight: '800' }, loading: { flex: 1, justifyContent: 'center', alignItems: 'center', gap: 20, padding: 24 }, content: { padding: 16, gap: 16 }, columns: { gap: 16 }, main: { gap: 16, minWidth: 0 },
+  card: { borderWidth: 1, borderColor: '#e1deec', borderRadius: 18, backgroundColor: '#fff', padding: 18, gap: 16 }, sectionHeader: { flexDirection: 'row', alignItems: 'center', gap: 12 }, title: { fontSize: 18, fontWeight: '700', color: '#17213a' }, caption: { fontSize: 13, color: '#59657c', lineHeight: 20 }, link: { color: '#3525cd', fontSize: 13, fontWeight: '600' },
+  hero: { backgroundColor: '#3525cd', borderRadius: 18, padding: 22, gap: 12 }, eyebrow: { color: '#e4e1ff', fontSize: 11, fontWeight: '700', letterSpacing: 1 }, heroTitle: { color: '#fff', fontSize: 24, fontWeight: '800', lineHeight: 34 }, heroDetail: { color: '#e4e1ff', fontSize: 13 }, actions: { flexDirection: 'row', flexWrap: 'wrap', gap: 10, alignItems: 'center' }, heroButton: { minHeight: 46, borderRadius: 10, backgroundColor: '#fff', paddingHorizontal: 16, flexDirection: 'row', gap: 8, alignItems: 'center' }, heroButtonText: { color: '#3525cd', fontWeight: '700', fontSize: 14 }, heroSecondary: { minHeight: 46, borderRadius: 10, borderWidth: 1, borderColor: '#aaa2ec', paddingHorizontal: 14 }, heroSecondaryText: { color: '#fff', fontSize: 13, fontWeight: '600' }, smallButton: { borderWidth: 1, borderColor: '#d8d5e8', borderRadius: 9, paddingHorizontal: 10, minHeight: 44, flexDirection: 'row', alignItems: 'center', gap: 6 },
+  metricGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 10 }, metric: { flexGrow: 1, flexBasis: '45%', minWidth: 120, backgroundColor: '#f7f8fc', borderWidth: 1, borderColor: '#e4e1ef', borderRadius: 12, padding: 12, gap: 8 }, metricValue: { color: '#3525cd', fontSize: 26, fontWeight: '700' }, metricFoot: { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'space-between', gap: 4 }, track: { height: 6, backgroundColor: '#e1e3e8', borderRadius: 6, overflow: 'hidden' }, fill: { height: 6, backgroundColor: '#3525cd', borderRadius: 6 }, word: { flexGrow: 1, flexBasis: '45%', borderWidth: 1, borderColor: '#e4e1ef', borderRadius: 12, padding: 12, gap: 4 }, inset: { borderWidth: 1, borderColor: '#e4e1ef', borderRadius: 12, padding: 14, gap: 12 }, profileRow: { flexDirection: 'row', alignItems: 'flex-start', justifyContent: 'space-between', gap: 12 }, profileValue: { flex: 1.3, textAlign: 'right', fontSize: 13, fontWeight: '600', color: '#3525cd' }, score: { backgroundColor: '#eeecff', color: '#3525cd', borderRadius: 10, paddingHorizontal: 8, paddingVertical: 4, fontSize: 12, fontWeight: '700' },
 });
-

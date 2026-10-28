@@ -15,9 +15,9 @@ import { api } from '../../src/shared/api/api-client';
 const TYPES: Record<string, { label: string; detail: string; action: string; icon: keyof typeof MaterialIcons.glyphMap }> = {
   terminology: { label: 'Thuật ngữ chuyên ngành', detail: 'Định nghĩa, ngữ cảnh và cách dùng', action: 'Khám phá thuật ngữ', icon: 'translate' },
   technical_reading: { label: 'Đọc hiểu kỹ thuật', detail: 'Tài liệu, ý chính và câu hỏi đọc hiểu', action: 'Bắt đầu đọc', icon: 'article' },
-  api_documentation: { label: 'Tài liệu API', detail: 'Endpoint, request, response và lỗi', action: 'Phân tích API', icon: 'api' },
-  system_design: { label: 'System Design', detail: 'Yêu cầu, kiến trúc và đánh đổi', action: 'Phân tích thiết kế', icon: 'account-tree' },
-  case_study: { label: 'Case study thực tế', detail: 'Bối cảnh, nhiệm vụ và giải pháp', action: 'Xử lý tình huống', icon: 'work' },
+  api_documentation: { label: 'Tài liệu API', detail: 'Đường dẫn, yêu cầu, phản hồi và lỗi', action: 'Phân tích API', icon: 'api' },
+  system_design: { label: 'Thiết kế hệ thống', detail: 'Yêu cầu, kiến trúc và đánh đổi', action: 'Phân tích thiết kế', icon: 'account-tree' },
+  case_study: { label: 'Tình huống thực tế', detail: 'Bối cảnh, nhiệm vụ và giải pháp', action: 'Xử lý tình huống', icon: 'work' },
 };
 export default function LessonList({ embedded = false }: { embedded?: boolean }) {
   const { height: windowHeight } = useWindowDimensions();
@@ -63,7 +63,6 @@ export default function LessonList({ embedded = false }: { embedded?: boolean })
       </Card>)}
       {!filtered.length && <View style={s.state}><EmptyState icon="search" title="Chưa tìm thấy bài học" detail="Thử từ khóa khác hoặc mở rộng bộ lọc để khám phá thêm nội dung." />{scope === 'path' && <Button onPress={() => setScope('all')}>Xem tất cả bài học</Button>}</View>}
     </View>}
-    {!type && scope === 'all' && <View style={{ marginTop: 28 }}><LearningActivities /></View>}
     <Portal><Dialog visible={filtersOpen} onDismiss={() => setFiltersOpen(false)} style={s.dialog}>
       <Dialog.Title>Lọc bài học</Dialog.Title>
       <Dialog.ScrollArea style={{ maxHeight: windowHeight * 0.5, paddingHorizontal: 0 }}><ScrollView keyboardShouldPersistTaps="handled" contentContainerStyle={s.filterFields}>

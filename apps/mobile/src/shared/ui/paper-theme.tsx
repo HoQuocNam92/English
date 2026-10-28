@@ -2,6 +2,8 @@ import { MD3LightTheme, PaperProvider, configureFonts } from 'react-native-paper
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { colors } from '@techenglish/design-tokens';
 import type { ReactNode } from 'react';
+import { interFontStyle } from './font-styles';
+import { MaterialIcons, hasAppIcon } from './AppIcon';
 
 export const mobileTheme = {
   ...MD3LightTheme,
@@ -25,9 +27,9 @@ export const mobileTheme = {
     error: '#ba1a1a',
     elevation: { ...MD3LightTheme.colors.elevation, level1: '#ffffff', level2: '#f5f4ff' },
   },
-  fonts: configureFonts({ config: { fontFamily: 'Inter', letterSpacing: 0 } }),
+  fonts: configureFonts({ config: Object.fromEntries(Object.entries(MD3LightTheme.fonts).map(([variant, font]) => [variant, { ...font, ...interFontStyle('fontWeight' in font ? font.fontWeight : '400'), letterSpacing: 0 }])) }),
 };
 
 export function MobileUIProvider({ children }: { children: ReactNode }) {
-  return <PaperProvider theme={mobileTheme} settings={{ icon: props => <MaterialCommunityIcons {...props} name={props.name as keyof typeof MaterialCommunityIcons.glyphMap} /> }}>{children}</PaperProvider>;
+  return <PaperProvider theme={mobileTheme} settings={{ icon: props => hasAppIcon(props.name) ? <MaterialIcons {...props} name={props.name as keyof typeof MaterialIcons.glyphMap} /> : <MaterialCommunityIcons {...props} name={props.name as keyof typeof MaterialCommunityIcons.glyphMap} /> }}>{children}</PaperProvider>;
 }

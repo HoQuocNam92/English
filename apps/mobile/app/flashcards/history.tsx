@@ -35,7 +35,7 @@ export default function FlashcardHistoryScreen() {
 
   useEffect(() => { void load(); }, [period, rating, page, limit]);
 
-  return <FeatureScreen title="Từ đã học" subtitle="Chạm vào từ để xem lại flashcard" loading={false} error={error} onRetry={load}>
+  return <FeatureScreen title="Từ đã học" subtitle="Chạm vào từ để xem lại thẻ từ" loading={false} error={error} onRetry={load}>
     <Text style={[styles.label, { color: colors.onSurface }]}>Thời gian</Text>
     <View style={styles.chips}>{PERIODS.map(([value, label]) => <TouchableOpacity key={value} onPress={() => { setPeriod(value); setPage(1); }} style={[styles.chip, { borderColor: colors.outlineVariant }, period === value && { backgroundColor: colors.primary, borderColor: colors.primary }]}><Text style={[styles.chipText, { color: period === value ? '#fff' : colors.onSurfaceVariant }]}>{label}</Text></TouchableOpacity>)}</View>
     <Text style={[styles.label, { color: colors.onSurface }]}>Độ khó gần nhất</Text>

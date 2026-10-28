@@ -1,3 +1,4 @@
+import { featureIconColor } from '../../src/shared/ui/icon-colors';
 import { RequiredMark } from '../../src/shared/ui/RequiredMark';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Text, TouchableOpacity } from '../../src/shared/ui/primitives';
@@ -12,7 +13,7 @@ import { colors, spacing } from '@techenglish/design-tokens';
 type Goal = 'certification' | 'vocabulary';
 
 const OPTIONS: Array<{ id: Goal; title: string; description: string; icon: keyof typeof MaterialIcons.glyphMap }> = [
-  { id: 'certification', title: 'Luyện chứng chỉ CNTT', description: 'Học theo Chuyên ngành, Chủ đề, từ vựng và Quiz của chứng chỉ.', icon: 'workspace-premium' },
+  { id: 'certification', title: 'Luyện chứng chỉ CNTT', description: 'Học theo Chuyên ngành, Chủ đề, từ vựng và bài luyện tập của chứng chỉ.', icon: 'workspace-premium' },
   { id: 'vocabulary', title: 'Luyện từ vựng CNTT', description: 'Tập trung từ vựng theo chuyên ngành.', icon: 'translate' },
 ];
 
@@ -42,7 +43,7 @@ export default function OnboardingGoalScreen() {
       {OPTIONS.map(item => {
         const active = selected === item.id;
         return <TouchableOpacity key={item.id} style={[styles.card, active && styles.cardActive]} onPress={() => setSelected(item.id)} activeOpacity={0.8}>
-          <View style={[styles.icon, active && styles.iconActive]}><MaterialIcons name={item.icon} size={26} color={active ? '#fff' : colors.primary} /></View>
+          <View style={[styles.icon, { backgroundColor: `${featureIconColor(item.icon)}14` }]}><MaterialIcons name={item.icon} size={26} color={featureIconColor(item.icon)} /></View>
           <View style={styles.copy}><Text style={styles.cardTitle}>{item.title}</Text><Text style={styles.cardDescription}>{item.description}</Text></View>
           <MaterialIcons name={active ? 'check-circle' : 'radio-button-unchecked'} size={22} color={active ? colors.primary : colors.outline} />
         </TouchableOpacity>;

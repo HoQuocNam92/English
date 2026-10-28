@@ -3,8 +3,9 @@ import { NotificationHistoryProvider } from '../src/shared/notifications/Notific
 import { Platform } from 'react-native';
 import { MobileUIProvider } from '../src/shared/ui/paper-theme';
 import { TranslationProvider } from '../src/shared/ui/TranslationProvider';
-import { Feather, MaterialIcons, MaterialCommunityIcons } from '@expo/vector-icons';
+import { MaterialIcons, MaterialCommunityIcons } from '@expo/vector-icons';
 import { useFonts } from 'expo-font';
+import { interFonts } from '../src/shared/ui/font-assets';
 import { Stack } from 'expo-router';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { AuthProvider } from '../src/shared/store/auth-context';
@@ -23,7 +24,7 @@ if (!isExpoGo && Platform.OS !== 'web') {
 }
 
 export default function RootLayout() {
-  const [fontsLoaded, fontError] = useFonts({ Inter: require('../assets/fonts/Inter.ttf'), ...Feather.font, ...MaterialIcons.font, ...MaterialCommunityIcons.font });
+  const [fontsLoaded, fontError] = useFonts({ ...interFonts, ...MaterialIcons.font, ...MaterialCommunityIcons.font });
   if (!fontsLoaded && !fontError) return null;
   return (
     <SafeAreaProvider>

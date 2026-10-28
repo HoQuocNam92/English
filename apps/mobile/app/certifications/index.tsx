@@ -44,6 +44,6 @@ export default function MobileCertificationsScreen({ embedded = false }: { embed
         <Button style={started(cert.id) ? { backgroundColor: '#047857' } : undefined} icon="route" onPress={() => open(cert, matchedExams.length === 1 ? matchedExams[0].id : undefined)}>{matchedExams.length === 1 ? 'Mở bài kiểm tra' : started(cert.id) ? 'Tiếp tục ôn' : 'Xem lộ trình'}</Button>
       </View>;
     })}
-    {!filtered.length && <EmptyState icon="workspace-premium" title={certificates.length ? 'Không có chứng chỉ phù hợp' : 'Chưa có chứng chỉ đang hoạt động'} detail="Thử đổi từ khóa hoặc xóa bộ lọc." />}</View>
+    {!filtered.length && <EmptyState icon="workspace-premium" title={certificates.length ? filter === 'started' ? 'Bạn chưa bắt đầu chứng chỉ nào' : 'Không có chứng chỉ phù hợp' : 'Chưa có chứng chỉ đang hoạt động'} detail={certificates.length ? 'Thử đổi từ khóa hoặc xóa bộ lọc để xem các chứng chỉ khác.' : 'Chứng chỉ sẽ xuất hiện tại đây khi được xuất bản.'}>{Boolean(search || filter) && <Button mode="outlined" onPress={() => { setSearch(''); setFilter(''); }}>Xóa bộ lọc</Button>}</EmptyState>}</View>
   </FeatureScreen>;
 }

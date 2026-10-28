@@ -5,6 +5,7 @@ module.exports = ({ config: base }) => ({
   ...(process.env.EXPO_OWNER ? { owner: process.env.EXPO_OWNER } : {}),
   plugins: [
     ...base.plugins,
+    '@react-native-community/datetimepicker',
     // Android uses native autolinking; this plugin adds the iOS callback scheme.
     ...(process.env.EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID ? [
       ['@react-native-google-signin/google-signin', {

@@ -19,26 +19,26 @@ interface LevelOption {
 const levels: LevelOption[] = [
   {
     id: 'beginner',
-    name: 'Beginner',
+    name: 'Cơ bản',
     tag: '(Mới bắt đầu)',
     desc: 'Chưa có nền tảng tiếng Anh hoặc mất gốc hoàn toàn.',
   },
   {
     id: 'intermediate',
-    name: 'Intermediate',
-    tag: '(Trung cấp)',
-    desc: 'Đã có nền tảng từ vựng IT và có thể bắt đầu luyện câu hỏi chứng chỉ.',
+    name: 'Trung cấp',
+    tag: '(Có nền tảng)',
+    desc: 'Đã có nền tảng từ vựng CNTT và có thể bắt đầu luyện câu hỏi chứng chỉ.',
   },
   {
     id: 'advanced',
-    name: 'Advanced',
+    name: 'Nâng cao',
     tag: '(Thành thạo)',
     desc: 'Tự tin thảo luận kiến trúc hệ thống, tự tin phỏng vấn quốc tế.',
   },
   {
     id: 'professional',
-    name: 'Professional',
-    tag: '(Chuyên nghiệp)',
+    name: 'Chuyên nghiệp',
+    tag: '(Chuyên sâu)',
     desc: 'Tập trung luyện thi và củng cố các chủ đề còn yếu.',
   },
 ];

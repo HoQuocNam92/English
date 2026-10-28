@@ -19,7 +19,7 @@ export const learningMenu = [
     { label: 'Mục tiêu và nhắc học', detail: 'Chọn chuyên ngành, chứng chỉ và chỉ tiêu mỗi ngày.', icon: 'schedule', href: '/profile/edit' },
   ] },
   { title: 'Tiến độ và lịch sử', items: [
-    { label: 'Tiến độ học tập', detail: 'Theo dõi kết quả, thành tích và các lần thi.', icon: 'trending-up', href: '/(tabs)/progress' },
+    { label: 'Tiến độ học tập', detail: 'Theo dõi kết quả, thành tích và các lần thi.', icon: 'monitoring', href: '/(tabs)/progress' },
     { label: 'Từ đã học', detail: 'Xem lịch sử ôn tập và kiểm tra lại từ vựng.', icon: 'history', href: '/flashcards/history' },
     { label: 'Lịch sử bài học và bài thi', detail: 'Xem lại các bài đã học và kết quả kiểm tra.', icon: 'fact-check', href: '/profile/history' },
   ] },

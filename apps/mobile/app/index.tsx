@@ -1,7 +1,8 @@
+import { featureIconColor } from '../src/shared/ui/icon-colors';
 import { Text, Button } from '../src/shared/ui/primitives';
 import { Redirect, useRouter } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
-import { ActivityIndicator, Image, ScrollView, StyleSheet, View } from 'react-native';
+import { ActivityIndicator, ScrollView, StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { MaterialIcons } from '../src/shared/ui/AppIcon';
 import { useAuth } from '../src/shared/store/auth-context';
@@ -15,11 +16,11 @@ export default function EntryScreen() {
   return <ScrollView style={s.root} contentContainerStyle={[s.content, { paddingTop: insets.top + 32, paddingBottom: insets.bottom + 24 }]}>
     <StatusBar style="dark" />
     <View style={s.hero}>
-      <View style={s.logo}><Image source={require('../assets/icon.png')} style={s.logoImage} accessibilityLabel="Logo Tech English" /></View>
-      <Text style={s.brand}>TECH ENGLISH</Text>
+      <View style={[s.logo, { backgroundColor: '#3525cd', alignItems: 'center', justifyContent: 'center' }]} accessibilityLabel="TechEnglish Pro"><MaterialIcons name="terminal" size={64} color="#ffffff" /></View>
+      <Text style={[s.brand, { fontSize: 22, letterSpacing: -0.4, color: '#3525cd' }]}>TechEnglish Pro</Text>
       <Text style={s.title}>Tự tin tiếng Anh.{'\n'}Vững bước công nghệ.</Text>
       <Text style={s.subtitle}>Học tiếng Anh chuyên ngành CNTT theo mục tiêu và nhịp độ của bạn.</Text>
-      <View style={s.highlights}>{[{ icon: 'auto-stories', title: 'Bài học thực tế' }, { icon: 'translate', title: 'Từ vựng chuyên ngành' }, { icon: 'workspace-premium', title: 'Lộ trình chứng chỉ' }].map(item => <View key={item.title} style={s.highlight}><View style={s.icon}><MaterialIcons name={item.icon as keyof typeof MaterialIcons.glyphMap} size={22} color="#6054c8" /></View><Text style={s.highlightText}>{item.title}</Text></View>)}</View>
+      <View style={s.highlights}>{[{ icon: 'auto-stories', title: 'Bài học thực tế' }, { icon: 'translate', title: 'Từ vựng chuyên ngành' }, { icon: 'workspace-premium', title: 'Lộ trình chứng chỉ' }].map(item => <View key={item.title} style={s.highlight}><View style={s.icon}><MaterialIcons name={item.icon as keyof typeof MaterialIcons.glyphMap} size={22} color={featureIconColor(item.icon)} /></View><Text style={s.highlightText}>{item.title}</Text></View>)}</View>
     </View>
     <View style={s.actions}><Button onPress={() => router.push('/(auth)/login' as any)}>Đăng nhập</Button><Button mode="outlined" onPress={() => router.push('/(auth)/register' as any)}>Tạo tài khoản mới</Button><Text style={s.note}>Mỗi ngày một bước tiến mới.</Text></View>
   </ScrollView>;

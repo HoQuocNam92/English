@@ -7,9 +7,9 @@ import { PlacementPlan } from '../src/features/learning/PlacementPlan';
 import { LearningPathJourney } from '../src/features/learning/LearningPathJourney';
 import { api, ApiError } from '../src/shared/api/api-client';
 
-export default function LearningPlan() {
+export default function LearningPlan({ embedded = false }: { embedded?: boolean } = {}) {
   const [available, setAvailable] = useState<boolean | null>(null);
-  return <FeatureScreen title="Lộ trình học của bạn"><View style={{ gap: 16 }}>
+  return <FeatureScreen title="Lộ trình học của bạn" embedded={embedded}><View style={{ gap: 16 }}>
     <LearningPathJourney full onAvailability={setAvailable} />
     {available === false && <LegacyPlan />}
   </View></FeatureScreen>;

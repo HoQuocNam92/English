@@ -62,12 +62,12 @@ export function LearningPathJourney({ full = false, refreshKey = 0, onAvailabili
         </> : <Text>Bài tổng kết đang được bổ sung; chưa thể chuyển cấp.</Text>}
       </View>}
       {practiceStep?.kind === 'review' && <View style={{ padding: 16, borderRadius: 18, borderWidth: 1, borderColor: '#ddd6fe', backgroundColor: '#f5f3ff', gap: 12 }}>
-        <Text style={{ fontSize: 12, fontWeight: '700', color: '#3525cd' }}>LUYỆN TẬP BỔ SUNG</Text><Text style={{ fontSize: 19, fontWeight: '800' }}>{practiceStep.title}</Text><Text>Ôn thuật ngữ bằng flashcards để nhớ chắc hơn trước khi tiếp tục.</Text><Button mode="outlined" onPress={() => open(practiceStep.href)}>Luyện từ vừa học</Button>
+        <Text style={{ fontSize: 12, fontWeight: '700', color: '#3525cd' }}>LUYỆN TẬP BỔ SUNG</Text><Text style={{ fontSize: 19, fontWeight: '800' }}>{practiceStep.title}</Text><Text>Ôn thuật ngữ bằng thẻ từ để nhớ chắc hơn trước khi tiếp tục.</Text><Button mode="outlined" onPress={() => open(practiceStep.href)}>Luyện từ vừa học</Button>
       </View>}
       {path.allCompleted && <Text style={{ color: '#047857', fontWeight: '700' }}>Đã học đủ bài và đạt tổng kết {path.level.name}.</Text>}
       {path.canAdvance && path.nextLevel && <Button disabled={saving} onPress={() => Alert.alert('Xác nhận chuyển cấp', `Học tiếp ${path.nextLevel.name}? Lịch sử học tập được giữ lại, các bài mới bắt đầu theo tiến độ riêng.`, [{ text: 'Ở lại ôn tập', style: 'cancel' }, { text: 'Xác nhận chuyển cấp', onPress: () => void advance() }])}>{saving ? 'Đang chuyển…' : `Học tiếp ${path.nextLevel.name}`}</Button>}
       {path.allCompleted && !path.finalLevel && !path.nextLevel && <Text>Nội dung cấp tiếp theo đang được bổ sung.</Text>}
-      {practiceStep?.kind !== 'review' && <Button mode="outlined" onPress={() => open('/learn/flashcards')}>Ôn flashcards</Button>}
+      {practiceStep?.kind !== 'review' && <Button mode="outlined" onPress={() => open('/learn/flashcards')}>Ôn thẻ từ</Button>}
       {!full && <Button onPress={() => open('/learn/plan')}>Xem toàn bộ lộ trình</Button>}
     </View>
     {path.allCompleted && path.finalLevel && <ContinuationPlans />}

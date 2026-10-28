@@ -1,3 +1,4 @@
+import { featureIconColor } from './icon-colors';
 import { Text, Button } from './primitives';
 import { NotificationBell } from '../notifications/NotificationBell';
 import { ReactNode } from 'react';
@@ -22,8 +23,8 @@ export function FeatureScreen({ title, subtitle, children, loading = false, erro
   </KeyboardAvoidingView>;
 }
 
-export function EmptyState({ icon, title, detail }: { icon: keyof typeof MaterialIcons.glyphMap; title: string; detail: string }) {
-  return <View style={s.empty}><View style={s.emptyIcon}><MaterialIcons name={icon} size={32} color="#6054c8" /></View><Text style={s.emptyTitle}>{title}</Text><Text style={s.emptyText}>{detail}</Text></View>;
+export function EmptyState({ icon, title, detail, children }: { icon: keyof typeof MaterialIcons.glyphMap; title: string; detail: string; children?: ReactNode }) {
+  return <View style={s.empty}><View style={[s.emptyIcon, { backgroundColor: `${featureIconColor(icon)}14` }]}><MaterialIcons name={icon} size={32} color={featureIconColor(icon)} /></View><Text accessibilityRole="header" style={s.emptyTitle}>{title}</Text><Text style={s.emptyText}>{detail}</Text>{children && <View style={{ marginTop: 12, gap: 12 }}>{children}</View>}</View>;
 }
 const s = StyleSheet.create({
   root: { flex: 1, backgroundColor: '#f7f8fc' }, header: { paddingBottom: 16, paddingHorizontal: 20, flexDirection: 'row', alignItems: 'center', gap: 8, backgroundColor: '#f7f8fc' },

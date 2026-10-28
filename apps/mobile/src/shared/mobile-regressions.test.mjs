@@ -2,6 +2,7 @@ import { buildLearningTrail } from '../../../../packages/shared-kernel/src/learn
 import { matchesFilterOption } from './utils/filter-options.ts';
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
+import { interFontStyle } from './ui/font-styles.ts';
 import { mobileRoute } from './navigation.ts';
 import { requestTimeoutMs } from './api/request-timeout.ts';
 import { validateLearningTargets } from './utils/learning-targets.ts';
@@ -211,6 +212,7 @@ test('native buttons wrap interpolated quiz labels and numbers in Text while pre
     './ClearFiltersButton': { ClearFiltersButton: 'clear-filters' },
     './TranslationProvider': { useTranslation: () => () => {} },
     './rich-text': { renderRichTextChildren: value => value, richTextToPlainText: value => value },
+    './font-styles': { interFontStyle },
     'react-native-paper': { Button: 'paper-button', TouchableRipple: 'paper-ripple', Chip: 'chip', Searchbar: 'searchbar' },
     'react-native': { Text: 'native-text', TextInput: 'input', TouchableOpacity: 'native-button', ScrollView: 'scroll', View: 'view', StyleSheet: { create: value => value } },
     '@techenglish/design-tokens': { colors: { primary: 'blue', onPrimary: 'white' }, radius: {}, typography: {} },

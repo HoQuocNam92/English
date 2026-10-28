@@ -83,7 +83,7 @@ export default function OnboardingPlanScreen() {
       <Text style={styles.subtitle}>Các mục tiêu chỉ dùng để nhắc và theo dõi. Tiến trình ban đầu vẫn là 0%.</Text>
       <View style={styles.card}>
         <NumberInput label="Từ vựng mỗi ngày" value={dailyVocabularyTarget} onChangeText={setDailyVocabularyTarget} />
-        <NumberInput label="Bài Quiz mỗi tuần" value={weeklyExamTarget} onChangeText={setWeeklyExamTarget} />
+        <NumberInput label="Bài kiểm tra mỗi tuần" value={weeklyExamTarget} onChangeText={setWeeklyExamTarget} />
         <NumberInput label="Phút học mỗi ngày" value={dailyStudyTargetMinutes} onChangeText={setDailyStudyTargetMinutes} />
       </View>
       <TouchableOpacity style={styles.option} onPress={() => setTakePlacementTest(value => !value)}><MaterialIcons name={takePlacementTest ? 'check-box' : 'check-box-outline-blank'} size={23} color={colors.primary} /><View style={styles.optionCopy}><Text style={styles.optionTitle}>Làm bài kiểm tra đầu vào</Text><Text style={styles.optionText}>Nếu chưa có đề phù hợp, app sẽ đưa bạn vào lộ trình đã chọn.</Text></View></TouchableOpacity>

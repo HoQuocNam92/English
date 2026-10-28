@@ -1,3 +1,4 @@
+import { featureIconColor } from '../../src/shared/ui/icon-colors';
 import { RequiredMark } from '../../src/shared/ui/RequiredMark';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Text, TouchableOpacity } from '../../src/shared/ui/primitives';
@@ -83,7 +84,7 @@ export default function OnboardingFieldScreen() {
                 activeOpacity={0.8}
               >
                 <View style={[styles.iconBox, isSelected && styles.iconBoxSelected]}>
-                  <MaterialIcons name={iconForDomain(f.code)} size={24} color={isSelected ? colors.primary : '#464555'} />
+                  <MaterialIcons name={iconForDomain(f.code)} size={24} color={featureIconColor(iconForDomain(f.code))} />
                 </View>
                 <Text style={[styles.fieldName, isSelected && styles.fieldNameSelected]}>{f.name}</Text>
               </TouchableOpacity>

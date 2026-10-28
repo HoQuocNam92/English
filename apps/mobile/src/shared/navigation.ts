@@ -51,7 +51,7 @@ export function mobileNotificationRoute(value: unknown): string {
   if (route.startsWith('//')) return '/learning-plan';
   const destination = mobileRoute(route);
   const pathname = destination.split('?')[0];
-  if (!/^(?:\/\(tabs\)\/(?:home|learning|progress|practice|certificates)|\/learning-plan|\/placement-test|\/catalog|\/lessons(?:\/[^/]+)?|\/certifications(?:\/(?:topics\/)?[^/]+)?|\/quiz\/[^/]+|\/test-result\/[^/]+|\/flashcards(?:\/(?:dashboard|explore|history|words))?|\/profile\/(?:edit|history))$/.test(pathname) || /(?:^|\/)\.\.?(?:\/|$)/.test(pathname)) return '/learning-plan';
+  if (!/^(?:\/\(tabs\)\/(?:home|learning|plan|progress|practice|certificates)|\/learning-plan|\/placement-test|\/catalog|\/lessons(?:\/[^/]+)?|\/certifications(?:\/(?:topics\/)?[^/]+)?|\/quiz\/[^/]+|\/test-result\/[^/]+|\/flashcards(?:\/(?:dashboard|explore|history|words))?|\/profile\/(?:edit|history))$/.test(pathname) || /(?:^|\/)\.\.?(?:\/|$)/.test(pathname)) return '/learning-plan';
   // Older server and local reminders point to Home, which may already be open.
   return pathname === '/(tabs)/home' ? destination.replace('/(tabs)/home', '/learning-plan') : destination;
 }

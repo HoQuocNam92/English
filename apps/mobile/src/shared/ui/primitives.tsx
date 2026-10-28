@@ -6,6 +6,7 @@ import { Button as PaperButton, Chip, Searchbar, TouchableRipple } from 'react-n
 import { Text as NativeText, TextInput as NativeInput, TouchableOpacity as NativeButton, ScrollView, View, StyleSheet, type StyleProp, type ViewStyle, type TextProps, type TextInputProps, type TouchableOpacityProps } from 'react-native';
 import { colors, radius, typography } from '@techenglish/design-tokens';
 import { renderRichTextChildren, richTextToPlainText } from './rich-text';
+import { interFontStyle } from './font-styles';
 
 // Shared typography and touch targets. Screen-specific layouts stay in style props.
 const TextDepth = React.createContext(false);
@@ -21,11 +22,12 @@ export function Text({ style, children, focusable, ...props }: AppTextProps) {
   const nativeProps = { ...props, ...(focusable === undefined ? {} : { focusable }) } as TextProps;
   return <NativeText {...nativeProps} onLongPress={props.onLongPress ?? (props.selectable && text.trim() ? () => translate(text) : undefined)} style={[
     !nested && { fontFamily: typography.fontFamily, fontSize: typography.body.fontSize, lineHeight: typography.body.lineHeight, color: colors.text },
-    style, { fontSize, lineHeight },
+    style, { fontSize, lineHeight }, (!nested || resolved?.fontWeight || resolved?.fontFamily) && interFontStyle(resolved?.fontWeight, resolved?.fontFamily),
   ]}><TextDepth.Provider value={true}>{isCode ? children : renderRichTextChildren(children)}</TextDepth.Provider></NativeText>;
 }
 export const TextInput = React.forwardRef<React.ElementRef<typeof NativeInput>, TextInputProps>(function TextInput({ style, ...props }, ref) {
-  return <NativeInput ref={ref} placeholderTextColor={colors.outline} {...props} style={[{ fontFamily: typography.fontFamily, fontSize: 15, color: colors.text, minWidth: 0, minHeight: 48 }, style]} />;
+  const resolved = StyleSheet.flatten(style);
+  return <NativeInput ref={ref} placeholderTextColor={colors.outline} {...props} style={[{ fontFamily: typography.fontFamily, fontSize: 15, color: colors.text, minWidth: 0, minHeight: 48 }, style, interFontStyle(resolved?.fontWeight, resolved?.fontFamily)]} />;
 });
 export function TouchableOpacity({ style, ...props }: TouchableOpacityProps) {
   return <NativeButton accessibilityRole="button" activeOpacity={0.8} {...props} accessibilityLabel={props.accessibilityLabel ?? (plainText(props.children) || undefined)} style={[{ minHeight: 48, justifyContent: 'center' }, style]} />;
@@ -37,7 +39,7 @@ export const controlStyles = StyleSheet.create({
 });
 export function Button({ children, style, activeOpacity, icon, ...props }: Omit<TouchableOpacityProps, 'style'> & { style?: StyleProp<ViewStyle>; mode?: 'contained' | 'outlined' | 'text' | 'tonal'; icon?: keyof typeof MaterialIcons.glyphMap }) {
   const items = React.Children.toArray(children);
-  const labelStyle = { color: props.disabled ? colors.mutedText : props.mode && props.mode !== 'contained' ? colors.primary : colors.onPrimary, fontSize: 15, fontWeight: '700' as const, textAlign: 'center' as const };
+  const labelStyle = { ...interFontStyle('700'), color: props.disabled ? colors.mutedText : props.mode && props.mode !== 'contained' ? colors.primary : colors.onPrimary, fontSize: 15, textAlign: 'center' as const };
   const isText = (child: React.ReactNode) => typeof child === 'string' || typeof child === 'number';
   // JSX labels with interpolations are arrays, and native buttons cannot render raw text.
   const content = items.every(isText)
@@ -52,7 +54,7 @@ export function Button({ children, style, activeOpacity, icon, ...props }: Omit<
 }
 export function Tabs({ items, value, onChange }: { items: { value: string; label: string }[]; value: string; onChange: (value: string) => void }) {
   if (!items.length) return null;
-  return <ScrollView horizontal style={{ flexGrow: 0, flexShrink: 0 }} showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 8, paddingVertical: 4, alignItems: 'center' }}>{items.map(item => <Chip key={item.value} selected={value === item.value} showSelectedCheck={false} onPress={() => onChange(item.value)} accessibilityRole="tab" accessibilityState={{ selected: value === item.value }} style={{ backgroundColor: value === item.value ? '#eeecff' : '#ffffff', borderWidth: 1, borderColor: value === item.value ? '#c9c2ff' : '#e4e8f1', borderRadius: 12 }} textStyle={{ color: value === item.value ? colors.primary : colors.mutedText, fontSize: 14, fontWeight: '600', marginVertical: 12 }}>{item.label}</Chip>)}</ScrollView>;
+  return <ScrollView horizontal style={{ flexGrow: 0, flexShrink: 0 }} showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 8, paddingVertical: 4, alignItems: 'center' }}>{items.map(item => <Chip key={item.value} selected={value === item.value} showSelectedCheck={false} onPress={() => onChange(item.value)} accessibilityRole="tab" accessibilityState={{ selected: value === item.value }} style={{ backgroundColor: value === item.value ? '#eeecff' : '#ffffff', borderWidth: 1, borderColor: value === item.value ? '#c9c2ff' : '#e4e8f1', borderRadius: 12 }} textStyle={{ color: value === item.value ? colors.primary : colors.mutedText, fontSize: 14, ...interFontStyle('600'), marginVertical: 12 }}>{item.label}</Chip>)}</ScrollView>;
 }
 
 function plainText(value: React.ReactNode): string {

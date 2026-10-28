@@ -228,7 +228,7 @@ export default function FlashcardsScreen() {
       setQuizResults([]);
       setPhase('quiz');
     } catch (e: any) {
-      setError(e.message || 'Không thể tạo quiz.');
+      setError(e.message || 'Không thể tạo bài kiểm tra.');
     }
   };
 
@@ -411,7 +411,7 @@ export default function FlashcardsScreen() {
           </TouchableOpacity>
         </View>
         {knownError && <TouchableOpacity onPress={() => void loadKnownCount()}><Text style={{ color: colors.onSurfaceVariant }}>Chưa tải được số từ đã biết. Chạm để thử lại.</Text></TouchableOpacity>}
-        <View style={styles.sessionToolbar}><Text style={[styles.dailyText, { color: colors.onSurfaceVariant }]}>{isPreview ? 'Xem lại flashcard đã học' : isReview ? `${totalWords} từ đến hạn ôn` : `Hôm nay: ${sessionMeta?.studiedToday ?? 0}/${sessionMeta?.maxDailyNewWords ?? '—'} từ mới`}</Text><TouchableOpacity onPress={() => router.push('/flashcards/history' as any)}><Text style={[styles.historyLink, { color: colors.primary }]}>Từ đã học</Text></TouchableOpacity></View>
+        <View style={styles.sessionToolbar}><Text style={[styles.dailyText, { color: colors.onSurfaceVariant }]}>{isPreview ? 'Xem lại thẻ từ đã học' : isReview ? `${totalWords} từ đến hạn ôn` : `Hôm nay: ${sessionMeta?.studiedToday ?? 0}/${sessionMeta?.maxDailyNewWords ?? '—'} từ mới`}</Text><TouchableOpacity onPress={() => router.push('/flashcards/history' as any)}><Text style={[styles.historyLink, { color: colors.primary }]}>Từ đã học</Text></TouchableOpacity></View>
         {dailyLimitNotice && <View style={styles.dailyNotice}><MaterialIcons name="check-circle" size={14} color="#a16207" /><Text style={styles.dailyNoticeText}>Đã đủ mục tiêu hôm nay · đang học thêm</Text></View>}
 
         <View style={styles.speakerRow}><TouchableOpacity onPress={() => void speak(currentWord.term)} style={[styles.speakerBtn, { backgroundColor: colors.surface }]} accessibilityRole="button" accessibilityLabel={`Phát âm ${currentWord.term}`}><MaterialIcons name="volume-up" size={28} color={colors.primary} /></TouchableOpacity></View>
@@ -476,7 +476,7 @@ export default function FlashcardsScreen() {
 
   const renderQuizPhase = () => {
     if (!currentQuestion) {
-      return <EmptyState icon="quiz" title="Không có câu hỏi" detail="Không thể tạo quiz." />;
+      return <EmptyState icon="quiz" title="Không có câu hỏi" detail="Không thể tạo bài kiểm tra." />;
     }
 
     const isCorrectAnswer = showResult && (
@@ -661,7 +661,7 @@ export default function FlashcardsScreen() {
   // ─── Title & subtitle ──────────────────────────────────────────────────────
 
   const phaseTitle = phase === 'learn' ? (isReview ? 'Ôn tập đến hạn' : 'Học từ vựng') : phase === 'quiz' ? 'Kiểm tra' : 'Kết quả';
-  const phaseSubtitle = phase === 'summary' ? 'Hoàn thành phiên học' : 'Ôn tập từ vựng IT';
+  const phaseSubtitle = phase === 'summary' ? 'Hoàn thành phiên học' : 'Ôn tập từ vựng CNTT';
 
   return (
     <FeatureScreen title={phaseTitle} subtitle={phaseSubtitle} loading={loading} error={error} onRetry={loadSession}>

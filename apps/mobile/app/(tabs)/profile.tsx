@@ -1,3 +1,4 @@
+import { featureIconColor } from '../../src/shared/ui/icon-colors';
 import { ProfileAvatar } from '../../src/shared/ui/ProfileAvatar';
 import { Text, TouchableOpacity } from '../../src/shared/ui/primitives';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -122,18 +123,12 @@ export default function MobileProfileScreen() {
         {/* Action List */}
         <View style={[styles.menuList, { backgroundColor: colors.surfaceContainerLowest, borderColor: colors.outlineVariant }]}>
           {[
-            ['article', 'Danh mục học tập', '/catalog'],
-            ['history', 'Lịch sử học tập', '/profile/history'],
             ['notifications', 'Thông báo', '/notifications'],
-            ['school', 'Lộ trình học', '/learning-plan'],
-            ['style', 'Tổng quan từ vựng', '/flashcards/dashboard'],
-            ['history', 'Từ đã học', '/flashcards/history'],
-            ['school', 'Kiểm tra trình độ', '/placement-test'],
             ['security', 'Chính sách bảo mật', '/privacy'],
             ['article', 'Điều khoản sử dụng', '/terms'],
           ].map(([icon, label, route], index, list) => (
             <TouchableOpacity key={route} style={[styles.menuListItem, { borderBottomColor: colors.outlineVariant, borderBottomWidth: index === list.length - 1 ? 0 : 1 }]} onPress={() => router.push(route as any)}>
-              <View style={styles.menuListLeft}><MaterialIcons name={icon as any} size={22} color={colors.primary} /><Text style={[styles.menuListText, { color: colors.onSurface }]}>{label}</Text></View>
+              <View style={styles.menuListLeft}><MaterialIcons name={icon as any} size={22} color={featureIconColor(icon)} /><Text style={[styles.menuListText, { color: colors.onSurface }]}>{label}</Text></View>
               <MaterialIcons name="chevron-right" size={24} color={colors.outline} />
             </TouchableOpacity>
           ))}

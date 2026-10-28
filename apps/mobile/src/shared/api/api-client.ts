@@ -1,6 +1,7 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { API_BASE_URL } from '../config/env';
 import { requestTimeoutMs } from './request-timeout';
+import { localizeApiDisplayFields } from '../utils/display-labels';
 
 export const API_BASE = API_BASE_URL;
 
@@ -90,7 +91,7 @@ export async function apiRequest<T>(
     const text = await res.text();
     if (!text.trim() && path.split('?')[0] === '/placement-test/result' && (!options.method || options.method === 'GET')) return null as T;
     try {
-      return JSON.parse(text) as T;
+      return localizeApiDisplayFields(JSON.parse(text), path) as T;
     } catch {
       throw new ApiError(res.status, 'Máy chủ trả về dữ liệu không hợp lệ. Vui lòng thử lại.');
     }

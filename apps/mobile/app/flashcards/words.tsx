@@ -52,7 +52,7 @@ export default function Words() {
       {!!word.studyStatus && <Text>{word.studyStatus === 'mastered' ? 'Đã nhớ' : word.studyStatus === 'learning' ? 'Đang học' : 'Chưa học'}</Text>}
       {word.examples?.map((example, index) => <View key={index} style={{ gap: 4 }}><Text selectable>{example.sentenceEn}</Text>{!!example.translationVi && <Text>{example.translationVi}</Text>}</View>)}
       <Button mode="outlined" onPress={() => { Speech.stop(); Speech.speak(word.term, { language: 'en-US' }); }}>Phát âm</Button>
-      {word.studyStatus && word.studyStatus !== 'new' && <Button mode="outlined" onPress={() => router.push({ pathname: '/flashcards', params: { mode: 'preview', vocabularyId: word.id } } as any)}>Xem lại flashcard</Button>}
+      {word.studyStatus && word.studyStatus !== 'new' && <Button mode="outlined" onPress={() => router.push({ pathname: '/flashcards', params: { mode: 'preview', vocabularyId: word.id } } as any)}>Xem lại thẻ từ</Button>}
     </View>)}
     {!loading && !error && !words.length && <Text>Không có từ phù hợp.</Text>}
     <Text>{total} từ phù hợp</Text><View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}><Button disabled={loading || page <= 1} onPress={() => setPage(value => value - 1)}>Trước</Button><Text>{page}/{pages}</Text><Button disabled={loading || page >= pages} onPress={() => setPage(value => value + 1)}>Sau</Button></View>

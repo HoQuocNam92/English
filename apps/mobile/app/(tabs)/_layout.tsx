@@ -3,6 +3,8 @@ import { Tabs } from 'expo-router';
 import { MaterialIcons } from '../../src/shared/ui/AppIcon';
 import { useTheme } from '../../src/shared/store/theme-context';
 import { View } from 'react-native';
+import { iconColors } from '../../src/shared/ui/icon-colors';
+import { interFontStyle } from '../../src/shared/ui/font-styles';
 
 export default function TabsLayout() {
   const { colors } = useTheme();
@@ -22,8 +24,8 @@ export default function TabsLayout() {
           paddingTop: 8
         },
         tabBarLabelStyle: {
-          fontSize: 12,
-          fontWeight: '600'
+          fontSize: 11,
+          ...interFontStyle('600')
         }
       }}
     >
@@ -31,30 +33,31 @@ export default function TabsLayout() {
         name="home"
         options={{
           title: 'Trang chủ',
-          tabBarIcon: ({ focused }) => <View style={{ width: 56, height: 32, alignItems: "center", justifyContent: "center", borderRadius: 16, backgroundColor: focused ? "#eeecff" : "transparent" }}><MaterialIcons name="home" size={23} color={focused ? colors.primary : colors.outline} /></View>
+          tabBarIcon: ({ focused }) => <View style={{ width: 44, height: 32, alignItems: "center", justifyContent: "center", borderRadius: 16, backgroundColor: focused ? "#eeecff" : "transparent" }}><MaterialIcons name="home" size={23} color={iconColors.home} /></View>
         }}
       />
       <Tabs.Screen
         name="learning"
         options={{
-          title: 'Học tập',
-          tabBarIcon: ({ focused }) => <View style={{ width: 56, height: 32, alignItems: "center", justifyContent: "center", borderRadius: 16, backgroundColor: focused ? "#eeecff" : "transparent" }}><MaterialIcons name="menu-book" size={23} color={focused ? colors.primary : colors.outline} /></View>,
+          title: 'Bài học',
+          tabBarIcon: ({ focused }) => <View style={{ width: 44, height: 32, alignItems: "center", justifyContent: "center", borderRadius: 16, backgroundColor: focused ? "#eeecff" : "transparent" }}><MaterialIcons name="menu-book" size={23} color={iconColors.learning} /></View>,
         }}
       />
       <Tabs.Screen name="practice" options={{ href: null }} />
-      <Tabs.Screen name="certificates" options={{ title: "Chứng chỉ", tabBarIcon: ({ focused }) => <View style={{ width: 56, height: 32, alignItems: "center", justifyContent: "center", borderRadius: 16, backgroundColor: focused ? "#eeecff" : "transparent" }}><MaterialIcons name="workspace-premium" size={23} color={focused ? colors.primary : colors.outline} /></View> }} />
+      <Tabs.Screen name="plan" options={{ title: 'Lộ trình', tabBarIcon: ({ focused }) => <View style={{ width: 44, height: 32, alignItems: 'center', justifyContent: 'center', borderRadius: 16, backgroundColor: focused ? '#eeecff' : 'transparent' }}><MaterialIcons name="route" size={23} color={iconColors.learning} /></View> }} />
+      <Tabs.Screen name="certificates" options={{ title: "Chứng chỉ", tabBarIcon: ({ focused }) => <View style={{ width: 44, height: 32, alignItems: "center", justifyContent: "center", borderRadius: 16, backgroundColor: focused ? "#eeecff" : "transparent" }}><MaterialIcons name="workspace-premium" size={23} color={iconColors.certificate} /></View> }} />
       <Tabs.Screen
         name="progress"
         options={{
           title: 'Tiến độ',
-          tabBarIcon: ({ focused }) => <View style={{ width: 56, height: 32, alignItems: "center", justifyContent: "center", borderRadius: 16, backgroundColor: focused ? "#eeecff" : "transparent" }}><MaterialIcons name="trending-up" size={23} color={focused ? colors.primary : colors.outline} /></View>
+          tabBarIcon: ({ focused }) => <View style={{ width: 44, height: 32, alignItems: "center", justifyContent: "center", borderRadius: 16, backgroundColor: focused ? "#eeecff" : "transparent" }}><MaterialIcons name="monitoring" size={23} color={iconColors.progress} /></View>
         }}
       />
       <Tabs.Screen
         name="profile"
         options={{
           title: 'Cá nhân',
-          tabBarIcon: ({ focused }) => <View style={{ width: 56, height: 32, alignItems: "center", justifyContent: "center", borderRadius: 16, backgroundColor: focused ? "#eeecff" : "transparent" }}><MaterialIcons name="person" size={23} color={focused ? colors.primary : colors.outline} /></View>
+          tabBarIcon: ({ focused }) => <View style={{ width: 44, height: 32, alignItems: "center", justifyContent: "center", borderRadius: 16, backgroundColor: focused ? "#eeecff" : "transparent" }}><MaterialIcons name="person" size={23} color={iconColors.profile} /></View>
         }}
       />
     </Tabs>
