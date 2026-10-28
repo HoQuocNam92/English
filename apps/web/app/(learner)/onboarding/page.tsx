@@ -2,9 +2,9 @@
 import { RequiredMark } from '@/shared/ui/RequiredMark';
 import { AppIcon, IconText } from '@/shared/ui/AppIcon';
 
-import { BarChart3, Network, Cloud, Shield, Database, Code2, RefreshCw, GraduationCap, TrendingUp, Award, Diamond, Languages, Route, ClipboardList, SlidersHorizontal, CircleCheck, type LucideIcon } from 'lucide-react';
+import { BarChart3, Network, Cloud, Shield, Database, Code2, RefreshCw, GraduationCap, TrendingUp, Award, Diamond, Languages, Route, CircleCheck, type LucideIcon } from 'lucide-react';
 import { LevelBadge } from '@/shared/ui/LevelBadge';
-import { useEffect, useId, useMemo, useState } from 'react';
+import { useEffect, useId, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { apiClient } from '@/shared/api/api-client';
 import { registerWebLearningNotifications } from '@/shared/notifications/firebase-client';
@@ -14,10 +14,10 @@ interface CertificateOption { id: string; code: string; name: string; provider: 
 interface DomainOption { id: string; code: string; name: string; description: string; icon?: string | null }
 
 const LEVELS = [
-  { id: 'beginner', title: 'Cơ bản', subtitle: 'Cần giải thích thuật ngữ và câu hỏi từ nền tảng.', icon: 'school' },
-  { id: 'intermediate', title: 'Trung cấp', subtitle: 'Đã có nền tảng và có thể bắt đầu luyện câu hỏi.', icon: 'trending_up' },
-  { id: 'advanced', title: 'Nâng cao', subtitle: 'Đọc hiểu tài liệu kỹ thuật và tình huống phức tạp.', icon: 'workspace_premium' },
-  { id: 'professional', title: 'Chuyên nghiệp', subtitle: 'Tập trung luyện thi và củng cố điểm yếu.', icon: 'diamond' },
+  { id: 'beginner', title: 'Cơ bản', subtitle: 'Mới bắt đầu hoặc muốn học lại từ gốc. Làm quen từ vựng CNTT và câu tiếng Anh đơn giản.', icon: 'school' },
+  { id: 'intermediate', title: 'Trung cấp', subtitle: 'Đã hiểu câu cơ bản. Mở rộng từ vựng chuyên ngành và luyện đọc các đoạn tài liệu ngắn.', icon: 'trending_up' },
+  { id: 'advanced', title: 'Nâng cao', subtitle: 'Đọc được tài liệu kỹ thuật. Luyện hiểu nội dung chuyên sâu và các tình huống phức tạp.', icon: 'workspace_premium' },
+  { id: 'professional', title: 'Chuyên nghiệp', subtitle: 'Sử dụng tiếng Anh kỹ thuật thành thạo. Tập trung luyện chứng chỉ và củng cố điểm yếu.', icon: 'diamond' },
 ];
 
 const GOALS = [
@@ -35,7 +35,6 @@ export default function OnboardingPage() {
   const [targetCertificateCode, setTargetCertificateCode] = useState('');
   const [domainCodes, setDomainCodes] = useState<string[]>([]);
   const [level, setLevel] = useState('beginner');
-  const [takePlacementTest, setTakePlacementTest] = useState(true);
   const [dailyVocabularyTarget, setDailyVocabularyTarget] = useState(10);
   const [weeklyExamTarget, setWeeklyExamTarget] = useState(2);
   const [dailyStudyTargetMinutes, setDailyStudyTargetMinutes] = useState(30);
@@ -46,7 +45,6 @@ export default function OnboardingPage() {
   const [errorMessage, setErrorMessage] = useState('');
   const totalSteps = 4;
 
-  const selectedCertificate = useMemo(() => certificates.find(item => item.code === targetCertificateCode), [certificates, targetCertificateCode]);
 
   useEffect(() => {
     Promise.all([
@@ -72,7 +70,6 @@ export default function OnboardingPage() {
       : true;
 
   const toggleDomain = (code: string) => setDomainCodes(current => current.includes(code) ? current.filter(item => item !== code) : [...current, code]);
-  const destination = () => (goal === 'certification' || goal === 'both') && selectedCertificate ? `/learn/certifications/${selectedCertificate.id}` : '/learn/flashcards';
 
   const handleSubmit = async () => {
     if (!goal || !canContinue) return;
@@ -103,10 +100,6 @@ export default function OnboardingPage() {
       });
       window.dispatchEvent(new CustomEvent('techenglish:reminder-settings', { detail: { reminderEnabled, reminderTime } }));
       if (reminderEnabled) await registerWebLearningNotifications().catch(() => false);
-      if (takePlacementTest) {
-        router.replace(`/onboarding/placement-test?next=${encodeURIComponent(destination())}`);
-        return;
-      }
       await apiClient.post('/placement-test/plan', {});
       router.replace('/learn/plan');
     } catch (error) {
@@ -135,7 +128,11 @@ export default function OnboardingPage() {
           </div>}
         </section>}
 
-        {step === 3 && <section><Header title="Xác định trình độ tiếng Anh" subtitle="Làm bài kiểm tra nhanh để hệ thống đề xuất lộ trình vừa sức, hoặc tự chọn nếu bạn đã biết trình độ của mình." /><div className="grid gap-4 md:grid-cols-2"><ChoiceCard selected={takePlacementTest} icon="quiz" title="Làm bài kiểm tra nhanh" description="10–15 câu · khoảng 5 phút · nhận trình độ đề xuất ngay" onClick={() => setTakePlacementTest(true)} /><ChoiceCard selected={!takePlacementTest} icon="tune" title="Tôi muốn tự chọn trình độ" description="Chọn trực tiếp mức phù hợp với kinh nghiệm hiện tại" onClick={() => setTakePlacementTest(false)} /></div>{!takePlacementTest && <div className="mt-5 grid gap-3 md:grid-cols-2">{LEVELS.map(item => <ChoiceCard key={item.id} selected={level === item.id} icon={item.icon} title={<LevelBadge level={{ code: item.id, name: item.title }} />} description={item.subtitle} onClick={() => setLevel(item.id)} />)}</div>}</section>}
+        {step === 3 && <section>
+          <Header title="Chọn lộ trình phù hợp với bạn" subtitle="Bắt đầu từ mức bạn thấy thoải mái nhất. Chọn Cơ bản nếu bạn chưa chắc nên bắt đầu từ đâu." />
+          <div className="grid gap-4 md:grid-cols-2">{LEVELS.map(item => <ChoiceCard key={item.id} selected={level === item.id} icon={item.icon} title={<LevelBadge level={{ code: item.id, name: item.title }} />} description={item.subtitle} onClick={() => setLevel(item.id)} />)}</div>
+          <p className="mt-5 text-center text-sm text-on-surface-variant">Bạn có thể thay đổi trình độ sau trong hồ sơ.</p>
+        </section>}
 
         {step === 4 && <section><Header title="Thiết lập kế hoạch học" subtitle="Mỗi ngày một lượng nhỏ, có ôn tập ngắt quãng và tổng kết vào cuối tuần." /><div className="rounded-2xl border border-outline-variant bg-white p-5"><div className="mb-5 rounded-xl bg-primary/5 p-4"><p className="text-sm font-bold text-primary">Nhịp học gợi ý mỗi ngày</p><p className="mt-1 text-sm text-on-surface-variant"><IconText>{"10 từ mới → 1 bài học ngắn → 5 câu luyện tập"}</IconText></p><p className="mt-2 text-xs text-on-surface-variant">Từ ngày 2, học xen kẽ với ôn từ đã học; ngày 7 ôn tập và làm bài kiểm tra cuối tuần.</p></div><div className="grid gap-4 sm:grid-cols-3"><NumberField label="Từ vựng/ngày" value={dailyVocabularyTarget} min={1} max={200} onChange={setDailyVocabularyTarget} /><NumberField label="Bài kiểm tra/tuần" value={weeklyExamTarget} min={1} max={50} onChange={setWeeklyExamTarget} /><NumberField label="Phút học/ngày" value={dailyStudyTargetMinutes} min={5} max={1440} onChange={setDailyStudyTargetMinutes} /></div><div className="mt-5 flex flex-wrap items-center gap-3 border-t border-border-subtle pt-5"><label className="flex items-center gap-2 text-sm font-semibold text-on-surface"><input type="checkbox" checked={reminderEnabled} onChange={event => setReminderEnabled(event.target.checked)} />Nhắc học mỗi ngày</label><input type="time" value={reminderTime} disabled={!reminderEnabled} onChange={event => setReminderTime(event.target.value)} className="rounded-lg border border-outline-variant px-3 py-2 text-sm disabled:opacity-65" /></div></div></section>}
 
@@ -164,8 +161,6 @@ const CHOICE_ICONS: Record<string, LucideIcon> = {
   diamond: Diamond,
   translate: Languages,
   route: Route,
-  quiz: ClipboardList,
-  tune: SlidersHorizontal,
 };
 
 function ChoiceCard({ selected, icon, title, description, onClick }: { selected: boolean; icon: string; title: React.ReactNode; description: string; onClick: () => void }) {
