@@ -3,7 +3,16 @@ import { PrismaService } from '../../infrastructure/database/prisma.service'
 
 const LEVELS = ['beginner', 'intermediate', 'advanced', 'professional']
 const PREFIX = 'focused-20261024-'
-const lessonOrder = (slug: string) => ['terminology', 'reading', 'documentation', 'case'].findIndex(type => slug.endsWith(`-${type}`))
+const lessonOrder = (slug: string) => {
+  const extension = slug.match(/-(0[5-9]|10)-(vocabulary|technical_reading|api_documentation|system_design|case_study)$/)
+  return extension ? Number(extension[1]) - 1 : ['terminology', 'reading', 'documentation', 'case'].findIndex(type => slug.endsWith(`-${type}`))
+}
+const expectedLessons = (code: string) => code === 'SOFTWARE_ENG' ? 10 : 4
+const completeCurriculum = (rows: any[], code: string) => {
+  const expected = expectedLessons(code)
+  const orders = rows.map(row => lessonOrder(row.slug))
+  return rows.length === expected && new Set(orders).size === expected && orders.every(order => order >= 0 && order < expected)
+}
 const done = (record: any) => record?.status === 'completed' || record?.completionPercent >= 100
 
 @Injectable()
@@ -29,7 +38,7 @@ export class LearningPathService {
     const domains = selected.map((link: any) => {
       const rows = lessons.filter((lesson: any) => lesson.domainId === link.domainId).sort((a: any, b: any) => lessonOrder(a.slug) - lessonOrder(b.slug))
       // Missing data must never produce a completed course or unlock promotion.
-      const available = rows.length === 4 && new Set(rows.map((row: any) => lessonOrder(row.slug))).size === 4 && rows.every((row: any) => lessonOrder(row.slug) >= 0)
+      const available = completeCurriculum(rows, link.domain.code)
       const lessonItems = rows.map((lesson: any) => ({ id: lesson.id, title: lesson.title, href: `/learn/lessons/${lesson.id}`, week: lessonOrder(lesson.slug) + 1, completed: done(byLesson.get(lesson.id)), estimatedMinutes: lesson.estimatedMinutes, vocabularyCount: lesson.vocabularies?.length ?? lesson._count?.vocabularies ?? 0, vocabularyReviewComplete: done(byLesson.get(lesson.id)) && lesson.vocabularies?.length > 0 && lesson.vocabularies.every((link: any) => { const record: any = byLesson.get(lesson.id); const completedAt = record?.completedAt ?? record?.updatedAt; const reviewedAt = link.vocabulary.vocabProgress[0]?.lastReviewAt; return completedAt && reviewedAt && new Date(reviewedAt).getTime() >= new Date(completedAt).getTime() }) }))
       const completedLessons = lessonItems.filter((lesson: any) => lesson.completed).length
       const lessonsComplete = available && completedLessons === rows.length
@@ -55,7 +64,7 @@ export class LearningPathService {
     const nextCode = LEVELS[LEVELS.indexOf(profile.level.code) + 1]
     const next = levels.find((level: any) => level.code === nextCode)
     const nextLessons = next ? await db.lesson.findMany({ where: { status: 'published', slug: { startsWith: PREFIX }, levelId: next.id, domainId: { in: domainIds } }, select: { domainId: true, slug: true } }) : []
-    const nextAvailable = !!next && domainIds.every((id: string) => new Set(nextLessons.filter((lesson: any) => lesson.domainId === id).map((lesson: any) => lessonOrder(lesson.slug)).filter((order: number) => order >= 0)).size === 4)
+    const nextAvailable = !!next && selected.every((link: any) => completeCurriculum(nextLessons.filter((lesson: any) => lesson.domainId === link.domainId), link.domain.code))
     return {
       configured: true as const, level: { id: profile.level.id, code: profile.level.code, name: profile.level.name }, domains,
       completedLessons: domains.reduce((total: number, domain: any) => total + domain.completedLessons, 0),

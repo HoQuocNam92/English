@@ -31,5 +31,16 @@ async function main() {
   });
   if (result.error) throw result.error;
   process.exitCode = result.status ?? 1;
+  if (process.exitCode === 0) {
+    const { applySoftwareCurriculum, audit } = require('../apps/api/prisma/seed-software-curriculum.cjs');
+    const { PrismaClient } = requireApi('@prisma/client');
+    const prisma = new PrismaClient();
+    try {
+      const current = await audit(prisma);
+      const complete = current.configured && current.tiers.length === 4 && current.tiers.every(tier => tier.errors.length === 0);
+      console.log('Software curriculum:', JSON.stringify(complete ? current : await applySoftwareCurriculum(prisma)));
+    }
+    finally { await prisma.$disconnect(); }
+  }
 }
 main().catch(error => { console.error(error.message); process.exitCode = 1; });

@@ -217,6 +217,7 @@ function GenericExperience({ lesson }: ExperienceProps) {
 export function LessonExperience(props: ExperienceProps) {
   const Component = useMemo(() => ({
     certification_review: CertificationReviewExperience,
+    vocabulary: TerminologyExperience,
     terminology: TerminologyExperience,
     technical_reading: TechnicalReadingExperience,
     api_documentation: ApiDocumentationExperience,

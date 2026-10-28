@@ -50,6 +50,12 @@ jobs:
       - run: pnpm --filter @techenglish/api test
       - run: pnpm --filter @techenglish/api test:agenda
       - run: pnpm --filter @techenglish/api test:learning-path
+      - run: node --test apps/api/prisma/seed-software-curriculum.test.cjs
+      - name: Check Software curriculum against PostgreSQL
+        working-directory: apps/api
+        env:
+          SOFTWARE_CURRICULUM_QA: '1'
+        run: node -r ts-node/register prisma/software-curriculum.integration.cjs
       - run: pnpm --filter @techenglish/api test:certification
       - run: pnpm --filter @techenglish/api test:learning-ai
       - run: pnpm --filter @techenglish/api test:placement

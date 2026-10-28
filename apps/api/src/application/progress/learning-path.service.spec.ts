@@ -20,7 +20,7 @@ function fixture(options: { completed?: boolean; passed?: boolean; final?: boole
   const levels = ['beginner', 'intermediate', 'advanced', 'professional'].map(code => ({ id: code, code, name: code }))
   const profile: any = { userId: 'learner', onboardingCompleted: true, learningGoal: 'vocabulary', levelId: options.final ? 'professional' : 'intermediate', level: levels[options.final ? 3 : 1], domains: [{ domainId: 'd', domain: { code: 'SOFTWARE_ENG', name: 'Software', isActive: true } }] }
   if (options.secondDomain) profile.domains.push({ domainId: 'other', domain: { code: 'CLOUD', name: 'Cloud', isActive: true } })
-  const lessonRows = (level: string) => profile.domains.flatMap((link: any) => ['terminology', 'reading', 'documentation', 'case'].map((type, index) => ({ id: `${link.domainId}-${level}-${index}`, title: type, slug: `focused-20261024-${link.domain.code.toLowerCase()}-${level}-${type}`, domainId: link.domainId, estimatedMinutes: 20 })))
+  const lessonRows = (level: string) => profile.domains.flatMap((link: any) => ['terminology', 'reading', 'documentation', 'case', ...(link.domain.code === 'SOFTWARE_ENG' ? ['05-vocabulary', '06-technical_reading', '07-api_documentation', '08-system_design', '09-case_study', '10-technical_reading'] : [])].map((type, index) => ({ id: `${link.domainId}-${level}-${index}`, title: type, slug: `focused-20261024-${link.domain.code.toLowerCase()}-${level}-${type}`, domainId: link.domainId, estimatedMinutes: 20 })))
   const progress = options.completed ? lessonRows(profile.levelId).filter((row: any) => row.domainId === 'd').map((row: any) => ({ resourceId: row.id, status: 'completed', completionPercent: 100, completedAt: new Date('2026-10-24T02:00:00Z') })) : []
   let updates = 0
   const db: any = {
@@ -39,6 +39,20 @@ test('recommends an unfinished lesson at the current level', async () => {
   const f = fixture(); const path = await f.service.getPath('learner')
   if (!path.configured) return assert.fail('path')
   assert.equal(path.domains[0].nextLesson.id, 'd-intermediate-0'); assert.equal(path.canAdvance, false); assert.equal(f.updates, 0)
+})
+
+test('Software requires all ten ordered lessons and never unlocks promotion from the old four', async () => {
+  const f = fixture({ completed: true, passed: true })
+  const complete = await f.service.getPath('learner'); if (!complete.configured) return assert.fail('path')
+  assert.equal(complete.domains[0].lessons.length, 10)
+  assert.equal(complete.domains[0].lessons[9].week, 10)
+  const read = f.db.lesson.findMany
+  f.db.lesson.findMany = async (args: any) => (await read(args)).slice(0, 4)
+  const old = await f.service.getPath('learner'); if (!old.configured) return assert.fail('path')
+  assert.equal(old.domains[0].available, false)
+  assert.equal(old.allCompleted, false)
+  assert.equal(old.canAdvance, false)
+  assert.equal(old.nextLevel, null)
 })
 test('reading alone opens assessment, never automatically upgrades', async () => {
   const f = fixture({ completed: true }); const path = await f.service.getPath('learner')

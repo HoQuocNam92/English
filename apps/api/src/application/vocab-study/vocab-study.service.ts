@@ -32,6 +32,8 @@ export class VocabStudyService {
   // Priority: 1) 'learning' words with nextReviewAt <= now, 2) 'new' words
   // Accepts optional filters: domainCode, levelCode
   async getStudySession(learnerId: string, filters?: { domainCode?: string; levelCode?: string; sourceLessonId?: string; topicId?: string; reviewOnly?: boolean; onlyNew?: boolean; continueLearning?: boolean }) {
+    // A lesson review promises all published linked words, including mastered or not-yet-due words.
+    const fullLessonReview = Boolean(filters?.sourceLessonId && filters.onlyNew === false && !filters.reviewOnly)
     // Build vocab filter
     const vocabWhere: any = { status: 'published' }
     if (filters?.domainCode) vocabWhere.OR = [{ domain: { code: filters.domainCode } }, { domains: { some: { domain: { code: filters.domainCode } } } }]
@@ -52,7 +54,7 @@ export class VocabStudyService {
       vocabWhere.level = { code: filters.levelCode }
     }
 
-    if (filters?.onlyNew === false && !filters?.reviewOnly) {
+    if (filters?.onlyNew === false && !filters?.reviewOnly && !fullLessonReview) {
       vocabWhere.AND = [{ OR: [
         { vocabProgress: { none: { learnerId, lastRating: { not: null } } } },
         { vocabProgress: { some: { learnerId, status: 'learning', nextReviewAt: { lte: new Date() } } } },
@@ -90,7 +92,7 @@ export class VocabStudyService {
         || new Date(left?.nextReviewAt ?? 0).getTime() - new Date(right?.nextReviewAt ?? 0).getTime()
         || a.id.localeCompare(b.id)
     })
-    const words = filters?.reviewOnly ? newWords : newWords.slice(0, remainingToday)
+    const words = filters?.reviewOnly || fullLessonReview ? newWords : newWords.slice(0, remainingToday)
 
     return {
       words: words.map(w => ({

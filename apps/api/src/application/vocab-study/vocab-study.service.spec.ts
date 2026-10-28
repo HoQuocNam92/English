@@ -241,3 +241,23 @@ test('studied card reads only the current learner published words without writin
   assert.deepEqual(query.where.vocabProgress.some.lastReviewAt, { not: null })
   await assert.rejects(() => service.getStudiedCard('other', 'known'))
 })
+
+test('lesson review returns all eight linked words even after the daily target and includes mastered words', async () => {
+  let query: any
+  const words = Array.from({ length: 8 }, (_, index) => ({ id: `linked-${index}`, term: `Term ${index}`, partsOfSpeech: [], examples: [], vocabProgress: [{ status: index < 2 ? 'mastered' : 'learning', lastRating: 'mastered' }] }))
+  const service = new VocabStudyService({
+    lesson: { findUnique: async () => ({ status: 'published', vocabularies: words.map(word => ({ vocabularyId: word.id })) }) },
+    vocabulary: { findMany: async (args: any) => { query = args; return words } },
+    vocabularyProgress: { count: async () => 20 },
+    learnerProfile: { findUnique: async () => ({ dailyVocabularyTarget: 10 }) },
+  } as any)
+  const result = await service.getStudySession('learner', { sourceLessonId: 'lesson', onlyNew: false })
+  assert.equal(result.words.length, 8)
+  assert.equal(query.where.status, 'published')
+  assert.equal(query.where.AND, undefined)
+  assert.equal(query.where.vocabProgress, undefined)
+  assert.deepEqual(query.where.id.in, words.map(word => word.id))
+  const newOnly = await service.getStudySession('learner', { sourceLessonId: 'lesson', onlyNew: true })
+  assert.equal(newOnly.words.length, 0, 'new-word mode still respects the daily target')
+  assert.ok(query.where.vocabProgress.none)
+})
