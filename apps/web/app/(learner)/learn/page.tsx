@@ -19,8 +19,7 @@ export default function LearnerHomePage() {
   useEffect(() => {
     async function loadData() {
       try {
-        const [meRes, profileRes, progressRes, attemptsRes, recsRes, journeyRes, certificatesRes] = await Promise.allSettled([
-          apiClient.get('/auth/me'),
+        const [profileRes, progressRes, attemptsRes, recsRes, journeyRes, certificatesRes] = await Promise.allSettled([
           apiClient.get('/learner-profiles/me'),
           apiClient.get('/progress/me'),
           apiClient.get('/exams/attempts/my?limit=3'),
@@ -37,7 +36,6 @@ export default function LearnerHomePage() {
         const certificatesData = get(certificatesRes);
 
         setData({
-          me: get(meRes),
           profile: profileData,
           progress: get(progressRes),
           certificates: Array.isArray(certificatesData?.data) ? certificatesData.data : [],
@@ -73,7 +71,6 @@ export default function LearnerHomePage() {
     );
   }
 
-  const displayName = data?.me?.displayName ?? data?.me?.user?.displayName ?? 'bạn';
   const profile = data?.profile;
   const progress = data?.progress;
   const certificates = selectedCertificates(data?.certificates ?? [], profile?.certGoals);
@@ -113,15 +110,7 @@ export default function LearnerHomePage() {
 
   return (
     <LearnerShell>
-      {/* ─── Hero Section ───────────────────────────────────────── */}
-      <section className="mb-6">
-        <h1 className="text-[30px] font-bold text-on-surface mb-2" style={{ lineHeight: '38px', letterSpacing: '-0.02em' }}>
-          {'Chào '} {displayName}, {'hôm nay bạn muốn học gì?'}
-        </h1>
-        <p className="text-[14px] text-on-surface-variant mb-6">
-          {'Học tiếng Anh chuyên ngành công nghệ thông tin theo mục tiêu của bạn.'}
-        </p>
-
+      <section className="mb-6" aria-label="Tổng quan học tập">
         {/* Stat Cards — 3 col */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           {[
