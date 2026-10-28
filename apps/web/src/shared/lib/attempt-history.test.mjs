@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { createRequire } from 'node:module';
 import { runInNewContext } from 'node:vm';
+import { goalProgress } from '../../../../../packages/shared-kernel/src/goal-progress.cjs';
 
 const ts = createRequire(import.meta.url)('typescript');
 const jsx = (type, props) => ({ type, props });
@@ -28,10 +29,11 @@ test('clicking a home history entry opens that specific attempt result, includin
   const component = load('../../../app/(learner)/learn/page.tsx', {
     react: { useState: () => [state[index++], () => {}], useEffect() {} },
     'next/link': 'link', '@/shared/layout': { LearnerShell: 'shell' },
-    'lucide-react': { ArrowRight: 'arrow', Play: 'play', Settings2: 'settings' },
+    'lucide-react': { ArrowRight: 'arrow', Play: 'play', Settings2: 'settings', Eye: 'eye', RotateCcw: 'replay', BookOpen: 'book', Route: 'route', ClipboardList: 'clipboard' },
     '@/shared/api/api-client': { apiClient: {} }, '@/shared/ui': { LoadingSpinner: 'spinner' },
     '@/shared/ui/LevelBadge': { LevelBadge: 'level' },
     '../../../../../packages/shared-kernel/src/selected-certificates': { selectedCertificates: () => [] },
+    '../../../../../packages/shared-kernel/src/goal-progress.cjs': { goalProgress },
   }).default;
   const tree = nodes(component());
   const entries = tree.filter(node => node.type === 'article');

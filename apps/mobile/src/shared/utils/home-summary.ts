@@ -1,3 +1,4 @@
+import { goalProgress } from '../../../../../packages/shared-kernel/src/goal-progress.cjs';
 const count = (value: unknown) => Math.max(0, Number.isFinite(Number(value)) ? Number(value) : 0);
 export function homeSummary(journey: any) {
   const configured = journey?.configured === true;
@@ -13,6 +14,6 @@ export function homeSummary(journey: any) {
     { label: 'Từ vựng', value: count(progress.vocabularyToday), target: count(targets.vocabularyPerDay), unit: 'từ' },
     { label: 'Thời gian học', value: count(progress.studyMinutesToday), target: count(targets.minutesPerDay), unit: 'phút' },
     { label: 'Bài thi tuần này', value: count(progress.examsWeek), target: count(targets.examsPerWeek), unit: 'bài' },
-  ].map(metric => ({ ...metric, percent: metric.target ? Math.min(100, Math.round(metric.value / metric.target * 100)) : 0 }));
+  ].map(metric => ({ ...metric, ...goalProgress(metric.value, metric.target, metric.unit) }));
   return { configured, complete, title, wordsLeft, minutesLeft, metrics, targets };
 }

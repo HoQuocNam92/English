@@ -2,7 +2,8 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { ArrowRight, Play, Settings2 } from 'lucide-react';
+import { ArrowRight, BookOpen, ChevronDown, ChevronUp, ClipboardList, Eye, Play, RotateCcw, Route, Settings2 } from 'lucide-react';
+import { goalProgress } from '../../../../../packages/shared-kernel/src/goal-progress.cjs';
 import { selectedCertificates } from '../../../../../packages/shared-kernel/src/selected-certificates';
 import { LearnerShell } from '@/shared/layout';
 import { apiClient } from '@/shared/api/api-client';
@@ -91,8 +92,8 @@ export default function LearnerHomePage() {
           <h2 id="continue-heading" className="max-w-xl text-xl font-bold leading-snug sm:text-2xl">{heroTitle}</h2>
           <p className="mt-2 text-xs leading-5 text-white/85">{attempts[0] ? `Gần nhất: ${attempts[0].exam?.title ?? attempts[0].examTitle ?? 'Bài kiểm tra'}` : 'Mỗi ngày một chút, tiến gần hơn đến mục tiêu của bạn.'}</p>
           <div className="mt-4 flex flex-wrap gap-2">
-            <Link href={!configured ? '/learn/profile?tab=goals' : goalComplete ? '/learn/flashcards' : studyHref} className="inline-flex min-h-11 items-center justify-center gap-2 rounded-lg bg-white px-4 py-2 text-sm font-semibold text-primary hover:bg-white/90"><Play size={15} fill="currentColor" aria-hidden="true" />{!configured ? 'Thiết lập mục tiêu' : goalComplete ? 'Khám phá từ vựng' : 'Học tiếp'}</Link>
-            {configured && wordsLeft > 0 && <Link href={studyHref} className="inline-flex min-h-11 items-center justify-center rounded-lg border border-white/40 px-4 py-2 text-sm font-semibold hover:bg-white/10">Học {wordsLeft} từ còn lại</Link>}
+            <Link href={!configured ? '/learn/profile?tab=goals' : goalComplete ? '/learn/flashcards' : studyHref} className="inline-flex min-h-11 items-center justify-center gap-2 rounded-lg bg-white px-4 py-2 text-sm font-semibold text-primary hover:bg-white/90">{!configured ? <Settings2 size={15} aria-hidden="true" /> : goalComplete ? <BookOpen size={15} aria-hidden="true" /> : <Play size={15} fill="currentColor" aria-hidden="true" />}{!configured ? 'Thiết lập mục tiêu' : goalComplete ? 'Khám phá từ vựng' : 'Học tiếp'}</Link>
+            {configured && wordsLeft > 0 && <Link href={studyHref} className="inline-flex min-h-11 items-center justify-center gap-2 rounded-lg border border-white/40 px-4 py-2 text-sm font-semibold hover:bg-white/10"><BookOpen size={15} aria-hidden="true" />Học {wordsLeft} từ còn lại</Link>}
           </div>
         </section>
 
@@ -104,27 +105,28 @@ export default function LearnerHomePage() {
           {configured ? <>
             <div className="grid gap-3 sm:grid-cols-2">
               {metrics.map((metric, index) => {
-                const percent = Math.min(100, Math.max(0, Number(metric.percent) || 0));
+                const goal = goalProgress(metric.value, metric.target, metric.unit);
+                const percent = goal.percent;
                 return <div key={metric.label} className={`rounded-xl border border-outline-variant/50 bg-background p-4 ${index === 2 ? 'sm:col-span-2' : ''}`}>
                   <h3 className="text-xs text-on-surface-variant">{metric.label}</h3>
-                  <p className="mb-3 mt-1"><strong className="text-2xl font-bold text-primary">{metric.value}</strong><span className="text-sm text-on-surface-variant">/{metric.target} {metric.unit}</span></p>
+                  <p aria-label={goal.description} className="mb-3 mt-2 flex flex-wrap items-baseline gap-x-1.5 gap-y-1"><strong className="text-[30px] font-bold leading-none tabular-nums text-primary">{goal.value}</strong><span className="text-xs font-normal tabular-nums text-on-surface-variant">/ {goal.target || '—'} {metric.unit}</span></p>
                   <div role="progressbar" aria-label={metric.label} aria-valuemin={0} aria-valuemax={100} aria-valuenow={percent} className="h-1.5 overflow-hidden rounded-full bg-surface-container-highest"><div className="h-full rounded-full bg-primary" style={{ width: `${percent}%` }} /></div>
-                  <div className="mt-2 flex items-center justify-between gap-2 text-[11px]"><span className="font-semibold text-primary">{percent}%</span>{metric.href ? <Link href={metric.href} className="inline-flex items-center gap-1 font-medium text-primary hover:underline">{metric.detail}<ArrowRight size={12} aria-hidden="true" /></Link> : <span className="text-on-surface-variant">{metric.detail}</span>}</div>
+                  <div className="mt-2 flex flex-wrap items-center justify-between gap-2 text-[11px]"><span className="font-semibold text-primary">{percent}%</span>{metric.href ? <Link href={metric.href} className="inline-flex items-center gap-1 font-medium text-primary hover:underline">{goal.remaining > 0 ? metric.detail : goal.status}<ArrowRight size={12} aria-hidden="true" /></Link> : <span className="text-on-surface-variant">{goal.status}</span>}</div>
                 </div>;
               })}
             </div>
             <p className="mt-4 text-xs leading-5 text-on-surface-variant">Mục tiêu dài hạn ({targets.examsPerMonth} bài/tháng, {targets.examsPerYear} bài/năm) xem tại <Link href="/learn/progress" className="font-semibold text-primary hover:underline">Tiến độ</Link>.</p>
             {targets.reminderEnabled && targets.reminderTime && <p className="mt-2 text-xs text-primary">Nhắc học lúc {targets.reminderTime} mỗi ngày</p>}
-          </> : <Link href="/learn/profile?tab=goals" className={primary}>Thiết lập lộ trình học tập<ArrowRight size={14} aria-hidden="true" /></Link>}
+          </> : <Link href="/learn/profile?tab=goals" className={primary}><Settings2 size={14} aria-hidden="true" />Thiết lập lộ trình học tập</Link>}
         </section>
 
         <section aria-labelledby="review-heading" className={card}>
-          <div className="mb-4 flex flex-wrap items-center justify-between gap-3"><h2 id="review-heading" className="text-lg font-bold">Từ cần ôn hôm nay</h2>{reviewWords.length > 0 && <Link href={reviewHref} className={`${outline} border-primary text-primary`}>Ôn tập ngay<ArrowRight size={14} aria-hidden="true" /></Link>}</div>
+          <div className="mb-4 flex flex-wrap items-center justify-between gap-3"><h2 id="review-heading" className="text-lg font-bold">Từ cần ôn hôm nay</h2>{reviewWords.length > 0 && <Link href={reviewHref} className={`${outline} border-primary text-primary`}><RotateCcw size={14} aria-hidden="true" />Ôn tập ngay</Link>}</div>
           {reviewWords.length > 0 ? <div className="grid gap-3 sm:grid-cols-2">{reviewWords.slice(0, 4).map(word => <Link key={word.id} href={reviewHref} className="rounded-xl border border-outline-variant/60 p-4 transition-colors hover:border-primary hover:bg-primary/5"><h3 className="text-sm font-bold">{word.term}</h3><p className="mt-1 line-clamp-2 text-xs leading-5 text-on-surface-variant">{word.definitionVi || word.definitionEn}</p></Link>)}</div>
-            : <div className="rounded-xl border border-dashed border-outline-variant p-5 text-sm leading-6 text-on-surface-variant">{data.reviewUnavailable ? 'Chưa tải được danh sách từ cần ôn. Bạn có thể mở phần ôn tập để thử lại.' : 'Hôm nay chưa có từ đến hạn ôn. Tiếp tục học từ mới để duy trì tiến độ nhé.'}<Link href={data.reviewUnavailable ? reviewHref : '/learn/flashcards'} className="mt-2 block font-semibold text-primary hover:underline">{data.reviewUnavailable ? 'Mở ôn tập' : 'Khám phá từ vựng'} →</Link></div>}
+            : <div className="rounded-xl border border-dashed border-outline-variant p-5 text-sm leading-6 text-on-surface-variant">{data.reviewUnavailable ? 'Chưa tải được danh sách từ cần ôn. Bạn có thể mở phần ôn tập để thử lại.' : 'Hôm nay chưa có từ đến hạn ôn. Tiếp tục học từ mới để duy trì tiến độ nhé.'}<Link href={data.reviewUnavailable ? reviewHref : '/learn/flashcards'} className="mt-2 inline-flex items-center gap-2 font-semibold text-primary hover:underline">{data.reviewUnavailable ? <RotateCcw size={14} aria-hidden="true" /> : <BookOpen size={14} aria-hidden="true" />}{data.reviewUnavailable ? 'Mở ôn tập' : 'Khám phá từ vựng'}</Link></div>}
         </section>
 
-        {certificates.length > 0 && <section aria-labelledby="certificates-heading" className={card}><h2 id="certificates-heading" className="mb-4 text-lg font-bold">Lộ trình chứng chỉ</h2><div className="grid gap-3 sm:grid-cols-2">{certificates.map((certificate: any) => <Link key={certificate.id} href={`/learn/certifications/${certificate.id}`} className="rounded-xl border border-outline-variant/60 p-4 hover:border-primary"><p className="text-xs font-semibold text-primary">{certificate.code}</p><h3 className="mt-1 text-sm font-bold">{certificate.name}</h3><p className="mt-3 inline-flex items-center gap-1 text-xs text-primary">Xem lộ trình<ArrowRight size={12} aria-hidden="true" /></p></Link>)}</div></section>}
+        {certificates.length > 0 && <section aria-labelledby="certificates-heading" className={card}><h2 id="certificates-heading" className="mb-4 text-lg font-bold">Lộ trình chứng chỉ</h2><div className="grid gap-3 sm:grid-cols-2">{certificates.map((certificate: any) => <Link key={certificate.id} href={`/learn/certifications/${certificate.id}`} className="rounded-xl border border-outline-variant/60 p-4 hover:border-primary"><p className="text-xs font-semibold text-primary">{certificate.code}</p><h3 className="mt-1 text-sm font-bold">{certificate.name}</h3><p className="mt-3 inline-flex items-center gap-1 text-xs text-primary"><Route size={14} aria-hidden="true" />Xem lộ trình</p></Link>)}</div></section>}
       </div>
 
       <aside className="min-w-0 space-y-5">
@@ -132,14 +134,14 @@ export default function LearnerHomePage() {
           <h2 id="profile-heading" className="border-b border-outline-variant/60 pb-3 text-sm font-bold">Hồ sơ học tập</h2>
           <dl className="space-y-5 py-4 text-xs">
             <div><div className="flex items-center justify-between gap-3"><dt className="text-on-surface-variant">Trình độ</dt><dd><LevelBadge level={level} /></dd></div><p className="mt-2 text-[11px] text-on-surface-variant">Học theo trình độ hiện tại của bạn</p></div>
-            <div className="flex items-start justify-between gap-3"><dt className="shrink-0 pt-1 text-on-surface-variant">Chuyên ngành IT</dt><dd className="min-w-0 text-right"><ul id="selected-it-domains" className="flex flex-wrap justify-end gap-1.5">{(showAllDomains ? domainNames : domainNames.slice(0, 1)).map(name => <li key={name} className="max-w-full break-words rounded-full bg-primary/10 px-2 py-1 font-medium text-primary">{name}</li>)}</ul>{!domainNames.length && 'Chưa thiết lập'}{domainNames.length > 1 && <button type="button" aria-expanded={showAllDomains} aria-controls="selected-it-domains" onClick={() => setShowAllDomains(shown => !shown)} className="mt-1 py-1 font-semibold text-primary hover:underline">{showAllDomains ? 'Thu gọn' : `+${domainNames.length - 1} chuyên ngành`}</button>}</dd></div>
+            <div className="flex items-start justify-between gap-3"><dt className="shrink-0 pt-1 text-on-surface-variant">Chuyên ngành IT</dt><dd className="min-w-0 text-right"><ul id="selected-it-domains" className="flex flex-wrap justify-end gap-1.5">{(showAllDomains ? domainNames : domainNames.slice(0, 1)).map(name => <li key={name} className="max-w-full break-words rounded-full bg-primary/10 px-2 py-1 font-medium text-primary">{name}</li>)}</ul>{!domainNames.length && 'Chưa thiết lập'}{domainNames.length > 1 && <button type="button" aria-expanded={showAllDomains} aria-controls="selected-it-domains" onClick={() => setShowAllDomains(shown => !shown)} className="mt-1 inline-flex items-center gap-1 py-1 font-semibold text-primary hover:underline">{showAllDomains ? <ChevronUp size={12} aria-hidden="true" /> : <ChevronDown size={12} aria-hidden="true" />}{showAllDomains ? 'Thu gọn' : `+${domainNames.length - 1} chuyên ngành`}</button>}</dd></div>
             <div className="flex items-start justify-between gap-3"><dt className="shrink-0 text-on-surface-variant">Mục tiêu chứng chỉ</dt><dd className="text-right font-semibold">{cert || 'Chưa thiết lập'}</dd></div>
           </dl>
-          <Link href="/learn/profile?tab=goals" className={`${outline} w-full border-primary text-primary`}>{cert ? 'Cập nhật hồ sơ' : 'Thiết lập ngay'}</Link>
+          <Link href="/learn/profile?tab=goals" className={`${outline} w-full border-primary text-primary`}><Settings2 size={14} aria-hidden="true" />{cert ? 'Cập nhật hồ sơ' : 'Thiết lập ngay'}</Link>
         </section>
 
         <section aria-labelledby="results-heading" className={card}>
-          <div className="mb-4 flex items-center justify-between gap-2"><h2 id="results-heading" className="text-sm font-bold">Kết quả kiểm tra gần đây</h2><Link href="/learn/progress" className="shrink-0 text-xs font-medium text-primary hover:underline">Tất cả</Link></div>
+          <div className="mb-4 flex items-center justify-between gap-2"><h2 id="results-heading" className="text-sm font-bold">Kết quả kiểm tra gần đây</h2><Link href="/learn/progress" className="inline-flex shrink-0 items-center gap-1 text-xs font-medium text-primary hover:underline">Tất cả<ArrowRight size={12} aria-hidden="true" /></Link></div>
           <div className="space-y-3">{attempts.length ? attempts.slice(0, 2).map(a => {
             const examId = a.exam?.id ?? a.examId;
             const score = a.score ?? a.correctCount;
@@ -148,9 +150,9 @@ export default function LearnerHomePage() {
             return <article key={a.id} className="rounded-xl border border-outline-variant/60 p-3">
               <div className="flex items-start justify-between gap-2"><h3 className="min-w-0 text-xs font-semibold leading-5">{a.exam?.title ?? a.examTitle ?? 'Bài kiểm tra'}</h3><span className={`shrink-0 rounded-full px-2 py-1 text-[10px] font-bold ${score == null ? 'bg-surface-container text-on-surface-variant' : percent >= 70 ? 'bg-emerald-100 text-emerald-800' : percent >= 25 ? 'bg-amber-100 text-amber-800' : 'bg-rose-100 text-rose-700'}`}>{score == null ? 'Chưa chấm' : `${score}/${total}`}</span></div>
               <p className="mb-3 mt-1 text-[11px] text-on-surface-variant">{formatRelativeDate(a.completedAt || a.submittedAt || a.startedAt)}</p>
-              <div className="grid grid-cols-2 gap-2"><Link href={`/learn/quiz/result/${a.id}`} className={`${outline} px-2`}>Xem kết quả</Link>{examId && <Link href={`/learn/quiz/${examId}`} className={primary}>Làm lại</Link>}</div>
+              <div className="grid grid-cols-2 gap-2"><Link href={`/learn/quiz/result/${a.id}`} className={`${outline} px-2`}><Eye size={14} aria-hidden="true" />Xem kết quả</Link>{examId && <Link href={`/learn/quiz/${examId}`} className={primary}><RotateCcw size={14} aria-hidden="true" />Làm lại</Link>}</div>
             </article>;
-          }) : <p className="text-sm leading-6 text-on-surface-variant">Bạn chưa có kết quả kiểm tra. <Link href="/learn/certifications" className="font-semibold text-primary hover:underline">Khám phá bài thi</Link></p>}</div>
+          }) : <p className="text-sm leading-6 text-on-surface-variant">Bạn chưa có kết quả kiểm tra. <Link href="/learn/certifications" className="inline-flex items-center gap-1 font-semibold text-primary hover:underline"><ClipboardList size={14} aria-hidden="true" />Khám phá bài thi</Link></p>}</div>
         </section>
       </aside>
     </div>
