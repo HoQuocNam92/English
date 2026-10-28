@@ -4,7 +4,7 @@ import { readFileSync } from 'node:fs';
 import { createRequire } from 'node:module';
 import { runInNewContext } from 'node:vm';
 
-function client(response) {
+function client(response, events) {
   const ts = createRequire(import.meta.url)('typescript');
   const source = readFileSync(new URL('../api/api-client.ts', import.meta.url), 'utf8');
   const code = ts.transpileModule(source, { compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022 } }).outputText;
@@ -17,7 +17,9 @@ function client(response) {
     '@/shared/lib/error-message': { toVietnameseErrorMessage: message => message },
   };
   const exports = {};
-  runInNewContext(code, { exports, require: name => { assert.ok(name in mocks, name); return mocks[name]; }, fetch: async () => response, Response, FormData, AbortController, setTimeout, clearTimeout });
+  runInNewContext(code, { exports, require: name => { assert.ok(name in mocks, name); return mocks[name]; }, fetch: async () => response, Response, FormData, AbortController, setTimeout, clearTimeout,
+    ...(events ? { window: { dispatchEvent: event => events.push(event) }, CustomEvent: class { constructor(type, options) { this.type = type; this.detail = options.detail; } } } : {}),
+  });
   return exports;
 }
 
@@ -38,4 +40,21 @@ test('malformed or unexpected empty success bodies give a readable error without
     const api = client(new Response(body));
     await assert.rejects(api.apiClient.get(path), error => error instanceof api.ApiClientError && error.message === 'Máy chủ trả về dữ liệu không hợp lệ. Vui lòng thử lại.');
   }
+});
+
+test('failed deletion displays immediate viewport feedback while retaining the API error for the page', async () => {
+  const events = [];
+  const message = 'Không thể xóa chứng chỉ đang có câu hỏi, bài thi hoặc học viên liên kết';
+  const api = client(new Response(JSON.stringify({ message }), { status: 409 }), events);
+  await assert.rejects(api.apiClient.delete('/certificates/linked'), error => error instanceof api.ApiClientError && error.message === message);
+  assert.equal(events.length, 1);
+  assert.equal(events[0].type, 'techenglish:toast');
+  assert.equal(events[0].detail.kind, 'error');
+  assert.equal(events[0].detail.message, message);
+});
+
+test('failed background reads do not interrupt the user with mutation feedback', async () => {
+  const events = [];
+  await assert.rejects(client(new Response('{}', { status: 503 }), events).apiClient.get('/certificates'));
+  assert.equal(events.length, 0);
 });

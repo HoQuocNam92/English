@@ -184,7 +184,7 @@ export class TaxonomyService {
     return { success: true, message: `Đã xóa cấp độ "${level.name}" thành công` }
   }
 
-  async getDomains(activeOnly = false) {
+  async getDomains(activeOnly = true) {
     const domains = await this.prisma.domain.findMany({
       where: activeOnly ? { isActive: true } : undefined,
       orderBy: { name: 'asc' },
@@ -209,8 +209,9 @@ export class TaxonomyService {
         exams: {
           where: { status: 'published' },
           orderBy: { createdAt: 'desc' },
-          select: { id: true, title: true, createdAt: true },
+          select: { id: true, title: true, createdAt: true, domain: { select: { id: true, code: true, name: true, isActive: true } } },
         },
+        lessons: { where: { lesson: { status: 'published' } }, select: { lesson: { select: { domain: { select: { id: true, code: true, name: true, isActive: true } } } } } },
         domains: {
           include: {
             domain: true,
@@ -228,7 +229,11 @@ export class TaxonomyService {
         },
       },
     })
-    return { data: certs }
+    return { data: certs.map(cert => ({ ...cert, selectionDomains: [...new Map([
+      ...(cert.domains ?? []).map(link => link.domain),
+      ...(cert.exams ?? []).map(exam => exam.domain),
+      ...(cert.lessons ?? []).map(link => link.lesson.domain),
+    ].filter(domain => domain?.isActive).map(domain => [domain.id, domain])).values()] })) }
   }
 
   async getStudents(params: any) {

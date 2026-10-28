@@ -61,7 +61,7 @@ export class TaxonomyController {
   @Get('domains')
   @ApiOperation({ summary: 'List all domains' })
   getDomains(@Query('activeOnly') activeOnly?: string) {
-    return this.svc.getDomains(activeOnly === 'true')
+    return this.svc.getDomains(activeOnly !== 'false')
   }
 
   @Get('certificates')

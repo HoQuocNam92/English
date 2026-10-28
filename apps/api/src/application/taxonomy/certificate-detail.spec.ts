@@ -6,7 +6,8 @@ test('certificate search data includes published exams and can restrict inactive
   const service = new TaxonomyService({
     certificate: { findMany: async (query: any) => {
       assert.deepEqual(query.where, { isActive: true })
-      assert.deepEqual(query.include.exams, { where: { status: 'published' }, orderBy: { createdAt: 'desc' }, select: { id: true, title: true, createdAt: true } })
+      assert.deepEqual(query.include.exams.where, { status: 'published' })
+      assert.equal(query.include.exams.select.domain.select.isActive, true)
       return [{ id: 'certificate-1', exams: [{ id: 'exam-1', title: 'Bài kiểm tra số 1' }] }]
     } },
   } as any)
@@ -35,4 +36,15 @@ test('certificate detail includes the linked questions specialty and level', asy
   assert.deepEqual(question.domain, domain)
   assert.deepEqual(question.level, level)
   assert.equal(result.stats.attempts, 0)
+})
+
+test('certificate filter domains derive from active linked content without exposing retired blueprint areas', async () => {
+  const cloud = { id: 'cloud', code: 'CLOUD', name: 'Cloud', isActive: true }
+  const blueprint = { id: 'blueprint', code: 'CLOUD_CONCEPTS', name: 'Cloud Concepts', isActive: false }
+  const service = new TaxonomyService({ certificate: { findMany: async () => [{
+    id: 'certificate', domains: [{ domain: blueprint }], exams: [{ domain: cloud }], lessons: [{ lesson: { domain: cloud } }],
+  }] } } as any)
+  const result = await service.getCertificates()
+  assert.deepEqual(result.data[0].selectionDomains, [cloud])
+  assert.deepEqual(result.data[0].domains[0].domain, blueprint, 'keep the real certificate structure')
 })

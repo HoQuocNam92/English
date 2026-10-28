@@ -28,6 +28,7 @@ interface CertificateItem {
   passingScaledScore?: number | null;
   examUrl: string | null;
   isActive: boolean;
+  selectionDomains?: Array<{ code: string; name: string }>;
   domains?: Array<{ domain: { code: string; name: string }; certificationTopics?: Array<{ _count?: { questions?: number } }> }>;
   _count?: {
     exams: number;
@@ -37,6 +38,7 @@ interface CertificateItem {
 export default function AdminCertifications({ createOnly = false }: { createOnly?: boolean }) {
   const router = useRouter();
   const [certs, setCerts] = React.useState<CertificateItem[]>([]);
+  const [domains, setDomains] = React.useState<{ code: string; name: string }[]>([]);
   const [searchInput, setSearchInput] = React.useState('');
   const [search, setSearch] = React.useState('');
   const [domainFilter, setDomainFilter] = React.useState('');
@@ -54,9 +56,13 @@ export default function AdminCertifications({ createOnly = false }: { createOnly
       setLoading(true);
       setError(null);
       try {
-        const res = await apiClient.get<{ data: CertificateItem[] }>('/certificates');
+        const [res, domainResult] = await Promise.all([
+          apiClient.get<{ data: CertificateItem[] }>('/certificates'),
+          apiClient.get<{ data: { code: string; name: string }[] }>('/domains?activeOnly=true'),
+        ]);
         const data = res.data ?? [];
         setCerts(data);
+        setDomains(domainResult.data ?? []);
       } catch (e) {
         setError(e instanceof ApiClientError ? e.message : 'Không thể tải danh sách chứng chỉ');
       } finally {
@@ -66,7 +72,6 @@ export default function AdminCertifications({ createOnly = false }: { createOnly
     if (!createOnly) void load();
   }, [createOnly]);
 
-  const domains = React.useMemo(() => [...new Map(certs.flatMap(cert => cert.domains ?? []).map(item => [item.domain.code, item.domain])).values()].sort((a, b) => a.name.localeCompare(b.name, 'vi')), [certs]);
   const categories = React.useMemo(() => [...new Set(certs.map(cert => cert.category?.trim()).filter((value): value is string => Boolean(value)))].sort((a, b) => a.localeCompare(b, 'vi')), [certs]);
   const providers = React.useMemo(() => [...new Set(certs.map(cert => cert.provider?.trim()).filter((value): value is string => Boolean(value)))].sort((a, b) => a.localeCompare(b, 'vi')), [certs]);
   const filteredCerts = React.useMemo(() => {
@@ -74,7 +79,7 @@ export default function AdminCertifications({ createOnly = false }: { createOnly
     return certs.filter(cert => {
       const matchesQuery = !q || [cert.name, cert.code, cert.provider, cert.description, cert.category, ...(cert.domains ?? []).map(item => item.domain.name)]
         .some(value => String(value ?? '').toLocaleLowerCase('vi').includes(q));
-      const matchesDomain = !domainFilter || cert.domains?.some(item => item.domain.code === domainFilter);
+      const matchesDomain = !domainFilter || cert.selectionDomains?.some(item => item.code === domainFilter) || cert.domains?.some(item => item.domain.code === domainFilter);
       const matchesCategory = !categoryFilter || cert.category?.trim() === categoryFilter;
       const matchesProvider = !providerFilter || cert.provider === providerFilter;
       const matchesStatus = !statusFilter || cert.isActive === (statusFilter === 'active');

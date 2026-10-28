@@ -154,18 +154,30 @@ async function request<T>(path: string, options: RequestInit = {}, canRetry = tr
 // API methods
 // ============================================================
 
+async function mutate<T>(path: string, options: RequestInit): Promise<T> {
+  try {
+    return await request<T>(path, options);
+  } catch (error) {
+    if (typeof window !== 'undefined') {
+      const message = error instanceof Error ? error.message : 'Không thể hoàn tất thao tác. Vui lòng thử lại.';
+      window.dispatchEvent(new CustomEvent('techenglish:toast', { detail: { message, kind: 'error', title: 'Không thể hoàn tất thao tác' } }));
+    }
+    throw error;
+  }
+}
+
 export const apiClient = {
   get: <T>(path: string) => request<T>(path),
   post: <T>(path: string, body: unknown) =>
-    request<T>(path, { method: "POST", body: JSON.stringify(body) }),
+    mutate<T>(path, { method: "POST", body: JSON.stringify(body) }),
   postWithHeaders: <T>(path: string, body: unknown, extraHeaders: Record<string, string>) =>
-    request<T>(path, { method: "POST", body: JSON.stringify(body), headers: extraHeaders }),
+    mutate<T>(path, { method: "POST", body: JSON.stringify(body), headers: extraHeaders }),
   put: <T>(path: string, body: unknown) =>
-    request<T>(path, { method: "PUT", body: JSON.stringify(body) }),
+    mutate<T>(path, { method: "PUT", body: JSON.stringify(body) }),
   patch: <T>(path: string, body: unknown) =>
-    request<T>(path, { method: "PATCH", body: JSON.stringify(body) }),
-  delete: <T>(path: string) => request<T>(path, { method: "DELETE" }),
-  upload: <T>(path: string, body: FormData) => request<T>(path, { method: "POST", body }),
+    mutate<T>(path, { method: "PATCH", body: JSON.stringify(body) }),
+  delete: <T>(path: string) => mutate<T>(path, { method: "DELETE" }),
+  upload: <T>(path: string, body: FormData) => mutate<T>(path, { method: "POST", body }),
 };
 
 // ============================================================

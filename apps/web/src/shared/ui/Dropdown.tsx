@@ -36,7 +36,7 @@ export const Dropdown = React.forwardRef<HTMLSelectElement, React.SelectHTMLAttr
     });
 
     const visibleItems = React.useMemo(() => filterDropdownItems(items, query), [items, query]);
-    const showSearch = items.length > 10;
+    const showSearch = items.length > 1;
     const close = React.useCallback(() => { setOpen(false); setQuery(''); }, []);
     React.useEffect(() => { if (open && showSearch) searchRef.current?.focus({ preventScroll: true }); }, [open, showSearch]);
     React.useEffect(() => {

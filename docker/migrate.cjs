@@ -39,6 +39,8 @@ async function main() {
       const current = await audit(prisma);
       const complete = current.configured && current.tiers.length === 4 && current.tiers.every(tier => tier.errors.length === 0);
       console.log('Software curriculum:', JSON.stringify(complete ? current : await applySoftwareCurriculum(prisma)));
+      const { repairSeededLessonDurations } = require('../apps/api/prisma/repair-lesson-durations.cjs');
+      console.log('Lesson duration estimates:', JSON.stringify(await repairSeededLessonDurations(prisma)));
     }
     finally { await prisma.$disconnect(); }
   }

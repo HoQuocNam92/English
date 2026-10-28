@@ -4,12 +4,14 @@
   "private": true,
   "type": "module",
   "exports": {
-    ".": "./src/index.ts"
+    ".": "./src/index.ts",
+    "./lesson-duration": "./src/lesson-duration.cjs"
   },
   "types": "./src/index.ts",
+  "typesVersions": { "*": { "lesson-duration": ["src/lesson-duration.d.cts"] } },
   "scripts": {
     "typecheck": "tsc --noEmit -p tsconfig.json",
-    "test": "node --test src/progress.test.mjs src/rich-text.test.mjs"
+    "test": "node --test src/progress.test.mjs src/rich-text.test.mjs src/lesson-duration.test.mjs"
   },
   "dependencies": {
     "htmlparser2": "10.0.0"

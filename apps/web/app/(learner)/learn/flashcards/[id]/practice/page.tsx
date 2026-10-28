@@ -465,7 +465,7 @@ export default function FlashcardPracticePage({ params }: { params: Promise<{ id
           )}
         </div>
 
-        {sessionStats?.studiedToday >= 20 && <div className="ml-auto w-fit rounded-full border border-amber-200 bg-amber-50 px-3 py-1.5 text-[11px] font-bold text-amber-800"><IconText>{"✓ Đã đủ mục tiêu hôm nay · đang học thêm"}</IconText></div>}
+        {sessionStats?.dailyLimitReached && <div className="ml-auto w-fit rounded-full border border-amber-200 bg-amber-50 px-3 py-1.5 text-[11px] font-bold text-amber-800"><IconText>{"✓ Đã đủ mục tiêu hôm nay · đang học thêm"}</IconText></div>}
 
         {/* Card Progress Indicator */}
         <div className="flex justify-between items-center text-xs font-bold text-slate-500 pt-1">

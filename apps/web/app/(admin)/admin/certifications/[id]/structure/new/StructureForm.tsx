@@ -9,7 +9,7 @@ import { Dropdown } from '@/shared/ui/Dropdown';
 import { apiClient, ApiClientError } from '@/shared/api/api-client';
 
 type Domain = { id: string; name: string };
-type Certificate = { domains?: { domainId: string }[] };
+type Certificate = { domains?: { domainId: string; domain?: Domain }[] };
 
 export default function StructureForm({ certificateId, mode, initialDomainId }: {
   certificateId: string; mode: 'domain' | 'topic'; initialDomainId: string;
@@ -31,7 +31,10 @@ export default function StructureForm({ certificateId, mode, initialDomainId }: 
           apiClient.get<Certificate>(`/certificates/${certificateId}`),
         ]);
         if (cancelled) return;
-        const options = Array.isArray(response) ? response : response.data;
+        // Existing certificate blueprint areas remain editable even if retired from general learning choices.
+        const options = mode === 'topic'
+          ? (certificate.domains ?? []).flatMap(entry => entry.domain ? [entry.domain] : [])
+          : Array.isArray(response) ? response : response.data;
         setDomains(options.filter(domain => mode === 'domain'
           ? !certificate.domains?.some(entry => entry.domainId === domain.id)
           : certificate.domains?.some(entry => entry.domainId === domain.id)));

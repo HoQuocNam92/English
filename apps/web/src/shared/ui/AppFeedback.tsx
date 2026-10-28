@@ -66,7 +66,7 @@ export function AppFeedbackProvider({ children }: { children: React.ReactNode })
   }, []);
   React.useEffect(() => {
     if (!toast) return;
-    const timer = window.setTimeout(() => setToast(null), 4200);
+    const timer = window.setTimeout(() => setToast(null), toast.kind === 'error' ? 8000 : 4200);
     return () => window.clearTimeout(timer);
   }, [toast]);
 

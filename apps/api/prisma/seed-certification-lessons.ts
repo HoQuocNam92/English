@@ -1,6 +1,7 @@
 import { PrismaClient } from '@prisma/client'
 import { readFileSync } from 'node:fs'
 import { join } from 'node:path'
+import { estimateLessonMinutes } from '@techenglish/shared-kernel/lesson-duration'
 
 const prisma = new PrismaClient()
 type Seed = { code: string; title: string; text: string; explanation: string; prompt: string; options: string[]; answerExplanation: string; trap: string; source: string }
@@ -25,7 +26,7 @@ async function main() {
       if (!lesson) {
         lesson = await tx.lesson.create({ data: {
           title: item.title, slug, summary: `Bài học mẫu CLF-C02 ${item.code}: ${topic.name}. Đọc kiến thức, phân tích tình huống và luyện câu hỏi sau bài.`,
-          type: 'certification_review', domainId: topic.domainId, levelId: level.id, estimatedMinutes: 12,
+          type: 'certification_review', domainId: topic.domainId, levelId: level.id, estimatedMinutes: estimateLessonMinutes([{ content: { text: item.text, explanation: item.explanation, prompt: item.prompt, answerExplanation: item.answerExplanation, trap: item.trap } }]),
           status: 'published', publishedAt: new Date(), createdById: author.id, keyConcepts: [topic.name],
           certificates: { create: { certificateId: certificate.id } },
           sections: { create: [
