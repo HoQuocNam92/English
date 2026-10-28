@@ -141,13 +141,13 @@ export default function LearnerQuizResultPage({ params }: { params: Promise<{ id
 
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs p-3 rounded-lg bg-surface-container-low">
                     <div>
-                      <span className="text-outline block text-[11px]">Bạn đã chọn:</span>
+                      <span className="block text-[11px] font-bold text-black">Bạn đã chọn:</span>
                       <span className={`font-bold ${isCorrect ? 'text-green-700' : 'text-red-700'}`}>
                         {selectedOptions.length ? selectedOptions.map((o: any) => o.text).join(', ') : 'Không chọn'}
                       </span>
                     </div>
                     <div>
-                      <span className="text-outline block text-[11px]">Đáp án đúng:</span>
+                      <span className="block text-[11px] font-bold text-black">Đáp án đúng:</span>
                       <span className="font-bold text-green-700">
                         {correctOptions.length ? correctOptions.map((o: any) => o.text).join(', ') : 'Chưa có đáp án đúng'}
                       </span>
