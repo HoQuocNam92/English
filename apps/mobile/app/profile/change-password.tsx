@@ -221,7 +221,7 @@ const styles = StyleSheet.create({
   },
   saveBtn: {
     backgroundColor: colors.primary,
-    height: 50,
+    height: 48,
     borderRadius: 12,
     alignItems: 'center',
     justifyContent: 'center'

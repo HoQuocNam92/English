@@ -16,7 +16,7 @@ export function FeatureScreen({ title, subtitle, children, loading = false, erro
   return <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={s.root}>
     <Surface elevation={0} style={[s.header, { paddingTop: insets.top + 8 }]}>
       {!embedded && <IconButton icon="arrow-left" accessibilityLabel="Quay lại" size={24} onPress={() => router.canGoBack() ? router.back() : router.replace('/(tabs)/learning' as any)} style={s.back} />}
-      <View style={{ flex: 1, minWidth: 0 }}><Text accessibilityRole="header" style={[s.title, embedded && { fontSize: 28 }]}>{title}</Text>{subtitle ? <Text style={s.subtitle}>{subtitle}</Text> : null}</View>
+      <View style={{ flex: 1, minWidth: 0 }}><Text accessibilityRole="header" style={[s.title, embedded && { fontSize: 23 }]}>{title}</Text>{subtitle ? <Text style={s.subtitle}>{subtitle}</Text> : null}</View>
       <NotificationBell />
     </Surface>
     {loading ? <View style={s.center}><ActivityIndicator size="large" /><Text style={s.emptyText}>Đang tải nội dung…</Text></View> : error ? <View style={s.center}><MaterialIcons name="error-outline" size={42} color="#ba1a1a" /><Text accessibilityRole="alert" style={s.error}>{error}</Text>{onRetry ? <Button onPress={onRetry}>Thử lại</Button> : null}</View> : <ScrollView keyboardShouldPersistTaps="handled" showsVerticalScrollIndicator={false} contentContainerStyle={[s.content, { paddingBottom: insets.bottom + 32 }]}>{children}</ScrollView>}

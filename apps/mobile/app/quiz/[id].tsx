@@ -498,9 +498,9 @@ const styles = StyleSheet.create({
   },
   btnSecondary: {
     width: 80,
-    height: 52,
+    height: 48,
     backgroundColor: '#ffffff',
-    borderRadius: 10,
+    borderRadius: 12,
     borderWidth: 1,
     borderColor: '#c7c4d8',
     alignItems: 'center',
@@ -558,7 +558,7 @@ const styles = StyleSheet.create({
   modalCancelBtn: {
     flex: 1,
     backgroundColor: '#f1f5f9',
-    paddingVertical: 14,
+    paddingVertical: 10,
     borderRadius: 12,
     alignItems: 'center'
   },
@@ -570,7 +570,7 @@ const styles = StyleSheet.create({
   modalSubmitBtn: {
     flex: 1,
     backgroundColor: colors.primary,
-    paddingVertical: 14,
+    paddingVertical: 10,
     borderRadius: 12,
     alignItems: 'center'
   },

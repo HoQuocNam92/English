@@ -11,7 +11,8 @@ import { colors, spacing } from '@techenglish/design-tokens';
 import { useAuth } from '../../src/shared/store/auth-context';
 import { validateEmail } from '../../src/shared/utils/validators';
 import { GoogleAuthButton } from '../../src/shared/ui/GoogleAuthButton';
-import Constants from 'expo-constants';
+import { isRunningInExpoGo } from 'expo';
+import { TurboModuleRegistry } from 'react-native';
 import { api } from '../../src/shared/api/api-client';
 
 
@@ -56,8 +57,8 @@ export default function MobileLoginScreen() {
   };
 
   const startGoogleLogin = async () => {
-    if (Constants.appOwnership === 'expo') {
-      Alert.alert('Cần bản cài ứng dụng', 'Đăng nhập Google không hỗ trợ Expo Go. Hãy mở bản development build hoặc APK TechEnglish Pro.');
+    if (isRunningInExpoGo() || !TurboModuleRegistry.get('RNGoogleSignin')) {
+      Alert.alert('Cần bản cài ứng dụng', 'Bản đang mở chưa hỗ trợ đăng nhập Google. Vui lòng dùng email trong Expo Go, hoặc cài development build/APK TechEnglish Pro có Google Sign-In.');
       return;
     }
     setIsLoading(true);
@@ -295,8 +296,8 @@ const styles = StyleSheet.create({
   },
   loginButton: {
     backgroundColor: colors.primary,
-    minHeight: 56,
-    borderRadius: 14,
+    minHeight: 44,
+    borderRadius: 12,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
@@ -358,8 +359,8 @@ const styles = StyleSheet.create({
     color: colors.mutedText
   },
   googleButton: {
-    minHeight: 56,
-    borderRadius: 14,
+    minHeight: 44,
+    borderRadius: 12,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',

@@ -1,3 +1,4 @@
+import { compactTextSize } from './font-styles';
 import { matchesFilterOption } from '../utils/filter-options';
 import { useRef, useState, type ComponentRef } from 'react';
 import { FlatList, Keyboard, Modal, Pressable, StyleSheet, View, useWindowDimensions } from 'react-native';
@@ -37,7 +38,7 @@ export function FilterSelect({ label, value, items, onChange }: { label: string;
         <Pressable accessibilityLabel="Đóng danh sách lựa chọn" onPress={close} style={s.backdrop} />
         <View accessibilityViewIsModal style={[s.menu, position, { maxHeight: menuHeight, top: Math.min(position.top, Math.max(32, height - menuHeight - 16)) }]}>
           <View style={s.menuHeader}><Text style={s.menuTitle}>{label}</Text><TouchableOpacity accessibilityLabel="Đóng" onPress={close} style={s.close}><MaterialIcons name="close" size={18} color="#59657c" /></TouchableOpacity></View>
-          <Searchbar accessibilityLabel={`Tìm ${label.toLocaleLowerCase('vi')}`} placeholder="Tìm trong danh sách…" value={query} onChangeText={setQuery} style={s.search} inputStyle={{ minHeight: 44, fontSize: 14 }} iconColor="#777587" />
+          <Searchbar accessibilityLabel={`Tìm ${label.toLocaleLowerCase('vi')}`} placeholder="Tìm trong danh sách…" value={query} onChangeText={setQuery} style={s.search} inputStyle={{ minHeight: 44, fontSize: compactTextSize(14) }} iconColor="#777587" />
           <FlatList style={{ flexGrow: 0, maxHeight: Math.max(80, menuHeight - 112) }} data={visible} keyExtractor={item => item.value} keyboardShouldPersistTaps="handled" contentContainerStyle={{ padding: 6 }} renderItem={({ item }) => <TouchableOpacity accessibilityRole="menuitem" accessibilityState={{ selected: item.value === value }} onPress={() => { onChange(item.value); close(); }} style={[s.option, item.value === value && s.selectedOption]}><Text style={[s.optionText, item.value === value && s.selectedValue]}>{item.label}</Text>{item.value === value && <MaterialIcons name="check" size={18} color="#3525cd" />}</TouchableOpacity>} ListEmptyComponent={<Text style={{ padding: 16, color: '#59657c' }}>Không có lựa chọn phù hợp.</Text>} />
         </View>
       </View>

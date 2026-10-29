@@ -58,6 +58,7 @@ export default function FlashcardsScreen() {
   const [error, setError] = useState('');
   const [saving, setSaving] = useState(false);
   const savingRef = useRef(false);
+  const [pendingRating, setPendingRating] = useState<string | null>(null);
 
   // Batch learning state
   const [batchStart, setBatchStart] = useState(0);
@@ -85,6 +86,7 @@ export default function FlashcardsScreen() {
   const [userAnswer, setUserAnswer] = useState('');
   const [selectedOption, setSelectedOption] = useState<string | null>(null);
   const [showResult, setShowResult] = useState(false);
+  const [explanationIndex, setExplanationIndex] = useState<number | null>(null);
   const [quizMarkedMastered, setQuizMarkedMastered] = useState(false);
   const [quizResults, setQuizResults] = useState<{ vocabId: string; term: string; correct: boolean; selfReported?: boolean }[]>([]);
   const [allTimeResults, setAllTimeResults] = useState<{ vocabId: string; term: string; correct: boolean; selfReported?: boolean }[]>([]);
@@ -363,9 +365,12 @@ export default function FlashcardsScreen() {
 
   const rateWord = async (rating: 'easy' | 'medium' | 'hard' | 'mastered') => {
     if (!currentWord || savingRef.current) return;
-    savingRef.current = true; setSaving(true);
+    savingRef.current = true; setSaving(true); setPendingRating(rating);
     try {
       await api.post('/vocab-study/rate', { vocabularyId: currentWord.id, rating });
+      if (currentWord.studyStatus === 'new' && !ratings[currentWord.id]) {
+        setSessionMeta((previous: any) => previous ? { ...previous, studiedToday: (previous.studiedToday ?? 0) + 1 } : previous);
+      }
       void loadKnownCount();
       if (rating === 'mastered') setMasteredSet(previous => new Set(previous).add(currentWord.id));
       const nextRatings = { ...ratings, [currentWord.id]: rating };
@@ -379,7 +384,7 @@ export default function FlashcardsScreen() {
       }
     } catch (cause) {
       Alert.alert('Chưa lưu được đánh giá', cause instanceof Error ? cause.message : 'Vui lòng thử lại.');
-    } finally { savingRef.current = false; setSaving(false); }
+    } finally { savingRef.current = false; setSaving(false); setPendingRating(null); }
   };
 
   // ── Render helpers ─────────────────────────────────────────────────────────
@@ -414,7 +419,6 @@ export default function FlashcardsScreen() {
         <View style={styles.sessionToolbar}><Text style={[styles.dailyText, { color: colors.onSurfaceVariant }]}>{isPreview ? 'Xem lại thẻ từ đã học' : isReview ? `${totalWords} từ đến hạn ôn` : `Hôm nay: ${sessionMeta?.studiedToday ?? 0}/${sessionMeta?.maxDailyNewWords ?? '—'} từ mới`}</Text><TouchableOpacity onPress={() => router.push('/flashcards/history' as any)}><Text style={[styles.historyLink, { color: colors.primary }]}>Từ đã học</Text></TouchableOpacity></View>
         {dailyLimitNotice && <View style={styles.dailyNotice}><MaterialIcons name="check-circle" size={14} color="#a16207" /><Text style={styles.dailyNoticeText}>Đã đủ mục tiêu hôm nay · đang học thêm</Text></View>}
 
-        <View style={styles.speakerRow}><TouchableOpacity onPress={() => void speak(currentWord.term)} style={[styles.speakerBtn, { backgroundColor: colors.surface }]} accessibilityRole="button" accessibilityLabel={`Phát âm ${currentWord.term}`}><MaterialIcons name="volume-up" size={28} color={colors.primary} /></TouchableOpacity></View>
 
         {/* Flip card */}
         <View style={styles.cardTouchArea}>
@@ -449,6 +453,7 @@ export default function FlashcardsScreen() {
             </ScrollView>
             </Animated.View>
           </TouchableOpacity>
+        <TouchableOpacity onPress={() => void speak(currentWord.term)} style={[styles.speakerBtn, { backgroundColor: colors.surface }]} accessibilityRole="button" accessibilityLabel={`Phát âm ${currentWord.term}`}><MaterialIcons name="volume-up" size={22} color={colors.primary} /></TouchableOpacity>
         </View>
 
         {!isPreview && <View style={[styles.ratingBar, { backgroundColor: colors.surface, borderColor: colors.outlineVariant }]}>
@@ -458,7 +463,7 @@ export default function FlashcardsScreen() {
             ['hard', 'sentiment-dissatisfied', 'Khó', '#dc2626'],
             ['mastered', 'fast-forward', 'Đã biết', '#64748b'],
           ] as const).map(([rating, icon, label, color]) => (
-            <TouchableOpacity key={rating} disabled={saving} style={[styles.ratingButton, saving && { backgroundColor: colors.surfaceContainer }]} onPress={() => rateWord(rating)}>
+            <TouchableOpacity key={rating} disabled={saving} accessibilityLabel={label} accessibilityState={{ disabled: saving, busy: pendingRating === rating }} style={[styles.ratingButton, pendingRating === rating && { backgroundColor: `${color}18`, borderColor: color }]} onPress={() => rateWord(rating)}>
               <MaterialIcons name={icon} size={22} color={color} />
               <Text style={[styles.ratingText, { color: rating === 'easy' ? '#047857' : rating === 'medium' ? '#b45309' : color }]}>{label}</Text>
             </TouchableOpacity>
@@ -570,13 +575,14 @@ export default function FlashcardsScreen() {
         </View>
 
         {showResult && !quizMarkedMastered && <View style={{ gap: 10 }}>
-          <Text style={{ fontWeight: '700' }}>Giải thích đáp án</Text>
-          {currentQuestion.explanation && <Text>{currentQuestion.explanation}</Text>}
-          {(currentQuestion.options ?? [currentQuestion.answer]).map(option => {
-            const correct = option === currentQuestion.answer;
-            const word = words.find(word => word.definitionVi === option || word.term === option);
-            return <Text key={option} style={{ color: correct ? colors.success : colors.onSurfaceVariant }}><Text style={{ fontWeight: '700' }}>{correct ? 'Đúng' : 'Sai'}: {option}. </Text>{currentQuestion.optionExplanations?.find(item => item.option === option)?.explanation ?? (correct ? `Đây là đáp án phù hợp với nghĩa của “${words.find(word => word.id === currentQuestion.vocabularyId)?.term ?? currentQuestion.answer}”.` : word ? `Đây là nghĩa của “${word.term}”, không phải từ đang hỏi.` : 'Đáp án này không khớp với nghĩa của từ đang hỏi.')}</Text>;
-          })}
+          {!isCorrectAnswer && selectedOption && <Text style={{ color: colors.onSurfaceVariant }}>Bạn đã chọn: {selectedOption}</Text>}
+          <TouchableOpacity accessibilityRole="button" accessibilityState={{ expanded: explanationIndex === quizIndex }} onPress={() => setExplanationIndex(previous => previous === quizIndex ? null : quizIndex)} style={{ flexDirection: 'row', alignItems: 'center', gap: 6, alignSelf: 'flex-start' }}>
+            <MaterialIcons name={explanationIndex === quizIndex ? 'expand-less' : 'expand-more'} size={18} color={colors.primary} />
+            <Text style={{ color: colors.primary, fontWeight: '600' }}>{explanationIndex === quizIndex ? 'Thu gọn giải thích' : 'Xem giải thích'}</Text>
+          </TouchableOpacity>
+          {explanationIndex === quizIndex && <View style={{ padding: 14, borderRadius: 12, backgroundColor: colors.surface, gap: 8 }}>
+            <Text>{currentQuestion.optionExplanations?.find(item => item.option === (isCorrectAnswer ? currentQuestion.answer : selectedOption))?.explanation ?? currentQuestion.explanation ?? 'Lựa chọn cần khớp với nghĩa của từ trong câu hỏi.'}</Text>
+          </View>}
         </View>}
         <View style={{ flexDirection: 'row', justifyContent: 'space-between', gap: 12 }}>
           <TouchableOpacity disabled={quizIndex === 0 || saving} onPress={() => navigateQuiz(quizIndex - 1)} style={[styles.secondaryBtn, styles.quizNavButton, { borderColor: colors.primary, opacity: quizIndex === 0 ? 0.8 : 1 }]}><MaterialIcons name="arrow-back" size={18} color={colors.primary} /><Text style={[styles.secondaryBtnText, { color: colors.primary }]}>Trước đó</Text></TouchableOpacity>
@@ -700,15 +706,14 @@ const styles = StyleSheet.create({
   cardFlipArea: { flex: 1 },
   flipCard: {
     position: 'absolute', width: '100%', height: '100%',
-    borderWidth: 1, borderRadius: 20, padding: 18,
+    borderWidth: 1, borderRadius: 20, padding: 18, paddingTop: 64,
     justifyContent: 'center', alignItems: 'center',
     backfaceVisibility: 'hidden',
     shadowColor: '#000', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.08, shadowRadius: 12,
     elevation: 4,
   },
   flipCardBack: { position: 'absolute', top: 0 },
-  speakerRow: { height: 44, alignItems: 'flex-end', justifyContent: 'center', marginBottom: -8, zIndex: 2 },
-  speakerBtn: { width: 44, height: 44, borderRadius: 22, alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderColor: '#ddd6fe', elevation: 2 },
+  speakerBtn: { position: 'absolute', top: 14, right: 14, zIndex: 3, width: 44, height: 44, borderRadius: 22, alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderColor: '#ddd6fe', elevation: 2 },
   termText: { fontSize: 27, lineHeight: 34, fontWeight: '900', textAlign: 'center' },
   ipaText: { fontSize: 16, marginTop: 8, textAlign: 'center' },
   posBadge: { paddingHorizontal: 12, paddingVertical: 4, borderRadius: 99, marginTop: 12 },
@@ -722,9 +727,9 @@ const styles = StyleSheet.create({
 
   // Navigation
   navRow: { flexDirection: 'row', justifyContent: 'space-between', gap: 10 },
-  navBtn: { flexDirection: 'row', alignItems: 'center', gap: 4, paddingHorizontal: 16, paddingVertical: 12, borderRadius: 12 },
-  ratingBar: { flexDirection: 'row', borderWidth: 1, borderRadius: 14, padding: 6 },
-  ratingButton: { flex: 1, minHeight: 52, alignItems: 'center', justifyContent: 'center', gap: 3, paddingHorizontal: 2 },
+  navBtn: { flexDirection: 'row', alignItems: 'center', gap: 4, paddingHorizontal: 16, paddingVertical: 10, borderRadius: 12 },
+  ratingBar: { flexDirection: 'row', borderWidth: 1, borderRadius: 14, padding: 6, gap: 4 },
+  ratingButton: { borderWidth: 1, borderColor: 'transparent', borderRadius: 10, flex: 1, minHeight: 44, alignItems: 'center', justifyContent: 'center', gap: 3, paddingHorizontal: 2 },
   ratingText: { fontSize: 10, fontWeight: '800', textAlign: 'center' },
 
   // Quiz
@@ -745,11 +750,11 @@ const styles = StyleSheet.create({
 
   // Buttons
   studyControls: { gap: 12 },
-  knownButton: { minHeight: 48, paddingHorizontal: 16, paddingVertical: 12, borderRadius: 14, borderWidth: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8 },
-  quizNavButton: { flex: 1, minWidth: 0, paddingHorizontal: 16, minHeight: 52 },
-  primaryBtn: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, paddingVertical: 16, borderRadius: 14 },
+  knownButton: { minHeight: 48, paddingHorizontal: 16, paddingVertical: 10, borderRadius: 12, borderWidth: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8 },
+  quizNavButton: { flex: 1, minWidth: 0, paddingHorizontal: 16, minHeight: 44 },
+  primaryBtn: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, paddingVertical: 10, borderRadius: 12 },
   primaryBtnText: { color: '#fff', fontSize: 16, fontWeight: '800' },
-  secondaryBtn: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, paddingVertical: 14, borderRadius: 14, borderWidth: 2 },
+  secondaryBtn: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, paddingVertical: 10, borderRadius: 12, borderWidth: 2 },
   secondaryBtnText: { fontSize: 15, fontWeight: '700' },
   textBtn: { alignItems: 'center', paddingVertical: 12 },
   textBtnText: { fontSize: 14 },

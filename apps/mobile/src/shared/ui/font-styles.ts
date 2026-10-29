@@ -7,3 +7,8 @@ export function interFontStyle(weight: TextStyle['fontWeight'] = '400', family?:
   const resolved = Math.min(900, Math.max(400, Math.round(numeric / 100) * 100));
   return { fontFamily: `Inter-${resolved}`, fontWeight: 'normal' };
 }
+
+// Keep typography slightly denser while preserving system accessibility scaling.
+export function compactTextSize(size: number): number {
+  return Math.round(size * 0.92 * 10) / 10;
+}

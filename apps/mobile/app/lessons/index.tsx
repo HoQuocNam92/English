@@ -1,3 +1,4 @@
+import { compactTextSize } from '../../src/shared/ui/font-styles';
 import { ClearFiltersButton } from '../../src/shared/ui/ClearFiltersButton';
 import { Text } from '../../src/shared/ui/primitives';
 import { Searchbar, SegmentedButtons, Card, Portal, Dialog, Button as PaperButton, ActivityIndicator, TouchableRipple } from 'react-native-paper';
@@ -42,9 +43,9 @@ export default function LessonList({ embedded = false }: { embedded?: boolean })
   const activeFilters = Number(Boolean(domainCode)) + Number(Boolean(certificateId)) + Number(vocabulary !== 'all') + Number(Boolean(query.trim())) + Number(Boolean(type));
   const resetFilters = () => { setQuery(''); setType(''); setDomainCode(''); setCertificateId(''); setVocabulary('all'); };
   return <FeatureScreen title="Bài học" subtitle="Kiến thức công nghệ, từng bước mỗi ngày" embedded={embedded}>
-    <Searchbar accessibilityLabel="Tìm bài học" placeholder="Tìm chủ đề bạn muốn học…" value={query} onChangeText={setQuery} style={s.search} inputStyle={{ fontSize: 15, minHeight: 52 }} />
+    <Searchbar accessibilityLabel="Tìm bài học" placeholder="Tìm chủ đề bạn muốn học…" value={query} onChangeText={setQuery} style={s.search} inputStyle={{ fontSize: compactTextSize(15), minHeight: 52 }} />
     <View style={s.scope}><SegmentedButtons value={scope} onValueChange={setScope} buttons={[{ value: 'path', label: 'Lộ trình của tôi' }, { value: 'all', label: 'Tất cả bài học' }]} /></View>
-    <View style={s.categoryHeader}><Text style={s.eyebrow}>KHÁM PHÁ CHUYÊN ĐỀ</Text><PaperButton mode="text" icon="tune-variant" onPress={() => setFiltersOpen(true)} compact labelStyle={{ fontSize: 14 }}>Bộ lọc{activeFilters ? ` (${activeFilters})` : ''}</PaperButton></View>
+    <View style={s.categoryHeader}><Text style={s.eyebrow}>KHÁM PHÁ CHUYÊN ĐỀ</Text><PaperButton mode="text" icon="tune-variant" onPress={() => setFiltersOpen(true)} compact labelStyle={{ fontSize: compactTextSize(14) }}>Bộ lọc{activeFilters ? ` (${activeFilters})` : ''}</PaperButton></View>
     <Tabs value={type} onChange={setType} items={[{ value: '', label: 'Tất cả' }, ...Object.entries(TYPES).map(([value, item]) => ({ value, label: item.label }))]} />
     <View style={s.filterSummary}><Text style={s.secondary}>{activeFilters} bộ lọc đang áp dụng</Text><ClearFiltersButton onPress={resetFilters} /></View>
     {scope === 'path' && <TouchableRipple onPress={() => router.push('/profile/edit' as any)} style={s.pathHint} borderless><View style={s.hintRow}><MaterialIcons name="route" size={20} color="#6054c8" /><Text style={s.hintText}>Nội dung phù hợp với mục tiêu của bạn</Text><MaterialIcons name="chevron-right" size={20} color="#6054c8" /></View></TouchableRipple>}

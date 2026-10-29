@@ -1,6 +1,7 @@
 import { BadRequestException, ForbiddenException, Injectable, NotFoundException } from '@nestjs/common'
 import { PrismaService } from '../../infrastructure/database/prisma.service'
 import { CompleteOnboardingDto, UpdateLearnerGoalsDto } from '../../presentation/http-dto/content.dto'
+import { vietnamPeriods } from '../progress/learning-agenda.service'
 
 @Injectable()
 export class LearnerProfilesService {
@@ -198,6 +199,18 @@ export class LearnerProfilesService {
     return this.findByUser(userId)
   }
 
+  async trackStudyTime(userId: string, sessionId: string, seconds: number) {
+    await this.assertLearner(userId)
+    if (typeof sessionId !== 'string' || !/^[a-zA-Z0-9-]{10,100}$/.test(sessionId) || !Number.isInteger(seconds) || seconds < 0 || seconds > 86400) throw new BadRequestException('Phiên học không hợp lệ')
+    // Cumulative heartbeats are idempotent and capped by elapsed server time.
+    await this.prisma.$executeRaw`
+      INSERT INTO study_time_sessions (id, learner_id, seconds) VALUES (${sessionId}, ${userId}::uuid, 0)
+      ON CONFLICT (id) DO UPDATE SET seconds = GREATEST(study_time_sessions.seconds, LEAST(${seconds}, GREATEST(0, FLOOR(EXTRACT(EPOCH FROM (CURRENT_TIMESTAMP - study_time_sessions.started_at)))::int)))
+      WHERE study_time_sessions.learner_id = ${userId}::uuid
+    `
+    return { saved: true }
+  }
+
   async getJourney(userId: string) {
     await this.assertLearner(userId)
     const profile = await this.prisma.learnerProfile.findUnique({
@@ -221,7 +234,12 @@ export class LearnerProfilesService {
       this.prisma.examAttempt.count({ where: { learnerId: userId, submittedAt: { gte: startMonth } } }),
       this.prisma.examAttempt.count({ where: { learnerId: userId, submittedAt: { gte: startYear } } }),
     ])
-    const studyMinutesToday = vocabularyToday
+    const period = vietnamPeriods(now)
+    const measured = await this.prisma.$queryRaw<{ seconds: number }[]>`
+      SELECT COALESCE(SUM(seconds), 0)::int AS seconds FROM study_time_sessions
+      WHERE learner_id = ${userId}::uuid AND started_at >= ${period.today} AND started_at < ${period.tomorrow}
+    `
+    const studyMinutesToday = Math.floor((measured[0]?.seconds ?? 0) / 60)
     const weeklyExamTarget = profile.weeklyExamTarget
     const monthlyExamTarget = weeklyExamTarget * 4
     const yearlyExamTarget = weeklyExamTarget * 52

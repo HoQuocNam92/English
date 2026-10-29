@@ -2,7 +2,7 @@ import { buildLearningTrail } from '../../../../packages/shared-kernel/src/learn
 import { matchesFilterOption } from './utils/filter-options.ts';
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { interFontStyle } from './ui/font-styles.ts';
+import { compactTextSize, interFontStyle } from './ui/font-styles.ts';
 import { mobileRoute } from './navigation.ts';
 import { requestTimeoutMs } from './api/request-timeout.ts';
 import { validateLearningTargets } from './utils/learning-targets.ts';
@@ -212,7 +212,7 @@ test('native buttons wrap interpolated quiz labels and numbers in Text while pre
     './ClearFiltersButton': { ClearFiltersButton: 'clear-filters' },
     './TranslationProvider': { useTranslation: () => () => {} },
     './rich-text': { renderRichTextChildren: value => value, richTextToPlainText: value => value },
-    './font-styles': { interFontStyle },
+    './font-styles': { compactTextSize, interFontStyle },
     'react-native-paper': { Button: 'paper-button', TouchableRipple: 'paper-ripple', Chip: 'chip', Searchbar: 'searchbar' },
     'react-native': { Text: 'native-text', TextInput: 'input', TouchableOpacity: 'native-button', ScrollView: 'scroll', View: 'view', StyleSheet: { create: value => value } },
     '@techenglish/design-tokens': { colors: { primary: 'blue', onPrimary: 'white' }, radius: {}, typography: {} },
@@ -223,7 +223,7 @@ test('native buttons wrap interpolated quiz labels and numbers in Text while pre
   const onPress = () => {};
   const button = exports.Button({ children: label, onPress, disabled: false });
   assert.equal(button.type, 'paper-button');
-  assert.equal(button.props.contentStyle.minHeight, 52);
+  assert.equal(button.props.contentStyle.minHeight, 44);
   assert.equal(button.props.onPress, onPress);
   assert.equal(button.props.children.type, exports.Text);
   assert.equal(button.props.children.props.children, label);
@@ -319,4 +319,68 @@ test('known words show saved all-time totals and remain accessible when previewi
   nodes(screen).find(node => node.type === 'touch' && label(node).includes('Chạm để thử lại')).props.onPress();
   await new Promise(resolve => setImmediate(resolve));
   assert.ok(label(render()).includes('Từ đã biết (30)'));
+});
+
+test('flashcard audio is separate from flipping and only the selected rating lights up until saved', async () => {
+  const require = createRequire(import.meta.url);
+  const ts = require('typescript');
+  const code = ts.transpileModule(readFileSync(new URL('../../app/flashcards/index.tsx', import.meta.url), 'utf8'), { compilerOptions: { module: ts.ModuleKind.CommonJS, jsx: ts.JsxEmit.ReactJSX } }).outputText;
+  const state = [], effects = [], requests = [], routes = [];
+  let cursor = 0, focus, failCount = false, completeRate;
+  const saving = new Promise(resolve => { completeRate = resolve; });
+  const jsx = (type, props) => ({ type, props });
+  class Value { interpolate() { return 0; } setValue() {} }
+  const mocks = {
+    'react/jsx-runtime': { jsx, jsxs: jsx },
+    react: {
+      useState: initial => {
+        const index = cursor++;
+        if (!(index in state)) state[index] = typeof initial === 'function' ? initial() : initial;
+        return [state[index], value => { state[index] = typeof value === 'function' ? value(state[index]) : value; }];
+      },
+      useCallback: callback => callback, useRef: current => ({ current }), useEffect: callback => effects.push(callback),
+    },
+    'react-native': { ScrollView: 'scroll', View: 'view', KeyboardAvoidingView: 'keyboard', Animated: { Value, View: 'animated' }, Alert: { alert() {} }, Dimensions: { get: () => ({ width: 390 }) }, Platform: { OS: 'ios' }, StyleSheet: { create: value => value } },
+    'expo-router': { useLocalSearchParams: () => ({}), useRouter: () => ({ push: route => routes.push(route) }), useFocusEffect: callback => { focus = callback; } },
+    'expo-speech': { stop: async () => {}, speak() {} },
+    '../../src/shared/api/api-client': { api: { get: async path => {
+      requests.push(path);
+      if (path.startsWith('/vocab-study/history')) {
+        if (failCount) throw new Error('Offline');
+        return { data: [], meta: { total: 30 } };
+      }
+      return { words: [{ id: 'one', term: 'API', studyStatus: 'new', definitionVi: 'Giao diện', examples: [] }, { id: 'two', term: 'TLS', studyStatus: 'new', examples: [] }], meta: { studiedToday: 0, maxDailyNewWords: 10 } };
+    }, post: async (path, body) => { requests.push({ path, body }); await saving; return {}; } } },
+    '../../src/shared/store/theme-context': { useTheme: () => ({ colors: {} }) },
+    '../../src/shared/ui/primitives': { Button: 'button', Text: 'text', TextInput: 'input', TouchableOpacity: 'touch' },
+    '../../src/shared/ui/FilterSelect': { FilterSelect: 'filter' },
+    '../../src/shared/ui/AppIcon': { MaterialIcons: 'icon' },
+    '../../src/shared/ui/FeatureScreen': { FeatureScreen: 'screen', EmptyState: 'empty' },
+  };
+  const exports = {};
+  runInNewContext(code, { exports, URLSearchParams, require: name => { assert.ok(name in mocks, name); return mocks[name]; } });
+  const render = () => { cursor = 0; return exports.default(); };
+  const nodes = tree => !tree || typeof tree !== 'object' ? [] : Array.isArray(tree) ? tree.flatMap(nodes) : [tree, ...nodes(tree.props?.children)];
+  const label = tree => nodes(tree).filter(node => node.type === 'text').map(node => node.props.children).flat().join('');
+  render(); effects[0]();
+  await new Promise(resolve => setImmediate(resolve));
+  let screen = render();
+  const audio = nodes(screen).find(node => node.props?.accessibilityLabel === 'Phát âm API');
+  assert.ok(audio);
+  const parent = nodes(screen).find(node => Array.isArray(node.props?.children) && node.props.children.includes(audio));
+  assert.equal(parent.type, 'view');
+  assert.ok(parent.props.children.some(node => node?.type === 'touch' && node.props.onPress !== audio.props.onPress));
+  const pending = nodes(screen).find(node => node.props?.accessibilityLabel === 'Dễ').props.onPress();
+  screen = render();
+  for (const label of ['Dễ', 'Trung bình', 'Khó', 'Đã biết']) {
+    const button = nodes(screen).find(node => node.props?.accessibilityLabel === label);
+    assert.equal(button.props.disabled, true);
+    assert.equal(Boolean(button.props.style[1]), label === 'Dễ');
+  }
+  assert.ok(label(screen).includes('Hôm nay: 0/10'));
+  completeRate(); await pending;
+  screen = render();
+  assert.ok(label(screen).includes('Hôm nay: 1/10'));
+  assert.ok(label(screen).includes('TLS'));
+  assert.deepEqual(JSON.parse(JSON.stringify(requests.find(item => item?.path))), { path: '/vocab-study/rate', body: { vocabularyId: 'one', rating: 'easy' } });
 });

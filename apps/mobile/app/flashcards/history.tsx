@@ -1,7 +1,7 @@
 import { FilterSelect } from '../../src/shared/ui/FilterSelect';
 import { Text, TouchableOpacity } from '../../src/shared/ui/primitives';
-import { useEffect, useState } from 'react';
-import { useRouter, useLocalSearchParams } from 'expo-router';
+import { useCallback, useState } from 'react';
+import { useRouter, useLocalSearchParams, useFocusEffect } from 'expo-router';
 import { ActivityIndicator, StyleSheet, View } from 'react-native';
 import { MaterialIcons } from '../../src/shared/ui/AppIcon';
 import { api } from '../../src/shared/api/api-client';
@@ -23,7 +23,7 @@ export default function FlashcardHistoryScreen() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
-  const load = async () => {
+  const load = useCallback(async () => {
     setLoading(true); setError('');
     try {
       const result = await api.get<{ data: any[]; meta: { totalPages: number } }>(`/vocab-study/history?period=${period}&rating=${rating}&page=${page}&limit=${limit}`);
@@ -31,9 +31,9 @@ export default function FlashcardHistoryScreen() {
       setTotalPages(result.meta.totalPages);
     } catch (cause: any) { setError(cause?.message || 'Không thể tải từ đã học.'); }
     finally { setLoading(false); }
-  };
+  }, [period, rating, page, limit]);
 
-  useEffect(() => { void load(); }, [period, rating, page, limit]);
+  useFocusEffect(useCallback(() => { void load(); }, [load]));
 
   return <FeatureScreen title="Từ đã học" subtitle="Chạm vào từ để xem lại thẻ từ" loading={false} error={error} onRetry={load}>
     <Text style={[styles.label, { color: colors.onSurface }]}>Thời gian</Text>

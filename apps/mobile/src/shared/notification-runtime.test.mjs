@@ -48,6 +48,7 @@ test('other missing native notification modules are handled without hiding unrel
 test('root layout exports normally and defers optional notification setup until mount', () => {
   let accesses = 0; const effects = []; const exports = {};
   const mocks = {
+    '../src/shared/study-time/StudyTimeTracker': { StudyTimeTracker: 'study-time' },
     '../src/shared/notifications/NotificationNavigation': { NotificationNavigation: 'notification-navigation' },
     '../src/shared/notifications/NotificationHistoryProvider': { NotificationHistoryProvider: 'history' },
     '../src/shared/ui/paper-theme': { MobileUIProvider: 'paper' },

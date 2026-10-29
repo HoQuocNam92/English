@@ -9,7 +9,6 @@ import { useRouter } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { StyleSheet, View, ScrollView, Alert, ActivityIndicator, Switch, useWindowDimensions } from 'react-native';
 import { MaterialIcons } from '../../src/shared/ui/AppIcon';
-import * as ImagePicker from 'expo-image-picker';
 import { colors, spacing } from '@techenglish/design-tokens';
 import { api } from '../../src/shared/api/api-client';
 import { validateDisplayName, validatePhone } from '../../src/shared/utils/validators';
@@ -46,7 +45,6 @@ export default function MobileEditProfileScreen() {
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
-  const [uploading, setUploading] = useState(false);
   const [loadError, setLoadError] = useState('');
   const [reloadKey, setReloadKey] = useState(0);
 
@@ -92,44 +90,6 @@ export default function MobileEditProfileScreen() {
     }).catch((cause: unknown) => setLoadError(cause instanceof Error ? cause.message : 'Không thể tải hồ sơ. Vui lòng thử lại.'))
       .finally(() => setLoading(false));
   }, [reloadKey]);
-
-  const handlePickImage = async () => {
-    try {
-      const result = await ImagePicker.launchImageLibraryAsync({
-        mediaTypes: ['images'],
-        allowsEditing: true,
-        aspect: [1, 1],
-        quality: 0.8,
-        base64: true,
-      });
-
-      if (!result.canceled && result.assets && result.assets[0]) {
-        uploadAvatar(result.assets[0]);
-      }
-    } catch (error) {
-      Alert.alert('Lỗi', 'Không thể chọn ảnh');
-    }
-  };
-
-  const uploadAvatar = async (asset: ImagePicker.ImagePickerAsset) => {
-    try {
-      setUploading(true);
-      if (!asset.base64) throw new Error('Không đọc được dữ liệu ảnh đã chọn');
-      const data = await api.post<{ url: string }>('/upload/avatar-base64', {
-        base64: asset.base64,
-        mimeType: asset.mimeType || 'image/jpeg',
-      });
-      setAvatarUrl(data.url);
-      
-      await api.patch('/users/me', { avatarUrl: data.url });
-      await fetchUser().catch(() => undefined);
-      Alert.alert('Thành công', 'Đã cập nhật ảnh đại diện');
-    } catch (error: any) {
-      Alert.alert('Lỗi', error.message || 'Không thể tải ảnh lên');
-    } finally {
-      setUploading(false);
-    }
-  };
 
   const handleSave = async () => {
     if (saving || loading || loadError) return;
@@ -233,7 +193,7 @@ export default function MobileEditProfileScreen() {
       <ScrollView contentContainerStyle={styles.scrollContent} keyboardShouldPersistTaps="handled" showsVerticalScrollIndicator={false}>
         {/* Avatar Section */}
         <View style={styles.avatarSection}>
-          <ProfileAvatar letter={avatarLetter} imageUrl={avatarUrl} loading={uploading} accessibilityLabel="Đổi ảnh đại diện" onPress={handlePickImage} />
+          <ProfileAvatar letter={avatarLetter} imageUrl={avatarUrl} accessibilityLabel="Ảnh đại diện" />
         </View>
 
         {/* Form Fields */}
@@ -291,15 +251,20 @@ export default function MobileEditProfileScreen() {
             <View style={[styles.inputGroup, styles.targetItem]}><Text style={styles.label}>Bài luyện tập mỗi tuần<RequiredMark /></Text><TextInput accessibilityLabel="Bài luyện tập mỗi tuần" style={styles.input} value={weeklyExamTarget} onChangeText={setWeeklyExamTarget} keyboardType="number-pad" /></View>
             <View style={[styles.inputGroup, styles.targetItem]}><Text style={styles.label}>Phút học mỗi ngày<RequiredMark /></Text><TextInput accessibilityLabel="Phút học mỗi ngày" style={styles.input} value={dailyStudyTargetMinutes} onChangeText={setDailyStudyTargetMinutes} keyboardType="number-pad" /></View>
           </View>
-          <View style={styles.targetRow}><Text style={styles.label}>Nhắc học hằng ngày</Text><Switch accessibilityLabel="Nhắc học hằng ngày" value={reminderEnabled} onValueChange={setReminderEnabled} /></View>
-          {reminderEnabled && <View style={styles.inputGroup}><Text style={styles.label}>Giờ nhắc học hằng ngày<RequiredMark /></Text><ReminderTimePicker value={reminderTime} onChange={setReminderTime} /></View>}
+          <View style={styles.reminderCard}>
+            <View style={styles.reminderHeader}>
+              <View style={{ flex: 1, gap: 4 }}><Text style={styles.reminderTitle}>Nhắc học hằng ngày</Text><Text style={styles.reminderHint}>{reminderEnabled ? 'Duy trì thói quen học mỗi ngày' : 'Bật để nhận lời nhắc học'}</Text></View>
+              <Switch accessibilityLabel="Nhắc học hằng ngày" value={reminderEnabled} onValueChange={setReminderEnabled} trackColor={{ false: '#d8dce6', true: '#c5beff' }} thumbColor={reminderEnabled ? colors.primary : '#ffffff'} ios_backgroundColor="#d8dce6" />
+            </View>
+            {reminderEnabled && <ReminderTimePicker value={reminderTime} onChange={setReminderTime} />}
+          </View>
         </View>
       </ScrollView>
 
 
       {/* Fixed Bottom CTA */}
-      <View style={styles.bottomBar}>
-        <TouchableOpacity style={styles.saveBtn} onPress={handleSave} disabled={saving}>
+      <View style={[styles.bottomBar, { paddingBottom: Math.max(insets.bottom, 12) }]}>
+        <TouchableOpacity style={[styles.saveBtn, saving && { opacity: 0.65 }]} onPress={handleSave} disabled={saving}>
           {saving ? <ActivityIndicator color="#ffffff" /> : <Text style={styles.saveBtnText}>Lưu thay đổi</Text>}
         </TouchableOpacity>
       </View>
@@ -373,6 +338,10 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: spacing.xs,
   },
+  reminderCard: { padding: 16, gap: 16, borderRadius: 20, backgroundColor: '#ffffff', borderWidth: 1, borderColor: '#e4e8f1' },
+  reminderHeader: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 12 },
+  reminderTitle: { fontSize: 15, fontWeight: '700', color: '#17213a' },
+  reminderHint: { fontSize: 12, color: '#59657c' },
   targetRow: { flexDirection: 'row', gap: spacing.xs },
   targetItem: { flex: 1 },
   choiceChip: {
@@ -420,8 +389,8 @@ const styles = StyleSheet.create({
   },
   saveBtn: {
     backgroundColor: colors.primary,
-    height: 52,
-    borderRadius: 8,
+    height: 48,
+    borderRadius: 12,
     alignItems: 'center',
     justifyContent: 'center'
   },

@@ -2,7 +2,7 @@ import React, { createContext, useContext, useRef, useState } from 'react';
 import { ActivityIndicator, Modal, ScrollView, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { colors, radius } from '@techenglish/design-tokens';
 import { MaterialIcons } from './AppIcon';
-import { interFontStyle } from './font-styles';
+import { compactTextSize, interFontStyle } from './font-styles';
 import * as Speech from 'expo-speech';
 import { api } from '../api/api-client';
 import { renderRichTextChildren } from './rich-text';
@@ -22,11 +22,11 @@ export function TranslationProvider({ children }: { children: React.ReactNode })
       if (current === request.current) { setResult(data); if (cache.current.size >= 50) cache.current.clear(); cache.current.set(key, data); }
     } catch (cause: any) { if (current === request.current) setError(cause.message); } finally { if (current === request.current) setLoading(false); }
   };
-  const font = { ...interFontStyle('400'), color: colors.text, fontSize: 14, lineHeight: 22 };
+  const font = { ...interFontStyle('400'), color: colors.text, fontSize: compactTextSize(14), lineHeight: compactTextSize(22) };
   const button = { minHeight: 44, padding: 12, borderRadius: radius.control, alignItems: 'center' as const, justifyContent: 'center' as const, backgroundColor: colors.primary };
   return <TranslationContext.Provider value={open}>{children}<Modal visible={visible} transparent animationType="slide" onRequestClose={close}>
     <View style={{ flex: 1, backgroundColor: '#00000066', justifyContent: 'center', padding: 20 }}><View style={{ maxHeight: '90%', backgroundColor: colors.surfaceWhite, borderRadius: radius.modal, padding: 20, gap: 12 }}>
-      <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}><Text style={[font, { fontSize: 20, ...interFontStyle('700') }]}>Dịch theo ngữ cảnh</Text><TouchableOpacity accessibilityRole="button" accessibilityLabel="Đóng bản dịch" onPress={close} style={{ padding: 10 }}><MaterialIcons name="close" size={24} color={colors.mutedText} /></TouchableOpacity></View>
+      <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}><Text style={[font, { fontSize: compactTextSize(20), ...interFontStyle('700') }]}>Dịch theo ngữ cảnh</Text><TouchableOpacity accessibilityRole="button" accessibilityLabel="Đóng bản dịch" onPress={close} style={{ padding: 10 }}><MaterialIcons name="close" size={24} color={colors.mutedText} /></TouchableOpacity></View>
       <ScrollView><Text selectable style={[font, { color: colors.mutedText }]}>{context}</Text>
       <Text style={[font, { marginTop: 12, ...interFontStyle('600') }]}>Từ/cụm từ cần dịch</Text><TextInput accessibilityLabel="Từ hoặc cụm từ cần dịch" value={text} onChangeText={value => { request.current++; setText(value); setResult(null); setLoading(false); }} maxLength={120} autoCapitalize="none" style={[font, { minHeight: 44, borderColor: colors.outlineVariant, borderWidth: 1, borderRadius: radius.control, padding: 12, marginTop: 8 }]} />
       <TouchableOpacity accessibilityRole="button" disabled={loading} onPress={translate} style={[button, { marginTop: 12, opacity: loading ? 0.8 : 1 }]}><Text style={[font, { color: colors.onPrimary, ...interFontStyle('700') }]}>Dịch</Text></TouchableOpacity>

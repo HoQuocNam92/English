@@ -19,12 +19,12 @@ export default function TabsLayout() {
         tabBarStyle: {
           backgroundColor: colors.surfaceContainerLowest,
           borderTopColor: colors.border,
-          height: 72 + insets.bottom,
+          height: 64 + insets.bottom,
           paddingBottom: Math.max(8, insets.bottom),
           paddingTop: 8
         },
         tabBarLabelStyle: {
-          fontSize: 11,
+          fontSize: 10,
           ...interFontStyle('600')
         }
       }}
@@ -33,7 +33,7 @@ export default function TabsLayout() {
         name="home"
         options={{
           title: 'Trang chủ',
-          tabBarIcon: ({ focused }) => <View style={{ width: 44, height: 32, alignItems: "center", justifyContent: "center", borderRadius: 16, backgroundColor: focused ? "#eeecff" : "transparent" }}><MaterialIcons name="home" size={23} color={iconColors.home} /></View>
+          tabBarIcon: ({ focused }) => <View style={{ width: 44, height: 32, alignItems: "center", justifyContent: "center", borderRadius: 16, backgroundColor: focused ? "#eeecff" : "transparent" }}><MaterialIcons name="home" size={21} color={iconColors.home} /></View>
         }}
       />
       <Tabs.Screen
@@ -50,6 +50,7 @@ export default function TabsLayout() {
         name="progress"
         options={{
           title: 'Tiến độ',
+          href: null,
           tabBarIcon: ({ focused }) => <View style={{ width: 44, height: 32, alignItems: "center", justifyContent: "center", borderRadius: 16, backgroundColor: focused ? "#eeecff" : "transparent" }}><MaterialIcons name="monitoring" size={23} color={iconColors.progress} /></View>
         }}
       />

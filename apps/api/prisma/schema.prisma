@@ -159,6 +159,7 @@ model User {
 
   // Content & learning
   placementAssessments PlacementAssessment[]
+  studyTimeSessions StudyTimeSession[]
   learnerProfile    LearnerProfile?
   createdExams      Exam[]               @relation("ExamCreatedBy")
   createdLessons    Lesson[]             @relation("LessonCreatedBy")
@@ -991,4 +992,15 @@ model LearningNotification {
   @@unique([userId, localDate])
   @@index([userId, readAt, createdAt])
   @@map("learning_notifications")
+}
+
+// Measured foreground learning time; cumulative heartbeats are idempotent.
+model StudyTimeSession {
+  id String @id
+  learnerId String @map("learner_id") @db.Uuid
+  seconds Int @default(0)
+  startedAt DateTime @default(now()) @map("started_at") @db.Timestamptz(6)
+  learner User @relation(fields: [learnerId], references: [id], onDelete: Cascade)
+  @@index([learnerId, startedAt])
+  @@map("study_time_sessions")
 }

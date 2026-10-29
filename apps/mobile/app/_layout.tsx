@@ -1,3 +1,4 @@
+import { StudyTimeTracker } from '../src/shared/study-time/StudyTimeTracker';
 import { NotificationNavigation } from '../src/shared/notifications/NotificationNavigation';
 import { NotificationHistoryProvider } from '../src/shared/notifications/NotificationHistoryProvider';
 import { useEffect } from 'react';
@@ -31,7 +32,7 @@ export default function RootLayout() {
                   backgroundColor: '#f7f9fb'
                 }
               }}
-            /><NotificationNavigation /></MobileUIProvider></TranslationProvider></NotificationHistoryProvider>
+            /><NotificationNavigation /><StudyTimeTracker /></MobileUIProvider></TranslationProvider></NotificationHistoryProvider>
         </AuthProvider>
       </ThemeProvider>
     </SafeAreaProvider>

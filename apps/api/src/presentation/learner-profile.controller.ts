@@ -27,6 +27,11 @@ export class LearnerProfilesController {
   @ApiOperation({ summary: 'Get configured learning journey targets and current progress' })
   getMyJourney(@CurrentUser() u: JwtPayload) { return this.svc.getJourney(u.sub) }
 
+  @Post('me/study-time')
+  trackStudyTime(@CurrentUser() u: JwtPayload, @Body() body: { sessionId: string; seconds: number }) {
+    return this.svc.trackStudyTime(u.sub, body.sessionId, body.seconds)
+  }
+
   @Get('me/placement-exam')
   @ApiOperation({ summary: 'Find a placement exam matching the selected path' })
   getPlacementExam(@CurrentUser() u: JwtPayload) { return this.svc.findPlacementExam(u.sub) }

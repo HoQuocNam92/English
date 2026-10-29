@@ -78,7 +78,7 @@ export default function MobileProfileScreen() {
         {/* Profile Header */}
         <View style={styles.profileSection}>
           <View style={styles.avatarContainer}>
-            <ProfileAvatar letter={avatarLetter} imageUrl={avatarUrl} accessibilityLabel="Chỉnh sửa hồ sơ" onPress={() => router.push('/profile/edit' as any)} />
+            <ProfileAvatar letter={avatarLetter} imageUrl={avatarUrl} accessibilityLabel="Ảnh đại diện" />
           </View>
           <Text style={[styles.userName, { color: colors.onSurface }]}>{displayName}</Text>
           <Text style={[styles.userEmail, { color: colors.onSurfaceVariant }]}>{email}</Text>
@@ -123,13 +123,14 @@ export default function MobileProfileScreen() {
         {/* Action List */}
         <View style={[styles.menuList, { backgroundColor: colors.surfaceContainerLowest, borderColor: colors.outlineVariant }]}>
           {[
+            ['monitoring', 'Tiến độ học tập', '/(tabs)/progress'],
             ['notifications', 'Thông báo', '/notifications'],
             ['security', 'Chính sách bảo mật', '/privacy'],
             ['article', 'Điều khoản sử dụng', '/terms'],
           ].map(([icon, label, route], index, list) => (
             <TouchableOpacity key={route} style={[styles.menuListItem, { borderBottomColor: colors.outlineVariant, borderBottomWidth: index === list.length - 1 ? 0 : 1 }]} onPress={() => router.push(route as any)}>
-              <View style={styles.menuListLeft}><MaterialIcons name={icon as any} size={22} color={featureIconColor(icon)} /><Text style={[styles.menuListText, { color: colors.onSurface }]}>{label}</Text></View>
-              <MaterialIcons name="chevron-right" size={24} color={colors.outline} />
+              <View style={styles.menuListLeft}><MaterialIcons name={icon as any} size={20} color={featureIconColor(icon)} /><Text style={[styles.menuListText, { color: colors.onSurface }]}>{label}</Text></View>
+              <MaterialIcons name="chevron-right" size={20} color={colors.outline} />
             </TouchableOpacity>
           ))}
         </View>
@@ -166,7 +167,7 @@ export default function MobileProfileScreen() {
             activeOpacity={0.8}
           >
             <MaterialIcons name="logout" size={20} color={colors.error} />
-            <Text style={[styles.logoutTextNew, { color: colors.error }]}>Đăng xuất</Text>
+            <Text style={[styles.logoutTextNew, { color: colors.error }]} numberOfLines={1}>Đăng xuất</Text>
           </TouchableOpacity>
         </View>
 
@@ -200,7 +201,7 @@ const styles = StyleSheet.create({
     padding: spacing.md,
     paddingTop: spacing.lg,
     paddingBottom: 80,
-    gap: spacing.xl
+    gap: 20
   },
   profileSection: {
     alignItems: 'center',
@@ -269,15 +270,20 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    padding: spacing.md,
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    minHeight: 52,
     borderBottomWidth: 1,
   },
   menuListLeft: {
+    flex: 1,
+    minWidth: 0,
     flexDirection: 'row',
     alignItems: 'center',
     gap: spacing.md,
   },
   menuListText: {
+    flexShrink: 1,
     fontSize: 14,
     fontWeight: '600',
   },
@@ -290,13 +296,18 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     gap: spacing.sm,
-    paddingHorizontal: spacing.xl,
+    paddingHorizontal: 20,
     paddingVertical: spacing.sm,
     borderRadius: 8,
     borderWidth: 1,
-    minWidth: 160,
+    minWidth: 180,
+    minHeight: 48,
+    maxWidth: '100%',
   },
   logoutTextNew: {
+    flexShrink: 0,
+    minWidth: 76,
+    textAlign: 'center',
     fontSize: 14,
     fontWeight: '600',
   }

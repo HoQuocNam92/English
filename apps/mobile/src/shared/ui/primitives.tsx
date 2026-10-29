@@ -6,7 +6,7 @@ import { Button as PaperButton, Chip, Searchbar, TouchableRipple } from 'react-n
 import { Text as NativeText, TextInput as NativeInput, TouchableOpacity as NativeButton, ScrollView, View, StyleSheet, type StyleProp, type ViewStyle, type TextProps, type TextInputProps, type TouchableOpacityProps } from 'react-native';
 import { colors, radius, typography } from '@techenglish/design-tokens';
 import { renderRichTextChildren, richTextToPlainText } from './rich-text';
-import { interFontStyle } from './font-styles';
+import { compactTextSize, interFontStyle } from './font-styles';
 
 // Shared typography and touch targets. Screen-specific layouts stay in style props.
 const TextDepth = React.createContext(false);
@@ -15,8 +15,9 @@ export function Text({ style, children, focusable, ...props }: AppTextProps) {
   const translate = useTranslation();
   const nested = React.useContext(TextDepth);
   const resolved = StyleSheet.flatten(style);
-  const fontSize = !nested ? Math.max(13, resolved?.fontSize ?? 15) : resolved?.fontSize;
-  const lineHeight = fontSize ? Math.max(resolved?.lineHeight ?? 0, Math.ceil(fontSize * 1.45)) : undefined;
+  const baseFontSize = !nested ? Math.max(11, resolved?.fontSize ?? 15) : resolved?.fontSize;
+  const fontSize = baseFontSize === undefined ? undefined : compactTextSize(baseFontSize);
+  const lineHeight = fontSize ? Math.max(resolved?.lineHeight ? compactTextSize(resolved.lineHeight) : 0, Math.ceil(fontSize * 1.4)) : undefined;
   const isCode = resolved?.fontFamily === 'monospace';
   const text = isCode ? plainText(children) : richTextToPlainText(plainText(children));
   const nativeProps = { ...props, ...(focusable === undefined ? {} : { focusable }) } as TextProps;
@@ -27,19 +28,19 @@ export function Text({ style, children, focusable, ...props }: AppTextProps) {
 }
 export const TextInput = React.forwardRef<React.ElementRef<typeof NativeInput>, TextInputProps>(function TextInput({ style, ...props }, ref) {
   const resolved = StyleSheet.flatten(style);
-  return <NativeInput ref={ref} placeholderTextColor={colors.outline} {...props} style={[{ fontFamily: typography.fontFamily, fontSize: 15, color: colors.text, minWidth: 0, minHeight: 48 }, style, interFontStyle(resolved?.fontWeight, resolved?.fontFamily)]} />;
+  return <NativeInput ref={ref} placeholderTextColor={colors.outline} {...props} style={[{ fontFamily: typography.fontFamily, fontSize: 15, color: colors.text, minWidth: 0, minHeight: 48 }, style, { fontSize: compactTextSize(resolved?.fontSize ?? 15), ...(resolved?.lineHeight ? { lineHeight: compactTextSize(resolved.lineHeight) } : {}) }, interFontStyle(resolved?.fontWeight, resolved?.fontFamily)]} />;
 });
 export function TouchableOpacity({ style, ...props }: TouchableOpacityProps) {
-  return <NativeButton accessibilityRole="button" activeOpacity={0.8} {...props} accessibilityLabel={props.accessibilityLabel ?? (plainText(props.children) || undefined)} style={[{ minHeight: 48, justifyContent: 'center' }, style]} />;
+  return <NativeButton accessibilityRole="button" activeOpacity={0.8} {...props} accessibilityLabel={props.accessibilityLabel ?? (plainText(props.children) || undefined)} style={[{ minHeight: 44, justifyContent: 'center' }, style]} />;
 }
 export const controlStyles = StyleSheet.create({
-  button: { minHeight: 44, paddingHorizontal: 16, paddingVertical: 10, borderRadius: radius.control, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8 },
+  button: { minHeight: 44, paddingHorizontal: 14, paddingVertical: 8, borderRadius: 12, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8 },
   card: { backgroundColor: colors.surfaceWhite, borderColor: '#e4e8f1', borderWidth: 1, borderRadius: 20, padding: 20 },
-  footer: { paddingTop: 12, flexDirection: 'row', justifyContent: 'flex-end', flexWrap: 'wrap', gap: 10 },
+  footer: { paddingTop: 12, flexDirection: 'row', justifyContent: 'flex-end', flexWrap: 'wrap', gap: 8 },
 });
 export function Button({ children, style, activeOpacity, icon, ...props }: Omit<TouchableOpacityProps, 'style'> & { style?: StyleProp<ViewStyle>; mode?: 'contained' | 'outlined' | 'text' | 'tonal'; icon?: keyof typeof MaterialIcons.glyphMap }) {
   const items = React.Children.toArray(children);
-  const labelStyle = { ...interFontStyle('700'), color: props.disabled ? colors.mutedText : props.mode && props.mode !== 'contained' ? colors.primary : colors.onPrimary, fontSize: 15, textAlign: 'center' as const };
+  const labelStyle = { ...interFontStyle('700'), color: props.disabled ? colors.mutedText : props.mode && props.mode !== 'contained' ? colors.primary : colors.onPrimary, fontSize: 14, textAlign: 'center' as const, marginVertical: 0, marginHorizontal: 0 };
   const isText = (child: React.ReactNode) => typeof child === 'string' || typeof child === 'number';
   // JSX labels with interpolations are arrays, and native buttons cannot render raw text.
   const content = items.every(isText)
@@ -48,13 +49,13 @@ export function Button({ children, style, activeOpacity, icon, ...props }: Omit<
   if (items.every(isText) && plainText(children).length > 30) {
     const { mode = 'contained', ...touchProps } = props;
     const backgroundColor = props.disabled ? colors.surfaceContainerHigh : mode === 'contained' ? colors.primary : mode === 'tonal' ? '#eeecff' : 'transparent';
-    return <TouchableRipple {...touchProps} accessibilityLabel={props.accessibilityLabel ?? plainText(children)} accessibilityRole="button" accessibilityState={{ ...props.accessibilityState, disabled: props.disabled }} style={[{ minHeight: 52, maxWidth: '100%', flexShrink: 1, justifyContent: 'center', paddingHorizontal: 18, paddingVertical: 14, borderRadius: 14, backgroundColor, borderWidth: mode === 'outlined' ? 1 : 0, borderColor: '#c9c2ff' }, style]}><View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8 }}>{icon && <MaterialIcons name={icon} color={labelStyle.color} size={20} />}<View style={{ flexShrink: 1 }}>{content}</View></View></TouchableRipple>;
+    return <TouchableRipple {...touchProps} accessibilityLabel={props.accessibilityLabel ?? plainText(children)} accessibilityRole="button" accessibilityState={{ ...props.accessibilityState, disabled: props.disabled }} style={[{ minHeight: 44, maxWidth: '100%', flexShrink: 1, justifyContent: 'center', paddingHorizontal: 14, paddingVertical: 10, borderRadius: 12, backgroundColor, borderWidth: mode === 'outlined' ? 1 : 0, borderColor: '#c9c2ff' }, style]}><View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8 }}>{icon && <MaterialIcons name={icon} color={labelStyle.color} size={18} />}<View style={{ flexShrink: 1 }}>{content}</View></View></TouchableRipple>;
   }
-  return <PaperButton {...props} accessibilityLabel={props.accessibilityLabel ?? plainText(children)} icon={icon ? ({ color, size }) => <MaterialIcons name={icon} color={color} size={size} /> : undefined} mode={props.mode === 'tonal' ? 'contained-tonal' : props.mode ?? 'contained'} contentStyle={{ minHeight: 52, paddingVertical: 4 }} labelStyle={labelStyle} style={[{ borderRadius: 14, flexShrink: 1 }, style]}>{content}</PaperButton>;
+  return <PaperButton {...props} accessibilityLabel={props.accessibilityLabel ?? plainText(children)} icon={icon ? ({ color, size }) => <MaterialIcons name={icon} color={color} size={Math.min(size, 18)} /> : undefined} mode={props.mode === 'tonal' ? 'contained-tonal' : props.mode ?? 'contained'} compact contentStyle={{ minHeight: 44, paddingVertical: 8, paddingHorizontal: 14 }} labelStyle={labelStyle} style={[{ borderRadius: 12, flexShrink: 1, borderColor: props.mode === 'outlined' ? '#d8d2ee' : undefined, backgroundColor: props.mode === 'outlined' ? '#ffffff' : undefined }, style]}>{content}</PaperButton>;
 }
 export function Tabs({ items, value, onChange }: { items: { value: string; label: string }[]; value: string; onChange: (value: string) => void }) {
   if (!items.length) return null;
-  return <ScrollView horizontal style={{ flexGrow: 0, flexShrink: 0 }} showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 8, paddingVertical: 4, alignItems: 'center' }}>{items.map(item => <Chip key={item.value} selected={value === item.value} showSelectedCheck={false} onPress={() => onChange(item.value)} accessibilityRole="tab" accessibilityState={{ selected: value === item.value }} style={{ backgroundColor: value === item.value ? '#eeecff' : '#ffffff', borderWidth: 1, borderColor: value === item.value ? '#c9c2ff' : '#e4e8f1', borderRadius: 12 }} textStyle={{ color: value === item.value ? colors.primary : colors.mutedText, fontSize: 14, ...interFontStyle('600'), marginVertical: 12 }}>{item.label}</Chip>)}</ScrollView>;
+  return <ScrollView horizontal style={{ flexGrow: 0, flexShrink: 0 }} showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 8, paddingVertical: 4, alignItems: 'center' }}>{items.map(item => <Chip key={item.value} selected={value === item.value} showSelectedCheck={false} onPress={() => onChange(item.value)} accessibilityRole="tab" accessibilityState={{ selected: value === item.value }} style={{ backgroundColor: value === item.value ? '#eeecff' : '#ffffff', borderWidth: 1, borderColor: value === item.value ? '#c9c2ff' : '#e4e8f1', borderRadius: 12 }} textStyle={{ color: value === item.value ? colors.primary : colors.mutedText, fontSize: compactTextSize(14), ...interFontStyle('600'), marginVertical: 8 }}>{item.label}</Chip>)}</ScrollView>;
 }
 
 function plainText(value: React.ReactNode): string {
@@ -69,5 +70,5 @@ export function Badge({ children, tone = 'primary' }: { children: React.ReactNod
   return <View style={{ alignSelf: 'flex-start', borderRadius: radius.pill, paddingHorizontal: 10, paddingVertical: 4, backgroundColor: palette[0] }}><Text style={{ color: palette[1], fontSize: 12, lineHeight: 18, fontWeight: '600' }}>{children}</Text></View>;
 }
 export function ListTools({ search, onSearch, placeholder, filters, value, onFilter }: { search: string; onSearch: (value: string) => void; placeholder: string; filters: { value: string; label: string }[]; value: string; onFilter: (value: string) => void }) {
-  return <View style={{ gap: 12, marginBottom: 20 }}><Searchbar accessibilityLabel={placeholder} placeholder={placeholder} value={search} onChangeText={onSearch} style={{ backgroundColor: '#ffffff', borderRadius: 16, borderWidth: 1, borderColor: '#e4e8f1' }} inputStyle={{ fontSize: 15, minHeight: 52 }} />{filters.length > 0 && <Tabs items={filters} value={value} onChange={onFilter} />}<ClearFiltersButton onPress={() => { onSearch(''); onFilter(filters[0]?.value ?? ''); }} /></View>;
+  return <View style={{ gap: 12, marginBottom: 20 }}><Searchbar accessibilityLabel={placeholder} placeholder={placeholder} value={search} onChangeText={onSearch} style={{ backgroundColor: '#ffffff', borderRadius: 16, borderWidth: 1, borderColor: '#e4e8f1' }} inputStyle={{ fontSize: compactTextSize(15), minHeight: 52 }} />{filters.length > 0 && <Tabs items={filters} value={value} onChange={onFilter} />}<ClearFiltersButton onPress={() => { onSearch(''); onFilter(filters[0]?.value ?? ''); }} /></View>;
 }

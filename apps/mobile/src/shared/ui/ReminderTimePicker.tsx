@@ -27,8 +27,8 @@ export function ReminderTimePicker({ value, onChange }: { value: string; onChang
   return <>
     <TouchableOpacity accessibilityLabel={`Giờ nhắc học: ${value}`} onPress={show} style={s.field}>
       <View style={s.icon}><MaterialIcons name="schedule" size={22} color="#3525cd" /></View>
-      <View style={{ flex: 1 }}><Text style={s.caption}>Nhắc học hằng ngày</Text><Text style={s.value}>{value}</Text></View>
-      <Text style={s.change}>Thay đổi</Text><MaterialIcons name="chevron-right" size={18} color="#3525cd" />
+      <View style={{ flex: 1 }}><Text style={s.caption}>Giờ nhắc học</Text><Text style={s.value}>{value}</Text></View>
+      <View style={s.changeButton}><Text style={s.change}>Đổi giờ</Text><MaterialIcons name="edit" size={16} color="#3525cd" /></View>
     </TouchableOpacity>
     {Platform.OS !== 'android' && <Modal visible={open} transparent animationType="slide" onRequestClose={() => setOpen(false)}>
       <View style={s.backdrop}><View style={s.sheet} accessibilityViewIsModal>
@@ -40,7 +40,8 @@ export function ReminderTimePicker({ value, onChange }: { value: string; onChang
   </>;
 }
 const s = StyleSheet.create({
-  field: { flexDirection: 'row', alignItems: 'center', gap: 10, borderWidth: 1, borderColor: '#d8d5e8', borderRadius: 14, padding: 14, backgroundColor: '#fff' },
+  field: { flexDirection: 'row', alignItems: 'center', gap: 10, borderWidth: 1, borderColor: '#e4dfff', borderRadius: 16, padding: 12, backgroundColor: '#f7f5ff' },
+  changeButton: { flexDirection: 'row', alignItems: 'center', gap: 6, paddingHorizontal: 12, minHeight: 40, borderRadius: 12, backgroundColor: '#eeecff' },
   icon: { padding: 10, borderRadius: 12, backgroundColor: '#eeecff' }, caption: { fontSize: 13, color: '#59657c' }, value: { fontSize: 22, fontWeight: '700', color: '#17213a' }, change: { color: '#3525cd', fontSize: 13, fontWeight: '600' },
   backdrop: { flex: 1, justifyContent: 'flex-end', backgroundColor: '#10182b66' }, sheet: { backgroundColor: '#fff', borderTopLeftRadius: 28, borderTopRightRadius: 28, padding: 24, paddingBottom: 36, gap: 8 }, handle: { width: 40, height: 4, borderRadius: 4, backgroundColor: '#d8d5e8', alignSelf: 'center', marginBottom: 16 }, title: { fontSize: 22, fontWeight: '700' }, actions: { flexDirection: 'row', justifyContent: 'flex-end', gap: 12 },
 });

@@ -5,6 +5,7 @@ import { createRequire } from 'node:module';
 import { runInNewContext } from 'node:vm';
 import { homeSummary } from './utils/home-summary.ts';
 import { matchesFilterOption } from './utils/filter-options.ts';
+import { compactTextSize } from './ui/font-styles.ts';
 const require = createRequire(import.meta.url);
 const ts = require('typescript');
 const nodes = tree => !tree || typeof tree !== 'object' ? [] : Array.isArray(tree) ? tree.flatMap(nodes) : [tree, ...nodes(tree.props?.children)];
@@ -35,6 +36,7 @@ test('dropdown searches Vietnamese, commits a selected ID and closes without cha
     react: { useRef: () => ({ current: { measureInWindow: callback => callback(20, 550, 160, 50) } }) },
     'react-native': { View: 'view', Modal: 'modal', Pressable: 'pressable', FlatList: 'list', Keyboard: { dismiss() {} }, StyleSheet: { create: value => value }, useWindowDimensions: () => dimensions },
     'react-native-paper': { Searchbar: 'search' },
+    './font-styles': { compactTextSize },
     './primitives': { Text: 'text', TouchableOpacity: 'touch' }, './AppIcon': { MaterialIcons: 'icon' },
     '../utils/filter-options': { matchesFilterOption },
   }, { label: 'Chuyên ngành', value: '', items: [{ value: '', label: 'Tất cả' }, { value: 'SOFTWARE_ENG', label: 'Kỹ thuật phần mềm' }, { value: 'CLOUD', label: 'Điện toán đám mây' }], onChange: value => chosen.push(value) });

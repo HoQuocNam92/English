@@ -463,8 +463,8 @@ const styles = StyleSheet.create({
   btnPrimary: {
     width: '100%',
     backgroundColor: colors.primary,
-    height: 52,
-    borderRadius: 10,
+    height: 48,
+    borderRadius: 12,
     alignItems: 'center',
     justifyContent: 'center'
   },
@@ -476,8 +476,8 @@ const styles = StyleSheet.create({
   btnSecondary: {
     width: '100%',
     backgroundColor: 'transparent',
-    height: 52,
-    borderRadius: 10,
+    height: 48,
+    borderRadius: 12,
     borderWidth: 1,
     borderColor: '#c7c4d8',
     alignItems: 'center',
@@ -492,7 +492,7 @@ const styles = StyleSheet.create({
     marginTop: spacing.md,
     padding: spacing.md,
     backgroundColor: colors.primary,
-    borderRadius: 8
+    borderRadius: 12
   },
   backHomeText: {
     color: '#ffffff',
