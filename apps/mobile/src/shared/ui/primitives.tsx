@@ -40,7 +40,10 @@ export const controlStyles = StyleSheet.create({
 });
 export function Button({ children, style, activeOpacity, icon, ...props }: Omit<TouchableOpacityProps, 'style'> & { style?: StyleProp<ViewStyle>; mode?: 'contained' | 'outlined' | 'text' | 'tonal'; icon?: keyof typeof MaterialIcons.glyphMap }) {
   const items = React.Children.toArray(children);
-  const labelStyle = { ...interFontStyle('700'), color: props.disabled ? colors.mutedText : props.mode && props.mode !== 'contained' ? colors.primary : colors.onPrimary, fontSize: 14, textAlign: 'center' as const, marginVertical: 0, marginHorizontal: 0 };
+  const mode = props.mode ?? 'contained';
+  const backgroundColor = props.disabled ? '#e4e8f1' : mode === 'contained' ? colors.primary : mode === 'tonal' ? '#eeecff' : mode === 'outlined' ? '#ffffff' : 'transparent';
+  const textColor = props.disabled ? '#59657c' : mode === 'contained' ? colors.onPrimary : colors.primary;
+  const labelStyle = { ...interFontStyle('700'), color: textColor, fontSize: 14, textAlign: 'center' as const, marginVertical: 0, marginHorizontal: 0 };
   const isText = (child: React.ReactNode) => typeof child === 'string' || typeof child === 'number';
   // JSX labels with interpolations are arrays, and native buttons cannot render raw text.
   const content = items.every(isText)
@@ -48,10 +51,9 @@ export function Button({ children, style, activeOpacity, icon, ...props }: Omit<
     : React.Children.map(children, child => isText(child) ? <Text style={labelStyle}>{child}</Text> : child);
   if (items.every(isText) && plainText(children).length > 30) {
     const { mode = 'contained', ...touchProps } = props;
-    const backgroundColor = props.disabled ? colors.surfaceContainerHigh : mode === 'contained' ? colors.primary : mode === 'tonal' ? '#eeecff' : 'transparent';
     return <TouchableRipple {...touchProps} accessibilityLabel={props.accessibilityLabel ?? plainText(children)} accessibilityRole="button" accessibilityState={{ ...props.accessibilityState, disabled: props.disabled }} style={[{ minHeight: 44, maxWidth: '100%', flexShrink: 1, justifyContent: 'center', paddingHorizontal: 14, paddingVertical: 10, borderRadius: 12, backgroundColor, borderWidth: mode === 'outlined' ? 1 : 0, borderColor: '#c9c2ff' }, style]}><View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8 }}>{icon && <MaterialIcons name={icon} color={labelStyle.color} size={18} />}<View style={{ flexShrink: 1 }}>{content}</View></View></TouchableRipple>;
   }
-  return <PaperButton {...props} accessibilityLabel={props.accessibilityLabel ?? plainText(children)} icon={icon ? ({ color, size }) => <MaterialIcons name={icon} color={color} size={Math.min(size, 18)} /> : undefined} mode={props.mode === 'tonal' ? 'contained-tonal' : props.mode ?? 'contained'} compact contentStyle={{ minHeight: 44, paddingVertical: 8, paddingHorizontal: 14 }} labelStyle={labelStyle} style={[{ borderRadius: 12, flexShrink: 1, borderColor: props.mode === 'outlined' ? '#d8d2ee' : undefined, backgroundColor: props.mode === 'outlined' ? '#ffffff' : undefined }, style]}>{content}</PaperButton>;
+  return <PaperButton {...props} buttonColor={backgroundColor} textColor={textColor} accessibilityLabel={props.accessibilityLabel ?? plainText(children)} icon={icon ? ({ color, size }) => <MaterialIcons name={icon} color={color} size={Math.min(size, 18)} /> : undefined} mode={props.mode === 'tonal' ? 'contained-tonal' : props.mode ?? 'contained'} compact contentStyle={{ minHeight: 44, paddingVertical: 8, paddingHorizontal: 14 }} labelStyle={labelStyle} style={[{ borderRadius: 12, flexShrink: 1, ...(mode === 'outlined' ? { borderColor: '#d8d2ee' } : {}), backgroundColor }, style]}>{content}</PaperButton>;
 }
 export function Tabs({ items, value, onChange }: { items: { value: string; label: string }[]; value: string; onChange: (value: string) => void }) {
   if (!items.length) return null;

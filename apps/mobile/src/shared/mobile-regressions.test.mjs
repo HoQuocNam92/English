@@ -223,6 +223,19 @@ test('native buttons wrap interpolated quiz labels and numbers in Text while pre
   const onPress = () => {};
   const button = exports.Button({ children: label, onPress, disabled: false });
   assert.equal(button.type, 'paper-button');
+  for (const mode of ['contained', 'outlined', 'tonal', 'text']) {
+    for (const disabled of [false, true]) {
+      const short = exports.Button({ children: 'Đăng nhập', mode, disabled });
+      const long = exports.Button({ children: 'Tiếp tục: Luyện 8 từ vựng trong bài', mode, disabled });
+      const expectedBackground = disabled ? '#e4e8f1' : mode === 'contained' ? 'blue' : mode === 'tonal' ? '#eeecff' : mode === 'outlined' ? '#ffffff' : 'transparent';
+      const expectedText = disabled ? '#59657c' : mode === 'contained' ? 'white' : 'blue';
+      assert.equal(short.props.style[0].backgroundColor, expectedBackground);
+      assert.equal(short.props.buttonColor, expectedBackground);
+      assert.equal(short.props.children.props.style.color, expectedText);
+      assert.equal(long.props.style[0].backgroundColor, expectedBackground);
+      assert.equal(long.props.children.props.children[1].props.children.props.style.color, expectedText);
+    }
+  }
   assert.equal(button.props.contentStyle.minHeight, 44);
   assert.equal(button.props.onPress, onPress);
   assert.equal(button.props.children.type, exports.Text);
