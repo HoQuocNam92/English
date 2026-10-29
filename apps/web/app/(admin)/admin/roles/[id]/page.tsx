@@ -94,13 +94,13 @@ export default function RoleDetailPage() {
   const revokeUser = async (userId: string) => {
     setBusy(userId);
     try { await apiClient.delete(`/roles/${id}/users/${userId}`); setUsers((current) => current.filter((u) => u.id !== userId)); }
-    catch (e: any) { setError(e.message ?? 'Không thể gỡ người này khỏi nhóm'); }
+    catch (e: any) { setError(e.message ?? 'Không thể gỡ vai trò của người dùng này'); }
     finally { setBusy(null); }
   };
 
   if (loading) {
     return (
-      <div className="p-6">
+      <div className="admin-page-stack p-6">
         <div className="flex items-center gap-4 mb-8">
           <a href="/admin/roles" className="w-10 h-10 flex items-center justify-center rounded-lg border border-outline-variant hover:bg-surface-container-low transition-colors">
             <AppIcon className=" text-[20px] text-on-surface-variant">arrow_back</AppIcon>
@@ -119,7 +119,7 @@ export default function RoleDetailPage() {
 
   if (error || !role) {
     return (
-      <div className="p-6">
+      <div className="admin-page-stack p-6">
         <div className="flex items-center gap-4 mb-8">
           <a href="/admin/roles" className="w-10 h-10 flex items-center justify-center rounded-lg border border-outline-variant hover:bg-surface-container-low transition-colors">
             <AppIcon className=" text-[20px] text-on-surface-variant">arrow_back</AppIcon>
@@ -136,7 +136,7 @@ export default function RoleDetailPage() {
   }
 
   return (
-    <div className="p-6">
+    <div className="admin-page-stack p-6">
       <div className="flex items-center gap-4 mb-8">
         <a href="/admin/roles" className="w-10 h-10 flex items-center justify-center rounded-lg border border-outline-variant hover:bg-surface-container-low transition-colors">
           <AppIcon className=" text-[20px] text-on-surface-variant">arrow_back</AppIcon>
@@ -146,7 +146,7 @@ export default function RoleDetailPage() {
             <h1 className="text-2xl font-bold text-on-surface">{roleLabel(role.code, role.name)}</h1>
             {role.isSystem && (
               <span className="text-xs font-semibold bg-primary/10 text-primary px-3 py-1 rounded-full">
-                Nhóm có sẵn
+                Vai trò có sẵn
               </span>
             )}
           </div>
@@ -162,7 +162,7 @@ export default function RoleDetailPage() {
           <div className="flex items-center justify-between mb-6 pb-4 border-b border-outline-variant">
             <h2 className="text-lg font-bold text-on-surface flex items-center gap-2">
               <AppIcon className=" text-primary">lock</AppIcon>
-              Nhóm này được làm gì?
+              Quyền hạn của vai trò
             </h2>
             <button disabled={busy === 'permissions'} onClick={() => editingPermissions ? void savePermissions() : beginPermissionEdit()} className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-semibold text-primary border border-outline-variant hover:bg-surface-container-low transition-colors disabled:opacity-70">
               <AppIcon className=" text-[18px]">edit</AppIcon>
@@ -186,7 +186,7 @@ export default function RoleDetailPage() {
           <div className="flex items-center justify-between mb-6 pb-4 border-b border-outline-variant">
             <h2 className="text-lg font-bold text-on-surface flex items-center gap-2">
               <AppIcon className=" text-primary">group</AppIcon>
-              Những người thuộc nhóm này
+              Người dùng được gán vai trò
             </h2>
             <button onClick={() => setAssigningUser((value) => !value)} className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-semibold text-white bg-primary hover:bg-primary/90 transition-colors">
               <AppIcon className=" text-[18px]">person_add</AppIcon>
@@ -194,14 +194,14 @@ export default function RoleDetailPage() {
             </button>
           </div>
           {assigningUser && <div className="mb-4 max-h-64 space-y-2 overflow-y-auto rounded-xl bg-surface-container-low/60 p-3">
-            <p className="px-1 pb-1 text-xs text-on-surface-variant">Chọn người cần đưa vào nhóm “{roleLabel(role.code, role.name)}”. Người đó sẽ có tất cả quyền ở cột bên trái.</p>
+            <p className="px-1 pb-1 text-xs text-on-surface-variant">Chọn người dùng cần gán vai trò “{roleLabel(role.code, role.name)}”. Người dùng sẽ có các quyền hạn được gán cho vai trò này.</p>
             {allUsers.filter((candidate) => !users.some((assigned) => (assigned.id ?? assigned.userId) === candidate.id)).map((candidate) => <div key={candidate.id} className="flex items-center justify-between gap-3 rounded-lg bg-white p-3"><div className="min-w-0"><p className="truncate text-sm font-semibold">{candidate.displayName ?? candidate.email}</p><p className="truncate text-xs text-on-surface-variant">{candidate.email}</p></div><button disabled={busy === candidate.id} onClick={() => void assignUser(candidate.id)} className="shrink-0 rounded-lg bg-primary px-3 py-1.5 text-xs font-semibold !text-white disabled:opacity-70">Gán</button></div>)}
           </div>}
 
           {users.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-12 text-on-surface-variant">
               <AppIcon className=" text-4xl mb-2 opacity-50">person_off</AppIcon>
-              <p className="text-sm font-semibold">Chưa có ai thuộc nhóm này.</p>
+              <p className="text-sm font-semibold">Chưa có người dùng được gán vai trò này.</p>
             </div>
           ) : (
             <div className="space-y-3">

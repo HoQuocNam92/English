@@ -64,7 +64,7 @@ export default function AdminProgressPage() {
   React.useEffect(() => { void load(); }, [load]);
 
   return (
-    <div>
+    <div className="admin-page-stack">
       <PageHeader title="Tiến độ học tập toàn hệ thống" icon="trending_up" />
 
       {/* Filters */}
@@ -171,7 +171,7 @@ export default function AdminProgressPage() {
         </div>
 
         {/* Pagination */}
-        {total > 0 && <Pagination page={page} limit={limit} total={total} totalPages={totalPages} onPageChange={setPage} onLimitChange={(value) => { setLimit(value); setPage(1); }} showQuickJumper />}
+        {total > 0 && <Pagination page={page} limit={limit} total={total} totalPages={totalPages} onPageChange={setPage} onLimitChange={(value) => { setLimit(value); setPage(1); }} />}
       </div>
     </div>
   );

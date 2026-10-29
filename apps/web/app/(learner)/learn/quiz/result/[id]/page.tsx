@@ -177,8 +177,7 @@ export default function LearnerQuizResultPage({ params }: { params: Promise<{ id
                 onPageChange={changeReviewPage}
                 onLimitChange={(limit) => { setReviewLimit(limit); changeReviewPage(1); }}
                 limitOptions={[5, 10, 20]}
-                showQuickJumper
-              />
+                    />
             )}
           </div>
         </div>

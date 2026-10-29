@@ -17,7 +17,7 @@ function buildTree(permissions: Permission[]): TreeNode {
   });
 
   return {
-    id: 'root', label: 'Tất cả chức năng', kind: 'root', children: [...folders.entries()]
+    id: 'root', label: 'Tất cả quyền hạn', kind: 'root', children: [...folders.entries()]
       .sort(([a], [b]) => resourceLabel(a).localeCompare(resourceLabel(b), 'vi'))
       .map(([resource, items]) => ({
         id: `folder:${resource}`, label: resourceLabel(resource), kind: 'folder' as const,

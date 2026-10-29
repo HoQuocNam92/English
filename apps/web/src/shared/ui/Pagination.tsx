@@ -1,8 +1,6 @@
 'use client';
-import { NumberInput } from '@/shared/ui/NumberInput';
 
 import { Dropdown } from '@/shared/ui/Dropdown';
-import * as React from 'react';
 import { ChevronLeft, ChevronRight, Rows3 } from 'lucide-react';
 import { cn } from '@/shared/lib/cn';
 
@@ -15,7 +13,6 @@ export interface PaginationProps {
   onLimitChange?: (limit: number) => void;
   limitOptions?: number[];
   className?: string;
-  showQuickJumper?: boolean;
 }
 
 const buildVisiblePages = (page: number, totalPages: number): Array<number | 'ellipsis'> => {
@@ -43,22 +40,11 @@ export function Pagination({
   onPageChange,
   onLimitChange,
   limitOptions = [10, 20, 30, 40],
-  showQuickJumper = false,
 }: PaginationProps) {
   const safeTotalPages = Math.max(totalPages, 1);
   const start = total === 0 ? 0 : (page - 1) * limit + 1;
   const end = total === 0 ? 0 : Math.min(page * limit, total);
   const visiblePages = buildVisiblePages(page, safeTotalPages);
-  const [jumpValue, setJumpValue] = React.useState('');
-
-  const handleJump = () => {
-    const target = /^\d+$/.test(jumpValue) ? Number(jumpValue) : NaN;
-    if (!isNaN(target) && target >= 1 && target <= safeTotalPages) {
-      onPageChange(target);
-      setJumpValue('');
-    }
-  };
-
   return (
     <div
       className={cn(
@@ -87,7 +73,7 @@ export function Pagination({
       </div>
 
       <div className="flex flex-wrap items-center gap-2">
-        <div className="flex items-center gap-1">
+        <div className="flex max-w-full flex-wrap items-center gap-1">
           <button
             aria-label="Trang trước"
             className="flex h-9 w-9 items-center justify-center rounded-lg border border-outline-variant/50 text-on-surface-variant transition-colors hover:bg-primary/5 hover:text-primary disabled:cursor-not-allowed disabled:opacity-35"
@@ -109,6 +95,8 @@ export function Pagination({
                   'flex h-9 min-w-9 items-center justify-center rounded-[var(--radius-control)] px-3 text-sm font-semibold transition-colors',
                   entry === page ? 'bg-primary text-white shadow-sm' : 'text-on-surface hover:bg-primary/5'
                 )}
+                aria-current={entry === page ? 'page' : undefined}
+                aria-label={`Trang ${entry}`}
                 key={entry}
                 onClick={() => onPageChange(entry)}
                 type="button"
@@ -128,34 +116,6 @@ export function Pagination({
             <ChevronRight className="h-4 w-4" />
           </button>
         </div>
-
-        {showQuickJumper && safeTotalPages > 5 && (
-          <div className="flex items-center gap-1.5 pl-2 border-l border-outline-variant/40 text-xs text-on-surface-variant">
-            <span>Đến trang</span>
-            <NumberInput
-              type="number"
-              min={1}
-              max={safeTotalPages}
-              value={jumpValue}
-              onChange={(e) => setJumpValue(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === 'Enter') {
-                  e.preventDefault();
-                  handleJump();
-                }
-              }}
-              placeholder={String(page)}
-              className="w-14 h-8 px-1.5 text-center text-xs rounded-lg border border-outline-variant/60 bg-surface-container-low focus:bg-surface-container-lowest focus:border-primary focus:outline-none transition-colors [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
-            />
-            <button
-              type="button"
-              onClick={handleJump}
-              className="h-8 px-2.5 rounded-lg border border-outline-variant/60 text-xs font-medium text-on-surface hover:bg-primary/5 hover:text-primary hover:border-primary/40 transition-colors"
-            >
-              Đi
-            </button>
-          </div>
-        )}
       </div>
     </div>
   );

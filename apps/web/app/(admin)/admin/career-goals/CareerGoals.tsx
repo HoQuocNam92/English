@@ -56,7 +56,7 @@ export default function CareerGoals({ createOnly = false }: { createOnly?: boole
     </form>);
   if (createOnly) return <CreatePage backHref="/admin/career-goals">{goalForm}</CreatePage>;
 
-  return <main className="flex-1 p-margin">
+  return <main className="admin-page-stack flex-1 p-margin">
     <PageHeader title="Mục tiêu nghề nghiệp" icon="work_outline" iconClassName="from-amber-500 to-orange-600" action={<button type="button" onClick={() => router.push('/admin/career-goals/new')} className="inline-flex h-10 items-center gap-2 rounded-xl bg-primary px-4 text-sm font-semibold text-white"><AppIcon aria-hidden="true" className="" style={{ fontSize: 18 }}>add</AppIcon>Thêm mục tiêu</button>} />
     <ListTools search={search} onSearch={setSearch} filter={filter} onFilter={setFilter} options={[{value:'',label:'Tất cả mục tiêu'},{value:'assigned',label:'Đã có học viên'},{value:'empty',label:'Chưa có học viên'}]} />
 

@@ -1,6 +1,7 @@
 import { BadRequestException, Injectable, NotFoundException, ConflictException } from '@nestjs/common'
 import { PrismaService } from '../../infrastructure/database/prisma.service'
 import * as bcrypt from 'bcrypt'
+import { normalizePhone, identityConflict } from './identity-fields'
 
 @Injectable()
 export class UsersService {
@@ -64,6 +65,7 @@ export class UsersService {
     const exists = await this.prisma.user.findFirst({ where: { email: { equals: email, mode: 'insensitive' } } })
     if (exists) throw new ConflictException('Email này đã được sử dụng')
 
+    const phoneNumber = normalizePhone(dto.phoneNumber)
     const passwordHash = await bcrypt.hash(dto.password, 12)
     const roleToAssign = dto.roleCode || dto.role || 'learner'
     const role = await this.prisma.role.findUnique({ where: { code: roleToAssign } })
@@ -82,7 +84,7 @@ export class UsersService {
           create: {
             displayName: dto.displayName,
             avatarUrl: dto.avatarUrl,
-            phoneNumber: dto.phoneNumber,
+            phoneNumber,
             bio: dto.bio,
             locale: dto.locale ?? 'vi',
             timezone: dto.timezone ?? 'Asia/Ho_Chi_Minh',
@@ -94,7 +96,7 @@ export class UsersService {
         }),
       },
       include: { userDetail: true, userRoles: { include: { role: true } } }
-    })
+    }).catch(identityConflict)
 
     return this.toResponse(await this.prisma.user.findUnique({
       where: { id: user.id },
@@ -105,6 +107,11 @@ export class UsersService {
   async update(id: string, dto: any) {
     await this.findOne(id)
     if (dto.status !== undefined) throw new BadRequestException('Dùng chức năng khóa hoặc mở khóa riêng để thay đổi trạng thái tài khoản.')
+    const phoneNumber = dto.phoneNumber === undefined ? undefined : normalizePhone(dto.phoneNumber)
+    if (phoneNumber) {
+      const occupied = await this.prisma.userDetail.findFirst({ where: { phoneNumber, userId: { not: id } } })
+      if (occupied) throw new ConflictException('Số điện thoại này đã được sử dụng')
+    }
     if (dto.displayName !== undefined || dto.avatarUrl !== undefined || dto.bio !== undefined
         || dto.phoneNumber !== undefined || dto.locale !== undefined || dto.timezone !== undefined) {
       await this.prisma.userDetail.upsert({
@@ -113,12 +120,12 @@ export class UsersService {
           ...(dto.displayName !== undefined && { displayName: dto.displayName }),
           ...(dto.avatarUrl !== undefined && { avatarUrl: dto.avatarUrl }),
           ...(dto.bio !== undefined && { bio: dto.bio }),
-          ...(dto.phoneNumber !== undefined && { phoneNumber: dto.phoneNumber }),
+          ...(phoneNumber !== undefined && { phoneNumber }),
           ...(dto.locale !== undefined && { locale: dto.locale }),
           ...(dto.timezone !== undefined && { timezone: dto.timezone }),
         },
-        create: { userId: id, displayName: dto.displayName ?? '' }
-      })
+        create: { userId: id, displayName: dto.displayName ?? '', avatarUrl: dto.avatarUrl, bio: dto.bio, phoneNumber, locale: dto.locale, timezone: dto.timezone }
+      }).catch(identityConflict)
     }
     return this.findOne(id)
   }

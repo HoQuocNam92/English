@@ -546,7 +546,7 @@ export default function AdminLearningContent({ createOnly = false }: { createOnl
   if (createOnly) return <CreatePage backHref="/admin/learning-content"><VocabularyModal page mode="create" domains={domains} levels={levels} onClose={() => router.push('/admin/learning-content')} onSuccess={() => completeCreation(router, '/admin/learning-content', 'Đã thêm từ vựng.')} /></CreatePage>;
 
   return (
-    <div>
+    <div className="admin-page-stack">
       {/* Page header + Add button */}
       <div className="flex items-start justify-between gap-4">
         <PageHeader
@@ -710,7 +710,6 @@ export default function AdminLearningContent({ createOnly = false }: { createOnl
           totalPages={totalPages}
           onPageChange={setPage}
           onLimitChange={(value) => { setLimit(value); setPage(1); }}
-          showQuickJumper
         />
       )}
 

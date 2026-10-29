@@ -1,6 +1,10 @@
 import { test } from 'node:test'
 import { strict as assert } from 'node:assert'
 import { UsersService } from './user.service'
+import { normalizePhone } from './identity-fields'
+import { plainToInstance } from 'class-transformer'
+import { validate } from 'class-validator'
+import { CreateUserDto } from '../../presentation/http-dto/user.dto'
 
 function accountFixture(overrides: any = {}) {
   let row: any = { id: 'learner', email: 'learner@gmail.com', status: 'active', deletedAt: null, suspensionReason: null, userDetail: {}, userRoles: [{ role: { code: 'learner', rolePermissions: [] } }], ...overrides }
@@ -18,6 +22,52 @@ function accountFixture(overrides: any = {}) {
   }
   return { service: new UsersService(db), db, calls, get row() { return row } }
 }
+
+test('phone normalization treats local, international and formatted numbers as the same identity', () => {
+  for (const value of ['0912 345 678', '+84 (912) 345-678', '0084912345678', '84912345678']) assert.equal(normalizePhone(value), '+84912345678')
+  for (const value of ['', '   ', null, undefined]) assert.equal(normalizePhone(value), null)
+  for (const value of ['abc0912345678', '123', '+1+234567890']) assert.throws(() => normalizePhone(value), /điện thoại/)
+})
+
+test('admin email validation normalizes surrounding spaces and case before validation', async () => {
+  const dto = plainToInstance(CreateUserDto, { email: ' USER@gmail.com ', password: 'Password123', displayName: 'Nguyễn Văn A' })
+  assert.equal(dto.email, 'user@gmail.com')
+  assert.equal((await validate(dto)).length, 0)
+})
+
+test('profile updates reject a number owned by another user and return readable concurrent uniqueness conflicts', async () => {
+  const f = accountFixture()
+  let writes = 0
+  f.db.userDetail = { findFirst: async () => ({ userId: 'another' }), upsert: async () => { writes++; return {} } }
+  await assert.rejects(f.service.update('learner', { phoneNumber: '0912345678' }), /đã được sử dụng/)
+  assert.equal(writes, 0)
+  f.db.userDetail.findFirst = async ({ where }: any) => { assert.equal(where.userId.not, 'learner'); assert.equal(where.phoneNumber, '+84912345678'); return null }
+  f.db.userDetail.upsert = async () => { throw { code: 'P2002', meta: { target: 'user_details_phone_normalized_key' } } }
+  await assert.rejects(f.service.update('learner', { phoneNumber: '+84912345678' }), /Số điện thoại này đã được sử dụng/)
+})
+
+test('profile updates preserve matching personal names and allow clearing optional phone numbers', async () => {
+  const f = accountFixture()
+  const updates: any[] = []
+  f.db.userDetail = {
+    findFirst: async () => null,
+    upsert: async (query: any) => { updates.push(query); return {} },
+  }
+  await f.service.update('learner', { displayName: 'Nguyễn Văn A', phoneNumber: '0912345678' })
+  assert.equal(updates[0].update.displayName, 'Nguyễn Văn A')
+  assert.equal(updates[0].update.phoneNumber, '+84912345678')
+  assert.equal(updates[0].create.phoneNumber, '+84912345678')
+  await f.service.update('learner', { phoneNumber: null })
+  assert.equal(updates[1].update.phoneNumber, null)
+})
+
+test('admin account creation handles a concurrent normalized email collision', async () => {
+  const f = accountFixture()
+  f.db.user.findFirst = async ({ where }: any) => { assert.equal(where.email.equals, 'same@gmail.com'); return null }
+  f.db.role = { findUnique: async () => ({ id: 'teacher' }) }
+  f.db.user.create = async () => { throw { code: 'P2002', meta: { target: 'users_email_normalized_key' } } }
+  await assert.rejects(f.service.create({ email: ' SAME@gmail.com ', password: 'SomePassword123', displayName: 'Nguyễn Văn A', roleCode: 'teacher' }), /Email này đã được sử dụng/)
+})
 
 test('suspension requires a public reason, revokes sessions, and activation clears the reason', async () => {
   const f = accountFixture()

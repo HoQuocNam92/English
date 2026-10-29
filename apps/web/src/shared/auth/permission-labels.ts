@@ -1,5 +1,5 @@
 const RESOURCE_LABELS: Record<string, string> = {
-  users: 'người dùng', roles: 'nhóm quyền', permissions: 'quyền hạn',
+  users: 'người dùng', roles: 'vai trò người dùng', permissions: 'quyền hạn',
   lessons: 'bài học', vocabulary: 'từ vựng', questions: 'câu hỏi',
   exams: 'bài thi', reports: 'báo cáo', groups: 'nhóm học viên',
   certificates: 'chứng chỉ', community: 'cộng đồng',

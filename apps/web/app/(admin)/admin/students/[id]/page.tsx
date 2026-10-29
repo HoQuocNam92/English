@@ -110,7 +110,7 @@ export default function AdminStudentDetailPage({
   const certProgress = progressData?.certProgress ?? [];
 
   return (
-    <div className="flex-1 overflow-y-auto p-4 md:p-margin bg-surface">
+    <div className="admin-page-stack flex-1 p-4 md:p-margin bg-surface">
       {/* Top back navigation */}
       <div className="mb-md">
         <Link

@@ -5,6 +5,7 @@ import { JwtAuthGuard } from '../infrastructure/auth/jwt-auth.guard'
 import { PermissionsGuard } from '../infrastructure/auth/permissions.guard'
 import { RequirePermissions } from './decorators/require-permissions.decorator'
 import { CreateCertificateDto, UpdateCertificateDto } from './http-dto/certificate.dto'
+import { CreateDomainDto, UpdateDomainDto } from './http-dto/domain.dto'
 
 @ApiTags('Taxonomy & Metadata')
 @ApiBearerAuth()
@@ -63,6 +64,14 @@ export class TaxonomyController {
   getDomains(@Query('activeOnly') activeOnly?: string) {
     return this.svc.getDomains(activeOnly !== 'false')
   }
+
+  @Post('domains')
+  @RequirePermissions('certificates:manage')
+  createDomain(@Body() dto: CreateDomainDto) { return this.svc.createDomain(dto) }
+
+  @Patch('domains/:id')
+  @RequirePermissions('certificates:manage')
+  updateDomain(@Param('id') id: string, @Body() dto: UpdateDomainDto) { return this.svc.updateDomain(id, dto) }
 
   @Get('certificates')
   @ApiOperation({ summary: 'List all certificates' })

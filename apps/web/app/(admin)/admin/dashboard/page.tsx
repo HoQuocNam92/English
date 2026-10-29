@@ -1,4 +1,6 @@
 'use client';
+import { ContentDistribution } from '@/shared/ui/ContentDistribution';
+import { roleLabel } from '@/shared/auth/permission-labels';
 import { SummaryStat } from '@/shared/ui/SummaryStat';
 import { dashboardDateRange } from '@/shared/lib/dashboard-date-range';
 import { AppIcon } from '@/shared/ui/AppIcon';
@@ -46,29 +48,6 @@ interface AnalyticsData {
   }>;
 }
 
-function RoleBadge({ role }: { role: string }) {
-  const map: Record<string, string> = {
-    admin: 'bg-red-100 text-red-700',
-    teacher: 'bg-blue-100 text-blue-700',
-    learner: 'bg-green-100 text-green-700',
-  };
-  return (
-    <span className={`inline-flex px-2 py-0.5 rounded-full text-xs font-medium ${map[role] ?? 'bg-gray-100 text-gray-600'}`}>
-      {role}
-    </span>
-  );
-}
-
-const DOMAIN_COLORS = [
-  'bg-blue-500',
-  'bg-purple-500',
-  'bg-emerald-500',
-  'bg-amber-500',
-  'bg-rose-500',
-  'bg-cyan-500',
-  'bg-indigo-500',
-];
-
 export default function AdminDashboardPage() {
   const { session } = useAuth();
   const roles = session?.user?.roles ?? (session?.user?.role ? [session.user.role] : []);
@@ -105,8 +84,6 @@ export default function AdminDashboardPage() {
           isAdmin ? apiClient.get<any>('/users?limit=1&status=active') : Promise.resolve({ meta: { total: 0 } }),
         ]);
 
-        const activeCount = allUsers.data.filter((u: any) => u.status === 'active').length;
-
         if (!current) return;
         setStats({
           totalUsers: allUsers.meta.total,
@@ -117,7 +94,7 @@ export default function AdminDashboardPage() {
         setRecentUsers(allUsers.data.slice(0, 5));
         if (analyticsRes) setAnalytics(analyticsRes);
       } catch (e: unknown) {
-        if (current) setError(e instanceof ApiClientError ? e.message : 'Không thể tải dữ liệu Dashboard');
+        if (current) setError(e instanceof ApiClientError ? e.message : 'Không thể tải dữ liệu tổng quan');
       } finally {
         if (current) setLoading(false);
       }
@@ -126,13 +103,7 @@ export default function AdminDashboardPage() {
     return () => { current = false; };
   }, [isAdmin, activityRange.dateFrom, activityRange.dateTo, validActivityRange]);
 
-  const statCards = [
-    { label: 'Tổng người dùng', value: stats?.totalUsers ?? 0, sub: `${stats?.totalUsers ?? 0} tài khoản hệ thống`, icon: 'people', color: 'text-primary' },
-    { label: 'Đề thi chứng chỉ', value: stats?.totalExams ?? 0, sub: 'AWS, CKA, Security+ Mock', icon: 'quiz', color: 'text-tertiary' },
-    { label: 'Kho thuật ngữ IT', value: stats?.totalVocab ?? 0, sub: 'Thuật ngữ có IPA & ví dụ', icon: 'translate', color: 'text-emerald-600' },
-  ];
-
-  const totalDomainItems = analytics?.domainsDistribution.reduce((s, d) => s + d.totalItems, 0) || 1;
+  const totalDomainItems = analytics?.domainsDistribution.reduce((sum, item) => sum + item.totalItems, 0) || 1;
 
   if (!isAdmin) return (
     <main className="w-full space-y-8">
@@ -155,13 +126,13 @@ export default function AdminDashboardPage() {
         </div>}
       </section>
       <section><h3 className="mb-4 text-xl font-bold">Công việc giảng dạy</h3><div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-        {[['Thêm câu hỏi','/admin/questions/editor','post_add'],['Tạo quiz chứng chỉ','/admin/tests/builder','quiz'],['Xem kết quả thi','/admin/test-results','fact_check'],['Theo dõi tiến độ','/admin/progress','insights']].map(([label,href,icon]) => <Link key={href} href={href} className="flex items-center gap-4 rounded-2xl bg-white p-5 shadow-[0_8px_28px_rgba(15,23,42,0.05)] transition hover:-translate-y-0.5 hover:text-primary"><AppIcon className=" text-primary">{icon}</AppIcon><span className="font-semibold">{label}</span><AppIcon className=" ml-auto text-outline">chevron_right</AppIcon></Link>)}
+        {[['Thêm câu hỏi','/admin/questions/editor','post_add'],['Tạo bài thi chứng chỉ','/admin/tests/builder','quiz'],['Xem kết quả thi','/admin/test-results','fact_check'],['Theo dõi tiến độ','/admin/progress','insights']].map(([label,href,icon]) => <Link key={href} href={href} className="flex items-center gap-4 rounded-2xl bg-white p-5 shadow-[0_8px_28px_rgba(15,23,42,0.05)] transition hover:-translate-y-0.5 hover:text-primary"><AppIcon className=" text-primary">{icon}</AppIcon><span className="font-semibold">{label}</span><AppIcon className=" ml-auto text-outline">chevron_right</AppIcon></Link>)}
       </div></section>
     </main>
   );
 
   return (
-    <main className="flex-1 overflow-y-auto p-gutter lg:px-xl xl:px-margin bg-background">
+    <main className="admin-page-stack flex-1 overflow-y-auto p-gutter lg:px-xl xl:px-margin bg-background">
       <PageHeader
         className="mb-xl"
         title="Tổng quan"
@@ -201,22 +172,7 @@ export default function AdminDashboardPage() {
         <div className="stat-card bg-surface-container-lowest p-lg col-span-12 lg:col-span-4 min-h-[360px] flex flex-col rounded-lg border border-outline-variant hover:shadow-[0_1px_3px_rgba(15,23,24,0.06)] hover:-translate-y-0.5 transition-all">
           <h3 className="font-headline-h3 text-headline-h3 text-on-surface mb-xl">Học liệu được tạo theo chuyên ngành</h3>
           <p className="mb-4 text-xs text-on-surface-variant">Trong khoảng thời gian đã chọn phía trên. Mỗi số là tổng bài học, từ vựng, câu hỏi và đề thi được tạo; % là tỷ trọng của chuyên ngành.</p>
-          <div className="max-h-[360px] space-y-4 overflow-y-auto pr-2">
-            {loading ? <p className="text-sm text-on-surface-variant">Đang tải số liệu...</p> : !(analytics?.domainsDistribution ?? []).some(dom => dom.totalItems > 0) ? <p className="text-sm text-on-surface-variant">Chưa có học liệu.</p> : [...(analytics?.domainsDistribution ?? [])].sort((a, b) => b.totalItems - a.totalItems).map(dom => {
-              const percentage = dom.totalItems / totalDomainItems * 100;
-              return (
-                <div key={dom.code}>
-                  <div className="mb-1.5 flex items-start justify-between gap-3 text-sm">
-                    <span className="min-w-0 text-on-surface">{dom.name}</span>
-                    <span className="shrink-0 text-xs text-on-surface-variant">{dom.totalItems.toLocaleString('vi-VN')} học liệu · {percentage.toLocaleString('vi-VN', { maximumFractionDigits: 1 })}%</span>
-                  </div>
-                  <div className="h-2 overflow-hidden rounded-full bg-surface-container-high" role="img" aria-label={`${dom.name}: ${dom.totalItems} học liệu, ${percentage.toFixed(1)}%`}>
-                    <div className="h-full rounded-full bg-primary" style={{ width: `${percentage}%` }} />
-                  </div>
-                </div>
-              );
-            })}
-          </div>
+          <ContentDistribution data={analytics?.domainsDistribution ?? []} loading={loading} />
         </div>
 
         <div className="stat-card bg-surface-container-lowest p-lg col-span-12 lg:col-span-8 min-h-[360px] flex flex-col rounded-lg border border-outline-variant hover:shadow-[0_1px_3px_rgba(15,23,24,0.06)] hover:-translate-y-0.5 transition-all">
@@ -255,7 +211,7 @@ export default function AdminDashboardPage() {
                   <div>
                     <p className="font-body-md text-body-md text-on-surface"><span className="font-interface-sb">{u.displayName ?? u.email}</span> đã đăng ký tài khoản</p>
                     <p className="font-body-sm text-body-sm text-on-surface-variant">
-                      Vai trò: {u.roles?.join(', ')}
+                      Vai trò: {u.roles?.map(code => roleLabel(code)).join(', ')}
                     </p>
                   </div>
                 </li>
@@ -274,7 +230,7 @@ export default function AdminDashboardPage() {
               </Link>
               <Link href="/admin/tests/builder" className="flex flex-col items-center justify-center p-md border border-outline-variant rounded-lg hover:border-primary hover:bg-surface-bright transition-all group">
                 <AppIcon className=" text-outline group-hover:text-primary mb-xs">quiz</AppIcon>
-                <span className="font-interface-sb text-body-sm text-on-surface group-hover:text-primary">Tạo quiz chứng chỉ</span>
+                <span className="font-interface-sb text-body-sm text-on-surface group-hover:text-primary">Tạo bài thi chứng chỉ</span>
               </Link>
               <Link href="/admin/students" className="flex flex-col items-center justify-center p-md border border-outline-variant rounded-lg hover:border-primary hover:bg-surface-bright transition-all group col-span-2">
                 <AppIcon className=" text-outline group-hover:text-primary mb-xs">person_search</AppIcon>
@@ -285,7 +241,7 @@ export default function AdminDashboardPage() {
         </div>
       </div>
 
-      <div className="h-2xl"></div>
+
     </main>
   );
 }

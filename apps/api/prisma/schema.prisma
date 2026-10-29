@@ -187,6 +187,7 @@ model UserDetail {
   userId      String    @unique @map("user_id") @db.Uuid
   displayName String    @map("display_name") @db.VarChar(150)
   avatarUrl   String?   @map("avatar_url") @db.VarChar(2048)
+  /// Normalized phone uniqueness is enforced by an expression index (20261029090000).
   phoneNumber String?   @map("phone_number") @db.VarChar(20)
   dateOfBirth DateTime? @map("date_of_birth") @db.Date
   gender      String?   @db.VarChar(20)

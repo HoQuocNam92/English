@@ -383,7 +383,7 @@ export default function AdminUsers({ createOnly = false }: { createOnly?: boolea
   if (createOnly) return <CreatePage backHref="/admin/users"><CreateUserModal page onClose={() => router.push('/admin/users')} onCreated={() => completeCreation(router, '/admin/users', 'Tạo tài khoản thành công.')} /></CreatePage>;
 
   return (
-    <main className="flex-1 p-6 lg:p-9 flex flex-col gap-7 w-full">
+    <main className="admin-page-stack flex-1 p-6 lg:p-9 w-full">
       {/* Page Header & Actions */}
       <PageHeader title="Quản lý người dùng" icon="manage_accounts" iconClassName="from-teal-500 to-emerald-600" action={<button
           onClick={() => router.push('/admin/users/new')}
@@ -506,7 +506,7 @@ export default function AdminUsers({ createOnly = false }: { createOnly?: boolea
         </div>
 
         {/* Pagination */}
-        {total > 0 && <Pagination page={page} limit={limit} total={total} totalPages={totalPages} onPageChange={setPage} onLimitChange={(value) => { setLimit(value); setPage(1); }} showQuickJumper />}
+        {total > 0 && <Pagination page={page} limit={limit} total={total} totalPages={totalPages} onPageChange={setPage} onLimitChange={(value) => { setLimit(value); setPage(1); }} />}
       </div>
 
 

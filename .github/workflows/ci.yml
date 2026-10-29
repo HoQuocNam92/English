@@ -41,6 +41,10 @@ jobs:
       - run: pnpm install --frozen-lockfile
       - run: pnpm --filter @techenglish/api db:generate
       - run: node docker/migrate.cjs
+      - name: Check identity constraints and reporting queries against PostgreSQL
+        env:
+          ACCOUNT_IDENTITY_QA: '1'
+        run: node scripts/account-identity.integration.cjs
       - run: pnpm --filter @techenglish/api exec prisma migrate diff --from-schema-datasource prisma/schema.prisma --to-schema-datamodel prisma/schema.prisma --exit-code
       - run: pnpm typecheck
       - run: pnpm --filter web typecheck

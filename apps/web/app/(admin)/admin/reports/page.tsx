@@ -1,4 +1,6 @@
 'use client';
+import { ContentDistribution } from '@/shared/ui/ContentDistribution';
+import { CertificateScoreChart, CompletionChart } from '@/shared/ui/ReportCharts';
 import { SummaryStat } from '@/shared/ui/SummaryStat';
 import { ClearFiltersButton } from '@/shared/ui/ClearFiltersButton';
 import { showToast } from '@/shared/ui/AppFeedback';
@@ -62,15 +64,7 @@ const presetRange = (preset: string): Pick<ReportFilters, 'dateFrom' | 'dateTo'>
   return dashboardDateRange(preset === 'last_7_days' ? 'week' : preset);
 };
 
-const DOMAIN_COLORS = [
-  'bg-blue-500',
-  'bg-purple-500',
-  'bg-emerald-500',
-  'bg-amber-500',
-  'bg-rose-500',
-  'bg-cyan-500',
-  'bg-indigo-500',
-];
+
 
 export default function AdminReportsPage() {
   const [analytics, setAnalytics] = React.useState<AnalyticsData | null>(null);
@@ -87,7 +81,7 @@ export default function AdminReportsPage() {
   const [appliedFilters, setAppliedFilters] = React.useState<ReportFilters>({ ...initialRange, domainCode: '', certificateId: '' });
 
   React.useEffect(() => {
-    void Promise.all([apiClient.get<any>('/domains'), apiClient.get<any>('/certificates')]).then(([domainResult, certificateResult]) => {
+    void Promise.all([apiClient.get<any>('/domains?activeOnly=true'), apiClient.get<any>('/certificates')]).then(([domainResult, certificateResult]) => {
       setDomains(domainResult?.data ?? domainResult ?? []);
       setCertificates(certificateResult?.data ?? certificateResult ?? []);
     }).catch(() => {});
@@ -149,7 +143,6 @@ export default function AdminReportsPage() {
     || appliedFilters.dateFrom !== initialRange.dateFrom
     || appliedFilters.dateTo !== initialRange.dateTo;
 
-  const totalDomainItems = analytics?.domainsDistribution.reduce((s, d) => s + d.totalItems, 0) || 1;
   const completionRate = Math.min(100, Math.max(0, analytics?.overview.passRate ?? 0));
 
   const exportExcel = async () => {
@@ -181,8 +174,8 @@ export default function AdminReportsPage() {
 
   return (
     <main className="min-w-0 flex-1 bg-background p-4 sm:p-6 lg:p-margin">
-      <div className="mx-auto flex w-full min-w-0 flex-col gap-xl">
-        <div className="flex min-w-0 flex-col gap-5">
+      <div className="admin-page-stack mx-auto w-full min-w-0">
+        <div className="admin-page-stack min-w-0">
           <PageHeader
             title="Báo cáo thống kê"
             icon="leaderboard"
@@ -227,17 +220,7 @@ export default function AdminReportsPage() {
               <ActionGroup><ActionButton action="export" label="Xuất dữ liệu biểu đồ" disabled={!analytics || loading || hasPendingFilters || !!error} onClick={() => void exportChart('domains')} /></ActionGroup>
             </div>
             <p className="text-xs text-on-surface-variant">% là tỷ trọng bài học, từ vựng, câu hỏi và đề thi được tạo trong khoảng ngày đã chọn.</p>
-            <div className="mt-md flex flex-col gap-sm">
-              {(analytics?.domainsDistribution ?? []).map((dom, idx) => {
-                const bgClasses = ['bg-primary', 'bg-secondary', 'bg-tertiary'];
-                return (
-                  <div key={dom.code} className="flex items-center justify-between font-body-sm text-body-sm">
-                    <div className="flex items-center gap-xs"><div className={`w-3 h-3 rounded-full ${bgClasses[idx%3]}`}></div><span className="break-words">{dom.name}</span></div>
-                    <span className="font-interface-sb text-on-surface">{dom.totalItems.toLocaleString('vi-VN')} học liệu · {Math.round((dom.totalItems / totalDomainItems) * 100)}%</span>
-                  </div>
-                )
-              })}
-            </div>
+            <ContentDistribution data={analytics?.domainsDistribution ?? []} loading={loading} />
           </div>
 
           <div className="lg:col-span-3 bg-surface-container-lowest p-lg rounded-xl border border-outline-variant hover:shadow-[0_1px_3px_rgba(15,23,24,0.06)] transition-all flex flex-col">
@@ -245,34 +228,11 @@ export default function AdminReportsPage() {
               <h3 className="font-headline-h3 text-headline-h3 text-on-surface">Điểm trung bình theo chứng chỉ</h3>
               <ActionGroup><ActionButton action="export" label="Xuất dữ liệu biểu đồ" disabled={!analytics || loading || hasPendingFilters || !!error} onClick={() => void exportChart('certificates')} /></ActionGroup>
             </div>
-            <p className="text-xs text-on-surface-variant">Cột thể hiện điểm trung bình (%) của các lượt thi trong khoảng ngày đã chọn. Số lượt thi nằm phía trên cột.</p>
-            <div className="relative h-[300px] w-full min-w-0 overflow-x-auto overflow-y-hidden pb-2">
-              <div className="flex h-full min-w-full items-end justify-between gap-6 px-2 pt-6" style={{ width: `${Math.max(100, (analytics?.certificatesDistribution.length ?? 0) * 108)}px` }}>
-                 {(analytics?.certificatesDistribution ?? []).map(item => {
-                    const heightPercent = Math.round(item.averageScore);
-                    return (
-                      <div key={item.id} className="min-w-20 flex-1 flex flex-col items-center gap-2 group h-full justify-end">
-                        <span className="text-xs font-bold text-on-surface opacity-100 transition-opacity">
-                          {item.averageScore}% · {item.attempts} lượt
-                        </span>
-                        <div className="w-full bg-surface-container h-[80%] flex items-end">
-                          <div
-                            className="w-full bg-primary transition-all duration-500 group-hover:brightness-110 rounded-t-sm"
-                            style={{ height: `${heightPercent}%` }}
-                          />
-                        </div>
-                        <span className="text-[10px] font-semibold text-on-surface-variant text-center leading-tight h-8">{item.code}</span>
-                      </div>
-                    );
-                 })}
-                 {!analytics?.certificatesDistribution.length && <p className="m-auto text-sm text-on-surface-variant">Chưa có dữ liệu thi theo chứng chỉ.</p>}
-              </div>
-            </div>
+            <CertificateScoreChart data={analytics?.certificatesDistribution ?? []} loading={loading} />
           </div>
-          <div className="lg:col-span-3 grid gap-4 md:grid-cols-[1fr_2fr]">
-            <div className="rounded-xl border border-outline-variant bg-surface-container-lowest p-5"><p className="text-sm font-semibold text-on-surface-variant">Người học đã hoàn thành</p><p className="mt-2 text-3xl font-black text-primary">{analytics?.completionStats.completedLearners ?? 0}</p><p className="mt-1 text-xs text-on-surface-variant">{analytics?.completionStats.completedItems ?? 0} nội dung đã hoàn thành</p></div>
-            <div className="rounded-xl border border-outline-variant bg-surface-container-lowest p-5"><h3 className="font-bold">Top người học hoàn thành nhiều nội dung</h3><div className="mt-3 divide-y divide-outline-variant/40">{analytics?.completionStats.topLearners.map((item,index)=><div key={item.learnerId} className="flex items-center justify-between py-2.5"><span className="text-sm font-semibold">{index+1}. {item.displayName}</span><span className="rounded-full bg-emerald-50 px-2.5 py-1 text-xs font-bold text-emerald-700">{item.completedItems} nội dung</span></div>)}{!analytics?.completionStats.topLearners.length&&<p className="py-4 text-sm text-on-surface-variant">Chưa có học viên hoàn thành nội dung trong kỳ.</p>}</div></div>
-          </div>
+          <section className="lg:col-span-3 rounded-xl border border-outline-variant bg-white p-5">
+            <CompletionChart data={analytics?.completionStats} loading={loading} />
+          </section>
         </div>
       </div>
     </main>

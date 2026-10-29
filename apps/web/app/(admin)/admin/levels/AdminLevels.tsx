@@ -301,7 +301,7 @@ export default function AdminLevels({ createOnly = false }: { createOnly?: boole
   if (createOnly) return <CreatePage backHref="/admin/levels">{error && <p role="alert" className="m-6 rounded-xl bg-error-container p-3 text-sm text-on-error-container">{error}</p>}{levelForm}</CreatePage>;
 
   return (
-    <div className="space-y-6">
+    <div className="admin-page-stack">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <PageHeader
           title="Cấp độ học tập"

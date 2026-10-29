@@ -142,7 +142,7 @@ export default function AdminQuestionsPage() {
   };
 
   return (
-    <div>
+    <div className="admin-page-stack">
       <div className="flex flex-wrap items-start justify-between gap-4">
         <PageHeader title="Ngân hàng câu hỏi" />
         <div className="flex flex-wrap items-center gap-2.5">
@@ -377,7 +377,7 @@ export default function AdminQuestionsPage() {
 
       {/* Pagination */}
       {total > 0 && (
-        <Pagination className="mt-4 rounded-2xl" page={page} limit={limit} total={total} totalPages={totalPages} onPageChange={setPage} onLimitChange={(value) => { setLimit(value); setPage(1); }} showQuickJumper />
+        <Pagination className="mt-4 rounded-2xl" page={page} limit={limit} total={total} totalPages={totalPages} onPageChange={setPage} onLimitChange={(value) => { setLimit(value); setPage(1); }} />
       )}
 
       {/* Import Questions Modal */}

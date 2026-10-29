@@ -204,7 +204,7 @@ export default function AdminRoles({ createKind }: { createKind?: 'role' | 'perm
   const openCreatePermission = () => router.push('/admin/roles/permissions/new');
   const openEditPermission = (permission: PermissionItem) => { setEditingPermission(permission); setPermissionForm({ resource: permission.resource, action: permission.action, name: permission.name, description: permission.description ?? '' }); setPermissionError(null); setPermissionModal(true); };
   const deletePermission = async (permission: PermissionItem) => {
-    if (!(await confirmDialog(`Xóa quyền “${permissionLabel(permission)}”? Quyền này sẽ bị gỡ khỏi tất cả nhóm đang sử dụng.`, { title: 'Xóa quyền hệ thống?', confirmLabel: 'Xóa quyền', tone: 'danger' }))) return;
+    if (!(await confirmDialog(`Xóa quyền “${permissionLabel(permission)}”? Quyền này sẽ bị gỡ khỏi tất cả vai trò đang sử dụng.`, { title: 'Xóa quyền hệ thống?', confirmLabel: 'Xóa quyền', tone: 'danger' }))) return;
     try { await apiClient.delete(`/roles/permissions/${permission.id}`); setPermissions((current) => current.filter((p) => p.id !== permission.id)); }
     catch (e) { setError(e instanceof ApiClientError ? e.message : 'Không thể xóa quyền hạn'); }
   };
@@ -236,16 +236,16 @@ export default function AdminRoles({ createKind }: { createKind?: 'role' | 'perm
 
   const permissionFormView = (<FormSurface page={Boolean(createKind)} open={permissionModal} onClose={closePermission} maxWidth="max-w-lg">
         <form onSubmit={savePermission}>
-          <div className="flex items-center justify-between border-b border-outline-variant/20 px-6 py-5"><div><h2 className="text-xl font-bold">{editingPermission ? 'Chỉnh sửa quyền hạn' : 'Thêm quyền hạn'}</h2><p className="mt-1 text-xs text-on-surface-variant">Chọn đối tượng và hành động bằng ngôn ngữ dễ hiểu.</p></div><button type="button" onClick={closePermission}><AppIcon className="">close</AppIcon></button></div>
+          <div className="flex items-center justify-between border-b border-outline-variant/20 px-6 py-5"><div><h2 className="text-xl font-bold">{editingPermission ? 'Chỉnh sửa quyền hạn' : 'Thêm quyền hạn'}</h2><p className="mt-1 text-xs text-on-surface-variant">Chọn nhóm chức năng và thao tác được phép thực hiện.</p></div><button type="button" onClick={closePermission}><AppIcon className="">close</AppIcon></button></div>
           <div className="grid gap-4 p-6 sm:grid-cols-2">
-            <label className="text-sm font-semibold">Áp dụng cho<RequiredMark /><Dropdown required value={permissionForm.resource} onChange={e => setPermissionForm({...permissionForm, resource:e.target.value})} className="mt-2 h-11 w-full rounded-xl border border-outline-variant/50 bg-white px-3"><option value="">Chọn đối tượng</option>{PERMISSION_RESOURCES.map(([value, label]) => <option key={value} value={value}>{label}</option>)}</Dropdown></label>
-            <label className="text-sm font-semibold">Được làm gì?<RequiredMark /><Dropdown required value={permissionForm.action} onChange={e => setPermissionForm({...permissionForm, action:e.target.value})} className="mt-2 h-11 w-full rounded-xl border border-outline-variant/50 bg-white px-3">{PERMISSION_ACTIONS.map(([value, label]) => <option key={value} value={value}>{label}</option>)}</Dropdown></label>
+            <label className="text-sm font-semibold">Nhóm chức năng<RequiredMark /><Dropdown required value={permissionForm.resource} onChange={e => setPermissionForm({...permissionForm, resource:e.target.value})} className="mt-2 h-11 w-full rounded-xl border border-outline-variant/50 bg-white px-3"><option value="">Chọn nhóm chức năng</option>{PERMISSION_RESOURCES.map(([value, label]) => <option key={value} value={value}>{label}</option>)}</Dropdown></label>
+            <label className="text-sm font-semibold">Thao tác được phép<RequiredMark /><Dropdown required value={permissionForm.action} onChange={e => setPermissionForm({...permissionForm, action:e.target.value})} className="mt-2 h-11 w-full rounded-xl border border-outline-variant/50 bg-white px-3">{PERMISSION_ACTIONS.map(([value, label]) => <option key={value} value={value}>{label}</option>)}</Dropdown></label>
             <label className="text-sm font-semibold sm:col-span-2">Tên hiển thị <span className="font-normal text-on-surface-variant">(không bắt buộc)</span><input value={permissionForm.name} onChange={e => setPermissionForm({...permissionForm, name:e.target.value})} className="mt-2 h-11 w-full rounded-xl border border-outline-variant/50 px-3" placeholder={permissionLabel(permissionForm)} /></label>
             <div className="text-sm font-semibold sm:col-span-2">Mô tả<RichTextEditor aria-label="Mô tả quyền" maxLength={500} value={permissionForm.description} onChange={value => setPermissionForm({...permissionForm, description:value})} className="mt-2" /></div>
             <div className="rounded-lg bg-primary/5 p-3 text-sm text-primary sm:col-span-2">Người có quyền này sẽ được: <strong>{permissionLabel(permissionForm)}</strong></div>
             {permissionError && <div className="rounded-lg bg-error-container p-3 text-sm text-on-error-container sm:col-span-2"><strong>Không thể tạo quyền:</strong> {permissionError}</div>}
           </div>
-          <div className="flex justify-end gap-3 border-t border-outline-variant/20 px-6 py-4"><button type="button" onClick={closePermission} className="h-10 cursor-pointer rounded-xl px-4 text-sm font-semibold">Huỷ</button><button type="submit" disabled={savingPermission} className="h-10 cursor-pointer rounded-xl bg-primary px-5 text-sm font-semibold !text-white disabled:opacity-65">{savingPermission ? 'Đang lưu...' : editingPermission ? 'Lưu thay đổi' : 'Tạo quyền'}</button></div>
+          <div className="flex justify-end gap-3 border-t border-outline-variant/20 px-6 py-4"><button type="button" onClick={closePermission} className="h-10 cursor-pointer rounded-xl px-4 text-sm font-semibold">Hủy</button><button type="submit" disabled={savingPermission} className="h-10 cursor-pointer rounded-xl bg-primary px-5 text-sm font-semibold !text-white disabled:opacity-65">{savingPermission ? 'Đang lưu...' : editingPermission ? 'Lưu thay đổi' : 'Thêm quyền hạn'}</button></div>
         </form>
       </FormSurface>);
   const roleFormView = (<FormSurface page={Boolean(createKind)} open={roleModal} onClose={closeRole} maxWidth="max-w-lg">
@@ -253,21 +253,21 @@ export default function AdminRoles({ createKind }: { createKind?: 'role' | 'perm
           <div className="flex items-center justify-between border-b border-outline-variant/20 px-6 py-5"><div><h2 className="text-xl font-bold">Thêm vai trò</h2><p className="mt-1 text-xs text-on-surface-variant">Tạo vai trò nghiệp vụ, sau đó chọn người dùng và quyền truy cập.</p></div><button type="button" onClick={closeRole}><AppIcon className="">close</AppIcon></button></div>
           <div className="grid gap-4 p-6">
             <label className="text-sm font-semibold">Tên vai trò<RequiredMark /><input required minLength={2} maxLength={100} value={roleForm.name} onChange={e => { const name = e.target.value; setRoleForm(current => ({ ...current, name, code: roleCodeFromName(name) })); }} className="mt-2 h-11 w-full rounded-xl border border-outline-variant/50 px-3" placeholder="Ví dụ: Người duyệt nội dung" /></label>
-            <label className="text-sm font-semibold">Mã role<RequiredMark /><input required pattern="[a-z0-9_]+" minLength={2} maxLength={50} value={roleForm.code} onChange={e => setRoleForm({...roleForm, code: roleCodeFromName(e.target.value)})} className="mt-2 h-11 w-full rounded-xl border border-outline-variant/50 px-3" placeholder="content_reviewer" /><span className="mt-1 block text-xs font-normal text-on-surface-variant">Chỉ dùng chữ thường, số và dấu gạch dưới; mã không đổi sau khi tạo.</span></label>
-            <div className="text-sm font-semibold">Mô tả nhiệm vụ<RequiredMark /><RichTextEditor aria-label="Mô tả nhiệm vụ" required minLength={5} maxLength={500} value={roleForm.description} onChange={value => setRoleForm({...roleForm, description:value})} className="mt-2" placeholder="Mô tả phạm vi trách nhiệm của nhóm..." /></div>
-            <div className="rounded-lg bg-primary/5 p-3 text-sm text-primary">Role mới chưa có quyền và người dùng. Sau khi tạo, chọn <strong>“Quản lý người dùng và quyền hạn”</strong> để cấu hình.</div>
+            <label className="text-sm font-semibold">Mã vai trò<RequiredMark /><input required pattern="[a-z0-9_]+" minLength={2} maxLength={40} value={roleForm.code} onChange={e => setRoleForm({...roleForm, code: roleCodeFromName(e.target.value)})} className="mt-2 h-11 w-full rounded-xl border border-outline-variant/50 px-3" placeholder="content_reviewer" /><span className="mt-1 block text-xs font-normal text-on-surface-variant">Chỉ dùng chữ thường, số và dấu gạch dưới; mã không đổi sau khi tạo.</span></label>
+            <div className="text-sm font-semibold">Mô tả nhiệm vụ<RequiredMark /><RichTextEditor aria-label="Mô tả nhiệm vụ" required minLength={5} maxLength={500} value={roleForm.description} onChange={value => setRoleForm({...roleForm, description:value})} className="mt-2" placeholder="Mô tả phạm vi trách nhiệm của vai trò..." /></div>
+            <div className="rounded-lg bg-primary/5 p-3 text-sm text-primary">Vai trò mới chưa được gán quyền hạn và người dùng. Sau khi tạo, chọn <strong>“Quản lý người dùng và quyền hạn”</strong> để cấu hình.</div>
             {roleError && <div className="rounded-lg bg-error-container p-3 text-sm text-on-error-container">{roleError}</div>}
           </div>
-          <div className="flex justify-end gap-3 border-t border-outline-variant/20 px-6 py-4"><button type="button" onClick={closeRole} className="h-10 rounded-xl px-4 text-sm font-semibold">Huỷ</button><button type="submit" disabled={savingRole} className="h-10 rounded-xl bg-primary px-5 text-sm font-semibold !text-white disabled:opacity-65">{savingRole ? 'Đang tạo...' : 'Tạo vai trò'}</button></div>
+          <div className="flex justify-end gap-3 border-t border-outline-variant/20 px-6 py-4"><button type="button" onClick={closeRole} className="h-10 rounded-xl px-4 text-sm font-semibold">Hủy</button><button type="submit" disabled={savingRole} className="h-10 rounded-xl bg-primary px-5 text-sm font-semibold !text-white disabled:opacity-65">{savingRole ? 'Đang tạo...' : 'Tạo vai trò'}</button></div>
         </form>
       </FormSurface>);
-  const visiblePermissions = permissions.filter(item => matchesSearch(search, item.code, item.name, item.resource) && (!filter || item.resource === filter));
+  const visiblePermissions = permissions.filter(item => matchesSearch(search, item.code, item.name, resourceLabel(item.resource), permissionLabel(item)) && (!filter || item.resource === filter));
   const visibleRoles = roles.filter(role => matchesSearch(search, role.name, role.code, role.description) && (!filter || ((role.userCount ?? 0) > 0) === (filter === 'assigned')));
 
   if (createKind) return <CreatePage backHref={createKind === 'permission' ? '/admin/roles?tab=permissions' : '/admin/roles'}>{createKind === 'permission' ? permissionFormView : roleFormView}</CreatePage>;
 
   return (
-    <div className="p-6">
+    <div className="admin-page-stack p-6">
       <PageHeader className="mb-6" title="Phân quyền" icon="admin_panel_settings" iconClassName="from-violet-500 to-indigo-500" />
 
       {error && (
@@ -275,11 +275,11 @@ export default function AdminRoles({ createKind }: { createKind?: 'role' | 'perm
       )}
 
       <div className="ui-tabs mb-7">
-        <button type="button" onClick={() => setActiveTab('roles')} className="ui-tab" aria-pressed={activeTab === 'roles'}>Vai trò người dùng</button>
-        <button type="button" onClick={() => setActiveTab('permissions')} className="ui-tab" aria-pressed={activeTab === 'permissions'}>Danh mục quyền hạn</button>
+        <button type="button" onClick={() => { setActiveTab('roles'); setFilter(''); setSearch(''); }} className="ui-tab" aria-pressed={activeTab === 'roles'}>Vai trò người dùng</button>
+        <button type="button" onClick={() => { setActiveTab('permissions'); setFilter(''); setSearch(''); }} className="ui-tab" aria-pressed={activeTab === 'permissions'}>Danh mục quyền hạn</button>
       </div>
 
-      <ListTools search={search} onSearch={setSearch} filter={filter} onFilter={setFilter} options={activeTab === 'roles' ? [{value:'',label:'Tất cả vai trò'},{value:'assigned',label:'Đã có người dùng'},{value:'empty',label:'Chưa có người dùng'}] : [{value:'',label:'Tất cả tài nguyên'},...Array.from(new Set(permissions.map(item=>item.resource))).map(resource=>({value:resource,label:resourceLabel(resource)}))]} />
+      <ListTools search={search} onSearch={setSearch} filter={filter} onFilter={setFilter} options={activeTab === 'roles' ? [{value:'',label:'Tất cả vai trò'},{value:'assigned',label:'Đã có người dùng'},{value:'empty',label:'Chưa có người dùng'}] : [{value:'',label:'Tất cả nhóm chức năng'},...Array.from(new Set(permissions.map(item=>item.resource))).map(resource=>({value:resource,label:resourceLabel(resource)}))]} />
 
       {/* Summary stats */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-md mb-xl">
@@ -316,7 +316,7 @@ export default function AdminRoles({ createKind }: { createKind?: 'role' | 'perm
 
       {/* Permissions table */}
       {activeTab === 'permissions' && <div>
-        <div className="mb-4 flex items-center justify-between gap-4"><div><h2 className="text-lg font-bold text-on-surface">Danh sách công việc có thể cấp</h2><p className="mt-1 text-sm text-on-surface-variant">Ví dụ: “Thêm bài học”, “Xóa bài học”, “Xem báo cáo”.</p></div><button type="button" onClick={openCreatePermission} className="inline-flex h-10 cursor-pointer items-center gap-2 rounded-xl bg-primary px-4 text-sm font-semibold !text-white"><AppIcon className=" text-[18px]">add</AppIcon>Thêm việc mới</button></div>
+        <div className="mb-4 flex items-center justify-between gap-4"><div><h2 className="text-lg font-bold text-on-surface">Danh sách quyền hạn</h2><p className="mt-1 text-sm text-on-surface-variant">Ví dụ: “Thêm bài học”, “Xóa bài học”, “Xem báo cáo”.</p></div><button type="button" onClick={openCreatePermission} className="inline-flex h-10 cursor-pointer items-center gap-2 rounded-xl bg-primary px-4 text-sm font-semibold !text-white"><AppIcon className=" text-[18px]">add</AppIcon>Thêm quyền hạn</button></div>
         {loading ? (
           <div className="bg-white border border-outline-variant rounded-xl shadow-sm p-6">
             <div className="p-6 space-y-4">

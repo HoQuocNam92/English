@@ -101,7 +101,7 @@ export default function AdminTestsPage() {
   };
 
   return (
-    <div>
+    <div className="admin-page-stack">
       <div className="flex items-start justify-between gap-4">
         <PageHeader title="Bài kiểm tra chứng chỉ" />
         <Link href="/admin/tests/builder" className="inline-flex shrink-0 items-center gap-2 rounded-xl bg-primary px-4 py-2.5 text-sm font-semibold !text-white shadow-sm"><AppIcon className=" text-[19px]">add</AppIcon>Tạo bài kiểm tra</Link>
@@ -245,7 +245,6 @@ export default function AdminTestsPage() {
           totalPages={totalPages}
           onPageChange={setPage}
           onLimitChange={(value) => { setLimit(value); setPage(1); }}
-          showQuickJumper
         />
       )}
     </div>

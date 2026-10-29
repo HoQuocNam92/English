@@ -153,7 +153,7 @@ export default function AdminCertifications({ createOnly = false }: { createOnly
   if (createOnly) return <CreatePage backHref="/admin/certifications"><CertificateModal page open initial={null} onClose={() => router.push('/admin/certifications')} onSaved={() => completeCreation(router, '/admin/certifications', 'Đã thêm chứng chỉ.')} /></CreatePage>;
 
   return (
-    <main className="flex-1 p-margin flex flex-col gap-xl">
+    <main className="admin-page-stack flex-1 p-margin">
       <PageHeader
         title="Quản lý Chứng chỉ"
         icon="workspace_premium"

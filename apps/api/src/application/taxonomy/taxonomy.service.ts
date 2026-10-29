@@ -1,4 +1,5 @@
-import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common'
+import { BadRequestException, ConflictException, Injectable, NotFoundException } from '@nestjs/common'
+import { CreateDomainDto, UpdateDomainDto } from '../../presentation/http-dto/domain.dto'
 import { activityDays } from './activity-days'
 import { PrismaService } from '../../infrastructure/database/prisma.service'
 
@@ -199,6 +200,20 @@ export class TaxonomyService {
       },
     })
     return { data: domains }
+  }
+
+  async createDomain(dto: CreateDomainDto) {
+    try {
+      return await this.prisma.domain.create({ data: { code: dto.code.trim().toUpperCase(), name: dto.name.trim(), description: dto.description.trim(), isActive: dto.isActive } })
+    } catch (error) {
+      if ((error as any)?.code === 'P2002') throw new ConflictException('Mã chuyên ngành đã được sử dụng')
+      throw error
+    }
+  }
+
+  async updateDomain(id: string, dto: UpdateDomainDto) {
+    if (!await this.prisma.domain.findUnique({ where: { id }, select: { id: true } })) throw new NotFoundException('Chuyên ngành không tồn tại')
+    return this.prisma.domain.update({ where: { id }, data: { ...(dto.name !== undefined ? { name: dto.name.trim() } : {}), ...(dto.description !== undefined ? { description: dto.description.trim() } : {}), ...(dto.isActive !== undefined ? { isActive: dto.isActive } : {}) } })
   }
 
   async getCertificates(activeOnly = false) {
@@ -432,8 +447,14 @@ export class TaxonomyService {
     const domainRelation = params.domainCode ? { domain: { code: params.domainCode } } : {}
     const examCertificateRelation = params.certificateId ? { certificateId: params.certificateId } : {}
     const examWhere: any = { ...(createdAt ? { createdAt } : {}), ...domainRelation, ...examCertificateRelation }
-    const vocabularyWhere: any = { ...(createdAt ? { createdAt } : {}), ...domainRelation }
+    const topicRelation = params.certificateId ? { certificationTopics: { some: { topic: { certificateId: params.certificateId } } } } : {}
+    const lessonWhere: any = { ...(createdAt ? { createdAt } : {}), ...domainRelation,
+      ...(params.certificateId ? { OR: [{ certificates: { some: { certificateId: params.certificateId } } }, topicRelation] } : {}) }
+    const vocabularyWhere: any = { ...(createdAt ? { createdAt } : {}), ...domainRelation, ...topicRelation }
+    const questionWhere: any = { ...(createdAt ? { createdAt } : {}), ...domainRelation,
+      ...(params.certificateId ? { OR: [topicRelation, { examQuestions: { some: { exam: { certificateId: params.certificateId } } } }] } : {}) }
     const attemptWhere: any = {
+      status: { in: ['graded', 'submitted'] },
       ...(createdAt ? { createdAt } : {}),
       ...((params.domainCode || params.certificateId) ? { exam: { ...domainRelation, ...examCertificateRelation } } : {}),
     }
@@ -452,8 +473,8 @@ export class TaxonomyService {
       ...(hasAudienceFilter ? { learnerProfile: { is: learnerProfileFilter } } : {}),
     }
     const domainWhere: any = {
+      isActive: true,
       ...(params.domainCode ? { code: params.domainCode } : {}),
-      ...(params.certificateId ? { certificateDomains: { some: { certificateId: params.certificateId } } } : {}),
     }
     const [domains, levels, totalUsers, activeUsers, totalExams, totalVocab, totalLessons, attemptTotals, passedCount] =
       await Promise.all([
@@ -477,7 +498,7 @@ export class TaxonomyService {
         this.prisma.user.count({ where: { ...userWhere, status: 'active' } }),
         this.prisma.exam.count({ where: examWhere }),
         this.prisma.vocabulary.count({ where: vocabularyWhere }),
-        this.prisma.lesson.count({ where: { ...(createdAt ? { createdAt } : {}), ...domainRelation } }),
+        this.prisma.lesson.count({ where: lessonWhere }),
         this.prisma.examAttempt.aggregate({ where: attemptWhere, _count: { _all: true }, _sum: { scorePercent: true } }),
         this.prisma.examAttempt.count({ where: { ...attemptWhere, passed: true } }),
       ])
@@ -492,7 +513,7 @@ export class TaxonomyService {
         where: params.certificateId ? { id: params.certificateId } : { isActive: true },
         include: {
           _count: { select: { profileGoals: true, exams: true } },
-          exams: { select: { attempts: { where: { status: { in: ['graded', 'submitted'] }, ...(createdAt ? { createdAt } : {}) }, select: { scorePercent: true, passed: true, learnerId: true } } } },
+          exams: { where: domainRelation, select: { attempts: { where: { status: { in: ['graded', 'submitted'] }, ...(createdAt ? { createdAt } : {}) }, select: { scorePercent: true, passed: true, learnerId: true } } } },
         },
         orderBy: { name: 'asc' },
       }),
@@ -539,15 +560,22 @@ export class TaxonomyService {
     }))
 
     const domainIds = domains.map(domain => domain.id)
-    const contentWhere = { ...(createdAt ? { createdAt } : {}), domainId: { in: domainIds } }
+    const contentDomainFilter = { domainId: { in: domainIds } }
     const [lessonCounts, vocabularyCounts, questionCounts, examCounts] = await Promise.all([
-      this.prisma.lesson.groupBy({ by: ['domainId'], where: contentWhere, _count: { _all: true } }),
-      this.prisma.vocabulary.groupBy({ by: ['domainId'], where: contentWhere, _count: { _all: true } }),
-      this.prisma.question.groupBy({ by: ['domainId'], where: contentWhere, _count: { _all: true } }),
-      this.prisma.exam.groupBy({ by: ['domainId'], where: { ...contentWhere, ...examCertificateRelation }, _count: { _all: true } }),
+      this.prisma.lesson.groupBy({ by: ['domainId'], where: { ...lessonWhere, ...contentDomainFilter }, _count: { _all: true } }),
+      this.prisma.vocabulary.groupBy({ by: ['domainId'], where: { ...vocabularyWhere, ...contentDomainFilter }, _count: { _all: true } }),
+      this.prisma.question.groupBy({ by: ['domainId'], where: { ...questionWhere, ...contentDomainFilter }, _count: { _all: true } }),
+      this.prisma.exam.groupBy({ by: ['domainId'], where: { ...examWhere, ...contentDomainFilter }, _count: { _all: true } }),
     ])
     const countFor = (rows: { domainId: string; _count: { _all: number } }[], domainId: string) => rows.find(row => row.domainId === domainId)?._count._all ?? 0
 
+    const [levelLessons, levelVocabulary, levelQuestions, levelExams] = await Promise.all([
+      this.prisma.lesson.groupBy({ by: ['levelId'], where: lessonWhere, _count: { _all: true } }),
+      this.prisma.vocabulary.groupBy({ by: ['levelId'], where: vocabularyWhere, _count: { _all: true } }),
+      this.prisma.question.groupBy({ by: ['levelId'], where: questionWhere, _count: { _all: true } }),
+      this.prisma.exam.groupBy({ by: ['levelId'], where: examWhere, _count: { _all: true } }),
+    ])
+    const levelCount = (rows: { levelId: string; _count: { _all: number } }[], id: string) => rows.find(row => row.levelId === id)?._count._all ?? 0
     return {
       overview: {
         totalUsers,
@@ -569,10 +597,10 @@ export class TaxonomyService {
         code: l.code,
         name: l.name,
         order: l.order,
-        lessons: l._count.lessons,
-        vocabularies: l._count.vocabularies,
-        questions: l._count.questions,
-        exams: l._count.exams,
+        lessons: levelCount(levelLessons, l.id),
+        vocabularies: levelCount(levelVocabulary, l.id),
+        questions: levelCount(levelQuestions, l.id),
+        exams: levelCount(levelExams, l.id),
       })),
       certificatesDistribution,
       completionStats: {

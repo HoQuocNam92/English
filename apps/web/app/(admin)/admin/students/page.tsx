@@ -80,7 +80,7 @@ export default function AdminStudentsPage() {
   }, []);
 
   return (
-    <main className="flex-1 p-margin overflow-y-auto">
+    <main className="admin-page-stack flex-1 p-margin">
       <PageHeader
         className="mb-xl"
         title={certificateGoalsView ? 'Mục tiêu chứng chỉ của học viên' : 'Danh sách học viên'}
@@ -189,7 +189,7 @@ export default function AdminStudentsPage() {
           </table>
         </div>
 
-        {total > 0 && <Pagination page={page} limit={limit} total={total} totalPages={totalPages} onPageChange={setPage} onLimitChange={(value) => { setLimit(value); setPage(1); }} showQuickJumper />}
+        {total > 0 && <Pagination page={page} limit={limit} total={total} totalPages={totalPages} onPageChange={setPage} onLimitChange={(value) => { setLimit(value); setPage(1); }} />}
       </div>
       <div className="h-24 md:h-8"></div>
     </main>

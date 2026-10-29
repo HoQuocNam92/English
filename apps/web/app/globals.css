@@ -719,6 +719,17 @@ body {
 
 .ui-card-padding { padding: var(--card-padding) !important; }
 .ui-section-gap { gap: var(--section-gap) !important; }
+.admin-page-stack {
+  display: flex;
+  flex-direction: column;
+  gap: var(--section-gap) !important;
+  min-width: 0;
+}
+/* A section owns its internal spacing; the page owns spacing between sections.
+   This prevents a filter's margins from adding to the page's flex gap. */
+.admin-page-stack > * {
+  margin-block: 0 !important;
+}
 .ui-control-gap { gap: var(--control-gap) !important; }
 
 .admin-canvas table tbody tr {

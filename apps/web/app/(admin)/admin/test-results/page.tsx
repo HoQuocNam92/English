@@ -98,7 +98,7 @@ export default function AdminTestResultsPage() {
   };
 
   return (
-    <main className="flex-1 overflow-y-auto p-4 md:p-margin bg-surface">
+    <main className="admin-page-stack flex-1 p-4 md:p-margin bg-surface">
       <PageHeader
         className="mb-lg"
         title="Kết quả bài thi"
@@ -208,7 +208,7 @@ export default function AdminTestResultsPage() {
           </table>
         </div>
 
-        {total > 0 && <Pagination page={page} limit={limit} total={total} totalPages={totalPages} onPageChange={setPage} onLimitChange={(value) => { setLimit(value); setPage(1); }} showQuickJumper />}
+        {total > 0 && <Pagination page={page} limit={limit} total={total} totalPages={totalPages} onPageChange={setPage} onLimitChange={(value) => { setLimit(value); setPage(1); }} />}
       </div>
       <div className="h-24 md:h-8"></div>
 
