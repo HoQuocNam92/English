@@ -1,5 +1,5 @@
 // =============================================================================
-// TechEnglish Pro (KLCN028) — Prisma Schema
+// TechEnglish (KLCN028) — Prisma Schema
 // Quy ước:
 //   - ID: UUID v4 (@db.Uuid)
 //   - Timestamps: TIMESTAMPTZ

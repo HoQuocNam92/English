@@ -6,7 +6,7 @@ export function Footer({ learner = false }: { learner?: boolean }) {
       <div className={learner ? "max-w-[1280px] mx-auto px-[var(--page-gutter)] py-6" : "max-w-6xl mx-auto px-4 sm:px-6 py-6"}>
         <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
           <div>
-            <p className="font-black text-primary text-base">TechEnglish Pro</p>
+            <p className="font-black text-primary text-base">TechEnglish</p>
             <p className="mt-3 text-xs text-on-surface-variant leading-6">Nền tảng học tiếng Anh chuyên ngành CNTT dành cho sinh viên và người làm công nghệ thông tin.</p>
           </div>
           <div>
@@ -25,7 +25,7 @@ export function Footer({ learner = false }: { learner?: boolean }) {
             </div>
           </div>
         </div>
-        <p className="mt-5 pt-4 border-t border-outline-variant text-xs text-on-surface-variant">© 2026 TechEnglish Pro</p>
+        <p className="mt-5 pt-4 border-t border-outline-variant text-xs text-on-surface-variant">© 2026 TechEnglish</p>
       </div>
     </footer>
   );

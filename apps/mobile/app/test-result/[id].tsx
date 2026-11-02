@@ -109,7 +109,7 @@ export default function MobileTestResultScreen() {
         <TouchableOpacity style={styles.headerIconBtn} onPress={() => router.replace(returnRoute as any)}>
           <MaterialIcons name="close" size={24} color="#464555" />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>TechEnglish Pro</Text>
+        <Text style={styles.headerTitle}>TechEnglish</Text>
         <View style={{ width: 40 }} />
       </View>
 

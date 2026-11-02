@@ -65,7 +65,7 @@ export default function OnboardingLevelScreen() {
         </TouchableOpacity>
         <View style={styles.logoTitle}>
           <MaterialIcons name="terminal" size={20} color={colors.primary} />
-          <Text style={styles.logoText}>TechEnglish Pro</Text>
+          <Text style={styles.logoText}>TechEnglish</Text>
         </View>
         <Text style={styles.skipButtonText}>Bước 3/4</Text>
       </View>

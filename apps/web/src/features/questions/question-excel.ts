@@ -134,7 +134,7 @@ export function downloadQuestionExcelTemplate() {
 
   // ── Sheet 2: Hướng dẫn nhập liệu
   const guideSheet = [
-    ['HƯỚNG DẪN ĐIỀN FILE EXCEL NHẬP CÂU HỎI TRẮC NGHIỆM TECHENGLISH PRO'],
+    ['HƯỚNG DẪN ĐIỀN FILE EXCEL NHẬP CÂU HỎI TRẮC NGHIỆM TECHENGLISH'],
     [''],
     ['1. Cột có dấu (*) là bắt buộc.'],
     ['2. Loại câu hỏi: nhập "single_choice" (1 đáp án) hoặc "multiple_choice" (nhiều đáp án).'],

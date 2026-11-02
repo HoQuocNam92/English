@@ -35,7 +35,7 @@ export default function OnboardingGoalScreen() {
 
   return <View style={styles.container}>
     <StatusBar style="dark" />
-    <View style={[styles.header, { paddingTop: insets.top + 12 }]}><Text style={styles.brand}>TechEnglish Pro</Text><Text style={styles.step}>Bước 1/4</Text></View>
+    <View style={[styles.header, { paddingTop: insets.top + 12 }]}><Text style={styles.brand}>TechEnglish</Text><Text style={styles.step}>Bước 1/4</Text></View>
     <View style={styles.progress}><View style={[styles.progressFill, { width: '25%' }]} /></View>
     <ScrollView contentContainerStyle={styles.content}>
       <Text style={styles.title}>Bạn muốn học theo hướng nào?<RequiredMark /></Text>

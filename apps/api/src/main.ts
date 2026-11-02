@@ -64,8 +64,8 @@ async function bootstrap() {
   app.setGlobalPrefix('api/v1')
 
   const doc = new DocumentBuilder()
-    .setTitle('TechEnglish Pro API')
-    .setDescription('Backend API for TechEnglish Pro - KLCN028')
+    .setTitle('TechEnglish API')
+    .setDescription('Backend API for TechEnglish - KLCN028')
     .setVersion('1.0')
     .addBearerAuth()
     .build()

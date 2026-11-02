@@ -101,7 +101,7 @@ export function Topbar({ onToggleMobileMenu }: TopbarProps) {
             <div className="w-7 h-7 rounded bg-primary text-white flex items-center justify-center shadow-xs">
               <AppIcon className=" text-[17px] ">terminal</AppIcon>
             </div>
-            <span className="font-bold text-primary text-sm">TechEnglish Pro</span>
+            <span className="font-bold text-primary text-sm">TechEnglish</span>
           </Link>
         </div>
 

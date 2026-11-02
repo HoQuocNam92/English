@@ -28,7 +28,7 @@ export async function scheduleLearningReminder(time: string | null) {
   }
   const [hour, minute] = time.split(':').map(Number);
   const identifier = await Notifications.scheduleNotificationAsync({
-    content: { title: 'Đến giờ học rồi!', body: 'Mở TechEnglish Pro để hoàn thành mục tiêu hôm nay.', data: { route: '/learning-plan' } },
+    content: { title: 'Đến giờ học rồi!', body: 'Mở TechEnglish để hoàn thành mục tiêu hôm nay.', data: { route: '/learning-plan' } },
     trigger: { type: Notifications.SchedulableTriggerInputTypes.DAILY, hour, minute, channelId: 'learning-reminders' },
   });
   await AsyncStorage.setItem(STORAGE_KEY, identifier);

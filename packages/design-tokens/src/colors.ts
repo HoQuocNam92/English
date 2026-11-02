@@ -1,5 +1,5 @@
 /**
- * TechEnglish Pro — Design Tokens: Colors
+ * TechEnglish — Design Tokens: Colors
  * Đồng bộ với web (apps/web/app/globals.css) và design-reference DESIGN.md
  */
 export const colors = {

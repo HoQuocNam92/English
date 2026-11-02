@@ -84,7 +84,7 @@ export default function MobileRegisterScreen() {
         <TouchableOpacity style={styles.headerBackButton} onPress={() => router.canGoBack() ? router.back() : router.replace('/' as any)} disabled={isLoading}>
           <MaterialIcons name="arrow-back" size={24} color={colors.primary} />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>TechEnglish Pro</Text>
+        <Text style={styles.headerTitle}>TechEnglish</Text>
         <View style={styles.headerSpacer} />
       </View>
 

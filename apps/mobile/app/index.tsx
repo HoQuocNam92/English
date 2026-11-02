@@ -15,8 +15,8 @@ export default function EntryScreen() {
   return <ScrollView style={s.root} contentContainerStyle={[s.content, { paddingTop: insets.top + 32, paddingBottom: insets.bottom + 24 }]}>
     <StatusBar style="dark" />
     <View style={s.hero}>
-      <View style={[s.logo, { backgroundColor: '#3525cd', alignItems: 'center', justifyContent: 'center' }]} accessibilityLabel="TechEnglish Pro"><MaterialIcons name="terminal" size={64} color="#ffffff" /></View>
-      <Text style={[s.brand, { fontSize: 22, letterSpacing: -0.4, color: '#3525cd' }]}>TechEnglish Pro</Text>
+      <View style={[s.logo, { backgroundColor: '#3525cd', alignItems: 'center', justifyContent: 'center' }]} accessibilityLabel="TechEnglish"><MaterialIcons name="terminal" size={64} color="#ffffff" /></View>
+      <Text style={[s.brand, { fontSize: 22, letterSpacing: -0.4, color: '#3525cd' }]}>TechEnglish</Text>
       <Text style={s.title}>Tự tin tiếng Anh.{'\n'}Vững bước công nghệ.</Text>
       <Text style={s.subtitle}>Học tiếng Anh chuyên ngành CNTT theo mục tiêu và nhịp độ của bạn.</Text>
     </View>

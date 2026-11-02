@@ -15,7 +15,7 @@ importScripts('https://www.gstatic.com/firebasejs/12.19.0/firebase-messaging-com
 firebase.initializeApp(${JSON.stringify(config)});
 firebase.messaging().onBackgroundMessage(function(payload) {
   var n = payload.notification || {};
-  self.registration.showNotification(n.title || 'TechEnglish Pro', { body: n.body || 'Đến giờ học rồi!', data: payload.data || {} });
+  self.registration.showNotification(n.title || 'TechEnglish', { body: n.body || 'Đến giờ học rồi!', data: payload.data || {} });
 });
 self.addEventListener('notificationclick', function(event) {
   event.notification.close();

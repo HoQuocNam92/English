@@ -40,7 +40,7 @@ export function LearnerShell({ children }: LearnerShellProps) {
                 <AppIcon className=" text-[22px] !text-white ">terminal</AppIcon>
               </div>
               <div>
-                <span className="block text-base font-black leading-tight tracking-tight text-primary">TechEnglish Pro</span>
+                <span className="block text-base font-black leading-tight tracking-tight text-primary">TechEnglish</span>
                 <span className="block text-[10px] font-semibold uppercase leading-none tracking-wider text-on-surface-variant">IT English Platform</span>
               </div>
             </Link>

@@ -145,7 +145,7 @@ export function Sidebar({ isMobile = false, onClose, isCollapsed = false, onTogg
         <div className="px-2 mb-6 flex flex-col items-center gap-3">
           <Link
             href="/admin/dashboard"
-            title={isAdmin ? 'TechEnglish Pro — Khu vực quản trị' : 'Khu vực giảng viên'}
+            title={isAdmin ? 'TechEnglish — Khu vực quản trị' : 'Khu vực giảng viên'}
             className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-primary to-tertiary text-white shadow-[0_8px_18px_rgba(53,37,205,0.22)]"
           >
             <AppIcon className=" text-[24px] ">school</AppIcon>
@@ -168,7 +168,7 @@ export function Sidebar({ isMobile = false, onClose, isCollapsed = false, onTogg
             </div>
             <div className="min-w-0">
               <h1 className="text-[17px] font-bold tracking-tight text-on-surface leading-tight truncate">
-                {isAdmin ? 'TechEnglish Pro' : 'Khu vực giảng viên'}
+                {isAdmin ? 'TechEnglish' : 'Khu vực giảng viên'}
               </h1>
               <p className="text-[11px] text-on-surface-variant mt-1">{isAdmin ? 'Khu vực quản trị' : 'Giảng viên'}</p>
             </div>

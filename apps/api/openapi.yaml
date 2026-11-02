@@ -1,9 +1,9 @@
 openapi: 3.0.3
 info:
-  title: TechEnglish Pro API
+  title: TechEnglish API
   version: 1.0.0
   description: |
-    REST API contract cho hệ thống TechEnglish Pro (KLCN028).
+    REST API contract cho hệ thống TechEnglish (KLCN028).
 
     ## Quy ước
     - Base path: `/api/v1`.
@@ -18,7 +18,7 @@ info:
     - `teacher`: quản lý nội dung, câu hỏi, bài thi và xem báo cáo được phép.
     - `learner`: học bài, làm bài thi và xem dữ liệu cá nhân.
   contact:
-    name: TechEnglish Pro
+    name: TechEnglish
   license:
     name: Proprietary - Academic Project
 servers:

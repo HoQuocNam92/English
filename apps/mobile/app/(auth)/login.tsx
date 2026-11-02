@@ -59,7 +59,7 @@ export default function MobileLoginScreen() {
 
   const startGoogleLogin = async () => {
     if (isRunningInExpoGo() || !TurboModuleRegistry.get('RNGoogleSignin')) {
-      Alert.alert('Cần bản cài ứng dụng', 'Bản đang mở chưa hỗ trợ đăng nhập Google. Vui lòng dùng email trong Expo Go, hoặc cài development build/APK TechEnglish Pro có Google Sign-In.');
+      Alert.alert('Cần bản cài ứng dụng', 'Bản đang mở chưa hỗ trợ đăng nhập Google. Vui lòng dùng email trong Expo Go, hoặc cài development build/APK TechEnglish có Google Sign-In.');
       return;
     }
     setIsLoading(true);
@@ -119,7 +119,7 @@ export default function MobileLoginScreen() {
         <TouchableOpacity style={styles.headerBackButton} onPress={() => router.canGoBack() ? router.back() : router.replace('/' as any)} disabled={isLoading}>
           <MaterialIcons name="arrow-back" size={24} color={colors.primary} />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>TechEnglish Pro</Text>
+        <Text style={styles.headerTitle}>TechEnglish</Text>
         <View style={styles.headerSpacer} />
       </View>
 

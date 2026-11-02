@@ -4,7 +4,7 @@ import './globals.css';
 import { AppFeedbackProvider } from '@/shared/ui';
 
 export const metadata: Metadata = {
-  title: 'TechEnglish Pro',
+  title: 'TechEnglish',
   description: 'Nền tảng học tiếng Anh chuyên ngành CNTT',
 };
 

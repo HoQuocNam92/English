@@ -48,7 +48,7 @@ export default function MobileHomeScreen() {
   const reviewWords = data?.reviewWords ?? [];
   return <View style={s.root}>
     <StatusBar style="dark" />
-    <View style={[s.header, { paddingTop: insets.top + 10 }]}><View style={s.logo}><MaterialIcons name="terminal" size={23} color="#fff" /></View><Text style={s.brand}>TechEnglish Pro</Text><NotificationBell /></View>
+    <View style={[s.header, { paddingTop: insets.top + 10 }]}><View style={s.logo}><MaterialIcons name="terminal" size={23} color="#fff" /></View><Text style={s.brand}>TechEnglish</Text><NotificationBell /></View>
     {!data ? <View style={s.loading}>{error ? <><Text accessibilityRole="alert">{error}</Text><Button icon="refresh" onPress={load}>Thử lại</Button></> : <ActivityIndicator color="#3525cd" />}</View> : <ScrollView contentContainerStyle={[s.content, { paddingBottom: insets.bottom + 24 }]}>
       {!!error && <View style={s.card}><Text accessibilityRole="alert">{error}</Text><Button icon="refresh" mode="text" onPress={load}>Thử lại</Button></View>}
       <View style={[s.columns, width >= 850 && { flexDirection: 'row', alignItems: 'flex-start' }]}>

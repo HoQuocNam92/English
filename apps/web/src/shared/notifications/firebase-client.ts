@@ -27,7 +27,7 @@ export async function registerWebLearningNotifications({ requestPermission = tru
   if (!token) return false;
   await apiClient.post('/notifications/subscriptions', { token, platform: 'web' });
   onMessage(messaging, payload => {
-    const title = payload.notification?.title || 'TechEnglish Pro';
+    const title = payload.notification?.title || 'TechEnglish';
     const body = payload.notification?.body || 'Đến giờ học rồi!';
     const href = notificationRoute(payload.data?.route);
     recordNotification(body, title, payload.messageId, href);

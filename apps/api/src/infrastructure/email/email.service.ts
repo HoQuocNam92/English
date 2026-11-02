@@ -37,7 +37,7 @@ export class EmailService {
 
       const safeUrl = resetUrl.replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;')
       const htmlContent = `<div style="font-family:Arial,sans-serif;max-width:600px;margin:auto;padding:24px">
-        <h2 style="color:#3525cd">TechEnglish Pro</h2>
+        <h2 style="color:#3525cd">TechEnglish</h2>
         <p>Bạn đã yêu cầu đặt lại mật khẩu. Nhấn nút bên dưới để tạo mật khẩu mới.</p>
         <p><a href="${safeUrl}" style="display:inline-block;padding:14px 24px;background:#3525cd;color:white;border-radius:12px;text-decoration:none">Đặt lại mật khẩu</a></p>
         <p>Liên kết có hiệu lực trong 15 phút và chỉ dùng được một lần để đổi mật khẩu. Không chia sẻ liên kết này.</p>
@@ -47,7 +47,7 @@ export class EmailService {
       await transporter.sendMail({
         from: smtpFrom,
         to: toEmail,
-        subject: '[TechEnglish Pro] Liên kết đặt lại mật khẩu',
+        subject: '[TechEnglish] Liên kết đặt lại mật khẩu',
         html: htmlContent,
         text: `Đặt lại mật khẩu: ${resetUrl}\nLiên kết có hiệu lực 15 phút và chỉ dùng một lần.`,
       })

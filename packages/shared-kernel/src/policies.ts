@@ -9,7 +9,7 @@ export const privacySections = [
 ];
 
 export const termsSections = [
-  ['1. Phạm vi sử dụng', 'TechEnglish Pro cung cấp bài học, từ vựng và hoạt động luyện tập tiếng Anh chuyên ngành CNTT. Khi sử dụng nền tảng, bạn cần tuân thủ các điều khoản dưới đây và sử dụng dịch vụ cho mục đích học tập hợp lệ.'],
+  ['1. Phạm vi sử dụng', 'TechEnglish cung cấp bài học, từ vựng và hoạt động luyện tập tiếng Anh chuyên ngành CNTT. Khi sử dụng nền tảng, bạn cần tuân thủ các điều khoản dưới đây và sử dụng dịch vụ cho mục đích học tập hợp lệ.'],
   ['2. Tài khoản và trách nhiệm của bạn', 'Bạn cần cung cấp thông tin tài khoản chính xác, bảo vệ thông tin đăng nhập và chịu trách nhiệm về hoạt động trên tài khoản của mình. Không sử dụng tài khoản của người khác hoặc chia sẻ quyền truy cập trái phép. Nếu phát hiện tài khoản bị truy cập bất thường, hãy đổi mật khẩu và thông báo cho quản trị viên nền tảng.'],
   ['3. Nội dung học tập', 'Nội dung trên nền tảng được cung cấp để hỗ trợ học tập. Bạn có thể sử dụng nội dung trong phạm vi các chức năng được cho phép. Không sao chép, phân phối hoặc khai thác thương mại tài liệu khi chưa có sự cho phép của chủ sở hữu quyền tương ứng.'],
   ['4. Hành vi không được phép', 'Không can thiệp vào hệ thống, tìm cách truy cập dữ liệu của người khác, phát tán mã độc, gian lận kết quả học tập hoặc đăng tải nội dung vi phạm quyền của người khác. Quyền truy cập có thể bị hạn chế khi có hành vi lạm dụng hoặc ảnh hưởng đến an toàn của nền tảng.'],
