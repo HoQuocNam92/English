@@ -7,8 +7,9 @@ import { Languages, X, RotateCcw, Volume2 } from 'lucide-react';
 import { apiClient } from '@/shared/api/api-client';
 import { usePronunciation } from '@/shared/lib/use-pronunciation';
 import { isEnglishSelection } from '@/shared/lib/english-selection';
+import { getSelectionContext } from '@/shared/lib/selection-context';
 
-type Result = { translation: string | null; definitionEn?: string; source: string; message?: string; partOfSpeech?: string; pronunciationIpa?: string; contextual?: boolean };
+type Result = { translation: string | null; definitionEn?: string; contextExplanation?: string; source: string; message?: string; partOfSpeech?: string; pronunciationIpa?: string; contextual?: boolean };
 type Selection = { text: string; context: string; x: number; y: number };
 
 export function SelectionTranslator() {
@@ -53,10 +54,7 @@ export function SelectionTranslator() {
       if (!learningContent || learningContent !== endContent) { dismiss(); return; }
       const text = selected.toString().trim().replace(/\s+/g, ' ');
       if (!isEnglishSelection(text)) { dismiss(); return; }
-      const block = node?.closest('p, li, h1, h2, h3, h4, td, blockquote');
-      const surrounding = (block?.textContent ?? text).replace(/\s+/g, ' ').trim();
-      const offset = surrounding.indexOf(text);
-      const context = surrounding.slice(Math.max(0, offset - 500), Math.max(0, offset - 500) + 1600);
+      const context = getSelectionContext(selected.getRangeAt(0), learningContent);
       const rect = selected.getRangeAt(0).getBoundingClientRect();
       if (!rect.width && !rect.height) return;
       const width = Math.min(340, window.innerWidth - 24);
@@ -80,6 +78,6 @@ export function SelectionTranslator() {
     <p className="mt-2 line-clamp-3 text-sm font-bold">{selection.text}</p>
     {!loading && result?.translation && <div className="mt-1 flex flex-wrap items-center gap-2 text-xs text-slate-500">{result.partOfSpeech && <span>{result.partOfSpeech}</span>}{result.pronunciationIpa && <span>{result.pronunciationIpa}</span>}<button aria-label="Nghe phát âm" disabled={speaking} onClick={() => void pronounce()} className="inline-flex items-center gap-1 text-primary"><Volume2 size={15} />{speaking ? 'Đang phát…' : 'Nghe'}</button></div>}
     {speechError && <p role="alert" className="mt-2 text-xs text-red-600">{speechError}</p>}
-    <div aria-live="polite" className="mt-3 text-sm leading-6">{loading ? 'Đang dịch…' : error ? <><p className="text-red-600">{error}</p><button onClick={() => void translate(selection)} className="mt-2 inline-flex items-center gap-1 font-semibold text-primary"><RotateCcw size={14} />Thử lại</button></> : <><p><RichText text={result?.translation ?? result?.message} /></p>{result?.definitionEn && <p className="mt-2 text-xs text-slate-500"><RichText text={result.definitionEn} /></p>}{result?.translation && <p className="mt-2 text-[10px] text-slate-500">{result.source === 'dictionary' ? 'Nghĩa từ điển chuyên ngành' : result.contextual ? 'Nghĩa theo ngữ cảnh · AI' : 'Nghĩa tham khảo · AI'}</p>}</>}</div>
+    <div aria-live="polite" className="mt-3 text-sm leading-6">{loading ? 'Đang dịch…' : error ? <><p className="text-red-600">{error}</p><button onClick={() => void translate(selection)} className="mt-2 inline-flex items-center gap-1 font-semibold text-primary"><RotateCcw size={14} />Thử lại</button></> : <><p><RichText text={result?.translation ?? result?.message} /></p>{result?.contextExplanation && <p className="mt-2 rounded-lg bg-primary/5 p-2 text-xs text-on-surface-variant"><RichText text={result.contextExplanation} /></p>}{result?.definitionEn && <p className="mt-2 text-xs text-slate-500"><RichText text={result.definitionEn} /></p>}{result?.translation && <p className="mt-2 text-[10px] text-slate-500">{result.source === 'dictionary' ? 'Nghĩa từ điển chuyên ngành' : result.contextual ? 'Nghĩa theo ngữ cảnh · AI' : 'Nghĩa tham khảo · AI'}</p>}</>}</div>
   </div>;
 }

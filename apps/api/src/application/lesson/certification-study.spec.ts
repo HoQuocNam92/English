@@ -165,3 +165,27 @@ test('contextual translation falls back to published dictionary when provider re
   assert.equal(result.contextual, false)
  } finally { global.fetch=originalFetch }
 })
+
+test('build-up uses the contextual noun sense instead of the saved generic meaning', async () => {
+  const original = global.fetch
+  global.fetch = (async (_url: any, init: any) => {
+    const body = JSON.parse(init.body)
+    assert.deepEqual(JSON.parse(body.messages[1].content), {
+      text: 'build-up', context: 'Culture shock comes from the constant build-up of small irritations.',
+    })
+    assert.match(body.messages[0].content, /contextExplanation/)
+    return { ok: true, json: async () => ({ choices: [{ message: { content: JSON.stringify({
+      translation: 'sự tích tụ', partOfSpeech: 'danh từ', definitionEn: 'An accumulation over time.',
+      contextExplanation: 'Cụm “of small irritations” cho thấy những khó chịu nhỏ dồn lại theo thời gian.',
+    }) } }] }) } as any
+  }) as any
+  try {
+    const service = translationService({ findFirst: async () => ({ definitionVi: 'xây dựng' }) }, { APIVN_API_KEY: 'test-key' })
+    const result = await service.translate('build-up', 'Culture shock comes from the constant build-up of small irritations.')
+    assert.equal(result.translation, 'sự tích tụ')
+    assert.equal(result.partOfSpeech, 'danh từ')
+    assert.match(result.contextExplanation!, /dồn lại/)
+    assert.equal(result.contextual, true)
+    assert.equal((await service.translate('build-up')).translation, 'xây dựng')
+  } finally { global.fetch = original }
+})
