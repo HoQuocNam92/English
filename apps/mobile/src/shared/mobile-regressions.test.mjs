@@ -132,55 +132,14 @@ test('every learning menu destination exists and covers the learner areas', () =
   }
 });
 
-test('a learner without a saved plan can create one, including after a failed attempt', async () => {
-  const require = createRequire(import.meta.url);
-  const ts = require('typescript');
-  const source = readFileSync(new URL('../../app/learning-plan.tsx', import.meta.url), 'utf8');
-  const code = ts.transpileModule(source, { compilerOptions: { module: ts.ModuleKind.CommonJS, jsx: ts.JsxEmit.ReactJSX } }).outputText;
-  const state = [];
-  let cursor = 0;
-  let focus;
-  class ApiError extends Error { constructor(statusCode, message) { super(message); this.statusCode = statusCode; } }
-  const jsx = (type, props) => ({ type, props });
-  const mocks = {
-    'react/jsx-runtime': { jsx, jsxs: jsx, Fragment: 'fragment' },
-    react: { useCallback: callback => callback, useState: initial => {
-      const index = cursor++;
-      if (!(index in state)) state[index] = initial;
-      return [state[index], value => { state[index] = value; }];
-    } },
-    'react-native': { View: 'view' },
-    'expo-router': { useFocusEffect: callback => { focus = callback; }, useRouter: () => ({ push() {} }) },
-    '../src/shared/ui/FeatureScreen': { FeatureScreen: 'screen' },
-    '../src/shared/ui/primitives': { Button: 'button', Text: 'text' },
-    '../src/features/learning/PlacementPlan': { PlacementPlan: 'plan' },
-    '../src/features/learning/LearningPathJourney': { LearningPathJourney: 'livepath' },
-    '../src/shared/api/api-client': { ApiError, api: { get: async () => { throw new ApiError(404, 'No assessment yet'); }, post: async () => { throw new ApiError(503, 'Server unavailable'); } } },
-  };
-  const exports = {};
-  runInNewContext(code, { exports, require: name => { assert.ok(name in mocks, name); return mocks[name]; } });
-  const nodes = tree => !tree || typeof tree !== 'object' ? [] : Array.isArray(tree) ? tree.flatMap(nodes) : [tree, ...nodes(tree.props?.children)];
-  const expand = tree => {
-    if (Array.isArray(tree)) return tree.map(expand);
-    if (!tree || typeof tree !== 'object') return tree;
-    if (typeof tree.type === 'function') return expand(tree.type(tree.props));
-    return { ...tree, props: { ...tree.props, children: expand(tree.props?.children) } };
-  };
-  const render = () => { cursor = 0; return expand(exports.default()); };
-  const initial = render();
-  nodes(initial).find(node => node.type === 'livepath').props.onAvailability(false);
-  render();
-  focus();
-  await new Promise(resolve => setImmediate(resolve));
-  let screen = render();
-  assert.equal(screen.props.error, undefined);
-  const createButton = nodes(screen).find(node => node.type === 'button' && node.props.children === 'Tạo kế hoạch 4 tuần');
-  assert.ok(createButton, 'Create plan action must remain available after 404');
-  await createButton.props.onPress();
-  screen = render();
-  assert.equal(screen.props.error, undefined);
-  assert.ok(nodes(screen).some(node => node.type === 'text' && node.props.children === 'Server unavailable'));
-  assert.ok(nodes(screen).some(node => node.type === 'button' && node.props.children === 'Tạo kế hoạch 4 tuần'));
+test('mobile plan keeps progression and setup without a fixed-week plan', () => {
+ const require=createRequire(import.meta.url),ts=require('typescript');let available=null;const exports={};const jsx=(type,props)=>({type,props});
+ const mocks={'react/jsx-runtime':{jsx,jsxs:jsx,Fragment:'fragment'},react:{useState:()=>[available,value=>{available=value}]},'expo-router':{useRouter:()=>({push(){}})},'react-native':{View:'view'},'../src/shared/ui/FeatureScreen':{FeatureScreen:'screen'},'../src/shared/ui/primitives':{Text:'text',Button:'button'},'../src/features/learning/LearningPathJourney':{LearningPathJourney:'journey'}};
+ const code=ts.transpileModule(readFileSync(new URL('../../app/learning-plan.tsx',import.meta.url),'utf8'),{compilerOptions:{module:ts.ModuleKind.CommonJS,jsx:ts.JsxEmit.ReactJSX}}).outputText;
+ runInNewContext(code,{exports,require:name=>{assert.ok(name in mocks,name);return mocks[name]}});
+ const nodes=tree=>!tree||typeof tree!=='object'?[]:Array.isArray(tree)?tree.flatMap(nodes):[tree,...nodes(tree.props?.children)];
+ let tree=nodes(exports.default());assert.equal(tree.find(node=>node.type==='journey').props.full,true);tree.find(node=>node.type==='journey').props.onAvailability(false);
+ tree=nodes(exports.default());assert.ok(tree.some(node=>node.type==='button'&&node.props.children==='Thiết lập mục tiêu'));
 });
 
 test('AI-backed mobile flows get enough time to complete while ordinary requests remain bounded', () => {

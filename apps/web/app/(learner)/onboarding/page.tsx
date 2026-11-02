@@ -100,7 +100,6 @@ export default function OnboardingPage() {
       });
       window.dispatchEvent(new CustomEvent('techenglish:reminder-settings', { detail: { reminderEnabled, reminderTime } }));
       if (reminderEnabled) await registerWebLearningNotifications().catch(() => false);
-      await apiClient.post('/placement-test/plan', {});
       router.replace('/learn/plan');
     } catch (error) {
       setErrorMessage(error instanceof Error ? error.message : 'Không thể tạo lộ trình. Vui lòng thử lại.');
