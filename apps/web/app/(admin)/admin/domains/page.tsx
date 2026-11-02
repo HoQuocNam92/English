@@ -43,7 +43,7 @@ export default function DomainsPage() {
   };
   const visible = items.filter(item => matchesSearch(search, item.name, item.code, item.description) && (!filter || item.isActive === (filter === 'active')));
   return <div className="admin-page-stack">
-    <PageHeader title="Chuyên ngành CNTT" icon="account_tree" description={`${items.filter(item => item.isActive).length} chuyên ngành đang hoạt động. Danh mục này được dùng cho lựa chọn học tập và biểu đồ thống kê.`} action={<Button disabled={loading || !!error} onClick={() => open(null)}><Plus className="h-4 w-4" />Thêm chuyên ngành</Button>} />
+    <PageHeader title="Chuyên ngành CNTT" icon="account_tree" action={<Button disabled={loading || !!error} onClick={() => open(null)}><Plus className="h-4 w-4" />Thêm chuyên ngành</Button>} />
     {error && <div role="alert" className="rounded-xl bg-red-50 p-4 text-sm text-red-700">{error}<button className="ml-3 font-semibold underline" onClick={() => void load()}>Thử lại</button></div>}
     <ListTools search={search} onSearch={setSearch} filter={filter} onFilter={setFilter} options={[{ value: '', label: 'Tất cả trạng thái' }, { value: 'active', label: 'Đang hoạt động' }, { value: 'inactive', label: 'Ngừng hoạt động' }]} />
     {loading ? <p role="status">Đang tải chuyên ngành...</p> : !visible.length ? <p className="rounded-xl border border-dashed p-6 text-sm">Không có chuyên ngành phù hợp.</p> : <PaginatedList className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">{visible.map(item => <article key={item.id} className="rounded-xl border border-outline-variant bg-white p-5">
