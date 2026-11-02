@@ -1,3 +1,4 @@
+import { postLoginDestination } from '../../../../packages/shared-kernel/src/post-login-destination';
 import { RequiredMark } from '../../src/shared/ui/RequiredMark';
 import { Button, Text, TextInput, TouchableOpacity } from '../../src/shared/ui/primitives';
 import { useState } from 'react';
@@ -48,7 +49,7 @@ export default function MobileLoginScreen() {
     try {
       const result = await api.post<any>('/auth/google/mobile', { idToken });
       await loginWithTokens(result);
-      router.replace('/(tabs)/home' as any);
+      router.replace(await postLoginDestination({ mobile: true, loadProfile: () => api.get<any>('/learner-profiles/me') }) as any);
     } catch (err: any) {
       Alert.alert('Lỗi đăng nhập Google', err.message ?? 'Không thể xác thực với Google.');
     } finally {

@@ -11,7 +11,7 @@
   "typesVersions": { "*": { "lesson-duration": ["src/lesson-duration.d.cts"] } },
   "scripts": {
     "typecheck": "tsc --noEmit -p tsconfig.json",
-    "test": "node --test src/progress.test.mjs src/rich-text.test.mjs src/lesson-duration.test.mjs"
+    "test": "node --test src/progress.test.mjs src/rich-text.test.mjs src/lesson-duration.test.mjs src/post-login-destination.test.mjs"
   },
   "dependencies": {
     "htmlparser2": "10.0.0"

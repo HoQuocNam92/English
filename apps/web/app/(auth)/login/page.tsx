@@ -1,4 +1,5 @@
 'use client';
+import { postLoginDestination } from '../../../../../packages/shared-kernel/src/post-login-destination';
 import { RequiredMark } from '@/shared/ui/RequiredMark';
 import { AppIcon } from '@/shared/ui/AppIcon';
 
@@ -8,11 +9,14 @@ import { BrandLogo } from '@/shared/layout/BrandLogo';
 import { useRouter } from 'next/navigation';
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/features/auth/presentation';
+import { apiClient } from '@/shared/api/api-client';
 import { API_BASE_URL } from '@/shared/config/env';
 
 export default function LoginPage() {
   const router = useRouter();
   const { session, loading, submitting, error, submitLogin } = useAuth();
+  const [routingError, setRoutingError] = useState('');
+  const [retryRoute, setRetryRoute] = useState(0);
   const [email, setEmail] = useState('');
   const [googleError, setGoogleError] = useState('');
   useEffect(() => {
@@ -28,24 +32,21 @@ export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [rememberMe, setRememberMe] = useState(true);
 
-  // Nếu đã đăng nhập → tự động chuyển thẳng vào trang tương ứng
   useEffect(() => {
+    let active = true;
     if (!loading && session) {
-      const role = session.user.role;
-      if (role === 'admin' || role === 'teacher') {
-        router.replace('/admin/dashboard');
-      } else {
-        router.replace('/learn');
-      }
+      setRoutingError('');
+      void postLoginDestination({ role: session.user.role, loadProfile: () => apiClient.get<any>('/learner-profiles/me') })
+        .then(destination => { if (active) router.replace(destination); })
+        .catch(() => { if (active) setRoutingError('Chưa kiểm tra được thiết lập lộ trình. Vui lòng thử lại.'); });
     }
-  }, [session, loading, router]);
+    return () => { active = false; };
+  }, [session, loading, router, retryRoute]);
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     try {
-      const result = await submitLogin({ email, password, rememberMe });
-      const role = (result as any)?.user?.role ?? 'learner';
-      router.push((role === 'admin' || role === 'teacher') ? '/admin/dashboard' : '/learn');
+      await submitLogin({ email, password, rememberMe });
     } catch {
       // Handled by auth state
     }
@@ -59,7 +60,7 @@ export default function LoginPage() {
     );
   }
 
-  if (session) return null;
+  if (session) return <main className="flex min-h-screen flex-col items-center justify-center gap-4 p-6"><p role={routingError ? 'alert' : 'status'}>{routingError || 'Đang kiểm tra lộ trình học…'}</p>{routingError && <button onClick={() => setRetryRoute(value => value + 1)} className="rounded-xl bg-primary px-5 py-3 font-semibold text-white">Thử lại</button>}</main>;
 
   return (
     <div className="flex min-h-screen flex-col bg-white text-on-surface">

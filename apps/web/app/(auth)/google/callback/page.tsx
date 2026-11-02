@@ -1,4 +1,5 @@
 'use client'
+import { postLoginDestination } from '../../../../../../packages/shared-kernel/src/post-login-destination';
 import { Suspense, useEffect } from 'react'
 import { useSearchParams, useRouter } from 'next/navigation'
 import { apiClient } from '@/shared/api/api-client'
@@ -35,15 +36,9 @@ function GoogleCallbackInner() {
         if (roles.includes('admin')) router.replace('/admin/dashboard')
         else if (roles.includes('teacher')) router.replace('/admin/dashboard')
         else {
-          apiClient.get<any>('/learner-profiles/me')
-            .then((profile) => {
-              if (profile && !profile.onboardingCompleted) {
-                router.replace('/onboarding')
-              } else {
-                router.replace('/learn')
-              }
-            })
-            .catch(() => router.replace('/learn'))
+          postLoginDestination({ loadProfile: () => apiClient.get<any>('/learner-profiles/me') })
+            .then(destination => router.replace(destination))
+            .catch(() => router.replace('/login'))
         }
       } catch {
         router.replace('/login?error=oauth_failed')
