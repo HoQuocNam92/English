@@ -143,9 +143,7 @@ export default function FlashcardsDashboard({ activeTab }: { activeTab: TabType 
   const domains = Array.from(
     new Map(lessons.filter(l => l.domain).map(l => [l.domain.code, l.domain])).values()
   );
-  const levels = ['beginner', 'intermediate', 'advanced', 'professional'].map(code => ({
-    code, name: levelLabel(code),
-  }));
+  const levels = Array.from(new Map(lessons.filter(lesson => lesson.level).map(lesson => [lesson.level.code, lesson.level])).values());
 
   const filteredExplore = lessons.filter(lesson => {
     const keyword = search.trim().toLowerCase();

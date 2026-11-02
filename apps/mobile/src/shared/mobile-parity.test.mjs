@@ -173,9 +173,9 @@ test('native lesson guidance and source links use the same presentation as web',
   assert.ok(tree.some(node => node.type === 'text' && label(node) === lessonPresentation.lessonStudyGuide));
   const reading = tree.find(node => typeof node.type === 'function' && node.type.name === 'Reading');
   const content = nodes(reading.type(reading.props));
-  assert.ok(content.some(node => node.type === 'text' && label(node) === 'Nguồn tham khảo'));
+  assert.ok(content.some(node => node.type === 'text' && label(node) === 'Nguồn khái niệm và phạm vi bài học'));
   assert.equal(content.some(node => node.type === 'text' && label(node) === 'Mục tiêu đọc'), false);
-  const source = content.find(node => typeof node.type === 'function' && node.type.name === 'LessonText' && node.props.text === 'https://example.org/guide');
+  const source = content.find(node => typeof node.type === 'function' && node.type.name === 'LessonText' && node.props.text === 'Tham khảo https://example.org/guide');
   const link = nodes(source.type(source.props)).find(node => node.props?.accessibilityRole === 'link');
   link.props.onPress(); await harness.flush(); assert.equal(links[0], 'https://example.org/guide');
 });

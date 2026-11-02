@@ -14,11 +14,9 @@ export type LessonProfile = {
   certGoals?: { certificate: { id: string; code: string } }[];
 };
 const normalize = (value: string) => value.normalize('NFD').replace(/\p{Diacritic}/gu, '').replace(/đ/g, 'd').replace(/Đ/g, 'D').toLowerCase().trim();
-const ranks = ['beginner', 'intermediate', 'advanced', 'professional'];
 export function filterLessons(items: CatalogLesson[], profile: LessonProfile | null, filters: { query: string; scope: string; domainCode: string; certificateId: string; vocabulary: string }) {
   const domains = new Set(profile?.domains?.map(link => link.domain.code));
   const certificates = new Set(profile?.certGoals?.map(link => link.certificate.id));
-  const rank = ranks.indexOf(profile?.level?.code ?? '');
   return items.filter(item => {
     const linkedCertificates = item.certificates ?? [];
     if (filters.scope === 'path') {
@@ -26,8 +24,7 @@ export function filterLessons(items: CatalogLesson[], profile: LessonProfile | n
       const certificateMatch = linkedCertificates.some(link => certificates.has(link.certificate.id));
       const matchesGoal = profile?.learningGoal === 'certification' ? certificateMatch : profile?.learningGoal === 'vocabulary' ? domainMatch : domainMatch || certificateMatch;
       if (!matchesGoal) return false;
-      const lessonRank = ranks.indexOf(item.level?.code ?? '');
-      if (rank >= 0 && lessonRank !== rank) return false;
+      if (profile?.level?.code && item.level?.code !== profile.level.code) return false;
     }
     if (filters.domainCode && item.domain?.code !== filters.domainCode) return false;
     if (filters.certificateId && !linkedCertificates.some(link => link.certificate.id === filters.certificateId)) return false;

@@ -1,18 +1,6 @@
 import { BadRequestException, ConflictException, ForbiddenException, Injectable } from '@nestjs/common'
 import { PrismaService } from '../../infrastructure/database/prisma.service'
 
-const LEVELS = ['beginner', 'intermediate', 'advanced', 'professional']
-const PREFIX = 'focused-20261024-'
-const lessonOrder = (slug: string) => {
-  const extension = slug.match(/-(0[5-9]|10)-(vocabulary|technical_reading|api_documentation|system_design|case_study)$/)
-  return extension ? Number(extension[1]) - 1 : ['terminology', 'reading', 'documentation', 'case'].findIndex(type => slug.endsWith(`-${type}`))
-}
-const expectedLessons = (code: string) => code === 'SOFTWARE_ENG' ? 10 : 4
-const completeCurriculum = (rows: any[], code: string) => {
-  const expected = expectedLessons(code)
-  const orders = rows.map(row => lessonOrder(row.slug))
-  return rows.length === expected && new Set(orders).size === expected && orders.every(order => order >= 0 && order < expected)
-}
 const done = (record: any) => record?.status === 'completed' || record?.completionPercent >= 100
 
 @Injectable()
@@ -23,26 +11,28 @@ export class LearningPathService {
     const user = await db.user.findFirst({ where: { id: learnerId, status: 'active', userRoles: { some: { role: { code: 'learner', isActive: true } } } }, select: { id: true } })
     if (!user) throw new ForbiddenException('Chỉ học viên mới có lộ trình học tập.')
     const profile = await db.learnerProfile.findUnique({ where: { userId: learnerId }, include: { level: true, domains: { include: { domain: true } } } })
-    if (!profile?.onboardingCompleted || profile.learningGoal === 'certification' || !LEVELS.includes(profile.level.code)) return { configured: false as const }
+    if (!profile?.onboardingCompleted || profile.learningGoal === 'certification' || profile.level.isActive === false) return { configured: false as const }
     const selected = profile.domains.filter((link: any) => link.domain.isActive)
     if (!selected.length) return { configured: false as const }
     const domainIds = selected.map((link: any) => link.domainId)
     const [lessons, progress, exams, attempts, levels] = await Promise.all([
-      db.lesson.findMany({ where: { status: 'published', slug: { startsWith: PREFIX }, domainId: { in: domainIds }, levelId: profile.levelId }, select: { id: true, title: true, slug: true, domainId: true, estimatedMinutes: true, _count: { select: { vocabularies: true } }, vocabularies: { where: { vocabulary: { status: 'published' } }, select: { vocabulary: { select: { vocabProgress: { where: { learnerId, lastRating: { not: null } }, select: { lastReviewAt: true } } } } } } } }),
+      db.lesson.findMany({ where: { status: 'published', type: { not: 'certification_review' }, domainId: { in: domainIds }, levelId: profile.levelId }, orderBy: [{ createdAt: 'asc' }, { id: 'asc' }], select: { id: true, title: true, slug: true, domainId: true, estimatedMinutes: true, _count: { select: { vocabularies: true } }, vocabularies: { where: { vocabulary: { status: 'published' } }, select: { vocabulary: { select: { vocabProgress: { where: { learnerId, lastRating: { not: null } }, select: { lastReviewAt: true } } } } } } } }),
       db.learningProgress.findMany({ where: { learnerId, resourceType: 'lesson' }, select: { resourceId: true, status: true, completionPercent: true, completedAt: true, updatedAt: true } }),
-      db.exam.findMany({ where: { status: 'published', kind: 'practice', certificateId: null, domainId: { in: domainIds }, levelId: profile.levelId, questions: { some: {} } }, select: { id: true, title: true, domainId: true, topics: true, passingScorePercent: true } }),
+      db.exam.findMany({ where: { status: 'published', kind: { in: ['domain_test', 'practice'] }, certificateId: null, domainId: { in: domainIds }, levelId: profile.levelId, questions: { some: {} } }, orderBy: [{ createdAt: 'desc' }, { id: 'asc' }], select: { id: true, title: true, kind: true, domainId: true, topics: true, passingScorePercent: true } }),
       db.examAttempt.findMany({ where: { learnerId, status: 'graded', exam: { domainId: { in: domainIds }, levelId: profile.levelId, certificateId: null } }, select: { id: true, examId: true, passed: true, scorePercent: true, submittedAt: true }, orderBy: [{ submittedAt: 'desc' }, { createdAt: 'desc' }] }),
-      db.level.findMany({ where: { isActive: true, code: { in: LEVELS } }, select: { id: true, code: true, name: true } }),
+      db.level.findMany({ where: { isActive: true }, orderBy: [{ order: 'asc' }, { id: 'asc' }], select: { id: true, code: true, name: true } }),
     ])
     const byLesson = new Map(progress.map((record: any) => [record.resourceId, record]))
     const domains = selected.map((link: any) => {
-      const rows = lessons.filter((lesson: any) => lesson.domainId === link.domainId).sort((a: any, b: any) => lessonOrder(a.slug) - lessonOrder(b.slug))
+      const rows = lessons.filter((lesson: any) => lesson.domainId === link.domainId)
       // Missing data must never produce a completed course or unlock promotion.
-      const available = completeCurriculum(rows, link.domain.code)
-      const lessonItems = rows.map((lesson: any) => ({ id: lesson.id, title: lesson.title, href: `/learn/lessons/${lesson.id}`, week: lessonOrder(lesson.slug) + 1, completed: done(byLesson.get(lesson.id)), estimatedMinutes: lesson.estimatedMinutes, vocabularyCount: lesson.vocabularies?.length ?? lesson._count?.vocabularies ?? 0, vocabularyReviewComplete: done(byLesson.get(lesson.id)) && lesson.vocabularies?.length > 0 && lesson.vocabularies.every((link: any) => { const record: any = byLesson.get(lesson.id); const completedAt = record?.completedAt ?? record?.updatedAt; const reviewedAt = link.vocabulary.vocabProgress[0]?.lastReviewAt; return completedAt && reviewedAt && new Date(reviewedAt).getTime() >= new Date(completedAt).getTime() }) }))
+      const available = rows.length > 0
+      const lessonItems = rows.map((lesson: any) => ({ id: lesson.id, title: lesson.title, href: `/learn/lessons/${lesson.id}`, week: rows.indexOf(lesson) + 1, completed: done(byLesson.get(lesson.id)), estimatedMinutes: lesson.estimatedMinutes, vocabularyCount: lesson.vocabularies?.length ?? lesson._count?.vocabularies ?? 0, vocabularyReviewComplete: done(byLesson.get(lesson.id)) && lesson.vocabularies?.length > 0 && lesson.vocabularies.every((link: any) => { const record: any = byLesson.get(lesson.id); const completedAt = record?.completedAt ?? record?.updatedAt; const reviewedAt = link.vocabulary.vocabProgress[0]?.lastReviewAt; return completedAt && reviewedAt && new Date(reviewedAt).getTime() >= new Date(completedAt).getTime() }) }))
       const completedLessons = lessonItems.filter((lesson: any) => lesson.completed).length
       const lessonsComplete = available && completedLessons === rows.length
-      const exam = exams.find((exam: any) => exam.domainId === link.domainId && exam.topics.includes(`coverage-20261009-${link.domain.code.toLowerCase()}-${profile.level.code}`))
+      const domainExams = exams.filter((exam: any) => exam.domainId === link.domainId)
+      // Prefer an explicit domain test; otherwise use the newest published practice.
+      const exam = domainExams.find((exam: any) => exam.kind === 'domain_test') ?? domainExams[0]
       const times = rows.map((lesson: any) => {
         const record: any = byLesson.get(lesson.id)
         return record?.completedAt ?? record?.updatedAt
@@ -61,23 +51,23 @@ export class LearningPathService {
       }
     })
     const allCompleted = domains.length > 0 && domains.every((domain: any) => domain.state === 'complete')
-    const nextCode = LEVELS[LEVELS.indexOf(profile.level.code) + 1]
-    const next = levels.find((level: any) => level.code === nextCode)
-    const nextLessons = next ? await db.lesson.findMany({ where: { status: 'published', slug: { startsWith: PREFIX }, levelId: next.id, domainId: { in: domainIds } }, select: { domainId: true, slug: true } }) : []
-    const nextAvailable = !!next && selected.every((link: any) => completeCurriculum(nextLessons.filter((lesson: any) => lesson.domainId === link.domainId), link.domain.code))
+    const currentIndex = levels.findIndex((level: any) => level.id === profile.levelId)
+    const next = currentIndex >= 0 ? levels[currentIndex + 1] : undefined
+    const nextLessons = next ? await db.lesson.findMany({ where: { status: 'published', type: { not: 'certification_review' }, levelId: next.id, domainId: { in: domainIds } }, select: { domainId: true, slug: true } }) : []
+    const nextAvailable = !!next && selected.every((link: any) => nextLessons.some((lesson: any) => lesson.domainId === link.domainId))
     return {
       configured: true as const, level: { id: profile.level.id, code: profile.level.code, name: profile.level.name }, domains,
       completedLessons: domains.reduce((total: number, domain: any) => total + domain.completedLessons, 0),
       totalLessons: domains.reduce((total: number, domain: any) => total + domain.totalLessons, 0),
       allCompleted, canAdvance: allCompleted && nextAvailable,
       nextLevel: nextAvailable ? next : null,
-      finalLevel: profile.level.code === 'professional',
+      finalLevel: currentIndex >= 0 && currentIndex === levels.length - 1,
       dailyMinutes: profile.dailyStudyTargetMinutes ?? 30,
     }
   }
 
   async advance(learnerId: string, fromLevelCode: unknown) {
-    if (typeof fromLevelCode !== 'string' || !LEVELS.includes(fromLevelCode)) throw new BadRequestException('Trình độ cần chuyển không hợp lệ.')
+    if (typeof fromLevelCode !== 'string' || !fromLevelCode.trim()) throw new BadRequestException('Trình độ cần chuyển không hợp lệ.')
     try {
       return await this.prisma.$transaction(async tx => {
         const path = await this.getPath(learnerId, tx)

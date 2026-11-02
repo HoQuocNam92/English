@@ -148,7 +148,7 @@ export default function AdminQuestionsPage() {
         <div className="flex flex-wrap items-center gap-2.5">
           <button
             type="button"
-            onClick={downloadQuestionExcelTemplate}
+            onClick={() => downloadQuestionExcelTemplate(domains, levels)}
             className="inline-flex shrink-0 items-center gap-2 rounded-xl border border-outline-variant bg-surface-container-lowest px-3.5 py-2.5 text-sm font-semibold text-on-surface shadow-sm transition-colors hover:bg-surface-container"
             title="Tải file mẫu Excel chuẩn để soạn câu hỏi"
           >

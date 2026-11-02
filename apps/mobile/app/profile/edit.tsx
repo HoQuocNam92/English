@@ -84,7 +84,12 @@ export default function MobileEditProfileScreen() {
       }
       const items = (value: any) => Array.isArray(value) ? value : (value?.data || value?.items || []);
       if (levelsRes.status === 'fulfilled') setLevels(items(levelsRes.value));
-      if (domainsRes.status === 'fulfilled') setDomains(items(domainsRes.value));
+      if (domainsRes.status === 'fulfilled') {
+        const activeDomains = items(domainsRes.value);
+        setDomains(activeDomains);
+        // Retired profile links are not valid active choices.
+        setDomainCodes(codes => codes.filter(code => activeDomains.some((domain: any) => domain.code === code)));
+      }
       if (certsRes.status === 'fulfilled') setCertificates(items(certsRes.value));
       if (careerGoalsRes.status === 'fulfilled') setCareerGoals(items(careerGoalsRes.value));
     }).catch((cause: unknown) => setLoadError(cause instanceof Error ? cause.message : 'Không thể tải hồ sơ. Vui lòng thử lại.'))

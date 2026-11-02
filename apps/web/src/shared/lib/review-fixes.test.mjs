@@ -9,9 +9,9 @@ test('learning reminders keep internal destinations and reject unsafe or unrelat
 
 import { lessonReadingText } from '../../../../../packages/shared-kernel/src/lesson-presentation.ts';
 
-test('reference sections keep actual links and English reading passages remain unchanged', () => {
-  assert.equal(lessonReadingText('Nguồn tham khảo', 'Tài liệu minh họa. Nguồn kỹ thuật: https://example.org/guide'), 'https://example.org/guide');
-  assert.equal(lessonReadingText('Nguồn tham khảo', '', 'https://example.org/guide'), 'https://example.org/guide');
+test('stored reference text and English passages remain unchanged', () => {
+  assert.equal(lessonReadingText('Nguồn tham khảo', 'Tài liệu minh họa. Nguồn kỹ thuật: https://example.org/guide'), 'Tài liệu minh họa. Nguồn kỹ thuật: https://example.org/guide');
+  assert.equal(lessonReadingText('Nguồn tham khảo', '', 'https://example.org/guide'), '');
   assert.equal(lessonReadingText('Đoạn đọc tiếng Anh', 'Only the owner may access this resource.'), 'Only the owner may access this resource.');
   assert.equal(lessonReadingText('Nguồn tham khảo', 'Tài liệu nội bộ'), 'Tài liệu nội bộ');
 });

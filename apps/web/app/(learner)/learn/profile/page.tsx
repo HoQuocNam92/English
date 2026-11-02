@@ -29,6 +29,7 @@ function LearnerProfileContent() {
   const [savingPassword, setSavingPassword] = useState(false);
   const [savingGoals, setSavingGoals] = useState(false);
   const [error, setError] = useState('');
+  const [catalogError, setCatalogError] = useState('');
   const [form, setForm] = useState({ displayName: '', email: '', phoneNumber: '', bio: '' });
   const [password, setPassword] = useState({ currentPassword: '', newPassword: '', confirmPassword: '' });
   const [passwordErrors, setPasswordErrors] = useState<{
@@ -39,7 +40,7 @@ function LearnerProfileContent() {
   }>({});
 
   // Mục tiêu & Trình độ
-  const [levelCode, setLevelCode] = useState('beginner');
+  const [levelCode, setLevelCode] = useState('');
   const [selectedDomains, setSelectedDomains] = useState<string[]>([]);
   const [learningGoal, setLearningGoal] = useState<'certification' | 'vocabulary' | 'both' | null>(null);
   const [certificateCode, setCertificateCode] = useState('');
@@ -76,7 +77,11 @@ function LearnerProfileContent() {
 
       // Taxonomy endpoints return { data }; keep array compatibility for older API responses.
       const taxonomyItems = (value: any) => Array.isArray(value) ? value : (value?.data ?? []);
-      if (levelsRes.status === 'fulfilled') setLevels(taxonomyItems(levelsRes.value));
+      if ([profileResult, levelsRes, domainsRes, certsRes, careersRes].some(result => result.status === 'rejected')) {
+        setCatalogError('Không tải được hồ sơ hoặc danh mục. Hãy tải lại trang trước khi lưu mục tiêu.');
+        setError('Không tải được hồ sơ hoặc danh mục. Hãy tải lại trang trước khi lưu mục tiêu.');
+      }
+      if (levelsRes.status === 'fulfilled') setLevels(taxonomyItems(levelsRes.value).filter((item: any) => item.isActive !== false));
       if (domainsRes.status === 'fulfilled') setDomains(taxonomyItems(domainsRes.value));
       if (certsRes.status === 'fulfilled') setCertificates(taxonomyItems(certsRes.value));
       if (careersRes.status === 'fulfilled') setCareerGoals(taxonomyItems(careersRes.value));
@@ -94,7 +99,7 @@ function LearnerProfileContent() {
           ? profile.domains.map((d: any) => d.domain?.code).filter(Boolean)
           : [];
         const savedCertificate = profile.certGoals?.[0]?.certificate?.code ?? '';
-        setSelectedDomains(savedDomains);
+        setSelectedDomains(domainsRes.status === 'fulfilled' ? savedDomains.filter((code: string) => taxonomyItems(domainsRes.value).some((domain: any) => domain.code === code)) : savedDomains);
         setCertificateCode(savedCertificate);
         setSelectedCareerGoals(Array.isArray(profile.careerGoals) ? profile.careerGoals.map((item: any) => item.careerGoal?.code).filter(Boolean) : []);
         setLearningGoal(profile.learningGoal === 'vocabulary' || profile.learningGoal === 'certification' || profile.learningGoal === 'both'
@@ -133,6 +138,8 @@ function LearnerProfileContent() {
 
   async function saveGoals(event: React.FormEvent) {
     event.preventDefault();
+    if (catalogError) return setError(catalogError);
+    if (!levels.some(item => item.code === levelCode)) return setError('Vui lòng chọn trình độ trong danh mục.');
     if (!learningGoal) return setError('Vui lòng chọn mục tiêu học chính.');
     if ((learningGoal === 'certification' || learningGoal === 'both') && !certificateCode) return setError('Vui lòng chọn một chứng chỉ mục tiêu.');
     if (selectedDomains.length === 0) return setError('Vui lòng chọn ít nhất một chuyên ngành IT.');
@@ -359,12 +366,7 @@ function LearnerProfileContent() {
             <div className="space-y-3">
               <label className="block text-sm font-bold text-on-surface">2. Trình độ tiếng Anh</label>
               <div className="grid grid-cols-1 sm:grid-cols-4 gap-3">
-                {(levels.length > 0 ? levels : [
-                  { code: 'beginner', name: 'Cơ bản', description: 'Mới bắt đầu, từ vựng cơ bản và cấu trúc kỹ thuật đơn giản' },
-                  { code: 'intermediate', name: 'Trung cấp', description: 'Đã có nền tảng từ vựng IT và sẵn sàng luyện thi chứng chỉ' },
-                  { code: 'advanced', name: 'Nâng cao', description: 'Thành thạo, kiến trúc hệ thống và ôn thi chứng chỉ chuyên sâu' },
-                  { code: 'professional', name: 'Professional', description: 'Tập trung luyện thi và củng cố chủ đề yếu' },
-                ]).map((lvl: any) => {
+                {levels.map((lvl: any) => {
                   const isSelected = levelCode === lvl.code;
                   return (
                     <div
@@ -392,15 +394,7 @@ function LearnerProfileContent() {
             {learningGoal && <div className="space-y-3">
               <label className="block text-sm font-bold text-on-surface">3. Chuyên ngành IT<RequiredMark /></label>
               <div className="flex flex-wrap gap-2">
-                {(domains.length > 0 ? domains : [
-                  { code: 'CLOUD', name: 'Cloud Computing' },
-                  { code: 'CYBERSEC', name: 'Cybersecurity' },
-                  { code: 'NETWORKING', name: 'Networking' },
-                  { code: 'DATA_ENG', name: 'Data Engineering' },
-                  { code: 'DATA_SCI', name: 'Data Science' },
-                  { code: 'SOFTWARE_ENG', name: 'Software Engineering' },
-                  { code: 'DEVOPS', name: 'DevOps' },
-                ]).map((dom: any) => {
+                {domains.map((dom: any) => {
                   const isSelected = selectedDomains.includes(dom.code);
                   return (
                     <button

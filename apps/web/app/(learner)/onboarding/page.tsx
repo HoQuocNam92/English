@@ -13,12 +13,7 @@ type LearningGoal = 'certification' | 'vocabulary' | 'both';
 interface CertificateOption { id: string; code: string; name: string; provider: string; description: string }
 interface DomainOption { id: string; code: string; name: string; description: string; icon?: string | null }
 
-const LEVELS = [
-  { id: 'beginner', title: 'Cơ bản', subtitle: 'Mới bắt đầu hoặc muốn học lại từ gốc. Làm quen từ vựng CNTT và câu tiếng Anh đơn giản.', icon: 'school' },
-  { id: 'intermediate', title: 'Trung cấp', subtitle: 'Đã hiểu câu cơ bản. Mở rộng từ vựng chuyên ngành và luyện đọc các đoạn tài liệu ngắn.', icon: 'trending_up' },
-  { id: 'advanced', title: 'Nâng cao', subtitle: 'Đọc được tài liệu kỹ thuật. Luyện hiểu nội dung chuyên sâu và các tình huống phức tạp.', icon: 'workspace_premium' },
-  { id: 'professional', title: 'Chuyên nghiệp', subtitle: 'Sử dụng tiếng Anh kỹ thuật thành thạo. Tập trung luyện chứng chỉ và củng cố điểm yếu.', icon: 'diamond' },
-];
+
 
 const GOALS = [
   { id: 'vocabulary' as const, icon: 'translate', title: 'Học từ vựng CNTT', description: 'Tập trung từ vựng theo Cloud, Security, DevOps và các chuyên ngành khác.' },
@@ -34,7 +29,8 @@ export default function OnboardingPage() {
   const [domains, setDomains] = useState<DomainOption[]>([]);
   const [targetCertificateCode, setTargetCertificateCode] = useState('');
   const [domainCodes, setDomainCodes] = useState<string[]>([]);
-  const [level, setLevel] = useState('beginner');
+  const [level, setLevel] = useState('');
+  const [levels, setLevels] = useState<Array<{ id: string; code: string; name: string; description?: string; isActive?: boolean }>>([]);
   const [dailyVocabularyTarget, setDailyVocabularyTarget] = useState(10);
   const [weeklyExamTarget, setWeeklyExamTarget] = useState(2);
   const [dailyStudyTargetMinutes, setDailyStudyTargetMinutes] = useState(30);
@@ -50,10 +46,12 @@ export default function OnboardingPage() {
     Promise.all([
       apiClient.get<{ data: CertificateOption[] }>('/certificates?activeOnly=true'),
       apiClient.get<{ data: DomainOption[] }>('/domains?activeOnly=true'),
+      apiClient.get<{ data: Array<{ id: string; code: string; name: string; description?: string; isActive?: boolean }> }>('/levels'),
     ])
-      .then(([certificateResponse, domainResponse]) => {
+      .then(([certificateResponse, domainResponse, levelResponse]) => {
         setCertificates(certificateResponse?.data ?? []);
         setDomains(domainResponse?.data ?? []);
+        setLevels((levelResponse?.data ?? []).filter(item => item.isActive !== false));
       })
       .catch(() => setErrorMessage('Không thể tải danh sách chứng chỉ và chuyên ngành. Vui lòng thử lại.'))
       .finally(() => setLoadingOptions(false));
@@ -67,7 +65,7 @@ export default function OnboardingPage() {
         : goal === 'both'
           ? Boolean(targetCertificateCode) && domainCodes.length > 0
           : domainCodes.length > 0
-      : true;
+      : levels.some(item => item.code === level);
 
   const toggleDomain = (code: string) => setDomainCodes(current => current.includes(code) ? current.filter(item => item !== code) : [...current, code]);
 
@@ -129,7 +127,7 @@ export default function OnboardingPage() {
 
         {step === 3 && <section>
           <Header title="Chọn lộ trình phù hợp với bạn" subtitle="Bắt đầu từ mức bạn thấy thoải mái nhất. Chọn Cơ bản nếu bạn chưa chắc nên bắt đầu từ đâu." />
-          <div className="grid gap-4 md:grid-cols-2">{LEVELS.map(item => <ChoiceCard key={item.id} selected={level === item.id} icon={item.icon} title={<LevelBadge level={{ code: item.id, name: item.title }} />} description={item.subtitle} onClick={() => setLevel(item.id)} />)}</div>
+          <div className="grid gap-4 md:grid-cols-2">{levels.map(item => <ChoiceCard key={item.id} selected={level === item.code} icon="school" title={<LevelBadge level={item} />} description={item.description ?? ''} onClick={() => setLevel(item.code)} />)}</div>
           <p className="mt-5 text-center text-sm text-on-surface-variant">Bạn có thể thay đổi trình độ sau trong hồ sơ.</p>
         </section>}
 

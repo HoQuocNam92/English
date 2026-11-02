@@ -41,7 +41,7 @@ test('recommends an unfinished lesson at the current level', async () => {
   assert.equal(path.domains[0].nextLesson.id, 'd-intermediate-0'); assert.equal(path.canAdvance, false); assert.equal(f.updates, 0)
 })
 
-test('Software requires all ten ordered lessons and never unlocks promotion from the old four', async () => {
+test('lesson totals and availability follow the published catalog rather than a fixed count', async () => {
   const f = fixture({ completed: true, passed: true })
   const complete = await f.service.getPath('learner'); if (!complete.configured) return assert.fail('path')
   assert.equal(complete.domains[0].lessons.length, 10)
@@ -49,10 +49,10 @@ test('Software requires all ten ordered lessons and never unlocks promotion from
   const read = f.db.lesson.findMany
   f.db.lesson.findMany = async (args: any) => (await read(args)).slice(0, 4)
   const old = await f.service.getPath('learner'); if (!old.configured) return assert.fail('path')
-  assert.equal(old.domains[0].available, false)
-  assert.equal(old.allCompleted, false)
-  assert.equal(old.canAdvance, false)
-  assert.equal(old.nextLevel, null)
+  assert.equal(old.domains[0].available, true)
+  assert.equal(old.allCompleted, true)
+  assert.equal(old.canAdvance, true)
+  assert.equal(old.totalLessons, 4)
 })
 test('reading alone opens assessment, never automatically upgrades', async () => {
   const f = fixture({ completed: true }); const path = await f.service.getPath('learner')
@@ -98,4 +98,35 @@ test('latest failed assessment supersedes an earlier pass, and unavailable next 
   nextMissing.db.lesson.findMany = (query: any) => query.where.levelId === 'advanced' ? [] : read(query)
   const path = await nextMissing.service.getPath('learner'); if (!path.configured) return assert.fail('path')
   assert.equal(path.allCompleted, true); assert.equal(path.nextLevel, null); assert.equal(path.canAdvance, false)
+})
+
+test('published catalog lessons without seed slugs remain visible in the learning path', async () => {
+  const f = fixture()
+  const read = f.db.lesson.findMany
+  f.db.lesson.findMany = async (args: any) => {
+    assert.equal(args.where.slug, undefined)
+    return (await read(args)).map((row: any) => ({ ...row, slug: row.slug.replace('focused-20261024-', 'catalog-') }))
+  }
+  const path = await f.service.getPath('learner')
+  if (!path.configured) return assert.fail('path')
+  assert.equal(path.totalLessons, 10)
+  assert.equal(path.domains[0].available, true)
+  assert.ok(path.domains[0].nextLesson)
+  assert.equal(path.allCompleted, false)
+})
+
+test('custom database levels, domain names and assessments need no seeded codes', async () => {
+  const f = fixture()
+  f.profile.level.code = 'custom-entry'
+  f.profile.domains[0].domain.code = 'CUSTOM_DOMAIN'
+  f.profile.domains[0].domain.name = 'Tên gốc từ database'
+  f.db.level.findMany = async () => [f.profile.level, { id: 'custom-next', code: 'custom-next', name: 'Cấp kế tiếp' }]
+  f.db.exam.findMany = async () => [{ id: 'custom-exam', kind: 'domain_test', domainId: 'd', title: 'Bài tổng kết thật', passingScorePercent: 70, topics: [] }]
+  const path = await f.service.getPath('learner')
+  if (!path.configured) return assert.fail('path')
+  assert.equal(path.level.code, 'custom-entry')
+  assert.equal(path.nextLevel?.code, 'custom-next')
+  assert.equal(path.domains[0].name, 'Tên gốc từ database')
+  assert.equal(path.domains[0].assessment?.id, 'custom-exam')
+  assert.equal(path.totalLessons, 4)
 })

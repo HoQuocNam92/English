@@ -11,7 +11,7 @@ const exports = {};
 runInNewContext(code, { exports });
 const { localizeLevelFields } = exports;
 
-test('learning path current and next levels are Vietnamese across every promotion', () => {
+test('learning path levels preserve database language', () => {
   for (const [current, next, currentLabel, nextLabel] of [
     ['Beginner', 'Intermediate', 'Cơ bản', 'Trung cấp'],
     ['Intermediate', 'Advanced', 'Trung cấp', 'Nâng cao'],
@@ -24,8 +24,8 @@ test('learning path current and next levels are Vietnamese across every promotio
       title: 'Intermediate reading',
     };
     const result = localizeLevelFields(input);
-    assert.equal(result.level.name, currentLabel);
-    assert.equal(result.nextLevel.name, nextLabel);
+    assert.equal(result.level.name, current);
+    assert.equal(result.nextLevel.name, next);
     assert.equal(result.level.code, input.level.code);
     assert.equal(result.nextLevel.code, input.nextLevel.code);
     assert.equal(result.nextLevel.id, 'next');

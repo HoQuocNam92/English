@@ -17,7 +17,8 @@ export class LearnerProfilesService {
   async upsert(userId: string, dto: any) {
     await this.assertLearner(userId)
     const level = dto.levelCode ? await this.prisma.level.findUnique({ where: { code: dto.levelCode } }) : null
-    const fallbackLevel = level ?? await this.prisma.level.findFirst({ orderBy: { order: 'asc' } })
+    if (dto.levelCode && (!level || level.isActive === false)) throw new BadRequestException('Trình độ không tồn tại hoặc đã ngừng hoạt động')
+    const fallbackLevel = level ?? await this.prisma.level.findFirst({ where: { isActive: true }, orderBy: { order: 'asc' } })
     if (!fallbackLevel) throw new BadRequestException('Hệ thống chưa cấu hình cấp độ học tập')
     return this.prisma.learnerProfile.upsert({
       where: { userId },
@@ -55,10 +56,10 @@ export class LearnerProfilesService {
       throw new BadRequestException('Có chứng chỉ không tồn tại hoặc đã ngừng hoạt động')
     }
     if (selectedCareerGoals.length !== requestedCareerGoalCodes.length) throw new BadRequestException('Có mục tiêu nghề nghiệp không tồn tại hoặc đã ngừng hoạt động')
-    // 1. Tìm level (mặc định beginner nếu không cung cấp)
-    const targetLevelCode = (dto.levelCode ? dto.levelCode.toLowerCase() : 'beginner') as any
-    const level = (await this.prisma.level.findUnique({ where: { code: targetLevelCode } })) ??
-      (await this.prisma.level.findFirst({ where: { code: 'beginner' } }))
+    const level = dto.levelCode
+      ? await this.prisma.level.findUnique({ where: { code: dto.levelCode } })
+      : await this.prisma.level.findFirst({ where: { isActive: true }, orderBy: { order: 'asc' } })
+    if (!level || level.isActive === false) throw new BadRequestException('Trình độ không tồn tại hoặc đã ngừng hoạt động')
 
     // 2. Upsert profile với level + onboardingCompleted
     const profile = await this.prisma.learnerProfile.upsert({

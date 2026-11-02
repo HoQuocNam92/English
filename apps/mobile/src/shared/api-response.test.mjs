@@ -32,21 +32,21 @@ test('native requests do not treat malformed or unexpectedly empty responses as 
   }
 });
 
-test('API metadata uses Vietnamese across profile and filter responses without changing IDs', async () => {
+test('API metadata preserves database language and identifiers', async () => {
   const body = { data: [{ id: 'domain-1', code: 'SOFTWARE_ENG', name: 'Software Engineering' }, { id: 'domain-2', code: 'CLOUD', name: 'Cloud Computing' }, { id: 'domain-3', code: 'CYBERSEC', name: 'Cybersecurity' }] };
   const result = await client(new Response(JSON.stringify(body))).api.get('/domains?activeOnly=true');
-  assert.equal(result.data.map(item => item.name).join('|'), 'Kỹ thuật phần mềm|Điện toán đám mây|An ninh mạng');
+  assert.equal(result.data.map(item => item.name).join('|'), 'Software Engineering|Cloud Computing|Cybersecurity');
   assert.equal(result.data[0].id, 'domain-1');
   assert.equal(result.data[0].code, 'SOFTWARE_ENG');
   assert.equal(body.data[0].name, 'Software Engineering');
   const levels = await client(new Response(JSON.stringify({ data: ['Beginner', 'Intermediate', 'Advanced', 'Professional'].map(name => ({ name })) }))).api.get('/levels');
-  assert.equal(levels.data.map(item => item.name).join('|'), 'Cơ bản|Trung cấp|Nâng cao|Chuyên nghiệp');
+  assert.equal(levels.data.map(item => item.name).join('|'), 'Beginner|Intermediate|Advanced|Professional');
   const profile = { level: { code: 'intermediate', name: 'Intermediate' }, domains: [{ domain: body.data[0] }], nextLevel: { name: 'Advanced' }, levelName: 'Intermediate', lesson: { name: 'Software Engineering', content: 'Cloud Computing', term: 'Intermediate' }, certificate: { name: 'AWS Certified Cloud Practitioner' } };
   const localized = await client(new Response(JSON.stringify(profile))).api.get('/learner-profiles/me');
-  assert.equal(localized.level.name, 'Trung cấp');
+  assert.equal(localized.level.name, 'Intermediate');
   assert.equal(localized.level.code, 'intermediate');
-  assert.equal(localized.nextLevel.name, 'Nâng cao');
-  assert.equal(localized.domains[0].domain.name, 'Kỹ thuật phần mềm');
+  assert.equal(localized.nextLevel.name, 'Advanced');
+  assert.equal(localized.domains[0].domain.name, 'Software Engineering');
   assert.equal(localized.lesson.name, profile.lesson.name);
   assert.equal(localized.lesson.content, profile.lesson.content);
   assert.equal(localized.certificate.name, profile.certificate.name);

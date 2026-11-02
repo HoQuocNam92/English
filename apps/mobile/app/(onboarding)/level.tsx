@@ -1,55 +1,50 @@
 import { RequiredMark } from '../../src/shared/ui/RequiredMark';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Text, TouchableOpacity } from '../../src/shared/ui/primitives';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useRouter } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
-import { StyleSheet, View, ScrollView } from 'react-native';
+import { StyleSheet, View, ScrollView, ActivityIndicator } from 'react-native';
 import { MaterialIcons } from '../../src/shared/ui/AppIcon';
 import { colors, spacing } from '@techenglish/design-tokens';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
+import { api } from '../../src/shared/api/api-client';
+
 interface LevelOption {
   id: string;
+  code: string;
+  isActive?: boolean;
+  description?: string;
   name: string;
-  tag: string;
-  desc: string;
+
 }
 
-const levels: LevelOption[] = [
-  {
-    id: 'beginner',
-    name: 'Cơ bản',
-    tag: '(Mới bắt đầu)',
-    desc: 'Chưa có nền tảng tiếng Anh hoặc mất gốc hoàn toàn.',
-  },
-  {
-    id: 'intermediate',
-    name: 'Trung cấp',
-    tag: '(Có nền tảng)',
-    desc: 'Đã có nền tảng từ vựng CNTT và có thể bắt đầu luyện câu hỏi chứng chỉ.',
-  },
-  {
-    id: 'advanced',
-    name: 'Nâng cao',
-    tag: '(Thành thạo)',
-    desc: 'Tự tin thảo luận kiến trúc hệ thống, tự tin phỏng vấn quốc tế.',
-  },
-  {
-    id: 'professional',
-    name: 'Chuyên nghiệp',
-    tag: '(Chuyên sâu)',
-    desc: 'Tập trung luyện thi và củng cố các chủ đề còn yếu.',
-  },
-];
+
 
 export default function OnboardingLevelScreen() {
   const insets = useSafeAreaInsets();
   const router = useRouter();
-  const [selectedLevel, setSelectedLevel] = useState('beginner');
+  const [selectedLevel, setSelectedLevel] = useState('');
+  const [levels, setLevels] = useState<LevelOption[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
+  const [retry, setRetry] = useState(0);
+  useEffect(() => {
+    let active = true;
+    setLoading(true); setError('');
+    api.get<LevelOption[] | { data: LevelOption[] }>('/levels').then(result => {
+      if (!active) return;
+      const rows = (Array.isArray(result) ? result : result.data).filter(level => level.isActive !== false);
+      setLevels(rows);
+      setSelectedLevel(current => rows.some(level => level.code === current) ? current : '');
+    }).catch(() => { if (active) setError('Không tải được trình độ. Vui lòng thử lại.'); })
+      .finally(() => { if (active) setLoading(false); });
+    return () => { active = false; };
+  }, [retry]);
 
   const handleNext = async () => {
-    // Lưu lựa chọn vào AsyncStorage để bước cuối tổng hợp gửi API
+    if (loading || error || !levels.some(level => level.code === selectedLevel)) return;
     await AsyncStorage.setItem('onboarding_level', selectedLevel);
     router.push('/(onboarding)/plan' as any);
   };
@@ -57,7 +52,7 @@ export default function OnboardingLevelScreen() {
   return (
     <View style={styles.container}>
       <StatusBar style="dark" />
-      
+
       {/* Top Bar Header */}
       <View style={[styles.headerBar, { paddingTop: insets.top + 12 }]}>
         <TouchableOpacity style={styles.iconButton} onPress={() => router.back()}>
@@ -85,14 +80,17 @@ export default function OnboardingLevelScreen() {
         <Text style={styles.title}>Trình độ tiếng Anh của bạn?<RequiredMark /></Text>
         <Text style={styles.subtitle}>Chọn mức độ phù hợp nhất để TechEnglish cá nhân hóa lộ trình học tiếng Anh CNTT.</Text>
 
+        {loading && <ActivityIndicator color={colors.primary} />}
+        {!!error && <TouchableOpacity onPress={() => setRetry(value => value + 1)}><Text>{error} Nhấn để thử lại.</Text></TouchableOpacity>}
+        {!loading && !error && !levels.length && <Text>Chưa có trình độ đang hoạt động.</Text>}
         <View style={styles.optionsList}>
           {levels.map((lvl) => {
-            const isSelected = selectedLevel === lvl.id;
+            const isSelected = selectedLevel === lvl.code;
             return (
               <TouchableOpacity
                 key={lvl.id}
                 style={[styles.optionCard, isSelected && styles.optionCardSelected]}
-                onPress={() => setSelectedLevel(lvl.id)}
+                onPress={() => setSelectedLevel(lvl.code)}
                 activeOpacity={0.8}
               >
                 <View style={styles.radioOuter}>
@@ -101,14 +99,14 @@ export default function OnboardingLevelScreen() {
                 <View style={styles.optionContent}>
                   <View style={styles.titleRow}>
                     <Text style={[styles.levelName, isSelected && styles.levelNameSelected]}>{lvl.name}</Text>
-                    <Text style={[styles.tagText, isSelected && styles.tagTextSelected]}>{lvl.tag}</Text>
+
                     {isSelected && (
                       <View style={{ marginLeft: 'auto' }}>
                         <MaterialIcons name="check-circle" size={18} color={colors.primary} />
                       </View>
                     )}
                   </View>
-                  <Text style={styles.levelDesc}>{lvl.desc}</Text>
+                  <Text style={styles.levelDesc}>{lvl.description}</Text>
                 </View>
               </TouchableOpacity>
             );
@@ -119,7 +117,7 @@ export default function OnboardingLevelScreen() {
 
       {/* Bottom Action */}
       <View style={[styles.bottomBar, { paddingBottom: Math.max(16, insets.bottom + 12) }]}>
-        <TouchableOpacity style={styles.nextButton} onPress={handleNext}>
+        <TouchableOpacity style={[styles.nextButton, (!selectedLevel || loading || !!error) && { opacity: 0.5 }]} disabled={!selectedLevel || loading || !!error} onPress={handleNext}>
           <Text style={styles.nextButtonText}>Tiếp tục</Text>
           <MaterialIcons name="arrow-forward" size={20} color="#ffffff" />
         </TouchableOpacity>

@@ -454,7 +454,7 @@ export function ImportQuestionsModal({
           <div className="flex items-center gap-2">
             <button
               type="button"
-              onClick={downloadQuestionExcelTemplate}
+              onClick={() => downloadQuestionExcelTemplate(availableDomains, availableLevels)}
               className="inline-flex items-center gap-1.5 rounded-xl border border-primary/20 bg-primary/5 px-3 py-1.5 text-xs font-semibold text-primary transition-colors hover:bg-primary/10"
               title="Tải mẫu Excel chuẩn có kèm dữ liệu mẫu"
             >
@@ -508,7 +508,7 @@ export function ImportQuestionsModal({
                 type="button"
                 onClick={(e) => {
                   e.stopPropagation();
-                  downloadQuestionExcelTemplate();
+                  downloadQuestionExcelTemplate(availableDomains, availableLevels);
                 }}
                 className="mt-4 inline-flex items-center gap-1.5 text-xs font-semibold text-primary hover:underline"
               >

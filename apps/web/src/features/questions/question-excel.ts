@@ -42,7 +42,7 @@ export interface ExcelParseResult {
 /**
  * Tạo và tải xuống file Excel mẫu chuẩn (.xlsx) để import câu hỏi.
  */
-export function downloadQuestionExcelTemplate() {
+export function downloadQuestionExcelTemplate(availableDomains: Array<{ code?: string; name?: string }> = [], availableLevels: Array<{ code?: string; name?: string }> = []) {
   const wb = XLSX.utils.book_new();
 
   // ── Sheet 1: Mẫu nhập câu hỏi
@@ -67,8 +67,8 @@ export function downloadQuestionExcelTemplate() {
       'single_choice',
       'What does IAM stand for in cloud computing and AWS?',
       'AWS Identity and Access Management provides fine-grained access control.',
-      'CLOUD',
-      'beginner',
+      '',
+      '',
       'technical_understanding',
       'Identity and Access Management',
       'Internet Access Module',
@@ -82,8 +82,8 @@ export function downloadQuestionExcelTemplate() {
       'multiple_choice',
       'Which of the following services provide relational database capabilities in AWS?',
       '',
-      'CLOUD',
-      'intermediate',
+      '',
+      '',
       'technical_understanding',
       'Amazon RDS',
       'Amazon Aurora',
@@ -97,8 +97,8 @@ export function downloadQuestionExcelTemplate() {
       'single_choice',
       'Trong mô hình MVC (Model-View-Controller), thành phần nào chịu trách nhiệm tương tác trực tiếp với Database?',
       '',
-      'SOFTWARE_ENG',
-      'beginner',
+      '',
+      '',
       'vocabulary',
       'Model',
       'View',
@@ -110,6 +110,11 @@ export function downloadQuestionExcelTemplate() {
     ],
   ];
 
+  // Examples use catalog identifiers from the current server.
+  exampleRows.forEach((row, index) => {
+    row[3] = availableDomains[index % Math.max(1, availableDomains.length)]?.code ?? '';
+    row[4] = availableLevels[index % Math.max(1, availableLevels.length)]?.code ?? '';
+  });
   const dataSheet = [headers, ...exampleRows];
   const wsData = XLSX.utils.aoa_to_sheet(dataSheet);
 
@@ -139,17 +144,9 @@ export function downloadQuestionExcelTemplate() {
     ['1. Cột có dấu (*) là bắt buộc.'],
     ['2. Loại câu hỏi: nhập "single_choice" (1 đáp án) hoặc "multiple_choice" (nhiều đáp án).'],
     ['3. Chuyên ngành: Có thể nhập mã code hoặc tên đầy đủ:'],
-    ['   - CLOUD: Cloud Computing'],
-    ['   - CYBERSEC: Cybersecurity'],
-    ['   - NETWORKING: Networking'],
-    ['   - DATA_ENG: Data Engineering'],
-    ['   - DATA_SCI: Data Science'],
-    ['   - SOFTWARE_ENG: Software Engineering'],
-    ['   - DEVOPS: DevOps'],
+    ...availableDomains.map(domain => [`   - ${domain.code ?? ''}: ${domain.name ?? ''}`]),
     ['4. Cấp độ: Có thể nhập mã code hoặc tên:'],
-    ['   - beginner: Mới bắt đầu (Beginner)'],
-    ['   - intermediate: Trung cấp (Intermediate)'],
-    ['   - advanced: Nâng cao (Advanced)'],
+    ...availableLevels.map(level => [`   - ${level.code ?? ''}: ${level.name ?? ''}`]),
     ['5. Kỹ năng: vocabulary, reading, technical_understanding hoặc scenario_based.'],
     ['6. Đáp án: Bắt buộc có ít nhất 2 đáp án A và B.'],
     ['7. Đáp án đúng: Điền chữ cái tương ứng:'],
@@ -266,15 +263,15 @@ export async function parseQuestionsFromExcel(
     }
 
     // 3. Domain
-    const domainMatch = domainLookup.get(domainRaw) || (availableDomains.length > 0 ? { id: availableDomains[0].id, code: availableDomains[0].code || 'CLOUD', name: availableDomains[0].name || 'IT' } : undefined);
-    if (!domainRaw && !domainMatch) {
-      errors.push('Chuyên ngành không được để trống');
+    const domainMatch = domainLookup.get(domainRaw);
+    if (!domainMatch) {
+      errors.push(domainRaw ? 'Chuyên ngành không tồn tại trong danh mục' : 'Chuyên ngành không được để trống');
     }
 
     // 4. Level
-    const levelMatch = levelLookup.get(levelRaw) || (availableLevels.length > 0 ? { id: availableLevels[0].id, code: availableLevels[0].code || 'beginner', name: availableLevels[0].name || 'Beginner' } : undefined);
-    if (!levelRaw && !levelMatch) {
-      errors.push('Cấp độ không được để trống');
+    const levelMatch = levelLookup.get(levelRaw);
+    if (!levelMatch) {
+      errors.push(levelRaw ? 'Cấp độ không tồn tại trong danh mục' : 'Cấp độ không được để trống');
     }
 
     const allowedSkills = ['vocabulary', 'reading', 'technical_understanding', 'scenario_based'] as const;
