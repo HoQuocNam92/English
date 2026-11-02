@@ -122,7 +122,7 @@ export interface SidebarProps {
 }
 
 export function Sidebar({ isMobile = false, onClose, isCollapsed = false, onToggleCollapse }: SidebarProps) {
-  const { session, signOut } = useAuth();
+  const { session } = useAuth();
   const roles = session?.user?.roles ?? (session?.user?.role ? [session.user.role] : []);
   // Prefer the least-privileged core role if legacy data contains both roles.
   const isAdmin = roles.includes('admin') && !roles.includes('teacher');
@@ -214,53 +214,6 @@ export function Sidebar({ isMobile = false, onClose, isCollapsed = false, onTogg
         ))}
       </nav>
 
-      {/* Bottom User Profile */}
-      <div className={`${isCollapsed && !isMobile ? 'px-2' : 'px-4'} mt-auto pt-4 border-t border-outline-variant/50`}>
-        {isCollapsed && !isMobile ? (
-          <div className="flex flex-col items-center gap-2.5 py-1">
-            <div
-              title={`${session?.user?.displayName ?? 'Demo User'} (${roleDisplay})`}
-              className="w-9 h-9 rounded-full font-bold text-xs flex items-center justify-center shrink-0 text-white bg-primary shadow-xs cursor-default"
-            >
-              {session?.user?.displayName ? session.user.displayName.charAt(0) : '?'}
-            </div>
-            <button
-              type="button"
-              onClick={signOut}
-              title="Đăng xuất khỏi hệ thống"
-              aria-label="Đăng xuất"
-              className="p-1.5 rounded-lg text-on-surface-variant hover:text-red-600 hover:bg-error-container/20 transition-all cursor-pointer shrink-0 active:scale-95"
-            >
-              <AppIcon className=" text-[18px]">logout</AppIcon>
-            </button>
-          </div>
-        ) : (
-          <div className="flex items-center justify-between gap-2 rounded-xl bg-surface-container-low px-3 py-2.5">
-            <div className="flex items-center gap-2.5 overflow-hidden">
-              <div className="w-10 h-10 rounded-full font-bold text-sm flex items-center justify-center shrink-0 text-white bg-primary">
-                {session?.user?.displayName ? session.user.displayName.charAt(0) : '?'}
-              </div>
-              <div className="overflow-hidden">
-                <p className="text-xs font-semibold text-on-surface truncate">
-                  {session?.user?.displayName ?? 'Demo User'}
-                </p>
-                <p className="text-[10px] text-on-surface-variant truncate uppercase">
-                  {roleDisplay}
-                </p>
-              </div>
-            </div>
-            <button
-              type="button"
-              onClick={signOut}
-              title="Đăng xuất khỏi hệ thống"
-              aria-label="Đăng xuất"
-              className="p-1.5 rounded-lg text-on-surface-variant hover:text-red-600 hover:bg-error-container/20 transition-all cursor-pointer shrink-0 active:scale-95"
-            >
-              <AppIcon className=" text-[18px]">logout</AppIcon>
-            </button>
-          </div>
-        )}
-      </div>
     </aside>
   );
 }
