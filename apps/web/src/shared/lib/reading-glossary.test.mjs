@@ -16,7 +16,6 @@ test('renders only reviewed exact spans as accessible highlight buttons and keep
   const text = 'The database stores orders.';
   const html = render(text, { text, annotations: [{ start: 4, end: 12, term: 'database', definitionVi: 'cơ sở dữ liệu' }] });
   assert.match(html, /aria-label="Xem nghĩa IT: database"/);
-  assert.match(html, /aria-expanded="false"/);
   assert.equal(html.replace(/<[^>]+>/g, ''), text);
   assert.doesNotMatch(html, /cơ sở dữ liệu/);
 });

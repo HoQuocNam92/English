@@ -177,6 +177,8 @@ test('build-up uses the contextual noun sense instead of the saved generic meani
     return { ok: true, json: async () => ({ choices: [{ message: { content: JSON.stringify({
       translation: 'sự tích tụ', partOfSpeech: 'danh từ', definitionEn: 'An accumulation over time.',
       contextExplanation: 'Cụm “of small irritations” cho thấy những khó chịu nhỏ dồn lại theo thời gian.',
+      exampleEn: 'A build-up of pressure damaged the pipe.',
+      exampleVi: 'Sự tích tụ áp suất làm hỏng đường ống.',
     }) } }] }) } as any
   }) as any
   try {
@@ -185,6 +187,8 @@ test('build-up uses the contextual noun sense instead of the saved generic meani
     assert.equal(result.translation, 'sự tích tụ')
     assert.equal(result.partOfSpeech, 'danh từ')
     assert.match(result.contextExplanation!, /dồn lại/)
+    assert.equal(result.exampleEn, 'A build-up of pressure damaged the pipe.')
+    assert.equal(result.exampleVi, 'Sự tích tụ áp suất làm hỏng đường ống.')
     assert.equal(result.contextual, true)
     assert.equal((await service.translate('build-up')).translation, 'xây dựng')
   } finally { global.fetch = original }
