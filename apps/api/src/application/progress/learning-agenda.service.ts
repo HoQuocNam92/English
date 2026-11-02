@@ -92,7 +92,6 @@ export class LearningAgendaService {
       else if (domain?.available && domain.assessment) core.push({ id: domain.assessment.id, title: domain.name + ' · Tổng kết', reason: 'Đã học đủ bài. Đạt tổng kết để hoàn thành cấp ở ngành này.', href: domain.assessment.href, action: 'Làm tổng kết', status: 'todo', kind: 'quiz' })
       else if (path.allCompleted) core.push({ id: 'core-complete', title: 'Đã hoàn thành chuỗi cốt lõi và tổng kết', reason: 'Mở lộ trình để chọn cấp tiếp theo hoặc kế hoạch ôn tập.', href: '/learn/plan', action: 'Chọn bước tiếp theo', status: 'done', kind: 'lesson' })
       baseline.tasks = [...core, ...tasks.filter(task => task.kind === 'vocabulary' || task.id === 'review-words' || (hasCert && task.kind === 'quiz'))]
-      return baseline
     }
     return this.ai ? this.ai.agenda(baseline) : baseline
   }

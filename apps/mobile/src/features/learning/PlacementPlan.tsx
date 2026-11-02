@@ -5,8 +5,12 @@ import { Text, Button, Badge, controlStyles } from '../../shared/ui/primitives';
 import { useTheme } from '../../shared/store/theme-context';
 import { mobileRoute } from '../../shared/navigation';
 
-export function PlacementPlan({ result }: { result: any }) {
+export function PlacementPlan({ result, compact = false }: { result: any; compact?: boolean }) {
   const router = useRouter(); const { colors } = useTheme(); const [review, setReview] = useState(false); const plan = result.plan;
+  if (compact) return <View style={{ gap: 16 }}>
+    <Text style={{ fontSize: 20, fontWeight: '700' }}>Kế hoạch 4 tuần</Text><Text>{plan?.summary}</Text><Text style={{ color: colors.onSurfaceVariant, fontSize: 12 }}>{plan?.dailyMinutes} phút/ngày · {plan?.source === 'ai' ? 'Đã cá nhân hóa bằng AI' : 'Theo mục tiêu của bạn'}</Text>{plan?.message && <Text accessibilityRole="alert" style={{ color: '#92400e' }}>{plan.message}</Text>}
+    {[1, 2, 3, 4].map(week => <View key={week} style={{ borderTopWidth: 1, borderTopColor: colors.outlineVariant, paddingTop: 12, gap: 8 }}><Text style={{ color: colors.primary, fontWeight: '700' }}>Tuần {week}</Text>{(plan?.steps ?? []).filter((step: any) => step.week === week).map((step: any) => <View key={step.id} style={{ gap: 4 }}><Button mode="text" onPress={() => router.push(mobileRoute(step.actionUrl) as any)}>{step.title}</Button><Text style={{ color: colors.onSurfaceVariant, fontSize: 12 }}>{step.reason}</Text></View>)}{!plan?.steps?.some((step: any) => step.week === week) && <Text>Ôn lại nội dung tuần trước và tiếp tục bài kế tiếp theo tiến độ.</Text>}</View>)}
+  </View>;
   return <View style={{ gap: 16 }}>
     <View style={[controlStyles.card, { gap: 10 }]}><Text style={{ color: colors.primary, fontWeight: '700' }}>{plan?.source === 'ai' ? 'Lộ trình AI dành cho bạn' : 'Lộ trình theo kết quả và mục tiêu'}</Text><Text style={{ fontSize: 22, fontWeight: '700' }}>Trình độ đề xuất</Text><Badge>{result.levelName}</Badge>{typeof result.total === 'number' && <Text>Đúng {result.correct}/{result.total} câu · {result.percent}%</Text>}<Text>{plan?.levelReason}</Text>{plan?.message && <Text style={{ color: '#b45309' }}>{plan.message}</Text>}</View>
     {!!result.domainScores?.length && <View style={[controlStyles.card, { gap: 12 }]}><Text style={{ fontWeight: '700' }}>Kết quả theo chuyên ngành</Text>{result.domainScores.map((domain: any) => <View key={domain.code} style={{ gap: 8 }}><Text>{domain.name}: {domain.correct}/{domain.total} · {domain.percent}%</Text><View style={{ height: 6, backgroundColor: colors.surfaceContainer }}><View style={{ height: 6, backgroundColor: colors.primary, width: `${Math.max(0, Math.min(100, domain.percent))}%` }} /></View></View>)}</View>}

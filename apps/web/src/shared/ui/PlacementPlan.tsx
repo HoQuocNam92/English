@@ -4,8 +4,12 @@ import Link from 'next/link';
 import { WeeklyLearningPath } from './WeeklyLearningPath';
 import { LevelBadge } from './LevelBadge';
 
-export function PlacementPlan({ result }: { result: any }) {
+export function PlacementPlan({ result, compact = false }: { result: any; compact?: boolean }) {
   const plan = result.plan;
+  if (compact) return <div className="space-y-5">
+    <div><h2 className="text-xl font-bold">Kế hoạch 4 tuần</h2><p className="mt-2 text-sm leading-6 text-on-surface-variant">{plan?.summary}</p><p className="mt-1 text-xs text-on-surface-variant">{plan?.dailyMinutes} phút/ngày · {plan?.source === 'ai' ? 'Đã cá nhân hóa bằng AI' : 'Theo mục tiêu của bạn'}</p>{plan?.message && <p role="status" className="mt-2 text-sm text-amber-800">{plan.message}</p>}</div>
+    {[1, 2, 3, 4].map(week => <div key={week} className="border-t border-outline-variant/50 pt-4"><h3 className="text-sm font-bold text-primary">Tuần {week}</h3><ul className="mt-2 space-y-3">{(plan?.steps ?? []).filter((step: any) => step.week === week).map((step: any) => <li key={step.id}><Link href={step.actionUrl} className="text-sm font-semibold hover:text-primary">{step.title} →</Link><p className="mt-1 text-xs leading-5 text-on-surface-variant">{step.reason}</p></li>)}</ul>{!plan?.steps?.some((step: any) => step.week === week) && <p className="mt-2 text-sm text-on-surface-variant">Ôn lại nội dung tuần trước và tiếp tục bài kế tiếp theo tiến độ.</p>}</div>)}
+  </div>;
   return <div className="space-y-6 text-left">
     <section className="rounded-2xl border border-outline-variant bg-white p-6"><p className="text-xs font-bold uppercase text-primary">{plan?.source === 'ai' ? 'Lộ trình gợi ý dành cho bạn' : 'Lộ trình theo kết quả và mục tiêu'}</p><h1 className="mt-3 text-2xl font-bold">Trình độ đề xuất: <LevelBadge level={result.levelName} /></h1>{typeof result.total === 'number' && <p className="mt-3 text-sm">Đúng {result.correct}/{result.total} câu · {result.percent}%</p>}<p className="mt-3 text-sm leading-6 text-on-surface-variant">{plan?.levelReason}</p>{plan?.message && <p role="status" className="mt-3 rounded-lg bg-amber-50 p-3 text-sm text-amber-800">{plan.message}</p>}</section>
     {!!result.domainScores?.length && <section className="rounded-2xl border border-outline-variant bg-white p-6"><h2 className="font-bold">Kết quả theo chuyên ngành</h2><div className="mt-4 space-y-3">{result.domainScores.map((d: any) => <div key={d.code}><div className="flex justify-between gap-4 text-sm"><span>{d.name}</span><span>{d.correct}/{d.total} · {d.percent}%</span></div><div className="mt-2 h-2 overflow-hidden rounded-full bg-slate-100"><div className="h-full rounded-full bg-primary" style={{ width: `${d.percent}%` }} /></div></div>)}</div></section>}

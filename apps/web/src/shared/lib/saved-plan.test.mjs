@@ -6,9 +6,9 @@ import { runInNewContext } from 'node:vm';
 
 const nodes = tree => !tree || typeof tree !== 'object' ? [] : Array.isArray(tree) ? tree.flatMap(nodes) : [tree, ...nodes(tree.props?.children)];
 const label = tree => typeof tree === 'string' ? tree : Array.isArray(tree) ? tree.map(label).join('') : tree?.props ? label(tree.props.children) : '';
-function mount(error = '') {
+function mount(error = '', configured = false) {
   const ts = createRequire(import.meta.url)('typescript');
-  const state = [null, false, error, false, false]; let cursor = 0; let reads = 0; const posts = [];
+  const state = [null, false, error, false, false, configured]; let cursor = 0; let reads = 0; const posts = [];
   const jsx = (type, props) => ({ type, props });
   const mocks = {
     'react/jsx-runtime': { jsx, jsxs: jsx, Fragment: 'fragment' },
@@ -44,4 +44,15 @@ test('failed loading shows retry instead of claiming the learner has no plan', (
   assert.ok(tree.some(node => node.props.role === 'alert'));
   assert.ok(tree.some(node => node.type === 'button' && label(node) === 'Thử lại'));
   assert.equal(tree.some(node => label(node).includes('Bạn chưa tạo lộ trình')), false);
+});
+
+test('configured core path also exposes the AI plan without another panel', async () => {
+  const page = mount('', true);
+  let tree = page.render();
+  tree.find(node => node.type === 'button' && label(node) === 'Tạo lộ trình theo mục tiêu').props.onClick();
+  await new Promise(resolve => setImmediate(resolve));
+  tree = page.render();
+  assert.equal(tree.find(node => node.type === 'plan').props.compact, true);
+  assert.equal(tree.find(node => node.type === 'plan').props.result.assessmentId, 'created');
+  assert.ok(tree.find(node => node.type === 'div' && node.props.hidden === true));
 });

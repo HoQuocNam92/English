@@ -25,7 +25,7 @@ test('clicking a home history entry opens that specific attempt result, includin
     { id: 'attempt-new', examId: 'same-exam', exam: { title: 'Cloud practice' }, status: 'graded', score: 75, completedAt: '2026-10-26T10:00:00Z' },
     { id: 'attempt-old', examId: 'same-exam', exam: { title: 'Cloud practice' }, status: 'graded', score: 25, completedAt: '2026-10-25T10:00:00Z' },
   ] };
-  const state = [data, false]; let index = 0;
+  const state = [data, false, {}]; let index = 0;
   const component = load('../../../app/(learner)/learn/page.tsx', {
     react: { useState: () => [state[index++], () => {}], useEffect() {} },
     'next/link': 'link', '@/shared/layout': { LearnerShell: 'shell' },

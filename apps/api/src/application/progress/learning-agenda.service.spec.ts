@@ -97,3 +97,14 @@ test('daily agenda prioritizes the same contextual review as the learning trail'
  result=await service.getAgenda('A')
  assert.equal(result.tasks[0].id,'second')
 })
+
+test('configured core path is enriched by AI while keeping permitted tasks', async () => {
+ const path:any={configured:true,allCompleted:false,domains:[{name:'Software',available:true,state:'in_progress',nextLesson:{id:'core',title:'Core',href:'/learn/lessons/core',estimatedMinutes:20}}]}
+ const {service}=fixture({goal:'vocabulary'}, {getPath:async()=>path})
+ let input:any
+ ;(service as any).ai={agenda:async(baseline:any)=>{input=baseline;return {...baseline,source:'ai',aiSummary:'Ưu tiên kiến thức nền'}}}
+ const result:any=await service.getAgenda('A')
+ assert.equal(result.source,'ai');assert.equal(result.aiSummary,'Ưu tiên kiến thức nền')
+ assert.equal(input.tasks[0].id,'core');assert.equal(result.tasks[0].href,'/learn/lessons/core')
+ assert.equal(result.tasks.some((task:any)=>task.kind==='quiz'),false)
+})

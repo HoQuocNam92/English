@@ -14,11 +14,11 @@ const source = readFileSync(new URL('../../../app/(learner)/learn/page.tsx', imp
 const code = ts.transpileModule(source, { compilerOptions: { module: ts.ModuleKind.CommonJS, jsx: ts.JsxEmit.ReactJSX } }).outputText;
 const walk = node => [node, ...(node.children ?? []).flatMap(walk)];
 const text = node => node.type === 'text' ? node.data : (node.children ?? []).map(text).join('');
-function render(journey) {
+function render(journey, guidance = {}) {
   let state = 0;
   const data = { profile: { level: { name: 'Trung cấp' }, domains: [], certGoals: [] }, journey, attempts: [{ id: 'a1', score: 100, totalQuestions: 100, exam: { id: 'e1', title: 'Bài kiểm tra' } }], reviewWords: [], reviewUnavailable: false, certificates: [] };
   const mocks = {
-    react: { ...React, useEffect() {}, useState: () => [state++ === 0 ? data : false, () => {}] },
+    react: { ...React, useEffect() {}, useState: () => [[data, false, guidance][state++], () => {}] },
     'next/link': { default: ({ children, href, ...props }) => React.createElement('a', { href, ...props }, children) },
     '../../../../../packages/shared-kernel/src/goal-progress.cjs': { goalProgress },
     '../../../../../packages/shared-kernel/src/selected-certificates': { selectedCertificates },
@@ -48,8 +48,20 @@ test('home renders a prominent actual total with a smaller target and explicit e
   const ratio = nodes.find(node => node.attribs?.['aria-label'] === '16 từ đã hoàn thành, mục tiêu 10 từ');
   assert.ok(ratio);
   assert.ok(walk(ratio).some(node => node.name === 'strong' && text(node) === '16' && node.attribs.class.includes('text-[30px]')));
-  assert.ok(walk(ratio).some(node => node.name === 'span' && text(node) === '/ 10 từ' && node.attribs.class.includes('text-xs')));
+  assert.ok(walk(ratio).some(node => node.name === 'span' && text(node) === 'từ đã hoàn thành' && node.attribs.class.includes('text-xs')));
+  assert.ok(nodes.some(node => node.name === 'p' && text(node) === 'Mục tiêu 10 từ/ngày'));
+  assert.ok(!nodes.some(node => node.type === 'text' && /\/ 10 từ/.test(node.data)));
   assert.ok(nodes.some(node => node.type === 'text' && node.data === 'Vượt mục tiêu 6 từ'));
   assert.ok(nodes.some(node => node.type === 'text' && node.data === 'Vượt mục tiêu 3 bài'));
   for (const bar of nodes.filter(node => node.attribs?.role === 'progressbar')) assert.ok(Number(bar.attribs['aria-valuenow']) <= 100);
+});
+
+test('AI daily guidance and ranked recommendation reuse the existing home hero', () => {
+  const journey = { configured: true, targets: { vocabularyPerDay: 10, minutesPerDay: 30, examsPerWeek: 2 }, progress: { vocabularyToday: 14, studyMinutesToday: 1 } };
+  const plain = render(journey);
+  const guided = render(journey, { agenda: { aiSummary: 'Ôn chủ đề yếu hôm nay', tasks: [{ status: 'todo', href: '/learn/lessons/core', reason: 'Học kiến thức trước' }] }, recommendations: [{ actionUrl: '/learn/certifications/cloud', actionText: 'Ôn bảo mật', title: 'Bảo mật Cloud', reason: 'Củng cố phần yếu' }] });
+  assert.ok(guided.some(node => node.name === 'a' && node.attribs.href === '/learn/lessons/core'));
+  assert.ok(guided.some(node => node.name === 'a' && text(node) === 'Gợi ý: Bảo mật Cloud' && node.attribs.href === '/learn/certifications/cloud'));
+  assert.ok(guided.some(node => node.name === 'p' && text(node) === 'Ôn chủ đề yếu hôm nay'));
+  assert.equal(guided.filter(node => node.name === 'section').length, plain.filter(node => node.name === 'section').length);
 });

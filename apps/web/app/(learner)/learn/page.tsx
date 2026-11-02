@@ -28,6 +28,17 @@ type HomeData = {
 export default function LearnerHomePage() {
   const [data, setData] = useState<HomeData | null>(null);
   const [showAllDomains, setShowAllDomains] = useState(false);
+  const [guidance, setGuidance] = useState<{ agenda?: any; recommendations?: any[] }>({});
+  useEffect(() => {
+    let active = true, sequence = 0;
+    const refresh = async () => {
+      const current = ++sequence;
+      const [agenda, ranked] = await Promise.allSettled([apiClient.get<any>('/progress/me/agenda'), apiClient.get<any>('/recommendations/me')]);
+      if (active && current === sequence) setGuidance({ agenda: agenda.status === 'fulfilled' ? agenda.value : undefined, recommendations: ranked.status === 'fulfilled' ? ranked.value.recommendations : [] });
+    };
+    void refresh(); window.addEventListener('focus', refresh); window.addEventListener('techenglish:learning-updated', refresh);
+    return () => { active = false; window.removeEventListener('focus', refresh); window.removeEventListener('techenglish:learning-updated', refresh); };
+  }, []);
 
   useEffect(() => {
     let active = true;
@@ -71,6 +82,10 @@ export default function LearnerHomePage() {
   const wordsLeft = Math.max(0, (targets?.vocabularyPerDay ?? 0) - (progress?.vocabularyToday ?? 0));
   const minutesLeft = Math.max(0, (targets?.minutesPerDay ?? 0) - (progress?.studyMinutesToday ?? 0));
   const examsLeft = Math.max(0, (targets?.examsPerWeek ?? 0) - (progress?.examsWeek ?? 0));
+  const nextTask = guidance.agenda?.tasks?.find((task: any) => task.status === 'todo' && task.href?.startsWith('/learn/'));
+  const suggestion = guidance.recommendations?.find((item: any) => item.actionUrl?.startsWith('/learn/') && item.actionUrl !== nextTask?.href);
+  const nextHref = nextTask?.href;
+  const nextReason = guidance.agenda?.aiSummary || nextTask?.reason || suggestion?.reason;
   const goalComplete = configured && wordsLeft === 0 && minutesLeft === 0;
   const heroTitle = !configured ? 'Bắt đầu hành trình học tiếng Anh CNTT'
     : goalComplete ? 'Bạn đã đạt mục tiêu học tập hôm nay!'
@@ -90,10 +105,10 @@ export default function LearnerHomePage() {
         <section aria-labelledby="continue-heading" className="rounded-2xl bg-primary p-6 text-white sm:p-7">
           <p className="mb-2 text-[11px] font-bold uppercase tracking-wider text-white/80">Tiếp tục học</p>
           <h2 id="continue-heading" className="max-w-xl text-xl font-bold leading-snug sm:text-2xl">{heroTitle}</h2>
-          <p className="mt-2 text-xs leading-5 text-white/85">{attempts[0] ? `Gần nhất: ${attempts[0].exam?.title ?? attempts[0].examTitle ?? 'Bài kiểm tra'}` : 'Mỗi ngày một chút, tiến gần hơn đến mục tiêu của bạn.'}</p>
+          <p className="mt-2 text-xs leading-5 text-white/85">{nextReason || (attempts[0] ? `Gần nhất: ${attempts[0].exam?.title ?? attempts[0].examTitle ?? 'Bài kiểm tra'}` : 'Mỗi ngày một chút, tiến gần hơn đến mục tiêu của bạn.')}</p>
           <div className="mt-4 flex flex-wrap gap-2">
-            <Link href={!configured ? '/learn/profile?tab=goals' : goalComplete ? '/learn/flashcards' : studyHref} className="inline-flex min-h-11 items-center justify-center gap-2 rounded-lg bg-white px-4 py-2 text-sm font-semibold text-primary hover:bg-white/90">{!configured ? <Settings2 size={15} aria-hidden="true" /> : goalComplete ? <BookOpen size={15} aria-hidden="true" /> : <Play size={15} fill="currentColor" aria-hidden="true" />}{!configured ? 'Thiết lập mục tiêu' : goalComplete ? 'Khám phá từ vựng' : 'Học tiếp'}</Link>
-            {configured && wordsLeft > 0 && <Link href={studyHref} className="inline-flex min-h-11 items-center justify-center gap-2 rounded-lg border border-white/40 px-4 py-2 text-sm font-semibold hover:bg-white/10"><BookOpen size={15} aria-hidden="true" />Học {wordsLeft} từ còn lại</Link>}
+            <Link href={!configured ? '/learn/profile?tab=goals' : nextHref ? nextHref : goalComplete ? '/learn/flashcards' : studyHref} className="inline-flex min-h-11 items-center justify-center gap-2 rounded-lg bg-white px-4 py-2 text-sm font-semibold text-primary hover:bg-white/90">{!configured ? <Settings2 size={15} aria-hidden="true" /> : goalComplete ? <BookOpen size={15} aria-hidden="true" /> : <Play size={15} fill="currentColor" aria-hidden="true" />}{!configured ? 'Thiết lập mục tiêu' : nextTask ? nextTask.action || 'Học tiếp' : goalComplete ? 'Khám phá từ vựng' : 'Học tiếp'}</Link>
+            {configured && (suggestion || wordsLeft > 0) && <Link href={suggestion?.actionUrl || studyHref} className="inline-flex min-h-11 items-center justify-center gap-2 rounded-lg border border-white/40 px-4 py-2 text-sm font-semibold hover:bg-white/10"><BookOpen size={15} aria-hidden="true" /><span className="max-w-[30ch] truncate">{suggestion ? `Gợi ý: ${suggestion.title}` : `Học ${wordsLeft} từ còn lại`}</span></Link>}
           </div>
         </section>
 
@@ -109,9 +124,10 @@ export default function LearnerHomePage() {
                 const percent = goal.percent;
                 return <div key={metric.label} className={`rounded-xl border border-outline-variant/50 bg-background p-4 ${index === 2 ? 'sm:col-span-2' : ''}`}>
                   <h3 className="text-xs text-on-surface-variant">{metric.label}</h3>
-                  <p aria-label={goal.description} className="mb-3 mt-2 flex flex-wrap items-baseline gap-x-1.5 gap-y-1"><strong className="text-[30px] font-bold leading-none tabular-nums text-primary">{goal.value}</strong><span className="text-xs font-normal tabular-nums text-on-surface-variant">/ {goal.target || '—'} {metric.unit}</span></p>
+                  <p aria-label={goal.description} className="mb-3 mt-2 flex flex-wrap items-baseline gap-x-1.5 gap-y-1"><strong className="text-[30px] font-bold leading-none tabular-nums text-primary">{goal.value}</strong><span className="text-xs font-normal tabular-nums text-on-surface-variant">{metric.unit} đã {index === 1 ? 'học' : 'hoàn thành'}</span></p>
+                  <p className="mb-2 text-xs text-on-surface-variant">Mục tiêu {goal.target || '—'} {metric.unit}{index === 2 ? '/tuần' : '/ngày'}</p>
                   <div role="progressbar" aria-label={metric.label} aria-valuemin={0} aria-valuemax={100} aria-valuenow={percent} className="h-1.5 overflow-hidden rounded-full bg-surface-container-highest"><div className="h-full rounded-full bg-primary" style={{ width: `${percent}%` }} /></div>
-                  <div className="mt-2 flex flex-wrap items-center justify-between gap-2 text-[11px]"><span className="font-semibold text-primary">{percent}%</span>{metric.href ? <Link href={metric.href} className="inline-flex items-center gap-1 font-medium text-primary hover:underline">{goal.remaining > 0 ? metric.detail : goal.status}<ArrowRight size={12} aria-hidden="true" /></Link> : <span className="text-on-surface-variant">{goal.status}</span>}</div>
+                  <div className="mt-2 flex flex-wrap items-center justify-between gap-2 text-[11px]"><span className="font-semibold text-primary">{goal.remaining === 0 && goal.target > 0 ? '✓ Đạt mục tiêu' : `${percent}%`}</span>{metric.href ? <Link href={metric.href} className="inline-flex items-center gap-1 font-medium text-primary hover:underline">{goal.remaining > 0 ? metric.detail : goal.status}<ArrowRight size={12} aria-hidden="true" /></Link> : <span className="text-on-surface-variant">{goal.status}</span>}</div>
                 </div>;
               })}
             </div>

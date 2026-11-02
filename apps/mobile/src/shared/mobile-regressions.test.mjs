@@ -174,13 +174,13 @@ test('a learner without a saved plan can create one, including after a failed at
   await new Promise(resolve => setImmediate(resolve));
   let screen = render();
   assert.equal(screen.props.error, undefined);
-  const createButton = nodes(screen).find(node => node.type === 'button' && node.props.children === 'Tạo lại kế hoạch theo mục tiêu');
+  const createButton = nodes(screen).find(node => node.type === 'button' && node.props.children === 'Tạo kế hoạch 4 tuần');
   assert.ok(createButton, 'Create plan action must remain available after 404');
   await createButton.props.onPress();
   screen = render();
   assert.equal(screen.props.error, undefined);
   assert.ok(nodes(screen).some(node => node.type === 'text' && node.props.children === 'Server unavailable'));
-  assert.ok(nodes(screen).some(node => node.type === 'button' && node.props.children === 'Tạo lại kế hoạch theo mục tiêu'));
+  assert.ok(nodes(screen).some(node => node.type === 'button' && node.props.children === 'Tạo kế hoạch 4 tuần'));
 });
 
 test('AI-backed mobile flows get enough time to complete while ordinary requests remain bounded', () => {
