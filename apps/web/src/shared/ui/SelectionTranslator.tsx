@@ -9,7 +9,7 @@ import { usePronunciation } from '@/shared/lib/use-pronunciation';
 import { isEnglishSelection } from '@/shared/lib/english-selection';
 import { getSelectionContext } from '@/shared/lib/selection-context';
 
-export type LookupResult = { translation: string | null; definitionEn?: string; contextExplanation?: string; source: string; message?: string; partOfSpeech?: string; pronunciationIpa?: string; contextual?: boolean; exampleEn?: string; exampleVi?: string };
+export type LookupResult = { translation: string | null; definitionEn?: string; contextExplanation?: string; source: string; message?: string; partOfSpeech?: string; pronunciationIpa?: string; contextual?: boolean; exampleEn?: string; exampleVi?: string; contextDependent?: boolean; standaloneMeaning?: string; sourceSentence?: string };
 type Selection = { text: string; context: string; x: number; y: number };
 
 export function SelectionTranslator() {
@@ -31,6 +31,8 @@ export function SelectionTranslator() {
     const version = ++request.current;
     stopSpeech();
     setSelection(picked); setResult(initial ?? null); setError(''); setLoading(true);
+    // Reviewed per-sentence senses must not be replaced by a generic dictionary response.
+    if (initial?.source === 'reading' && initial.contextDependent && initial.sourceSentence && initial.standaloneMeaning) { setLoading(false); return; }
     try {
       const key = JSON.stringify([picked.text.toLocaleLowerCase('en'), picked.context]);
       const data = cache.current.get(key) ?? await apiClient.post<LookupResult>('/translation/selection', { text: picked.text, context: picked.context });

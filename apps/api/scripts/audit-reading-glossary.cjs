@@ -5,7 +5,6 @@ const { isDeepStrictEqual } = require('node:util');
 const { PrismaClient } = require('@prisma/client');
 const prisma = new PrismaClient();
 const { buildAnnotations } = require('./reading-glossary.cjs');
-const { supplements } = require('./reading-glossary-supplements.cjs');
 const hash = value => crypto.createHash('sha256').update(JSON.stringify(value)).digest('hex');
 const plain = value => value.replace(/<\s*br\s*\/?\s*>/gi, '\n').replace(/<\s*\/\s*(p|div|li|h[1-6])\s*>/gi, '\n').replace(/<[^>]+>/g, '').replace(/&nbsp;/g, ' ').replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&quot;/g, '"').trim();
 const textOf = content => typeof content === 'string' ? content : content?.html ? plain(content.html) : typeof content?.text === 'string' ? content.text : '';
@@ -40,16 +39,15 @@ async function main() {
     return console.log(JSON.stringify({ updatedSections: plan.sections.length, backup: `${file}.before.json` }));
   }
   const lessons = await prisma.lesson.findMany({ include: { sections: { orderBy: { order: 'asc' } }, vocabularies: { include: { vocabulary: true } }, domain: true } });
-  const vocabulary = await prisma.vocabulary.findMany({ where: { status: 'published' } });
-  const plan = { version: 1, scannedLessons: lessons.length, sections: [], failures: [], excluded: [] };
+  const plan = { version: 2, scannedLessons: lessons.length, sections: [], failures: [], excluded: [] };
   for (const lesson of lessons) {
     for (const section of lesson.sections) {
       const text = textOf(section.content);
       if (['quiz', 'code', 'heading', 'vocabulary_list'].includes(section.type) || !english(text)) {
         plan.excluded.push({ id: section.id, lessonId: lesson.id, reason: 'Not an English reading paragraph' }); continue;
       }
-      const annotations = buildAnnotations(text, [...lesson.vocabularies.map(v => v.vocabulary), ...supplements(lesson.title)], vocabulary);
-      plan.sections.push({ id: section.id, lessonId: lesson.id, title: lesson.title, sectionTitle: section.title, beforeHash: hash(section.content), glossary: { version: 1, text, annotations } });
+      const annotations = buildAnnotations(text);
+      plan.sections.push({ id: section.id, lessonId: lesson.id, title: lesson.title, sectionTitle: section.title, beforeHash: hash(section.content), glossary: { version: 2, text, annotations } });
     }
   }
   fs.writeFileSync(file, JSON.stringify(plan, null, 2), { mode: 0o600 });

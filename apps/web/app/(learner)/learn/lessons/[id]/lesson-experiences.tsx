@@ -244,7 +244,7 @@ export function LessonExperience(props: ExperienceProps) {
     {(lesson.sections ?? []).some(section => {
       const glossary = glossaryOf(section) as { annotations?: unknown[] } | undefined;
       return !!glossary?.annotations?.length;
-    }) && <p className="text-sm text-on-surface-variant">Thuật ngữ IT được tô vàng trong đoạn đọc. Bấm vào thuật ngữ để xem nghĩa phù hợp với bài.</p>}
+    }) && <p className="text-sm text-on-surface-variant">Từ gạch chân có nghĩa cần phân biệt theo ngữ cảnh. Bấm vào từ để xem nghĩa trong câu và nghĩa dễ nhầm.</p>}
     <Component lesson={lesson} />
   </div>;
 }

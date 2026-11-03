@@ -14,13 +14,20 @@ runInNewContext(code, { exports, require });
 const render = (text, glossary) => renderToStaticMarkup(React.createElement(exports.ReadingGlossary, { text, glossary }));
 test('renders only reviewed exact spans as accessible highlight buttons and keeps the paragraph intact', () => {
   const text = 'The database stores orders.';
-  const html = render(text, { text, annotations: [{ start: 4, end: 12, term: 'database', definitionVi: 'cơ sở dữ liệu' }] });
-  assert.match(html, /aria-label="Xem nghĩa IT: database"/);
+  const html = render(text, { text, annotations: [{ start: 4, end: 12, term: 'database', definitionVi: 'cơ sở dữ liệu', contextDependent: true, standaloneMeaning: 'kho thông tin nói chung', sourceSentence: text }] });
+  assert.match(html, /aria-label="Xem nghĩa theo ngữ cảnh: database"/);
   assert.equal(html.replace(/<[^>]+>/g, ''), text);
   assert.doesNotMatch(html, /cơ sở dữ liệu/);
+  assert.match(html, /font-normal/);
+  assert.doesNotMatch(html, /bg-amber|font-semibold|font-bold/);
 });
 test('does not highlight when a reading changed after its annotation was generated', () => {
   assert.equal(render('Updated text.', { text: 'Old text.', annotations: [{ start: 0, end: 3, term: 'Old', definitionVi: 'cũ' }] }), 'Updated text.');
+});
+test('legacy dictionary-only markers are not treated as context-dependent words', () => {
+  const text = 'The server returns JSON.';
+  const html = render(text, { text, annotations: [{ start: 4, end: 10, term: 'server', definitionVi: 'máy chủ' }] });
+  assert.equal(html, text);
 });
 test('ignores invalid offsets and renders strings as escaped text', () => {
   const text = 'Read <script>alert(1)</script> safely.';

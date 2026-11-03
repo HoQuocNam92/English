@@ -193,3 +193,32 @@ test('build-up uses the contextual noun sense instead of the saved generic meani
     assert.equal((await service.translate('build-up')).translation, 'xây dựng')
   } finally { global.fetch = original }
 })
+
+test('having context does not make a fixed technical term context dependent', async () => {
+  const original = global.fetch
+  global.fetch = (async () => ({ ok: true, json: async () => ({ choices: [{ message: { content: JSON.stringify({ translation: 'tham số truy vấn', contextDependent: false, contextExplanation: 'Query parameter giữ nghĩa chuyên môn thông thường; câu này không làm đổi nghĩa.' }) } }] }) })) as any
+  try {
+    const service = translationService({ findFirst: async () => null }, { APIVN_API_KEY: 'test-key' })
+    const result = await service.translate('query parameter', 'A query parameter filters the list.')
+    assert.equal(result.contextual, true)
+    assert.equal(result.contextDependent, false)
+    assert.equal(result.standaloneMeaning, undefined)
+  } finally { global.fetch = original }
+})
+
+test('a contextual sense comparison requires a source sentence actually present in the reading', async () => {
+  const original = global.fetch
+  let quote = 'The team releases a new image with a rolling update.'
+  global.fetch = (async () => ({ ok: true, json: async () => ({ choices: [{ message: { content: JSON.stringify({ translation: 'bản đóng gói phần mềm', contextDependent: true, standaloneMeaning: 'hình ảnh', sourceSentence: quote }) } }] }) })) as any
+  try {
+    const service = translationService({ findFirst: async () => null }, { APIVN_API_KEY: 'test-key' })
+    const result = await service.translate('image', quote)
+    assert.equal(result.contextDependent, true)
+    assert.equal(result.sourceSentence, quote)
+    assert.equal(result.standaloneMeaning, 'hình ảnh')
+    quote = 'This sentence was not in the lesson.'
+    const invalid = await service.translate('image', 'A different deployment image is used.')
+    assert.equal(invalid.contextDependent, undefined)
+    assert.equal(invalid.standaloneMeaning, undefined)
+  } finally { global.fetch = original }
+})

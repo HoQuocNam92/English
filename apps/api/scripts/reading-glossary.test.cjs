@@ -1,22 +1,35 @@
 const { test } = require('node:test');
 const assert = require('node:assert/strict');
 const { buildAnnotations } = require('./reading-glossary.cjs');
-const word = (term, definitionVi = 'nghĩa IT') => ({ id: term, term, definitionVi, definitionEn: 'technical meaning', status: 'published', tags: ['reviewed-meaning'] });
-
-test('does not highlight ordinary or unreviewed words as technical terms', () => {
-  const text = 'The team expects excitement in a new region. They turn to a reference.';
-  assert.deepEqual(buildAnnotations(text, [word('Team'), word('Region'), { ...word('turn'), tags: [] }, { ...word('excitement'), tags: [] }, word('Reference')]), []);
+test('does not mark fixed technical terms merely because they are in the dictionary', () => {
+  const text = 'A query parameter filters the list. JSON stores the data and the server sends a unique identifier.';
+  assert.deepEqual(buildAnnotations(text, [{ term: 'query parameter', status: 'published', tags: ['reviewed-meaning'] }]), []);
 });
-test('matches whole technical phrases, regular plurals and hyphens without overlaps', () => {
-  const text = 'A source of truth uses database transactions; dual-write operations update databases.';
-  const annotations = buildAnnotations(text, [word('Source of truth'), word('Database transaction'), word('Database'), word('Dual write')]);
-  assert.deepEqual(annotations.map(a => a.term), ['source of truth', 'database transactions', 'dual-write', 'databases']);
-  for (const a of annotations) assert.equal(text.slice(a.start, a.end), a.term);
+test('same word image is marked for deployment but not photographs', () => {
+  const photo = 'Course images are stored in object storage. Learners view the photos.';
+  assert.deepEqual(buildAnnotations(photo), []);
+  const text = 'The team releases a new image with a rolling update.';
+  const a = buildAnnotations(text);
+  assert.equal(a.length, 1); assert.equal(a[0].term, 'image');
+  assert.match(a[0].definitionVi, /đóng gói/); assert.match(a[0].standaloneMeaning, /hình ảnh/);
+  assert.equal(a[0].sourceSentence, text); assert.equal(a[0].contextDependent, true);
 });
-test('uses the lesson-specific reviewed definition before a global homonym', () => {
-  const annotations = buildAnnotations('A backfill populates the new customer table.', [word('Backfill', 'Điền dữ liệu cũ vào cấu trúc mới.')], [word('Backfill', 'Xử lý bù dữ liệu lịch sử.')]);
-  assert.equal(annotations[0].definitionVi, 'Điền dữ liệu cũ vào cấu trúc mới.');
+test('the same sentence distinguishes physical switch ports from TCP/UDP port numbers', () => {
+  const text = 'A port on a switch is not the same concept as a TCP or UDP port number.';
+  const a = buildAnnotations(text);
+  assert.deepEqual(a.map(x => x.senseId), ['switch-port', 'transport-port']);
+  assert.notEqual(a[0].definitionVi, a[1].definitionVi);
+  for (const span of a) assert.equal(text.slice(span.start, span.end), span.term);
 });
-test('never matches a technical substring inside a different word', () => {
-  assert.deepEqual(buildAnnotations('The cachedatabase and databasesuffix are arbitrary identifiers.', [word('Database')]), []);
+test('fit means learning parameters only with machine-learning evidence', () => {
+  assert.deepEqual(buildAnnotations('ELT can fit a warehouse with scalable compute.'), []);
+  const a = buildAnnotations('The training set is used to fit the model.');
+  assert.equal(a[0].senseId, 'ml-fit'); assert.match(a[0].definitionVi, /học/);
+});
+test('HTTP return cannot be mislabeled as a function return due to neighboring text', () => {
+  const a = buildAnnotations('A function handles the request. The endpoint returns 201 Created.');
+  assert.equal(a[0].senseId, 'response-return');
+});
+test('ordinary business labels and features are not mislabeled as machine-learning values', () => {
+  assert.deepEqual(buildAnnotations('The team labels the hypothesis and releases a new feature.'), []);
 });

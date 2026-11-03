@@ -62,6 +62,15 @@ test('scrolling or changing the browser selection inside an open lookup does not
   assert.equal(h.render(), null);
 });
 
+test('a reviewed contextual reading sense opens directly without a generic AI lookup overwriting it', () => {
+  const h = harness(); h.render();
+  h.event('reading-lookup', { detail: { text: 'image', context: 'The team releases a new image with a rolling update.', result: { translation: 'bản đóng gói phần mềm', contextDependent: true, standaloneMeaning: 'hình ảnh', sourceSentence: 'The team releases a new image with a rolling update.', source: 'reading', contextual: true } } });
+  assert.equal(h.calls(), 0);
+  const modal = h.render();
+  assert.equal(modal.props.result.translation, 'bản đóng gói phần mềm');
+  assert.equal(modal.props.result.standaloneMeaning, 'hình ảnh');
+});
+
 test('lookup modal shows dictionary fields and examples without note or save controls', () => {
   const React = require('react');
   const { renderToStaticMarkup } = require('react-dom/server');
