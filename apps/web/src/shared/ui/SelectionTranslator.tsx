@@ -32,15 +32,22 @@ export function SelectionTranslator() {
     stopSpeech();
     setSelection(picked); setResult(initial ?? null); setError(''); setLoading(true);
     // Reviewed per-sentence senses must not be replaced by a generic dictionary response.
-    if (initial?.source === 'reading' && initial.contextDependent && initial.sourceSentence && initial.standaloneMeaning) { setLoading(false); return; }
+    const reviewed = initial?.source === 'reading' && initial.contextDependent && initial.sourceSentence && initial.standaloneMeaning;
+    if (reviewed && initial.partOfSpeech?.trim() && initial.pronunciationIpa?.trim()) { setLoading(false); return; }
     try {
       const key = JSON.stringify([picked.text.toLocaleLowerCase('en'), picked.context]);
-      const data = cache.current.get(key) ?? await apiClient.post<LookupResult>('/translation/selection', { text: picked.text, context: picked.context });
+      const cached = cache.current.get(key);
+      const data = cached && (!reviewed || (cached.partOfSpeech?.trim() && cached.pronunciationIpa?.trim())) ? cached : await apiClient.post<LookupResult>('/translation/selection', { text: picked.text, context: picked.context });
       if (version !== request.current) return;
-      const resolved = initial && (!data.contextual || !data.translation) ? initial : data;
-      if (resolved.translation) { if (cache.current.size >= 200) cache.current.clear(); cache.current.set(key, resolved); }
+      const resolved = reviewed ? {
+        ...initial,
+        partOfSpeech: initial.partOfSpeech?.trim() || data.partOfSpeech,
+        pronunciationIpa: initial.pronunciationIpa?.trim() || data.pronunciationIpa,
+      } : initial && (!data.contextual || !data.translation) ? initial : data;
+      if (data.translation && (!reviewed || (data.partOfSpeech?.trim() && data.pronunciationIpa?.trim()))) { if (cache.current.size >= 200) cache.current.clear(); cache.current.set(key, data); }
       setResult(resolved);
-    } catch (cause: any) { if (version === request.current && !initial) setError(cause?.message ?? 'Chưa dịch được. Vui lòng thử lại.'); }
+      if (reviewed && (!resolved.partOfSpeech?.trim() || !resolved.pronunciationIpa?.trim())) setError('Nghĩa trong bài vẫn được giữ. Chưa có đủ từ loại và phiên âm cho mục này; bạn có thể thử lại.');
+    } catch (cause: any) { if (version === request.current) setError(initial ? 'Nghĩa trong bài vẫn được giữ. Chưa tải được từ loại và phiên âm; vui lòng thử lại.' : cause?.message ?? 'Chưa dịch được. Vui lòng thử lại.'); }
     finally { if (version === request.current) setLoading(false); }
   };
 
@@ -87,7 +94,7 @@ export function SelectionTranslator() {
   }, []);
 
   if (!selection) return null;
-  if (open) return <LookupDialog text={selection.text} context={selection.context} result={result} loading={loading} error={error} speaking={speaking} speechError={speechError} onPronounce={pronounce} onClose={dismiss} onRetry={() => void translate(selection)} />;
+  if (open) return <LookupDialog text={selection.text} context={selection.context} result={result} loading={loading} error={error} speaking={speaking} speechError={speechError} onPronounce={pronounce} onClose={dismiss} onRetry={() => void translate(selection, result?.source === 'reading' ? result : undefined)} />;
   return <div ref={popup} data-selection-translation role="toolbar" aria-label="Tra cứu từ đã chọn" style={{ left: selection.x, top: selection.y }} onMouseDown={event => event.preventDefault()} className="fixed z-[10000] flex items-center gap-2 rounded-xl border border-primary/20 bg-white p-2 text-on-surface shadow-xl">
     <button type="button" onClick={() => void translate(selection)} className="inline-flex min-h-10 items-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-bold text-white"><Languages size={16} />Tra cứu</button>
     <button type="button" onClick={dismiss} aria-label="Đóng tra cứu" className="rounded-lg p-2 hover:bg-slate-100"><X size={16} /></button>
