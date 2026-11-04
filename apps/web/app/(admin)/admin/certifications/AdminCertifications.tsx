@@ -1,4 +1,5 @@
 'use client';
+import { PublicationBulkBar } from '@/shared/ui/PublicationBulkBar';
 import { RichTextEditor } from '@/shared/ui/RichTextEditor';
 
 import { Input } from '@/shared/ui/Input';
@@ -13,7 +14,7 @@ import { Dropdown } from '@/shared/ui/Dropdown';
 
 import * as React from 'react';
 import Link from 'next/link';
-import { BulkSelectionBar, confirmDialog, PageHeader, SearchInput } from '@/shared/ui';
+import { confirmDialog, PageHeader, SearchInput } from '@/shared/ui';
 import { apiClient, ApiClientError } from '@/shared/api/api-client';
 
 interface CertificateItem {
@@ -126,29 +127,6 @@ export default function AdminCertifications({ createOnly = false }: { createOnly
   };
 
   const selectionPage = useSelectionPage(filteredCerts);
-  React.useEffect(() => { setSelectedIds([]); }, [selectionPage.page, selectionPage.limit]);
-
-  const bulkChangePublication = async (isActive: boolean) => {
-    const ids = [...selectedIds];
-    if (bulkBusy || !ids.length) return;
-    const action = isActive ? 'xuất bản' : 'chuyển về bản nháp';
-    if (!(await confirmDialog(`Bạn có chắc muốn ${action} ${ids.length} chứng chỉ đã chọn?`, { title: `Xác nhận ${action}`, confirmLabel: action, tone: 'primary' }))) return;
-
-    setBulkBusy(true);
-    setError(null);
-    setSuccessMessage(null);
-    try {
-      const saved = await Promise.all(ids.map(id => apiClient.patch<CertificateItem>(`/certificates/${id}`, { isActive })));
-      const updated = new Map(saved.map(cert => [cert.id, cert]));
-      setCerts(current => current.map(cert => updated.get(cert.id) ?? cert));
-      setSelectedIds([]);
-      setSuccessMessage(`Đã ${action} ${saved.length} chứng chỉ.`);
-    } catch (cause) {
-      setError(cause instanceof ApiClientError ? cause.message : 'Không thể cập nhật trạng thái chứng chỉ');
-    } finally {
-      setBulkBusy(false);
-    }
-  };
 
   if (createOnly) return <CreatePage backHref="/admin/certifications"><CertificateModal page open initial={null} onClose={() => router.push('/admin/certifications')} onSaved={() => completeCreation(router, '/admin/certifications', 'Đã thêm chứng chỉ.')} /></CreatePage>;
 
@@ -172,16 +150,7 @@ export default function AdminCertifications({ createOnly = false }: { createOnly
 
 
       {successMessage && <div role="status" className="rounded-xl border border-emerald-200 bg-emerald-50 p-3 text-sm text-emerald-800">{successMessage}</div>}
-      <BulkSelectionBar
-        pageCount={selectionPage.items.length}
-        selectedCount={selectedIds.length}
-        allPageSelected={selectionPage.items.length > 0 && selectionPage.items.every(cert => selectedIds.includes(cert.id))}
-        onSelectPage={checked => setSelectedIds(checked ? selectionPage.items.map(cert => cert.id) : [])}
-        selectionLabel="Chọn trang này"
-      >
-        <button type="button" disabled={bulkBusy || loading || selectedIds.length === 0} onClick={() => void bulkChangePublication(true)} className="rounded-lg border border-emerald-600 bg-white px-3 py-2 text-xs font-bold text-emerald-700 disabled:opacity-85">Xuất bản</button>
-        <button type="button" disabled={bulkBusy || loading || selectedIds.length === 0} onClick={() => void bulkChangePublication(false)} className="rounded-lg border border-amber-500 bg-white px-3 py-2 text-xs font-bold text-amber-700 disabled:opacity-90">Chuyển về bản nháp</button>
-      </BulkSelectionBar>
+      <PublicationBulkBar items={selectionPage.items} allItems={filteredCerts} total={filteredCerts.length} query={JSON.stringify([search, domainFilter, categoryFilter, providerFilter, statusFilter])} endpoint="/certificates/bulk-activity" booleanStatus selectedIds={selectedIds} onSelectionChange={ids => setSelectedIds([...ids])} loading={loading} onBusyChange={setBulkBusy} itemLabel="chứng chỉ" onUpdated={async () => { const result = await apiClient.get<{ data: CertificateItem[] }>('/certificates'); setCerts(result.data); }} />
 
       <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-2 gap-lg">
         {loading ? (
@@ -203,7 +172,7 @@ export default function AdminCertifications({ createOnly = false }: { createOnly
             return (
               <div key={c.id} className="relative bg-surface-container-lowest rounded-xl border border-outline-variant p-lg hover:shadow-[0_1px_3px_rgba(15,23,24,0.06)] transition-all flex flex-col gap-md">
                 <label className="absolute left-4 top-4 flex items-center" aria-label={`Chọn chứng chỉ ${c.name}`}>
-                  <input type="checkbox" className="h-4 w-4 accent-primary" checked={selectedIds.includes(c.id)} onChange={event => setSelectedIds(current => event.target.checked ? [...new Set([...current, c.id])] : current.filter(id => id !== c.id))} />
+                  <input disabled={bulkBusy || loading} type="checkbox" className="h-4 w-4 accent-primary" checked={selectedIds.includes(c.id)} onChange={event => setSelectedIds(current => event.target.checked ? [...new Set([...current, c.id])] : current.filter(id => id !== c.id))} />
                 </label>
                 <div className="flex flex-col gap-3 sm:flex-row sm:justify-between sm:items-start">
                   <div className="flex flex-col gap-xs pl-6">

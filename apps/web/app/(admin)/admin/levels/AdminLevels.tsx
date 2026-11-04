@@ -1,4 +1,5 @@
 'use client';
+import { PublicationBulkBar } from '@/shared/ui/PublicationBulkBar';
 import { RichTextEditor } from '@/shared/ui/RichTextEditor';
 import { RichText } from '@/shared/ui/RichText';
 
@@ -15,7 +16,7 @@ import { ActionButton, ActionGroup } from '@/shared/ui/ActionButton';
 
 import { getLevelTheme } from '@/shared/lib/level-theme';
 import * as React from 'react';
-import { BulkSelectionBar, confirmDialog, PageHeader, Modal } from '@/shared/ui';
+import { confirmDialog, PageHeader, Modal } from '@/shared/ui';
 import { apiClient, ApiClientError } from '@/shared/api/api-client';
 
 interface LevelItem {
@@ -189,28 +190,6 @@ export default function AdminLevels({ createOnly = false }: { createOnly?: boole
   const visibleLevels = levels.filter(level => matchesSearch(search, level.name, level.code, level.description) && (!filter || level.isActive === (filter === 'active')));
 
   const selectionPage = useSelectionPage(visibleLevels);
-  React.useEffect(() => { setSelectedIds([]); }, [selectionPage.page, selectionPage.limit]);
-
-  const bulkChangeActivity = async (active: boolean) => {
-    const ids = [...selectedIds];
-    if (bulkBusy || !ids.length) return;
-    const action = active ? 'kích hoạt' : 'ngừng hoạt động';
-    if (!(await confirmDialog(`Bạn có chắc muốn ${action} ${ids.length} cấp độ đã chọn?`, { title: `Xác nhận ${action}`, confirmLabel: action, tone: active ? 'primary' : 'danger' }))) return;
-
-    setBulkBusy(true);
-    setError(null);
-    setSuccessMsg(null);
-    try {
-      await Promise.all(ids.map(id => apiClient.patch(`/levels/${id}`, { isActive: active })));
-      setLevels(current => current.map(level => ids.includes(level.id) ? { ...level, isActive: active } : level));
-      setSelectedIds([]);
-      setSuccessMsg(`Đã ${action} ${ids.length} cấp độ.`);
-    } catch (err) {
-      setError(err instanceof ApiClientError ? err.message : 'Không thể cập nhật trạng thái cấp độ');
-    } finally {
-      setBulkBusy(false);
-    }
-  };
 
   // Check linked count
   const getLinkedCount = (lvl: LevelItem | null) => {
@@ -355,16 +334,7 @@ export default function AdminLevels({ createOnly = false }: { createOnly?: boole
 
       {/* Level Cards Grid */}
       <section className="space-y-4" aria-label="Danh sách cấp độ">
-        <BulkSelectionBar
-          pageCount={selectionPage.items.length}
-          selectedCount={selectedIds.length}
-          allPageSelected={selectionPage.items.length > 0 && selectionPage.items.every(level => selectedIds.includes(level.id))}
-          onSelectPage={checked => setSelectedIds(checked ? selectionPage.items.map(level => level.id) : [])}
-          selectionLabel="Chọn trang này"
-        >
-          <button type="button" disabled={bulkBusy || loading || selectedIds.length === 0} onClick={() => void bulkChangeActivity(true)} className="rounded-lg border border-emerald-600 bg-white px-3 py-2 text-xs font-bold text-emerald-700 disabled:opacity-85">Kích hoạt</button>
-          <button type="button" disabled={bulkBusy || loading || selectedIds.length === 0} onClick={() => void bulkChangeActivity(false)} className="rounded-lg border border-amber-500 bg-white px-3 py-2 text-xs font-bold text-amber-700 disabled:opacity-90">Ngừng hoạt động</button>
-        </BulkSelectionBar>
+        <PublicationBulkBar items={selectionPage.items} allItems={visibleLevels} total={visibleLevels.length} query={JSON.stringify([search, filter])} endpoint="/levels/bulk-activity" selectedIds={selectedIds} onSelectionChange={ids => setSelectedIds([...ids])} loading={loading} onBusyChange={setBulkBusy} itemLabel="cấp độ" activity onUpdated={async () => { await load(); }} />
 
         {loading ? (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -404,7 +374,7 @@ export default function AdminLevels({ createOnly = false }: { createOnly?: boole
                     <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between mb-3">
                       <div className="flex items-center gap-3">
                         <label className="flex shrink-0 items-center" aria-label={`Chọn cấp độ ${lvl.name}`}>
-                          <input type="checkbox" className="h-4 w-4 accent-primary" checked={selectedIds.includes(lvl.id)} onChange={event => setSelectedIds(current => event.target.checked ? [...new Set([...current, lvl.id])] : current.filter(id => id !== lvl.id))} />
+                          <input disabled={bulkBusy || loading} type="checkbox" className="h-4 w-4 accent-primary" checked={selectedIds.includes(lvl.id)} onChange={event => setSelectedIds(current => event.target.checked ? [...new Set([...current, lvl.id])] : current.filter(id => id !== lvl.id))} />
                         </label>
                         <div className={`w-10 h-10 rounded-xl flex items-center justify-center border ${meta.bg}`}>
                           <AppIcon className=" text-[20px]">{meta.icon}</AppIcon>

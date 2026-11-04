@@ -1,3 +1,4 @@
+import { publicationSelection } from '../publication-selection'
 import { BadRequestException, ConflictException, Injectable, NotFoundException } from '@nestjs/common'
 import { PrismaService } from '../../infrastructure/database/prisma.service'
 import { CreateLessonDto, UpdateLessonDto } from '../../presentation/http-dto/content.dto'
@@ -42,7 +43,7 @@ export class LessonsService {
           createdBy: { select: { id: true, userDetail: true } },
           _count: { select: { sections: true, vocabularies: true } },
         },
-        orderBy: { updatedAt: 'desc' },
+        orderBy: [{ updatedAt: 'desc' }, { id: 'desc' }],
       }),
       this.prisma.lesson.count({ where }),
     ])
@@ -50,15 +51,12 @@ export class LessonsService {
   }
 
   async bulkUpdateStatus(dto: Record<string, any>) {
-    if (!Array.isArray(dto.ids) || dto.ids.length === 0 || dto.ids.some((id: unknown) => typeof id !== 'string' || !id.trim())) {
-      throw new BadRequestException('Cần chọn ít nhất một mục để cập nhật trạng thái')
-    }
-    const where = { id: { in: [...new Set<string>(dto.ids)] } }
+    const where = publicationSelection(dto)
     const result = await this.prisma.lesson.updateMany({
       where,
       data: { status: dto.status, ...(dto.status === 'published' ? { publishedAt: new Date() } : {}) },
     })
-    return { updatedCount: result.count, status: dto.status }
+    return { updatedCount: result.count, skippedCount: dto.ids.length - result.count, requestedCount: dto.ids.length, status: dto.status }
   }
 
   async findOne(idOrSlug: string) {
@@ -121,7 +119,7 @@ export class LessonsService {
         ...(dto.thumbnailUrl !== undefined && { thumbnailUrl: dto.thumbnailUrl }),
         ...(dto.keyConcepts !== undefined && { keyConcepts: dto.keyConcepts }),
         ...(dto.status !== undefined && { status: dto.status }),
-        ...(dto.status === 'published' && { publishedAt: new Date() }),
+        ...(dto.status === 'published' && existing.status !== 'published' && { publishedAt: new Date() }),
         ...(dto.topicIds && { certificationTopics: { create: dto.topicIds.map(topicId => ({ topicId })) } }),
         ...(dto.sections && { sections: { create: dto.sections } }),
         ...(dto.certificateIds && { certificates: { create: dto.certificateIds.map(certificateId => ({ certificateId })) } }),

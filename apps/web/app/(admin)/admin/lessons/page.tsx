@@ -1,4 +1,5 @@
 'use client';
+import { PublicationBulkBar } from '@/shared/ui/PublicationBulkBar';
 import { RichText } from '@/shared/ui/RichText';
 
 import { FilterPanel } from '@/shared/ui/FilterPanel';
@@ -13,7 +14,7 @@ import * as React from 'react';
 import { StatusBadge } from '@/shared/ui/StatusBadge';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
-import { BulkSelectionBar, PageHeader, Pagination, SearchInput } from '@/shared/ui';
+import { PageHeader, Pagination, SearchInput } from '@/shared/ui';
 import { apiClient, ApiClientError } from '@/shared/api/api-client';
 import type { PaginatedResponse } from '@/shared/api/api-client';
 import { ContentPreview } from './ContentPreview';
@@ -42,38 +43,27 @@ export default function LessonsPage() {
   const category = CONTENT_TYPES[type];
   const itemName = category?.item ?? 'bài học';
 
+  const loadRequest = React.useRef(0);
+  React.useEffect(() => () => { loadRequest.current++; }, []);
   const load = React.useCallback(async () => {
+    const request = ++loadRequest.current;
     setLoading(true); setError('');
     try {
       const query = new URLSearchParams({ page: String(page), limit: '10', ...(search && { search }), ...(type && { type }), ...(status && { status }) });
       const result = await apiClient.get<PaginatedResponse<Lesson>>(`/lessons?${query}`);
+      if (request !== loadRequest.current) return;
+      if (page > Math.max(1, result.meta.totalPages)) { setPage(Math.max(1, result.meta.totalPages)); return; }
       setItems(result.data); setTotal(result.meta.total); setTotalPages(result.meta.totalPages || 1);
-    } catch (e) { setError(e instanceof ApiClientError ? e.message : 'Không thể tải danh sách bài học'); }
-    finally { setLoading(false); }
+    } catch (e) { if (request !== loadRequest.current) return; setError(e instanceof ApiClientError ? e.message : 'Không thể tải danh sách bài học'); }
+    finally { if (request === loadRequest.current) setLoading(false); }
   }, [page, search, type, status]);
-  React.useEffect(() => { void load(); }, [load]);
-  React.useEffect(() => { setSelectedIds(new Set()); }, [page, search, type, status]);
+  React.useEffect(() => { void load(); return () => { loadRequest.current++; }; }, [load]);
+  React.useEffect(() => { setSelectedIds(new Set()); }, [search, type, status]);
   React.useEffect(() => {
     const requestedType = searchParams.get('type') ?? '';
     if (requestedType !== type) { setType(requestedType); setPage(1); }
   }, [searchParams]);
 
-  const bulkUpdateStatus = async (targetStatus: 'draft' | 'published') => {
-    const ids = [...selectedIds];
-    if (bulkBusy || ids.length === 0) return;
-    const count = ids.length;
-    const action = targetStatus === 'published' ? 'xuất bản' : 'chuyển về bản nháp';
-    const affected = `${count} bài học đã chọn`;
-    if (!(await confirmDialog(`Bạn có chắc muốn ${action} ${affected}?`, { title: 'Xác nhận cập nhật hàng loạt', confirmLabel: action, tone: targetStatus === 'published' ? 'primary' : 'warning' }))) return;
-    setBulkBusy(true); setError(''); setSuccessMessage('');
-    try {
-      const result = await apiClient.patch<{ updatedCount: number }>('/lessons/bulk-status', { ids, status: targetStatus });
-      setSelectedIds(new Set());
-      setSuccessMessage(`Đã ${action} ${result.updatedCount} bài học.`);
-      await load();
-    } catch (e) { setError(e instanceof ApiClientError ? e.message : 'Không thể cập nhật hàng loạt bài học'); }
-    finally { setBulkBusy(false); }
-  };
   const remove = async (item: Lesson) => { if (!await confirmDialog(`Bạn có muốn xóa bài học “${item.title}” hay không?`, { title: 'Xóa bài học', confirmLabel: 'Xóa', tone: 'danger' })) return; try { await apiClient.delete(`/lessons/${item.id}`); await load(); } catch (e) { setError(e instanceof ApiClientError ? e.message : 'Không thể xóa bài học'); } };
 
   return <div className="admin-page-stack">
@@ -89,20 +79,17 @@ export default function LessonsPage() {
 
     {error && <div className="mt-4 rounded-xl bg-error-container p-3 text-sm text-on-error-container">{error}</div>}
     {successMessage && <div className="mt-4 rounded-xl bg-emerald-50 p-3 text-sm text-emerald-800">{successMessage}</div>}
-    <BulkSelectionBar pageCount={items.length} selectedCount={selectedIds.size} allPageSelected={items.length > 0 && items.every((item) => selectedIds.has(item.id))} onSelectPage={(selected) => setSelectedIds((current) => { const next = new Set(current); items.forEach((item) => selected ? next.add(item.id) : next.delete(item.id)); return next; })}>
-        <button type="button" disabled={bulkBusy || loading || selectedIds.size === 0} onClick={() => void bulkUpdateStatus('published')} className="rounded-lg border border-emerald-600 bg-white px-3 py-2 text-xs font-bold text-emerald-700 disabled:opacity-85">Xuất bản</button>
-        <button type="button" disabled={bulkBusy || loading || selectedIds.size === 0} onClick={() => void bulkUpdateStatus('draft')} className="rounded-lg border border-amber-500 bg-white px-3 py-2 text-xs font-bold text-amber-700 disabled:opacity-90">Chuyển về bản nháp</button>
-      </BulkSelectionBar>
+    <PublicationBulkBar items={items} total={total} query={`/lessons?${new URLSearchParams({ search, type, status })}`} endpoint="/lessons/bulk-status" selectedIds={selectedIds} onSelectionChange={setSelectedIds} loading={loading} onBusyChange={setBulkBusy} itemLabel="bài học" onUpdated={async () => { await load(); }} />
     {category ? <div className="mt-5 space-y-4">
       {loading ? <p role="status" className="py-12 text-center">Đang tải nội dung...</p> : !items.length ? <p className="py-12 text-center text-on-surface-variant">Chưa có {itemName} phù hợp.</p> : items.map(item => <article key={item.id} className="rounded-2xl border border-outline-variant/50 bg-white p-5 shadow-sm">
-        <label className="mb-3 inline-flex cursor-pointer items-center gap-2 text-xs font-semibold text-on-surface-variant"><input type="checkbox" aria-label={`Chọn ${item.title}`} checked={selectedIds.has(item.id)} onChange={() => setSelectedIds((current) => { const next = new Set(current); if (next.has(item.id)) next.delete(item.id); else next.add(item.id); return next; })} className="h-4 w-4 accent-primary" />Chọn bài học</label>
+        <label className="mb-3 inline-flex cursor-pointer items-center gap-2 text-xs font-semibold text-on-surface-variant"><input disabled={bulkBusy || loading} type="checkbox" aria-label={`Chọn ${item.title}`} checked={selectedIds.has(item.id)} onChange={() => setSelectedIds((current) => { const next = new Set(current); if (next.has(item.id)) next.delete(item.id); else next.add(item.id); return next; })} className="h-4 w-4 accent-primary" />Chọn bài học</label>
         <div className="mb-4 flex flex-wrap items-center gap-3 text-xs text-on-surface-variant"><LevelBadge level={item.level} /><span>{item.estimatedMinutes} phút</span><span>{item._count?.sections ?? 0} khối nội dung</span><StatusBadge status={item.status} /></div>
         <ContentPreview item={item} />
         <div className="mt-5 flex flex-wrap items-center justify-between gap-3 border-t border-outline-variant/40 pt-4"><span className="text-sm text-on-surface-variant">{item.domain.name}</span><ActionGroup><ActionButton action="edit" label={`Biên soạn ${category.item}`} href={`/admin/lessons/editor?id=${item.id}`} /><ActionButton action="delete" onClick={() => void remove(item)} /></ActionGroup></div>
       </article>)}
     </div> : (
     <div className="mt-4 overflow-hidden rounded-2xl border border-outline-variant/50 bg-surface-container-lowest"><div className="overflow-x-auto"><table className="w-full min-w-[1040px] table-fixed text-left text-sm"><colgroup><col className="w-[5%]" /><col className="w-[32%]" /><col className="w-[11%]" /><col className="w-[13%]" /><col className="w-[10%]" /><col className="w-[8%]" /><col className="w-[11%]" /><col className="w-[10%]" /></colgroup><thead className="bg-white"><tr>{['Chọn', type ? `Tên ${itemName}` : 'Bài học','Loại nội dung','Chuyên ngành','Trình độ','Thời lượng','Trạng thái','Thao tác'].map(x => <th key={x} className={`px-4 py-3 font-semibold ${x === 'Thao tác' ? 'text-right' : ''}`}>{x}</th>)}</tr></thead><tbody className="divide-y divide-outline-variant/30">
-      {loading ? <tr><td colSpan={8} className="px-4 py-12 text-center text-on-surface-variant">Đang tải bài học...</td></tr> : items.length === 0 ? <tr><td colSpan={8} className="px-4 py-14 text-center text-on-surface-variant">Chưa có bài học phù hợp bộ lọc.</td></tr> : items.map(item => <tr key={item.id} className="hover:bg-surface-container-low/60"><td className="px-4 py-3"><input type="checkbox" aria-label={`Chọn ${item.title}`} checked={selectedIds.has(item.id)} onChange={() => setSelectedIds((current) => { const next = new Set(current); if (next.has(item.id)) next.delete(item.id); else next.add(item.id); return next; })} className="h-4 w-4 accent-primary" /></td><td className="min-w-0 px-4 py-3"><p className="truncate font-semibold" title={item.title}>{item.title}</p><p className="mt-1 truncate text-xs text-on-surface-variant" title={item.summary}><RichText text={item.summary} /></p></td><td className="px-4 py-3">{TYPES[item.type] ?? item.type}</td><td className="px-4 py-3">{item.domain.name}</td><td className="px-4 py-3"><LevelBadge level={item.level} /></td><td className="whitespace-nowrap px-4 py-3">{item.estimatedMinutes} phút</td><td className="whitespace-nowrap px-4 py-3"><StatusBadge status={item.status} /></td><td className="px-4 py-3"><ActionGroup><ActionButton action="edit" title="Chỉnh sửa" href={`/admin/lessons/editor?id=${item.id}`} /><ActionButton action="delete" title="Xóa" onClick={() => void remove(item)} /></ActionGroup></td></tr>)}</tbody></table></div></div>
+      {loading ? <tr><td colSpan={8} className="px-4 py-12 text-center text-on-surface-variant">Đang tải bài học...</td></tr> : items.length === 0 ? <tr><td colSpan={8} className="px-4 py-14 text-center text-on-surface-variant">Chưa có bài học phù hợp bộ lọc.</td></tr> : items.map(item => <tr key={item.id} className="hover:bg-surface-container-low/60"><td className="px-4 py-3"><input disabled={bulkBusy || loading} type="checkbox" aria-label={`Chọn ${item.title}`} checked={selectedIds.has(item.id)} onChange={() => setSelectedIds((current) => { const next = new Set(current); if (next.has(item.id)) next.delete(item.id); else next.add(item.id); return next; })} className="h-4 w-4 accent-primary" /></td><td className="min-w-0 px-4 py-3"><p className="truncate font-semibold" title={item.title}>{item.title}</p><p className="mt-1 truncate text-xs text-on-surface-variant" title={item.summary}><RichText text={item.summary} /></p></td><td className="px-4 py-3">{TYPES[item.type] ?? item.type}</td><td className="px-4 py-3">{item.domain.name}</td><td className="px-4 py-3"><LevelBadge level={item.level} /></td><td className="whitespace-nowrap px-4 py-3">{item.estimatedMinutes} phút</td><td className="whitespace-nowrap px-4 py-3"><StatusBadge status={item.status} /></td><td className="px-4 py-3"><ActionGroup><ActionButton action="edit" title="Chỉnh sửa" href={`/admin/lessons/editor?id=${item.id}`} /><ActionButton action="delete" title="Xóa" onClick={() => void remove(item)} /></ActionGroup></td></tr>)}</tbody></table></div></div>
     )}
     <div className="mt-5"><Pagination page={page} limit={10} total={total} totalPages={totalPages} onPageChange={setPage} /></div>
   </div>;

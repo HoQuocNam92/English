@@ -10,12 +10,12 @@ export function auditEvent(req: any, statusCode: number) {
   const params = Object.values(req.params ?? {}).filter((id): id is string => typeof id === 'string' && uuid.test(id))
   // Only UUID identifiers are retained from bodies; credential values and personal text never enter the log.
   const candidates = [...(Array.isArray(req.body?.ids) ? req.body.ids : []), req.body?.userId, req.body?.questionId, req.body?.permissionId]
-  const selected = candidates.filter((id: any) => typeof id === 'string' && uuid.test(id)).slice(0, 3000)
+  const selected = candidates.filter((id: any) => typeof id === 'string' && uuid.test(id)).slice(0, 10000)
   const loginUser = req.user?.user
   return {
     actorId: uuid.test(req.user?.sub ?? loginUser?.id ?? '') ? (req.user?.sub ?? loginUser?.id) : null,
     actorEmail: req.user?.email ?? loginUser?.email ?? null,
-    method: req.method, action: ['draft', 'published', 'archived', 'active', 'inactive'].includes(req.body?.status) ? req.body.status : null,
+    method: req.method, action: ['draft', 'published', 'archived', 'active', 'inactive'].includes(req.body?.status) ? req.body.status : typeof req.body?.isActive === 'boolean' ? (req.body.isActive ? 'active' : 'inactive') : null,
     route, targetIds: [...new Set<string>([...params, ...selected])], statusCode,
     // Use the socket peer; never trust a client-supplied forwarded-for header.
     ipAddress: String(req.socket?.remoteAddress ?? '').slice(0, 64) || null,

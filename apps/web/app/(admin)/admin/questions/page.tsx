@@ -1,4 +1,5 @@
 'use client';
+import { PublicationBulkBar } from '@/shared/ui/PublicationBulkBar';
 import { RichText } from '@/shared/ui/RichText';
 
 import { loadAllPages } from '@/shared/lib/load-all-pages';
@@ -11,7 +12,7 @@ import { LevelBadge } from '@/shared/ui/LevelBadge';
 import { Dropdown } from '@/shared/ui/Dropdown';
 import * as React from 'react';
 import Link from 'next/link';
-import { BulkSelectionBar, confirmDialog, PageHeader, Pagination, SearchInput } from '@/shared/ui';
+import { confirmDialog, PageHeader, Pagination, SearchInput } from '@/shared/ui';
 import { apiClient, ApiClientError } from '@/shared/api/api-client';
 import type { ExamItem, QuestionItem, PaginatedResponse } from '@/shared/api/api-client';
 import { downloadQuestionExcelTemplate } from '@/features/questions/question-excel';
@@ -68,7 +69,10 @@ export default function AdminQuestionsPage() {
   const [deletingId, setDeletingId] = React.useState<string | null>(null);
   const [selectedIds, setSelectedIds] = React.useState<Set<string>>(new Set());
   const [bulkBusy, setBulkBusy] = React.useState(false);
+  const loadRequest = React.useRef(0);
+  React.useEffect(() => () => { loadRequest.current++; }, []);
   const load = React.useCallback(async () => {
+    const request = ++loadRequest.current;
     setLoading(true);
     setError(null);
     try {
@@ -84,17 +88,17 @@ export default function AdminQuestionsPage() {
         ...(examId && { examId }),
       });
       const res = await apiClient.get<PaginatedResponse<QuestionItem>>(`/questions?${params}`);
+      if (request !== loadRequest.current) return;
+      if (page > Math.max(1, res.meta.totalPages)) { setPage(Math.max(1, res.meta.totalPages)); return; }
       setItems(res.data);
       setTotal(res.meta.total);
-    } catch (e) {
+    } catch (e) { if (request !== loadRequest.current) return;
       setError(e instanceof ApiClientError ? e.message : 'Không thể tải ngân hàng câu hỏi');
-    } finally {
-      setLoading(false);
-    }
+    } finally { if (request === loadRequest.current) setLoading(false); }
   }, [page, limit, search, status, type, skill, domainCode, examId, topic]);
 
-  React.useEffect(() => { void load(); }, [load]);
-  React.useEffect(() => { setSelectedIds(new Set()); }, [page, limit, search, status, type, topic, skill, domainCode, examId]);
+  React.useEffect(() => { void load(); return () => { loadRequest.current++; }; }, [load]);
+  React.useEffect(() => { setSelectedIds(new Set()); }, [search, status, type, topic, skill, domainCode, examId]);
 
   React.useEffect(() => {
     void Promise.all([
@@ -107,24 +111,6 @@ export default function AdminQuestionsPage() {
       setExams(examResult);
     }).catch(() => undefined);
   }, []);
-
-  const bulkUpdateStatus = async (targetStatus: 'draft' | 'published') => {
-    const ids = [...selectedIds];
-    if (bulkBusy || ids.length === 0) return;
-    const count = ids.length;
-    const action = targetStatus === 'published' ? 'xuất bản' : 'chuyển về bản nháp';
-    const affected = `${count} câu hỏi đã chọn`;
-    if (!(await confirmDialog(`Bạn có chắc muốn ${action} ${affected}?`, { title: 'Xác nhận cập nhật hàng loạt', confirmLabel: action, tone: targetStatus === 'published' ? 'primary' : 'warning' }))) return;
-    setBulkBusy(true);
-    setError(null);
-    try {
-      const result = await apiClient.patch<{ updatedCount: number }>('/questions/bulk-status', { ids, status: targetStatus });
-      setSelectedIds(new Set());
-      setSuccessMessage(`Đã ${action} ${result.updatedCount} câu hỏi.`);
-      await load();
-    } catch (cause) { setError(cause instanceof ApiClientError ? cause.message : 'Không thể cập nhật trạng thái câu hỏi'); }
-    finally { setBulkBusy(false); }
-  };
 
   const handleDelete = async (question: QuestionItem) => {
     if (!(await confirmDialog(`Xóa câu hỏi “${question.prompt.slice(0, 80)}${question.prompt.length > 80 ? '…' : ''}”? Câu hỏi cũng sẽ được gỡ khỏi các bộ đề liên quan.`, { title: 'Xóa câu hỏi?', confirmLabel: 'Xóa câu hỏi', tone: 'danger' }))) return;
@@ -269,10 +255,7 @@ export default function AdminQuestionsPage() {
       )}
 
       {/* Question list */}
-      <BulkSelectionBar pageCount={items.length} selectedCount={selectedIds.size} allPageSelected={items.length > 0 && items.every((item) => selectedIds.has(item.id))} onSelectPage={(selected) => setSelectedIds((current) => { const next = new Set(current); items.forEach((item) => selected ? next.add(item.id) : next.delete(item.id)); return next; })}>
-        <button type="button" disabled={bulkBusy || loading || selectedIds.size === 0} onClick={() => void bulkUpdateStatus('published')} className="rounded-lg border border-emerald-600 bg-white px-3 py-2 text-xs font-bold text-emerald-700 disabled:opacity-85">Xuất bản</button>
-        <button type="button" disabled={bulkBusy || loading || selectedIds.size === 0} onClick={() => void bulkUpdateStatus('draft')} className="rounded-lg border border-amber-500 bg-white px-3 py-2 text-xs font-bold text-amber-700 disabled:opacity-90">Chuyển về bản nháp</button>
-      </BulkSelectionBar>
+      <PublicationBulkBar items={items} total={total} query={`/questions?${new URLSearchParams({ search, status, type, skill, topic, domainCode, examId })}`} endpoint="/questions/bulk-status" selectedIds={selectedIds} onSelectionChange={setSelectedIds} loading={loading} onBusyChange={setBulkBusy} itemLabel="câu hỏi" onUpdated={async () => { await load(); }} />
       <div className="mt-4 rounded-2xl bg-surface-container-lowest overflow-hidden shadow-[0_8px_28px_rgba(15,23,42,0.05)]">
         {loading ? (
           Array.from({ length: 5 }).map((_, i) => <SkeletonRow key={i} />)
@@ -288,7 +271,7 @@ export default function AdminQuestionsPage() {
               const isExpanded = expanded === q.id;
               return <React.Fragment key={q.id}>
                 <tr>
-                  <td><input type="checkbox" aria-label={`Chọn câu hỏi $<RichText text={q.prompt} />`} checked={selectedIds.has(q.id)} onChange={() => setSelectedIds((current) => { const next = new Set(current); if (next.has(q.id)) next.delete(q.id); else next.add(q.id); return next; })} className="h-4 w-4 accent-primary" /></td>
+                  <td><input disabled={bulkBusy || loading} type="checkbox" aria-label={`Chọn câu hỏi $<RichText text={q.prompt} />`} checked={selectedIds.has(q.id)} onChange={() => setSelectedIds((current) => { const next = new Set(current); if (next.has(q.id)) next.delete(q.id); else next.add(q.id); return next; })} className="h-4 w-4 accent-primary" /></td>
                   <td className="max-w-[360px]"><button type="button" aria-expanded={isExpanded} onClick={() => setExpanded(isExpanded ? null : q.id)} className="text-left text-sm font-semibold text-on-surface hover:text-primary"><span className="mr-2 text-xs text-on-surface-variant">{(page - 1) * limit + idx + 1}.</span><RichText text={q.prompt} /></button></td>
                   <td><p>{qType.label}</p><p className="mt-1 text-xs text-on-surface-variant">{SKILLS[q.skill] ?? q.skill}</p></td>
                   <td>{q.domain?.name ?? '—'}</td><td><LevelBadge level={q.level} /></td>

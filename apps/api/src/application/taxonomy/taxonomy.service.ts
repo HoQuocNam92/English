@@ -1,3 +1,4 @@
+import { activitySelection } from '../publication-selection'
 import { BadRequestException, ConflictException, Injectable, NotFoundException } from '@nestjs/common'
 import { CreateDomainDto, UpdateDomainDto } from '../../presentation/http-dto/domain.dto'
 import { activityDays } from './activity-days'
@@ -6,6 +7,14 @@ import { PrismaService } from '../../infrastructure/database/prisma.service'
 @Injectable()
 export class TaxonomyService {
   constructor(private prisma: PrismaService) {}
+
+  async bulkActivity(resource: 'level' | 'certificate', dto: { ids: string[]; isActive: boolean }) {
+    const where = activitySelection(dto)
+    const result = resource === 'level'
+      ? await this.prisma.level.updateMany({ where, data: { isActive: dto.isActive } })
+      : await this.prisma.certificate.updateMany({ where, data: { isActive: dto.isActive } })
+    return { updatedCount: result.count, skippedCount: dto.ids.length - result.count, requestedCount: dto.ids.length }
+  }
 
   private assertProfessionalCertificate(name: unknown) {
     if (/^english\s+(?:a1|a2|b1|b2|c1|c2)$/i.test(String(name ?? '').trim())) {
@@ -62,6 +71,7 @@ export class TaxonomyService {
   }
 
   async createLevel(dto: { code: string; name: string; order?: number; description?: string; isActive?: boolean }) {
+    if (dto.isActive !== undefined && typeof dto.isActive !== 'boolean') throw new BadRequestException('Trạng thái hoạt động phải là boolean')
     const code = dto.code?.trim().toLowerCase()
     if (!code) throw new BadRequestException('Mã cấp độ không được để trống')
     if (!dto.name?.trim()) throw new BadRequestException('Tên cấp độ không được để trống')
@@ -101,6 +111,7 @@ export class TaxonomyService {
   }
 
   async updateLevel(id: string, dto: { code?: string; name?: string; order?: number; description?: string; isActive?: boolean }) {
+    if (dto.isActive !== undefined && typeof dto.isActive !== 'boolean') throw new BadRequestException('Trạng thái hoạt động phải là boolean')
     const existing = await this.prisma.level.findUnique({ where: { id } })
     if (!existing) throw new NotFoundException('Cấp độ không tồn tại')
 
