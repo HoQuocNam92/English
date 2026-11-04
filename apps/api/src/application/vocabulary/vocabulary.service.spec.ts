@@ -3,11 +3,26 @@ import { test } from 'node:test'
 import { strict as assert } from 'node:assert'
 import { validate } from 'class-validator'
 import { VocabularyService } from './vocabulary.service'
-import { CreateVocabularyDto, UpdateVocabularyDto } from '../../presentation/http-dto/content.dto'
+import { BulkUpdateVocabularyStatusDto, CreateVocabularyDto, UpdateVocabularyDto } from '../../presentation/http-dto/content.dto'
 
 const domainIds = ['11111111-1111-4111-8111-111111111111', '22222222-2222-4222-8222-222222222222']
 const levelId = '33333333-3333-4333-8333-333333333333'
 const createDto = { term: 'deploy', definitionEn: 'Release an application', levelId, domainIds, partsOfSpeech: ['noun', 'verb'] }
+
+test('bulk vocabulary status accepts imported UUID v5 alongside UUID v4 and rejects malformed IDs', async () => {
+  const importedId = '12345678-1234-5678-a123-123456789abc'
+  for (const status of ['published', 'draft']) {
+    const dto = Object.assign(new BulkUpdateVocabularyStatusDto(), { status, ids: [domainIds[0], importedId] })
+    assert.deepEqual(await validate(dto), [])
+    const { service, calls } = setup()
+    await service.bulkUpdateStatus(dto)
+    assert.deepEqual(calls.bulk.where, { id: { in: dto.ids } })
+    assert.deepEqual(calls.bulk.data, { status })
+  }
+  for (const ids of [[], ['invalid'], [domainIds[0], 'invalid']]) {
+    assert.ok((await validate(Object.assign(new BulkUpdateVocabularyStatusDto(), { status: 'published', ids }))).length > 0)
+  }
+})
 
 function setup() {
   const calls: Record<string, any> = {}

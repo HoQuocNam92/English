@@ -4,10 +4,12 @@ const fieldLabels: Record<string, string> = {
   email: 'Email', password: 'Mật khẩu', newPassword: 'Mật khẩu mới', displayName: 'Tên hiển thị',
   title: 'Tiêu đề', name: 'Tên', code: 'Mã', domainId: 'Chuyên ngành', levelId: 'Cấp độ',
   role: 'Vai trò', status: 'Trạng thái', file: 'Tệp', otp: 'Mã OTP',
+  ids: 'Danh sách mục đã chọn', vocabularyIds: 'Danh sách từ vựng',
+  questionId: 'Câu hỏi', selectedOptionIds: 'Danh sách đáp án',
 };
 
 function translateValidationMessage(raw: string): string | null {
-  const field = raw.match(/^([A-Za-z][\w]*)\s/)?.[1];
+  const field = raw.match(/^(?:each value in\s+)?([A-Za-z][\w]*)\s/)?.[1];
   const label = field ? (fieldLabels[field] ?? `Trường ${field}`) : 'Dữ liệu';
   if (/must be an email/i.test(raw)) return `${label} không đúng định dạng.`;
   if (/should not be empty|must not be empty/i.test(raw)) return `${label} không được để trống.`;
