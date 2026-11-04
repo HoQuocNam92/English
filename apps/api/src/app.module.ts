@@ -1,4 +1,6 @@
-import { Module } from '@nestjs/common'
+import { MiddlewareConsumer, Module, NestModule } from '@nestjs/common'
+import { AuditMiddleware } from './infrastructure/audit/audit.middleware'
+import { AuditLogController } from './presentation/audit-log.controller'
 import { ConfigModule } from '@nestjs/config'
 import { PrismaModule } from './infrastructure/database/prisma.module'
 import { AuthModule } from './modules/auth.module'
@@ -22,6 +24,7 @@ import { PlacementTestController } from './presentation/placement-test.controlle
 
 @Module({
   controllers: [
+    AuditLogController,
     PlacementTestController,
   ],
   imports: [
@@ -44,4 +47,6 @@ import { PlacementTestController } from './presentation/placement-test.controlle
     LearnerGroupModule,
   ],
 })
-export class AppModule {}
+export class AppModule implements NestModule {
+  configure(consumer: MiddlewareConsumer) { consumer.apply(AuditMiddleware).forRoutes('*') }
+}

@@ -122,6 +122,7 @@ async function request<T>(path: string, options: RequestInit = {}, canRetry = tr
 
   if (!res.ok) {
     const err: ApiError = await res.json().catch(() => ({ message: "Lỗi không xác định" }));
+    if ((err as any).code === 'MFA_REQUIRED' && typeof window !== 'undefined') window.dispatchEvent(new CustomEvent('techenglish:mfa-required'));
     throw new ApiClientError(
       toVietnameseErrorMessage((err as any).message ?? err.message, res.status),
       res.status,

@@ -97,5 +97,5 @@ export class RolesController {
   }
 
   @Delete(':id/users/:userId') @RequirePermissions('roles:assign') @HttpCode(HttpStatus.NO_CONTENT) @ApiOperation({ summary: 'Revoke role from user' })
-  revokeUser(@Param('id') id: string, @Param('userId') userId: string) { return this.rolesService.revokeRoleFromUser(userId, id) }
+  revokeUser(@Param('id') id: string, @Param('userId') userId: string, @CurrentUser() actor: JwtPayload) { return this.rolesService.revokeRoleFromUser(userId, id, actor.sub) }
 }

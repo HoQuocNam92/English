@@ -8,8 +8,10 @@ import { useParams } from 'next/navigation';
 import { useState, useEffect } from 'react';
 import { permissionLabel, roleLabel } from '@/shared/auth/permission-labels';
 import { PermissionTree } from '@/shared/auth/PermissionTree';
+import { useAuth } from '@/features/auth/presentation';
 
 export default function RoleDetailPage() {
+  const { session } = useAuth();
   const params = useParams();
   const id = params?.id as string;
   const [role, setRole] = useState<any>(null);
@@ -92,8 +94,9 @@ export default function RoleDetailPage() {
     finally { setBusy(null); }
   };
   const revokeUser = async (userId: string) => {
+    if (!session || userId === session.user.id) return;
     setBusy(userId);
-    try { await apiClient.delete(`/roles/${id}/users/${userId}`); setUsers((current) => current.filter((u) => u.id !== userId)); }
+    try { await apiClient.delete(`/roles/${id}/users/${userId}`); setUsers((current) => current.filter((u) => (u.userId ?? u.id) !== userId)); }
     catch (e: any) { setError(e.message ?? 'Không thể gỡ vai trò của người dùng này'); }
     finally { setBusy(null); }
   };
@@ -206,7 +209,7 @@ export default function RoleDetailPage() {
           ) : (
             <div className="space-y-3">
               {users.map((u: any) => {
-                const userId = u.id ?? u.userId;
+                const userId = u.userId ?? u.id;
                 return (
                 <div key={userId} className="flex items-center gap-4 p-3 rounded-xl border border-outline-variant hover:bg-surface-container-low transition-colors">
                   <div className="w-10 h-10 rounded-full bg-primary/10 text-primary text-sm font-bold flex items-center justify-center">
@@ -216,7 +219,7 @@ export default function RoleDetailPage() {
                     <p className="text-sm font-bold text-on-surface">{u.userDetail?.displayName || u.displayName || 'Chưa cập nhật tên'}</p>
                     <p className="text-xs text-on-surface-variant mt-0.5">{u.email}</p>
                   </div>
-                  <button disabled={busy === userId} onClick={() => void revokeUser(userId)} className="rounded-lg px-2 py-1 text-xs font-semibold text-error hover:bg-error-container disabled:opacity-75">Gỡ</button>
+                  {session && userId !== session.user.id ? <button disabled={busy === userId} onClick={() => void revokeUser(userId)} className="rounded-lg px-2 py-1 text-xs font-semibold text-error hover:bg-error-container disabled:opacity-75">Gỡ</button> : <span className="text-xs text-on-surface-variant">{userId === session?.user.id ? 'Bạn' : 'Được bảo vệ'}</span>}
                 </div>
               )})}
             </div>
