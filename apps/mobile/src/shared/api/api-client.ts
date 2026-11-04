@@ -77,7 +77,7 @@ export async function apiRequest<T>(
       headers,
       signal: controller.signal,
     });
-    if (res.status === 401 && token && retryOnUnauth && !path.startsWith('/auth/')) {
+    if (res.status === 401 && token && retryOnUnauth && !['/auth/login', '/auth/register', '/auth/refresh'].includes(path)) {
       if (await refreshSession()) return apiRequest<T>(path, options, false);
       throw new ApiError(401, 'Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.');
     }

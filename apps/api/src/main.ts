@@ -17,6 +17,9 @@ async function bootstrap() {
   app.useBodyParser('json', { limit: '7mb' })
 
   const configService = app.get(ConfigService)
+  // Exact IPs/CIDRs only; never trust all proxies or a hop count on a public-facing API.
+  const trustedProxies = String(configService.get('TRUSTED_PROXY_CIDRS') ?? '').split(',').map(value => value.trim()).filter(Boolean)
+  if (trustedProxies.length) app.set('trust proxy', trustedProxies)
   const port = Number(configService.getOrThrow<string>('PORT'))
   if (!Number.isInteger(port) || port < 1 || port > 65535) {
     throw new Error('PORT must be an integer between 1 and 65535')
@@ -33,6 +36,7 @@ async function bootstrap() {
   const isDevelopment = configService.get<string>('NODE_ENV', 'development') !== 'production'
 
   app.enableCors({
+    exposedHeaders: ['X-Request-ID'],
     origin(origin, callback) {
       // Requests without an Origin header are server-to-server or local tools.
       if (!origin || configuredOrigins.includes(origin)) return callback(null, true)

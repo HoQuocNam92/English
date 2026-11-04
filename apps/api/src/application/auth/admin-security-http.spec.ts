@@ -22,9 +22,10 @@ test('HTTP enforces MFA on required and optional staff routes, preserves learner
   let grant: Date | null = null
   const db: any = {
     user: { findUnique: async ({ where }: any) => ({ id: where.id, email, status: 'active', userRoles: [{ role: { code: where.id === id ? 'admin' : 'learner', isActive: true, rolePermissions: [] } }] }) },
-    refreshToken: { findUnique: async () => ({ id: 'session', userId: id, expiresAt: new Date(Date.now() + 86400000), mfaVerifiedAt: grant }) },
+    refreshToken: { findUnique: async ({where}:any) => ({ id: where.id, userId: where.id === 'learner-session' ? '22222222-2222-4222-8222-222222222222' : id, expiresAt: new Date(Date.now() + 86400000), mfaVerifiedAt: grant }) },
     auditLog: { create: async ({ data }: any) => { events.push(data); return data } },
     adminMfa: { findUnique: async () => null },
+    $transaction: async (run: any) => run(db),
   }
   @Controller()
   class FixtureController {
@@ -65,7 +66,7 @@ test('HTTP enforces MFA on required and optional staff routes, preserves learner
     assert.deepEqual(await status.json(), { required: true, enabled: false, verified: false })
     assert.equal((await fetch(`${base}/catalog`, { headers: token({}) })).status, 403)
     assert.equal((await fetch(`${base}/catalog`)).status, 200)
-    assert.equal((await fetch(`${base}/protected`, { headers: token({ sub: '22222222-2222-4222-8222-222222222222' }) })).status, 200)
+    assert.equal((await fetch(`${base}/protected`, { headers: token({ sub: '22222222-2222-4222-8222-222222222222', sid: 'learner-session' }) })).status, 200)
     grant = now
     assert.equal((await fetch(`${base}/protected`, { headers: token({}) })).status, 403)
     assert.equal((await fetch(`${base}/protected`, { headers: token({ mfaAt: now.getTime() }) })).status, 200)

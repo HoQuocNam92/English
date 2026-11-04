@@ -46,9 +46,10 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     ]
 
     let mfaVerified = false
-    if (privileged(roles) && payload.sid) {
-      const session = await this.prisma.refreshToken.findUnique({ where: { id: payload.sid } })
-      if (!session || session.userId !== user.id || session.revokedAt || session.expiresAt <= new Date()) throw new UnauthorizedException('Phiên đăng nhập đã hết hạn')
+    if (!payload.sid) throw new UnauthorizedException('Vui lòng đăng nhập lại để cập nhật bảo mật phiên')
+    const session = await this.prisma.refreshToken.findUnique({ where: { id: payload.sid } })
+    if (!session || session.userId !== user.id || session.revokedAt || session.expiresAt <= new Date()) throw new UnauthorizedException('Phiên đăng nhập đã hết hạn')
+    if (privileged(roles)) {
       const at = session.mfaVerifiedAt?.getTime()
       mfaVerified = Boolean(at && payload.mfaAt === at && Date.now() - at < MFA_SESSION_MS)
     }

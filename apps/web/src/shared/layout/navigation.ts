@@ -80,7 +80,6 @@ export const adminNavigation: NavigationGroup[] = [
 // ─── Combined Portal Navigation (Admin + Teacher unified) ────────────────────
 // Admin thấy tất cả; Teacher chỉ thấy các item không có adminOnly
 export const combinedNavigation: NavigationGroup[] = [
-  { group: 'Tài khoản', items: [{ label: 'Bảo mật MFA', href: '/admin/security', icon: 'security' }] },
   {
     group: 'Tổng quan',
     items: [
@@ -133,6 +132,7 @@ export const combinedNavigation: NavigationGroup[] = [
       { label: 'Báo cáo thống kê', href: '/admin/reports', icon: 'leaderboard', adminOnly: true },
     ],
   },
+  { group: 'Tài khoản', items: [{ label: 'Bảo mật tài khoản', href: '/admin/security', icon: 'security' }] },
 ];
 
 export const teacherNavigation: NavigationGroup[] = [
@@ -148,6 +148,8 @@ export const teacherNavigation: NavigationGroup[] = [
     { label: 'Phân nhóm học viên', href: '/admin/learner-groups', icon: 'groups' },
     { label: 'Tiến độ học tập', href: '/admin/progress', icon: 'trending_up' },
   ] },
+  { group: 'Kiểm tra bảo mật', items: [{ label: 'Nhật ký thao tác', href: '/admin/audit-logs', icon: 'history', adminOnly: true }] },
+  { group: 'Tài khoản', items: [{ label: 'Bảo mật tài khoản', href: '/admin/security', icon: 'security' }] },
 ];
 
 // Legacy export (kept for backward compatibility)

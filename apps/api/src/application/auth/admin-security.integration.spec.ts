@@ -40,7 +40,7 @@ test('PostgreSQL commits MFA failures, allows only one concurrent recovery, and 
     assert.equal(listed.data[0].id, logId)
     await assert.rejects(logs.list({ ...user, roles: ['teacher'] }, { page: 1, limit: 25 }))
   } finally {
-    await db.auditLog.deleteMany({ where: { id: logId } })
+    // Append-only audit rows are intentionally retained in the isolated QA database.
     await db.adminMfa.deleteMany({ where: { userId: id } })
     await db.user.deleteMany({ where: { id } })
     await db.$disconnect()

@@ -317,10 +317,40 @@ model AuditLog {
   targetIds String[] @default([]) @map("target_ids")
   statusCode Int @map("status_code")
   ipAddress String? @map("ip_address") @db.VarChar(64)
+  eventKey String? @map("event_key") @db.VarChar(100)
+  targetType String? @map("target_type") @db.VarChar(40)
+  outcome String? @db.VarChar(20)
+  severity String @default("info") @db.VarChar(10)
+  requestId String? @map("request_id") @db.Uuid
+  userAgent String? @map("user_agent") @db.VarChar(500)
+  failureReason String? @map("failure_reason") @db.VarChar(100)
+  oldValues Json? @map("old_values")
+  newValues Json? @map("new_values")
+  requestedCount Int? @map("requested_count")
+  updatedCount Int? @map("updated_count")
+  skippedCount Int? @map("skipped_count")
   createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
   @@index([createdAt, id])
   @@index([actorId, createdAt])
+  @@index([eventKey, createdAt])
+  @@index([outcome, createdAt])
+  @@index([severity, createdAt])
+  @@index([targetType, createdAt])
+  @@index([ipAddress, createdAt])
+  @@index([requestId])
+  @@index([targetIds], type: Gin, map: "audit_logs_target_ids_gin_idx")
   @@map("audit_logs")
+}
+
+model AuditAlert {
+  id String @id @default(uuid()) @db.Uuid
+  dedupeKey String @unique @map("dedupe_key") @db.VarChar(150)
+  kind String @db.VarChar(50)
+  severity String @db.VarChar(10)
+  eventId String @map("event_id") @db.Uuid
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  @@index([createdAt, id])
+  @@map("audit_alerts")
 }
 
 /// Single-use password reset links. otp_hash retains its legacy name and stores a SHA-256 token hash.

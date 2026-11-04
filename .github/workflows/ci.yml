@@ -45,7 +45,7 @@ jobs:
         working-directory: apps/api
         env:
           ADMIN_SECURITY_QA: '1'
-        run: node --test -r ts-node/register src/application/auth/admin-security.integration.spec.ts
+        run: node --test -r ts-node/register src/application/auth/admin-security.integration.spec.ts src/infrastructure/audit/business-audit.integration.spec.ts src/infrastructure/audit/business-audit-http.integration.spec.ts src/application/auth/session-revocation.integration.spec.ts
       - name: Check identity constraints and reporting queries against PostgreSQL
         env:
           ACCOUNT_IDENTITY_QA: '1'

@@ -19,11 +19,11 @@ Admin xem **Quản trị hệ thống → Nhật ký thao tác** (`/admin/audit-
 
 Không ghi nội dung yêu cầu/phản hồi, mật khẩu, token, khóa TOTP hay mã khôi phục. IP là địa chỉ kết nối tới API, có thể là reverse proxy; ứng dụng không tin `X-Forwarded-For` do khách tự gửi. API không có thao tác sửa/xóa nhật ký. Đây là lịch sử từ khi triển khai, không tái dựng các thao tác trước đó; không ghi mọi lượt đọc nội dung học tập.
 
-Middleware ghi sau khi phản hồi hoàn tất. Lỗi ghi cơ sở dữ liệu được phát ra log máy chủ để vận hành theo dõi; nhật ký này không phải kho bằng chứng bất biến chống quản trị viên cơ sở dữ liệu can thiệp. Chưa có chính sách tự xóa lịch sử.
+Bản nâng cấp nghiệp vụ ghi thành công trong transaction; thất bại trước handler được ghi riêng và báo lỗi vận hành nếu mất kết nối. Có trigger append-only, cảnh báo, permission audit:read và công cụ archive theo chính sách. Xem báo cáo [nâng cấp audit](business-audit-upgrade.md) để biết giới hạn, lưu giữ, deploy và rollback.
 
 ## Phân quyền và triển khai
 
-Giao diện ẩn nút tự gỡ vai trò/tự khóa/tự xóa. API tiếp tục từ chối các thao tác đó, cấm tự giới hạn thời hạn vai trò, cấm thay thế ngầm vai trò admin và bảo vệ admin hoạt động cuối cùng. Chỉ admin được đọc audit logs, kể cả khi vai trò khác có quyền quản lý nội dung.
+Giao diện ẩn nút tự gỡ vai trò/tự khóa/tự xóa. API tiếp tục từ chối các thao tác đó, cấm tự giới hạn thời hạn vai trò, cấm thay thế ngầm vai trò admin và bảo vệ admin hoạt động cuối cùng. Admin hoặc nhân sự có permission audit:read được đọc audit logs; quyền quản lý nội dung không tự cho phép đọc audit.
 
 Migration `20261104090000_admin_security` có trong cả lịch sử Prisma cũ và lịch sử Docker cho cài đặt mới. Chạy luồng `node docker/migrate.cjs` như triển khai hiện tại, trước khi khởi động API mới. Kiểm thử PostgreSQL: đặt `ADMIN_SECURITY_QA=1` và `DATABASE_URL` trỏ tới database QA riêng, chạy `node --test -r ts-node/register src/application/auth/admin-security.integration.spec.ts` từ `apps/api`. Kiểm thử tạo và dọn dữ liệu của chính nó; không dùng database production để QA.
 

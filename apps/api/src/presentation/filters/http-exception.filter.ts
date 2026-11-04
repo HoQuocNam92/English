@@ -20,7 +20,7 @@ export class HttpExceptionFilter implements ExceptionFilter {
 
     if (status >= 500) {
       const error = exception instanceof Error ? exception : new Error(String(exception))
-      this.logger.error(`${request.method} ${request.url}: ${error.message}`, error.stack)
+      this.logger.error(`[${(request as any).auditRequestId ?? 'no-request-id'}] ${request.method} ${request.url}: ${error.message}`, error.stack)
     }
 
     response.status(status).json({

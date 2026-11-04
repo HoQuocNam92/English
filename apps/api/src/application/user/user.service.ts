@@ -1,3 +1,4 @@
+import { auditContext } from '../../infrastructure/audit/audit-context'
 import { BadRequestException, Injectable, NotFoundException, ConflictException } from '@nestjs/common'
 import { PrismaService } from '../../infrastructure/database/prisma.service'
 import * as bcrypt from 'bcrypt'
@@ -138,7 +139,12 @@ export class UsersService {
     if (!isMatch) throw new ConflictException('Mật khẩu hiện tại không đúng')
 
     const passwordHash = await bcrypt.hash(dto.newPassword, 12)
-    await this.prisma.user.update({ where: { id }, data: { passwordHash } })
+    const [, revoked] = await this.prisma.$transaction([
+      this.prisma.user.update({ where: { id }, data: { passwordHash } }),
+      this.prisma.refreshToken.updateMany({ where: { userId: id, revokedAt: null }, data: { revokedAt: new Date() } }),
+    ])
+    const request = auditContext.getStore()?.request
+    if (request) request.auditRevokedCount = revoked.count
     return { success: true }
   }
 
