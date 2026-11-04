@@ -2,6 +2,7 @@ import { isUUID } from 'class-validator'
 import { createHash } from 'node:crypto'
 
 export const safeId = (value: unknown): value is string => typeof value === 'string' && isUUID(value, 'all')
+export const routineAuditEvents = ['audit.read', 'auth.session_refresh'];
 export function eventDefinition(req: any) {
   const path = String(req.route?.path ?? '').replace(/^\/api\/v1/, '')
   const method = req.method

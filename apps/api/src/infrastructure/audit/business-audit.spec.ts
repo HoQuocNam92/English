@@ -6,6 +6,7 @@ import { plainToInstance } from 'class-transformer'
 import { randomUUID } from 'node:crypto'
 import { auditEvent } from './audit.middleware'
 import { eventDefinition, eventBase, safeValues, saveEvent, snapshot } from './audit-events'
+import { AuditInterceptor } from './audit.interceptor'
 import { AuditLogController, AuditQueryDto } from '../../presentation/audit-log.controller'
 
 const actor = { sub:randomUUID(),email:'reviewer@example.invalid',roles:['teacher'],permissions:['audit:read'] }
@@ -54,4 +55,22 @@ test('lesson content changes are traceable by digest without copying raw content
   assert.notEqual(before.contentDigest,after.contentDigest)
   assert.equal(before.sectionCount,1)
   assert.ok(!JSON.stringify(safeValues(before)).includes('PRIVATE_CONTENT'))
+})
+
+test('routine reads and refresh do not write success logs, but authentication/permission failures remain auditable', async()=>{
+ const interceptor=new AuditInterceptor({} as any)
+ for(const [path,method] of [['/api/v1/audit-logs','GET'],['/api/v1/audit-logs/alerts','GET'],['/api/v1/auth/refresh','POST']]) {
+  const req={route:{path},method};const sentinel={} as any
+  const context:any={switchToHttp:()=>({getRequest:()=>req,getResponse:()=>({statusCode:200})})}
+  assert.equal(interceptor.intercept(context,{handle:()=>sentinel}),sentinel)
+  assert.equal(auditEvent(req,401)?.outcome,'failure')
+  assert.equal(auditEvent(req,403)?.eventKey,'security.access_denied')
+ }
+ let captured:any
+ const db:any={auditLog:{findMany:(args:any)=>{captured=args;return []},count:()=>0},$transaction:async(values:any)=>Promise.all(values)}
+ const controller=new AuditLogController(db)
+ await controller.list(actor,{page:1,limit:10})
+ assert.deepEqual(captured.where.AND[0].OR,[{eventKey:null},{outcome:null},{NOT:{eventKey:{in:['audit.read','auth.session_refresh']},outcome:'success'}}])
+ await controller.list(actor,{page:1,limit:10,eventKey:'audit.read'})
+ assert.equal(captured.where.AND,undefined)
 })
