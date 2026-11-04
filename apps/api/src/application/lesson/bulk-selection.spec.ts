@@ -1,13 +1,15 @@
 import { test } from 'node:test'
 import { strict as assert } from 'node:assert'
 import { validate } from 'class-validator'
-import { BulkUpdateStatusDto } from '../../presentation/http-dto/content.dto'
+import { BulkUpdateStatusDto, UpdateLessonDto, ExamQuestionLinkDto } from '../../presentation/http-dto/content.dto'
+import { AnswerDto } from '../../presentation/http-dto/exam-attempt.dto'
 import { LessonsService } from './lesson.service'
 import { QuestionsService } from '../question/question.service'
 import { ExamsService } from '../exam/exam.service'
 import { VocabularyService } from '../vocabulary/vocabulary.service'
 
-const ids = Array.from({ length: 10 }, (_, i) => `4936f4ab-59a9-4c51-b3da-${String(i).padStart(12, '0')}`)
+// Exercise mixed API-created v4 and imported v5 records through every bulk endpoint.
+const ids = Array.from({ length: 10 }, (_, i) => `4936f4ab-59a9-${i % 2 ? '5c51' : '4c51'}-b3da-${String(i).padStart(12, '0')}`)
 
 for (const [model, Service] of [
   ['lesson', LessonsService], ['question', QuestionsService],
@@ -40,5 +42,18 @@ test('bulk request validation requires a nonempty list of unique identifiers', a
   assert.equal((await validate(Object.assign(new BulkUpdateStatusDto(), { ids, status: 'published' }))).length, 0)
   for (const input of [{}, { ids: [] }, { ids: [ids[0], ids[0]] }, { ids: ['invalid'] }]) {
     assert.ok((await validate(Object.assign(new BulkUpdateStatusDto(), { ...input, status: 'published' }))).length > 0)
+  }
+})
+
+test('imported vocabulary, question and option IDs work when editing lessons, linking exams and submitting answers', async () => {
+  const importedId = ids[1]
+  const cases = [
+    [UpdateLessonDto, { vocabularyIds: [importedId] }, { vocabularyIds: ['invalid'] }],
+    [ExamQuestionLinkDto, { questionId: importedId, order: 1 }, { questionId: 'invalid', order: 1 }],
+    [AnswerDto, { questionId: importedId, selectedOptionIds: [importedId] }, { questionId: importedId, selectedOptionIds: ['invalid'] }],
+  ] as const
+  for (const [Dto, valid, invalid] of cases) {
+    assert.equal((await validate(Object.assign(new Dto(), valid))).length, 0)
+    assert.ok((await validate(Object.assign(new Dto(), invalid))).length > 0)
   }
 })

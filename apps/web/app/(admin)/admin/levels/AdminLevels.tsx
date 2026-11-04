@@ -354,8 +354,7 @@ export default function AdminLevels({ createOnly = false }: { createOnly?: boole
 
 
       {/* Level Cards Grid */}
-      <section className="space-y-4" aria-labelledby="levels-list-title">
-        <h2 id="levels-list-title" className="text-lg font-semibold text-on-surface">Danh sách cấp độ</h2>
+      <section className="space-y-4" aria-label="Danh sách cấp độ">
         <BulkSelectionBar
           pageCount={selectionPage.items.length}
           selectedCount={selectedIds.length}

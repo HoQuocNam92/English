@@ -2,11 +2,11 @@ import { IsUUID, IsArray, IsString, IsOptional, ArrayMinSize, ValidateNested } f
 import { Type } from 'class-transformer'
 
 export class AnswerDto {
-  @IsUUID('4', { message: 'questionId phải là UUID hợp lệ' })
+  @IsUUID('all', { message: 'questionId phải là UUID hợp lệ' })
   questionId: string
 
   @IsArray()
-  @IsUUID('4', { each: true })
+  @IsUUID('all', { each: true })
   selectedOptionIds: string[]
 
   @IsOptional()

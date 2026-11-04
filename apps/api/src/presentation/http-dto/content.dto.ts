@@ -44,7 +44,7 @@ export class CreateVocabularyDto {
   partsOfSpeech?: string[]
 
   @ApiPropertyOptional({ type: [String] })
-  @IsOptional() @IsArray() @ArrayNotEmpty() @ArrayMaxSize(100) @ArrayUnique() @IsUUID('4', { each: true })
+  @IsOptional() @IsArray() @ArrayNotEmpty() @ArrayMaxSize(100) @ArrayUnique() @IsUUID('all', { each: true })
   domainIds?: string[]
 
   @ApiProperty({ example: 'The automatic adjustment of compute resources based on demand.' })
@@ -58,11 +58,11 @@ export class CreateVocabularyDto {
 
   @ApiProperty()
   @ValidateIf((dto) => dto.domainId !== undefined || dto.domainIds === undefined)
-  @IsUUID('4', { message: 'domainId không hợp lệ' })
+  @IsUUID('all', { message: 'domainId không hợp lệ' })
   domainId: string
 
   @ApiProperty()
-  @IsUUID('4', { message: 'levelId không hợp lệ' })
+  @IsUUID('all', { message: 'levelId không hợp lệ' })
   levelId: string
 
   @ApiPropertyOptional({ type: [String] })
@@ -93,7 +93,7 @@ export class UpdateVocabularyDto {
   partsOfSpeech?: string[]
 
   @ApiPropertyOptional({ type: [String] })
-  @IsOptional() @IsArray() @ArrayNotEmpty() @ArrayMaxSize(100) @ArrayUnique() @IsUUID('4', { each: true })
+  @IsOptional() @IsArray() @ArrayNotEmpty() @ArrayMaxSize(100) @ArrayUnique() @IsUUID('all', { each: true })
   domainIds?: string[]
 
   @ApiPropertyOptional()
@@ -127,7 +127,8 @@ export class BulkUpdateVocabularyStatusDto {
   status: string
 
   @ApiPropertyOptional({ type: [String], description: 'Chỉ cập nhật các từ vựng được chọn' })
-  @IsOptional() @IsArray() @ArrayNotEmpty() @ArrayMaxSize(3000) @IsUUID('4', { each: true })
+  // Imported vocabulary uses deterministic UUID v5; API-created vocabulary uses v4.
+  @IsOptional() @IsArray() @ArrayNotEmpty() @ArrayMaxSize(3000) @IsUUID('all', { each: true })
   ids?: string[]
 
   @ApiPropertyOptional()
@@ -153,7 +154,7 @@ export class BulkUpdateStatusDto {
   status: string
 
   @ApiProperty({ type: [String], description: 'Identifiers of the selected items only' })
-  @IsArray() @ArrayNotEmpty() @ArrayMaxSize(3000) @ArrayUnique() @IsUUID('4', { each: true })
+  @IsArray() @ArrayNotEmpty() @ArrayMaxSize(3000) @ArrayUnique() @IsUUID('all', { each: true })
   ids: string[]
 }
 
@@ -193,10 +194,10 @@ export class CreateLessonDto {
   @IsEnum(LESSON_TYPES)
   type: string
 
-  @ApiProperty() @IsUUID('4')
+  @ApiProperty() @IsUUID('all')
   domainId: string
 
-  @ApiProperty() @IsUUID('4')
+  @ApiProperty() @IsUUID('all')
   levelId: string
 
   @ApiProperty({ example: 30 })
@@ -216,15 +217,15 @@ export class CreateLessonDto {
   status?: string
 
   @ApiPropertyOptional({ type: [String] })
-  @IsOptional() @IsArray() @ArrayMaxSize(30) @IsUUID('4', { each: true })
+  @IsOptional() @IsArray() @ArrayMaxSize(30) @IsUUID('all', { each: true })
   certificateIds?: string[]
 
   @ApiPropertyOptional({ type: [String] })
-  @IsOptional() @IsArray() @ArrayMaxSize(200) @IsUUID('4', { each: true })
+  @IsOptional() @IsArray() @ArrayMaxSize(200) @IsUUID('all', { each: true })
   vocabularyIds?: string[]
 
   @ApiPropertyOptional({ type: [String] })
-  @IsOptional() @IsArray() @ArrayMaxSize(30) @ArrayUnique() @IsUUID('4', { each: true })
+  @IsOptional() @IsArray() @ArrayMaxSize(30) @ArrayUnique() @IsUUID('all', { each: true })
   topicIds?: string[]
 
   @ApiPropertyOptional({ type: [LessonSectionDto] })
@@ -239,9 +240,9 @@ export class UpdateLessonDto {
   summary?: string
   @ApiPropertyOptional({ enum: LESSON_TYPES }) @IsOptional() @IsEnum(LESSON_TYPES)
   type?: string
-  @ApiPropertyOptional() @IsOptional() @IsUUID('4')
+  @ApiPropertyOptional() @IsOptional() @IsUUID('all')
   domainId?: string
-  @ApiPropertyOptional() @IsOptional() @IsUUID('4')
+  @ApiPropertyOptional() @IsOptional() @IsUUID('all')
   levelId?: string
   @ApiPropertyOptional() @IsOptional() @IsInt() @Min(1) @Max(480)
   estimatedMinutes?: number
@@ -251,13 +252,13 @@ export class UpdateLessonDto {
   keyConcepts?: string[]
   @ApiPropertyOptional({ enum: ['draft', 'published', 'archived'] }) @IsOptional() @IsEnum(['draft', 'published', 'archived'])
   status?: string
-  @ApiPropertyOptional({ type: [String] }) @IsOptional() @IsArray() @ArrayMaxSize(30) @IsUUID('4', { each: true })
+  @ApiPropertyOptional({ type: [String] }) @IsOptional() @IsArray() @ArrayMaxSize(30) @IsUUID('all', { each: true })
   certificateIds?: string[]
-  @ApiPropertyOptional({ type: [String] }) @IsOptional() @IsArray() @ArrayMaxSize(200) @IsUUID('4', { each: true })
+  @ApiPropertyOptional({ type: [String] }) @IsOptional() @IsArray() @ArrayMaxSize(200) @IsUUID('all', { each: true })
   vocabularyIds?: string[]
 
   @ApiPropertyOptional({ type: [String] })
-  @IsOptional() @IsArray() @ArrayMaxSize(30) @ArrayUnique() @IsUUID('4', { each: true })
+  @IsOptional() @IsArray() @ArrayMaxSize(30) @ArrayUnique() @IsUUID('all', { each: true })
   topicIds?: string[]
   @ApiPropertyOptional({ type: [LessonSectionDto] }) @IsOptional() @IsArray() @ArrayMaxSize(100) @ValidateNested({ each: true }) @Type(() => LessonSectionDto)
   sections?: LessonSectionDto[]
@@ -319,11 +320,11 @@ export class CreateQuestionDto {
   acceptedAnswers?: string[]
 
   @ApiProperty()
-  @IsUUID('4', { message: 'domainId không hợp lệ' })
+  @IsUUID('all', { message: 'domainId không hợp lệ' })
   domainId: string
 
   @ApiProperty()
-  @IsUUID('4', { message: 'levelId không hợp lệ' })
+  @IsUUID('all', { message: 'levelId không hợp lệ' })
   levelId: string
 
   @ApiPropertyOptional()
@@ -336,7 +337,7 @@ export class CreateQuestionDto {
   options?: QuestionOptionDto[]
 
   @ApiPropertyOptional({ type: [String] })
-  @IsOptional() @IsArray() @ArrayMaxSize(20) @IsUUID('4', { each: true })
+  @IsOptional() @IsArray() @ArrayMaxSize(20) @IsUUID('all', { each: true })
   certificateIds?: string[]
 }
 
@@ -495,7 +496,7 @@ export class UpdateQuestionDto {
   options?: QuestionOptionDto[]
 
   @ApiPropertyOptional({ type: [String] })
-  @IsOptional() @IsArray() @ArrayMaxSize(20) @IsUUID('4', { each: true })
+  @IsOptional() @IsArray() @ArrayMaxSize(20) @IsUUID('all', { each: true })
   certificateIds?: string[]
 }
 
@@ -503,7 +504,7 @@ export class UpdateQuestionDto {
 
 export class ExamQuestionLinkDto {
   @ApiProperty()
-  @IsUUID('4', { message: 'questionId không hợp lệ' })
+  @IsUUID('all', { message: 'questionId không hợp lệ' })
   questionId: string
 
   @ApiProperty()
@@ -554,15 +555,15 @@ export class CreateExamDto {
   availableUntil?: string
 
   @ApiProperty()
-  @IsUUID('4', { message: 'domainId không hợp lệ' })
+  @IsUUID('all', { message: 'domainId không hợp lệ' })
   domainId: string
 
   @ApiProperty()
-  @IsUUID('4', { message: 'levelId không hợp lệ' })
+  @IsUUID('all', { message: 'levelId không hợp lệ' })
   levelId: string
 
   @ApiPropertyOptional()
-  @IsOptional() @IsUUID('4')
+  @IsOptional() @IsUUID('all')
   certificateId?: string
 
   @ApiPropertyOptional()
@@ -624,7 +625,7 @@ export class UpdateExamDto {
   levelId?: string
 
   @ApiPropertyOptional()
-  @IsOptional() @IsUUID('4')
+  @IsOptional() @IsUUID('all')
   certificateId?: string
 
   @ApiPropertyOptional()
@@ -794,7 +795,7 @@ export class TrackProgressDto {
   resourceType: 'lesson' | 'domain' | 'certificate'
 
   @ApiProperty()
-  @IsUUID('4', { message: 'resourceId không hợp lệ' })
+  @IsUUID('all', { message: 'resourceId không hợp lệ' })
   resourceId: string
 
   @ApiPropertyOptional({ enum: ['not_started', 'in_progress', 'completed'] })
