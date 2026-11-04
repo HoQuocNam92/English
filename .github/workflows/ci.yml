@@ -41,6 +41,11 @@ jobs:
       - run: pnpm install --frozen-lockfile
       - run: pnpm --filter @techenglish/api db:generate
       - run: node docker/migrate.cjs
+      - name: Verify admin MFA and audit logs against PostgreSQL
+        working-directory: apps/api
+        env:
+          ADMIN_SECURITY_QA: '1'
+        run: node --test -r ts-node/register src/application/auth/admin-security.integration.spec.ts
       - name: Check identity constraints and reporting queries against PostgreSQL
         env:
           ACCOUNT_IDENTITY_QA: '1'

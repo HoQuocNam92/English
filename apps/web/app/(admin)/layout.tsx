@@ -4,6 +4,7 @@ import { usePathname, useRouter } from 'next/navigation';
 import { AppShell } from '@/shared/layout/AppShell';
 import { RouteGuard } from '@/shared/layout/RouteGuard';
 import { useAuth } from '@/features/auth/presentation';
+import { AdminMfaBoundary } from '@/shared/auth/AdminMfaBoundary';
 
 const TEACHER_ROUTES = [
   '/admin/dashboard', '/admin/learning-content',
@@ -12,6 +13,7 @@ const TEACHER_ROUTES = [
   '/admin/test-results', '/admin/progress',
   '/admin/learner-groups',
   '/admin/search',
+  '/admin/security',
 ];
 
 function AdminRoleBoundary({ children }: { children: React.ReactNode }) {
@@ -30,7 +32,7 @@ function AdminRoleBoundary({ children }: { children: React.ReactNode }) {
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
   return (
     <RouteGuard allowedRoles={['admin', 'teacher']}>
-      <AdminRoleBoundary><AppShell>{children}</AppShell></AdminRoleBoundary>
+      <AdminMfaBoundary><AdminRoleBoundary><AppShell>{children}</AppShell></AdminRoleBoundary></AdminMfaBoundary>
     </RouteGuard>
   );
 }

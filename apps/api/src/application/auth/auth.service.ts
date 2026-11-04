@@ -96,17 +96,17 @@ export class AuthService {
   private async generateTokensForUser(full: any) {
     const payload = this.buildPayload(full)
 
-    const accessToken = this.jwt.sign(payload, { expiresIn: '15m' })
     const refreshToken = crypto.randomBytes(40).toString('hex')
     const tokenHash = crypto.createHash('sha256').update(refreshToken).digest('hex')
 
-    await this.prisma.refreshToken.create({
+    const session = await this.prisma.refreshToken.create({
       data: {
         userId: full.id,
         tokenHash,
         expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
       }
     })
+    const accessToken = this.jwt.sign({ ...payload, sid: session.id }, { expiresIn: '15m' })
 
     // Update last login
     await this.prisma.userDetail.update({
@@ -240,7 +240,7 @@ export class AuthService {
     if (!full || full.status !== 'active' || full.deletedAt) throw new UnauthorizedException('Tài khoản không còn hoạt động hoặc phiên đăng nhập không hợp lệ')
 
     const payload = this.buildPayload(full)
-    const accessToken = this.jwt.sign(payload, { expiresIn: '15m' })
+    const accessToken = this.jwt.sign({ ...payload, sid: stored.id, mfaAt: stored.mfaVerifiedAt?.getTime() }, { expiresIn: '15m' })
 
     return { accessToken }
   }

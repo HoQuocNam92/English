@@ -4,6 +4,7 @@ import { PassportStrategy } from '@nestjs/passport'
 import { ExtractJwt, Strategy } from 'passport-jwt'
 import { ConfigService } from '@nestjs/config'
 import { PrismaService } from '../../infrastructure/database/prisma.service'
+import { MFA_SESSION_MS, privileged } from '../../application/auth/admin-mfa.service'
 
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy) {
@@ -34,15 +35,23 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     if (user?.status === 'suspended' && !user.deletedAt) throw new UnauthorizedException(suspensionMessage(user))
     if (!user || user.status !== 'active' || user.deletedAt) throw new UnauthorizedException('Phiên đăng nhập không hợp lệ hoặc tài khoản không còn hoạt động')
 
-    const roles = user.userRoles.map((ur) => ur.role.code)
+    const activeRoles = user.userRoles.filter(ur => ur.role.isActive !== false && (!ur.expiresAt || ur.expiresAt > new Date()))
+    const roles = activeRoles.map((ur) => ur.role.code)
     const permissions = [
       ...new Set(
-        user.userRoles.flatMap((ur) =>
+        activeRoles.flatMap((ur) =>
           ur.role.rolePermissions.map((rp) => rp.permission.code),
         ),
       ),
     ]
 
-    return { sub: user.id, email: user.email, roles, permissions }
+    let mfaVerified = false
+    if (privileged(roles) && payload.sid) {
+      const session = await this.prisma.refreshToken.findUnique({ where: { id: payload.sid } })
+      if (!session || session.userId !== user.id || session.revokedAt || session.expiresAt <= new Date()) throw new UnauthorizedException('Phiên đăng nhập đã hết hạn')
+      const at = session.mfaVerifiedAt?.getTime()
+      mfaVerified = Boolean(at && payload.mfaAt === at && Date.now() - at < MFA_SESSION_MS)
+    }
+    return { sub: user.id, email: user.email, roles, permissions, sid: payload.sid, mfaVerified }
   }
 }

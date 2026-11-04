@@ -57,15 +57,19 @@ export class AuthController {
   @Post('login')
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'Login bằng email/password (admin & giảng viên)' })
-  login(@Body() dto: LoginDto) {
-    return this.authService.login(dto)
+  async login(@Body() dto: LoginDto, @Request() req: any) {
+    const result = await this.authService.login(dto)
+    req.user = { sub: result.user.id, email: result.user.email }
+    return result
   }
 
   @Post('register')
   @HttpCode(HttpStatus.CREATED)
   @ApiOperation({ summary: 'Đăng ký tài khoản learner mới (mobile)' })
-  register(@Body() dto: RegisterDto) {
-    return this.authService.register(dto)
+  async register(@Body() dto: RegisterDto, @Request() req: any) {
+    const result = await this.authService.register(dto)
+    req.user = { sub: result.user.id, email: result.user.email }
+    return result
   }
 
   @Post('forgot-password')

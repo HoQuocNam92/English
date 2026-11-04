@@ -44,6 +44,7 @@ export class RolesService {
 
   async update(id: string, dto: { name?: string; description?: string; isActive?: boolean }) {
     const role = await this.findOne(id)
+    if (role.code === 'admin' && dto.isActive === false) throw new ForbiddenException('Không thể vô hiệu hóa vai trò quản trị viên')
     return this.prisma.role.update({ where: { id: role.id }, data: dto })
   }
 
@@ -95,7 +96,13 @@ export class RolesService {
     const user = await this.prisma.user.findUnique({ where: { id: dto.userId } })
     if (!user) throw new NotFoundException('Không tìm thấy người dùng')
     const role = await this.findOne(dto.roleId)
+    if ((role.code !== 'admin' || dto.expiresAt) && await this.prisma.userRole.count({ where: { userId: dto.userId, role: { code: 'admin' } } })) {
+      throw new ForbiddenException('Cần gỡ vai trò quản trị viên bằng chức năng phân quyền trước khi đổi vai trò')
+    }
     const coreRoleCodes = ['admin', 'teacher', 'learner']
+    if (dto.userId === dto.grantedById && (role.code !== 'admin' || dto.expiresAt)) {
+      throw new ForbiddenException('Không thể tự thay đổi vai trò hoặc giới hạn quyền truy cập của chính mình')
+    }
     const defaultLevel = role.code === 'learner'
       ? await this.prisma.level.findFirst({ orderBy: { order: 'asc' } })
       : null
@@ -103,6 +110,7 @@ export class RolesService {
 
     await this.prisma.$transaction(async (tx) => {
       if (coreRoleCodes.includes(role.code)) {
+        if (role.code !== 'admin' && await tx.userRole.count({ where: { userId: dto.userId, role: { code: 'admin' } } })) throw new ForbiddenException('Không thể tự động thay thế vai trò quản trị viên')
         const otherCoreRoles = await tx.role.findMany({
           where: { code: { in: coreRoleCodes.filter(code => code !== role.code) } },
           select: { id: true },
@@ -131,15 +139,20 @@ export class RolesService {
       } else if (role.code === 'admin' || role.code === 'teacher') {
         await tx.learnerProfile.deleteMany({ where: { userId: dto.userId } })
       }
-    })
+    }, { isolationLevel: 'Serializable' })
   }
 
-  async revokeRoleFromUser(userId: string, roleId: string) {
+  async revokeRoleFromUser(userId: string, roleId: string, actorId?: string) {
+    if (userId === actorId) throw new ForbiddenException('Không thể tự gỡ vai trò của chính mình')
     const role = await this.findOne(roleId)
     await this.prisma.$transaction(async (tx) => {
+      if (role.code === 'admin') {
+        const remaining = await tx.userRole.count({ where: { roleId, userId: { not: userId }, user: { status: 'active', deletedAt: null }, OR: [{ expiresAt: null }, { expiresAt: { gt: new Date() } }] } })
+        if (!remaining) throw new ForbiddenException('Không thể gỡ quản trị viên hoạt động cuối cùng')
+      }
       await tx.userRole.deleteMany({ where: { userId, roleId } })
       if (role.code === 'learner') await tx.learnerProfile.deleteMany({ where: { userId } })
-    })
+    }, { isolationLevel: 'Serializable' })
   }
 
   async findAllPermissions() {

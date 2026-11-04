@@ -1,4 +1,5 @@
 'use client';
+import { useAuth } from '@/features/auth/presentation';
 
 import { ClearFiltersButton } from '@/shared/ui/ClearFiltersButton';
 import { showToast } from '@/shared/ui/AppFeedback';
@@ -294,6 +295,7 @@ function EditUserModal({ user, onClose, onSaved }: { user: UserItem; onClose: ()
 
 // ─── Page ──────────────────────────────────────────────────────────────
 export default function AdminUsers({ createOnly = false }: { createOnly?: boolean }) {
+  const { session } = useAuth();
   const router = useRouter();
   const [users, setUsers] = React.useState<UserItem[]>([]);
   const [total, setTotal] = React.useState(0);
@@ -494,8 +496,8 @@ export default function AdminUsers({ createOnly = false }: { createOnly?: boolea
                         <ActionGroup>
                           {user.deletedAt && <button type="button" disabled={!user.canRestore || actionLoading === user.id} onClick={() => void handleRestore(user)} className="min-h-11 rounded-xl border border-primary/30 px-3 py-2 text-sm font-bold text-primary disabled:opacity-70">Khôi phục</button>}
                           {!user.deletedAt && <ActionButton action="edit" label="Chỉnh sửa người dùng" onClick={() => setEditingUser(user)} />}
-                          {!user.deletedAt && !user.roles?.includes('admin') && <ActionButton action={user.status === 'active' ? 'lock' : 'unlock'} loading={actionLoading === user.id} onClick={() => handleToggleStatus(user)} />}
-                          {!user.roles?.includes('admin') && <ActionButton action="delete" disabled={actionLoading === user.id} onClick={() => handleDelete(user)} />}
+                          {session && user.id !== session.user.id && !user.deletedAt && !user.roles?.includes('admin') && <ActionButton action={user.status === 'active' ? 'lock' : 'unlock'} loading={actionLoading === user.id} onClick={() => handleToggleStatus(user)} />}
+                          {session && user.id !== session.user.id && !user.roles?.includes('admin') && <ActionButton action="delete" disabled={actionLoading === user.id} onClick={() => handleDelete(user)} />}
                         </ActionGroup>
                     </td>
                   </tr>

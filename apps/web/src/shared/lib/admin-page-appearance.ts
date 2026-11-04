@@ -7,6 +7,7 @@ const colors: Record<string, string> = {
   workspace_premium: '#b45309', help: '#c026d3', quiz: '#7c3aed', badge: '#0891b2',
   verified: '#b45309', work_outline: '#b45309', groups: '#0891b2', fact_check: '#059669',
   trending_up: '#059669', leaderboard: '#2563eb', phone_iphone: '#7c3aed',
+  security: '#0d9488', history: '#7c3aed',
 };
 
 export function adminIconColor(icon: string): string {

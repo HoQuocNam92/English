@@ -28,6 +28,7 @@ export class HttpExceptionFilter implements ExceptionFilter {
       timestamp: new Date().toISOString(),
       path: request.url,
       message: typeof message === 'string' ? message : (message as any).message ?? message,
+      ...(typeof message === 'object' && (message as any)?.code === 'MFA_REQUIRED' ? { code: 'MFA_REQUIRED' } : {}),
     })
   }
 }

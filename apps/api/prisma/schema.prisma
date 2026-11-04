@@ -281,6 +281,7 @@ model RefreshToken {
   tokenHash String    @unique @map("token_hash") @db.VarChar(255)
   expiresAt DateTime  @map("expires_at") @db.Timestamptz(6)
   revokedAt DateTime? @map("revoked_at") @db.Timestamptz(6)
+  mfaVerifiedAt DateTime? @map("mfa_verified_at") @db.Timestamptz(6)
   userAgent String?   @map("user_agent") @db.VarChar(500)
   ipAddress String?   @map("ip_address") @db.VarChar(45)
   createdAt DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
@@ -290,6 +291,36 @@ model RefreshToken {
   @@index([userId])
   @@index([tokenHash])
   @@map("refresh_tokens")
+}
+
+/// MFA state is independent of profile responses. Secrets are encrypted; recovery codes are hashed.
+model AdminMfa {
+  userId String @id @map("user_id") @db.Uuid
+  secretEncrypted String @map("secret_encrypted")
+  enabledAt DateTime? @map("enabled_at") @db.Timestamptz(6)
+  pendingExpiresAt DateTime @map("pending_expires_at") @db.Timestamptz(6)
+  lastStep Int @default(-1) @map("last_step")
+  recoveryHashes String[] @default([]) @map("recovery_hashes")
+  failedAttempts Int @default(0) @map("failed_attempts")
+  lockedUntil DateTime? @map("locked_until") @db.Timestamptz(6)
+  @@map("admin_mfa")
+}
+
+/// Append-only through the application API; no request/response bodies or credentials.
+model AuditLog {
+  id String @id @default(uuid()) @db.Uuid
+  actorId String? @map("actor_id") @db.Uuid
+  actorEmail String? @map("actor_email") @db.VarChar(254)
+  method String @db.VarChar(10)
+  action String? @db.VarChar(30)
+  route String @db.VarChar(300)
+  targetIds String[] @default([]) @map("target_ids")
+  statusCode Int @map("status_code")
+  ipAddress String? @map("ip_address") @db.VarChar(64)
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  @@index([createdAt, id])
+  @@index([actorId, createdAt])
+  @@map("audit_logs")
 }
 
 /// Single-use password reset links. otp_hash retains its legacy name and stores a SHA-256 token hash.
