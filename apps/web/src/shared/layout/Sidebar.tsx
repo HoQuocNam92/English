@@ -92,8 +92,9 @@ function NavItem({ item, isCollapsed }: { item: NavigationItem; isCollapsed?: bo
 }
 
 function NavGroup({ group, isAdmin, isCollapsed }: { group: NavigationGroup; isAdmin: boolean; isCollapsed?: boolean }) {
+  const { session } = useAuth();
   // Lọc items theo role: teacher không thấy adminOnly items
-  const visibleItems = group.items.filter((item) => isAdmin || !item.adminOnly);
+  const visibleItems = group.items.filter((item) => isAdmin || (item.href === '/admin/audit-logs' && session?.user?.permissions?.includes('audit:read')) || !item.adminOnly);
   if (visibleItems.length === 0) return null;
 
   return (

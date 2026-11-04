@@ -9,6 +9,7 @@ import { LoginDto, RegisterDto, AuthChangePasswordDto, ForgotPasswordDto, ResetP
 import * as bcrypt from 'bcrypt'
 import * as crypto from 'crypto'
 import { isEmail } from 'class-validator'
+import { auditContext } from '../../infrastructure/audit/audit-context'
 
 @Injectable()
 export class AuthService {
@@ -113,6 +114,9 @@ export class AuthService {
       where: { userId: full.id },
       data: { lastLoginAt: new Date() }
     }).catch(() => {})
+
+    const request = auditContext.getStore()?.request
+    if (request) request.user = { sub: full.id, email: full.email }
 
     return {
       accessToken,
@@ -241,16 +245,19 @@ export class AuthService {
 
     const payload = this.buildPayload(full)
     const accessToken = this.jwt.sign({ ...payload, sid: stored.id, mfaAt: stored.mfaVerifiedAt?.getTime() }, { expiresIn: '15m' })
+    const request = auditContext.getStore()?.request
+    if (request) request.user = { sub: full.id, email: full.email }
 
     return { accessToken }
   }
 
   async logout(refreshToken: string) {
     const tokenHash = crypto.createHash('sha256').update(refreshToken).digest('hex')
-    await this.prisma.refreshToken.updateMany({
+    const result = await this.prisma.refreshToken.updateMany({
       where: { tokenHash, revokedAt: null },
       data: { revokedAt: new Date() }
     })
+    return { updatedCount: result.count, requestedCount: 1, skippedCount: result.count ? 0 : 1 }
   }
 
   async me(userId: string) {
@@ -280,13 +287,12 @@ export class AuthService {
     if (!valid) throw new UnauthorizedException('Mật khẩu hiện tại không chính xác')
 
     const passwordHash = await bcrypt.hash(dto.newPassword, 12)
-    await this.prisma.user.update({ where: { id: userId }, data: { passwordHash } })
-
-    // Revoke all refresh tokens
-    await this.prisma.refreshToken.updateMany({
-      where: { userId, revokedAt: null },
-      data: { revokedAt: new Date() }
-    })
+    const [, revoked] = await this.prisma.$transaction([
+      this.prisma.user.update({ where: { id: userId }, data: { passwordHash } }),
+      this.prisma.refreshToken.updateMany({ where: { userId, revokedAt: null }, data: { revokedAt: new Date() } }),
+    ])
+    const request = auditContext.getStore()?.request
+    if (request) request.auditRevokedCount = revoked.count
   }
 
   private async getPasswordResetUser(email: string) {
@@ -345,6 +351,8 @@ export class AuthService {
 
   async resetPassword(dto: ResetPasswordDto) {
     const { user, otpHash } = await this.getResetLinkUser(dto.token)
+    const request = auditContext.getStore()?.request
+    if (request) request.auditTargetId = user.id
     const passwordHash = await bcrypt.hash(dto.newPassword, 12)
 
     await this.prisma.$transaction(async (tx) => {
@@ -365,7 +373,8 @@ export class AuthService {
       })
       if (updated.count !== 1) throw new BadRequestException('Tài khoản đã thay đổi. Vui lòng yêu cầu liên kết mới')
       await tx.passwordResetToken.updateMany({ where: { userId: user.id, usedAt: null }, data: { usedAt: new Date() } })
-      await tx.refreshToken.updateMany({ where: { userId: user.id, revokedAt: null }, data: { revokedAt: new Date() } })
+      const revoked = await tx.refreshToken.updateMany({ where: { userId: user.id, revokedAt: null }, data: { revokedAt: new Date() } })
+      if (request) request.auditRevokedCount = revoked.count
     })
     return { message: 'Đặt lại mật khẩu thành công. Vui lòng đăng nhập bằng mật khẩu mới.' }
   }

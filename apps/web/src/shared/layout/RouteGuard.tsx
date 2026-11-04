@@ -5,6 +5,7 @@ import * as React from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/features/auth/presentation';
 import { roleHome } from '@/shared/lib/role-home';
+import { SessionMonitor } from '@/shared/auth/SessionMonitor';
 
 interface RouteGuardProps {
   children: React.ReactNode;
@@ -54,5 +55,5 @@ export function RouteGuard({ children, allowedRoles = [], redirectTo }: RouteGua
   const userRoles = session.user.roles ?? (session.user.role ? [session.user.role] : []);
   if (allowedRoles.length > 0 && !allowedRoles.some((role) => userRoles.includes(role))) return null;
 
-  return <>{children}</>;
+  return <><SessionMonitor />{children}</>;
 }

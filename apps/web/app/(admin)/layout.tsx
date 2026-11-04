@@ -23,7 +23,7 @@ function AdminRoleBoundary({ children }: { children: React.ReactNode }) {
   const roles = session?.user?.roles ?? (session?.user?.role ? [session.user.role] : []);
   // A stale/misconfigured multi-role session must not elevate a teacher to admin.
   const isAdmin = roles.includes('admin') && !roles.includes('teacher');
-  const allowed = isAdmin || TEACHER_ROUTES.some((route) => pathname === route || pathname.startsWith(`${route}/`));
+  const allowed = isAdmin || (pathname === '/admin/audit-logs' && session?.user?.permissions?.includes('audit:read')) || TEACHER_ROUTES.some((route) => pathname === route || pathname.startsWith(`${route}/`));
   React.useEffect(() => { if (session && !allowed) router.replace('/admin/dashboard'); }, [session, allowed, router]);
   if (session && !allowed) return null;
   return <>{children}</>;

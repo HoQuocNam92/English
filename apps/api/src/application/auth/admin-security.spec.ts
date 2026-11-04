@@ -109,7 +109,9 @@ test('JWT strategy requires a live matching MFA session, rejects stale proof and
   session.revokedAt = now
   await assert.rejects(strategy.validate({ sub: user.sub, sid: 'session', mfaAt: now.getTime() }))
   account.userRoles[0].expiresAt = new Date(Date.now() - 1000)
-  assert.deepEqual((await strategy.validate({ sub: user.sub })).roles, [])
+  session.revokedAt = null
+  assert.deepEqual((await strategy.validate({ sub: user.sub, sid: 'session' })).roles, [])
+  await assert.rejects(strategy.validate({ sub: user.sub }))
 })
 
 test('the final recovery code can replace a lost authenticator without a second recovery code', async () => {
@@ -168,9 +170,9 @@ test('audit API rejects teachers even with granular permissions and bounds pagin
   let args: any
   const db: any = { auditLog: { findMany: (value: any) => { args = value; return [] }, count: () => 3 }, $transaction: async (values: any) => Promise.all(values) }
   const controller = new AuditLogController(db)
-  await assert.rejects(controller.list({ ...user, roles: ['teacher'], permissions: ['users:read'] }, { page: 1, limit: 25 }), /Chỉ quản trị viên/)
+  await assert.rejects(controller.list({ ...user, roles: ['teacher'], permissions: ['users:read'] }, { page: 1, limit: 25 }), /không có quyền/)
   const result = await controller.list(user, { page: 2, limit: 25, outcome: 'failure', search: 'admin' })
   assert.equal(args.skip, 25)
-  assert.deepEqual(args.where.statusCode, { gte: 400 })
+  assert.equal(args.where.outcome, 'failure')
   assert.equal(result.meta.total, 3)
 })

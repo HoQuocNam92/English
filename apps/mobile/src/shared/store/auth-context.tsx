@@ -1,6 +1,8 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { apiRequest } from '../api/api-client';
+import { AppState } from 'react-native';
+import { ApiError } from '../api/api-client';
 
 interface User {
   id: string;
@@ -35,6 +37,25 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [state, setState] = useState<AuthState>({
     user: null, accessToken: null, isLoggedIn: false, isLoading: true
   });
+  useEffect(() => {
+    if (!state.isLoggedIn) return;
+    let active = true, checking = false;
+    const check = async () => {
+      if (!active || checking || AppState.currentState !== 'active') return;
+      checking = true;
+      try { await apiRequest('/auth/me'); }
+      catch (error) {
+        if (active && error instanceof ApiError && error.statusCode === 401) {
+          await Promise.all(['access_token', 'refresh_token', 'user'].map(key => AsyncStorage.removeItem(key)));
+          if (active) setState({ user: null, accessToken: null, isLoggedIn: false, isLoading: false });
+        }
+      } finally { checking = false; }
+    };
+    void check();
+    const timer = setInterval(() => { void check(); }, 5000);
+    const subscription = AppState.addEventListener('change', next => { if (next === 'active') void check(); });
+    return () => { active = false; clearInterval(timer); subscription.remove(); };
+  }, [state.isLoggedIn]);
 
   useEffect(() => {
     // Restore session

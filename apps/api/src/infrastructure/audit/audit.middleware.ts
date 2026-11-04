@@ -1,25 +1,21 @@
 import { Injectable, Logger, NestMiddleware } from '@nestjs/common'
+import { randomUUID } from 'node:crypto'
 import { PrismaService } from '../database/prisma.service'
+import { auditContext } from './audit-context'
+import { eventBase, eventDefinition, saveEvent } from './audit-events'
+import { safeId } from './audit-events'
 
-const uuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i
 export function auditEvent(req: any, statusCode: number) {
-  const route = String(req.route?.path ?? '').slice(0, 300)
-  if (!route) return null
-  const authEvent = route.includes('/auth/') && !route.endsWith('/me') && !route.endsWith('/mfa/status')
-  if (!authEvent && (!req.user || (req.method === 'GET' && !route.includes('audit-logs')))) return null
-  const params = Object.values(req.params ?? {}).filter((id): id is string => typeof id === 'string' && uuid.test(id))
-  // Only UUID identifiers are retained from bodies; credential values and personal text never enter the log.
-  const candidates = [...(Array.isArray(req.body?.ids) ? req.body.ids : []), req.body?.userId, req.body?.questionId, req.body?.permissionId]
-  const selected = candidates.filter((id: any) => typeof id === 'string' && uuid.test(id)).slice(0, 10000)
-  const loginUser = req.user?.user
-  return {
-    actorId: uuid.test(req.user?.sub ?? loginUser?.id ?? '') ? (req.user?.sub ?? loginUser?.id) : null,
-    actorEmail: req.user?.email ?? loginUser?.email ?? null,
-    method: req.method, action: ['draft', 'published', 'archived', 'active', 'inactive'].includes(req.body?.status) ? req.body.status : typeof req.body?.isActive === 'boolean' ? (req.body.isActive ? 'active' : 'inactive') : null,
-    route, targetIds: [...new Set<string>([...params, ...selected])], statusCode,
-    // Use the socket peer; never trust a client-supplied forwarded-for header.
-    ipAddress: String(req.socket?.remoteAddress ?? '').slice(0, 64) || null,
+  if (!req.route?.path) return null
+  if (String(req.route.path).endsWith('/auth/google/callback')) {
+    const success = !req.user?.authError && typeof req.user?.accessToken === 'string' && safeId(req.user?.user?.id) && statusCode < 400
+    return { ...eventBase(req, statusCode), outcome: success ? 'success' : 'failure', ...(success ? {} : {failureReason:'AUTHENTICATION_FAILED'}) }
   }
+  if (statusCode < 400) return null // completed business events are written by the interceptor
+  const definition = eventDefinition(req)
+  if (!definition && statusCode !== 403) return null
+  const base = eventBase(req, statusCode)
+  return { ...base, ...(statusCode === 403 ? { eventKey: 'security.access_denied' } : {}), outcome: 'failure', ...(Array.isArray(req.body?.ids) ? {requestedCount:req.body.ids.length,updatedCount:0,skippedCount:0} : {}), failureReason: statusCode === 403 ? 'ACCESS_DENIED' : statusCode === 401 ? 'AUTHENTICATION_FAILED' : statusCode === 400 ? 'VALIDATION_OR_BUSINESS_REJECTION' : statusCode === 409 ? 'CONCURRENT_OR_CONFLICT' : 'REQUEST_FAILED', severity: base.severity === 'critical' ? 'critical' : 'info' }
 }
 
 @Injectable()
@@ -27,10 +23,25 @@ export class AuditMiddleware implements NestMiddleware {
   private logger = new Logger(AuditMiddleware.name)
   constructor(private prisma: PrismaService) {}
   use(req: any, res: any, next: () => void) {
+    req.auditRequestId = randomUUID()
+    res.setHeader('X-Request-ID', req.auditRequestId)
     res.once('finish', () => {
+      if (req.auditCommitted) return
       const event = auditEvent(req, res.statusCode)
-      if (event) void this.prisma.auditLog.create({ data: event }).catch(() => this.logger.error('Không thể ghi audit log; cần kiểm tra kết nối cơ sở dữ liệu'))
+      if (event) void this.persist(event, req.auditRequestId)
     })
-    next()
+    auditContext.run({ request: req }, next)
+  }
+  private async persist(event: any, requestId: string) {
+    // Failure telemetry has no business mutation to roll back; expose storage faults to operators.
+    try {
+      await this.prisma.$transaction(async tx => {
+        if (event.eventKey === 'auth.login' && event.outcome === 'failure' && event.ipAddress) {
+          await tx.$queryRaw`SELECT pg_advisory_xact_lock(hashtextextended(${event.ipAddress}, 0))::text AS locked`
+        }
+        await saveEvent(tx, event)
+      }, { timeout: 10000 })
+    }
+    catch { this.logger.error('AUDIT_WRITE_FAILED requestId=' + requestId) }
   }
 }

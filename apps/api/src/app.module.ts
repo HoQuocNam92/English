@@ -1,6 +1,8 @@
 import { MiddlewareConsumer, Module, NestModule } from '@nestjs/common'
 import { AuditMiddleware } from './infrastructure/audit/audit.middleware'
 import { AuditLogController } from './presentation/audit-log.controller'
+import { APP_INTERCEPTOR } from '@nestjs/core'
+import { AuditInterceptor } from './infrastructure/audit/audit.interceptor'
 import { ConfigModule } from '@nestjs/config'
 import { PrismaModule } from './infrastructure/database/prisma.module'
 import { AuthModule } from './modules/auth.module'
@@ -23,6 +25,7 @@ import { LearnerGroupModule } from './modules/learner-group.module'
 import { PlacementTestController } from './presentation/placement-test.controller';
 
 @Module({
+  providers: [{ provide: APP_INTERCEPTOR, useClass: AuditInterceptor }],
   controllers: [
     AuditLogController,
     PlacementTestController,

@@ -12,6 +12,7 @@ import { EmailModule } from './email.module'
 import { GoogleStrategy } from '../infrastructure/auth/google.strategy'
 import { AdminMfaService } from '../application/auth/admin-mfa.service'
 import { AdminMfaController } from '../presentation/admin-mfa.controller'
+import { SessionEventsController } from '../presentation/session-events.controller'
 
 @Module({
   imports: [
@@ -27,7 +28,7 @@ import { AdminMfaController } from '../presentation/admin-mfa.controller'
     }),
   ],
   providers: [AdminMfaService, GoogleCallbackGuard, AuthService, JwtStrategy, GoogleStrategy, JwtAuthGuard, PermissionsGuard],
-  controllers: [AuthController, AdminMfaController],
+  controllers: [AuthController, AdminMfaController, SessionEventsController],
   exports: [AuthService, JwtAuthGuard, PermissionsGuard],
 })
 export class AuthModule {}

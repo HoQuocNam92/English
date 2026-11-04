@@ -5,6 +5,8 @@ import { createCipheriv, createDecipheriv, createHash, hkdfSync, randomBytes } f
 import { PrismaService } from '../../infrastructure/database/prisma.service'
 import { base32, matchingStep } from './totp'
 import { JwtPayload } from '../../presentation/decorators/current-user.decorator'
+import { auditContext } from '../../infrastructure/audit/audit-context'
+import { eventBase, saveEvent } from '../../infrastructure/audit/audit-events'
 
 export const MFA_SESSION_MS = 8 * 60 * 60 * 1000
 export const privileged = (roles: string[]) => roles.some(role => role === 'admin' || role === 'teacher')
@@ -76,6 +78,8 @@ export class AdminMfaService {
           if (current.count !== 1) throw new UnauthorizedException('Phiên đăng nhập đã hết hạn')
           await tx.adminMfa.delete({ where: { userId: user.sub } })
           await tx.refreshToken.updateMany({ where: { userId: user.sub }, data: { mfaVerifiedAt: null } })
+          const request = auditContext.getStore()?.request
+          if (request) { await saveEvent(tx, { ...eventBase(request, 201), outcome: 'success', eventKey: 'mfa.reset', severity: 'critical', oldValues: { enabled: true }, newValues: { enabled: false } }); request.auditPendingCommit = true }
           return { reset: true }
         }
         const recoveryCodes = state.enabledAt ? undefined : Array.from({ length: 10 }, () => randomBytes(10).toString('hex'))
@@ -85,6 +89,8 @@ export class AdminMfaService {
         } })
         const session = await tx.refreshToken.updateMany({ where: { id: user.sid, userId: user.sub, revokedAt: null, expiresAt: { gt: now } }, data: { mfaVerifiedAt: now } })
         if (session.count !== 1) throw new UnauthorizedException('Phiên đăng nhập đã hết hạn')
+        const request = auditContext.getStore()?.request
+        if (request) { await saveEvent(tx, { ...eventBase(request, 201), outcome: 'success', eventKey: state.enabledAt ? 'mfa.verify' : 'mfa.enroll', oldValues: { enabled: Boolean(state.enabledAt) }, newValues: { enabled: true } }); request.auditPendingCommit = true }
         return { recoveryCodes, verifiedAt: now }
       }, { isolationLevel: 'Serializable' })
     } catch (error) {
@@ -92,6 +98,8 @@ export class AdminMfaService {
       throw error
     }
     if (result.error) throw new BadRequestException(result.error)
+    const request = auditContext.getStore()?.request
+    if (request?.auditPendingCommit) request.auditCommitted = true
     if (result.reset) return { success: true, reenrollRequired: true }
     const accessToken = this.jwt.sign({ sub: user.sub, email: user.email, roles: user.roles, permissions: user.permissions, sid: user.sid, mfaAt: result.verifiedAt.getTime() }, { expiresIn: '15m' })
     return { accessToken, recoveryCodes: result.recoveryCodes }
