@@ -1,4 +1,5 @@
 'use client';
+import { LevelFilter } from '@/shared/ui/LevelFilter';
 import { PublicationBulkBar } from '@/shared/ui/PublicationBulkBar';
 import { RichText } from '@/shared/ui/RichText';
 
@@ -29,6 +30,10 @@ export default function LessonsPage() {
   const [items, setItems] = React.useState<Lesson[]>([]);
   const [page, setPage] = React.useState(1);
   const [totalPages, setTotalPages] = React.useState(1);
+  const [domainCode, setDomainCode] = React.useState('');
+  const [domainOptions, setDomainOptions] = React.useState<Array<{id:string;code:string;name:string}>>([]);
+  React.useEffect(() => { apiClient.get<any>('/domains').then(result => setDomainOptions(result.data ?? result)).catch(() => setError('Không thể tải bộ lọc chuyên ngành')); }, []);
+  const [levelCode, setLevelCode] = React.useState('');
   const [search, setSearch] = React.useState('');
   const [searchInput, setSearchInput] = React.useState('');
   const [total, setTotal] = React.useState(0);
@@ -49,14 +54,14 @@ export default function LessonsPage() {
     const request = ++loadRequest.current;
     setLoading(true); setError('');
     try {
-      const query = new URLSearchParams({ page: String(page), limit: '10', ...(search && { search }), ...(type && { type }), ...(status && { status }) });
+      const query = new URLSearchParams({ page: String(page), limit: '10', ...(search && { search }), ...(type && { type }), ...(levelCode && { levelCode }), ...(domainCode && { domainCode }), ...(status && { status }) });
       const result = await apiClient.get<PaginatedResponse<Lesson>>(`/lessons?${query}`);
       if (request !== loadRequest.current) return;
       if (page > Math.max(1, result.meta.totalPages)) { setPage(Math.max(1, result.meta.totalPages)); return; }
       setItems(result.data); setTotal(result.meta.total); setTotalPages(result.meta.totalPages || 1);
     } catch (e) { if (request !== loadRequest.current) return; setError(e instanceof ApiClientError ? e.message : 'Không thể tải danh sách bài học'); }
     finally { if (request === loadRequest.current) setLoading(false); }
-  }, [page, search, type, status]);
+  }, [page, search, type, status, levelCode, domainCode]);
   React.useEffect(() => { void load(); return () => { loadRequest.current++; }; }, [load]);
   React.useEffect(() => { setSelectedIds(new Set()); }, [search, type, status]);
   React.useEffect(() => {
@@ -71,15 +76,17 @@ export default function LessonsPage() {
     <FilterPanel className="mt-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
       <SearchInput value={searchInput} onChange={setSearchInput} onSearch={value => { setSearch(value); setPage(1); }} placeholder="Tìm theo tiêu đề, tóm tắt..." />
       <div className="flex flex-wrap gap-3 sm:ml-auto">
+      <Dropdown aria-label="Lọc theo chuyên ngành" value={domainCode} onChange={e => { setDomainCode(e.target.value); setPage(1); }} className="rounded-xl border border-outline-variant bg-white px-3 text-sm"><option value="">Tất cả chuyên ngành</option>{domainOptions.map(option => <option key={option.id} value={option.code}>{option.name}</option>)}</Dropdown><LevelFilter value={levelCode} onChange={value => { setLevelCode(value); setPage(1); }} />
       <Dropdown value={type} onChange={e => { setType(e.target.value); setPage(1); }} className="rounded-xl border border-outline-variant bg-surface-container-lowest px-3 text-sm"><option value="">Tất cả loại bài học</option>{Object.entries(TYPES).map(([value, label]) => <option key={value} value={value}>{label}</option>)}</Dropdown>
       <Dropdown value={status} onChange={e => { setStatus(e.target.value); setPage(1); }} className="rounded-xl border border-outline-variant bg-surface-container-lowest px-3 text-sm"><option value="">Tất cả trạng thái</option>{Object.entries(STATUS).map(([value, label]) => <option key={value} value={value}>{label}</option>)}</Dropdown>
-      <ClearFiltersButton onClick={() => { setSearchInput(''); setSearch(''); setType(''); setStatus(''); setPage(1); setSelectedIds(new Set()); }} />
+      <ClearFiltersButton onClick={() => { setSearchInput(''); setSearch(''); setLevelCode(''); setDomainCode(''); setType(''); setStatus(''); setPage(1); setSelectedIds(new Set()); }} />
       </div>
     </FilterPanel>
 
     {error && <div className="mt-4 rounded-xl bg-error-container p-3 text-sm text-on-error-container">{error}</div>}
     {successMessage && <div className="mt-4 rounded-xl bg-emerald-50 p-3 text-sm text-emerald-800">{successMessage}</div>}
-    <PublicationBulkBar items={items} total={total} query={`/lessons?${new URLSearchParams({ search, type, status })}`} endpoint="/lessons/bulk-status" selectedIds={selectedIds} onSelectionChange={setSelectedIds} loading={loading} onBusyChange={setBulkBusy} itemLabel="bài học" onUpdated={async () => { await load(); }} />
+      <p role="status" className="text-sm text-on-surface-variant">{loading ? 'Đang đếm kết quả…' : `Tìm thấy ${total.toLocaleString('vi-VN')} bài học phù hợp bộ lọc`}</p>
+    <PublicationBulkBar items={items} total={total} query={`/lessons?${new URLSearchParams({ search, type, status, levelCode, domainCode })}`} endpoint="/lessons/bulk-status" selectedIds={selectedIds} onSelectionChange={setSelectedIds} loading={loading} onBusyChange={setBulkBusy} itemLabel="bài học" onUpdated={async () => { await load(); }} />
     {category ? <div className="mt-5 space-y-4">
       {loading ? <p role="status" className="py-12 text-center">Đang tải nội dung...</p> : !items.length ? <p className="py-12 text-center text-on-surface-variant">Chưa có {itemName} phù hợp.</p> : items.map(item => <article key={item.id} className="rounded-2xl border border-outline-variant/50 bg-white p-5 shadow-sm">
         <label className="mb-3 inline-flex cursor-pointer items-center gap-2 text-xs font-semibold text-on-surface-variant"><input disabled={bulkBusy || loading} type="checkbox" aria-label={`Chọn ${item.title}`} checked={selectedIds.has(item.id)} onChange={() => setSelectedIds((current) => { const next = new Set(current); if (next.has(item.id)) next.delete(item.id); else next.add(item.id); return next; })} className="h-4 w-4 accent-primary" />Chọn bài học</label>
