@@ -1,4 +1,5 @@
 'use client';
+import { LevelFilter } from '@/shared/ui/LevelFilter';
 import { PublicationBulkBar } from '@/shared/ui/PublicationBulkBar';
 import { RichTextEditor } from '@/shared/ui/RichTextEditor';
 import { RichText } from '@/shared/ui/RichText';
@@ -461,6 +462,7 @@ export default function AdminLearningContent({ createOnly = false }: { createOnl
   const [total, setTotal]             = React.useState(0);
   const [page, setPage]               = React.useState(1);
   const [searchInput, setSearchInput] = React.useState('');
+  const [levelCode, setLevelCode] = React.useState('');
   const [search, setSearch]           = React.useState('');
   const [status, setStatus]           = React.useState('');
   const [domainCode, setDomainCode]   = React.useState('');
@@ -504,6 +506,7 @@ export default function AdminLearningContent({ createOnly = false }: { createOnl
         ...(search && { search }),
         ...(status && { status }),
         ...(domainCode && { domainCode }),
+        ...(levelCode && { levelCode }),
       });
       const res = await apiClient.get<PaginatedResponse<VocabularyItem>>(`/vocabulary?${params}`);
       if (request !== loadRequest.current) return;
@@ -513,7 +516,7 @@ export default function AdminLearningContent({ createOnly = false }: { createOnl
     } catch (e) { if (request !== loadRequest.current) return;
       setError(e instanceof ApiClientError ? e.message : 'Không thể tải kho từ vựng');
     } finally { if (request === loadRequest.current) setLoading(false); }
-  }, [page, limit, search, status, domainCode]);
+  }, [page, limit, search, status, domainCode, levelCode]);
 
   React.useEffect(() => { if (!createOnly) void load(); return () => { loadRequest.current++; }; }, [load, createOnly]);
 
@@ -523,7 +526,7 @@ export default function AdminLearningContent({ createOnly = false }: { createOnl
   const handleModalSuccess  = () => { closeModal();       void load(); };
   const handleDeleteSuccess = () => { setDeleteTarget(null); void load(); };
 
-  React.useEffect(() => { setSelectedIds(new Set()); }, [search, status, domainCode]);
+  React.useEffect(() => { setSelectedIds(new Set()); }, [search, status, domainCode, levelCode]);
 
   const toggleSelected = (id: string) => setSelectedIds((current) => {
     const next = new Set(current);
@@ -573,6 +576,7 @@ export default function AdminLearningContent({ createOnly = false }: { createOnl
           <option value="">Tất cả chuyên ngành</option>
           {domains.map((domain) => <option key={domain.id} value={domain.code}>{domain.name}</option>)}
         </Dropdown>
+        <LevelFilter value={levelCode} onChange={value => { setLevelCode(value); setPage(1); }} />
         <Dropdown
           value={status}
           onChange={(e) => { setStatus(e.target.value); setPage(1); }}
@@ -580,14 +584,15 @@ export default function AdminLearningContent({ createOnly = false }: { createOnl
         >
           {STATUSES.map((s) => <option key={s.value} value={s.value}>{s.label}</option>)}
         </Dropdown>
-        <ClearFiltersButton onClick={() => { setSearchInput(''); setSearch(''); setDomainCode(''); setStatus(''); setPage(1); setSelectedIds(new Set()); }} />
+        <ClearFiltersButton onClick={() => { setSearchInput(''); setSearch(''); setDomainCode(''); setLevelCode(''); setStatus(''); setPage(1); setSelectedIds(new Set()); }} />
         </div>
       </FilterPanel>
 
 
 
+      <p role="status" className="text-sm text-on-surface-variant">{loading ? 'Đang đếm kết quả…' : `Tìm thấy ${total.toLocaleString('vi-VN')} từ vựng phù hợp bộ lọc`}</p>
       {!loading && items.length > 0 && (
-        <PublicationBulkBar items={items} total={total} query={`/vocabulary?${new URLSearchParams({ search, status, domainCode })}`} endpoint="/vocabulary/bulk-status" selectedIds={selectedIds} onSelectionChange={setSelectedIds} loading={loading} onBusyChange={setBulkBusy} itemLabel="từ vựng" onUpdated={async () => { await load(); }} />
+        <PublicationBulkBar items={items} total={total} query={`/vocabulary?${new URLSearchParams({ search, status, domainCode, levelCode })}`} endpoint="/vocabulary/bulk-status" selectedIds={selectedIds} onSelectionChange={setSelectedIds} loading={loading} onBusyChange={setBulkBusy} itemLabel="từ vựng" onUpdated={async () => { await load(); }} />
       )}
 
       {error && (

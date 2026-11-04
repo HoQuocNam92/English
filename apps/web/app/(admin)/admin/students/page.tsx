@@ -1,4 +1,5 @@
 'use client';
+import { LevelFilter } from '@/shared/ui/LevelFilter';
 
 import { ClearFiltersButton } from '@/shared/ui/ClearFiltersButton';
 import { AppIcon } from '@/shared/ui/AppIcon';
@@ -34,6 +35,7 @@ export default function AdminStudentsPage() {
   const [total, setTotal] = React.useState(0);
   const [page, setPage] = React.useState(1);
   const [searchInput, setSearchInput] = React.useState('');
+  const [levelCode, setLevelCode] = React.useState('');
   const [search, setSearch] = React.useState('');
   const [status, setStatus] = React.useState('');
   const [domainId, setDomainId] = React.useState('');
@@ -57,6 +59,7 @@ export default function AdminStudentsPage() {
         ...(search && { search }),
         ...(status && { status }),
         ...(domainId && { domainId }),
+        ...(levelCode && { levelCode }),
         ...(certificateId && { certificateId }),
       });
       const res = await apiClient.get<PaginatedResponse<UserItem>>(`/students?${params}`);
@@ -67,7 +70,7 @@ export default function AdminStudentsPage() {
     } finally {
       setLoading(false);
     }
-  }, [page, limit, search, status, domainId, certificateId]);
+  }, [page, limit, search, status, domainId, certificateId, levelCode]);
 
   React.useEffect(() => { void load(); }, [load]);
   React.useEffect(() => {
@@ -117,15 +120,17 @@ export default function AdminStudentsPage() {
           <option value="">Tất cả chuyên ngành</option>
           {domains.map(item => <option key={item.id} value={item.id}>{item.name}</option>)}
         </Dropdown>
+        <LevelFilter value={levelCode} onChange={value => { setLevelCode(value); setPage(1); }} />
         <Dropdown value={certificateId} onChange={(e) => { setCertificateId(e.target.value); setPage(1); }} className="rounded-lg border border-outline-variant bg-surface-bright py-sm pl-sm pr-xl font-body-md text-on-surface focus:border-primary focus:ring-1 focus:ring-primary focus:outline-none min-w-[210px]">
           <option value="">Tất cả mục tiêu chứng chỉ</option>
           {certificates.map(item => <option key={item.id} value={item.id}>{item.code} - {item.name}</option>)}
         </Dropdown>
-        <ClearFiltersButton onClick={() => { setSearchInput(''); setSearch(''); setStatus(''); setDomainId(''); setCertificateId(''); setPage(1); }} />
+        <ClearFiltersButton onClick={() => { setSearchInput(''); setSearch(''); setStatus(''); setDomainId(''); setLevelCode(''); setCertificateId(''); setPage(1); }} />
         </div>
       </div>
 
 
+      <p role="status" className="text-sm text-on-surface-variant">{loading ? 'Đang đếm kết quả…' : `Tìm thấy ${total.toLocaleString('vi-VN')} học viên phù hợp bộ lọc`}</p>
       <div className="bg-surface-container-lowest rounded-xl border border-outline-variant overflow-hidden shadow-[0_1px_3px_rgba(15,23,24,0.06)]">
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse">

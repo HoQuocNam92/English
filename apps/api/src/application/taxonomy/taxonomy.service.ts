@@ -265,7 +265,7 @@ export class TaxonomyService {
   async getStudents(params: any) {
     const page = Math.max(1, Number(params?.page) || 1)
     const limit = Math.min(Math.max(1, Number(params?.limit) || 20), 100)
-    const { search, status, domainId, certificateId } = params || {}
+    const { search, status, domainId, certificateId, levelCode } = params || {}
     const skip = (page - 1) * limit
 
     const where: any = {
@@ -281,10 +281,11 @@ export class TaxonomyService {
     if (status) {
       where.status = status
     }
-    if (domainId || certificateId) {
+    if (domainId || certificateId || levelCode) {
       where.learnerProfile = { is: {
         ...(domainId && { domains: { some: { domainId } } }),
         ...(certificateId && { certGoals: { some: { certificateId } } }),
+        ...(levelCode && { level: { code: levelCode } }),
       } }
     }
     const [users, total] = await Promise.all([

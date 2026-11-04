@@ -1,4 +1,5 @@
 'use client';
+import { LevelFilter } from '@/shared/ui/LevelFilter';
 import { PublicationBulkBar } from '@/shared/ui/PublicationBulkBar';
 import { RichText } from '@/shared/ui/RichText';
 
@@ -51,6 +52,7 @@ export default function AdminQuestionsPage() {
   const [limit, setLimit] = React.useState(30);
   const totalPages = Math.max(1, Math.ceil(total / limit));
   const [searchInput, setSearchInput] = React.useState('');
+  const [levelCode, setLevelCode] = React.useState('');
   const [search, setSearch] = React.useState('');
   const [status, setStatus] = React.useState('');
   const [type, setType] = React.useState('');
@@ -85,6 +87,7 @@ export default function AdminQuestionsPage() {
         ...(skill && { skill }),
         ...(topic && { topic }),
         ...(domainCode && { domainCode }),
+        ...(levelCode && { levelCode }),
         ...(examId && { examId }),
       });
       const res = await apiClient.get<PaginatedResponse<QuestionItem>>(`/questions?${params}`);
@@ -95,10 +98,10 @@ export default function AdminQuestionsPage() {
     } catch (e) { if (request !== loadRequest.current) return;
       setError(e instanceof ApiClientError ? e.message : 'Không thể tải ngân hàng câu hỏi');
     } finally { if (request === loadRequest.current) setLoading(false); }
-  }, [page, limit, search, status, type, skill, domainCode, examId, topic]);
+  }, [page, limit, search, status, type, skill, domainCode, examId, topic, levelCode]);
 
   React.useEffect(() => { void load(); return () => { loadRequest.current++; }; }, [load]);
-  React.useEffect(() => { setSelectedIds(new Set()); }, [search, status, type, topic, skill, domainCode, examId]);
+  React.useEffect(() => { setSelectedIds(new Set()); }, [search, status, type, topic, skill, domainCode, examId, levelCode]);
 
   React.useEffect(() => {
     void Promise.all([
@@ -208,6 +211,7 @@ export default function AdminQuestionsPage() {
           <option value="">Tất cả chuyên ngành</option>
           {domains.map((domain) => <option key={domain.id} value={domain.code}>{domain.name}</option>)}
         </Dropdown>
+        <LevelFilter value={levelCode} onChange={value => { setLevelCode(value); setPage(1); }} />
         <Dropdown
           value={examId}
           onChange={(e) => { setExamId(e.target.value); setPage(1); }}
@@ -224,7 +228,7 @@ export default function AdminQuestionsPage() {
         >
           {STATUSES.map((s) => <option key={s.value} value={s.value}>{s.label}</option>)}
         </Dropdown>
-        <ClearFiltersButton className="justify-self-start" onClick={() => { setSearchInput(''); setSearch(''); setType(''); setTopic(''); setSkill(''); setDomainCode(''); setExamId(''); setStatus(''); setPage(1); setSelectedIds(new Set()); }} />
+        <ClearFiltersButton className="justify-self-start" onClick={() => { setSearchInput(''); setSearch(''); setType(''); setTopic(''); setSkill(''); setDomainCode(''); setLevelCode(''); setExamId(''); setStatus(''); setPage(1); setSelectedIds(new Set()); }} />
         </div>
         </div>
       </div>
@@ -255,7 +259,8 @@ export default function AdminQuestionsPage() {
       )}
 
       {/* Question list */}
-      <PublicationBulkBar items={items} total={total} query={`/questions?${new URLSearchParams({ search, status, type, skill, topic, domainCode, examId })}`} endpoint="/questions/bulk-status" selectedIds={selectedIds} onSelectionChange={setSelectedIds} loading={loading} onBusyChange={setBulkBusy} itemLabel="câu hỏi" onUpdated={async () => { await load(); }} />
+      <p role="status" className="text-sm text-on-surface-variant">{loading ? 'Đang đếm kết quả…' : `Tìm thấy ${total.toLocaleString('vi-VN')} câu hỏi phù hợp bộ lọc`}</p>
+      <PublicationBulkBar items={items} total={total} query={`/questions?${new URLSearchParams({ search, status, type, skill, topic, domainCode, examId, levelCode })}`} endpoint="/questions/bulk-status" selectedIds={selectedIds} onSelectionChange={setSelectedIds} loading={loading} onBusyChange={setBulkBusy} itemLabel="câu hỏi" onUpdated={async () => { await load(); }} />
       <div className="mt-4 rounded-2xl bg-surface-container-lowest overflow-hidden shadow-[0_8px_28px_rgba(15,23,42,0.05)]">
         {loading ? (
           Array.from({ length: 5 }).map((_, i) => <SkeletonRow key={i} />)
