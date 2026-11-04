@@ -1,5 +1,6 @@
 'use client';
 import { useCallback, useEffect, useState } from 'react';
+import { QRCodeSVG } from 'qrcode.react';
 import { apiClient } from '@/shared/api/api-client';
 import { AUTH_SESSION_KEY, sessionStorageTarget } from '@/shared/storage';
 import { useAuth } from '@/features/auth/presentation';
@@ -55,7 +56,7 @@ export function AdminMfaBoundary({ children }: { children: React.ReactNode }) {
     finally { setBusy(false); }
   };
   if (status?.verified && !codes) return <>{children}</>;
-  return <main className="min-h-screen bg-surface-container-low px-4 py-12"><div className="mx-auto max-w-lg space-y-5 rounded-2xl border border-outline-variant bg-white p-6 shadow-sm">
+  return <main className="flex min-h-dvh items-center justify-center bg-surface-container-low px-4 py-8"><div className="w-full max-w-lg space-y-5 rounded-2xl border border-outline-variant bg-white p-6 shadow-sm">
     <h1 className="text-2xl font-bold">{codes ? 'Lưu mã khôi phục MFA' : 'Xác thực để vào quản trị'}</h1>
     {error && <p role="alert" className="text-sm text-error">{error}</p>}
     {notice && <p role="status" className="text-sm text-emerald-700">{notice}</p>}
@@ -66,7 +67,7 @@ export function AdminMfaBoundary({ children }: { children: React.ReactNode }) {
     </> : !status ? <><p>Đang kiểm tra phiên xác thực…</p><button className="text-primary" onClick={() => void check()}>Thử lại</button></> : <>
       <p className="text-sm">{status.enabled ? 'Nhập mã 6 số trong Google Authenticator hoặc Microsoft Authenticator. Bạn cũng có thể dùng một mã khôi phục.' : 'Thiết lập ứng dụng xác thực để bảo vệ tài khoản trước khi sử dụng khu vực quản trị.'}</p>
       {!status.enabled && !setup && <button disabled={busy} onClick={() => void begin()} className="rounded-xl bg-primary px-4 py-3 font-bold text-white">Thiết lập ứng dụng xác thực</button>}
-      {setup && <div className="space-y-3 text-sm"><p>Trong ứng dụng xác thực, chọn thêm tài khoản bằng khóa thiết lập, chọn mã theo thời gian và nhập khóa sau:</p><code className="block select-all break-all rounded-lg bg-slate-100 p-3">{setup.secret}</code><a className="block font-semibold text-primary" href={setup.uri}>Mở ứng dụng xác thực trên thiết bị này</a><p>Khóa thiết lập hết hạn sau 10 phút.</p><button className="text-primary" disabled={busy} onClick={() => void begin()}>Tải lại khóa thiết lập</button></div>}
+      {setup && <div className="space-y-3 text-sm"><p>Trong Google Authenticator hoặc Microsoft Authenticator, chọn thêm tài khoản rồi quét mã QR:</p><div className="mx-auto w-fit rounded-xl border border-outline-variant bg-white p-4"><QRCodeSVG value={setup.uri} size={208} level="M" marginSize={4} title="Mã QR thiết lập MFA TechEnglish" /></div><p>Không quét được? Chọn nhập khóa thiết lập, dùng mã theo thời gian và nhập khóa sau:</p><code className="block select-all break-all rounded-lg bg-slate-100 p-3">{setup.secret}</code><a className="block font-semibold text-primary" href={setup.uri}>Mở ứng dụng xác thực trên thiết bị này</a><p>Khóa thiết lập hết hạn sau 10 phút.</p><button className="text-primary" disabled={busy} onClick={() => void begin()}>Tải lại khóa thiết lập</button></div>}
       {status.enabled && <label className="flex items-start gap-2 text-sm"><input type="checkbox" checked={recover} onChange={e => setRecover(e.target.checked)} />Dùng mã khôi phục để thay ứng dụng xác thực đã mất</label>}{(status.enabled || setup) && <form onSubmit={verify} className="space-y-3"><label className="block text-sm font-semibold" htmlFor="admin-mfa-code">Mã xác thực hoặc mã khôi phục</label><input id="admin-mfa-code" value={code} onChange={e => setCode(e.target.value)} autoComplete="one-time-code" maxLength={40} required className="w-full rounded-xl border border-outline-variant p-3" /><button disabled={busy || code.trim().length < 6} className="rounded-xl bg-primary px-4 py-3 font-bold text-white disabled:opacity-60">{busy ? 'Đang xác thực…' : 'Xác thực'}</button></form>}
     </>}
     <button onClick={() => void signOut()} className="block text-sm text-on-surface-variant">Đăng xuất</button>
