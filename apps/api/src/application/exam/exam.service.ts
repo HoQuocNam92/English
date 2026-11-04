@@ -1,3 +1,4 @@
+import { publicationSelection } from '../publication-selection'
 import { Injectable, NotFoundException, BadRequestException, ConflictException, ForbiddenException } from '@nestjs/common'
 import { PrismaService } from '../../infrastructure/database/prisma.service'
 import { learnerQuestion } from '../question/learner-question'
@@ -65,7 +66,7 @@ export class ExamsService {
           certificate: true,
           _count: { select: { questions: true } },
         },
-        orderBy: { createdAt: 'desc' },
+        orderBy: [{ createdAt: 'desc' }, { id: 'desc' }],
       }),
       this.prisma.exam.count({ where }),
     ])
@@ -73,15 +74,12 @@ export class ExamsService {
   }
 
   async bulkUpdateStatus(dto: any) {
-    if (!Array.isArray(dto.ids) || dto.ids.length === 0 || dto.ids.some((id: unknown) => typeof id !== 'string' || !id.trim())) {
-      throw new BadRequestException('Cần chọn ít nhất một mục để cập nhật trạng thái')
-    }
-    const where = { id: { in: [...new Set<string>(dto.ids)] } }
+    const where = publicationSelection(dto)
     const result = await this.prisma.exam.updateMany({
       where,
       data: { status: dto.status, ...(dto.status === 'published' ? { publishedAt: new Date() } : {}) },
     })
-    return { updatedCount: result.count, status: dto.status }
+    return { updatedCount: result.count, skippedCount: dto.ids.length - result.count, requestedCount: dto.ids.length, status: dto.status }
   }
 
   async findOne(id: string) {
@@ -122,7 +120,7 @@ export class ExamsService {
     if (dto.domainId !== undefined) data.domain = { connect: { id: dto.domainId } }
     if (dto.levelId !== undefined) data.level = { connect: { id: dto.levelId } }
     if (dto.certificateId !== undefined) data.certificate = dto.certificateId ? { connect: { id: dto.certificateId } } : { disconnect: true }
-    if (dto.status==='published') data.publishedAt=new Date()
+    if (dto.status==='published' && existing.status !== 'published') data.publishedAt=new Date()
     return this.prisma.$transaction(async (tx) => {
       // Preserve historical question links when editing metadata. New questions and
       // taxonomy changes must satisfy the current scope rules.
@@ -141,7 +139,13 @@ export class ExamsService {
   }
 
   async delete(id: string) { await this.findOne(id); await this.prisma.exam.delete({ where: { id } }) }
-  async publish(id: string) { await this.findOne(id); return this.prisma.exam.update({ where: { id }, data: { status: 'published', publishedAt: new Date() } }) }
+  async publish(id: string) {
+    const existing = await this.findOne(id)
+    if (existing.status === 'published') return existing
+    if (existing.status !== 'draft') throw new BadRequestException('Chỉ xuất bản bài thi đang ở bản nháp')
+    await this.prisma.exam.updateMany({ where: { id, status: 'draft' }, data: { status: 'published', publishedAt: new Date() } })
+    return this.findOne(id)
+  }
 
   private async practiceRequirement(exam: any, learnerId: string, db: Pick<PrismaService, 'certificationTopic' | 'lesson' | 'learningProgress'> = this.prisma) {
     if (exam.kind !== 'practice' || !exam.certificateId) return { ready: true, reason: '', lessonIds: [] as string[] }

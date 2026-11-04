@@ -1,3 +1,4 @@
+import { publicationSelection } from '../publication-selection'
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common'
 import { PrismaService } from '../../infrastructure/database/prisma.service'
 
@@ -35,7 +36,7 @@ export class VocabularyService {
       where.status = 'published'
     }
     const [data, total] = await Promise.all([
-      this.prisma.vocabulary.findMany({ where, skip, take: limit, include: { domain: true, domains: { include: { domain: true } }, level: true, examples: true }, orderBy: { createdAt: 'desc' } }),
+      this.prisma.vocabulary.findMany({ where, skip, take: limit, include: { domain: true, domains: { include: { domain: true } }, level: true, examples: true }, orderBy: [{ createdAt: 'desc' }, { id: 'desc' }] }),
       this.prisma.vocabulary.count({ where })
     ])
     return { data, meta: { total, page, limit, totalPages: Math.ceil(total / limit) } }
@@ -118,12 +119,9 @@ export class VocabularyService {
   }
 
   async bulkUpdateStatus(dto: any) {
-    if (!Array.isArray(dto.ids) || dto.ids.length === 0 || dto.ids.some((id: unknown) => typeof id !== 'string' || !id.trim())) {
-      throw new BadRequestException('Cần chọn ít nhất một mục để cập nhật trạng thái')
-    }
-    const where = { id: { in: [...new Set<string>(dto.ids)] } }
+    const where = publicationSelection(dto)
     const result = await this.prisma.vocabulary.updateMany({ where, data: { status: dto.status } })
-    return { updatedCount: result.count, status: dto.status }
+    return { updatedCount: result.count, skippedCount: dto.ids.length - result.count, requestedCount: dto.ids.length, status: dto.status }
   }
 
   async delete(id: string) { await this.findOne(id); await this.prisma.vocabulary.delete({ where: { id } }) }

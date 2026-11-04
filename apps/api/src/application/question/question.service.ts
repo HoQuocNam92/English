@@ -1,3 +1,4 @@
+import { publicationSelection } from '../publication-selection'
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common'
 import { PrismaService } from '../../infrastructure/database/prisma.service'
 import { learnerQuestion } from './learner-question'
@@ -60,12 +61,9 @@ export class QuestionsService {
   }
 
   async bulkUpdateStatus(dto: any) {
-    if (!Array.isArray(dto.ids) || dto.ids.length === 0 || dto.ids.some((id: unknown) => typeof id !== 'string' || !id.trim())) {
-      throw new BadRequestException('Cần chọn ít nhất một mục để cập nhật trạng thái')
-    }
-    const where = { id: { in: [...new Set<string>(dto.ids)] } }
+    const where = publicationSelection(dto)
     const result = await this.prisma.question.updateMany({ where, data: { status: dto.status } })
-    return { updatedCount: result.count, status: dto.status }
+    return { updatedCount: result.count, skippedCount: dto.ids.length - result.count, requestedCount: dto.ids.length, status: dto.status }
   }
 
   async findOne(id: string) {

@@ -6,6 +6,7 @@ import { PermissionsGuard } from '../infrastructure/auth/permissions.guard'
 import { RequirePermissions } from './decorators/require-permissions.decorator'
 import { CreateCertificateDto, UpdateCertificateDto } from './http-dto/certificate.dto'
 import { CreateDomainDto, UpdateDomainDto } from './http-dto/domain.dto'
+import { BulkActivityDto } from './http-dto/content.dto'
 
 @ApiTags('Taxonomy & Metadata')
 @ApiBearerAuth()
@@ -13,6 +14,12 @@ import { CreateDomainDto, UpdateDomainDto } from './http-dto/domain.dto'
 @Controller()
 export class TaxonomyController {
   constructor(private readonly svc: TaxonomyService) {}
+
+  @Patch('levels/bulk-activity') @RequirePermissions('certificates:manage')
+  bulkLevels(@Body() dto: BulkActivityDto) { return this.svc.bulkActivity('level', dto) }
+
+  @Patch('certificates/bulk-activity') @RequirePermissions('certificates:manage')
+  bulkCertificates(@Body() dto: BulkActivityDto) { return this.svc.bulkActivity('certificate', dto) }
 
   @Get('career-goals')
   @ApiOperation({ summary: 'List career goals' })

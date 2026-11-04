@@ -1,4 +1,5 @@
 'use client';
+import { PublicationBulkBar } from '@/shared/ui/PublicationBulkBar';
 import { RichText } from '@/shared/ui/RichText';
 
 import { FilterPanel } from '@/shared/ui/FilterPanel';
@@ -11,7 +12,7 @@ import { Dropdown } from '@/shared/ui/Dropdown';
 import * as React from 'react';
 import Link from 'next/link';
 import { StatusBadge } from '@/shared/ui/StatusBadge';
-import { BulkSelectionBar, confirmDialog, PageHeader, SearchInput, Pagination } from '@/shared/ui';
+import { confirmDialog, PageHeader, SearchInput, Pagination } from '@/shared/ui';
 import { apiClient, ApiClientError } from '@/shared/api/api-client';
 import type { ExamItem, PaginatedResponse } from '@/shared/api/api-client';
 
@@ -52,7 +53,10 @@ export default function AdminTestsPage() {
   React.useEffect(() => { Promise.all([apiClient.get<any>('/domains'), apiClient.get<any>('/levels'), apiClient.get<any>('/certificates')]).then(([d,l,c]) => setOptions({ domains: d.data ?? d, levels: l.data ?? l, certificates: c.data ?? c })).catch(() => setError('Không thể tải bộ lọc. Vui lòng tải lại trang.')); }, []);
   const totalPages = Math.ceil(total / limit);
 
+  const loadRequest = React.useRef(0);
+  React.useEffect(() => () => { loadRequest.current++; }, []);
   const load = React.useCallback(async () => {
+    const request = ++loadRequest.current;
     setLoading(true);
     setError(null);
     try {
@@ -64,35 +68,17 @@ export default function AdminTestsPage() {
         ...filters,
       });
       const res = await apiClient.get<PaginatedResponse<ExamItem>>(`/exams?${params}`);
+      if (request !== loadRequest.current) return;
+      if (page > Math.max(1, res.meta.totalPages)) { setPage(Math.max(1, res.meta.totalPages)); return; }
       setItems(res.data);
       setTotal(res.meta.total);
-    } catch (e) {
+    } catch (e) { if (request !== loadRequest.current) return;
       setError(e instanceof ApiClientError ? e.message : 'Không thể tải danh sách bài kiểm tra chứng chỉ');
-    } finally {
-      setLoading(false);
-    }
+    } finally { if (request === loadRequest.current) setLoading(false); }
   }, [page, limit, search, status, filters]);
 
-  React.useEffect(() => { void load(); }, [load]);
-  React.useEffect(() => { setSelectedIds(new Set()); }, [page, limit, search, status, filters]);
-
-  const bulkUpdateStatus = async (targetStatus: 'draft' | 'published') => {
-    const ids = [...selectedIds];
-    if (bulkBusy || ids.length === 0) return;
-    const count = ids.length;
-    const action = targetStatus === 'published' ? 'xuất bản' : 'chuyển về bản nháp';
-    const affected = `${count} bài thi đã chọn`;
-    if (!(await confirmDialog(`Bạn có chắc muốn ${action} ${affected}?`, { title: 'Xác nhận cập nhật hàng loạt', confirmLabel: action, tone: targetStatus === 'published' ? 'primary' : 'warning' }))) return;
-    setBulkBusy(true); setError(null); setSuccessMessage('');
-    try {
-      const result = await apiClient.patch<{ updatedCount: number }>('/exams/bulk-status', { ids, status: targetStatus });
-      setSelectedIds(new Set());
-      setSuccessMessage(`Đã ${action} ${result.updatedCount} bài thi.`);
-      await load();
-    } catch (e) {
-      setError(e instanceof ApiClientError ? e.message : 'Không thể cập nhật hàng loạt bài thi');
-    } finally { setBulkBusy(false); }
-  };
+  React.useEffect(() => { void load(); return () => { loadRequest.current++; }; }, [load]);
+  React.useEffect(() => { setSelectedIds(new Set()); }, [search, status, filters]);
 
   const removeExam = async (exam: ExamItem) => {
     if (!(await confirmDialog(`Xóa bài thi “${exam.title}”? Hành động này không thể hoàn tác.`, { title: 'Xóa bài thi?', confirmLabel: 'Xóa bài thi', tone: 'danger' }))) return;
@@ -150,10 +136,7 @@ export default function AdminTestsPage() {
       )}
 
       {/* Cards */}
-      <BulkSelectionBar pageCount={items.length} selectedCount={selectedIds.size} allPageSelected={items.length > 0 && items.every((item) => selectedIds.has(item.id))} onSelectPage={(selected) => setSelectedIds((current) => { const next = new Set(current); items.forEach((item) => selected ? next.add(item.id) : next.delete(item.id)); return next; })}>
-        <button type="button" disabled={bulkBusy || loading || selectedIds.size === 0} onClick={() => void bulkUpdateStatus('published')} className="rounded-lg border border-emerald-600 bg-white px-3 py-2 text-xs font-bold text-emerald-700 disabled:opacity-85">Xuất bản</button>
-        <button type="button" disabled={bulkBusy || loading || selectedIds.size === 0} onClick={() => void bulkUpdateStatus('draft')} className="rounded-lg border border-amber-500 bg-white px-3 py-2 text-xs font-bold text-amber-700 disabled:opacity-90">Chuyển về bản nháp</button>
-      </BulkSelectionBar>
+      <PublicationBulkBar items={items} total={total} query={`/exams?${new URLSearchParams({ search, status, ...filters })}`} endpoint="/exams/bulk-status" selectedIds={selectedIds} onSelectionChange={setSelectedIds} loading={loading} onBusyChange={setBulkBusy} itemLabel="bài thi" onUpdated={async () => { await load(); }} />
       <div className="mt-4 grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
         {loading ? (
           Array.from({ length: 6 }).map((_, i) => <SkeletonCard key={i} />)
@@ -167,7 +150,7 @@ export default function AdminTestsPage() {
             <div key={exam.id} className="rounded-2xl border border-outline-variant/50 bg-surface-container-lowest p-5 shadow-[0_8px_28px_rgba(15,23,42,0.035)] hover:shadow-md transition-shadow content-card md:min-h-[460px]">
               <div>
                 <div className="flex items-start justify-between gap-2 mb-2">
-                  <input type="checkbox" aria-label={`Chọn ${exam.title}`} checked={selectedIds.has(exam.id)} onChange={() => setSelectedIds((current) => { const next = new Set(current); if (next.has(exam.id)) next.delete(exam.id); else next.add(exam.id); return next; })} className="mt-1 h-4 w-4 shrink-0 accent-primary" />
+                  <input disabled={bulkBusy || loading} type="checkbox" aria-label={`Chọn ${exam.title}`} checked={selectedIds.has(exam.id)} onChange={() => setSelectedIds((current) => { const next = new Set(current); if (next.has(exam.id)) next.delete(exam.id); else next.add(exam.id); return next; })} className="mt-1 h-4 w-4 shrink-0 accent-primary" />
                   <h3 className="font-bold text-on-surface text-base line-clamp-2 flex-1">{exam.title}</h3>
                   <StatusBadge status={exam.status} />
                 </div>

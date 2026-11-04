@@ -1,4 +1,5 @@
 'use client';
+import { PublicationBulkBar } from '@/shared/ui/PublicationBulkBar';
 import { RichTextEditor } from '@/shared/ui/RichTextEditor';
 import { RichText } from '@/shared/ui/RichText';
 
@@ -12,7 +13,7 @@ import { ActionButton, ActionGroup } from '@/shared/ui/ActionButton';
 import { LevelBadge } from '@/shared/ui/LevelBadge';
 import { Dropdown } from '@/shared/ui/Dropdown';
 import * as React from 'react';
-import { BulkSelectionBar, confirmDialog, PageHeader, SearchInput, Pagination } from '@/shared/ui';
+import { confirmDialog, PageHeader, SearchInput, Pagination } from '@/shared/ui';
 import { apiClient, ApiClientError } from '@/shared/api/api-client';
 import type { VocabularyItem, PaginatedResponse } from '@/shared/api/api-client';
 
@@ -490,7 +491,10 @@ export default function AdminLearningContent({ createOnly = false }: { createOnl
   }, []);
 
   // Load vocabulary list (unchanged logic)
+  const loadRequest = React.useRef(0);
+  React.useEffect(() => () => { loadRequest.current++; }, []);
   const load = React.useCallback(async () => {
+    const request = ++loadRequest.current;
     setLoading(true);
     setError(null);
     try {
@@ -502,16 +506,16 @@ export default function AdminLearningContent({ createOnly = false }: { createOnl
         ...(domainCode && { domainCode }),
       });
       const res = await apiClient.get<PaginatedResponse<VocabularyItem>>(`/vocabulary?${params}`);
+      if (request !== loadRequest.current) return;
+      if (page > Math.max(1, res.meta.totalPages)) { setPage(Math.max(1, res.meta.totalPages)); return; }
       setItems(res.data);
       setTotal(res.meta.total);
-    } catch (e) {
+    } catch (e) { if (request !== loadRequest.current) return;
       setError(e instanceof ApiClientError ? e.message : 'Không thể tải kho từ vựng');
-    } finally {
-      setLoading(false);
-    }
+    } finally { if (request === loadRequest.current) setLoading(false); }
   }, [page, limit, search, status, domainCode]);
 
-  React.useEffect(() => { if (!createOnly) void load(); }, [load, createOnly]);
+  React.useEffect(() => { if (!createOnly) void load(); return () => { loadRequest.current++; }; }, [load, createOnly]);
 
   const openCreate = () => router.push('/admin/learning-content/new');
   const openEdit   = (v: VocabularyItem) => { setEditTarget(v); setModalMode('edit'); };
@@ -519,29 +523,13 @@ export default function AdminLearningContent({ createOnly = false }: { createOnl
   const handleModalSuccess  = () => { closeModal();       void load(); };
   const handleDeleteSuccess = () => { setDeleteTarget(null); void load(); };
 
-  React.useEffect(() => { setSelectedIds(new Set()); }, [page, limit, search, status, domainCode]);
+  React.useEffect(() => { setSelectedIds(new Set()); }, [search, status, domainCode]);
 
   const toggleSelected = (id: string) => setSelectedIds((current) => {
     const next = new Set(current);
     if (next.has(id)) next.delete(id); else next.add(id);
     return next;
   });
-
-  const bulkUpdate = async (targetStatus: 'draft' | 'published') => {
-    const ids = [...selectedIds];
-    if (bulkBusy || ids.length === 0) return;
-    const affected = `${ids.length} từ đã chọn`;
-    const action = targetStatus === 'published' ? 'xuất bản' : 'chuyển về bản nháp';
-    if (!(await confirmDialog(`Bạn có chắc muốn ${action} ${affected}?`, { title: 'Xác nhận cập nhật hàng loạt', confirmLabel: action, tone: targetStatus === 'published' ? 'primary' : 'warning' }))) return;
-    setBulkBusy(true); setError(null);
-    try {
-      await apiClient.patch('/vocabulary/bulk-status', { ids, status: targetStatus });
-      setSelectedIds(new Set());
-      await load();
-    } catch (e) {
-      setError(e instanceof ApiClientError ? e.message : 'Không thể cập nhật hàng loạt');
-    } finally { setBulkBusy(false); }
-  };
 
   if (createOnly) return <CreatePage backHref="/admin/learning-content"><VocabularyModal page mode="create" domains={domains} levels={levels} onClose={() => router.push('/admin/learning-content')} onSuccess={() => completeCreation(router, '/admin/learning-content', 'Đã thêm từ vựng.')} /></CreatePage>;
 
@@ -599,10 +587,7 @@ export default function AdminLearningContent({ createOnly = false }: { createOnl
 
 
       {!loading && items.length > 0 && (
-        <BulkSelectionBar pageCount={items.length} selectedCount={selectedIds.size} allPageSelected={items.every((item) => selectedIds.has(item.id))} onSelectPage={(selected) => setSelectedIds((current) => { const next = new Set(current); items.forEach((item) => selected ? next.add(item.id) : next.delete(item.id)); return next; })}>
-        <button type="button" disabled={bulkBusy || loading || selectedIds.size === 0} onClick={() => void bulkUpdate('published')} className="rounded-lg border border-emerald-600 bg-white px-3 py-2 text-xs font-bold text-emerald-700 disabled:opacity-85">Xuất bản</button>
-        <button type="button" disabled={bulkBusy || loading || selectedIds.size === 0} onClick={() => void bulkUpdate('draft')} className="rounded-lg border border-amber-500 bg-white px-3 py-2 text-xs font-bold text-amber-700 disabled:opacity-90">Chuyển về bản nháp</button>
-      </BulkSelectionBar>
+        <PublicationBulkBar items={items} total={total} query={`/vocabulary?${new URLSearchParams({ search, status, domainCode })}`} endpoint="/vocabulary/bulk-status" selectedIds={selectedIds} onSelectionChange={setSelectedIds} loading={loading} onBusyChange={setBulkBusy} itemLabel="từ vựng" onUpdated={async () => { await load(); }} />
       )}
 
       {error && (

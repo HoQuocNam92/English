@@ -121,40 +121,24 @@ export class UpdateVocabularyDto {
   examples?: VocabExampleDto[]
 }
 
-export class BulkUpdateVocabularyStatusDto {
-  @ApiProperty({ enum: ['draft', 'published', 'archived'] })
-  @IsEnum(['draft', 'published', 'archived'])
-  status: string
-
-  @ApiPropertyOptional({ type: [String], description: 'Chỉ cập nhật các từ vựng được chọn' })
-  // Imported vocabulary uses deterministic UUID v5; API-created vocabulary uses v4.
-  @IsOptional() @IsArray() @ArrayNotEmpty() @ArrayMaxSize(3000) @IsUUID('all', { each: true })
-  ids?: string[]
-
-  @ApiPropertyOptional()
-  @IsOptional() @IsString() @MaxLength(30)
-  domainCode?: string
-
-  @ApiPropertyOptional({ enum: ['draft', 'published', 'archived'] })
-  @IsOptional() @IsEnum(['draft', 'published', 'archived'])
-  currentStatus?: string
-
-  @ApiPropertyOptional()
-  @IsOptional() @IsString() @MaxLength(100)
-  search?: string
-
-  @ApiPropertyOptional({ description: 'Bắt buộc khi cập nhật toàn bộ kho mà không có bộ lọc' })
-  @IsOptional() @IsBoolean()
-  confirmAll?: boolean
-}
-
 export class BulkUpdateStatusDto {
   @ApiProperty({ enum: ['draft', 'published'] })
   @IsEnum(['draft', 'published'])
   status: string
 
-  @ApiProperty({ type: [String], description: 'Identifiers of the selected items only' })
-  @IsArray() @ArrayNotEmpty() @ArrayMaxSize(3000) @ArrayUnique() @IsUUID('all', { each: true })
+  @ApiProperty({ type: [String], description: 'Snapshot of explicitly selected identifiers, across matching pages' })
+  @IsArray() @ArrayNotEmpty() @ArrayMaxSize(10000) @ArrayUnique() @IsUUID('all', { each: true })
+  ids: string[]
+}
+
+export class BulkUpdateVocabularyStatusDto extends BulkUpdateStatusDto {}
+
+export class BulkActivityDto {
+  @ApiProperty() @IsBoolean()
+  isActive: boolean
+
+  @ApiProperty({ type: [String] })
+  @IsArray() @ArrayNotEmpty() @ArrayMaxSize(10000) @ArrayUnique() @IsUUID('all', { each: true })
   ids: string[]
 }
 

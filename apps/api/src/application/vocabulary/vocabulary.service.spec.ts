@@ -16,7 +16,7 @@ test('bulk vocabulary status accepts imported UUID v5 alongside UUID v4 and reje
     assert.deepEqual(await validate(dto), [])
     const { service, calls } = setup()
     await service.bulkUpdateStatus(dto)
-    assert.deepEqual(calls.bulk.where, { id: { in: dto.ids } })
+    assert.deepEqual(calls.bulk.where, { id: { in: dto.ids }, status: status === 'published' ? 'draft' : 'published' })
     assert.deepEqual(calls.bulk.data, { status })
   }
   for (const ids of [[], ['invalid'], [domainIds[0], 'invalid']]) {
