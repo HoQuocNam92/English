@@ -56,6 +56,7 @@ export function AdminMfaBoundary({ children }: { children: React.ReactNode }) {
     finally { setBusy(false); }
   };
   if (status?.verified && !codes) return <>{children}</>;
+  if (!status && !codes && !error) return <main aria-busy="true" className="flex min-h-dvh items-center justify-center bg-surface-container-low"><div role="status" className="flex flex-col items-center gap-3 text-sm text-on-surface-variant"><span aria-hidden="true" className="h-8 w-8 animate-spin rounded-full border-2 border-outline-variant border-t-primary" />Đang tải…</div></main>;
   return <main className="flex min-h-dvh items-center justify-center bg-surface-container-low px-4 py-8"><div className="w-full max-w-lg space-y-5 rounded-2xl border border-outline-variant bg-white p-6 shadow-sm">
     <h1 className="text-2xl font-bold">{codes ? 'Lưu mã khôi phục MFA' : 'Xác thực để vào quản trị'}</h1>
     {error && <p role="alert" className="text-sm text-error">{error}</p>}
@@ -64,7 +65,7 @@ export function AdminMfaBoundary({ children }: { children: React.ReactNode }) {
       <p className="text-sm">Mỗi mã dùng được một lần khi bạn mất ứng dụng xác thực. Lưu các mã ở nơi riêng tư trước khi tiếp tục. Các mã chỉ hiển thị lần này.</p>
       <pre className="select-all rounded-lg bg-slate-100 p-4 text-sm">{codes.join('\n')}</pre>
       <button className="rounded-xl bg-primary px-4 py-3 font-bold text-white" onClick={() => { setCodes(null); }}>Tôi đã lưu mã, vào quản trị</button>
-    </> : !status ? <><p>Đang kiểm tra phiên xác thực…</p><button className="text-primary" onClick={() => void check()}>Thử lại</button></> : <>
+    </> : !status ? <><p>Chưa thể kiểm tra phiên xác thực. Vui lòng thử lại.</p><button className="text-primary" onClick={() => void check()}>Thử lại</button></> : <>
       <p className="text-sm">{status.enabled ? 'Nhập mã 6 số trong Google Authenticator hoặc Microsoft Authenticator. Bạn cũng có thể dùng một mã khôi phục.' : 'Thiết lập ứng dụng xác thực để bảo vệ tài khoản trước khi sử dụng khu vực quản trị.'}</p>
       {!status.enabled && !setup && <button disabled={busy} onClick={() => void begin()} className="rounded-xl bg-primary px-4 py-3 font-bold text-white">Thiết lập ứng dụng xác thực</button>}
       {setup && <div className="space-y-3 text-sm"><p>Trong Google Authenticator hoặc Microsoft Authenticator, chọn thêm tài khoản rồi quét mã QR:</p><div className="mx-auto w-fit rounded-xl border border-outline-variant bg-white p-4"><QRCodeSVG value={setup.uri} size={208} level="M" marginSize={4} title="Mã QR thiết lập MFA TechEnglish" /></div><p>Không quét được? Chọn nhập khóa thiết lập, dùng mã theo thời gian và nhập khóa sau:</p><code className="block select-all break-all rounded-lg bg-slate-100 p-3">{setup.secret}</code><a className="block font-semibold text-primary" href={setup.uri}>Mở ứng dụng xác thực trên thiết bị này</a><p>Khóa thiết lập hết hạn sau 10 phút.</p><button className="text-primary" disabled={busy} onClick={() => void begin()}>Tải lại khóa thiết lập</button></div>}
