@@ -1,11 +1,11 @@
-import React, { createContext, useContext, useRef, useState } from 'react';
+import React, { createContext, useContext, useEffect, useRef, useState } from 'react';
 import { ActivityIndicator, KeyboardAvoidingView, Modal, Platform, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View, useWindowDimensions } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { colors } from '@techenglish/design-tokens';
 import { MaterialIcons } from './AppIcon';
 import { compactTextSize, interFontStyle } from './font-styles';
 import * as Speech from 'expo-speech';
-import { api } from '../api/api-client';
+import { api, subscribeSessionExpired } from '../api/api-client';
 import { renderRichTextChildren } from './rich-text';
 
 const TranslationContext = createContext<(context: string) => void>(() => {});
@@ -23,6 +23,7 @@ export function TranslationProvider({ children }: { children: React.ReactNode })
   const request = useRef(0);
   const cache = useRef(new Map<string, any>());
   const close = () => { request.current++; setVisible(false); void Speech.stop(); };
+  useEffect(() => subscribeSessionExpired(close), []);
   const open = (value: string) => { request.current++; void Speech.stop(); setContext(value); setText(value.length <= 120 ? value : ''); setResult(null); setError(''); setLoading(false); setExpanded(false); setVisible(true); };
   const translate = async () => {
     const selection = text.trim();

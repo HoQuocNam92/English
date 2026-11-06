@@ -1,4 +1,5 @@
 'use client';
+import { clearAuthSession } from '@/shared/storage';
 import { RichText } from '@/shared/ui/RichText';
 import { RequiredMark } from '@/shared/ui/RequiredMark';
 import { NumberInput } from '@/shared/ui/NumberInput';
@@ -202,6 +203,8 @@ function LearnerProfileContent() {
       });
       setPassword({ currentPassword: '', newPassword: '', confirmPassword: '' });
       setPasswordErrors({});
+      clearAuthSession();
+      window.location.replace('/login');
     } catch (cause: any) {
       const msg = cause?.message || 'Không thể đổi mật khẩu.';
       const lower = msg.toLowerCase();

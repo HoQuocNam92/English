@@ -9,10 +9,12 @@ import { MaterialIcons } from '../../src/shared/ui/AppIcon';
 import { colors, spacing } from '@techenglish/design-tokens';
 import { api } from '../../src/shared/api/api-client';
 import { validatePassword } from '../../src/shared/utils/validators';
+import { useAuth } from '../../src/shared/store/auth-context';
 
 export default function MobileChangePasswordScreen() {
   const insets = useSafeAreaInsets();
   const router = useRouter();
+  const { logout } = useAuth();
   const [currentPassword, setCurrentPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -47,9 +49,9 @@ export default function MobileChangePasswordScreen() {
     setSaving(true);
     try {
       await api.post('/users/me/change-password', { currentPassword, newPassword });
-      Alert.alert('Thành công', 'Đổi mật khẩu thành công!', [
-        { text: 'OK', onPress: () => router.back() }
-      ]);
+      await logout();
+      router.replace('/(auth)/login');
+      Alert.alert('Đã đổi mật khẩu', 'Tất cả phiên đăng nhập đã bị thu hồi. Vui lòng đăng nhập lại bằng mật khẩu mới.');
     } catch (err: any) {
       Alert.alert('Lỗi', /current password is incorrect/i.test(err.message ?? '') ? 'Mật khẩu hiện tại không chính xác.' : err.message || 'Có lỗi xảy ra');
     } finally {

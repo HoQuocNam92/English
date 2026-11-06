@@ -4,7 +4,8 @@ import { readFileSync } from 'node:fs';
 import { createRequire } from 'node:module';
 import { runInNewContext } from 'node:vm';
 
-function client(response, events) {
+function client(response, events, initialSession) {
+  let stored = initialSession ? JSON.stringify(initialSession) : null;
   const ts = createRequire(import.meta.url)('typescript');
   const source = readFileSync(new URL('../api/api-client.ts', import.meta.url), 'utf8');
   const code = ts.transpileModule(source, { compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022 } }).outputText;
@@ -12,16 +13,31 @@ function client(response, events) {
     './mutation-feedback': { mutationSuccessMessage: () => null },
     '../lib/request-query': { withoutEmptyQueryValues: path => path },
     '@/shared/lib/level-label': { localizeLevelFields: value => value },
-    '@/shared/storage': { sessionStorageTarget: () => ({ getItem: () => null }), clearAuthSession() {} },
+    '@/shared/storage': { sessionStorageTarget: () => ({ getItem: () => stored, setItem: (_key, value) => { stored = value; } }), clearAuthSession() { stored = null; } },
     '@/shared/config/env': { API_BASE_URL: 'https://example.test/api/v1' },
     '@/shared/lib/error-message': { toVietnameseErrorMessage: message => message },
   };
   const exports = {};
-  runInNewContext(code, { exports, require: name => { assert.ok(name in mocks, name); return mocks[name]; }, fetch: async () => response, Response, FormData, AbortController, setTimeout, clearTimeout,
-    ...(events ? { window: { dispatchEvent: event => events.push(event) }, CustomEvent: class { constructor(type, options) { this.type = type; this.detail = options.detail; } } } : {}),
+  runInNewContext(code, { exports, require: name => { assert.ok(name in mocks, name); return mocks[name]; }, fetch: typeof response === 'function' ? response : async () => response, Response, FormData, AbortController, setTimeout, clearTimeout,
+    ...(events ? { window: { location: { pathname: '/learn', replace: path => events.push({ type: 'redirect', path }) }, dispatchEvent: event => events.push(event) }, CustomEvent: class { constructor(type, options) { this.type = type; this.detail = options.detail; } } } : {}),
   });
-  return exports;
+  return { ...exports, stored: () => stored };
 }
+
+test('web clears revoked sessions and replaces the current route with login', async () => {
+  const events = [];
+  const c = client(async () => new Response('{}', { status: 401 }), events, { accessToken: 'old', refreshToken: 'old-refresh' });
+  await assert.rejects(c.apiClient.get('/lessons'));
+  assert.equal(c.stored(), null);
+  assert.ok(events.some(event => event.type === 'redirect' && event.path === '/login'));
+});
+test('web keeps the login during a temporary refresh failure', async () => {
+  const events = [];
+  const c = client(async url => new Response('{}', { status: url.endsWith('/auth/refresh') ? 503 : 401 }), events, { accessToken: 'old', refreshToken: 'old-refresh' });
+  await assert.rejects(c.apiClient.get('/lessons'));
+  assert.ok(c.stored());
+  assert.equal(events.some(event => event.type === 'redirect'), false);
+});
 
 test('missing placement plans accept both JSON null and legacy empty HTTP 200 bodies', async () => {
   for (const body of ['', '  ', 'null']) {

@@ -25,6 +25,17 @@ export async function getTokens(): Promise<{ accessToken: string | null; refresh
 }
 
 let refreshPromise: Promise<boolean> | null = null;
+const expiredListeners = new Set<() => void>();
+export function subscribeSessionExpired(listener: () => void) {
+  expiredListeners.add(listener);
+  return () => { expiredListeners.delete(listener); };
+}
+async function expireSession(expectedToken: string) {
+  // A delayed response from an old login must not sign out a newer login.
+  if (await getToken() !== expectedToken) return;
+  await Promise.all(['access_token', 'refresh_token', 'user'].map(key => AsyncStorage.removeItem(key)));
+  expiredListeners.forEach(listener => listener());
+}
 
 async function refreshSession(): Promise<boolean> {
   if (refreshPromise) return refreshPromise;
@@ -40,9 +51,10 @@ async function refreshSession(): Promise<boolean> {
         body: JSON.stringify({ refreshToken }),
         signal: controller.signal,
       });
-      if (!response.ok) return false;
+      if (response.status === 401 || response.status === 403) return false;
+      if (!response.ok) throw new ApiError(response.status, 'Chưa thể kiểm tra phiên đăng nhập. Vui lòng thử lại.');
       const data = await response.json();
-      if (!data.accessToken) return false;
+      if (!data.accessToken) throw new ApiError(502, 'Máy chủ chưa trả về phiên đăng nhập hợp lệ.');
       // Do not restore a session that was signed out while refreshing.
       if (await AsyncStorage.getItem('refresh_token') !== refreshToken) return false;
       await AsyncStorage.setItem('access_token', data.accessToken);
@@ -77,8 +89,9 @@ export async function apiRequest<T>(
       headers,
       signal: controller.signal,
     });
-    if (res.status === 401 && token && retryOnUnauth && !['/auth/login', '/auth/register', '/auth/refresh'].includes(path)) {
-      if (await refreshSession()) return apiRequest<T>(path, options, false);
+    if (res.status === 401 && token && !['/auth/login', '/auth/register', '/auth/refresh', '/auth/google/mobile', '/auth/change-password', '/users/me/change-password'].includes(path.split('?')[0])) {
+      if (retryOnUnauth && await refreshSession()) return apiRequest<T>(path, options, false);
+      await expireSession(token);
       throw new ApiError(401, 'Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.');
     }
 

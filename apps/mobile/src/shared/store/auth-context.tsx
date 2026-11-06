@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { apiRequest } from '../api/api-client';
+import { apiRequest, subscribeSessionExpired } from '../api/api-client';
+import { useRouter, useSegments, useRootNavigationState } from 'expo-router';
 import { AppState } from 'react-native';
 import { ApiError } from '../api/api-client';
 
@@ -34,9 +35,20 @@ interface AuthContextValue extends AuthState {
 const AuthContext = createContext<AuthContextValue | null>(null);
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
+  const router = useRouter();
+  const segments = useSegments();
+  const navigation = useRootNavigationState();
   const [state, setState] = useState<AuthState>({
     user: null, accessToken: null, isLoggedIn: false, isLoading: true
   });
+  useEffect(() => {
+    if (!navigation?.key || state.isLoading || state.isLoggedIn) return;
+    if (segments.length && String(segments[0]) !== '(auth)') router.replace('/(auth)/login');
+  }, [navigation?.key, state.isLoading, state.isLoggedIn, segments.join('/'), router]);
+  useEffect(() => subscribeSessionExpired(() => {
+    setState({ user: null, accessToken: null, isLoggedIn: false, isLoading: false });
+    router.replace('/(auth)/login');
+  }), [router]);
   useEffect(() => {
     if (!state.isLoggedIn) return;
     let active = true, checking = false;
@@ -48,6 +60,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         if (active && error instanceof ApiError && error.statusCode === 401) {
           await Promise.all(['access_token', 'refresh_token', 'user'].map(key => AsyncStorage.removeItem(key)));
           if (active) setState({ user: null, accessToken: null, isLoggedIn: false, isLoading: false });
+          if (active) router.replace('/(auth)/login');
         }
       } finally { checking = false; }
     };
@@ -68,7 +81,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         if (token && userRaw) {
           const user = JSON.parse(userRaw) as User;
           if (!user || typeof user.id !== 'string' || typeof user.email !== 'string') throw new Error('Invalid stored session');
-          setState({ user, accessToken: token, isLoggedIn: true, isLoading: false });
+          if (await AsyncStorage.getItem('access_token') === token) setState({ user, accessToken: token, isLoggedIn: true, isLoading: false });
         } else {
           setState(s => ({ ...s, isLoading: false }));
         }

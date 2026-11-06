@@ -63,17 +63,20 @@ async function refreshAccessToken(): Promise<string | null> {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ refreshToken: session.refreshToken }),
       });
-      if (!response.ok) return null;
+      if (response.status === 401 || response.status === 403) return null;
+      if (!response.ok) throw new ApiClientError('Chưa thể kiểm tra phiên đăng nhập. Vui lòng thử lại.', response.status);
 
       const data = await response.json();
-      if (!data?.accessToken) return null;
+      if (!data?.accessToken) throw new ApiClientError('Máy chủ chưa trả về phiên đăng nhập hợp lệ.', 502);
+      if (sessionStorageTarget().getItem(SESSION_KEY) !== raw) return null;
       sessionStorageTarget().setItem(
         SESSION_KEY,
         JSON.stringify({ ...session, accessToken: data.accessToken }),
       );
       return data.accessToken as string;
-    } catch {
-      return null;
+    } catch (error) {
+      if (error instanceof ApiClientError) throw error;
+      throw new ApiClientError('Không thể kiểm tra phiên đăng nhập. Vui lòng thử lại.', 0);
     } finally {
       refreshPromise = null;
     }
@@ -112,12 +115,14 @@ async function request<T>(path: string, options: RequestInit = {}, canRetry = tr
     throw new ApiClientError(toVietnameseErrorMessage(error instanceof Error ? error.message : error), 0);
   }
 
-  if (res.status === 401 && canRetry && token && path !== "/auth/refresh") {
-    const refreshedToken = await refreshAccessToken();
+  if (res.status === 401 && token && !['/auth/login', '/auth/register', '/auth/refresh', '/auth/google/mobile', '/auth/change-password', '/users/me/change-password'].includes(path.split('?')[0])) {
+    const refreshedToken = canRetry ? await refreshAccessToken() : null;
     if (refreshedToken) return request<T>(path, options, false);
 
-    clearAuthSession();
-    if (window.location.pathname !== "/login") window.location.assign("/login");
+    if (getAccessToken() === token) {
+      clearAuthSession();
+      if (window.location.pathname !== "/login") window.location.replace("/login");
+    }
   }
 
   if (!res.ok) {

@@ -13,6 +13,7 @@ function harness() {
   let cursor = 0, requests = [];
   const state = [];
   const react = {
+    useEffect() {},
     createContext: () => ({ Provider: 'provider' }), useContext: () => {},
     useState(initial) { const key = cursor++; if (!(key in state)) state[key] = initial; return [state[key], value => { state[key] = typeof value === 'function' ? value(state[key]) : value; }]; },
     useRef(initial) { const key = cursor++; return state[key] ??= { current: initial }; },
@@ -25,7 +26,7 @@ function harness() {
     '@techenglish/design-tokens': { colors: { primary: '#4338ca', text: '#111827', mutedText: '#64748b', error: '#be123c' } },
     './AppIcon': { MaterialIcons: 'icon' }, './font-styles': { compactTextSize: value => value, interFontStyle: () => ({}) },
     'expo-speech': { stop: async () => {}, speak() {} },
-    '../api/api-client': { api: { post: (path, body) => new Promise(resolve => requests.push({ path, body, resolve })) } },
+    '../api/api-client': { subscribeSessionExpired: () => () => {}, api: { post: (path, body) => new Promise(resolve => requests.push({ path, body, resolve })) } },
     './rich-text': { renderRichTextChildren: value => value },
   };
   const exports = {};
