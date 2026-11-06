@@ -1,3 +1,4 @@
+import { PasswordField } from '../../src/shared/ui/PasswordField';
 import { RequiredMark } from '../../src/shared/ui/RequiredMark';
 import { Button, Text, TextInput, TouchableOpacity } from '../../src/shared/ui/primitives';
 import { useRef, useState } from 'react';
@@ -17,8 +18,6 @@ export default function MobileRegisterScreen() {
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [agreeTerms, setAgreeTerms] = useState(false);
-  const [showPassword, setShowPassword] = useState(false);
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   
   const [nameError, setNameError] = useState('');
   const [emailError, setEmailError] = useState('');
@@ -133,50 +132,8 @@ export default function MobileRegisterScreen() {
             {emailError ? <Text style={styles.errorTextSmall}>{emailError}</Text> : null}
           </View>
 
-          <View style={styles.inputGroup}>
-            <Text style={styles.label}>Mật khẩu<RequiredMark /></Text>
-            <View style={[styles.inputWrapper, passwordError ? styles.inputError : null]}>
-              <MaterialIcons name="lock-outline" size={20} color={colors.outline} style={styles.inputIcon} />
-              <TextInput
-                style={styles.input}
-                placeholder="Tối thiểu 6 ký tự"
-                value={password}
-                onChangeText={setPassword}
-                secureTextEntry={!showPassword}
-                autoComplete="new-password"
-                returnKeyType="next"
-                onSubmitEditing={() => confirmPasswordRef.current?.focus()}
-                editable={!isLoading}
-              />
-              <TouchableOpacity onPress={() => setShowPassword(!showPassword)} style={styles.eyeIcon} disabled={isLoading} accessibilityLabel={showPassword ? 'Ẩn mật khẩu' : 'Hiện mật khẩu'}>
-                <MaterialIcons name={showPassword ? 'visibility-off' : 'visibility'} size={20} color={colors.outline} />
-              </TouchableOpacity>
-            </View>
-            {passwordError ? <Text style={styles.errorTextSmall}>{passwordError}</Text> : null}
-            <Text style={styles.passwordHint}>Mật khẩu tối thiểu 6 ký tự (nên chứa chữ hoa, chữ số và ký tự đặc biệt).</Text>
-          </View>
-
-          <View style={styles.inputGroup}>
-            <Text style={styles.label}>Xác nhận mật khẩu<RequiredMark /></Text>
-            <View style={[styles.inputWrapper, confirmError ? styles.inputError : null]}>
-              <MaterialIcons name="lock-outline" size={20} color={colors.outline} style={styles.inputIcon} />
-              <TextInput
-                style={styles.input}
-                ref={confirmPasswordRef}
-                placeholder="Nhập lại mật khẩu"
-                value={confirmPassword}
-                onChangeText={setConfirmPassword}
-                secureTextEntry={!showConfirmPassword}
-                autoComplete="new-password"
-                returnKeyType="done"
-                editable={!isLoading}
-              />
-              <TouchableOpacity onPress={() => setShowConfirmPassword(!showConfirmPassword)} style={styles.eyeIcon} disabled={isLoading} accessibilityLabel={showConfirmPassword ? 'Ẩn xác nhận mật khẩu' : 'Hiện xác nhận mật khẩu'}>
-                <MaterialIcons name={showConfirmPassword ? 'visibility-off' : 'visibility'} size={20} color={colors.outline} />
-              </TouchableOpacity>
-            </View>
-            {confirmError ? <Text style={styles.errorTextSmall}>{confirmError}</Text> : null}
-          </View>
+          <PasswordField label="Mật khẩu" placeholder="Tối thiểu 6 ký tự" value={password} onChangeText={setPassword} error={passwordError} showHint editable={!isLoading} returnKeyType="next" onSubmitEditing={() => confirmPasswordRef.current?.focus()} />
+          <PasswordField ref={confirmPasswordRef} label="Xác nhận mật khẩu" placeholder="Nhập lại mật khẩu" value={confirmPassword} onChangeText={setConfirmPassword} error={confirmError} editable={!isLoading} returnKeyType="done" />
 
           <View style={styles.termsRow}>
             <TouchableOpacity

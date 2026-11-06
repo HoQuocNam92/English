@@ -1,10 +1,10 @@
-import { RequiredMark } from '../../src/shared/ui/RequiredMark';
+import { PasswordField } from '../../src/shared/ui/PasswordField';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { Text, TextInput, TouchableOpacity } from '../../src/shared/ui/primitives';
-import { useState } from 'react';
+import { Button, Text, TouchableOpacity } from '../../src/shared/ui/primitives';
+import { useRef, useState } from 'react';
 import { useRouter } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
-import { StyleSheet, View, ScrollView, Alert, ActivityIndicator } from 'react-native';
+import { StyleSheet, View, ScrollView, Alert } from 'react-native';
 import { MaterialIcons } from '../../src/shared/ui/AppIcon';
 import { colors, spacing } from '@techenglish/design-tokens';
 import { api } from '../../src/shared/api/api-client';
@@ -19,15 +19,10 @@ export default function MobileChangePasswordScreen() {
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [saving, setSaving] = useState(false);
-  const [showCurrent, setShowCurrent] = useState(false);
-  const [showNew, setShowNew] = useState(false);
-  const [showConfirm, setShowConfirm] = useState(false);
 
-  const rules = [
-    { label: 'Ít nhất 6 ký tự', ok: newPassword.length >= 6 },
-    { label: 'Không quá 72 ký tự', ok: newPassword.length <= 72 },
-  ];
-  const allRulesMet = rules.every(r => r.ok);
+  const newPasswordRef = useRef<any>(null);
+  const confirmPasswordRef = useRef<any>(null);
+  const allRulesMet = newPassword.length >= 6 && newPassword.length <= 72;
   const saveDisabled = saving || !allRulesMet || !currentPassword || newPassword !== confirmPassword;
 
   const handleUpdate = async () => {
@@ -70,86 +65,16 @@ export default function MobileChangePasswordScreen() {
         <View style={{ width: 40 }} />
       </View>
 
-      <ScrollView contentContainerStyle={styles.scrollContent} keyboardShouldPersistTaps="handled">
+      <ScrollView contentContainerStyle={[styles.scrollContent, { paddingBottom: insets.bottom + 120 }]} keyboardShouldPersistTaps="handled">
         <View style={styles.formCard}>
-          {/* Mật khẩu hiện tại */}
-          <View style={styles.inputGroup}>
-            <Text style={styles.label}>Mật khẩu hiện tại<RequiredMark /></Text>
-            <View style={styles.inputRow}>
-              <TextInput
-                style={styles.input}
-                placeholder="••••••••"
-                value={currentPassword}
-                onChangeText={setCurrentPassword}
-                secureTextEntry={!showCurrent}
-              />
-              <TouchableOpacity style={styles.eyeBtn} onPress={() => setShowCurrent(!showCurrent)}>
-                <MaterialIcons name={showCurrent ? 'visibility-off' : 'visibility'} size={20} color={colors.outline} />
-              </TouchableOpacity>
-            </View>
-          </View>
-
-          {/* Mật khẩu mới */}
-          <View style={styles.inputGroup}>
-            <Text style={styles.label}>Mật khẩu mới<RequiredMark /></Text>
-            <View style={styles.inputRow}>
-              <TextInput
-                style={styles.input}
-                placeholder="Nhập mật khẩu mới"
-                value={newPassword}
-                onChangeText={setNewPassword}
-                secureTextEntry={!showNew}
-              />
-              <TouchableOpacity style={styles.eyeBtn} onPress={() => setShowNew(!showNew)}>
-                <MaterialIcons name={showNew ? 'visibility-off' : 'visibility'} size={20} color={colors.outline} />
-              </TouchableOpacity>
-            </View>
-
-            {/* Password requirements */}
-            <View style={styles.rulesBox}>
-              {rules.map(r => (
-                <View key={r.label} style={styles.ruleRow}>
-                  <MaterialIcons
-                    name={r.ok ? 'check-circle' : 'radio-button-unchecked'}
-                    size={14}
-                    color={r.ok ? '#15803d' : '#64748b'}
-                  />
-                  <Text style={[styles.ruleText, r.ok && styles.ruleTextOk]}>{r.label}</Text>
-                </View>
-              ))}
-            </View>
-          </View>
-
-          {/* Xác nhận mật khẩu */}
-          <View style={styles.inputGroup}>
-            <Text style={styles.label}>Xác nhận mật khẩu mới<RequiredMark /></Text>
-            <View style={styles.inputRow}>
-              <TextInput
-                style={styles.input}
-                placeholder="Nhập lại mật khẩu mới"
-                value={confirmPassword}
-                onChangeText={setConfirmPassword}
-                secureTextEntry={!showConfirm}
-              />
-              <TouchableOpacity style={styles.eyeBtn} onPress={() => setShowConfirm(!showConfirm)}>
-                <MaterialIcons name={showConfirm ? 'visibility-off' : 'visibility'} size={20} color={colors.outline} />
-              </TouchableOpacity>
-            </View>
-            {confirmPassword.length > 0 && newPassword !== confirmPassword && (
-              <Text style={styles.errorText}>Mật khẩu xác nhận không khớp</Text>
-            )}
-          </View>
+          <PasswordField label="Mật khẩu hiện tại" placeholder="Nhập mật khẩu hiện tại" value={currentPassword} onChangeText={setCurrentPassword} autoComplete="current-password" editable={!saving} returnKeyType="next" onSubmitEditing={() => newPasswordRef.current?.focus()} />
+          <PasswordField ref={newPasswordRef} label="Mật khẩu mới" placeholder="Tối thiểu 6 ký tự" value={newPassword} onChangeText={setNewPassword} showHint editable={!saving} returnKeyType="next" onSubmitEditing={() => confirmPasswordRef.current?.focus()} />
+          <PasswordField ref={confirmPasswordRef} label="Xác nhận mật khẩu mới" placeholder="Nhập lại mật khẩu mới" value={confirmPassword} onChangeText={setConfirmPassword} error={confirmPassword.length > 0 && newPassword !== confirmPassword ? 'Mật khẩu xác nhận không khớp' : ''} editable={!saving} returnKeyType="done" onSubmitEditing={() => { if (!saveDisabled) void handleUpdate(); }} />
         </View>
       </ScrollView>
 
-      <View style={styles.bottomBar}>
-        <TouchableOpacity
-          style={[styles.saveBtn, saveDisabled && styles.saveBtnDisabled]}
-          onPress={handleUpdate}
-          disabled={saveDisabled}
-        >
-          {saving ? <ActivityIndicator color="#fff" /> : <Text style={[styles.saveBtnText, saveDisabled && { color: colors.mutedText }]}>Cập nhật mật khẩu</Text>}
-        </TouchableOpacity>
+      <View style={[styles.bottomBar, { paddingBottom: Math.max(insets.bottom, 16) }]}>
+        <Button onPress={handleUpdate} disabled={saveDisabled}>{saving ? 'Đang cập nhật…' : 'Cập nhật mật khẩu'}</Button>
       </View>
     </View>
   );
