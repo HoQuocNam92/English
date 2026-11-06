@@ -2,6 +2,7 @@ import { ApivnLearningPlanner } from '../../infrastructure/ai/apivn-learning-pla
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common'
 import { randomInt } from 'node:crypto'
 import { PrismaService } from '../../infrastructure/database/prisma.service'
+import { careerFocus } from '../recommendation/career-focus'
 
 type Answer = { questionId: string; optionId: string }
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
@@ -36,7 +37,7 @@ export function balancedQuestions(pool: any[], limit = 15) {
 export class PlacementService {
   constructor(private readonly prisma: PrismaService, private readonly ai?: ApivnLearningPlanner) {}
   private profile(learnerId: string) {
-    return this.prisma.learnerProfile.findUnique({ where: { userId: learnerId }, include: { level: true, domains: { include: { domain: true } }, certGoals: { include: { certificate: true } } } })
+    return this.prisma.learnerProfile.findUnique({ where: { userId: learnerId }, include: { level: true, domains: { include: { domain: true } }, certGoals: { include: { certificate: true } }, careerGoals: { include: { careerGoal: true } } } })
   }
   async start(learnerId: string) {
     const profile = await this.profile(learnerId)
@@ -81,13 +82,13 @@ export class PlacementService {
     return this.prisma.$transaction(async tx => {
       const saved = await tx.placementAssessment.updateMany({ where: { id: session.id, learnerId, submittedAt: null }, data: { answers, result, submittedAt: new Date() } })
       if (!saved.count) return (await tx.placementAssessment.findUnique({ where: { id: session.id } }))!.result
-      await tx.learnerProfile.upsert({ where: { userId: learnerId }, update: { levelId: level.id }, create: { userId: learnerId, levelId: level.id, onboardingCompleted: false } })
+      await tx.learnerProfile.upsert({ where: { userId: learnerId }, update: { levelId: level.id, levelSelectedAt: new Date() }, create: { userId: learnerId, levelId: level.id, levelSelectedAt: new Date(), onboardingCompleted: false } })
       return result
     })
   }
   async personalPlan(learnerId: string) {
     const profile = await this.profile(learnerId)
-    if (!profile?.onboardingCompleted) throw new BadRequestException('Hãy hoàn thành thiết lập mục tiêu trước.')
+    if (!profile?.onboardingCompleted || profile.levelSelectedAt === null) throw new BadRequestException('Hãy hoàn thành thiết lập mục tiêu và chọn trình độ trước.')
     const previous = await this.latest(learnerId)
     const assessment = previous && !previous.selfSelected ? { levelCode: profile.level.code, percent: previous.percent, correct: previous.correct, total: previous.total, domainScores: previous.domainScores, mistakes: previous.review?.filter((q: any) => !q.correct).map((q: any) => ({ prompt: q.prompt, domain: q.domain.code, level: q.level.code })) } : { levelCode: profile.level.code, selfSelected: true }
     const plan = await this.buildPlan(profile, assessment)
@@ -97,18 +98,19 @@ export class PlacementService {
     return { ...result, assessmentId: saved.id }
   }
   private async buildPlan(profile: any, assessment: any) {
+    const focus = careerFocus(profile?.careerGoals)
     const domainIds = profile?.domains.map((d: any) => d.domainId) ?? []
     const certificateIds = profile?.certGoals.map((c: any) => c.certificateId) ?? []
     const goal = profile?.learningGoal ?? 'both'
     const minutes = profile?.dailyStudyTargetMinutes ?? 30
     const lessons = await this.prisma.lesson.findMany({ where: { status: 'published', domain: { isActive: true }, ...(domainIds.length ? { domainId: { in: domainIds } } : {}), ...(goal === 'certification' ? { type: 'certification_review', certificates: { some: { certificateId: { in: certificateIds } } } } : {}) }, include: { domain: true, level: true }, orderBy: [{ level: { order: 'asc' } }, { createdAt: 'asc' }], take: 40 })
-    const candidates = lessons.map(l => ({ id: l.id, title: l.title, kind: 'lesson', domain: l.domain.name, level: l.level.code, actionUrl: `/learn/lessons/${l.id}` }))
-    for (const item of profile?.certGoals ?? []) if (item.certificate.isActive) candidates.push({ id: item.certificateId, title: item.certificate.name, kind: 'certificate', domain: '', level: '', actionUrl: `/learn/certifications/${item.certificateId}` })
-    if (goal !== 'certification') for (const item of profile?.domains ?? []) candidates.push({ id: `vocab-${item.domainId}`, title: `Từ vựng ${item.domain.name}`, kind: 'vocabulary', domain: item.domain.name, level: '', actionUrl: '/learn/flashcards' })
+    const candidates = lessons.sort((a, b) => a.level.order - b.level.order || focus.score(b.domain.code) - focus.score(a.domain.code)).map(l => ({ id: l.id, title: l.title, kind: 'lesson', domain: l.domain.name, level: l.level.code, actionUrl: `/learn/lessons/${l.id}`, careerReason: focus.reason(l.domain.code) }))
+    for (const item of profile?.certGoals ?? []) if (item.certificate.isActive) candidates.push({ id: item.certificateId, title: item.certificate.name, kind: 'certificate', domain: '', level: '', actionUrl: `/learn/certifications/${item.certificateId}`, careerReason: '' })
+    if (goal !== 'certification') for (const item of profile?.domains ?? []) candidates.push({ id: `vocab-${item.domainId}`, title: `Từ vựng ${item.domain.name}`, kind: 'vocabulary', domain: item.domain.name, level: '', actionUrl: '/learn/flashcards', careerReason: focus.reason(item.domain.code) })
     const weak = assessment.domainScores?.filter((d: any) => d.percent < 70).map((d: any) => d.name) ?? []
-    const fallback = { source: 'rules', summary: `Học ${minutes} phút mỗi ngày${weak.length ? ` và ưu tiên củng cố ${weak.join(', ')}` : ''}.`, strengths: [], weaknesses: weak, levelReason: assessment.selfSelected ? 'Dựa trên trình độ bạn tự chọn; chưa có bài kiểm tra.' : `Dựa trên ${assessment.correct}/${assessment.total} câu đúng. Bài ngắn chỉ giúp định hướng học, không thay thế đánh giá chính thức.`, steps: candidates.slice(0, 5).map((c, i) => ({ ...c, reason: c.kind === 'certificate' ? 'Học kiến thức theo chủ đề trước khi làm Quiz.' : 'Củng cố nội dung thuộc mục tiêu đã chọn.', week: Math.min(i + 1, 4) })), dailyMinutes: minutes }
+    const fallback = { source: 'rules', summary: `Học ${minutes} phút mỗi ngày${weak.length ? ` và ưu tiên củng cố ${weak.join(', ')}` : ''}.`, strengths: [], weaknesses: weak, levelReason: assessment.selfSelected ? 'Dựa trên trình độ bạn tự chọn; chưa có bài kiểm tra.' : `Dựa trên ${assessment.correct}/${assessment.total} câu đúng. Bài ngắn chỉ giúp định hướng học, không thay thế đánh giá chính thức.`, steps: candidates.slice(0, 5).map((c, i) => ({ ...c, reason: c.careerReason || (c.kind === 'certificate' ? 'Học kiến thức theo chủ đề trước khi làm Quiz.' : 'Củng cố nội dung thuộc mục tiêu đã chọn.'), week: Math.min(i + 1, 4) })), dailyMinutes: minutes }
     if (!this.ai || !candidates.length) return fallback
     const progress = profile?.userId ? await this.prisma.learningProgress.findMany({ where: { learnerId: profile.userId, resourceType: 'lesson' }, select: { resourceId: true, status: true, completionPercent: true } }) : []
-    return this.ai.plan(fallback, candidates, { assessment, goal, dailyMinutes: minutes, domains: profile?.domains.map((d: any) => d.domain.name), certificates: profile?.certGoals.map((c: any) => c.certificate.name), progress: progress.filter(p => candidates.some(c => c.id === p.resourceId)).map(p => ({ candidateId: p.resourceId, status: p.status, completionPercent: p.completionPercent })) })
+    return this.ai.plan(fallback, candidates, { assessment, goal, careerGoals: focus.goals, dailyMinutes: minutes, domains: profile?.domains.map((d: any) => d.domain.name), certificates: profile?.certGoals.map((c: any) => c.certificate.name), progress: progress.filter(p => candidates.some(c => c.id === p.resourceId)).map(p => ({ candidateId: p.resourceId, status: p.status, completionPercent: p.completionPercent })) })
   }
 }

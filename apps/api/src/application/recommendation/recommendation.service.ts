@@ -1,6 +1,7 @@
 import { Inject, Injectable } from '@nestjs/common'
 import { PrismaService } from '../../infrastructure/database/prisma.service'
 import { AI_RECOMMENDATION_PORT, AiRecommendationPort } from './ai-recommendation.port'
+import { careerFocus } from './career-focus'
 
 export interface LearningRecommendationItem {
   id: string
@@ -29,12 +30,14 @@ export class RecommendationService {
         level: true,
         domains: { include: { domain: true } },
         certGoals: { include: { certificate: true } },
+        careerGoals: { include: { careerGoal: true } },
       },
     })
 
     const levelId = profile?.levelId
     const targetDomainIds = (profile?.domains ?? []).map((d) => d.domainId)
     const targetCertIds = (profile?.certGoals ?? []).map((c) => c.certificateId)
+    const focus = careerFocus(profile?.careerGoals)
 
     // 2. Lấy dữ liệu bài thi và từ vựng
     const [recentAttempts, weakVocabCount] = await Promise.all([
@@ -61,7 +64,7 @@ export class RecommendationService {
     const hasTargets = hasTargetDomains || hasTargetCerts
 
     // Không đưa gợi ý chung chung khi học viên chưa chọn lộ trình.
-    if (!profile?.onboardingCompleted || !hasTargets || profile.learningPathMode === 'self') {
+    if (!profile?.onboardingCompleted || profile.levelSelectedAt === null || !hasTargets || profile.learningPathMode === 'self') {
       return { recommendations: [], personalizationSource: 'rules' }
     }
 
@@ -104,10 +107,9 @@ export class RecommendationService {
         ...(hasTargetDomains ? { domainId: { in: targetDomainIds } } : {}),
       },
       include: { domain: true, level: true },
-      take: 2,
     }) : []
 
-    for (const ex of availableExams) {
+    for (const ex of availableExams.sort((a, b) => focus.score(b.domain?.code) - focus.score(a.domain?.code))) {
       // Chỉ đề xuất nếu chưa có lượt thi đạt điểm cao
       const hasPassed = recentAttempts.some((a) => a.examId === ex.id && (a.passed || (a.scorePercent ?? 0) >= 70))
       if (!hasPassed) {
@@ -116,7 +118,7 @@ export class RecommendationService {
           type: 'exam',
           title: ex.title,
           summary: ex.description,
-          reason: `Học kiến thức ${ex.domain?.name || 'CNTT'} theo chứng chỉ đã chọn trước khi luyện Quiz.`,
+          reason: `Học kiến thức ${ex.domain?.name || 'CNTT'} theo chứng chỉ đã chọn trước khi luyện Quiz. ${focus.reason(ex.domain?.code)}`.trim(),
           priority: 'high',
           priorityScore: 84,
           domainName: ex.domain?.name,
@@ -134,6 +136,7 @@ export class RecommendationService {
       level: profile?.level?.code ?? null,
       targetDomains: profile?.domains.map(item => item.domain.code) ?? [],
       targetCertificates: profile?.certGoals.map(item => item.certificate.code) ?? [],
+      careerGoals: focus.goals,
       recentScores: recentAttempts.map(item => item.scorePercent).filter(score => score !== null),
       weakVocabularyCount: weakVocabCount,
     })

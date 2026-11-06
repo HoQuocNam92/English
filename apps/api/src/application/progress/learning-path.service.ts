@@ -1,5 +1,6 @@
 import { BadRequestException, ConflictException, ForbiddenException, Injectable } from '@nestjs/common'
 import { PrismaService } from '../../infrastructure/database/prisma.service'
+import { careerFocus } from '../recommendation/career-focus'
 
 const done = (record: any) => record?.status === 'completed' || record?.completionPercent >= 100
 
@@ -10,9 +11,11 @@ export class LearningPathService {
   async getPath(learnerId: string, db: any = this.prisma) {
     const user = await db.user.findFirst({ where: { id: learnerId, status: 'active', userRoles: { some: { role: { code: 'learner', isActive: true } } } }, select: { id: true } })
     if (!user) throw new ForbiddenException('Chỉ học viên mới có lộ trình học tập.')
-    const profile = await db.learnerProfile.findUnique({ where: { userId: learnerId }, include: { level: true, domains: { include: { domain: true } } } })
-    if (!profile?.onboardingCompleted || profile.learningGoal === 'certification' || profile.level.isActive === false) return { configured: false as const }
+    const profile = await db.learnerProfile.findUnique({ where: { userId: learnerId }, include: { level: true, domains: { include: { domain: true } }, careerGoals: { include: { careerGoal: true } } } })
+    if (!profile?.onboardingCompleted || profile.levelSelectedAt === null || profile.learningGoal === 'certification' || profile.level.isActive === false) return { configured: false as const }
+    const focus = careerFocus(profile.careerGoals)
     const selected = profile.domains.filter((link: any) => link.domain.isActive)
+      .sort((a: any, b: any) => focus.score(b.domain.code) - focus.score(a.domain.code))
     if (!selected.length) return { configured: false as const }
     const domainIds = selected.map((link: any) => link.domainId)
     const [lessons, progress, exams, attempts, levels] = await Promise.all([
@@ -44,6 +47,7 @@ export class LearningPathService {
       const passed = lessonsComplete && attempt?.passed === true
       return {
         id: link.domainId, code: link.domain.code, name: link.domain.name, available,
+        careerReason: focus.reason(link.domain.code),
         lessons: lessonItems, completedLessons, totalLessons: rows.length,
         state: !lessonsComplete ? 'in_progress' : passed ? 'complete' : attempt ? 'review_needed' : 'assessment_due',
         nextLesson: lessonItems.find((lesson: any) => !lesson.completed) ?? null,

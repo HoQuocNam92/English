@@ -2,7 +2,7 @@
 import { ReadingGlossary } from '@/shared/ui/ReadingGlossary';
 import { RichText } from '@/shared/ui/RichText';
 import { isRichText } from '../../../../../../../packages/shared-kernel/src/rich-text';
-import { lessonSectionTitle, isLessonGuidance, lessonStudyGuide } from '../../../../../../../packages/shared-kernel/src/lesson-presentation';
+import { lessonSourceParts, lessonSectionTitle, isLessonGuidance, lessonStudyGuide } from '../../../../../../../packages/shared-kernel/src/lesson-presentation';
 import { lessonReadingText } from '@/shared/lib/lesson-reading';
 import { AppIcon } from '@/shared/ui/AppIcon';
 
@@ -69,7 +69,7 @@ function sectionText(section: LessonSection) {
   const content = contentOf(section);
   if (content.html) return lessonReadingText(section.title, plainHtml(content.html), content.url);
   if (content.text || content.code || content.url) return lessonReadingText(section.title, content.text ?? content.code ?? '', content.url);
-  const ignored = new Set(['method', 'path', 'auth', 'language', 'status', 'term', 'pronunciation', 'partOfSpeech', 'documentTitle', 'sourceLabel', 'url']);
+  const ignored = new Set(['method', 'path', 'auth', 'language', 'status', 'term', 'pronunciation', 'partOfSpeech', 'documentTitle', 'sourceLabel', 'url', 'translationVi', 'readingGoal']);
   return Object.entries(content).filter(([key, value]) => !ignored.has(key) && typeof value === 'string' && value.trim()).map(([, value]) => value).join('\n\n');
 }
 
@@ -80,10 +80,10 @@ function glossaryOf(section: LessonSection): unknown {
 function SectionBody({ text, glossary }: { text: string; glossary?: unknown }) {
   if (glossary && !isRichText(text)) return <ReadingGlossary text={text} glossary={glossary} />;
   if (isRichText(text)) return <RichText text={text} />;
-  return <>{text.split(/(https?:\/\/[^\s<>]+)/g).map((part, index) => {
-    if (!/^https?:\/\//.test(part)) return part;
-    const href = part.replace(/[.,;]+$/, '');
-    return <a key={index} href={href} target="_blank" rel="noopener noreferrer" className="break-words font-semibold text-primary underline underline-offset-4">Đọc nguồn tham khảo{part.slice(href.length)}</a>;
+  return <>{lessonSourceParts(text).map((part, index) => {
+    if (!part.href) return part.text;
+    const href = part.href;
+    return <a key={index} href={href} target="_blank" rel="noopener noreferrer" className="break-words font-semibold text-primary underline underline-offset-4">{part.text}</a>;
   })}</>;
 }
 
@@ -138,10 +138,10 @@ function TechnicalReadingExperience({ lesson }: ExperienceProps) {
   return <div className="space-y-6">
     <header className="rounded-3xl border border-outline-variant/60 bg-white p-7 shadow-sm"><div className="flex items-center gap-2 text-xs font-black uppercase tracking-[.2em] text-primary"><AppIcon className=" text-[19px]">article</AppIcon>Đọc hiểu tài liệu kỹ thuật</div><h1 className="mt-4 max-w-3xl text-2xl font-bold leading-snug text-on-surface">{lesson.title}</h1><p className="mt-3 max-w-3xl leading-7 text-on-surface-variant"><RichText text={lesson.summary} /></p><div className="mt-5"><LessonMeta lesson={lesson} /></div></header>
     <div className="grid items-start gap-6 lg:grid-cols-[minmax(0,1fr)]">
-      <article className="overflow-hidden rounded-2xl border border-outline-variant/60 bg-white shadow-sm"><div className="flex items-center justify-between border-b border-outline-variant/50 bg-surface-container-low px-6 py-3"><span className="text-xs font-black uppercase tracking-widest text-primary">Nội dung bài đọc</span><span className="text-xs text-on-surface-variant">Đọc và tìm ý chính</span></div><div className="space-y-7 p-7 md:p-9">{reading.length ? reading.map((section, index) => { const content = contentOf(section); return <section key={section.id ?? index}>{section.type === 'heading' ? <><p className="text-xs font-black uppercase tracking-widest text-primary">Phần {index + 1}</p><h2 className="mt-2 text-2xl font-black leading-tight">{section.title || sectionText(section)}</h2>{section.title && sectionText(section) !== section.title && <p className="mt-3 text-base leading-8 text-on-surface-variant">{<SectionBody text={sectionText(section)} glossary={glossaryOf(section)} />}</p>}</> : section.type === 'code' ? <CodePanel section={section} /> : <>{content.sourceLabel && <p className="text-xs font-black uppercase tracking-widest text-primary">{content.sourceLabel}</p>}<h2 className="mt-2 text-xl font-bold">{content.documentTitle || section.title || `Phần ${index + 1}`}</h2>{content.readingGoal && <div className="mt-4 rounded-xl border-l-4 border-primary bg-surface-container-low px-4 py-3 text-sm leading-6 text-on-surface"><strong>Mục tiêu khi đọc:</strong> {content.readingGoal}</div>}<p className="mt-5 whitespace-pre-wrap text-[16px] leading-8 text-on-surface">{<SectionBody text={sectionText(section)} glossary={glossaryOf(section)} />}</p></>}</section>; }) : <EmptyLesson />}</div></article>
+      <article className="overflow-hidden rounded-2xl border border-outline-variant/60 bg-white shadow-sm"><div className="flex items-center justify-between border-b border-outline-variant/50 bg-surface-container-low px-6 py-3"><span className="text-xs font-black uppercase tracking-widest text-primary">Nội dung bài đọc</span><span className="text-xs text-on-surface-variant">Đọc và tìm ý chính</span></div><div className="space-y-7 p-7 md:p-9">{reading.length ? reading.map((section, index) => { const content = contentOf(section); return <section key={section.id ?? index}>{section.type === 'heading' ? <><p className="text-xs font-black uppercase tracking-widest text-primary">Phần {index + 1}</p><h2 className="mt-2 text-2xl font-black leading-tight">{section.title || sectionText(section)}</h2>{section.title && sectionText(section) !== section.title && <p className="mt-3 text-base leading-8 text-on-surface-variant">{<SectionBody text={sectionText(section)} glossary={glossaryOf(section)} />}</p>}</> : section.type === 'code' ? <CodePanel section={section} /> : <>{content.sourceLabel && <p className="text-xs font-black uppercase tracking-widest text-primary">{content.sourceLabel}</p>}<h2 className="mt-2 text-xl font-bold">{content.documentTitle || section.title || `Phần ${index + 1}`}</h2>{content.readingGoal && <div className="mt-4 rounded-xl border-l-4 border-primary bg-surface-container-low px-4 py-3 text-sm leading-6 text-on-surface"><strong>Mục tiêu khi đọc:</strong> {content.readingGoal}</div>}<p className="mt-5 whitespace-pre-wrap text-[16px] leading-8 text-on-surface">{<SectionBody text={sectionText(section)} glossary={glossaryOf(section)} />}</p>{content.translationVi && <section className="mt-5 rounded-xl bg-violet-50 p-5"><h3 className="font-bold text-violet-950">Bản dịch tiếng Việt</h3><p className="mt-3 whitespace-pre-wrap leading-8"><SectionBody text={content.translationVi} /></p></section>}</>}</section>; }) : <EmptyLesson />}</div></article>
 
     </div>
-
+    {sections.filter(section => section.type === 'quiz').map((section, index) => { const content = contentOf(section); return <section key={section.id ?? index} className="rounded-2xl border border-outline-variant bg-white p-6"><h2 className="text-lg font-bold">{section.title || `Câu hỏi đọc hiểu ${index + 1}`}</h2><p className="mt-4 whitespace-pre-wrap leading-7"><SectionBody text={content.question || sectionText(section)} /></p><details className="mt-4 rounded-xl bg-violet-50 p-4"><summary className="cursor-pointer font-semibold text-primary">Xem đáp án tham khảo</summary>{content.answer && <div className="mt-4"><h3 className="font-semibold">Đáp án tham khảo</h3><p className="mt-2 whitespace-pre-wrap leading-7"><SectionBody text={content.answer} /></p></div>}{content.evidence && <div className="mt-4"><h3 className="font-semibold">Bằng chứng trong bài</h3><p className="mt-2 whitespace-pre-wrap leading-7"><SectionBody text={content.evidence} /></p></div>}{!content.answer && !content.evidence && <p className="mt-3">Chưa có đáp án tham khảo cho câu hỏi này.</p>}</details></section>; })}
   </div>;
 }
 
@@ -232,7 +232,7 @@ export function LessonExperience(props: ExperienceProps) {
   }[props.lesson.type] ?? GenericExperience), [props.lesson.type]);
 
   const guidance = (props.lesson.sections ?? []).filter(isLessonGuidance);
-  const lesson = { ...props.lesson, sections: props.lesson.sections?.filter(section => section.type !== 'quiz' && !guidance.includes(section)).map(section => ({ ...section, title: lessonSectionTitle(section.title) })) };
+  const lesson = { ...props.lesson, sections: props.lesson.sections?.filter(section => (props.lesson.type === 'technical_reading' || section.type !== 'quiz') && !guidance.includes(section)).map(section => ({ ...section, title: lessonSectionTitle(section.title) })) };
   return <div className="space-y-5 lesson-content">
     <details className="rounded-2xl border border-blue-200 bg-blue-50 p-5">
       <summary className="cursor-pointer font-bold text-blue-950">Hướng dẫn học bài</summary>

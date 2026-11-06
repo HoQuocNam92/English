@@ -1,4 +1,5 @@
 import { activitySelection } from '../publication-selection'
+import { careerDomainCodes } from '../recommendation/career-focus'
 import { BadRequestException, ConflictException, Injectable, NotFoundException } from '@nestjs/common'
 import { CreateDomainDto, UpdateDomainDto } from '../../presentation/http-dto/domain.dto'
 import { activityDays } from './activity-days'
@@ -24,7 +25,7 @@ export class TaxonomyService {
 
   async getCareerGoals() {
     const data = await this.prisma.careerGoal.findMany({ where: { isActive: true }, include: { _count: { select: { profileGoals: true, learnerGroups: true } } }, orderBy: { name: 'asc' } })
-    return { data }
+    return { data: data.map(goal => ({ ...goal, preferredDomainCodes: careerDomainCodes(goal.code) })) }
   }
 
   createCareerGoal(dto: any) {

@@ -70,7 +70,7 @@ export default function MobileEditProfileScreen() {
       }
       if (profileRes.status === 'fulfilled') {
         const profile = profileRes.value as any;
-        setLevelCode(profile.level?.code || '');
+        setLevelCode(profile.levelSelectedAt || profile.onboardingCompleted ? profile.level?.code || '' : '');
         setDomainCodes(profile.domains?.map((item: any) => item.domain?.code).filter(Boolean) || []);
         const savedCertificateCodes = profile.certGoals?.map((item: any) => item.certificate?.code).filter(Boolean) || [];
         setCertificateCodes(savedCertificateCodes);
@@ -244,12 +244,18 @@ export default function MobileEditProfileScreen() {
             <Text style={styles.modeDescription}>Học từ vựng CNTT cùng lộ trình chứng chỉ.</Text>
           </TouchableOpacity>
           {renderChoiceGroup('2. Trình độ tiếng Anh', levels, levelCode ? [levelCode] : [], setLevelCode, true, true)}
+          {!levelCode && <Text style={styles.modeDescription}>Chưa xác định trình độ. Hãy chọn mức bắt đầu; đây là tự đánh giá, không phải kết quả bài kiểm tra.</Text>}
           {renderChoiceGroup('3. Chuyên ngành CNTT', domains, domainCodes, code => toggleCode(code, domainCodes, setDomainCodes), false, true)}
           {learningGoal !== 'vocabulary' && <View style={{ gap: 12 }}>
             <TouchableOpacity accessibilityRole="button" accessibilityState={{ expanded: showCertificates }} onPress={() => setShowCertificates(value => !value)} style={[styles.choiceChip, { flexDirection: 'row', alignItems: 'center', gap: 8 }]}><MaterialIcons name={showCertificates ? 'expand-less' : 'expand-more'} size={20} color={colors.primary} /><Text style={styles.choiceChipTextActive}>{showCertificates ? 'Thu gọn danh sách' : certificateCodes.length ? 'Đổi chứng chỉ mục tiêu' : 'Chọn chứng chỉ mục tiêu'}</Text></TouchableOpacity>
             {renderChoiceGroup('4. Chứng chỉ mục tiêu', certificates.filter(cert => showCertificates || !certificateCodes.length || certificateCodes.includes(cert.code)), certificateCodes, code => { setCertificateCodes([code]); setShowCertificates(false); }, true, true)}
           </View>}
           {renderChoiceGroup('Mục tiêu nghề nghiệp', careerGoals, careerGoalCodes, code => toggleCode(code, careerGoalCodes, setCareerGoalCodes))}
+          <Text style={styles.modeDescription}>Không bắt buộc. Dùng để ưu tiên chuyên ngành liên quan trong lộ trình và gợi ý học; không thay đổi chuyên ngành bạn đã chọn.</Text>
+          {careerGoals.filter(goal => careerGoalCodes.includes(goal.code)).map(goal => {
+            const related = domains.filter(domain => domainCodes.includes(domain.code) && goal.preferredDomainCodes?.includes(domain.code));
+            return <Text key={goal.code} style={styles.modeDescription}>{goal.name}: {related.length ? `ưu tiên ${related.map(domain => domain.name).join(', ')}.` : 'chưa có chuyên ngành liên quan trong lựa chọn hiện tại; chưa ưu tiên theo nghề này.'}</Text>;
+          })}
           <Text style={styles.label}>{learningGoal === 'vocabulary' ? '4' : '5'}. Kế hoạch học</Text>
           <View style={[styles.targetRow, compact && { flexDirection: 'column', gap: 12 }]}>
             <View style={[styles.inputGroup, styles.targetItem]}><Text style={styles.label}>Từ vựng mỗi ngày<RequiredMark /></Text><TextInput accessibilityLabel="Từ vựng mỗi ngày" style={styles.input} value={dailyVocabularyTarget} onChangeText={setDailyVocabularyTarget} keyboardType="number-pad" /></View>

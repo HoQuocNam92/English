@@ -224,7 +224,8 @@ export class UsersService {
       )],
       learnerProfile: user.learnerProfile ? {
         id: user.learnerProfile.id,
-        level: user.learnerProfile.level?.code,
+        level: user.learnerProfile.levelSelectedAt ? user.learnerProfile.level?.code : null,
+        levelSelectedAt: user.learnerProfile.levelSelectedAt ?? null,
         bio: user.learnerProfile.bio,
         weeklyStudyTargetMinutes: user.learnerProfile.weeklyStudyTargetMinutes,
         domains: user.learnerProfile.domains?.map((d: any) => d.domain.code) ?? [],
