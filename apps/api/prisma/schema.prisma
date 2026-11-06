@@ -504,6 +504,7 @@ model LearnerProfile {
   id                       String   @id @default(uuid()) @db.Uuid
   userId                   String   @unique @map("user_id") @db.Uuid
   levelId                  String   @map("level_id") @db.Uuid
+  levelSelectedAt          DateTime? @map("level_selected_at") @db.Timestamptz(6)
   bio                      String?  @db.VarChar(500)
   weeklyStudyTargetMinutes Int      @default(180) @map("weekly_study_target_minutes")
   dailyVocabularyTarget    Int      @default(10) @map("daily_vocabulary_target")

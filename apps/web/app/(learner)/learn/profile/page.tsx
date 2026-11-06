@@ -94,7 +94,7 @@ function LearnerProfileContent() {
       });
 
       if (profile) {
-        if (profile.level?.code) setLevelCode(profile.level.code);
+        setLevelCode(profile.levelSelectedAt || profile.onboardingCompleted ? profile.level?.code ?? '' : '');
         const savedDomains = Array.isArray(profile.domains)
           ? profile.domains.map((d: any) => d.domain?.code).filter(Boolean)
           : [];
@@ -366,6 +366,7 @@ function LearnerProfileContent() {
             <div className="space-y-3">
               <label className="block text-sm font-bold text-on-surface">2. Trình độ tiếng Anh</label>
               <div className="grid grid-cols-1 sm:grid-cols-4 gap-3">
+                {!levelCode && <p className="text-sm text-on-surface-variant sm:col-span-2">Chưa xác định trình độ. Hãy chọn mức bắt đầu; đây là tự đánh giá, không phải kết quả bài kiểm tra.</p>}
                 {levels.map((lvl: any) => {
                   const isSelected = levelCode === lvl.code;
                   return (
@@ -450,7 +451,11 @@ function LearnerProfileContent() {
 
             <div className="space-y-3">
               <label className="block text-sm font-bold text-on-surface">Mục tiêu nghề nghiệp</label>
-              <p className="text-xs text-on-surface-variant">Chọn một hoặc nhiều định hướng để hệ thống ưu tiên nội dung phù hợp.</p>
+              <p className="text-xs text-on-surface-variant">Không bắt buộc. Ưu tiên chuyên ngành liên quan trong lộ trình và gợi ý học; không thay đổi chuyên ngành bạn đã chọn.</p>
+              {careerGoals.filter((goal: any) => selectedCareerGoals.includes(goal.code)).map((goal: any) => {
+                const related = domains.filter((domain: any) => selectedDomains.includes(domain.code) && goal.preferredDomainCodes?.includes(domain.code));
+                return <p key={goal.code} className="text-xs text-on-surface-variant">{goal.name}: {related.length ? `ưu tiên ${related.map((domain: any) => domain.name).join(', ')}.` : 'chưa có chuyên ngành liên quan trong lựa chọn hiện tại; chưa ưu tiên theo nghề này.'}</p>;
+              })}
               <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
                 {careerGoals.map((goal:any) => { const selected=selectedCareerGoals.includes(goal.code); return <button key={goal.code} type="button" onClick={()=>toggleCareerGoal(goal.code)} className={`rounded-xl border p-4 text-left transition-all ${selected?'border-primary bg-primary/5 ring-2 ring-primary/20':'border-outline-variant/60 bg-surface-bright hover:border-primary/40'}`}><span className="flex items-center gap-2 text-sm font-bold"><AppIcon className=" text-[19px] text-primary">work</AppIcon>{goal.name}<AppIcon className={` ml-auto text-[18px] ${selected?'text-primary':'text-outline'}`}>{selected?'check_circle':'radio_button_unchecked'}</AppIcon></span><span className="mt-2 block text-xs leading-5 text-on-surface-variant"><RichText text={goal.description||'Định hướng nghề nghiệp CNTT'} /></span></button>; })}
               </div>

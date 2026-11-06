@@ -7,24 +7,14 @@ import { usePathname, useSearchParams } from 'next/navigation';
 import { combinedNavigation, teacherNavigation, type NavigationGroup, type NavigationItem } from './navigation';
 import { useAuth } from '@/features/auth/presentation';
 import { adminIconColor } from '@/shared/lib/admin-page-appearance';
+import { navigationRouteMatches } from '@/shared/lib/navigation-route';
 
 function NavItem({ item, isCollapsed }: { item: NavigationItem; isCollapsed?: boolean }) {
   const pathname = usePathname();
   const searchParams = useSearchParams();
-  const [itemPath, itemQuery = ''] = item.href.split('?');
-  const expectedQuery = new URLSearchParams(itemQuery);
-  const queryMatches = [...expectedQuery.entries()].every(([key, value]) => searchParams.get(key) === value);
-  const isLessonIndex = itemPath === '/admin/lessons' && expectedQuery.size === 0;
-  const routeMatches = expectedQuery.size > 0
-    ? pathname === itemPath && queryMatches
-    : (pathname === itemPath && (!isLessonIndex || !searchParams.has('type')))
-      || (pathname.startsWith(`${itemPath}/`) && itemPath.split('/').length > 2);
+  const routeMatches = navigationRouteMatches(item.href, pathname, searchParams);
   const level = item.level ?? 0;
-  const childIsActive = item.children?.some((child) => {
-    const [childPath, childQuery = ''] = child.href.split('?');
-    const query = new URLSearchParams(childQuery);
-    return (pathname === childPath || pathname.startsWith(`${childPath}/`)) && [...query.entries()].every(([key, value]) => searchParams.get(key) === value);
-  }) ?? false;
+  const childIsActive = item.children?.some(child => navigationRouteMatches(child.href, pathname, searchParams)) ?? false;
   // A child owns the selected state; its parent only stays expanded.
   const isActive = routeMatches && !childIsActive;
   const [expanded, setExpanded] = useState(childIsActive);

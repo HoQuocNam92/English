@@ -1,4 +1,4 @@
-import { lessonReadingText, lessonSectionTitle, isLessonGuidance, lessonStudyGuide } from '../../../../../packages/shared-kernel/src/lesson-presentation';
+import { lessonSourceParts, lessonReadingText, lessonSectionTitle, isLessonGuidance, lessonStudyGuide } from '../../../../../packages/shared-kernel/src/lesson-presentation';
 import { Text, Badge, Button } from '../../shared/ui/primitives';
 import React, { useMemo, useState } from 'react';
 import { Alert, Linking, ScrollView, StyleSheet, View, useWindowDimensions } from 'react-native';
@@ -8,7 +8,7 @@ import { isRichText } from '../../../../../packages/shared-kernel/src/rich-text'
 const textOf = (value: any) => {
   if (typeof value === 'string') return value;
   if (value?.text || value?.html || value?.code) return String(value.text ?? value.html?.replace(/<[^>]+>/g, '') ?? value.code ?? '');
-  const ignored = new Set(['method','path','auth','language','status','term','pronunciation','partOfSpeech','documentTitle','sourceLabel']);
+  const ignored = new Set(['method','path','auth','language','status','term','pronunciation','partOfSpeech','documentTitle','sourceLabel','translationVi','readingGoal']);
   return Object.entries(value ?? {}).filter(([key, item]) => !ignored.has(key) && String(item ?? '').trim()).map(([, item]) => String(item)).join('\n\n');
 };
 
@@ -17,10 +17,10 @@ function sectionText(section: any) {
 }
 function LessonText({ text, style }: { text: string; style?: any }) {
   if (isRichText(text)) return <Text selectable style={style}>{text}</Text>;
-  return <Text selectable style={style}>{text.split(/(https?:\/\/[^\s<>]+)/g).map((part, index) => {
-    if (!/^https?:\/\//.test(part)) return part;
-    const url = part.replace(/[.,;]+$/, '');
-    return <Text key={index} accessibilityRole="link" accessibilityLabel="Đọc nguồn tham khảo" style={{ color: '#1d4ed8', fontWeight: '700', textDecorationLine: 'underline' }} onPress={() => { void Linking.openURL(url).catch(() => Alert.alert('Không mở được liên kết', 'Vui lòng kiểm tra kết nối mạng và thử lại.')); }}>Đọc nguồn tham khảo{part.slice(url.length)}</Text>;
+  return <Text selectable style={style}>{lessonSourceParts(text).map((part, index) => {
+    if (!part.href) return part.text;
+    const url = part.href;
+    return <Text key={index} accessibilityRole="link" accessibilityLabel={`Mở nguồn tham khảo: ${part.text}`} style={{ color: '#1d4ed8', fontWeight: '700', textDecorationLine: 'underline' }} onPress={() => { void Linking.openURL(url).catch(() => Alert.alert('Không mở được liên kết', 'Vui lòng kiểm tra kết nối mạng và thử lại.')); }}>{part.text}</Text>;
   })}</Text>;
 }
 
@@ -41,7 +41,12 @@ function Terminology({ lesson }: any) {
 function Reading({ lesson }: any) {
   const reading = (lesson.sections ?? []).filter((x: any) => x.type !== 'quiz');
   const quizzes = (lesson.sections ?? []).filter((x: any) => x.type === 'quiz');
-  return <><View style={[s.hero, { backgroundColor: '#eef2ff' }]}><Text style={[s.eyebrow, { color: '#3525cd' }]}>Đọc hiểu tài liệu kỹ thuật</Text><Text style={s.title}>{lesson.title}</Text><Text style={s.summary}>{lesson.summary}</Text><Meta lesson={lesson} /></View><View style={s.document}><View style={s.documentBar}><MaterialIcons name="article" size={18} color="#3525cd" /><Text style={[s.eyebrow, { color: '#3525cd' }]}>Nội dung bài đọc</Text></View>{reading.map((section: any, index: number) => <View key={section.id ?? index} style={s.documentSection}><Text style={s.cardTitle}>{section.title || `Phần ${index + 1}`}</Text><LessonText style={s.readingText} text={sectionText(section)} /></View>)}</View>{quizzes.map((section: any, index: number) => null)}</>;
+  return <><View style={[s.hero, { backgroundColor: '#eef2ff' }]}><Text style={[s.eyebrow, { color: '#3525cd' }]}>Đọc hiểu tài liệu kỹ thuật</Text><Text style={s.title}>{lesson.title}</Text><Text style={s.summary}>{lesson.summary}</Text><Meta lesson={lesson} /></View><View style={s.document}><View style={s.documentBar}><MaterialIcons name="article" size={18} color="#3525cd" /><Text style={[s.eyebrow, { color: '#3525cd' }]}>Nội dung bài đọc</Text></View>{reading.map((section: any, index: number) => <View key={section.id ?? index} style={s.documentSection}><Text style={s.cardTitle}>{section.content?.documentTitle || section.title || `Phần ${index + 1}`}</Text>{section.content?.sourceLabel && <Text style={s.summary}>{section.content.sourceLabel}</Text>}{section.content?.readingGoal && <View style={s.card}><Text style={s.cardTitle}>Mục tiêu khi đọc</Text><LessonText style={s.body} text={section.content.readingGoal} /></View>}<LessonText style={s.readingText} text={sectionText(section)} />{section.content?.translationVi && <View style={{ marginTop: 18, padding: 16, backgroundColor: '#f3f0ff', borderRadius: 14 }}><Text style={s.cardTitle}>Bản dịch tiếng Việt</Text><LessonText style={s.body} text={section.content.translationVi} /></View>}</View>)}</View>{quizzes.map((section: any, index: number) => <ReadingQuestion key={section.id ?? index} section={section} index={index} />)}</>;
+}
+
+function ReadingQuestion({ section, index }: any) {
+  const [revealed, setRevealed] = useState(false);
+  return <View style={s.card}><Text style={s.cardTitle}>{section.title || `Câu hỏi đọc hiểu ${index + 1}`}</Text><LessonText style={s.body} text={section.content?.question || sectionText(section)} /><Button mode="outlined" accessibilityState={{ expanded: revealed }} onPress={() => setRevealed(value => !value)}>{revealed ? 'Ẩn đáp án tham khảo' : 'Xem đáp án tham khảo'}</Button>{revealed && <View style={{ gap: 12 }}>{section.content?.answer && <View><Text style={s.cardTitle}>Đáp án tham khảo</Text><LessonText style={s.body} text={section.content.answer} /></View>}{section.content?.evidence && <View><Text style={s.cardTitle}>Bằng chứng trong bài</Text><LessonText style={s.body} text={section.content.evidence} /></View>}{!section.content?.answer && !section.content?.evidence && <Text style={s.body}>Chưa có đáp án tham khảo cho câu hỏi này.</Text>}</View>}</View>;
 }
 
 function ApiDocs({ lesson }: any) {
@@ -77,7 +82,7 @@ export function LessonExperience({ lesson }: { lesson: any }) {
     return experiences[String(lesson.type)] ?? Generic;
   }, [lesson.type]);
   const guidance = (lesson.sections ?? []).filter(isLessonGuidance);
-  const sections = (lesson.sections ?? []).filter((section: any) => section.type !== 'quiz' && !isLessonGuidance(section)).map((section: any) => ({ ...section, title: lessonSectionTitle(section.title) }));
+  const sections = (lesson.sections ?? []).filter((section: any) => (lesson.type === 'technical_reading' || section.type !== 'quiz') && !isLessonGuidance(section)).map((section: any) => ({ ...section, title: lessonSectionTitle(section.title) }));
   return <><View style={{ borderWidth: 1, borderColor: '#bfdbfe', backgroundColor: '#eff6ff', borderRadius: 16, padding: 16, gap: 12, marginBottom: 16 }}>
     <Button mode="outlined" accessibilityState={{ expanded: showGuide }} onPress={() => setShowGuide(value => !value)}>{showGuide ? 'Thu gọn hướng dẫn' : 'Hướng dẫn học bài'}</Button>
     {showGuide && <View style={{ gap: 14 }}><Text style={{ color: '#172554', lineHeight: 24 }}>{lessonStudyGuide}</Text><Text style={{ color: '#172554' }}>Nhấn giữ đoạn tiếng Anh để dịch theo ngữ cảnh.</Text>{guidance.map((section: any, index: number) => <View key={section.id ?? index} style={{ gap: 6 }}><Text style={{ fontWeight: '700' }}>{section.title}</Text><LessonText text={sectionText(section)} style={s.body} /></View>)}</View>}

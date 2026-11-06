@@ -2,6 +2,7 @@ import { LearningPathService } from './learning-path.service'
 import { ApivnLearningPlanner } from '../../infrastructure/ai/apivn-learning-planner'
 import { BadRequestException, ForbiddenException, Injectable } from '@nestjs/common'
 import { PrismaService } from '../../infrastructure/database/prisma.service'
+import { careerFocus } from '../recommendation/career-focus'
 
 export function vietnamPeriods(now = new Date()) {
   const local = new Date(now.getTime() + 7 * 60 * 60 * 1000)
@@ -17,9 +18,10 @@ export class LearningAgendaService {
   async getAgenda(learnerId: string) {
     const user = await this.prisma.user.findFirst({ where: { id: learnerId, status: 'active', userRoles: { some: { role: { code: 'learner', isActive: true } } } }, select: { id: true } })
     if (!user) throw new ForbiddenException('Chỉ học viên mới có kế hoạch học tập.')
-    const profile = await this.prisma.learnerProfile.findUnique({ where: { userId: learnerId }, include: { level: true, domains: { include: { domain: true } }, certGoals: { include: { certificate: true } } } })
+    const profile = await this.prisma.learnerProfile.findUnique({ where: { userId: learnerId }, include: { level: true, domains: { include: { domain: true } }, certGoals: { include: { certificate: true } }, careerGoals: { include: { careerGoal: true } } } })
     if (!profile) throw new BadRequestException('Chưa có hồ sơ học tập.')
-    if (!profile.onboardingCompleted || (!profile.domains.length && !profile.certGoals.length)) return { configured: false }
+    if (!profile.onboardingCompleted || profile.levelSelectedAt === null || (!profile.domains.length && !profile.certGoals.length)) return { configured: false }
+    const focus = careerFocus(profile.careerGoals)
     const now = new Date(), period = vietnamPeriods(now)
     const goal = profile.learningGoal ?? (profile.certGoals.length ? 'certification' : 'vocabulary')
     const hasVocab = goal !== 'certification', hasCert = goal !== 'vocabulary'
@@ -47,7 +49,8 @@ export class LearningAgendaService {
     const topicMatch = (lesson: typeof lessons[number], attempt: typeof attempts[number]) => lesson.certificationTopics.some(link => link.topic.certificateId === attempt.exam.certificateId && attempt.exam.topics.includes(link.topic.code))
     const ordered = [...lessons].sort((a, b) => {
       const score = (l: typeof lessons[number]) => (byLesson.get(l.id)?.status === 'in_progress' ? 1000 : 0) + (weak.some(w => topicMatch(l, w)) ? 100 : 0) - Math.abs(l.level.order - profile.level.order) * 10 - (l.certificationTopics[0]?.topic.certificateDomain?.order ?? 0) - (l.certificationTopics[0]?.topic.order ?? 0) / 10
-      return score(b) - score(a)
+      // Keep continuation, weak-topic review and level fit ahead of career preference.
+      return score(b) - score(a) || focus.score(b.domain?.code) - focus.score(a.domain?.code)
     })
     const linkFor = (l: typeof lessons[number]) => { const topic = l.certificationTopics.find(t => certIds.includes(t.topic.certificateId))?.topic; return topic ? `/learn/certifications/${topic.certificateId}/topics/${topic.id}?lessonId=${encodeURIComponent(l.id)}` : `/learn/lessons/${l.id}` }
     const tasks: Task[] = []
@@ -88,7 +91,7 @@ export class LearningAgendaService {
       const firstUnread = domain?.lessons?.findIndex((lesson: any) => !lesson.completed) ?? -1
       const reviewLesson = domain?.lessons?.slice(0, firstUnread < 0 ? undefined : firstUnread).find((lesson: any) => lesson.vocabularyCount > 0 && !lesson.vocabularyReviewComplete)
       if (reviewLesson) core.push({ id: 'review-' + reviewLesson.id, title: 'Luyện từ: ' + reviewLesson.title, reason: 'Ôn từ của chủ đề vừa học trước khi tiếp tục. Hoạt động ôn bổ sung không thay thế bài tổng kết.', href: '/learn/flashcards/' + reviewLesson.id + '/practice', action: 'Luyện tập', status: 'todo', kind: 'review', minutes: Math.min(15, Math.max(5, reviewLesson.vocabularyCount)) })
-      else if (domain?.nextLesson) core.push({ id: domain.nextLesson.id, title: domain.nextLesson.title, reason: domain.name + ' · Bài tiếp theo trong chuỗi cốt lõi của cấp hiện tại.', href: domain.nextLesson.href, action: 'Học tiếp', status: 'todo', kind: 'lesson', minutes: domain.nextLesson.estimatedMinutes })
+      else if (domain?.nextLesson) core.push({ id: domain.nextLesson.id, title: domain.nextLesson.title, reason: domain.name + ' · Bài tiếp theo trong chuỗi cốt lõi của cấp hiện tại.' + (domain.careerReason ? ' ' + domain.careerReason : ''), href: domain.nextLesson.href, action: 'Học tiếp', status: 'todo', kind: 'lesson', minutes: domain.nextLesson.estimatedMinutes })
       else if (domain?.available && domain.assessment) core.push({ id: domain.assessment.id, title: domain.name + ' · Tổng kết', reason: 'Đã học đủ bài. Đạt tổng kết để hoàn thành cấp ở ngành này.', href: domain.assessment.href, action: 'Làm tổng kết', status: 'todo', kind: 'quiz' })
       else if (path.allCompleted) core.push({ id: 'core-complete', title: 'Đã hoàn thành chuỗi cốt lõi và tổng kết', reason: 'Mở lộ trình để chọn cấp tiếp theo hoặc kế hoạch ôn tập.', href: '/learn/plan', action: 'Chọn bước tiếp theo', status: 'done', kind: 'lesson' })
       baseline.tasks = [...core, ...tasks.filter(task => task.kind === 'vocabulary' || task.id === 'review-words' || (hasCert && task.kind === 'quiz'))]

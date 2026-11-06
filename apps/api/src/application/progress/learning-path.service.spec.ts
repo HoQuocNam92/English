@@ -41,6 +41,19 @@ test('recommends an unfinished lesson at the current level', async () => {
   assert.equal(path.domains[0].nextLesson.id, 'd-intermediate-0'); assert.equal(path.canAdvance, false); assert.equal(f.updates, 0)
 })
 
+test('career choice reprioritizes selected domains without changing lesson prerequisites or level', async () => {
+  const f = fixture({ secondDomain: true })
+  f.profile.careerGoals = [{ careerGoal: { code: 'CLOUD_ENGINEER', name: 'Cloud Engineer', isActive: true } }]
+  const path = await f.service.getPath('learner')
+  if (!path.configured) return assert.fail('path')
+  assert.deepEqual(path.domains.map((domain: any) => domain.code), ['CLOUD', 'SOFTWARE_ENG'])
+  assert.match(path.domains[0].careerReason, /Cloud Engineer/)
+  assert.equal(path.domains[0].nextLesson.id, 'other-intermediate-0')
+  assert.equal(path.level.code, 'intermediate')
+  assert.equal(path.canAdvance, false)
+  assert.equal(f.updates, 0)
+})
+
 test('lesson totals and availability follow the published catalog rather than a fixed count', async () => {
   const f = fixture({ completed: true, passed: true })
   const complete = await f.service.getPath('learner'); if (!complete.configured) return assert.fail('path')

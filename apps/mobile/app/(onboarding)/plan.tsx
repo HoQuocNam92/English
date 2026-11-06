@@ -34,7 +34,11 @@ export default function OnboardingPlanScreen() {
       const values = await AsyncStorage.multiGet(STORAGE_KEYS);
       const stored = Object.fromEntries(values);
       const goal = stored.onboarding_goal;
-      const levelCode = stored.onboarding_level || 'beginner';
+      const levelCode = stored.onboarding_level;
+      if (!levelCode) {
+        Alert.alert('Chưa chọn trình độ', 'Hãy tự chọn mức bắt đầu. Bạn có thể làm bài đầu vào để xác định lại sau.', [{ text: 'Chọn trình độ', onPress: () => router.push('/(onboarding)/level' as any) }]);
+        return;
+      }
       const domainCodes: string[] = goal === 'vocabulary' && stored.onboarding_domains ? JSON.parse(stored.onboarding_domains) : [];
       const certificateCode = goal === 'certification' ? stored.onboarding_certificate_code : '';
       const certificateId = goal === 'certification' ? stored.onboarding_certificate_id : '';

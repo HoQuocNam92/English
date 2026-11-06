@@ -78,7 +78,7 @@ export default function OnboardingLevelScreen() {
         </View>
 
         <Text style={styles.title}>Trình độ tiếng Anh của bạn?<RequiredMark /></Text>
-        <Text style={styles.subtitle}>Chọn mức độ phù hợp nhất để TechEnglish cá nhân hóa lộ trình học tiếng Anh CNTT.</Text>
+        <Text style={styles.subtitle}>Chưa có trình độ nào được chọn sẵn. Tự chọn mức bắt đầu; bạn có thể làm bài đầu vào để xác định lại sau.</Text>
 
         {loading && <ActivityIndicator color={colors.primary} />}
         {!!error && <TouchableOpacity onPress={() => setRetry(value => value + 1)}><Text>{error} Nhấn để thử lại.</Text></TouchableOpacity>}

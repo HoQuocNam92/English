@@ -664,11 +664,10 @@ export class CompleteOnboardingDto {
   @IsEnum(['vocabulary', 'certification', 'both'], { message: 'Vui lòng chọn mục tiêu học tập' })
   learningGoal: 'vocabulary' | 'certification' | 'both'
 
-  @ApiPropertyOptional({ description: 'Level code (beginner/intermediate/advanced/professional)' })
-  @IsOptional()
+  @ApiProperty({ description: 'Explicitly selected level code (beginner/intermediate/advanced/professional)' })
   @IsString()
   @IsEnum(['beginner', 'intermediate', 'advanced', 'professional'])
-  levelCode?: string
+  levelCode: string
 
   @ApiPropertyOptional({ type: [String], description: 'Mảng domain codes (CLOUD, DEVOPS, ...)' })
   @IsOptional()

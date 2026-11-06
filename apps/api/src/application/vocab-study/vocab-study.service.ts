@@ -1,6 +1,7 @@
 import { quizMeaning } from './quiz-meaning'
 import { BadRequestException, Injectable } from '@nestjs/common'
 import { PrismaService } from '../../infrastructure/database/prisma.service'
+import { careerFocus } from '../recommendation/career-focus'
 
 @Injectable()
 export class VocabStudyService {
@@ -9,12 +10,15 @@ export class VocabStudyService {
   async getRecommendations(learnerId: string) {
     const profile = await this.prisma.learnerProfile.findUnique({
       where: { userId: learnerId },
-      include: { level: true, domains: { include: { domain: true } }, certGoals: { include: { certificate: { include: { domains: { include: { domain: true } } } } } } },
+      include: { level: true, domains: { include: { domain: true } }, certGoals: { include: { certificate: { include: { domains: { include: { domain: true } } } } } }, careerGoals: { include: { careerGoal: true } } },
     })
+    if (profile?.levelSelectedAt === null) return { groups: [], level: null }
     const selectedDomains = profile?.domains.map(link => link.domain) ?? []
     const certificateDomains = profile?.certGoals.flatMap(link => link.certificate.domains.map(item => item.domain)) ?? []
     const goalDomains = profile?.learningGoal === 'certification' ? certificateDomains : profile?.learningGoal === 'vocabulary' ? selectedDomains : [...selectedDomains, ...certificateDomains]
+    const focus = careerFocus(profile?.careerGoals)
     const domains = [...new Map(goalDomains.map(domain => [domain.code, domain])).values()]
+      .sort((a, b) => focus.score(b.code) - focus.score(a.code))
     if (!profile?.level || !domains.length) return { groups: [], level: profile?.level ?? null }
     const groups = await Promise.all(domains.map(async domain => {
       const where = { status: 'published' as const, levelId: profile.level!.id, OR: [{ domainId: domain.id }, { domains: { some: { domainId: domain.id } } }] }

@@ -11,7 +11,8 @@ export class LearnerProfilesService {
     await this.assertLearner(userId)
     const p = await this.prisma.learnerProfile.findUnique({ where: { userId }, include: { level: true, domains: { include: { domain: true } }, certGoals: { include: { certificate: true } }, careerGoals: { include: { careerGoal: true } } } })
     if (!p) throw new NotFoundException('Không tìm thấy hồ sơ học viên')
-    return p
+    // The required storage level is a technical baseline, never a learner choice.
+    return p.levelSelectedAt ? p : { ...p, level: null, levelId: null }
   }
 
   async upsert(userId: string, dto: any) {
@@ -20,16 +21,18 @@ export class LearnerProfilesService {
     if (dto.levelCode && (!level || level.isActive === false)) throw new BadRequestException('Trình độ không tồn tại hoặc đã ngừng hoạt động')
     const fallbackLevel = level ?? await this.prisma.level.findFirst({ where: { isActive: true }, orderBy: { order: 'asc' } })
     if (!fallbackLevel) throw new BadRequestException('Hệ thống chưa cấu hình cấp độ học tập')
-    return this.prisma.learnerProfile.upsert({
+    await this.prisma.learnerProfile.upsert({
       where: { userId },
-      update: { bio: dto.bio, weeklyStudyTargetMinutes: dto.weeklyStudyTargetMinutes, onboardingCompleted: dto.onboardingCompleted, ...(level && { levelId: level.id }) },
-      create: { userId, levelId: fallbackLevel.id, bio: dto.bio, weeklyStudyTargetMinutes: dto.weeklyStudyTargetMinutes ?? 180 },
+      update: { bio: dto.bio, weeklyStudyTargetMinutes: dto.weeklyStudyTargetMinutes, ...(level && { levelId: level.id, levelSelectedAt: new Date() }) },
+      create: { userId, levelId: fallbackLevel.id, levelSelectedAt: level ? new Date() : null, bio: dto.bio, weeklyStudyTargetMinutes: dto.weeklyStudyTargetMinutes ?? 180 },
       include: { level: true, domains: { include: { domain: true } }, certGoals: { include: { certificate: true } } }
     })
+    return this.findByUser(userId)
   }
 
   async completeOnboarding(userId: string, dto: CompleteOnboardingDto) {
     await this.assertLearner(userId)
+    if (!dto.levelCode?.trim()) throw new BadRequestException('Vui lòng tự chọn trình độ trước khi tạo lộ trình')
     this.assertCompleteGoal(dto.learningGoal, dto.domainCodes?.length ?? 0, dto.certificateCodes?.length ?? 0)
     if (dto.reminderTime && !/^([01]\d|2[0-3]):[0-5]\d$/.test(dto.reminderTime)) {
       throw new BadRequestException('Giờ nhắc học phải có định dạng HH:mm')
@@ -56,9 +59,7 @@ export class LearnerProfilesService {
       throw new BadRequestException('Có chứng chỉ không tồn tại hoặc đã ngừng hoạt động')
     }
     if (selectedCareerGoals.length !== requestedCareerGoalCodes.length) throw new BadRequestException('Có mục tiêu nghề nghiệp không tồn tại hoặc đã ngừng hoạt động')
-    const level = dto.levelCode
-      ? await this.prisma.level.findUnique({ where: { code: dto.levelCode } })
-      : await this.prisma.level.findFirst({ where: { isActive: true }, orderBy: { order: 'asc' } })
+    const level = await this.prisma.level.findUnique({ where: { code: dto.levelCode } })
     if (!level || level.isActive === false) throw new BadRequestException('Trình độ không tồn tại hoặc đã ngừng hoạt động')
 
     // 2. Upsert profile với level + onboardingCompleted
@@ -66,6 +67,7 @@ export class LearnerProfilesService {
       where: { userId },
       update: {
         levelId: level?.id,
+        levelSelectedAt: new Date(),
         weeklyStudyTargetMinutes: dto.weeklyStudyTargetMinutes ?? 120,
         onboardingCompleted: true,
         learningGoal: dto.learningGoal,
@@ -79,6 +81,7 @@ export class LearnerProfilesService {
       create: {
         userId,
         levelId: level?.id ?? '',
+        levelSelectedAt: new Date(),
         weeklyStudyTargetMinutes: dto.weeklyStudyTargetMinutes ?? 120,
         onboardingCompleted: true,
         learningGoal: dto.learningGoal,
@@ -162,6 +165,7 @@ export class LearnerProfilesService {
 
     const updateData: any = {
       levelId,
+      ...(dto.levelCode !== undefined && { levelSelectedAt: new Date() }),
     }
     // Editing preferences must not bypass the explicit completion flow.
     if (existing.onboardingCompleted) this.assertCompleteGoal(dto.learningGoal ?? existing.learningGoal, domains?.length ?? existing.domains.length, certs?.length ?? existing.certGoals.length)
@@ -295,13 +299,13 @@ export class LearnerProfilesService {
     const { levelCode, domainCode } = params
     const skip = (page - 1) * limit
     const where: any = {}
-    if (levelCode) where.level = { code: levelCode }
+    if (levelCode) { where.level = { code: levelCode }; where.levelSelectedAt = { not: null } }
     if (domainCode) where.domains = { some: { domain: { code: domainCode } } }
     const [data, total] = await Promise.all([
       this.prisma.learnerProfile.findMany({ where, skip, take: limit, include: { user: { include: { userDetail: true } }, level: true }, orderBy: { createdAt: 'desc' } }),
       this.prisma.learnerProfile.count({ where })
     ])
-    return { data, meta: { total, page, limit, totalPages: Math.ceil(total / limit) } }
+    return { data: data.map(profile => profile.levelSelectedAt ? profile : { ...profile, level: null, levelId: null }), meta: { total, page, limit, totalPages: Math.ceil(total / limit) } }
   }
 
   private async assertLearner(userId: string) {
