@@ -204,3 +204,31 @@ test('mobile results keep percentage thresholds and return to the originating ce
     assert.equal(tree.some(node => node.type === 'journey'), false);
   }
 });
+
+test('reading mobile retains all authored blocks and reveals answers and evidence for every saved question', () => {
+  const lesson = { type: 'technical_reading', title: 'Reading', sections: [
+    { type: 'rich_text', title: 'Source One', content: { text: 'English one.', readingGoal: 'Find evidence.', translationVi: 'Bản dịch một.' } },
+    { type: 'rich_text', title: 'Source Two', content: { text: 'English two.' } },
+    ...[1, 2, 3].map(n => ({ type: 'quiz', title: `Question ${n}`, content: { question: `Prompt ${n}`, answer: `Answer ${n}`, evidence: `Evidence ${n}` } })),
+  ] };
+  const h = mount('../features/lessons/LessonExperience.tsx', {
+    '../../../../../packages/shared-kernel/src/rich-text': richText,
+    '../../../../../packages/shared-kernel/src/lesson-presentation': lessonPresentation,
+    '../../shared/ui/primitives': ui,
+    'react-native': { View: 'view', ScrollView: 'scroll', StyleSheet: { create: value => value }, useWindowDimensions: () => ({ width: 390 }), Linking: { openURL() {} }, Alert: { alert() {} } },
+    '../../shared/ui/AppIcon': { MaterialIcons: 'icon' },
+  }, 'LessonExperience');
+  const content = () => { const reading = h.render({ lesson }).find(n => typeof n.type === 'function' && n.type.name === 'Reading'); return nodes(reading.type(reading.props)); };
+  let tree = content();
+  for (const text of ['English one.', 'English two.', 'Bản dịch một.', 'Find evidence.']) assert.ok(tree.some(n => n.props.text === text), text);
+  const questions = tree.filter(n => typeof n.type === 'function' && n.type.name === 'ReadingQuestion');
+  assert.equal(questions.length, 3);
+  for (const n of [1, 2, 3]) assert.equal(questions[n - 1].props.section.content.answer, `Answer ${n}`);
+  let question = nodes(questions[0].type(questions[0].props));
+  assert.equal(question.some(n => n.props.text === 'Answer 1'), false);
+  question.find(n => n.type === 'button').props.onPress();
+  const first = content().find(n => typeof n.type === 'function' && n.type.name === 'ReadingQuestion');
+  question = nodes(first.type(first.props));
+  assert.ok(question.some(n => n.props.text === 'Answer 1'));
+  assert.ok(question.some(n => n.props.text === 'Evidence 1'));
+});

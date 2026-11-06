@@ -5,6 +5,7 @@ import { createRequire } from 'node:module';
 import { runInNewContext } from 'node:vm';
 import React from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
+import * as presentation from '../../../../../packages/shared-kernel/src/lesson-presentation.ts';
 
 const require = createRequire(import.meta.url);
 const ts = require('typescript');
@@ -28,6 +29,26 @@ const raw = [
   { type: 'rich_text', title: 'Mục tiêu học tập', content: { text: 'Đọc và giải thích các thuật ngữ Git.' } },
   { type: 'vocabulary_list', title: 'Repository', content: { term: 'Repository', partOfSpeech: 'noun', definitionEn: 'A store of versioned files.', definitionVi: 'Kho lưu tệp được quản lý phiên bản.', text: 'Giải thích ví dụ đã lưu.' } },
 ];
+
+test('web learner displays all authored reading fields and multiple questions', () => {
+  const { LessonExperience } = load('../../../app/(learner)/learn/lessons/[id]/lesson-experiences.tsx', {
+    react: React, 'react/jsx-runtime': require('react/jsx-runtime'),
+    '@/shared/ui/ReadingGlossary': { ReadingGlossary: ({ text }) => text },
+    '@/shared/ui/RichText': { RichText: ({ text }) => text },
+    '../../../../../../../packages/shared-kernel/src/rich-text': { isRichText: () => false },
+    '../../../../../../../packages/shared-kernel/src/lesson-presentation': presentation,
+    '@/shared/lib/lesson-reading': { lessonReadingText: presentation.lessonReadingText },
+    '@/shared/ui/AppIcon': { AppIcon: () => null }, '@/shared/ui/LevelBadge': { LevelBadge: () => null },
+  });
+  const lesson = { id: 'reading', type: 'technical_reading', title: 'Reading', summary: 'Summary', sections: [
+    { type: 'rich_text', title: 'Source One', content: { text: 'English passage one.', readingGoal: 'Find the evidence.', translationVi: 'Bản dịch một.' } },
+    { type: 'rich_text', title: 'Source Two', content: { text: 'English passage two.' } },
+    ...[1, 2, 3].map(n => ({ type: 'quiz', title: `Question ${n}`, content: { question: `Prompt ${n}`, answer: `Answer ${n}`, evidence: `Evidence ${n}` } })),
+  ] };
+  const html = renderToStaticMarkup(React.createElement(LessonExperience, { lesson }));
+  for (const text of ['English passage one.', 'English passage two.', 'Bản dịch một.', 'Find the evidence.']) assert.ok(html.includes(text), text);
+  for (const n of [1, 2, 3]) for (const prefix of ['Prompt', 'Answer', 'Evidence']) assert.ok(html.includes(`${prefix} ${n}`));
+});
 
 test('editing mixed terminology sections preserves content and never creates a leading empty term', () => {
   const sections = studio.hydrateStudioSections('terminology', raw, ['import-techenglish-v5', 'internal-tag']);
