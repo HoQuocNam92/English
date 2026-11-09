@@ -107,12 +107,12 @@ export default function LearnerHomePage() {
           <h2 id="continue-heading" className="max-w-xl text-xl font-bold leading-snug sm:text-2xl">{heroTitle}</h2>
           <p className="mt-2 text-xs leading-5 text-white/85">{nextReason || (attempts[0] ? `Gần nhất: ${attempts[0].exam?.title ?? attempts[0].examTitle ?? 'Bài kiểm tra'}` : 'Mỗi ngày một chút, tiến gần hơn đến mục tiêu của bạn.')}</p>
           <div className="mt-4 flex flex-wrap gap-2">
-            <Link href={!configured ? '/learn/profile?tab=goals' : nextHref ? nextHref : goalComplete ? '/learn/flashcards' : studyHref} className="inline-flex min-h-11 items-center justify-center gap-2 rounded-lg bg-white px-4 py-2 text-sm font-semibold text-primary hover:bg-white/90">{!configured ? <Settings2 size={15} aria-hidden="true" /> : goalComplete ? <BookOpen size={15} aria-hidden="true" /> : <Play size={15} fill="currentColor" aria-hidden="true" />}{!configured ? 'Thiết lập mục tiêu' : nextTask ? nextTask.action || 'Học tiếp' : goalComplete ? 'Khám phá từ vựng' : 'Học tiếp'}</Link>
+            <Link href={!configured ? '/onboarding' : nextHref ? nextHref : goalComplete ? '/learn/flashcards' : studyHref} className="inline-flex min-h-11 items-center justify-center gap-2 rounded-lg bg-white px-4 py-2 text-sm font-semibold text-primary hover:bg-white/90">{!configured ? <Settings2 size={15} aria-hidden="true" /> : goalComplete ? <BookOpen size={15} aria-hidden="true" /> : <Play size={15} fill="currentColor" aria-hidden="true" />}{!configured ? 'Thiết lập mục tiêu' : nextTask ? nextTask.action || 'Học tiếp' : goalComplete ? 'Khám phá từ vựng' : 'Học tiếp'}</Link>
             {configured && (suggestion || wordsLeft > 0) && <Link href={suggestion?.actionUrl || studyHref} className="inline-flex min-h-11 items-center justify-center gap-2 rounded-lg border border-white/40 px-4 py-2 text-sm font-semibold hover:bg-white/10"><BookOpen size={15} aria-hidden="true" /><span className="max-w-[30ch] truncate">{suggestion ? `Gợi ý: ${suggestion.title}` : `Học ${wordsLeft} từ còn lại`}</span></Link>}
           </div>
         </section>
 
-        <section aria-labelledby="goals-heading" className={card}>
+        {configured && <section aria-labelledby="goals-heading" className={card}>
           <div className="mb-4 flex items-start justify-between gap-3">
             <div><h2 id="goals-heading" className="text-lg font-bold">Mục tiêu hôm nay</h2><p className="mt-1 text-xs text-on-surface-variant">{configured ? `Mục tiêu bài thi: ${targets.examsPerWeek} bài mỗi tuần` : 'Thiết lập mục tiêu phù hợp với lịch học của bạn.'}</p></div>
             <Link href="/learn/profile?tab=goals" className={`${outline} shrink-0`}><Settings2 size={14} aria-hidden="true" />{configured ? 'Điều chỉnh' : 'Thiết lập'}</Link>
@@ -134,7 +134,7 @@ export default function LearnerHomePage() {
             <p className="mt-4 text-xs leading-5 text-on-surface-variant">Mục tiêu dài hạn ({targets.examsPerMonth} bài/tháng, {targets.examsPerYear} bài/năm) xem tại <Link href="/learn/progress" className="font-semibold text-primary hover:underline">Tiến độ</Link>.</p>
             {targets.reminderEnabled && targets.reminderTime && <p className="mt-2 text-xs text-primary">Nhắc học lúc {targets.reminderTime} mỗi ngày</p>}
           </> : <Link href="/learn/profile?tab=goals" className={primary}><Settings2 size={14} aria-hidden="true" />Thiết lập lộ trình học tập</Link>}
-        </section>
+        </section>}
 
         <section aria-labelledby="review-heading" className={card}>
           <div className="mb-4 flex flex-wrap items-center justify-between gap-3"><h2 id="review-heading" className="text-lg font-bold">Từ cần ôn hôm nay</h2>{reviewWords.length > 0 && <Link href={reviewHref} className={`${outline} border-primary text-primary`}><RotateCcw size={14} aria-hidden="true" />Ôn tập ngay</Link>}</div>
@@ -153,7 +153,7 @@ export default function LearnerHomePage() {
             <div className="flex items-start justify-between gap-3"><dt className="shrink-0 pt-1 text-on-surface-variant">Chuyên ngành IT</dt><dd className="min-w-0 text-right"><ul id="selected-it-domains" className="flex flex-wrap justify-end gap-1.5">{(showAllDomains ? domainNames : domainNames.slice(0, 1)).map(name => <li key={name} className="max-w-full break-words rounded-full bg-primary/10 px-2 py-1 font-medium text-primary">{name}</li>)}</ul>{!domainNames.length && 'Chưa thiết lập'}{domainNames.length > 1 && <button type="button" aria-expanded={showAllDomains} aria-controls="selected-it-domains" onClick={() => setShowAllDomains(shown => !shown)} className="mt-1 inline-flex items-center gap-1 py-1 font-semibold text-primary hover:underline">{showAllDomains ? <ChevronUp size={12} aria-hidden="true" /> : <ChevronDown size={12} aria-hidden="true" />}{showAllDomains ? 'Thu gọn' : `+${domainNames.length - 1} chuyên ngành`}</button>}</dd></div>
             <div className="flex items-start justify-between gap-3"><dt className="shrink-0 text-on-surface-variant">Mục tiêu chứng chỉ</dt><dd className="text-right font-semibold">{cert || 'Chưa thiết lập'}</dd></div>
           </dl>
-          <Link href="/learn/profile?tab=goals" className={`${outline} w-full border-primary text-primary`}><Settings2 size={14} aria-hidden="true" />{cert ? 'Cập nhật hồ sơ' : 'Thiết lập ngay'}</Link>
+          {configured && <Link href="/learn/profile?tab=goals" className={`${outline} w-full border-primary text-primary`}><Settings2 size={14} aria-hidden="true" />{cert ? 'Cập nhật hồ sơ' : 'Thiết lập ngay'}</Link>}
         </section>
 
         <section aria-labelledby="results-heading" className={card}>

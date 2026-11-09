@@ -24,7 +24,7 @@ export function AdminMfaBoundary({ children }: { children: React.ReactNode }) {
     void check();
     const reset = () => { void check(); };
     window.addEventListener('techenglish:mfa-required', reset);
-    // Recheck on focus and periodically so an eight-hour session cannot keep the portal open indefinitely.
+    // Recheck on focus and periodically to detect revoked or reset MFA sessions.
     window.addEventListener('focus', reset);
     const timer = window.setInterval(reset, 60000);
     return () => { window.removeEventListener('techenglish:mfa-required', reset); window.removeEventListener('focus', reset); window.clearInterval(timer); };

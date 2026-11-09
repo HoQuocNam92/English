@@ -20,7 +20,12 @@ test('mobile navigation keeps the web semantic icon colors in both tab states', 
   const code = ts.transpileModule(source, { compilerOptions: { module: ts.ModuleKind.CommonJS, jsx: ts.JsxEmit.ReactJSX } }).outputText;
   const Tabs = Object.assign(() => {}, { Screen: 'screen' });
   const mocks = {
-    'react-native': { View: 'view' }, 'expo-router': { Tabs },
+    'react-native': { View: 'view' }, 'expo-router': { Tabs, useRouter: () => ({}) },
+    react: { useEffect() {}, useState: () => ['learner', () => {}] },
+    '../../src/shared/store/auth-context': { useAuth: () => ({ user: { id: 'learner' }, isLoggedIn: true, isLoading: false }) },
+    '../../src/shared/api/api-client': { api: {} },
+    '../../src/shared/ui/primitives': { Button: 'button', Text: 'text' },
+    '../../../../packages/shared-kernel/src/post-login-destination': {},
     'react-native-safe-area-context': { useSafeAreaInsets: () => ({ bottom: 0 }) },
     '../../src/shared/ui/AppIcon': { MaterialIcons: 'icon' },
     '../../src/shared/ui/icon-colors': { iconColors },

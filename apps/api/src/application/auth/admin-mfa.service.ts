@@ -8,7 +8,6 @@ import { JwtPayload } from '../../presentation/decorators/current-user.decorator
 import { auditContext } from '../../infrastructure/audit/audit-context'
 import { eventBase, saveEvent } from '../../infrastructure/audit/audit-events'
 
-export const MFA_SESSION_MS = 8 * 60 * 60 * 1000
 export const privileged = (roles: string[]) => roles.some(role => role === 'admin' || role === 'teacher')
 
 @Injectable()

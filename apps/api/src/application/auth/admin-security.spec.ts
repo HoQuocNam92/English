@@ -1,7 +1,7 @@
 import 'reflect-metadata'
 import { test } from 'node:test'
 import { strict as assert } from 'node:assert'
-import { AdminMfaService, MFA_SESSION_MS } from './admin-mfa.service'
+import { AdminMfaService } from './admin-mfa.service'
 import { base32, matchingStep, totp } from './totp'
 import { RolesService } from '../role/role.service'
 import { auditEvent } from '../../infrastructure/audit/audit.middleware'
@@ -104,8 +104,13 @@ test('JWT strategy requires a live matching MFA session, rejects stale proof and
   const strategy = new JwtStrategy({ get: () => 'test-only-key' } as any, { user: { findUnique: async () => account }, refreshToken: { findUnique: async () => session } } as any)
   assert.equal((await strategy.validate({ sub: user.sub, sid: 'session' })).mfaVerified, false)
   assert.equal((await strategy.validate({ sub: user.sub, sid: 'session', mfaAt: now.getTime() })).mfaVerified, true)
-  session.mfaVerifiedAt = new Date(Date.now() - MFA_SESSION_MS - 1)
-  assert.equal((await strategy.validate({ sub: user.sub, sid: 'session', mfaAt: session.mfaVerifiedAt.getTime() })).mfaVerified, false)
+  session.mfaVerifiedAt = new Date(Date.now() - 2 * 86400000)
+  assert.equal((await strategy.validate({ sub: user.sub, sid: 'session', mfaAt: session.mfaVerifiedAt.getTime() })).mfaVerified, true)
+  assert.equal((await strategy.validate({ sub: user.sub, sid: 'session', mfaAt: now.getTime() })).mfaVerified, false)
+  const expiry = session.expiresAt
+  session.expiresAt = new Date(Date.now() - 1)
+  await assert.rejects(strategy.validate({ sub: user.sub, sid: 'session', mfaAt: session.mfaVerifiedAt.getTime() }))
+  session.expiresAt = expiry
   session.revokedAt = now
   await assert.rejects(strategy.validate({ sub: user.sub, sid: 'session', mfaAt: now.getTime() }))
   account.userRoles[0].expiresAt = new Date(Date.now() - 1000)

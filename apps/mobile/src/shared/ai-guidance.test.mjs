@@ -34,4 +34,12 @@ test('mobile reuses home hero for daily AI and ranked suggestion, with goals dis
   all.find(node => node.type === 'touch' && label(node) === 'Học tiếp').props.onPress();
   all.find(node => node.type === 'touch' && label(node) === 'Gợi ý: Bảo mật Cloud').props.onPress();
   assert.deepEqual(routes, ['/lessons/core', '/certifications/cloud']);
+  data.journey = { configured: false };
+  cursor = 0;
+  const unfinished = exports.default();
+  const setup = nodes(unfinished).filter(node => ['touch', 'button'].includes(node.type) && label(node).includes('Thiết lập'));
+  assert.equal(setup.length, 1);
+  assert.ok(!label(unfinished).includes('Mục tiêu hôm nay'));
+  setup[0].props.onPress();
+  assert.equal(routes.at(-1), '/(onboarding)/goal');
 });

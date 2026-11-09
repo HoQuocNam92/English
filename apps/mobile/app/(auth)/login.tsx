@@ -104,7 +104,7 @@ export default function MobileLoginScreen() {
     setIsLoading(true);
     try {
       await login(email, password);
-      router.replace('/(tabs)/home' as any);
+      router.replace(await postLoginDestination({ mobile: true, loadProfile: () => api.get<any>('/learner-profiles/me') }) as any);
     } catch (err: any) {
       setLoginError(err.message || 'Đăng nhập thất bại. Vui lòng thử lại.');
     } finally {
