@@ -6,7 +6,7 @@ function database(seconds: number) {
     user: { findFirst: async () => ({ id: 'learner' }) },
     learnerProfile: { findUnique: async () => ({ onboardingCompleted: true, domains: [{}], certGoals: [], dailyVocabularyTarget: 10, weeklyExamTarget: 2, dailyStudyTargetMinutes: 30 }) },
     vocabularyProgress: { count: async () => 20 }, examAttempt: { count: async () => 0 },
-    $queryRaw: async () => [{ seconds }],
+    studyTimeSession: { findMany: async () => [{ seconds }] },
   }
 }
 test('twenty studied words do not become twenty minutes; only measured seconds count', async () => {
@@ -18,7 +18,7 @@ test('twenty studied words do not become twenty minutes; only measured seconds c
 })
 test('invalid heartbeat input cannot write time', async () => {
   let writes = 0
-  const service = new LearnerProfilesService({ ...database(0), $executeRaw: async () => { writes++ } } as any)
+  const service = new LearnerProfilesService({ ...database(0), $transaction: async (run: any) => run({ studyTimeSession: { findUnique: async () => null, create: async () => { writes++ } } }) } as any)
   for (const seconds of [-1, 1.5, 86401, NaN]) await assert.rejects(() => service.trackStudyTime('learner', 'valid-session-123', seconds))
   await assert.rejects(() => service.trackStudyTime('learner', '', 60))
   assert.equal(writes, 0)

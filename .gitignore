@@ -31,5 +31,6 @@ GoogleService-Info.plist
 # Local review scratch files and generated data backups
 /.tmp-*/
 *.tsbuildinfo
+.runtime-state/
 /docs/data-audit/backups/
 /docs/data-audit/content-snapshot.json

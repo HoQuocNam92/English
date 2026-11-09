@@ -11,6 +11,7 @@ services:
     - path: apps/api/.env
       required: false
     environment:
+      TECHENGLISH_STATE_DIR: /var/lib/techenglish-state
       NODE_ENV: production
       LEARNING_REMINDER_JOB_KEY: ${LEARNING_REMINDER_JOB_KEY:-}
       DATABASE_URL: ${DATABASE_URL:?Set the existing PostgreSQL connection URL}
@@ -26,6 +27,8 @@ services:
       CORS_ORIGIN: ${CORS_ORIGIN:-http://localhost:3000}
     ports:
     - ${API_PORT:-8080}:8080
+    volumes:
+    - file_state:/var/lib/techenglish-state
     healthcheck:
       test:
       - CMD
@@ -80,3 +83,6 @@ services:
     depends_on:
       api:
         condition: service_healthy
+
+volumes:
+  file_state:

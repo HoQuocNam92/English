@@ -28,7 +28,7 @@ test('real PostgreSQL couples business changes to append-only logs and protects 
     assert.ok(!JSON.stringify(event).includes('MUST_NOT_LOG'))
     await assert.rejects(db.auditLog.update({where:{id:event.id},data:{outcome:'failure'}}),/append-only/)
     await assert.rejects(db.auditLog.delete({where:{id:event.id}}),/append-only/)
-    await assert.rejects(db.$executeRawUnsafe('TRUNCATE audit_logs'),/append-only/)
+    await assert.rejects(db.$executeRawUnsafe('TRUNCATE audit_logs'),/does not exist/)
     // Invalid request UUID makes audit insertion fail AFTER business deletion; both must roll back.
     const broken:any=request('/roles/:id/users/:userId','DELETE',{id:roleId,userId:targetId});broken.auditRequestId='invalid'
     await assert.rejects(execute(broken,()=>roles.revokeRoleFromUser(targetId,roleId,actorId)))

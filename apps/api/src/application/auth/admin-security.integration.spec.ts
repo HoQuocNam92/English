@@ -1,7 +1,7 @@
 import 'reflect-metadata'
 import { test } from 'node:test'
 import { strict as assert } from 'node:assert'
-import { PrismaClient } from '@prisma/client'
+import { PrismaService } from '../../infrastructure/database/prisma.service'
 import { randomUUID } from 'node:crypto'
 import { JwtService } from '@nestjs/jwt'
 import { AdminMfaService } from './admin-mfa.service'
@@ -9,7 +9,7 @@ import { totp } from './totp'
 import { AuditLogController } from '../../presentation/audit-log.controller'
 
 test('PostgreSQL commits MFA failures, allows only one concurrent recovery, and persists audit records', { skip: process.env.ADMIN_SECURITY_QA !== '1' }, async () => {
-  const db = new PrismaClient()
+  const db = new PrismaService()
   const id = randomUUID(), sid = randomUUID(), otherSid = randomUUID(), logId = randomUUID()
   const user = { sub: id, email: `security-qa-${id}@example.invalid`, roles: ['admin'], permissions: [], sid, mfaVerified: false }
   const service = new AdminMfaService(db as any, { get: () => 'integration-security-encryption-key-only' } as any, new JwtService({ secret: 'integration-signing-key-only' }))
