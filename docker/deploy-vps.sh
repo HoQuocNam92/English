@@ -54,7 +54,11 @@ if [[ "$("${compose[@]}" exec -T --interactive=false db psql -U techenglish -d t
   test -s "$backup.file-state.json"
 fi
 "${compose[@]}" stop api < /dev/null
-"${compose[@]}" run --rm --no-deps -T migrate < /dev/null
+if ! "${compose[@]}" run --rm --no-deps -T migrate < /dev/null; then
+  echo 'Migration failed; restarting the previously running API container.' >&2
+  "${compose[@]}" start api < /dev/null
+  exit 1
+fi
 "${compose[@]}" up -d --no-build --no-deps --wait api web < /dev/null
 for service in api web; do
   container_id=$("${compose[@]}" ps -q "$service" < /dev/null)

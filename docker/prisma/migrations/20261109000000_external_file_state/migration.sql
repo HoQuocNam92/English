@@ -1,3 +1,5 @@
+BEGIN;
+LOCK TABLE admin_mfa, audit_logs, audit_alerts, study_time_sessions IN ACCESS EXCLUSIVE MODE;
 -- Existing data must first be exported and fsynced by docker/export-legacy-state.cjs.
 DO $$
 DECLARE name text; actual bigint; marker text; expected bigint;
@@ -19,3 +21,5 @@ DROP TABLE audit_logs;
 DROP TABLE admin_mfa;
 DROP TABLE study_time_sessions;
 DROP FUNCTION IF EXISTS protect_audit_history();
+
+COMMIT;
