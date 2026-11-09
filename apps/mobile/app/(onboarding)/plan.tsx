@@ -20,7 +20,6 @@ export default function OnboardingPlanScreen() {
   const [dailyVocabularyTarget, setDailyVocabularyTarget] = useState('20');
   const [weeklyExamTarget, setWeeklyExamTarget] = useState('2');
   const [dailyStudyTargetMinutes, setDailyStudyTargetMinutes] = useState('30');
-  const [takePlacementTest, setTakePlacementTest] = useState(false);
   const [reminderEnabled, setReminderEnabled] = useState(false);
   const [reminderTime, setReminderTime] = useState('20:00');
   const [submitting, setSubmitting] = useState(false);
@@ -36,12 +35,11 @@ export default function OnboardingPlanScreen() {
       const goal = stored.onboarding_goal;
       const levelCode = stored.onboarding_level;
       if (!levelCode) {
-        Alert.alert('Chưa chọn trình độ', 'Hãy tự chọn mức bắt đầu. Bạn có thể làm bài đầu vào để xác định lại sau.', [{ text: 'Chọn trình độ', onPress: () => router.push('/(onboarding)/level' as any) }]);
+        Alert.alert('Chưa chọn trình độ', 'Hãy chọn trình độ bắt đầu trước khi hoàn tất thiết lập.', [{ text: 'Chọn trình độ', onPress: () => router.push('/(onboarding)/level' as any) }]);
         return;
       }
       const domainCodes: string[] = goal === 'vocabulary' && stored.onboarding_domains ? JSON.parse(stored.onboarding_domains) : [];
       const certificateCode = goal === 'certification' ? stored.onboarding_certificate_code : '';
-      const certificateId = goal === 'certification' ? stored.onboarding_certificate_id : '';
       if (!goal || (goal === 'certification' && !certificateCode) || (goal === 'vocabulary' && domainCodes.length === 0)) {
         Alert.alert('Thiếu thông tin', 'Vui lòng quay lại và chọn mục tiêu học tập.');
         return;
@@ -66,11 +64,7 @@ export default function OnboardingPlanScreen() {
       if (reminderEnabled) await scheduleLearningReminder(reminderTime).catch(() => false);
       await AsyncStorage.multiRemove(STORAGE_KEYS);
 
-      if (takePlacementTest) {
-        router.replace({ pathname: '/placement-test', params: { next: certificateId ? `/certifications/${certificateId}` : '/flashcards' } } as any);
-        return;
-      }
-      router.replace(certificateId ? `/certifications/${certificateId}` as any : '/flashcards' as any);
+      router.replace('/(tabs)/home' as any);
     } catch (error: any) {
       Alert.alert('Không thể tạo lộ trình', error?.message || 'Vui lòng thử lại.');
     } finally {
@@ -90,7 +84,6 @@ export default function OnboardingPlanScreen() {
         <NumberInput label="Bài kiểm tra mỗi tuần" value={weeklyExamTarget} onChangeText={setWeeklyExamTarget} />
         <NumberInput label="Phút học mỗi ngày" value={dailyStudyTargetMinutes} onChangeText={setDailyStudyTargetMinutes} />
       </View>
-      <TouchableOpacity style={styles.option} onPress={() => setTakePlacementTest(value => !value)}><MaterialIcons name={takePlacementTest ? 'check-box' : 'check-box-outline-blank'} size={23} color={colors.primary} /><View style={styles.optionCopy}><Text style={styles.optionTitle}>Làm bài kiểm tra đầu vào</Text><Text style={styles.optionText}>Nếu chưa có đề phù hợp, app sẽ đưa bạn vào lộ trình đã chọn.</Text></View></TouchableOpacity>
       <TouchableOpacity style={styles.option} onPress={() => setReminderEnabled(value => !value)}><MaterialIcons name={reminderEnabled ? 'check-box' : 'check-box-outline-blank'} size={23} color={colors.primary} /><View style={styles.optionCopy}><Text style={styles.optionTitle}>Nhắc học mỗi ngày</Text><Text style={styles.optionText}>Bật thông báo nhắc học trên thiết bị.</Text></View></TouchableOpacity>
       {reminderEnabled && <View style={styles.timeWrap}><Text style={styles.label}>Giờ nhắc học (HH:mm)<RequiredMark /></Text><TextInput value={reminderTime} onChangeText={setReminderTime} style={styles.input} placeholder="20:00" /></View>}
       <View style={styles.zeroNote}><MaterialIcons name="verified" size={21} color={colors.primary} /><Text style={styles.zeroText}>Lưu mục tiêu không đánh dấu bài học, từ vựng hay bài thi là đã hoàn thành.</Text></View>

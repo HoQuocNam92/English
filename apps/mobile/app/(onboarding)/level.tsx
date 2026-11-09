@@ -78,7 +78,7 @@ export default function OnboardingLevelScreen() {
         </View>
 
         <Text style={styles.title}>Trình độ tiếng Anh của bạn?<RequiredMark /></Text>
-        <Text style={styles.subtitle}>Chưa có trình độ nào được chọn sẵn. Tự chọn mức bắt đầu; bạn có thể làm bài đầu vào để xác định lại sau.</Text>
+        <Text style={styles.subtitle}>Chưa có trình độ nào được chọn sẵn. Hãy chọn mức bắt đầu phù hợp với bạn.</Text>
 
         {loading && <ActivityIndicator color={colors.primary} />}
         {!!error && <TouchableOpacity onPress={() => setRetry(value => value + 1)}><Text>{error} Nhấn để thử lại.</Text></TouchableOpacity>}

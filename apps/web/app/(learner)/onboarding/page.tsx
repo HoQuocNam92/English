@@ -98,7 +98,7 @@ export default function OnboardingPage() {
       });
       window.dispatchEvent(new CustomEvent('techenglish:reminder-settings', { detail: { reminderEnabled, reminderTime } }));
       if (reminderEnabled) await registerWebLearningNotifications().catch(() => false);
-      router.replace('/learn/plan');
+      router.replace('/learn');
     } catch (error) {
       setErrorMessage(error instanceof Error ? error.message : 'Không thể tạo lộ trình. Vui lòng thử lại.');
       setIsSubmitting(false);
@@ -126,7 +126,7 @@ export default function OnboardingPage() {
         </section>}
 
         {step === 3 && <section>
-          <Header title="Chọn lộ trình phù hợp với bạn" subtitle="Chưa có trình độ nào được chọn sẵn. Tự chọn mức bắt đầu; bạn có thể làm bài đầu vào để xác định lại sau." />
+          <Header title="Chọn lộ trình phù hợp với bạn" subtitle="Chưa có trình độ nào được chọn sẵn. Hãy chọn mức bắt đầu phù hợp với bạn." />
           <div className="grid gap-4 md:grid-cols-2">{levels.map(item => <ChoiceCard key={item.id} selected={level === item.code} icon="school" title={<LevelBadge level={item} />} description={item.description ?? ''} onClick={() => setLevel(item.code)} />)}</div>
           <p className="mt-5 text-center text-sm text-on-surface-variant">Bạn có thể thay đổi trình độ sau trong hồ sơ.</p>
         </section>}
