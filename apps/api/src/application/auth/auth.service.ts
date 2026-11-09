@@ -11,6 +11,10 @@ import * as crypto from 'crypto'
 import { isEmail } from 'class-validator'
 import { auditContext } from '../../infrastructure/audit/audit-context'
 
+const LEARNER_SESSION_MS = 30 * 24 * 60 * 60 * 1000
+const STAFF_SESSION_MS = 7 * 24 * 60 * 60 * 1000
+const isLearnerSession = (roles: string[]) => roles.includes('learner') && !roles.some(role => role === 'admin' || role === 'teacher')
+
 @Injectable()
 export class AuthService {
   constructor(
@@ -104,7 +108,7 @@ export class AuthService {
       data: {
         userId: full.id,
         tokenHash,
-        expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
+        expiresAt: new Date(Date.now() + (isLearnerSession(payload.roles) ? LEARNER_SESSION_MS : STAFF_SESSION_MS)),
       }
     })
     const accessToken = this.jwt.sign({ ...payload, sid: session.id }, { expiresIn: '15m' })
@@ -244,6 +248,14 @@ export class AuthService {
     if (!full || full.status !== 'active' || full.deletedAt) throw new UnauthorizedException('Tài khoản không còn hoạt động hoặc phiên đăng nhập không hợp lệ')
 
     const payload = this.buildPayload(full)
+    // Active learners retain their session for 30 days of inactivity. Never revive a revoked session.
+    if (isLearnerSession(payload.roles)) {
+      const renewed = await this.prisma.refreshToken.updateMany({
+        where: { id: stored.id, userId: stored.userId, revokedAt: null, expiresAt: { gt: new Date() } },
+        data: { expiresAt: new Date(Date.now() + LEARNER_SESSION_MS) },
+      })
+      if (renewed.count !== 1) throw new UnauthorizedException('Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại')
+    }
     const accessToken = this.jwt.sign({ ...payload, sid: stored.id, mfaAt: stored.mfaVerifiedAt?.getTime() }, { expiresIn: '15m' })
     const request = auditContext.getStore()?.request
     if (request) request.user = { sub: full.id, email: full.email }

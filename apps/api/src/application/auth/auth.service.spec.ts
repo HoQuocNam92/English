@@ -6,6 +6,36 @@ import { GoogleCallbackGuard } from '../../infrastructure/auth/google-callback.g
 import { AuthController } from '../../presentation/auth.controller'
 import { UnauthorizedException } from '@nestjs/common'
 
+test('learner refresh extends inactivity expiry without reviving expired or revoked sessions', async () => {
+  const stored: any = { id: 'session', userId: 'learner', expiresAt: new Date(Date.now() + 60000), revokedAt: null }
+  let renewed: any = null, count = 1, roles = ['learner']
+  const db: any = {
+    refreshToken: {
+      findUnique: async () => stored,
+      updateMany: async (args: any) => { renewed = args; return { count } },
+    },
+    user: { findUnique: async () => ({ id: 'learner', email: 'learner@gmail.com', status: 'active', userRoles: roles.map(code => ({ role: { code, rolePermissions: [] } })) }) },
+  }
+  const auth = new AuthService(db, { sign: () => 'renewed-access' } as any, {} as any, {} as any)
+  assert.equal((await auth.refresh('refresh-token')).accessToken, 'renewed-access')
+  assert.equal(renewed.where.revokedAt, null)
+  assert.ok(renewed.where.expiresAt.gt instanceof Date)
+  assert.ok(renewed.data.expiresAt.getTime() > Date.now() + 29 * 86400000)
+  count = 0
+  await assert.rejects(auth.refresh('refresh-token'), /hết hạn/)
+  stored.expiresAt = new Date(Date.now() - 1)
+  renewed = null
+  await assert.rejects(auth.refresh('refresh-token'), /hết hạn/)
+  assert.equal(renewed, null)
+  stored.expiresAt = new Date(Date.now() + 60000)
+  stored.revokedAt = new Date()
+  await assert.rejects(auth.refresh('refresh-token'), /hết hạn/)
+  stored.revokedAt = null
+  roles = ['learner', 'admin']
+  assert.equal((await auth.refresh('refresh-token')).accessToken, 'renewed-access')
+  assert.equal(renewed, null, 'staff retain the existing fixed session lifetime')
+})
+
 test('password and Google login expose the same saved suspension reason without allowing access', async () => {
   const f = fixture({ id: 'locked', email: 'locked@gmail.com', deletedAt: null, status: 'suspended', suspensionReason: 'Spam nội dung' })
   await assert.rejects(f.service.login({ email: 'locked@gmail.com', password: 'Password123!' }), /Lý do: Spam nội dung/)
@@ -16,6 +46,7 @@ test('password and Google login expose the same saved suspension reason without 
 function registrationFixture(age: number, status = 'inactive') {
   let old: any = { id: 'old-id', email: 'reuse@gmail.com', status, deletedAt: new Date(Date.now() - age) }
   let created: any = null
+  let session: any = null
   const db: any = {
     user: {
       findFirst: async () => old.email === 'reuse@gmail.com' ? old : created,
@@ -28,7 +59,7 @@ function registrationFixture(age: number, status = 'inactive') {
     },
     role: { findUnique: async () => ({ id: 'learner-role' }) },
     level: { findFirst: async () => ({ id: 'beginner' }) },
-    refreshToken: { create: async () => ({}) },
+    refreshToken: { create: async ({ data }: any) => { session = data; return { id: 'new-session' } } },
     userDetail: { update: async () => ({}) },
     $transaction: async (run: any, options: any) => {
       assert.equal(options.isolationLevel, 'Serializable')
@@ -36,7 +67,7 @@ function registrationFixture(age: number, status = 'inactive') {
       try { return await run(db) } catch (error) { old = before; throw error }
     },
   }
-  return { service: new AuthService(db, { sign: () => 'new-token' } as any, {} as any, {} as any), db, get old() { return old }, get created() { return created } }
+  return { service: new AuthService(db, { sign: () => 'new-token' } as any, {} as any, {} as any), db, get old() { return old }, get created() { return created }, get session() { return session } }
 }
 
 test('deleted email is reserved during 30-day delay for password and Google registration', async () => {
@@ -53,6 +84,7 @@ test('after delay both registration paths create a fresh learner identity and pr
     const f = registrationFixture(ACCOUNT_REUSE_DELAY_MS + 60_000)
     const result = google ? await f.service.findOrCreateGoogleUser({ googleId: 'google', email: 'reuse@gmail.com', displayName: 'New' }) : await f.service.register({ email: ' REUSE@gmail.com ', password: 'Password123!', displayName: 'New' })
     assert.equal(result.user.id, 'new-id'); assert.equal(f.old.email, 'old-id@deleted.invalid')
+    assert.ok(f.session.expiresAt.getTime() > Date.now() + 29 * 86400000)
     assert.equal(f.old.status, 'inactive'); assert.ok(f.old.deletedAt)
     assert.equal(f.created.email, 'reuse@gmail.com'); assert.equal(f.created.learnerProfile.create.onboardingCompleted, false)
     assert.deepEqual(f.created.userRoles.create, { roleId: 'learner-role' })
