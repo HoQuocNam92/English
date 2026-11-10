@@ -41,9 +41,12 @@ export function LearningPathJourney({ full = false, refreshKey = 0, onAvailabili
   };
   if (loading) return <ActivityIndicator accessibilityLabel="Đang tải lộ trình" />;
   if (!path) return error ? <View><Text accessibilityRole="alert">{error}</Text><Button onPress={load}>Thử lại</Button></View> : null;
+  const certificatePaths = path.certificates?.length ? <View style={{ gap: 12 }}>{path.certificates.map((certificate: any) => <View key={certificate.id} style={[controlStyles.card, { gap: 12 }]}><Text style={{ fontSize: 12, fontWeight: '700' }}>LỘ TRÌNH CHỨNG CHỈ</Text><Text style={{ fontSize: 20, fontWeight: '800' }}>{certificate.name}</Text><Text>Học theo chủ đề và luyện tập trong lộ trình chứng chỉ đã chọn.</Text><Button onPress={() => open(certificate.href)}>Mở lộ trình</Button></View>)}</View> : null;
+  if (!path.domains.length && certificatePaths) return certificatePaths;
   const practiceStep = buildLearningTrail(path.domains).next;
   const domain = path.domains.find((item: any) => item.state !== 'complete');
   return <View style={{ gap: 16 }}>
+    {certificatePaths}
     <View style={[controlStyles.card, { gap: 12 }]}>
       <Text style={{ fontSize: 21, fontWeight: '800' }}>Lộ trình · {path.level.name}</Text>
       <Text>{path.totalLessons > 0 ? `Bạn đã học ${path.completedLessons}/${path.totalLessons} bài học trong tổng số ${path.domains.length} chuyên ngành đã chọn. Để chuyển cấp, hãy hoàn thành bài học và đạt điểm yêu cầu của bài tổng kết ở từng ngành.` : 'Chưa có bài học đã xuất bản cho trình độ và chuyên ngành bạn đã chọn.'}</Text>

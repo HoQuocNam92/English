@@ -138,7 +138,7 @@ export default function MobileLoginScreen() {
             <MaterialIcons name="mail-outline" size={20} color={colors.outline} style={styles.inputIcon} />
             <TextInput
               style={styles.input}
-              placeholder="email@example.com"
+              placeholder="yourname@gmail.com"
               value={email}
               onChangeText={setEmail}
               autoCapitalize="none"

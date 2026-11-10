@@ -35,6 +35,33 @@ function fixture(options: { completed?: boolean; passed?: boolean; final?: boole
   db.$transaction = async (run: any) => run(db)
   return { service: new LearningPathService(db), db, profile, get updates() { return updates } }
 }
+
+test('saved certification goals appear without vocabulary domains and cannot upgrade vocabulary levels', async () => {
+  const f = fixture()
+  f.profile.learningGoal = 'certification'
+  f.profile.domains = []
+  f.profile.certGoals = [{ certificate: { id: 'aws', code: 'AWS', name: 'AWS Developer', isActive: true } }]
+  const path = await f.service.getPath('learner')
+  if (!path.configured) return assert.fail('certification path should be configured')
+  assert.deepEqual(path.certificates.map((item: any) => item.href), ['/learn/certifications/aws'])
+  assert.deepEqual(path.domains, [])
+  assert.equal(path.canAdvance, false)
+  await assert.rejects(() => f.service.advance('learner', 'intermediate'))
+  assert.equal(f.updates, 0)
+})
+
+test('combined goals retain vocabulary and active certificate paths', async () => {
+  const f = fixture()
+  f.profile.learningGoal = 'both'
+  f.profile.certGoals = [
+    { certificate: { id: 'aws', name: 'AWS', isActive: true } },
+    { certificate: { id: 'old', name: 'Old', isActive: false } },
+  ]
+  const path = await f.service.getPath('learner')
+  if (!path.configured) return assert.fail('path')
+  assert.equal(path.domains.length, 1)
+  assert.deepEqual(path.certificates.map((item: any) => item.id), ['aws'])
+})
 test('recommends an unfinished lesson at the current level', async () => {
   const f = fixture(); const path = await f.service.getPath('learner')
   if (!path.configured) return assert.fail('path')

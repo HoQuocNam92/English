@@ -11,8 +11,13 @@ export class LearningPathService {
   async getPath(learnerId: string, db: any = this.prisma) {
     const user = await db.user.findFirst({ where: { id: learnerId, status: 'active', userRoles: { some: { role: { code: 'learner', isActive: true } } } }, select: { id: true } })
     if (!user) throw new ForbiddenException('Chỉ học viên mới có lộ trình học tập.')
-    const profile = await db.learnerProfile.findUnique({ where: { userId: learnerId }, include: { level: true, domains: { include: { domain: true } }, careerGoals: { include: { careerGoal: true } } } })
-    if (!profile?.onboardingCompleted || profile.levelSelectedAt === null || profile.learningGoal === 'certification' || profile.level.isActive === false) return { configured: false as const }
+    const profile = await db.learnerProfile.findUnique({ where: { userId: learnerId }, include: { level: true, domains: { include: { domain: true } }, certGoals: { include: { certificate: true } }, careerGoals: { include: { careerGoal: true } } } })
+    if (!profile?.onboardingCompleted || profile.levelSelectedAt === null || !profile.level || profile.level.isActive === false) return { configured: false as const }
+    const certificates = ['certification', 'both'].includes(profile.learningGoal) ? (profile.certGoals ?? []).filter((link: any) => link.certificate?.isActive !== false && link.certificate).map((link: any) => ({ id: link.certificate.id, code: link.certificate.code, name: link.certificate.name, href: `/learn/certifications/${link.certificate.id}` })) : []
+    if (profile.learningGoal === 'certification') {
+      if (!certificates.length) return { configured: false as const }
+      return { configured: true as const, level: { id: profile.level.id, code: profile.level.code, name: profile.level.name }, certificates, domains: [], completedLessons: 0, totalLessons: 0, allCompleted: false, canAdvance: false, nextLevel: null, finalLevel: false, dailyMinutes: profile.dailyStudyTargetMinutes ?? 30 }
+    }
     const focus = careerFocus(profile.careerGoals)
     const selected = profile.domains.filter((link: any) => link.domain.isActive)
       .sort((a: any, b: any) => focus.score(b.domain.code) - focus.score(a.domain.code))
@@ -60,7 +65,7 @@ export class LearningPathService {
     const nextLessons = next ? await db.lesson.findMany({ where: { status: 'published', type: { not: 'certification_review' }, levelId: next.id, domainId: { in: domainIds } }, select: { domainId: true, slug: true } }) : []
     const nextAvailable = !!next && selected.every((link: any) => nextLessons.some((lesson: any) => lesson.domainId === link.domainId))
     return {
-      configured: true as const, level: { id: profile.level.id, code: profile.level.code, name: profile.level.name }, domains,
+      configured: true as const, level: { id: profile.level.id, code: profile.level.code, name: profile.level.name }, domains, certificates,
       completedLessons: domains.reduce((total: number, domain: any) => total + domain.completedLessons, 0),
       totalLessons: domains.reduce((total: number, domain: any) => total + domain.totalLessons, 0),
       allCompleted, canAdvance: allCompleted && nextAvailable,
