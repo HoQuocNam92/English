@@ -37,6 +37,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
 
     const activeRoles = user.userRoles.filter(ur => ur.role.isActive !== false && (!ur.expiresAt || ur.expiresAt > new Date()))
     const roles = activeRoles.map((ur) => ur.role.code)
+    if (roles.includes('SUPER_ADMIN') && !roles.includes('admin')) roles.push('admin')
     const permissions = [
       ...new Set(
         activeRoles.flatMap((ur) =>

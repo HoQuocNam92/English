@@ -31,7 +31,7 @@ export class UsersController {
   @Patch('me')
   @ApiOperation({ summary: 'Update my own profile' })
   updateMe(@CurrentUser() user: JwtPayload, @Body() dto: UpdateProfileDto) {
-    return this.usersService.update(user.sub, dto)
+    return this.usersService.update(user.sub, dto, user.sub)
   }
 
   @Post('me/change-password')
@@ -58,8 +58,8 @@ export class UsersController {
   @Patch(':id')
   @RequirePermissions('users:manage')
   @ApiOperation({ summary: 'Update user' })
-  update(@Param('id') id: string, @Body() dto: UpdateUserDto) {
-    return this.usersService.update(id, dto)
+  update(@Param('id') id: string, @Body() dto: UpdateUserDto, @CurrentUser() actor: JwtPayload) {
+    return this.usersService.update(id, dto, actor.sub)
   }
 
   @Patch(':id/suspend')
@@ -74,15 +74,15 @@ export class UsersController {
   @RequirePermissions('users:manage')
   @HttpCode(HttpStatus.NO_CONTENT)
   @ApiOperation({ summary: 'Activate user' })
-  activate(@Param('id') id: string) {
-    return this.usersService.activate(id)
+  activate(@Param('id') id: string, @CurrentUser() actor: JwtPayload) {
+    return this.usersService.activate(id, actor.sub)
   }
 
   @Patch(':id/restore')
   @RequirePermissions('users:manage')
   @ApiOperation({ summary: 'Restore a soft-deleted user whose email has not been released' })
-  restore(@Param('id') id: string) {
-    return this.usersService.restore(id)
+  restore(@Param('id') id: string, @CurrentUser() actor: JwtPayload) {
+    return this.usersService.restore(id, actor.sub)
   }
 
   @Delete(':id')

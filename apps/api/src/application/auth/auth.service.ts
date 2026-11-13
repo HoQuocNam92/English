@@ -13,7 +13,7 @@ import { auditContext } from '../../infrastructure/audit/audit-context'
 
 const LEARNER_SESSION_MS = 30 * 24 * 60 * 60 * 1000
 const STAFF_SESSION_MS = 7 * 24 * 60 * 60 * 1000
-const isLearnerSession = (roles: string[]) => roles.includes('learner') && !roles.some(role => role === 'admin' || role === 'teacher')
+const isLearnerSession = (roles: string[]) => roles.includes('learner') && !roles.some(role => role === 'SUPER_ADMIN' || role === 'admin' || role === 'teacher')
 
 @Injectable()
 export class AuthService {
@@ -41,9 +41,13 @@ export class AuthService {
   }
 
   private buildPayload(user: any) {
-    const roles = user.userRoles.map((ur: any) => ur.role.code)
+    const activeRoles = user.userRoles.filter((link: any) => link.role.isActive !== false && (!link.expiresAt || link.expiresAt > new Date()))
+    const roles = activeRoles.map((ur: any) => ur.role.code)
+    if (roles.includes('SUPER_ADMIN') && !roles.includes('admin')) roles.push('admin')
+    const priority = ['SUPER_ADMIN', 'admin', 'teacher', 'learner']
+    roles.sort((a: string, b: string) => (priority.includes(a) ? priority.indexOf(a) : priority.length) - (priority.includes(b) ? priority.indexOf(b) : priority.length))
     const permissions = [...new Set<string>(
-      user.userRoles.flatMap((ur: any) => ur.role.rolePermissions.map((rp: any) => rp.permission.code))
+      activeRoles.flatMap((ur: any) => ur.role.rolePermissions.map((rp: any) => rp.permission.code))
     )]
     return { sub: user.id, email: user.email, roles, permissions }
   }

@@ -18,6 +18,7 @@ import { apiClient, ApiClientError } from '@/shared/api/api-client';
 import type { RoleItem, PermissionItem } from '@/shared/api/api-client';
 import { actionLabel, permissionLabel, PERMISSION_ACTIONS, PERMISSION_RESOURCES, resourceLabel, roleLabel } from '@/shared/auth/permission-labels';
 import { PermissionTree } from '@/shared/auth/PermissionTree';
+import { useAuth } from '@/features/auth/presentation';
 
 const ROLE_COLORS: Record<string, string> = {
   admin: 'bg-primary/10 text-primary',
@@ -120,6 +121,8 @@ function SkeletonCard() {
 }
 
 export default function AdminRoles({ createKind }: { createKind?: 'role' | 'permission' }) {
+  const { session } = useAuth();
+  const canEditPermissionDefinitions = session?.user.roles?.includes('SUPER_ADMIN') === true;
   const router = useRouter();
   const closeRole = () => createKind ? router.push('/admin/roles') : setRoleModal(false);
   const closePermission = () => createKind ? router.push('/admin/roles?tab=permissions') : setPermissionModal(false);
@@ -328,8 +331,8 @@ export default function AdminRoles({ createKind }: { createKind?: 'role' | 'perm
           ) : (
             <PermissionTree paginate permissions={visiblePermissions} renderMeta={(permission) => {
               const rolesWithPerm = roles.filter((role) => role.permissions?.some((item) => item.id === permission.id));
-              return <div className="flex flex-wrap items-center justify-end gap-2"><div className="hidden flex-wrap justify-end gap-1.5 md:flex">{rolesWithPerm.map((role) => <span key={role.id} className="rounded-full border border-primary/20 bg-primary/5 px-2 py-1 text-[11px] font-semibold text-primary">{roleLabel(role.code, role.name)}</span>)}</div><ActionGroup><ActionButton action="edit" type="button" onClick={() => openEditPermission(permission as PermissionItem)} title="Sửa" />
-<ActionButton action="delete" type="button" onClick={() => void deletePermission(permission as PermissionItem)} title="Xóa" /></ActionGroup></div>;
+              return <div className="flex flex-wrap items-center justify-end gap-2"><div className="hidden flex-wrap justify-end gap-1.5 md:flex">{rolesWithPerm.map((role) => <span key={role.id} className="rounded-full border border-primary/20 bg-primary/5 px-2 py-1 text-[11px] font-semibold text-primary">{roleLabel(role.code, role.name)}</span>)}</div>{canEditPermissionDefinitions && <ActionGroup><ActionButton action="edit" type="button" onClick={() => openEditPermission(permission as PermissionItem)} title="Sửa" />
+<ActionButton action="delete" type="button" onClick={() => void deletePermission(permission as PermissionItem)} title="Xóa" /></ActionGroup>}</div>;
             }} />
           )}
       </div>}

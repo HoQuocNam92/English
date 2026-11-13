@@ -1,6 +1,7 @@
 import { PrismaClient, UserStatus, ContentStatus, QuestionType, AttemptStatus, ProgressStatus, ProgressResourceType } from '@prisma/client'
 import { seedPlacement } from './seed-placement-data'
 import * as bcrypt from 'bcrypt'
+const { seedSuperAdmin, INITIAL_ADMIN_EMAIL } = require('./seed-super-admin.cjs')
 
 const LevelCode = {
   beginner: 'beginner' as const,
@@ -68,6 +69,7 @@ async function main() {
   // 5a. ROLES
   // ============================================================
   const roleData = [
+    { code: 'SUPER_ADMIN', name: 'Quản trị viên cấp cao', description: 'Quản trị gốc được bảo vệ khỏi thay đổi bởi tài khoản có quyền thấp hơn.', isSystem: true },
     { code: 'admin', name: 'Administrator', description: 'Toàn quyền quản trị hệ thống.', isSystem: true },
     { code: 'teacher', name: 'Teacher', description: 'Tạo và quản lý bài học, câu hỏi, bài thi. Theo dõi tiến độ học viên.', isSystem: true },
     { code: 'learner', name: 'Learner', description: 'Truy cập nội dung học, làm bài thi và theo dõi tiến độ cá nhân.', isSystem: true },
@@ -156,7 +158,8 @@ async function main() {
     return user
   }
 
-  const adminUser   = await createUser('admin@techenglish.pro', 'Admin TechEnglish', 'admin', { bio: 'System administrator of TechEnglish Pro platform.', locale: 'vi', timezone: 'Asia/Ho_Chi_Minh' })
+  const adminUser   = await createUser(process.env.INITIAL_ADMIN_EMAIL || INITIAL_ADMIN_EMAIL, 'Admin TechEnglish', 'admin', { bio: 'System administrator of TechEnglish Pro platform.', locale: 'vi', timezone: 'Asia/Ho_Chi_Minh' })
+  await seedSuperAdmin(prisma)
   const teacher1    = await createUser('nguyen.thanh@techenglish.pro', 'Nguyễn Thanh Hà', 'teacher', { bio: 'Cloud & DevOps specialist với 10 năm kinh nghiệm. Chuyên gia AWS, Kubernetes và CI/CD.', phoneNumber: '0901000001', locale: 'vi' })
   const teacher2    = await createUser('tran.minh@techenglish.pro', 'Trần Minh Đức', 'teacher', { bio: 'Security & Networking specialist 8 năm kinh nghiệm. CompTIA Security+, CISSP certified.', phoneNumber: '0901000002', locale: 'vi' })
   const learner1    = await createUser('learner1@techenglish.pro', 'Lê Văn An', 'learner', { bio: 'Backend developer tại TP.HCM, 3 năm kinh nghiệm. Đang chuẩn bị AWS Solutions Architect.', phoneNumber: '0901001001' })
@@ -760,7 +763,7 @@ async function main() {
   console.log('Placement:', await seedPlacement(prisma))
   console.log('\n✨ Seed hoàn tất!')
   console.log('\n📌 Tài khoản demo:')
-  console.log('   Admin:    admin@techenglish.pro         / Demo@123456')
+  console.log(`   Super Admin: ${process.env.INITIAL_ADMIN_EMAIL || INITIAL_ADMIN_EMAIL} (mật khẩu được giữ nguyên nếu tài khoản đã tồn tại)`)
   console.log('   Teacher1: nguyen.thanh@techenglish.pro  / Demo@123456  (Cloud & DevOps)')
   console.log('   Teacher2: tran.minh@techenglish.pro     / Demo@123456  (Security & Networking)')
   console.log('   Learner1: learner1@techenglish.pro      / Demo@123456  (Backend dev, AWS-SAA)')

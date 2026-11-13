@@ -1,7 +1,7 @@
 type Options = { role?: string; mobile?: boolean; loadProfile: () => Promise<{ onboardingCompleted?: boolean } | null> };
 /** Onboarding belongs after login; network failures must not silently skip it. */
 export async function postLoginDestination({ role = 'learner', mobile = false, loadProfile }: Options): Promise<string> {
-  if (role === 'admin' || role === 'teacher') return '/admin/dashboard';
+  if (role === 'SUPER_ADMIN' || role === 'admin' || role === 'teacher') return '/admin/dashboard';
   const onboarding = mobile ? '/(onboarding)/goal' : '/onboarding';
   try {
     const profile = await loadProfile();

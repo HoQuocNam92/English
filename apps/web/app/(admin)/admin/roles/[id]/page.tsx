@@ -24,6 +24,8 @@ export default function RoleDetailPage() {
   const [draftPermissionIds, setDraftPermissionIds] = useState<Set<string>>(new Set());
   const [assigningUser, setAssigningUser] = useState(false);
   const [busy, setBusy] = useState<string | null>(null);
+  const isSuperAdmin = session?.user.roles?.includes('SUPER_ADMIN') === true;
+  const canManageRole = role?.code !== 'SUPER_ADMIN' || isSuperAdmin;
   const normalizeRole = (value: any) => {
     const raw = value?.data ?? value;
     return { ...raw, permissions: raw?.permissions ?? raw?.rolePermissions?.map((item: any) => item.permission) ?? [] };
@@ -57,6 +59,7 @@ export default function RoleDetailPage() {
   }, [id]);
 
   const beginPermissionEdit = () => {
+    if (!canManageRole) return;
     setDraftPermissionIds(new Set(role.permissions.map((item: any) => item.permission?.id ?? item.id)));
     setEditingPermissions(true);
     setError(null);
@@ -85,6 +88,7 @@ export default function RoleDetailPage() {
     finally { setBusy(null); }
   };
   const assignUser = async (userId: string) => {
+    if (!canManageRole) return;
     setBusy(userId);
     try {
       await apiClient.post(`/roles/${id}/users`, { userId });
@@ -95,6 +99,7 @@ export default function RoleDetailPage() {
   };
   const revokeUser = async (userId: string) => {
     if (!session || userId === session.user.id) return;
+    if (!canManageRole || (!isSuperAdmin && users.some(user => (user.userId ?? user.id) === userId && user.isSuperAdmin))) return;
     setBusy(userId);
     try { await apiClient.delete(`/roles/${id}/users/${userId}`); setUsers((current) => current.filter((u) => (u.userId ?? u.id) !== userId)); }
     catch (e: any) { setError(e.message ?? 'Không thể gỡ vai trò của người dùng này'); }
@@ -167,7 +172,7 @@ export default function RoleDetailPage() {
               <AppIcon className=" text-primary">lock</AppIcon>
               Quyền hạn của vai trò
             </h2>
-            <button disabled={busy === 'permissions'} onClick={() => editingPermissions ? void savePermissions() : beginPermissionEdit()} className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-semibold text-primary border border-outline-variant hover:bg-surface-container-low transition-colors disabled:opacity-70">
+            <button disabled={!canManageRole || busy === 'permissions'} onClick={() => editingPermissions ? void savePermissions() : beginPermissionEdit()} className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-semibold text-primary border border-outline-variant hover:bg-surface-container-low transition-colors disabled:opacity-70">
               <AppIcon className=" text-[18px]">edit</AppIcon>
               {busy === 'permissions' ? 'Đang lưu…' : editingPermissions ? 'Hoàn tất' : 'Chọn quyền'}
             </button>
@@ -191,14 +196,14 @@ export default function RoleDetailPage() {
               <AppIcon className=" text-primary">group</AppIcon>
               Người dùng được gán vai trò
             </h2>
-            <button onClick={() => setAssigningUser((value) => !value)} className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-semibold text-white bg-primary hover:bg-primary/90 transition-colors">
+            <button disabled={!canManageRole} onClick={() => setAssigningUser((value) => !value)} className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-semibold text-white bg-primary hover:bg-primary/90 transition-colors disabled:opacity-50">
               <AppIcon className=" text-[18px]">person_add</AppIcon>
               {assigningUser ? 'Đóng' : 'Thêm người'}
             </button>
           </div>
           {assigningUser && <div className="mb-4 max-h-64 space-y-2 overflow-y-auto rounded-xl bg-surface-container-low/60 p-3">
             <p className="px-1 pb-1 text-xs text-on-surface-variant">Chọn người dùng cần gán vai trò “{roleLabel(role.code, role.name)}”. Người dùng sẽ có các quyền hạn được gán cho vai trò này.</p>
-            {allUsers.filter((candidate) => !users.some((assigned) => (assigned.id ?? assigned.userId) === candidate.id)).map((candidate) => <div key={candidate.id} className="flex items-center justify-between gap-3 rounded-lg bg-white p-3"><div className="min-w-0"><p className="truncate text-sm font-semibold">{candidate.displayName ?? candidate.email}</p><p className="truncate text-xs text-on-surface-variant">{candidate.email}</p></div><button disabled={busy === candidate.id} onClick={() => void assignUser(candidate.id)} className="shrink-0 rounded-lg bg-primary px-3 py-1.5 text-xs font-semibold !text-white disabled:opacity-70">Gán</button></div>)}
+            {allUsers.filter((candidate) => (isSuperAdmin || !candidate.roles?.includes('SUPER_ADMIN')) && !users.some((assigned) => (assigned.id ?? assigned.userId) === candidate.id)).map((candidate) => <div key={candidate.id} className="flex items-center justify-between gap-3 rounded-lg bg-white p-3"><div className="min-w-0"><p className="truncate text-sm font-semibold">{candidate.displayName ?? candidate.email}</p><p className="truncate text-xs text-on-surface-variant">{candidate.email}</p></div><button disabled={busy === candidate.id} onClick={() => void assignUser(candidate.id)} className="shrink-0 rounded-lg bg-primary px-3 py-1.5 text-xs font-semibold !text-white disabled:opacity-70">Gán</button></div>)}
           </div>}
 
           {users.length === 0 ? (
@@ -219,7 +224,7 @@ export default function RoleDetailPage() {
                     <p className="text-sm font-bold text-on-surface">{u.userDetail?.displayName || u.displayName || 'Chưa cập nhật tên'}</p>
                     <p className="text-xs text-on-surface-variant mt-0.5">{u.email}</p>
                   </div>
-                  {session && userId !== session.user.id ? <button disabled={busy === userId} onClick={() => void revokeUser(userId)} className="rounded-lg px-2 py-1 text-xs font-semibold text-error hover:bg-error-container disabled:opacity-75">Gỡ</button> : <span className="text-xs text-on-surface-variant">{userId === session?.user.id ? 'Bạn' : 'Được bảo vệ'}</span>}
+                  {session && userId !== session.user.id && canManageRole && (!u.isSuperAdmin || (isSuperAdmin && role.code !== 'admin')) ? <button disabled={busy === userId} onClick={() => void revokeUser(userId)} className="rounded-lg px-2 py-1 text-xs font-semibold text-error hover:bg-error-container disabled:opacity-75">Gỡ</button> : <span className="text-xs text-on-surface-variant">{userId === session?.user.id ? 'Bạn' : 'Được bảo vệ'}</span>}
                 </div>
               )})}
             </div>

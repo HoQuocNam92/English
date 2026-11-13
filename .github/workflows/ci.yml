@@ -48,7 +48,7 @@ jobs:
           ADMIN_SECURITY_QA: '1'
         # These files share one database; parallel fixtures can conflict with Serializable audit transactions.
         # Concurrency scenarios within each file still run concurrently.
-        run: node --test --test-concurrency=1 -r ts-node/register src/application/auth/admin-security.integration.spec.ts src/infrastructure/audit/business-audit.integration.spec.ts src/infrastructure/audit/business-audit-http.integration.spec.ts src/application/auth/session-revocation.integration.spec.ts
+        run: node --test --test-concurrency=1 -r ts-node/register src/application/auth/admin-security.integration.spec.ts src/infrastructure/audit/business-audit.integration.spec.ts src/infrastructure/audit/business-audit-http.integration.spec.ts src/application/auth/session-revocation.integration.spec.ts src/application/auth/super-admin.integration.spec.ts
       - name: Check identity constraints and reporting queries against PostgreSQL
         env:
           ACCOUNT_IDENTITY_QA: '1'

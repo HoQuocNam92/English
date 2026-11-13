@@ -11,6 +11,7 @@ const ACTION_LABELS: Record<string, string> = {
 };
 
 export const roleLabel = (code: string, fallback?: string) => ({
+  SUPER_ADMIN: 'Quản trị viên cấp cao',
   admin: 'Quản trị viên', teacher: 'Giảng viên', learner: 'Học viên',
 }[code] ?? fallback ?? code);
 

@@ -1,5 +1,6 @@
 import { Injectable, NotFoundException, ForbiddenException, ConflictException } from '@nestjs/common'
 import { PrismaService } from '../../infrastructure/database/prisma.service'
+import { SUPER_ADMIN, hasSuperAdminRole, protectSuperAdmin, requireSuperAdmin } from '../auth/super-admin.policy'
 
 @Injectable()
 export class RolesService {
@@ -28,7 +29,7 @@ export class RolesService {
       where: { id },
       include: {
         rolePermissions: { include: { permission: true } },
-        userRoles: { include: { user: { include: { userDetail: true } } } },
+        userRoles: { include: { user: { select: { id: true, email: true, userDetail: true, userRoles: { include: { role: true } } } } } },
       },
     })
     if (!role) throw new NotFoundException('Không tìm thấy nhóm quyền')
@@ -37,27 +38,34 @@ export class RolesService {
 
   async create(dto: { code: string; name: string; description?: string }) {
     const code = dto.code.trim().toLowerCase()
+    if (code === 'super_admin') throw new ForbiddenException('SUPER_ADMIN là vai trò hệ thống được bảo vệ')
     const exists = await this.prisma.role.findUnique({ where: { code } })
     if (exists) throw new ConflictException(`Nhóm quyền có mã "${code}" đã tồn tại`)
     return this.prisma.role.create({ data: { code, name: dto.name.trim(), description: dto.description?.trim(), isSystem: false } })
   }
 
-  async update(id: string, dto: { name?: string; description?: string; isActive?: boolean }) {
+  async update(id: string, dto: { name?: string; description?: string; isActive?: boolean }, actorId?: string) {
     const role = await this.findOne(id)
+    if (role.code === SUPER_ADMIN) {
+      await requireSuperAdmin(this.prisma, actorId)
+      if (dto.isActive === false) throw new ForbiddenException('Không thể vô hiệu hóa vai trò Super Admin')
+    }
     if (role.code === 'admin' && dto.isActive === false) throw new ForbiddenException('Không thể vô hiệu hóa vai trò quản trị viên')
     return this.prisma.role.update({ where: { id: role.id }, data: dto })
   }
 
-  async delete(id: string) {
+  async delete(id: string, actorId?: string) {
     const role = await this.findOne(id)
+    if (role.code === SUPER_ADMIN) throw new ForbiddenException('Không thể xóa vai trò Super Admin')
     if (role.isSystem) throw new ForbiddenException('Không thể xóa nhóm quyền mặc định của hệ thống')
     await this.prisma.rolePermission.deleteMany({ where: { roleId: id } })
     await this.prisma.userRole.deleteMany({ where: { roleId: id } })
     await this.prisma.role.delete({ where: { id } })
   }
 
-  async assignPermission(roleId: string, permissionId: string) {
+  async assignPermission(roleId: string, permissionId: string, actorId?: string) {
     const role = await this.findOne(roleId)
+    if (role.code === SUPER_ADMIN) await requireSuperAdmin(this.prisma, actorId)
     const permission = await this.prisma.permission.findUnique({ where: { id: permissionId } })
     if (!permission) throw new NotFoundException('Không tìm thấy quyền')
     await this.prisma.rolePermission.upsert({
@@ -67,13 +75,15 @@ export class RolesService {
     })
   }
 
-  async revokePermission(roleId: string, permissionId: string) {
-    await this.findOne(roleId)
+  async revokePermission(roleId: string, permissionId: string, actorId?: string) {
+    const role = await this.findOne(roleId)
+    if (role.code === SUPER_ADMIN) await requireSuperAdmin(this.prisma, actorId)
     await this.prisma.rolePermission.deleteMany({ where: { roleId, permissionId } })
   }
 
-  async replacePermissions(roleId: string, permissionIds: string[]) {
-    await this.findOne(roleId)
+  async replacePermissions(roleId: string, permissionIds: string[], actorId?: string) {
+    const role = await this.findOne(roleId)
+    if (role.code === SUPER_ADMIN) await requireSuperAdmin(this.prisma, actorId)
     const uniqueIds = [...new Set(permissionIds)]
     const existingCount = uniqueIds.length
       ? await this.prisma.permission.count({ where: { id: { in: uniqueIds } } })
@@ -93,10 +103,16 @@ export class RolesService {
   }
 
   async assignRoleToUser(dto: { userId: string; roleId: string; expiresAt?: string; grantedById?: string }) {
-    const user = await this.prisma.user.findUnique({ where: { id: dto.userId } })
+    const user = await this.prisma.user.findUnique({ where: { id: dto.userId }, include: { userRoles: { include: { role: true } } } })
     if (!user) throw new NotFoundException('Không tìm thấy người dùng')
+    await protectSuperAdmin(this.prisma, user, dto.grantedById)
     const role = await this.findOne(dto.roleId)
-    if ((role.code !== 'admin' || dto.expiresAt) && await this.prisma.userRole.count({ where: { userId: dto.userId, role: { code: 'admin' } } })) {
+    if (role.code === SUPER_ADMIN) {
+      await requireSuperAdmin(this.prisma, dto.grantedById)
+      if (dto.expiresAt) throw new ForbiddenException('Vai trò Super Admin không được có thời hạn')
+      if (user.status !== 'active' || user.deletedAt) throw new ForbiddenException('Chỉ cấp Super Admin cho tài khoản đang hoạt động')
+    }
+    if ((!(role.code === 'admin' || role.code === SUPER_ADMIN) || dto.expiresAt) && await this.prisma.userRole.count({ where: { userId: dto.userId, role: { code: 'admin' } } })) {
       throw new ForbiddenException('Cần gỡ vai trò quản trị viên bằng chức năng phân quyền trước khi đổi vai trò')
     }
     const coreRoleCodes = ['admin', 'teacher', 'learner']
@@ -109,6 +125,16 @@ export class RolesService {
     if (role.code === 'learner' && !defaultLevel) throw new ConflictException('Hệ thống chưa cấu hình cấp độ mặc định')
 
     await this.prisma.$transaction(async (tx) => {
+      const current = await tx.user.findUnique({ where: { id: dto.userId }, include: { userRoles: { include: { role: true } } } })
+      await protectSuperAdmin(tx, current, dto.grantedById)
+      if (role.code === SUPER_ADMIN) {
+        await requireSuperAdmin(tx, dto.grantedById)
+        if (!current || current.status !== 'active' || current.deletedAt) throw new ForbiddenException('Chỉ cấp Super Admin cho tài khoản đang hoạt động')
+        const admin = await tx.role.findUnique({ where: { code: 'admin' } })
+        if (!admin) throw new ConflictException('Hệ thống chưa cấu hình vai trò admin')
+        await tx.userRole.upsert({ where: { userId_roleId: { userId: dto.userId, roleId: admin.id } }, update: { expiresAt: null }, create: { userId: dto.userId, roleId: admin.id, grantedById: dto.grantedById } })
+      }
+      if (hasSuperAdminRole(current) && (role.code === 'teacher' || role.code === 'learner' || (role.code === 'admin' && dto.expiresAt))) throw new ForbiddenException('Không thể hạ quyền hoặc giới hạn vai trò của Super Admin')
       if (coreRoleCodes.includes(role.code)) {
         if (role.code !== 'admin' && await tx.userRole.count({ where: { userId: dto.userId, role: { code: 'admin' } } })) throw new ForbiddenException('Không thể tự động thay thế vai trò quản trị viên')
         const otherCoreRoles = await tx.role.findMany({
@@ -146,6 +172,14 @@ export class RolesService {
     if (userId === actorId) throw new ForbiddenException('Không thể tự gỡ vai trò của chính mình')
     const role = await this.findOne(roleId)
     await this.prisma.$transaction(async (tx) => {
+      const target = await tx.user.findUnique({ where: { id: userId }, include: { userRoles: { include: { role: true } } } })
+      await protectSuperAdmin(tx, target, actorId)
+      if (role.code === SUPER_ADMIN) {
+        await requireSuperAdmin(tx, actorId)
+        const remaining = await tx.userRole.count({ where: { roleId, userId: { not: userId }, role: { isActive: true }, user: { status: 'active', deletedAt: null }, OR: [{ expiresAt: null }, { expiresAt: { gt: new Date() } }] } })
+        if (!remaining) throw new ForbiddenException('Không thể gỡ Super Admin hoạt động cuối cùng')
+      }
+      if (role.code === 'admin' && hasSuperAdminRole(target)) throw new ForbiddenException('Không thể gỡ vai trò admin nền tảng của Super Admin')
       if (role.code === 'admin') {
         const remaining = await tx.userRole.count({ where: { roleId, userId: { not: userId }, user: { status: 'active', deletedAt: null }, OR: [{ expiresAt: null }, { expiresAt: { gt: new Date() } }] } })
         if (!remaining) throw new ForbiddenException('Không thể gỡ quản trị viên hoạt động cuối cùng')
@@ -167,7 +201,8 @@ export class RolesService {
     return this.prisma.permission.create({ data: dto })
   }
 
-  async updatePermission(id: string, dto: { code?: string; name?: string; resource?: string; action?: string; description?: string }) {
+  async updatePermission(id: string, dto: { code?: string; name?: string; resource?: string; action?: string; description?: string }, actorId?: string) {
+    await requireSuperAdmin(this.prisma, actorId)
     const permission = await this.prisma.permission.findUnique({ where: { id } })
     if (!permission) throw new NotFoundException('Không tìm thấy quyền')
     if (dto.code && dto.code !== permission.code) {
@@ -177,7 +212,8 @@ export class RolesService {
     return this.prisma.permission.update({ where: { id }, data: dto })
   }
 
-  async deletePermission(id: string) {
+  async deletePermission(id: string, actorId?: string) {
+    await requireSuperAdmin(this.prisma, actorId)
     const permission = await this.prisma.permission.findUnique({ where: { id } })
     if (!permission) throw new NotFoundException('Không tìm thấy quyền')
     await this.prisma.permission.delete({ where: { id } })
@@ -190,7 +226,7 @@ export class RolesService {
     const [userRoles, total] = await Promise.all([
       this.prisma.userRole.findMany({
         where: { roleId },
-        include: { user: { include: { userDetail: true } } },
+        include: { user: { select: { email: true, userDetail: true, userRoles: { include: { role: true } } } } },
         skip, take: limit,
       }),
       this.prisma.userRole.count({ where: { roleId } }),
@@ -199,6 +235,7 @@ export class RolesService {
       data: userRoles.map((ur) => ({
         userId: ur.userId, email: ur.user.email,
         displayName: ur.user.userDetail?.displayName,
+        isSuperAdmin: hasSuperAdminRole(ur.user),
         grantedAt: ur.grantedAt, expiresAt: ur.expiresAt,
       })),
       meta: { total, page, limit, totalPages: Math.ceil(total / limit) },

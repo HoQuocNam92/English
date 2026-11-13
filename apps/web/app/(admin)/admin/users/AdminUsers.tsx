@@ -481,7 +481,7 @@ export default function AdminUsers({ createOnly = false }: { createOnly?: boolea
                     <td className="truncate px-5 py-4 text-sm text-on-surface-variant" title={user.email}>{user.email}</td>
                     <td className="px-5 py-4">
                       <div className="flex flex-wrap gap-1">
-                        {user.roles?.map(r => <Badge key={r} tone="primary">{{ learner: 'Người học', teacher: 'Giảng viên', admin: 'Quản trị viên' }[r] ?? r}</Badge>) ?? <span className="text-on-surface-variant text-xs">—</span>}
+                        {user.roles?.map(r => <Badge key={r} tone="primary">{{ SUPER_ADMIN: 'Quản trị viên cấp cao', learner: 'Người học', teacher: 'Giảng viên', admin: 'Quản trị viên' }[r] ?? r}</Badge>) ?? <span className="text-on-surface-variant text-xs">—</span>}
                       </div>
                     </td>
                     <td className="px-5 py-4">
@@ -494,10 +494,10 @@ export default function AdminUsers({ createOnly = false }: { createOnly?: boolea
                     </td>
                     <td className="px-5 py-4 text-right">
                         <ActionGroup>
-                          {user.deletedAt && <button type="button" disabled={!user.canRestore || actionLoading === user.id} onClick={() => void handleRestore(user)} className="min-h-11 rounded-xl border border-primary/30 px-3 py-2 text-sm font-bold text-primary disabled:opacity-70">Khôi phục</button>}
-                          {!user.deletedAt && <ActionButton action="edit" label="Chỉnh sửa người dùng" onClick={() => setEditingUser(user)} />}
-                          {session && user.id !== session.user.id && !user.deletedAt && !user.roles?.includes('admin') && <ActionButton action={user.status === 'active' ? 'lock' : 'unlock'} loading={actionLoading === user.id} onClick={() => handleToggleStatus(user)} />}
-                          {session && user.id !== session.user.id && !user.roles?.includes('admin') && <ActionButton action="delete" disabled={actionLoading === user.id} onClick={() => handleDelete(user)} />}
+                          {user.deletedAt && <button type="button" disabled={!user.canRestore || actionLoading === user.id || (user.roles?.includes('SUPER_ADMIN') && !session?.user.roles?.includes('SUPER_ADMIN'))} onClick={() => void handleRestore(user)} className="min-h-11 rounded-xl border border-primary/30 px-3 py-2 text-sm font-bold text-primary disabled:opacity-70">Khôi phục</button>}
+                          {!user.deletedAt && (!user.roles?.includes('SUPER_ADMIN') || session?.user.roles?.includes('SUPER_ADMIN')) && <ActionButton action="edit" label="Chỉnh sửa người dùng" onClick={() => setEditingUser(user)} />}
+                          {session && user.id !== session.user.id && !user.deletedAt && !user.roles?.some(role => role === 'admin' || role === 'SUPER_ADMIN') && <ActionButton action={user.status === 'active' ? 'lock' : 'unlock'} loading={actionLoading === user.id} onClick={() => handleToggleStatus(user)} />}
+                          {session && user.id !== session.user.id && !user.roles?.some(role => role === 'admin' || role === 'SUPER_ADMIN') && <ActionButton action="delete" disabled={actionLoading === user.id} onClick={() => handleDelete(user)} />}
                         </ActionGroup>
                     </td>
                   </tr>

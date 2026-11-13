@@ -60,10 +60,10 @@ export class RolesController {
   createPermission(@Body() dto: CreatePermissionDto) { return this.rolesService.createPermission(dto) }
 
   @Patch('permissions/:permissionId') @RequirePermissions('roles:update') @ApiOperation({ summary: 'Update permission' })
-  updatePermission(@Param('permissionId') permissionId: string, @Body() dto: UpdatePermissionDto) { return this.rolesService.updatePermission(permissionId, dto) }
+  updatePermission(@Param('permissionId') permissionId: string, @Body() dto: UpdatePermissionDto, @CurrentUser() actor: JwtPayload) { return this.rolesService.updatePermission(permissionId, dto, actor.sub) }
 
   @Delete('permissions/:permissionId') @RequirePermissions('roles:delete') @HttpCode(HttpStatus.NO_CONTENT) @ApiOperation({ summary: 'Delete permission' })
-  deletePermission(@Param('permissionId') permissionId: string) { return this.rolesService.deletePermission(permissionId) }
+  deletePermission(@Param('permissionId') permissionId: string, @CurrentUser() actor: JwtPayload) { return this.rolesService.deletePermission(permissionId, actor.sub) }
 
   @Get(':id') @RequirePermissions('roles:read') @ApiOperation({ summary: 'Get role detail' })
   findOne(@Param('id') id: string) { return this.rolesService.findOne(id) }
@@ -77,19 +77,19 @@ export class RolesController {
   create(@Body() dto: CreateRoleDto) { return this.rolesService.create(dto) }
 
   @Patch(':id') @RequirePermissions('roles:update') @ApiOperation({ summary: 'Update role' })
-  update(@Param('id') id: string, @Body() dto: UpdateRoleDto) { return this.rolesService.update(id, dto) }
+  update(@Param('id') id: string, @Body() dto: UpdateRoleDto, @CurrentUser() actor: JwtPayload) { return this.rolesService.update(id, dto, actor.sub) }
 
   @Delete(':id') @RequirePermissions('roles:delete') @HttpCode(HttpStatus.NO_CONTENT) @ApiOperation({ summary: 'Delete custom role' })
-  delete(@Param('id') id: string) { return this.rolesService.delete(id) }
+  delete(@Param('id') id: string, @CurrentUser() actor: JwtPayload) { return this.rolesService.delete(id, actor.sub) }
 
   @Post(':id/permissions') @RequirePermissions('roles:update') @HttpCode(HttpStatus.NO_CONTENT) @ApiOperation({ summary: 'Assign permission to role' })
-  assignPermission(@Param('id') id: string, @Body() dto: AssignPermissionDto) { return this.rolesService.assignPermission(id, dto.permissionId) }
+  assignPermission(@Param('id') id: string, @Body() dto: AssignPermissionDto, @CurrentUser() actor: JwtPayload) { return this.rolesService.assignPermission(id, dto.permissionId, actor.sub) }
 
   @Patch(':id/permissions') @RequirePermissions('roles:update') @ApiOperation({ summary: 'Replace all permissions of a role' })
-  replacePermissions(@Param('id') id: string, @Body() dto: ReplacePermissionsDto) { return this.rolesService.replacePermissions(id, dto.permissionIds) }
+  replacePermissions(@Param('id') id: string, @Body() dto: ReplacePermissionsDto, @CurrentUser() actor: JwtPayload) { return this.rolesService.replacePermissions(id, dto.permissionIds, actor.sub) }
 
   @Delete(':id/permissions/:permId') @RequirePermissions('roles:update') @HttpCode(HttpStatus.NO_CONTENT) @ApiOperation({ summary: 'Revoke permission from role' })
-  revokePermission(@Param('id') id: string, @Param('permId') permId: string) { return this.rolesService.revokePermission(id, permId) }
+  revokePermission(@Param('id') id: string, @Param('permId') permId: string, @CurrentUser() actor: JwtPayload) { return this.rolesService.revokePermission(id, permId, actor.sub) }
 
   @Post(':id/users') @RequirePermissions('roles:assign') @HttpCode(HttpStatus.NO_CONTENT) @ApiOperation({ summary: 'Assign role to user' })
   assignUser(@Param('id') id: string, @Body() dto: AssignRoleDto, @CurrentUser() actor: JwtPayload) {

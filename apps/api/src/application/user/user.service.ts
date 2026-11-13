@@ -3,6 +3,7 @@ import { BadRequestException, Injectable, NotFoundException, ConflictException }
 import { PrismaService } from '../../infrastructure/database/prisma.service'
 import * as bcrypt from 'bcrypt'
 import { normalizePhone, identityConflict } from './identity-fields'
+import { SUPER_ADMIN, protectSuperAdmin } from '../auth/super-admin.policy'
 
 @Injectable()
 export class UsersService {
@@ -69,6 +70,7 @@ export class UsersService {
     const phoneNumber = normalizePhone(dto.phoneNumber)
     const passwordHash = await bcrypt.hash(dto.password, 12)
     const roleToAssign = dto.roleCode || dto.role || 'learner'
+    if (String(roleToAssign).toUpperCase() === SUPER_ADMIN) throw new BadRequestException('Cấp Super Admin qua chức năng phân quyền được bảo vệ')
     const role = await this.prisma.role.findUnique({ where: { code: roleToAssign } })
     if (!role) throw new BadRequestException('Vai trò không tồn tại')
     const defaultLevel = roleToAssign === 'learner'
@@ -105,8 +107,8 @@ export class UsersService {
     }))
   }
 
-  async update(id: string, dto: any) {
-    await this.findOne(id)
+  async update(id: string, dto: any, actorId?: string) {
+    await protectSuperAdmin(this.prisma, await this.findOne(id), actorId)
     if (dto.status !== undefined) throw new BadRequestException('Dùng chức năng khóa hoặc mở khóa riêng để thay đổi trạng thái tài khoản.')
     const phoneNumber = dto.phoneNumber === undefined ? undefined : normalizePhone(dto.phoneNumber)
     if (phoneNumber) {
@@ -153,6 +155,7 @@ export class UsersService {
     if (clean.length < 3 || clean.length > 500) throw new BadRequestException('Nhập lý do khóa từ 3 đến 500 ký tự.')
     if (id === actorId) throw new BadRequestException('Không thể khóa tài khoản đang đăng nhập')
     const user = await this.findOne(id)
+    await protectSuperAdmin(this.prisma, user, actorId)
     if (user.roles.includes('admin')) throw new BadRequestException('Không thể khóa tài khoản quản trị viên')
     const now = new Date()
     await this.prisma.$transaction([
@@ -161,15 +164,16 @@ export class UsersService {
     ])
   }
 
-  async activate(id: string) {
-    await this.findOne(id)
+  async activate(id: string, actorId?: string) {
+    await protectSuperAdmin(this.prisma, await this.findOne(id), actorId)
     await this.prisma.user.update({ where: { id, deletedAt: null }, data: { status: 'active', suspensionReason: null } })
   }
 
-  async restore(id: string) {
+  async restore(id: string, actorId?: string) {
     try {
       return await this.prisma.$transaction(async tx => {
-        const user = await tx.user.findUnique({ where: { id } })
+        const user = await tx.user.findUnique({ where: { id }, include: { userRoles: { include: { role: true } } } })
+        await protectSuperAdmin(tx, user, actorId)
         if (!user?.deletedAt) throw new BadRequestException('Tài khoản không ở trạng thái đã xóa.')
         if (user.email.endsWith('@deleted.invalid')) throw new ConflictException('Email cũ đã được giải phóng để đăng ký tài khoản mới. Không thể khôi phục danh tính cũ.')
         const restored = await tx.user.updateMany({ where: { id, deletedAt: user.deletedAt, email: user.email, status: 'inactive' }, data: { status: 'active', deletedAt: null, suspensionReason: null } })
@@ -186,6 +190,7 @@ export class UsersService {
   async softDelete(id: string, actorId: string) {
     if (id === actorId) throw new BadRequestException('Không thể xóa tài khoản đang đăng nhập')
     const user = await this.findOne(id)
+    await protectSuperAdmin(this.prisma, user, actorId)
     if (user.roles.includes('admin')) throw new BadRequestException('Không thể xóa tài khoản quản trị viên')
     const now = new Date()
     await this.prisma.$transaction([
