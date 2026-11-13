@@ -1,6 +1,6 @@
 'use client';
 import { RequiredMark } from '@/shared/ui/RequiredMark';
-import { AppIcon, IconText } from '@/shared/ui/AppIcon';
+import { AppIcon } from '@/shared/ui/AppIcon';
 
 import { BarChart3, Network, Cloud, Shield, Database, Code2, RefreshCw, GraduationCap, TrendingUp, Award, Diamond, Languages, Route, CircleCheck, type LucideIcon } from 'lucide-react';
 import { LevelBadge } from '@/shared/ui/LevelBadge';
@@ -61,7 +61,7 @@ export default function OnboardingPage() {
     ? goal !== null
     : step === 2
       ? goal === 'certification'
-        ? Boolean(targetCertificateCode) && domainCodes.length > 0
+        ? Boolean(targetCertificateCode)
         : goal === 'both'
           ? Boolean(targetCertificateCode) && domainCodes.length > 0
           : domainCodes.length > 0
@@ -86,8 +86,8 @@ export default function OnboardingPage() {
       await apiClient.post('/learner-profiles/me/complete-onboarding', {
         learningGoal: goal,
         levelCode: level,
-        domainCodes,
-        certificateCodes: goal === 'certification' || goal === 'both' ? [targetCertificateCode] : [],
+        domainCodes: goal === 'vocabulary' ? domainCodes : [],
+        certificateCodes: goal === 'certification' ? [targetCertificateCode] : [],
         weeklyStudyTargetMinutes: dailyStudyTargetMinutes * 7,
         learningPathMode: 'smart',
         dailyVocabularyTarget,
@@ -110,7 +110,6 @@ export default function OnboardingPage() {
       <div className="mx-auto flex w-full max-w-[820px] flex-col">
         <div className="mb-6 flex items-center justify-between">
           <div><p className="text-xs font-bold uppercase tracking-wider text-primary">Thiết lập lộ trình</p><p className="mt-1 text-sm text-on-surface-variant">Bước {step} / {totalSteps}</p></div>
-          <span className="rounded-full bg-primary/10 px-3 py-1 text-xs font-bold text-primary">Tiến trình mới: 0%</span>
         </div>
         <div className="mb-10 flex gap-2">{Array.from({ length: totalSteps }).map((_, index) => <div key={index} className={`h-2 flex-1 rounded-full ${index + 1 <= step ? 'bg-primary' : 'bg-surface-container-highest'}`} />)}</div>
 
@@ -119,9 +118,9 @@ export default function OnboardingPage() {
         {step === 2 && <section>
           <Header title={goal === 'vocabulary' ? 'Chọn chuyên ngành CNTT' : goal === 'certification' ? 'Chọn chứng chỉ mục tiêu' : 'Chọn nội dung và chứng chỉ'} subtitle="Hệ thống sẽ dùng lựa chọn này để cá nhân hóa từ vựng, bài học và câu hỏi luyện tập." />
           {loadingOptions ? <p className="py-12 text-center text-sm text-on-surface-variant">Đang tải dữ liệu...</p> : <div className="space-y-7">
-            <div><h2 className="mb-3 text-sm font-bold text-on-surface">Chuyên ngành IT<RequiredMark /></h2><div className="grid gap-3 md:grid-cols-2">{domains.map(item => <ChoiceCard key={item.id} selected={domainCodes.includes(item.code)} icon={item.icon || 'code'} title={item.name} description={item.description} onClick={() => toggleDomain(item.code)} />)}</div></div>
+            {(goal === 'vocabulary' || goal === 'both') && <div><h2 className="mb-3 text-sm font-bold text-on-surface">Chuyên ngành IT<RequiredMark /></h2><div className="grid gap-3 md:grid-cols-2">{domains.map(item => <ChoiceCard key={item.id} selected={domainCodes.includes(item.code)} icon={item.icon || 'code'} title={item.name} description={item.description} onClick={() => toggleDomain(item.code)} />)}</div></div>}
             {(goal === 'certification' || goal === 'both') && <div><h2 className="mb-3 text-sm font-bold text-on-surface">Chứng chỉ mục tiêu<RequiredMark /></h2><div className="grid gap-3 md:grid-cols-2">{certificates.map(item => <ChoiceCard key={item.id} selected={targetCertificateCode === item.code} icon="workspace_premium" title={item.name} description={`${item.provider} · ${item.code}`} onClick={() => setTargetCertificateCode(item.code)} />)}</div></div>}
-            {(domains.length === 0 || (goal !== 'vocabulary' && certificates.length === 0)) && <p className="rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-800">Chưa có đủ nội dung đang hoạt động để lựa chọn.</p>}
+            {((goal !== 'certification' && domains.length === 0) || (goal !== 'vocabulary' && certificates.length === 0)) && <p className="rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-800">Chưa có đủ nội dung đang hoạt động để lựa chọn.</p>}
           </div>}
         </section>}
 
@@ -131,12 +130,12 @@ export default function OnboardingPage() {
           <p className="mt-5 text-center text-sm text-on-surface-variant">Bạn có thể thay đổi trình độ sau trong hồ sơ.</p>
         </section>}
 
-        {step === 4 && <section><Header title="Thiết lập kế hoạch học" subtitle="Mỗi ngày một lượng nhỏ, có ôn tập ngắt quãng và tổng kết vào cuối tuần." /><div className="rounded-2xl border border-outline-variant bg-white p-5"><div className="mb-5 rounded-xl bg-primary/5 p-4"><p className="text-sm font-bold text-primary">Nhịp học gợi ý mỗi ngày</p><p className="mt-1 text-sm text-on-surface-variant"><IconText>{"10 từ mới → 1 bài học ngắn → 5 câu luyện tập"}</IconText></p><p className="mt-2 text-xs text-on-surface-variant">Từ ngày 2, học xen kẽ với ôn từ đã học; ngày 7 ôn tập và làm bài kiểm tra cuối tuần.</p></div><div className="grid gap-4 sm:grid-cols-3"><NumberField label="Từ vựng/ngày" value={dailyVocabularyTarget} min={1} max={200} onChange={setDailyVocabularyTarget} /><NumberField label="Bài kiểm tra/tuần" value={weeklyExamTarget} min={1} max={50} onChange={setWeeklyExamTarget} /><NumberField label="Phút học/ngày" value={dailyStudyTargetMinutes} min={5} max={1440} onChange={setDailyStudyTargetMinutes} /></div><div className="mt-5 flex flex-wrap items-center gap-3 border-t border-border-subtle pt-5"><label className="flex items-center gap-2 text-sm font-semibold text-on-surface"><input type="checkbox" checked={reminderEnabled} onChange={event => setReminderEnabled(event.target.checked)} />Nhắc học mỗi ngày</label><input type="time" value={reminderTime} disabled={!reminderEnabled} onChange={event => setReminderTime(event.target.value)} className="rounded-lg border border-outline-variant px-3 py-2 text-sm disabled:opacity-65" /></div></div></section>}
+        {step === 4 && <section><Header title="Thiết lập kế hoạch học" subtitle="Mỗi ngày một lượng nhỏ, có ôn tập ngắt quãng và tổng kết vào cuối tuần." /><div className="rounded-2xl border border-outline-variant bg-white p-5"><div className="grid gap-4 sm:grid-cols-3"><NumberField label="Từ vựng/ngày" value={dailyVocabularyTarget} min={1} max={200} onChange={setDailyVocabularyTarget} /><NumberField label="Bài kiểm tra/tuần" value={weeklyExamTarget} min={1} max={50} onChange={setWeeklyExamTarget} /><NumberField label="Phút học/ngày" value={dailyStudyTargetMinutes} min={5} max={1440} onChange={setDailyStudyTargetMinutes} /></div><div className="mt-5 flex flex-wrap items-center gap-3 border-t border-border-subtle pt-5"><label className="flex items-center gap-2 text-sm font-semibold text-on-surface"><input type="checkbox" checked={reminderEnabled} onChange={event => setReminderEnabled(event.target.checked)} />Nhắc học mỗi ngày</label><input type="time" value={reminderTime} disabled={!reminderEnabled} onChange={event => setReminderTime(event.target.value)} className="rounded-lg border border-outline-variant px-3 py-2 text-sm disabled:opacity-65" /></div></div></section>}
 
         {errorMessage && <p className="mt-6 rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-700">{errorMessage}</p>}
         <div className="mt-10 flex items-center justify-between border-t border-border-subtle pt-6">
-          <button type="button" disabled={step === 1 || isSubmitting} onClick={() => setStep(current => Math.max(1, current - 1))} className="rounded-lg border border-outline-variant px-5 py-2.5 text-sm font-semibold text-on-surface disabled:opacity-65">Quay lại</button>
-          <button type="button" disabled={!canContinue || isSubmitting || loadingOptions} onClick={step === totalSteps ? handleSubmit : () => { setErrorMessage(''); setStep(current => current + 1); }} className="flex items-center gap-2 rounded-lg bg-primary px-7 py-2.5 text-sm font-semibold text-white disabled:cursor-not-allowed disabled:opacity-65">{isSubmitting ? 'Đang tạo lộ trình...' : step === totalSteps ? 'Tạo lộ trình' : 'Tiếp tục'}{!isSubmitting && <AppIcon className=" text-[19px]">{step === totalSteps ? 'check' : 'arrow_forward'}</AppIcon>}</button>
+          <button type="button" disabled={step === 1 || isSubmitting} onClick={() => setStep(current => goal === 'both' && current === 3 ? 1 : Math.max(1, current - 1))} className="rounded-lg border border-outline-variant px-5 py-2.5 text-sm font-semibold text-on-surface disabled:opacity-65">Quay lại</button>
+          <button type="button" disabled={!canContinue || isSubmitting || loadingOptions} onClick={step === totalSteps ? handleSubmit : () => { setErrorMessage(''); setStep(current => goal === 'both' && current === 1 ? 3 : current + 1); }} className="flex items-center gap-2 rounded-lg bg-primary px-7 py-2.5 text-sm font-semibold text-white disabled:cursor-not-allowed disabled:opacity-65">{isSubmitting ? 'Đang tạo lộ trình...' : step === totalSteps ? 'Tạo lộ trình' : 'Tiếp tục'}{!isSubmitting && <AppIcon className=" text-[19px]">{step === totalSteps ? 'check' : 'arrow_forward'}</AppIcon>}</button>
         </div>
       </div>
     </main>

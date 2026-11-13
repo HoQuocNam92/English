@@ -40,6 +40,27 @@ test('onboarding cannot silently substitute Beginner for a missing level', async
   await assert.rejects(service.completeOnboarding('u', { learningGoal: 'vocabulary', domainCodes: ['CLOUD'] } as any), /tự chọn trình độ/)
 })
 
+test('both can complete onboarding with an explicit level and no content selection', async () => {
+  const profile: any = { id: 'p', userId: 'u' }
+  const links = { deleteMany: async () => ({ count: 0 }) }
+  const prisma: any = {
+    user: { findFirst: async () => ({ id: 'u' }) },
+    level: { findUnique: async () => ({ id: 'level', isActive: true }) },
+    learnerProfile: {
+      upsert: async ({ update }: any) => Object.assign(profile, update),
+      findUnique: async () => profile,
+    },
+    learnerProfileDomain: links,
+    learnerCertificateGoal: links,
+    learnerProfileCareerGoal: links,
+  }
+  const service = new LearnerProfilesService(prisma)
+  await service.completeOnboarding('u', { learningGoal: 'both', levelCode: 'beginner', domainCodes: [], certificateCodes: [] })
+  assert.equal(profile.onboardingCompleted, true)
+  assert.equal(profile.learningGoal, 'both')
+  assert.equal(profile.levelId, 'level')
+})
+
 test('career preference changes ranking without inventing matches for unknown or retired careers', () => {
   const focus = careerFocus([{ careerGoal: { code: 'SECURITY_ENGINEER', name: 'Security Engineer' } }])
   const selected = ['CLOUD', 'CYBERSEC', 'SOFTWARE_ENG']

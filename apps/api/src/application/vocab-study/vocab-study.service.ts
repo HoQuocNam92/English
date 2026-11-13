@@ -2,6 +2,7 @@ import { quizMeaning } from './quiz-meaning'
 import { BadRequestException, Injectable } from '@nestjs/common'
 import { PrismaService } from '../../infrastructure/database/prisma.service'
 import { careerFocus } from '../recommendation/career-focus'
+import { vietnamPeriods } from '../progress/learning-agenda.service'
 
 @Injectable()
 export class VocabStudyService {
@@ -79,10 +80,9 @@ export class VocabStudyService {
     })
 
     // Phiên mặc định chỉ học từ hoàn toàn mới. Từ đã học được ôn ở phiên SRS riêng.
-    const todayStart = new Date()
-    todayStart.setHours(0, 0, 0, 0)
+    const { today: todayStart, tomorrow } = vietnamPeriods()
     const studiedToday = await this.prisma.vocabularyProgress.count({
-      where: { learnerId, createdAt: { gte: todayStart } },
+      where: { learnerId, lastRating: { not: null }, lastReviewAt: { gte: todayStart, lt: tomorrow } },
     })
     const profile = await this.prisma.learnerProfile.findUnique({
       where: { userId: learnerId }, select: { dailyVocabularyTarget: true },

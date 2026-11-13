@@ -55,6 +55,28 @@ test('recommended study session only selects linked, published, unstudied words'
   assert.deepEqual(query.where.vocabProgress, { none: { learnerId: 'learner', lastRating: { not: null } } })
 })
 
+test('daily session offers ten words then the seven remaining after three rated words', async () => {
+  let studied = 0
+  const service = new VocabStudyService({
+    vocabulary: { findMany: async () => Array.from({ length: 20 }, (_, index) => ({
+      id: String(index), term: `Word ${index}`, partsOfSpeech: [], examples: [], vocabProgress: [],
+    })) },
+    vocabularyProgress: { count: async ({ where }: any) => {
+      assert.deepEqual(where.lastRating, { not: null })
+      assert.ok(where.lastReviewAt.gte instanceof Date)
+      assert.ok(where.lastReviewAt.lt instanceof Date)
+      assert.equal(where.createdAt, undefined)
+      return studied
+    } },
+    learnerProfile: { findUnique: async () => ({ dailyVocabularyTarget: 10 }) },
+  } as any)
+  assert.equal((await service.getStudySession('learner', { onlyNew: true })).words.length, 10)
+  studied = 3
+  const remaining = await service.getStudySession('learner', { onlyNew: true })
+  assert.equal(remaining.words.length, 7)
+  assert.equal(remaining.meta.remainingToday, 7)
+})
+
 test('recommendations never fall back to all words when lesson is unavailable', async () => {
   let queried = false
   const service = new VocabStudyService({

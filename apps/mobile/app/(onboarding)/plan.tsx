@@ -40,7 +40,7 @@ export default function OnboardingPlanScreen() {
       }
       const domainCodes: string[] = goal === 'vocabulary' && stored.onboarding_domains ? JSON.parse(stored.onboarding_domains) : [];
       const certificateCode = goal === 'certification' ? stored.onboarding_certificate_code : '';
-      if (!goal || (goal === 'certification' && !certificateCode) || (goal === 'vocabulary' && domainCodes.length === 0)) {
+      if (!['vocabulary', 'certification', 'both'].includes(goal ?? '') || (goal === 'certification' && !certificateCode) || (goal === 'vocabulary' && domainCodes.length === 0)) {
         Alert.alert('Thiếu thông tin', 'Vui lòng quay lại và chọn mục tiêu học tập.');
         return;
       }

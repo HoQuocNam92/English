@@ -33,7 +33,8 @@ export default function OnboardingCertificateScreen() {
       ['onboarding_certificate_code', selected.code],
       ['onboarding_certificate_id', selected.id],
     ]);
-    router.push('/(onboarding)/level' as any);
+    const goal = await AsyncStorage.getItem('onboarding_goal');
+    router.push(goal === 'both' ? '/(onboarding)/it-field' as any : '/(onboarding)/level' as any);
   };
 
   return <View style={styles.container}>

@@ -50,13 +50,13 @@ export class AuthService {
 
   async login(dto: LoginDto) {
     const user = await this.prisma.user.findFirst({ where: { email: { equals: dto.email.trim().toLowerCase(), mode: 'insensitive' } } })
-    if (!user) throw new UnauthorizedException('Không tìm thấy tài khoản với email này')
+    if (!user) throw new UnauthorizedException('Email hoặc mật khẩu không chính xác. Vui lòng kiểm tra và thử lại.')
     if (user.deletedAt) throw new UnauthorizedException(deletedAccountMessage(user.deletedAt))
     if (user.status === 'inactive') throw new UnauthorizedException('Tài khoản đã bị vô hiệu hóa hoặc chưa được kích hoạt')
     if (user.status === 'suspended') throw new UnauthorizedException(suspensionMessage(user))
 
     const valid = await bcrypt.compare(dto.password, user.passwordHash)
-    if (!valid) throw new UnauthorizedException('Mật khẩu không chính xác')
+    if (!valid) throw new UnauthorizedException('Email hoặc mật khẩu không chính xác. Vui lòng kiểm tra và thử lại.')
 
     const full = await this.getUserWithPermissions(user.id)
     return this.generateTokensForUser(full)

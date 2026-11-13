@@ -11,6 +11,8 @@ import { useState, useEffect } from 'react';
 import { useAuth } from '@/features/auth/presentation';
 import { apiClient } from '@/shared/api/api-client';
 import { API_BASE_URL } from '@/shared/config/env';
+import { rememberCompletedOnboarding } from '@/shared/auth/onboarding-cache';
+import { LoadingSpinner } from '@/shared/ui';
 
 export default function LoginPage() {
   const router = useRouter();
@@ -37,7 +39,11 @@ export default function LoginPage() {
     if (!loading && session) {
       setRoutingError('');
       void postLoginDestination({ role: session.user.role, loadProfile: () => apiClient.get<any>('/learner-profiles/me') })
-        .then(destination => { if (active) router.replace(destination); })
+        .then(destination => {
+          if (!active) return;
+          if (destination === '/learn') rememberCompletedOnboarding(session.user.id);
+          router.replace(destination);
+        })
         .catch(() => { if (active) setRoutingError('Chưa kiểm tra được thiết lập lộ trình. Vui lòng thử lại.'); });
     }
     return () => { active = false; };
@@ -60,7 +66,7 @@ export default function LoginPage() {
     );
   }
 
-  if (session) return <main className="flex min-h-screen flex-col items-center justify-center gap-4 p-6"><p role={routingError ? 'alert' : 'status'}>{routingError || 'Đang kiểm tra lộ trình học…'}</p>{routingError && <button onClick={() => setRetryRoute(value => value + 1)} className="rounded-xl bg-primary px-5 py-3 font-semibold text-white">Thử lại</button>}</main>;
+  if (session) return <main className="flex min-h-screen flex-col items-center justify-center gap-4 p-6">{routingError ? <><p role="alert">{routingError}</p><button onClick={() => setRetryRoute(value => value + 1)} className="rounded-xl bg-primary px-5 py-3 font-semibold text-white">Thử lại</button></> : <LoadingSpinner />}</main>;
 
   return (
     <div className="flex min-h-screen flex-col bg-white text-on-surface">

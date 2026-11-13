@@ -84,7 +84,7 @@ export default function LearnerHomePage() {
   const examsLeft = Math.max(0, (targets?.examsPerWeek ?? 0) - (progress?.examsWeek ?? 0));
   const nextTask = guidance.agenda?.tasks?.find((task: any) => task.status === 'todo' && task.href?.startsWith('/learn/'));
   const suggestion = guidance.recommendations?.find((item: any) => item.actionUrl?.startsWith('/learn/') && item.actionUrl !== nextTask?.href);
-  const nextHref = nextTask?.href;
+  const nextHref = wordsLeft > 0 ? studyHref : nextTask?.href;
   const nextReason = guidance.agenda?.aiSummary || nextTask?.reason || suggestion?.reason;
   const goalComplete = configured && wordsLeft === 0 && minutesLeft === 0;
   const heroTitle = !configured ? 'Bắt đầu hành trình học tiếng Anh CNTT'
@@ -107,7 +107,7 @@ export default function LearnerHomePage() {
           <h2 id="continue-heading" className="max-w-xl text-xl font-bold leading-snug sm:text-2xl">{heroTitle}</h2>
           <p className="mt-2 text-xs leading-5 text-white/85">{nextReason || (attempts[0] ? `Gần nhất: ${attempts[0].exam?.title ?? attempts[0].examTitle ?? 'Bài kiểm tra'}` : 'Mỗi ngày một chút, tiến gần hơn đến mục tiêu của bạn.')}</p>
           <div className="mt-4 flex flex-wrap gap-2">
-            <Link href={!configured ? '/onboarding' : nextHref ? nextHref : goalComplete ? '/learn/flashcards' : studyHref} className="inline-flex min-h-11 items-center justify-center gap-2 rounded-lg bg-white px-4 py-2 text-sm font-semibold text-primary hover:bg-white/90">{!configured ? <Settings2 size={15} aria-hidden="true" /> : goalComplete ? <BookOpen size={15} aria-hidden="true" /> : <Play size={15} fill="currentColor" aria-hidden="true" />}{!configured ? 'Thiết lập mục tiêu' : nextTask ? nextTask.action || 'Học tiếp' : goalComplete ? 'Khám phá từ vựng' : 'Học tiếp'}</Link>
+            <Link href={!configured ? '/onboarding' : nextHref ? nextHref : goalComplete ? '/learn/flashcards' : studyHref} className="inline-flex min-h-11 items-center justify-center gap-2 rounded-lg bg-white px-4 py-2 text-sm font-semibold text-primary hover:bg-white/90">{!configured ? <Settings2 size={15} aria-hidden="true" /> : goalComplete ? <BookOpen size={15} aria-hidden="true" /> : <Play size={15} fill="currentColor" aria-hidden="true" />}{!configured ? 'Thiết lập mục tiêu' : wordsLeft > 0 ? 'Học ' + wordsLeft + ' từ còn lại' : nextTask ? nextTask.action || 'Học tiếp' : goalComplete ? 'Khám phá từ vựng' : 'Học tiếp'}</Link>
             {configured && (suggestion || wordsLeft > 0) && <Link href={suggestion?.actionUrl || studyHref} className="inline-flex min-h-11 items-center justify-center gap-2 rounded-lg border border-white/40 px-4 py-2 text-sm font-semibold hover:bg-white/10"><BookOpen size={15} aria-hidden="true" /><span className="max-w-[30ch] truncate">{suggestion ? `Gợi ý: ${suggestion.title}` : `Học ${wordsLeft} từ còn lại`}</span></Link>}
           </div>
         </section>

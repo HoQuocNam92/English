@@ -139,8 +139,8 @@ export class LearnerProfilesService {
 
   private assertCompleteGoal(goal: unknown, domainCount: number, certificateCount: number) {
     if (!['vocabulary', 'certification', 'both'].includes(String(goal))) throw new BadRequestException('Vui lòng chọn mục tiêu học tập')
-    if ((goal === 'vocabulary' || goal === 'both') && domainCount === 0) throw new BadRequestException('Vui lòng chọn ít nhất một chuyên ngành')
-    if ((goal === 'certification' || goal === 'both') && certificateCount === 0) throw new BadRequestException('Vui lòng chọn ít nhất một chứng chỉ mục tiêu')
+    if (goal === 'vocabulary' && domainCount === 0) throw new BadRequestException('Vui lòng chọn ít nhất một chuyên ngành')
+    if (goal === 'certification' && certificateCount === 0) throw new BadRequestException('Vui lòng chọn ít nhất một chứng chỉ mục tiêu')
   }
 
   async updateGoals(userId: string, dto: UpdateLearnerGoalsDto) {
@@ -234,7 +234,7 @@ export class LearnerProfilesService {
     const startYear = new Date(now.getFullYear(), 0, 1)
 
     const [vocabularyToday, examsWeek, examsMonth, examsYear] = await Promise.all([
-      this.prisma.vocabularyProgress.count({ where: { learnerId: userId, updatedAt: { gte: startToday }, status: { in: ['learning', 'mastered'] } } }),
+      this.prisma.vocabularyProgress.count({ where: { learnerId: userId, lastRating: { not: null }, lastReviewAt: { gte: vietnamPeriods(now).today, lt: vietnamPeriods(now).tomorrow } } }),
       this.prisma.examAttempt.count({ where: { learnerId: userId, submittedAt: { gte: startWeek } } }),
       this.prisma.examAttempt.count({ where: { learnerId: userId, submittedAt: { gte: startMonth } } }),
       this.prisma.examAttempt.count({ where: { learnerId: userId, submittedAt: { gte: startYear } } }),
