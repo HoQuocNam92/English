@@ -11,7 +11,7 @@ import { NotificationBell } from '../../src/shared/notifications/NotificationBel
 import { homeSummary } from '../../src/shared/utils/home-summary';
 import { selectedCertificates } from '../../../../packages/shared-kernel/src/selected-certificates';
 
-type HomeData = { profile: any; journey: any; attempts: any[]; reviewWords: any[]; reviewUnavailable: boolean; attemptsUnavailable: boolean; certificates: any[]; exams: any[]; examsUnavailable: boolean };
+type HomeData = { profile: any; journey: any; attempts: any[]; reviewWords: any[]; reviewUnavailable: boolean; attemptsUnavailable: boolean; certificates: any[]; exams: any[]; examsUnavailable: boolean; examsLoading: boolean };
 const list = (response: any): any[] => Array.isArray(response?.data) ? response.data : Array.isArray(response) ? response : [];
 export default function MobileHomeScreen() {
   const router = useRouter(); const insets = useSafeAreaInsets(); const { width } = useWindowDimensions();
@@ -27,6 +27,8 @@ export default function MobileHomeScreen() {
     if (failure?.status === 'rejected') { setError(failure.reason?.message || 'Không thể tải trang chủ.'); return; }
     const get = (index: number) => results[index].status === 'fulfilled' ? results[index].value : null;
     const profile = get(0);
+    const initialData: HomeData = { profile, journey: get(1), attempts: list(get(2)), reviewWords: get(3)?.words ?? [], reviewUnavailable: results[3].status === 'rejected', attemptsUnavailable: results[2].status === 'rejected', certificates: list(get(4)), exams: [], examsUnavailable: false, examsLoading: !!get(1)?.configured };
+    setData(initialData);
     const examQuery = new URLSearchParams({ limit: '12', status: 'published' });
     if (profile?.level?.code) examQuery.set('levelCode', profile.level.code);
     const certificateId = profile?.certGoals?.[0]?.certificateId;
@@ -44,7 +46,7 @@ export default function MobileHomeScreen() {
       catch { examsUnavailable = true; }
     }
     if (request.current !== current) return;
-    setData({ profile, journey: get(1), attempts: list(get(2)), reviewWords: get(3)?.words ?? [], reviewUnavailable: results[3].status === 'rejected', attemptsUnavailable: results[2].status === 'rejected', certificates: list(get(4)), exams, examsUnavailable });
+    setData({ ...initialData, exams, examsUnavailable, examsLoading: false });
   }, []);
   useFocusEffect(useCallback(() => { void load(); return () => { ++request.current; }; }, [load]));
   const [guidance, setGuidance] = useState<{ agenda?: any; recommendations?: any[]; unavailable?: boolean; loading?: boolean }>({ loading: true });
@@ -90,7 +92,7 @@ export default function MobileHomeScreen() {
           {summary.configured && <View style={s.card}>
             <View style={s.sectionHeader}><Text accessibilityRole="header" style={[s.title, { flex: 1 }]}>Bài thi đề xuất</Text><TouchableOpacity accessibilityRole="button" onPress={() => router.push('/certifications' as any)} style={s.smallButton}><Text style={s.link}>Tất cả bài thi</Text></TouchableOpacity></View>
             <Text style={s.caption}>{summary.metrics[2].remaining > 0 ? 'Bạn còn ' + summary.metrics[2].remaining + ' bài thi để đạt mục tiêu tuần này.' : 'Đã đạt mục tiêu bài thi tuần này. Bạn có thể tiếp tục luyện tập.'}</Text>
-            {examSuggestions.length ? examSuggestions.map(item => <TouchableOpacity accessibilityRole="button" key={item.href} onPress={() => router.push(mobileRoute(item.href) as any)} style={s.inset}><View style={s.sectionHeader}><MaterialIcons name="assignment" size={22} color="#a21caf" /><Text style={{ flex: 1, fontWeight: '700' }}>{item.title}</Text></View>{!!item.reason && <Text style={s.caption}>{item.reason}</Text>}<Text style={s.link}>Mở bài thi →</Text></TouchableOpacity>) : <Text style={s.caption}>{data.examsUnavailable ? 'Chưa tải được bài thi đề xuất. Mở danh sách chứng chỉ để chọn bài thi.' : 'Chưa có bài thi phù hợp được đề xuất. Mở danh sách chứng chỉ để xem nội dung đang có.'}</Text>}
+            {!examSuggestions.length && data.examsLoading ? <ActivityIndicator color="#3525cd" /> : examSuggestions.length ? examSuggestions.map(item => <TouchableOpacity accessibilityRole="button" key={item.href} onPress={() => router.push(mobileRoute(item.href) as any)} style={s.inset}><View style={s.sectionHeader}><MaterialIcons name="assignment" size={22} color="#a21caf" /><Text style={{ flex: 1, fontWeight: '700' }}>{item.title}</Text></View>{!!item.reason && <Text style={s.caption}>{item.reason}</Text>}<Text style={s.link}>Mở bài thi →</Text></TouchableOpacity>) : <Text style={s.caption}>{data.examsUnavailable ? 'Chưa tải được bài thi đề xuất. Mở danh sách chứng chỉ để chọn bài thi.' : 'Chưa có bài thi phù hợp được đề xuất. Mở danh sách chứng chỉ để xem nội dung đang có.'}</Text>}
           </View>}
           <View style={s.card}><View style={s.sectionHeader}><Text accessibilityRole="header" style={[s.title, { flex: 1 }]}>Từ cần ôn hôm nay</Text>{reviewWords.length > 0 && <TouchableOpacity onPress={review} style={s.smallButton}><MaterialIcons name="replay" size={16} color="#3525cd" /><Text style={s.link}>Ôn tập ngay</Text></TouchableOpacity>}</View>{reviewWords.length ? <View style={s.metricGrid}>{reviewWords.slice(0, 4).map(word => <TouchableOpacity key={word.id} onPress={review} style={s.word}><Text style={{ fontWeight: '700' }}>{word.term}</Text><Text style={s.caption}>{word.definitionVi || word.definitionEn}</Text></TouchableOpacity>)}</View> : <View style={s.inset}><Text style={s.caption}>{data.reviewUnavailable ? 'Chưa tải được danh sách từ cần ôn. Bạn có thể mở phần ôn tập để thử lại.' : 'Hôm nay chưa có từ đến hạn ôn. Tiếp tục học từ mới để duy trì tiến độ nhé.'}</Text><Button icon={data.reviewUnavailable ? 'replay' : 'auto-stories'} mode="text" onPress={data.reviewUnavailable ? review : () => router.push('/flashcards/dashboard' as any)}>{data.reviewUnavailable ? 'Mở ôn tập' : 'Khám phá từ vựng'}</Button></View>}</View>
           {certificates.length > 0 && <View style={s.card}><Text accessibilityRole="header" style={s.title}>Lộ trình chứng chỉ</Text>{certificates.map(cert => <Button key={cert.id} mode="outlined" icon="route" onPress={() => router.push(`/certifications/${cert.id}` as any)}>{cert.name}</Button>)}</View>}

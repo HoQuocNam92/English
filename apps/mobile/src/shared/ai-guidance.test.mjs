@@ -69,22 +69,28 @@ test('mobile reuses home hero and provides real lesson and exam actions with saf
   setup[0].props.onPress();
   assert.equal(routes.at(-1), '/(onboarding)/goal');
   const requests = [];
+  let finishCatalog;
   mocks['../../src/shared/api/api-client'].api.get = async path => {
     requests.push(path);
     if (path === '/learner-profiles/me') return { level: { code: 'beginner' }, certGoals: [{ certificateId: 'selected-cert' }] };
     if (path === '/learner-profiles/me/journey') return { configured: true };
-    if (path.startsWith('/exams?')) return { data: [
+    if (path.startsWith('/exams?')) return new Promise(resolve => { finishCatalog = () => resolve({ data: [
       { id: 'eligible', title: 'Open exam', status: 'published', _count: { questions: 5 } },
       { id: 'future', title: 'Not open yet', status: 'published', availableFrom: '2100-01-01', _count: { questions: 5 } },
       { id: 'expired', title: 'Closed exam', status: 'published', availableUntil: '2000-01-01', _count: { questions: 5 } },
       { id: 'draft', title: 'Draft exam', status: 'draft', _count: { questions: 5 } },
       { id: 'empty', title: 'Empty exam', status: 'published', _count: { questions: 0 } },
-    ] };
+    ] }); });
     return { data: [], words: [] };
   };
   cursor = 0; focus.length = 0;
   exports.default(); focus[0]();
   await new Promise(resolve => setImmediate(resolve));
+  assert.equal(state[0].profile.level.code, 'beginner', 'Home must render without waiting for optional exam suggestions');
+  assert.equal(state[0].examsLoading, true);
+  finishCatalog();
+  await new Promise(resolve => setImmediate(resolve));
+  assert.equal(state[0].examsLoading, false);
   const catalogRequest = requests.find(path => path.startsWith('/exams?'));
   assert.ok(catalogRequest.includes('levelCode=beginner'));
   assert.ok(catalogRequest.includes('certificateId=selected-cert'));
