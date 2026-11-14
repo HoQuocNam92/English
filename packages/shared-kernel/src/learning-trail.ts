@@ -35,3 +35,9 @@ export function buildLearningTrail(domains: TrailDomain[]) {
   const steps = stages.flatMap(stage => stage.steps);
   return { stages, steps, next: stages.filter(stage => !stage.completed).flatMap(stage => stage.steps).find(step => step.ready && !step.completed) ?? null };
 }
+
+/** Vietnamese wording for standard learning levels; custom labels remain intact. */
+export function learningLevelLabel(level: { code?: string; name: string }) {
+  const labels: Record<string, string> = { beginner: 'Sơ cấp', intermediate: 'Trung cấp', advanced: 'Nâng cao', professional: 'Chuyên nghiệp' };
+  return labels[(level.code || level.name).toLowerCase()] ?? level.name;
+}

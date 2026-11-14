@@ -1,5 +1,5 @@
 import { LearningTrail } from './LearningTrail';
-import { buildLearningTrail } from '../../../../../packages/shared-kernel/src/learning-trail';
+import { buildLearningTrail, learningLevelLabel } from '../../../../../packages/shared-kernel/src/learning-trail';
 import { useCallback, useRef, useState } from 'react';
 import { useFocusEffect, useRouter } from 'expo-router';
 import { ActivityIndicator, Alert, AppState, View } from 'react-native';
@@ -48,7 +48,7 @@ export function LearningPathJourney({ full = false, refreshKey = 0, onAvailabili
   return <View style={{ gap: 16 }}>
     {certificatePaths}
     <View style={[controlStyles.card, { gap: 12 }]}>
-      <Text style={{ fontSize: 21, fontWeight: '800' }}>Lộ trình · {path.level.name}</Text>
+      <Text style={{ fontSize: 21, fontWeight: '800' }}>Lộ trình · {learningLevelLabel(path.level)}</Text>
       <Text>{path.totalLessons > 0 ? `Bạn đã học ${path.completedLessons}/${path.totalLessons} bài học trong tổng số ${path.domains.length} chuyên ngành đã chọn. Để chuyển cấp, hãy hoàn thành bài học và đạt điểm yêu cầu của bài tổng kết ở từng ngành.` : 'Chưa có bài học đã xuất bản cho trình độ và chuyên ngành bạn đã chọn.'}</Text>
       {!!error && <Text accessibilityRole="alert" style={{ color: '#b91c1c' }}>{error}</Text>}
       {domain && <View style={{ gap: 14, padding: 16, backgroundColor: '#f8fafc', borderWidth: 1, borderColor: '#e2e8f0', borderRadius: 18 }}>
@@ -67,8 +67,8 @@ export function LearningPathJourney({ full = false, refreshKey = 0, onAvailabili
       {practiceStep?.kind === 'review' && <View style={{ padding: 16, borderRadius: 18, borderWidth: 1, borderColor: '#ddd6fe', backgroundColor: '#f5f3ff', gap: 12 }}>
         <Text style={{ fontSize: 12, fontWeight: '700', color: '#3525cd' }}>LUYỆN TẬP BỔ SUNG</Text><Text style={{ fontSize: 19, fontWeight: '800' }}>{practiceStep.title}</Text><Text>Ôn thuật ngữ bằng thẻ từ để nhớ chắc hơn trước khi tiếp tục.</Text><Button mode="outlined" onPress={() => open(practiceStep.href)}>Luyện từ vừa học</Button>
       </View>}
-      {path.allCompleted && <Text style={{ color: '#047857', fontWeight: '700' }}>Đã học đủ bài và đạt tổng kết {path.level.name}.</Text>}
-      {path.canAdvance && path.nextLevel && <Button disabled={saving} onPress={() => Alert.alert('Xác nhận chuyển cấp', `Học tiếp ${path.nextLevel.name}? Lịch sử học tập được giữ lại, các bài mới bắt đầu theo tiến độ riêng.`, [{ text: 'Ở lại ôn tập', style: 'cancel' }, { text: 'Xác nhận chuyển cấp', onPress: () => void advance() }])}>{saving ? 'Đang chuyển…' : `Học tiếp ${path.nextLevel.name}`}</Button>}
+      {path.allCompleted && <Text style={{ color: '#047857', fontWeight: '700' }}>Bạn đã hoàn thành trình độ {learningLevelLabel(path.level)}.</Text>}
+      {path.canAdvance && path.nextLevel && <Button disabled={saving} onPress={() => Alert.alert('Chuyển trình độ', `Bạn muốn chuyển lên trình độ ${learningLevelLabel(path.nextLevel)}? Kết quả đã học sẽ được lưu lại.`, [{ text: 'Tiếp tục ôn tập', style: 'cancel' }, { text: 'Chuyển trình độ', onPress: () => void advance() }])}>{saving ? 'Đang chuyển…' : `Chuyển lên trình độ ${learningLevelLabel(path.nextLevel)}`}</Button>}
       {path.allCompleted && !path.finalLevel && !path.nextLevel && <Text>Nội dung cấp tiếp theo đang được bổ sung.</Text>}
       {practiceStep?.kind !== 'review' && <Button mode="outlined" onPress={() => open('/learn/flashcards')}>Ôn thẻ từ</Button>}
       {!full && <Button onPress={() => open('/learn/plan')}>Xem toàn bộ lộ trình</Button>}

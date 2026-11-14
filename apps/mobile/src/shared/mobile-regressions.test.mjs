@@ -1,4 +1,4 @@
-import { buildLearningTrail } from '../../../../packages/shared-kernel/src/learning-trail.ts';
+import { buildLearningTrail, learningLevelLabel } from '../../../../packages/shared-kernel/src/learning-trail.ts';
 import { matchesFilterOption } from './utils/filter-options.ts';
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
@@ -28,7 +28,7 @@ test('native journey uses the topic trail, omits calendar UI and requires level 
     '../../shared/ui/primitives': { Text: 'text', Button: 'button', controlStyles: { card: {} } },
     '../../shared/api/api-client': { api: { post: async (url, body) => { posts.push({ url, body }); return path; } } },
     '../../shared/navigation': { mobileRoute },
-    '../../../../../packages/shared-kernel/src/learning-trail': { buildLearningTrail },
+    '../../../../../packages/shared-kernel/src/learning-trail': { buildLearningTrail, learningLevelLabel },
     './ContinuationPlans': { ContinuationPlans: 'continuation' },
     './LearningTrail': { LearningTrail: 'trail' },
   };
@@ -45,7 +45,7 @@ test('native journey uses the topic trail, omits calendar UI and requires level 
   assert.equal(tree.some(node => node.type === 'button' && Array.isArray(node.props.children) && node.props.children[0] === 'Học tiếp '), false);
   path.canAdvance = true; path.allCompleted = true; path.domains[0].state = 'complete';
   tree = render();
-  tree.find(node => node.type === 'button' && node.props.children === 'Học tiếp Nâng cao').props.onPress();
+  tree.find(node => node.type === 'button' && node.props.children === 'Chuyển lên trình độ Nâng cao').props.onPress();
   assert.equal(posts.length, 0, 'opening confirmation must not promote');
   confirmation[2][1].onPress();
   await new Promise(resolve => setImmediate(resolve));

@@ -20,7 +20,7 @@ export function LearningTrail({ domains }: { domains: TrailDomain[] }) {
   </View>;
 }
 function Node({ step, current, onOpen }: { step: ReturnType<typeof buildLearningTrail>['steps'][number]; current: boolean; onOpen: (href: string) => void }) {
-  return <View style={{ borderLeftWidth: 4, borderLeftColor: '#ddd6fe', paddingLeft: 12, gap: 10 }}>
+  return <View style={{ gap: 10 }}>
     <View style={{ width: 48, height: 48, borderRadius: 24, alignItems: 'center', justifyContent: 'center', backgroundColor: step.completed ? '#047857' : current ? '#3525cd' : '#e2e8f0' }}><Text style={{ color: step.completed || current ? '#fff' : '#475569', fontWeight: '800', fontSize: 22 }}>{step.completed ? '✓' : !step.ready ? '🔒' : step.kind === 'review' ? '↻' : step.kind === 'checkpoint' ? '★' : '▶'}</Text></View>
     <Text style={{ fontWeight: '800' }}>{step.title}</Text><Text>{step.completed ? 'Đã hoàn thành' : current ? 'Bước tiếp theo' : step.ready ? 'Sẵn sàng' : 'Hoàn thành bài trước để mở'}</Text><Text>{step.description}{step.minutes > 0 ? ` Khoảng ${step.minutes} phút.` : ''}</Text>
     {step.ready && <Button onPress={() => onOpen(step.href)}>{step.completed ? 'Ôn lại' : step.kind === 'review' ? 'Luyện tập' : step.kind === 'checkpoint' ? 'Làm tổng kết' : 'Bắt đầu học'}</Button>}
