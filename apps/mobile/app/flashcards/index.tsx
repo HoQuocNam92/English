@@ -10,6 +10,7 @@ import { useLocalSearchParams, useRouter, useFocusEffect } from 'expo-router';
 import { api } from '../../src/shared/api/api-client';
 import { useTheme } from '../../src/shared/store/theme-context';
 import { FeatureScreen, EmptyState } from '../../src/shared/ui/FeatureScreen';
+import { FlashcardSessionScore } from '../../src/features/vocabulary/FlashcardSessionScore';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 const BATCH_SIZE = 20;
@@ -603,15 +604,12 @@ export default function FlashcardsScreen() {
 
   const renderSummaryPhase = () => {
     const finalMastered = masteredSet.size;
-    const percentage = totalWords > 0 ? Math.round((finalMastered / totalWords) * 100) : 0;
-    const emoji = percentage >= 80 ? '🎉' : percentage >= 50 ? '💪' : '📚';
 
     // Deduplicate — show last result per vocabId
     const resultMap = new Map<string, { vocabId: string; term: string; correct: boolean; selfReported?: boolean }>();
     allTimeResults.forEach(r => resultMap.set(r.vocabId, r));
     const finalResults = Array.from(resultMap.values());
     const answers = allTimeResults.filter(result => !result.selfReported);
-    const finalCorrect = answers.filter(result => result.correct).length;
     const selfReportedIds = new Set([
       ...Object.entries(ratings).filter(([, rating]) => rating === 'mastered').map(([id]) => id),
       ...allTimeResults.filter(result => result.selfReported).map(result => result.vocabId),
@@ -619,25 +617,9 @@ export default function FlashcardsScreen() {
 
     return (
       <View style={styles.phaseContainer}>
-        {/* Score circle */}
-        <View style={[styles.scoreCircle, { borderColor: percentage >= 80 ? '#15803d' : percentage >= 50 ? '#FF9800' : '#b91c1c' }]}>
-          <Text style={styles.scoreEmoji}>{emoji}</Text>
-          <Text style={[styles.scoreText, { color: colors.onSurface }]}>{finalMastered}/{totalWords}</Text>
-          <Text style={[styles.scoreLabel, { color: colors.onSurfaceVariant }]}>từ hoàn tất trong phiên</Text>
-        </View>
-
-        <Text style={[styles.summaryTitle, { color: colors.onSurface }]}>
-          {percentage >= 80 ? 'Xuất sắc!' : percentage >= 50 ? 'Khá tốt!' : 'Cần ôn thêm!'}
-        </Text>
-        <Text style={[styles.summarySubtitle, { color: colors.onSurfaceVariant }]}>
-          {batchNumber} đợt học · {finalCorrect}/{answers.length} lượt trả lời đúng
-        </Text>
-
-        <Text style={[styles.summarySubtitle, { color: colors.onSurfaceVariant }]}>
-          {selfReportedIds.size} từ tự đánh dấu đã biết · Kết quả trong phiên này
-        </Text>
+        <FlashcardSessionScore completed={finalMastered} total={totalWords} batches={batchNumber} answers={answers} selfReportedCount={selfReportedIds.size} colors={colors} />
         {/* Results list */}
-        <View style={[styles.resultsList, { backgroundColor: colors.surface, borderColor: colors.outlineVariant }]}>
+        {finalResults.length > 0 && <View style={[styles.resultsList, { backgroundColor: colors.surface, borderColor: colors.outlineVariant }]}>
           {finalResults.map((r, i) => (
             <View key={i} style={[styles.resultRow, i < finalResults.length - 1 && { borderBottomWidth: 1, borderBottomColor: colors.outlineVariant }]}>
               <MaterialIcons name={r.correct ? 'check-circle' : 'cancel'} size={20} color={r.correct ? '#15803d' : '#b91c1c'} />
@@ -647,13 +629,13 @@ export default function FlashcardsScreen() {
               </Text>
             </View>
           ))}
-        </View>
+        </View>}
 
         {/* Action buttons */}
         <View style={styles.summaryActions}>
           <TouchableOpacity onPress={() => loadSession(true)} style={[styles.primaryBtn, { backgroundColor: colors.primary }]}>
             <MaterialIcons name="replay" size={20} color="#fff" />
-            <Text style={styles.primaryBtnText}>{isReview ? 'Kiểm tra từ đến hạn' : 'Học thêm từ mới'}</Text>
+            <Text style={[styles.primaryBtnText, { flexShrink: 1, textAlign: 'center' }]}>{isReview ? 'Kiểm tra từ đến hạn' : 'Học thêm từ mới'}</Text>
           </TouchableOpacity>
 
           <TouchableOpacity onPress={() => router.replace(params.sourceLessonId || params.lessonId ? `/lessons/${params.sourceLessonId || params.lessonId}` as any : '/flashcards/words' as any)} style={[styles.textBtn]}>
@@ -760,16 +742,10 @@ const styles = StyleSheet.create({
   textBtnText: { fontSize: 14 },
 
   // Summary
-  scoreCircle: { width: 140, height: 140, borderRadius: 70, borderWidth: 5, alignSelf: 'center', justifyContent: 'center', alignItems: 'center', marginTop: 12 },
-  scoreEmoji: { fontSize: 32 },
-  scoreText: { fontSize: 28, fontWeight: '900' },
-  scoreLabel: { fontSize: 12 },
-  summaryTitle: { fontSize: 22, fontWeight: '900', textAlign: 'center' },
-  summarySubtitle: { fontSize: 14, textAlign: 'center' },
   resultsList: { borderWidth: 1, borderRadius: 16, overflow: 'hidden' },
-  resultRow: { flexDirection: 'row', alignItems: 'center', gap: 10, paddingHorizontal: 16, paddingVertical: 12 },
+  resultRow: { flexDirection: 'row', flexWrap: 'wrap', alignItems: 'center', gap: 10, paddingHorizontal: 16, paddingVertical: 12 },
   resultTerm: { flex: 1, fontSize: 15, fontWeight: '600' },
-  resultStatus: { fontSize: 12, fontWeight: '700' },
+  resultStatus: { fontSize: 12, fontWeight: '700', flexShrink: 1, maxWidth: '55%', textAlign: 'right' },
   summaryActions: { gap: 10, marginTop: 8 },
 });
 

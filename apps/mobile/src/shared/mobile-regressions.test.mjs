@@ -266,6 +266,7 @@ test('known words show saved all-time totals and remain accessible when previewi
     '../../src/shared/ui/FilterSelect': { FilterSelect: 'filter' },
     '../../src/shared/ui/AppIcon': { MaterialIcons: 'icon' },
     '../../src/shared/ui/FeatureScreen': { FeatureScreen: 'screen', EmptyState: 'empty' },
+    '../../src/features/vocabulary/FlashcardSessionScore': { FlashcardSessionScore: 'session-score' },
   };
   const exports = {};
   runInNewContext(code, { exports, URLSearchParams, require: name => { assert.ok(name in mocks, name); return mocks[name]; } });
@@ -328,6 +329,7 @@ test('flashcard audio is separate from flipping and only the selected rating lig
     '../../src/shared/ui/FilterSelect': { FilterSelect: 'filter' },
     '../../src/shared/ui/AppIcon': { MaterialIcons: 'icon' },
     '../../src/shared/ui/FeatureScreen': { FeatureScreen: 'screen', EmptyState: 'empty' },
+    '../../src/features/vocabulary/FlashcardSessionScore': { FlashcardSessionScore: 'session-score' },
   };
   const exports = {};
   runInNewContext(code, { exports, URLSearchParams, require: name => { assert.ok(name in mocks, name); return mocks[name]; } });
