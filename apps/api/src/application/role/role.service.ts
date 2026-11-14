@@ -1,4 +1,5 @@
-import { Injectable, NotFoundException, ForbiddenException, ConflictException } from '@nestjs/common'
+import { Injectable, NotFoundException, ForbiddenException, ConflictException, BadRequestException } from '@nestjs/common'
+import { isRoleColor, roleColor } from '@techenglish/shared-kernel/role-color'
 import { PrismaService } from '../../infrastructure/database/prisma.service'
 import { SUPER_ADMIN, hasSuperAdminRole, protectSuperAdmin, requireSuperAdmin } from '../auth/super-admin.policy'
 
@@ -16,6 +17,7 @@ export class RolesService {
     })
     return roles.map((r) => ({
       id: r.id, code: r.code, name: r.name, description: r.description,
+      color: roleColor(r.code, r.color),
       isSystem: r.isSystem, isActive: r.isActive,
       permissions: r.rolePermissions.map((rp) => ({
         id: rp.permission.id, code: rp.permission.code, name: rp.permission.name,
@@ -36,15 +38,17 @@ export class RolesService {
     return role
   }
 
-  async create(dto: { code: string; name: string; description?: string }) {
+  async create(dto: { code: string; name: string; description?: string; color?: string }) {
+    if (dto.color !== undefined && !isRoleColor(dto.color)) throw new BadRequestException('Màu vai trò không hợp lệ')
     const code = dto.code.trim().toLowerCase()
     if (code === 'super_admin') throw new ForbiddenException('SUPER_ADMIN là vai trò hệ thống được bảo vệ')
     const exists = await this.prisma.role.findUnique({ where: { code } })
     if (exists) throw new ConflictException(`Nhóm quyền có mã "${code}" đã tồn tại`)
-    return this.prisma.role.create({ data: { code, name: dto.name.trim(), description: dto.description?.trim(), isSystem: false } })
+    return this.prisma.role.create({ data: { code, name: dto.name.trim(), description: dto.description?.trim(), color: roleColor(code, dto.color), isSystem: false } })
   }
 
-  async update(id: string, dto: { name?: string; description?: string; isActive?: boolean }, actorId?: string) {
+  async update(id: string, dto: { name?: string; description?: string; isActive?: boolean; color?: string }, actorId?: string) {
+    if (dto.color !== undefined && !isRoleColor(dto.color)) throw new BadRequestException('Màu vai trò không hợp lệ')
     const role = await this.findOne(id)
     if (role.code === SUPER_ADMIN) {
       await requireSuperAdmin(this.prisma, actorId)

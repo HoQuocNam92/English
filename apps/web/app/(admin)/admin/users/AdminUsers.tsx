@@ -1,4 +1,5 @@
 'use client';
+import { roleColorStyle } from '@techenglish/shared-kernel/role-color';
 import { useAuth } from '@/features/auth/presentation';
 
 import { ClearFiltersButton } from '@/shared/ui/ClearFiltersButton';
@@ -481,7 +482,7 @@ export default function AdminUsers({ createOnly = false }: { createOnly?: boolea
                     <td className="truncate px-5 py-4 text-sm text-on-surface-variant" title={user.email}>{user.email}</td>
                     <td className="px-5 py-4">
                       <div className="flex flex-wrap gap-1">
-                        {user.roles?.map(r => <Badge key={r} tone="primary">{{ SUPER_ADMIN: 'Quản trị viên cấp cao', learner: 'Người học', teacher: 'Giảng viên', admin: 'Quản trị viên' }[r] ?? r}</Badge>) ?? <span className="text-on-surface-variant text-xs">—</span>}
+                        {user.roles?.map(r => <span key={r} style={roleColorStyle(r, user.roleDetails?.find(item => item.code === r)?.color)} className="inline-flex rounded-full px-2.5 py-1 text-xs font-semibold">{{ SUPER_ADMIN: 'Quản trị viên cấp cao', learner: 'Người học', teacher: 'Giảng viên', admin: 'Quản trị viên' }[r] ?? r}</span>) ?? <span className="text-on-surface-variant text-xs">—</span>}
                       </div>
                     </td>
                     <td className="px-5 py-4">

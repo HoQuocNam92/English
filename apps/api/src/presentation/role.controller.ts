@@ -1,6 +1,7 @@
 import { Controller, Get, Post, Patch, Delete, Body, Param, Query, UseGuards, HttpCode, HttpStatus } from '@nestjs/common'
 import { ApiTags, ApiBearerAuth, ApiOperation } from '@nestjs/swagger'
-import { ArrayUnique, IsArray, IsString, IsOptional, IsBoolean, IsDateString, IsUUID, Matches, MinLength, MaxLength } from 'class-validator'
+import { ArrayUnique, IsArray, IsString, IsOptional, IsBoolean, IsDateString, IsUUID, Matches, MinLength, MaxLength, IsIn } from 'class-validator'
+import { ROLE_COLOR_KEYS } from '@techenglish/shared-kernel/role-color'
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger'
 import { RolesService } from '../application/role/role.service'
 import { JwtAuthGuard } from '../infrastructure/auth/jwt-auth.guard'
@@ -9,11 +10,13 @@ import { RequirePermissions } from './decorators/require-permissions.decorator'
 import { CurrentUser, JwtPayload } from './decorators/current-user.decorator'
 
 class CreateRoleDto {
+  @ApiPropertyOptional({ enum: [...ROLE_COLOR_KEYS] }) @IsOptional() @IsIn(ROLE_COLOR_KEYS) color?: string
   @ApiProperty() @IsString() @MinLength(2) @MaxLength(50) @Matches(/^[a-z0-9_]+$/) code: string
   @ApiProperty() @IsString() @MinLength(2) @MaxLength(100) name: string
   @ApiPropertyOptional() @IsOptional() @IsString() @MaxLength(500) description?: string
 }
 class UpdateRoleDto {
+  @ApiPropertyOptional({ enum: [...ROLE_COLOR_KEYS] }) @IsOptional() @IsIn(ROLE_COLOR_KEYS) color?: string
   @ApiPropertyOptional() @IsOptional() @IsString() name?: string
   @ApiPropertyOptional() @IsOptional() @IsString() description?: string
   @ApiPropertyOptional() @IsOptional() @IsBoolean() isActive?: boolean

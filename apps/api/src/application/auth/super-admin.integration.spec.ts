@@ -42,3 +42,23 @@ test('PostgreSQL protects owner and serializes concurrent removal of the final S
     await db.$disconnect()
   }
 })
+
+test('PostgreSQL persists generated and edited custom role colors', { skip: process.env.ADMIN_SECURITY_QA !== '1' }, async () => {
+  const db = new PrismaService()
+  let id: string | undefined
+  try {
+    const service = new RolesService(db)
+    const created = await service.create({ code: `color_${randomUUID().replace(/-/g, '')}`, name: 'Color QA' })
+    id = created.id
+    assert.ok(['amber', 'indigo', 'blue', 'violet', 'emerald', 'teal', 'rose', 'orange'].includes(created.color))
+    await service.update(id, { color: 'rose' })
+    assert.equal((await db.role.findUniqueOrThrow({ where: { id } })).color, 'rose')
+    await service.update(id, { name: 'Renamed color QA' })
+    assert.equal((await service.findOne(id)).color, 'rose')
+    await assert.rejects(service.update(id, { color: '#ffffff' }), /Màu vai trò/)
+    assert.equal((await db.role.findUniqueOrThrow({ where: { id } })).color, 'rose')
+  } finally {
+    if (id) await db.role.deleteMany({ where: { id } })
+    await db.$disconnect()
+  }
+})

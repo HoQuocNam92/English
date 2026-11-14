@@ -7,7 +7,7 @@ async function seedSuperAdmin(prisma, email = process.env.INITIAL_ADMIN_EMAIL ||
     const role = await tx.role.upsert({
       where: { code: SUPER_ADMIN },
       update: { isSystem: true, isActive: true },
-      create: { code: SUPER_ADMIN, name: 'Quản trị viên cấp cao', description: 'Quản trị gốc được bảo vệ khỏi thay đổi bởi tài khoản có quyền thấp hơn.', isSystem: true, isActive: true },
+      create: { code: SUPER_ADMIN, color: 'amber', name: 'Quản trị viên cấp cao', description: 'Quản trị gốc được bảo vệ khỏi thay đổi bởi tài khoản có quyền thấp hơn.', isSystem: true, isActive: true },
     });
     const permissions = await tx.permission.findMany({ select: { id: true } });
     if (permissions.length) await tx.rolePermission.createMany({ data: permissions.map(permission => ({ roleId: role.id, permissionId: permission.id })), skipDuplicates: true });

@@ -5,13 +5,23 @@
   "type": "module",
   "exports": {
     ".": "./src/index.ts",
-    "./lesson-duration": "./src/lesson-duration.cjs"
+    "./lesson-duration": "./src/lesson-duration.cjs",
+    "./role-color": "./src/role-color.cjs"
   },
   "types": "./src/index.ts",
-  "typesVersions": { "*": { "lesson-duration": ["src/lesson-duration.d.cts"] } },
+  "typesVersions": {
+    "*": {
+      "lesson-duration": [
+        "src/lesson-duration.d.cts"
+      ],
+      "role-color": [
+        "src/role-color.d.cts"
+      ]
+    }
+  },
   "scripts": {
     "typecheck": "tsc --noEmit -p tsconfig.json",
-    "test": "node --test src/progress.test.mjs src/rich-text.test.mjs src/lesson-duration.test.mjs src/post-login-destination.test.mjs"
+    "test": "node --test src/progress.test.mjs src/rich-text.test.mjs src/lesson-duration.test.mjs src/post-login-destination.test.mjs src/role-color.test.mjs"
   },
   "dependencies": {
     "htmlparser2": "10.0.0"

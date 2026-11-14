@@ -212,6 +212,7 @@ export class UsersService {
       avatarUrl: user.userDetail?.avatarUrl,
       phoneNumber: user.userDetail?.phoneNumber,
       roles: user.userRoles?.map((ur: any) => ur.role.code) ?? [],
+      roleDetails: user.userRoles?.map((ur: any) => ({ code: ur.role.code, name: ur.role.name, color: ur.role.color })) ?? [],
       createdAt: user.createdAt,
       updatedAt: user.updatedAt,
     }

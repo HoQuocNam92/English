@@ -280,6 +280,7 @@ export interface UserItem {
   avatarUrl: string | null;
   phoneNumber: string | null;
   roles: string[];
+  roleDetails?: Array<{ code: string; name: string; color: string }>;
   createdAt: string;
   updatedAt: string;
   level?: string;
@@ -289,6 +290,7 @@ export interface UserItem {
 
 // Roles
 export interface RoleItem {
+  color?: string;
   id: string;
   code: string;
   name: string;

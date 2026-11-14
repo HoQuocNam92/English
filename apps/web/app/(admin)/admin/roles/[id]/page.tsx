@@ -9,6 +9,8 @@ import { useState, useEffect } from 'react';
 import { permissionLabel, roleLabel } from '@/shared/auth/permission-labels';
 import { PermissionTree } from '@/shared/auth/PermissionTree';
 import { useAuth } from '@/features/auth/presentation';
+import { roleColor, roleColorStyle } from '@techenglish/shared-kernel/role-color';
+import { RoleColorPicker } from '@/shared/auth/RoleColorPicker';
 
 export default function RoleDetailPage() {
   const { session } = useAuth();
@@ -24,6 +26,7 @@ export default function RoleDetailPage() {
   const [draftPermissionIds, setDraftPermissionIds] = useState<Set<string>>(new Set());
   const [assigningUser, setAssigningUser] = useState(false);
   const [busy, setBusy] = useState<string | null>(null);
+  const [draftColor, setDraftColor] = useState<string | null>(null);
   const isSuperAdmin = session?.user.roles?.includes('SUPER_ADMIN') === true;
   const canManageRole = role?.code !== 'SUPER_ADMIN' || isSuperAdmin;
   const normalizeRole = (value: any) => {
@@ -63,6 +66,15 @@ export default function RoleDetailPage() {
     setDraftPermissionIds(new Set(role.permissions.map((item: any) => item.permission?.id ?? item.id)));
     setEditingPermissions(true);
     setError(null);
+  };
+  const saveColor = async () => {
+    if (!canManageRole || !role || draftColor === null) return;
+    setBusy('color'); setError(null);
+    try {
+      const refreshed: any = await apiClient.patch(`/roles/${id}`, { color: roleColor(role.code, draftColor) });
+      setRole(normalizeRole(refreshed)); setDraftColor(null);
+    } catch (e: any) { setError(e.message ?? 'Không thể lưu màu vai trò'); }
+    finally { setBusy(null); }
   };
   const togglePermission = (permission: any) => {
     setDraftPermissionIds((current) => {
@@ -151,7 +163,7 @@ export default function RoleDetailPage() {
         </a>
         <div className="flex-1">
           <div className="flex items-center gap-3">
-            <h1 className="text-2xl font-bold text-on-surface">{roleLabel(role.code, role.name)}</h1>
+            <span style={roleColorStyle(role.code, role.color)} className="flex h-10 w-10 items-center justify-center rounded-xl"><AppIcon>shield_person</AppIcon></span><h1 className="text-2xl font-bold text-on-surface">{roleLabel(role.code, role.name)}</h1>
             {role.isSystem && (
               <span className="text-xs font-semibold bg-primary/10 text-primary px-3 py-1 rounded-full">
                 Vai trò có sẵn
@@ -164,6 +176,7 @@ export default function RoleDetailPage() {
         </div>
       </div>
 
+      {canManageRole && <section className="mb-6 rounded-xl border border-outline-variant bg-white p-5"><RoleColorPicker code={role.code} value={draftColor ?? role.color ?? ''} onChange={setDraftColor} /><div className="mt-4 flex items-center gap-3"><button type="button" disabled={draftColor === null || busy !== null} onClick={() => void saveColor()} className="rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-white disabled:opacity-50">{busy === 'color' ? 'Đang lưu…' : 'Lưu màu'}</button>{draftColor !== null && <button type="button" onClick={() => setDraftColor(null)} className="text-sm text-on-surface-variant">Hủy</button>}</div></section>}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Permissions Card */}
         <div className="bg-white border border-outline-variant rounded-xl shadow-sm p-6">

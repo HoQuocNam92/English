@@ -19,12 +19,9 @@ import type { RoleItem, PermissionItem } from '@/shared/api/api-client';
 import { actionLabel, permissionLabel, PERMISSION_ACTIONS, PERMISSION_RESOURCES, resourceLabel, roleLabel } from '@/shared/auth/permission-labels';
 import { PermissionTree } from '@/shared/auth/PermissionTree';
 import { useAuth } from '@/features/auth/presentation';
+import { roleColorStyle } from '@techenglish/shared-kernel/role-color';
+import { RoleColorPicker } from '@/shared/auth/RoleColorPicker';
 
-const ROLE_COLORS: Record<string, string> = {
-  admin: 'bg-primary/10 text-primary',
-  teacher: 'bg-secondary/10 text-secondary',
-  learner: 'bg-tertiary/10 text-tertiary',
-};
 
 function RoleCard({
   role,
@@ -39,7 +36,7 @@ function RoleCard({
   onDelete: () => void;
   deleting: boolean;
 }) {
-  const color = ROLE_COLORS[role.code] ?? 'bg-surface-container-low text-on-surface-variant';
+  const color = roleColorStyle(role.code, role.color);
 
   return (
     <div className="bg-white border border-outline-variant rounded-xl shadow-sm overflow-hidden flex flex-col">
@@ -47,7 +44,7 @@ function RoleCard({
         {/* Header */}
         <div className="flex items-start justify-between gap-2">
           <div className="flex items-center gap-3">
-            <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${color}`}>
+            <div style={color} className="w-10 h-10 rounded-lg flex items-center justify-center">
               <AppIcon className=" text-[20px]">shield_person</AppIcon>
             </div>
             <div>
@@ -139,7 +136,7 @@ export default function AdminRoles({ createKind }: { createKind?: 'role' | 'perm
   const [savingPermission, setSavingPermission] = React.useState(false);
   const [permissionError, setPermissionError] = React.useState<string | null>(null);
   const [permissionForm, setPermissionForm] = React.useState({ resource: '', action: 'read', name: '', description: '' });
-  const [roleForm, setRoleForm] = React.useState({ name: '', code: '', description: '' });
+  const [roleForm, setRoleForm] = React.useState({ name: '', code: '', description: '', color: '' });
   const [savingRole, setSavingRole] = React.useState(false);
   const [deletingRoleId, setDeletingRoleId] = React.useState<string | null>(null);
   const deleteRolePending = React.useRef(false);
@@ -156,10 +153,11 @@ export default function AdminRoles({ createKind }: { createKind?: 'role' | 'perm
         name: roleForm.name.trim(),
         code: roleForm.code.trim().toLowerCase(),
         description: roleForm.description.trim() || undefined,
+        color: roleForm.color || undefined,
       });
       setRoles((current) => [...current, { ...saved, permissions: saved.permissions ?? [], userCount: saved.userCount ?? 0 }]);
       if (createKind) completeCreation(router, '/admin/roles', 'Đã thêm vai trò.'); else closeRole();
-      setRoleForm({ name: '', code: '', description: '' });
+      setRoleForm({ name: '', code: '', description: '', color: '' });
     } catch (e) { setRoleError(e instanceof ApiClientError ? e.message : 'Không thể tạo vai trò'); }
     finally { setSavingRole(false); }
   };
@@ -258,6 +256,7 @@ export default function AdminRoles({ createKind }: { createKind?: 'role' | 'perm
             <label className="text-sm font-semibold">Tên vai trò<RequiredMark /><input required minLength={2} maxLength={100} value={roleForm.name} onChange={e => { const name = e.target.value; setRoleForm(current => ({ ...current, name, code: roleCodeFromName(name) })); }} className="mt-2 h-11 w-full rounded-xl border border-outline-variant/50 px-3" placeholder="Ví dụ: Người duyệt nội dung" /></label>
             <label className="text-sm font-semibold">Mã vai trò<RequiredMark /><input required pattern="[a-z0-9_]+" minLength={2} maxLength={40} value={roleForm.code} onChange={e => setRoleForm({...roleForm, code: roleCodeFromName(e.target.value)})} className="mt-2 h-11 w-full rounded-xl border border-outline-variant/50 px-3" placeholder="content_reviewer" /><span className="mt-1 block text-xs font-normal text-on-surface-variant">Chỉ dùng chữ thường, số và dấu gạch dưới; mã không đổi sau khi tạo.</span></label>
             <div className="text-sm font-semibold">Mô tả nhiệm vụ<RequiredMark /><RichTextEditor aria-label="Mô tả nhiệm vụ" required minLength={5} maxLength={500} value={roleForm.description} onChange={value => setRoleForm({...roleForm, description:value})} className="mt-2" placeholder="Mô tả phạm vi trách nhiệm của vai trò..." /></div>
+            <RoleColorPicker code={roleForm.code} value={roleForm.color} onChange={color => setRoleForm(current => ({ ...current, color }))} />
             <div className="rounded-lg bg-primary/5 p-3 text-sm text-primary">Vai trò mới chưa được gán quyền hạn và người dùng. Sau khi tạo, chọn <strong>“Quản lý người dùng và quyền hạn”</strong> để cấu hình.</div>
             {roleError && <div className="rounded-lg bg-error-container p-3 text-sm text-on-error-container">{roleError}</div>}
           </div>
@@ -331,7 +330,7 @@ export default function AdminRoles({ createKind }: { createKind?: 'role' | 'perm
           ) : (
             <PermissionTree paginate permissions={visiblePermissions} renderMeta={(permission) => {
               const rolesWithPerm = roles.filter((role) => role.permissions?.some((item) => item.id === permission.id));
-              return <div className="flex flex-wrap items-center justify-end gap-2"><div className="hidden flex-wrap justify-end gap-1.5 md:flex">{rolesWithPerm.map((role) => <span key={role.id} className="rounded-full border border-primary/20 bg-primary/5 px-2 py-1 text-[11px] font-semibold text-primary">{roleLabel(role.code, role.name)}</span>)}</div>{canEditPermissionDefinitions && <ActionGroup><ActionButton action="edit" type="button" onClick={() => openEditPermission(permission as PermissionItem)} title="Sửa" />
+              return <div className="flex flex-wrap items-center justify-end gap-2"><div className="hidden flex-wrap justify-end gap-1.5 md:flex">{rolesWithPerm.map((role) => <span key={role.id} style={roleColorStyle(role.code, role.color)} className="rounded-full px-2 py-1 text-[11px] font-semibold">{roleLabel(role.code, role.name)}</span>)}</div>{canEditPermissionDefinitions && <ActionGroup><ActionButton action="edit" type="button" onClick={() => openEditPermission(permission as PermissionItem)} title="Sửa" />
 <ActionButton action="delete" type="button" onClick={() => void deletePermission(permission as PermissionItem)} title="Xóa" /></ActionGroup>}</div>;
             }} />
           )}

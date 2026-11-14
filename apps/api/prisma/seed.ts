@@ -1,6 +1,7 @@
 import { PrismaClient, UserStatus, ContentStatus, QuestionType, AttemptStatus, ProgressStatus, ProgressResourceType } from '@prisma/client'
 import { seedPlacement } from './seed-placement-data'
 import * as bcrypt from 'bcrypt'
+import { roleColor } from '@techenglish/shared-kernel/role-color'
 const { seedSuperAdmin, INITIAL_ADMIN_EMAIL } = require('./seed-super-admin.cjs')
 
 const LevelCode = {
@@ -83,7 +84,7 @@ async function main() {
   ]
   const roles: Record<string, { id: string }> = {}
   for (const r of roleData) {
-    roles[r.code] = await prisma.role.upsert({ where: { code: r.code }, update: {}, create: r })
+    roles[r.code] = await prisma.role.upsert({ where: { code: r.code }, update: {}, create: { ...r, color: roleColor(r.code) } })
   }
   console.log(`   ✅ ${Object.keys(roles).length} roles`)
 
