@@ -12,7 +12,7 @@ export default function Words() {
   const params = useLocalSearchParams<{ domainCode?: string; levelCode?: string; sourceLessonId?: string }>(); const router = useRouter();
   const [words, setWords] = useState<Word[]>([]); const [title, setTitle] = useState('Danh sách từ vựng');
   const [stats, setStats] = useState<{ total: number; remembered: number; needsReview: number; newCount: number } | null>(null);
-  const [page, setPage] = useState(1); const [pages, setPages] = useState(1); const [total, setTotal] = useState(0); const [limit, setLimit] = useState('20');
+  const [page, setPage] = useState(1); const [pages, setPages] = useState(1); const [limit, setLimit] = useState('20');
   const [query, setQuery] = useState(''); const [search, setSearch] = useState('');
   const [loading, setLoading] = useState(true); const [error, setError] = useState(''); const [retry, setRetry] = useState(0);
   useEffect(() => { setPage(1); }, [params.domainCode, params.levelCode, params.sourceLessonId]);
@@ -20,22 +20,22 @@ export default function Words() {
     let active = true; setLoading(true); setError('');
     const load = async () => {
       try {
-        let resultWords: Word[]; let pageCount: number; let count: number;
+        let resultWords: Word[]; let pageCount: number;
         if (params.sourceLessonId) {
           const [lesson, session] = await Promise.all([api.get<{ title: string }>(`/lessons/${encodeURIComponent(params.sourceLessonId)}`), api.get<{ words: Word[] }>(`/vocab-study/session?sourceLessonId=${encodeURIComponent(params.sourceLessonId)}&onlyNew=false`)]);
           if (!active) return;
           const all = session.words ?? [];
           setTitle(lesson.title); setStats({ total: all.length, remembered: all.filter(word => word.studyStatus === 'mastered').length, needsReview: all.filter(word => word.studyStatus === 'learning').length, newCount: all.filter(word => word.studyStatus === 'new').length });
           const filtered = all.filter(word => `${word.term} ${word.definitionVi ?? ''} ${word.definitionEn ?? ''}`.toLocaleLowerCase('vi').includes(search.trim().toLocaleLowerCase('vi')));
-          count = filtered.length; pageCount = Math.max(1, Math.ceil(count / Number(limit))); resultWords = filtered.slice((page - 1) * Number(limit), page * Number(limit));
+          const count = filtered.length; pageCount = Math.max(1, Math.ceil(count / Number(limit))); resultWords = filtered.slice((page - 1) * Number(limit), page * Number(limit));
         } else {
           const qs = new URLSearchParams({ status: 'published', limit, page: String(page), search });
           if (params.domainCode) qs.set('domainCode', params.domainCode); if (params.levelCode) qs.set('levelCode', params.levelCode);
           const result = await api.get<{ data: Word[]; meta?: { totalPages?: number; total?: number } }>(`/vocabulary?${qs}`);
           if (!active) return;
-          setTitle('Danh sách từ vựng'); setStats(null); resultWords = result.data ?? []; pageCount = Math.max(1, result.meta?.totalPages ?? 1); count = result.meta?.total ?? resultWords.length;
+          setTitle('Danh sách từ vựng'); setStats(null); resultWords = result.data ?? []; pageCount = Math.max(1, result.meta?.totalPages ?? 1);
         }
-        if (active) { setWords(resultWords); setPages(pageCount); setTotal(count); if (page > pageCount) setPage(pageCount); }
+        if (active) { setWords(resultWords); setPages(pageCount); if (page > pageCount) setPage(pageCount); }
       } catch (cause: any) { if (active) setError(cause.message || 'Không thể tải từ vựng.'); }
       finally { if (active) setLoading(false); }
     };
@@ -55,6 +55,6 @@ export default function Words() {
       {word.studyStatus && word.studyStatus !== 'new' && <Button mode="outlined" onPress={() => router.push({ pathname: '/flashcards', params: { mode: 'preview', vocabularyId: word.id } } as any)}>Xem lại thẻ từ</Button>}
     </View>)}
     {!loading && !error && !words.length && <Text>Không có từ phù hợp.</Text>}
-    <Text>{total} từ phù hợp</Text><View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}><Button disabled={loading || page <= 1} onPress={() => setPage(value => value - 1)}>Trước</Button><Text>{page}/{pages}</Text><Button disabled={loading || page >= pages} onPress={() => setPage(value => value + 1)}>Sau</Button></View>
+    <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}><Button disabled={loading || page <= 1} onPress={() => setPage(value => value - 1)}>Trước</Button><Text>Trang {page}</Text><Button disabled={loading || page >= pages} onPress={() => setPage(value => value + 1)}>Sau</Button></View>
   </View></FeatureScreen>;
 }
