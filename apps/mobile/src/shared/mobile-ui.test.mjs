@@ -23,7 +23,7 @@ function mount(file, mocks, args = {}) {
 test('home uses current targets and actual progress including over-completed goals', () => {
   const journey = { configured: true, targets: { vocabularyPerDay: 10, minutesPerDay: 30, examsPerWeek: 2 }, progress: { vocabularyToday: 8, studyMinutesToday: 8, examsWeek: 1 } };
   const summary = homeSummary(journey);
-  assert.equal(summary.title, 'Còn 2 từ và 22 phút nữa là đạt mục tiêu hôm nay');
+  assert.equal(summary.title, 'Còn 2 từ mới và 22 phút học');
   assert.deepEqual(summary.metrics.map(item => item.percent), [80, 27, 50]);
   assert.equal(homeSummary({ ...journey, progress: { vocabularyToday: 16, studyMinutesToday: 35, examsWeek: 5 } }).complete, true);
   assert.equal(homeSummary({ ...journey, progress: { vocabularyToday: 16, studyMinutesToday: 35, examsWeek: 5 } }).metrics[2].percent, 100);

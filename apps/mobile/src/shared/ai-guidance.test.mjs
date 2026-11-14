@@ -32,8 +32,7 @@ test('mobile reuses home hero and provides real lesson and exam actions with saf
   assert.ok(label(tree).includes('Mục tiêu 10 từ/ngày')); assert.ok(label(tree).includes('Vượt mục tiêu 4 từ'));
   assert.ok(!label(tree).includes('/ 10 từ'));
   all.find(node => node.type === 'touch' && label(node) === 'Học tiếp').props.onPress();
-  all.find(node => node.type === 'touch' && label(node) === 'Gợi ý: Bảo mật Cloud').props.onPress();
-  assert.deepEqual(routes, ['/lessons/core', '/certifications/cloud']);
+  assert.deepEqual(routes, ['/lessons/core']);
   data.journey.progress.examsWeek = 0;
   data.journey.progress.studyMinutesToday = 0;
   data.exams = [{ id: 'recommended', title: 'Bài thi catalog trùng', durationMinutes: 20 }];
@@ -60,6 +59,17 @@ test('mobile reuses home hero and provides real lesson and exam actions with saf
   assert.equal(routes.at(-1), '/(tabs)/learning');
   empty.find(node => node.type === 'touch' && label(node) === 'Làm 2 bài nữa').props.onPress();
   assert.equal(routes.at(-1), '/certifications');
+  data.journey.targets.vocabularyPerDay = 20;
+  data.journey.progress.vocabularyToday = 0;
+  cursor = 0;
+  const dailyHome = exports.default();
+  const hero = nodes(dailyHome).find(node => node.props?.style?.backgroundColor === '#3525cd' && label(node).includes('Còn 20 từ mới'));
+  const heroButtons = nodes(hero).filter(node => node.type === 'touch');
+  assert.equal(heroButtons.length, 1, 'hero must have a single learning action');
+  assert.equal(label(heroButtons[0]), 'Học từ vựng');
+  assert.ok(label(hero).includes('Còn 20 từ mới và 30 phút học'));
+  heroButtons[0].props.onPress();
+  assert.equal(routes.at(-1), '/flashcards');
   data.journey = { configured: false };
   cursor = 0;
   const unfinished = exports.default();
