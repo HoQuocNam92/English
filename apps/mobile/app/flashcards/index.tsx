@@ -607,6 +607,9 @@ export default function FlashcardsScreen() {
 
     // Deduplicate — show last result per vocabId
     const resultMap = new Map<string, { vocabId: string; term: string; correct: boolean; selfReported?: boolean }>();
+    words.filter(word => ratings[word.id] === 'mastered').forEach(word => {
+      resultMap.set(word.id, { vocabId: word.id, term: word.term, correct: true, selfReported: true });
+    });
     allTimeResults.forEach(r => resultMap.set(r.vocabId, r));
     const finalResults = Array.from(resultMap.values());
     const answers = allTimeResults.filter(result => !result.selfReported);

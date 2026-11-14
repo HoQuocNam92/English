@@ -31,16 +31,18 @@ test('twenty self-marked words show completion without inventing quiz accuracy o
 test('actual attempts determine quiz feedback even when every word is completed', () => {
   const text = label(render({ answers: [{ correct: false }, { correct: false }, { correct: false }, { correct: true }], selfReportedCount: 19 }));
   assert.ok(text.includes('1/4 lượt trả lời đúng'));
-  assert.ok(text.includes('Cần ôn thêm!'));
+  assert.ok(text.includes('Đã hoàn thành bài kiểm tra'));
   assert.ok(!text.includes('Xuất sắc'));
-  assert.ok(label(render({ answers: [{ correct: true }] })).includes('Xuất sắc!'));
+  const shortQuiz = label(render({ completed: 3, total: 3, answers: [{ correct: true }, { correct: true }, { correct: true }] }));
+  assert.ok(shortQuiz.includes('3/3 lượt trả lời đúng'));
+  assert.ok(!shortQuiz.includes('Xuất sắc'));
 });
 
 test('long description stays outside the fixed-size circle and numeric score can fit large fonts', () => {
   const tree = render();
   const circle = tree.props.children[0];
-  assert.ok(!label(circle).includes('từ hoàn tất'));
-  assert.ok(label(tree.props.children[1]).includes('từ hoàn tất'));
+  assert.ok(!label(circle).includes('Từ hoàn tất'));
+  assert.ok(label(tree.props.children[1]).includes('Từ hoàn tất'));
   const score = nodes(circle).find(node => node.type === 'text' && label(node) === '20/20');
   assert.equal(score.props.adjustsFontSizeToFit, true);
   assert.equal(score.props.numberOfLines, 1);

@@ -7,16 +7,15 @@ export function FlashcardSessionScore({ completed, total, batches, answers, self
   colors: { onSurface: string; onSurfaceVariant: string };
 }) {
   const correct = answers.filter(answer => answer.correct).length;
-  const accuracy = answers.length ? correct / answers.length : null;
   const completion = total > 0 ? completed / total : 0;
-  const title = accuracy === null ? (completed > 0 ? 'Đã hoàn thành phiên học' : 'Chưa có kết quả')
-    : accuracy >= .8 ? 'Xuất sắc!' : accuracy >= .5 ? 'Khá tốt!' : 'Cần ôn thêm!';
+  const title = answers.length > 0 ? 'Đã hoàn thành bài kiểm tra'
+    : completed > 0 ? 'Đã hoàn thành phiên học' : 'Chưa có kết quả';
   return <View style={styles.container}>
     <View style={[styles.circle, { borderColor: completion >= .8 ? '#15803d' : completion >= .5 ? '#b45309' : '#b91c1c' }]}>
       <Text style={styles.emoji} accessible={false}>{completion >= .8 ? '🎉' : '📚'}</Text>
       <Text style={[styles.score, { color: colors.onSurface }]} numberOfLines={1} adjustsFontSizeToFit minimumFontScale={.5}>{completed}/{total}</Text>
     </View>
-    <Text style={[styles.label, { color: colors.onSurfaceVariant }]}>từ hoàn tất trong phiên</Text>
+    <Text style={[styles.label, { color: colors.onSurfaceVariant }]}>Từ hoàn tất trong phiên</Text>
     <Text style={[styles.title, { color: colors.onSurface }]}>{title}</Text>
     <Text style={[styles.description, { color: colors.onSurfaceVariant }]}>{batches} đợt học{answers.length > 0 ? ` · ${correct}/${answers.length} lượt trả lời đúng` : ''}</Text>
     {selfReportedCount > 0 && <Text style={[styles.description, { color: colors.onSurfaceVariant }]}>{selfReportedCount} từ tự đánh dấu đã biết</Text>}
