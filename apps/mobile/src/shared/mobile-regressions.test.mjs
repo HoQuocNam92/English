@@ -1,3 +1,4 @@
+import { dailyVocabularyProgress } from './utils/daily-vocabulary.ts';
 import { buildLearningTrail, learningLevelLabel } from '../../../../packages/shared-kernel/src/learning-trail.ts';
 import { matchesFilterOption } from './utils/filter-options.ts';
 import { test } from 'node:test';
@@ -266,6 +267,7 @@ test('known words show saved all-time totals and remain accessible when previewi
     '../../src/shared/ui/FilterSelect': { FilterSelect: 'filter' },
     '../../src/shared/ui/AppIcon': { MaterialIcons: 'icon' },
     '../../src/shared/ui/FeatureScreen': { FeatureScreen: 'screen', EmptyState: 'empty' },
+    '../../src/shared/utils/daily-vocabulary': { dailyVocabularyProgress },
     '../../src/features/vocabulary/FlashcardSessionScore': { FlashcardSessionScore: 'session-score' },
   };
   const exports = {};
@@ -329,6 +331,7 @@ test('flashcard audio is separate from flipping and only the selected rating lig
     '../../src/shared/ui/FilterSelect': { FilterSelect: 'filter' },
     '../../src/shared/ui/AppIcon': { MaterialIcons: 'icon' },
     '../../src/shared/ui/FeatureScreen': { FeatureScreen: 'screen', EmptyState: 'empty' },
+    '../../src/shared/utils/daily-vocabulary': { dailyVocabularyProgress },
     '../../src/features/vocabulary/FlashcardSessionScore': { FlashcardSessionScore: 'session-score' },
   };
   const exports = {};

@@ -1,3 +1,4 @@
+import { dailyVocabularyProgress } from '../../src/shared/utils/daily-vocabulary';
 import { ScrollView } from 'react-native';
 import { Button } from '../../src/shared/ui/primitives';
 import { FilterSelect } from '../../src/shared/ui/FilterSelect';
@@ -93,7 +94,7 @@ export default function FlashcardsScreen() {
   const [allTimeResults, setAllTimeResults] = useState<{ vocabId: string; term: string; correct: boolean; selfReported?: boolean }[]>([]);
   const [ratings, setRatings] = useState<Record<string, 'easy' | 'medium' | 'hard' | 'mastered'>>({});
   const [sessionMeta, setSessionMeta] = useState<any>(null);
-  const [dailyLimitNotice, setDailyLimitNotice] = useState(false);
+
 
   // Animation
   const flipAnim = useRef(new Animated.Value(0)).current;
@@ -147,7 +148,7 @@ export default function FlashcardsScreen() {
       let res: any = await api.get(`/vocab-study/session${query}`);
       const initialMeta = res.meta ?? null;
       const reachedDailyTarget = Boolean(initialMeta?.dailyLimitReached);
-      setDailyLimitNotice(reachedDailyTarget);
+
       if (!isReview && !continueLearning && reachedDailyTarget && (res.words?.length ?? 0) === 0) {
         qs.set('continue', 'true');
         res = await api.get(`/vocab-study/session?${qs.toString()}`);
@@ -401,6 +402,7 @@ export default function FlashcardsScreen() {
   useEffect(() => { if (autoPronounce && phase === 'learn' && currentWord?.term) void speak(currentWord.term); return () => { void Speech.stop(); }; }, [autoPronounce, phase, currentWord?.id]);
 
   const renderLearnPhase = () => {
+    const daily = dailyVocabularyProgress(sessionMeta?.studiedToday, sessionMeta?.maxDailyNewWords);
     if (!currentWord || currentBatch.length === 0 || allDone) {
       return <View style={styles.emptySession}><EmptyState icon="school" title={isReview ? "Chưa có từ đến hạn ôn" : "Không còn từ mới"} detail={isReview ? "Quay lại sau hoặc tiếp tục học từ mới." : "Những từ đã học và đã biết đã được loại khỏi phiên mặc định."} />
         <TouchableOpacity onPress={() => router.push('/flashcards/history' as any)} style={styles.textBtn}><Text style={[styles.textBtnText, { color: colors.primary }]}>Xem từ đã học</Text></TouchableOpacity>
@@ -417,8 +419,8 @@ export default function FlashcardsScreen() {
           </TouchableOpacity>
         </View>
         {knownError && <TouchableOpacity onPress={() => void loadKnownCount()}><Text style={{ color: colors.onSurfaceVariant }}>Chưa tải được số từ đã biết. Chạm để thử lại.</Text></TouchableOpacity>}
-        <View style={styles.sessionToolbar}><Text style={[styles.dailyText, { color: colors.onSurfaceVariant }]}>{isPreview ? 'Xem lại thẻ từ đã học' : isReview ? `${totalWords} từ đến hạn ôn` : `Hôm nay: ${sessionMeta?.studiedToday ?? 0}/${sessionMeta?.maxDailyNewWords ?? '—'} từ mới`}</Text><TouchableOpacity onPress={() => router.push('/flashcards/history' as any)}><Text style={[styles.historyLink, { color: colors.primary }]}>Từ đã học</Text></TouchableOpacity></View>
-        {dailyLimitNotice && <View style={styles.dailyNotice}><MaterialIcons name="check-circle" size={14} color="#a16207" /><Text style={styles.dailyNoticeText}>Đã đủ mục tiêu hôm nay · đang học thêm</Text></View>}
+        <View style={styles.sessionToolbar}><Text style={[styles.dailyText, { color: colors.onSurfaceVariant }]}>{isPreview ? 'Xem lại thẻ từ đã học' : isReview ? `${totalWords} từ đến hạn ôn` : daily.label}</Text><TouchableOpacity onPress={() => router.push('/flashcards/history' as any)}><Text style={[styles.historyLink, { color: colors.primary }]}>Từ đã học</Text></TouchableOpacity></View>
+        {!isPreview && !isReview && daily.extra > 0 && <View style={styles.dailyNotice}><MaterialIcons name="check-circle" size={14} color="#a16207" /><Text style={styles.dailyNoticeText}>Học thêm {daily.extra} từ</Text></View>}
 
 
         {/* Flip card */}
