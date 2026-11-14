@@ -1,27 +1,31 @@
-import { MaterialIcons } from '../../src/shared/ui/AppIcon';
+import { MaterialIcons } from '../src/shared/ui/AppIcon';
 import { useCallback, useRef, useState } from 'react';
 import { useFocusEffect, useRouter } from 'expo-router';
 import { ActivityIndicator, AppState, View } from 'react-native';
-import { api } from '../../src/shared/api/api-client';
-import { FeatureScreen } from '../../src/shared/ui/FeatureScreen';
-import { Text, Button, controlStyles } from '../../src/shared/ui/primitives';
-import { learningReport, type LearningReportPayload, type CourseReportPayload } from '../../../../packages/shared-kernel/src/learning-report';
+import { api } from '../src/shared/api/api-client';
+import { FeatureScreen } from '../src/shared/ui/FeatureScreen';
+import { Text, Button, controlStyles } from '../src/shared/ui/primitives';
+import { learningReport, type LearningReportPayload, type CourseReportPayload } from '../../../packages/shared-kernel/src/learning-report';
 
 export default function MobileProgressScreen() {
   const [data, setData] = useState<LearningReportPayload | null>(null);
   const [course, setCourse] = useState<CourseReportPayload | null>(null);
   const [loading, setLoading] = useState(true); const [refreshing, setRefreshing] = useState(false);
+  const [courseLoading, setCourseLoading] = useState(true);
   const [error, setError] = useState(''); const [courseError, setCourseError] = useState('');
   const request = useRef(0); const router = useRouter();
   const load = useCallback(async () => {
-    const current = ++request.current; setRefreshing(true);
-    const [progress, path] = await Promise.allSettled([api.get<LearningReportPayload>('/progress/me'), api.get<CourseReportPayload>('/progress/me/learning-path')]);
-    if (current !== request.current) return;
-    if (progress.status === 'fulfilled') { setData(progress.value); setError(''); }
-    else setError(progress.reason?.message || 'Không thể tải tiến độ.');
-    if (path.status === 'fulfilled') { setCourse(path.value); setCourseError(''); }
-    else { setCourse(null); setCourseError('Không thể tải kết quả của cấp hiện tại.'); }
-    setLoading(false); setRefreshing(false);
+    const current = ++request.current; setRefreshing(true); setCourseLoading(true);
+    const progress = api.get<LearningReportPayload>('/progress/me')
+      .then(value => { if (current === request.current) { setData(value); setError(''); } })
+      .catch(reason => { if (current === request.current) setError(reason?.message || 'Không thể tải tiến độ.'); })
+      .finally(() => { if (current === request.current) setLoading(false); });
+    const path = api.get<CourseReportPayload>('/progress/me/learning-path')
+      .then(value => { if (current === request.current) { setCourse(value); setCourseError(''); } })
+      .catch(() => { if (current === request.current) { setCourse(null); setCourseError('Không thể tải kết quả của cấp hiện tại.'); } })
+      .finally(() => { if (current === request.current) setCourseLoading(false); });
+    await Promise.all([progress, path]);
+    if (current === request.current) setRefreshing(false);
   }, []);
   useFocusEffect(useCallback(() => {
     void load(); const subscription = AppState.addEventListener('change', state => { if (state === 'active') void load(); });
@@ -29,10 +33,11 @@ export default function MobileProgressScreen() {
     return () => { ++request.current; subscription.remove(); clearInterval(timer); };
   }, [load]));
   const report = data ? learningReport(data, course) : null;
-  return <FeatureScreen title="Tiến độ học tập" embedded loading={loading} error={!data ? error : ''} onRetry={load}><View style={{ gap: 20 }}>
+  return <FeatureScreen title="Tiến độ học tập" embedded={false} loading={loading} error={!data ? error : ''} onRetry={load}><View style={{ gap: 20 }}>
     <Text>Tổng hợp bài đã học, từ vựng và kết quả kiểm tra của bạn.</Text>
     <Button icon="route" onPress={() => router.push('/learning-plan' as any)}>Đến lộ trình</Button>
     <Button icon="refresh" mode="outlined" disabled={refreshing} onPress={load}>{refreshing ? 'Đang làm mới…' : 'Làm mới tiến độ'}</Button>
+    {courseLoading && <View style={{ flexDirection: 'row', gap: 8, alignItems: 'center' }}><ActivityIndicator accessibilityLabel="Đang tải kết quả cấp hiện tại" /><Text>Đang tải kết quả cấp hiện tại…</Text></View>}
     {!!courseError && <Text accessibilityRole="alert">{courseError}</Text>}
     {!!data && !!error && <Text accessibilityRole="alert">{error}</Text>}
     {refreshing && <ActivityIndicator />}

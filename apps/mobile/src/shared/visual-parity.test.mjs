@@ -36,7 +36,7 @@ test('mobile navigation keeps the web semantic icon colors in both tab states', 
   const exports = {};
   runInNewContext(code, { exports, require: name => name in mocks ? mocks[name] : require(name) });
   const tabs = exports.default().props.children;
-  for (const [tab, semantic, icon] of [['home', 'home', 'home'], ['learning', 'learning', 'menu-book'], ['plan', 'learning', 'route'], ['certificates', 'certificate', 'workspace-premium'], ['progress', 'progress', 'monitoring'], ['profile', 'profile', 'person']]) {
+  for (const [tab, semantic, icon] of [['home', 'home', 'home'], ['learning', 'learning', 'menu-book'], ['plan', 'learning', 'route'], ['certificates', 'certificate', 'workspace-premium'], ['profile', 'profile', 'person']]) {
     const options = tabs.find(item => item.props.name === tab).props.options;
     for (const focused of [true, false]) {
       const rendered = options.tabBarIcon({ focused }).props.children;

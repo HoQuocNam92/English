@@ -79,14 +79,6 @@ export default function TabsLayout() {
       <Tabs.Screen name="plan" options={{ title: 'Lộ trình', tabBarIcon: ({ focused }) => <View style={{ width: 44, height: 32, alignItems: 'center', justifyContent: 'center', borderRadius: 16, backgroundColor: focused ? '#eeecff' : 'transparent' }}><MaterialIcons name="route" size={23} color={iconColors.learning} /></View> }} />
       <Tabs.Screen name="certificates" options={{ title: "Chứng chỉ", tabBarIcon: ({ focused }) => <View style={{ width: 44, height: 32, alignItems: "center", justifyContent: "center", borderRadius: 16, backgroundColor: focused ? "#eeecff" : "transparent" }}><MaterialIcons name="workspace-premium" size={23} color={iconColors.certificate} /></View> }} />
       <Tabs.Screen
-        name="progress"
-        options={{
-          title: 'Tiến độ',
-          href: null,
-          tabBarIcon: ({ focused }) => <View style={{ width: 44, height: 32, alignItems: "center", justifyContent: "center", borderRadius: 16, backgroundColor: focused ? "#eeecff" : "transparent" }}><MaterialIcons name="monitoring" size={23} color={iconColors.progress} /></View>
-        }}
-      />
-      <Tabs.Screen
         name="profile"
         options={{
           title: 'Cá nhân',

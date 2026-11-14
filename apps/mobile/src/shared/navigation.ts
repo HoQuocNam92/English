@@ -20,7 +20,7 @@ export function mobileRoute(href: string) {
   if (['/flashcards/explore', '/flashcards/history', '/flashcards/words'].includes(route)) return finish(route);
   if (route === '/plan') return finish('/learning-plan');
   if (route === '/profile') return finish(query.get('tab') === 'history' ? '/profile/history' : '/profile/edit');
-  if (route === '/progress') return finish('/(tabs)/progress');
+  if (route === '/progress' || route === '/(tabs)/progress') return finish('/progress');
   if (route === '/practice') return finish('/(tabs)/practice');
   const vocabulary = route.match(/^\/flashcards\/([^/]+)\/(practice|quiz)$/);
   if (vocabulary) {
@@ -51,7 +51,7 @@ export function mobileNotificationRoute(value: unknown): string {
   if (route.startsWith('//')) return '/learning-plan';
   const destination = mobileRoute(route);
   const pathname = destination.split('?')[0];
-  if (!/^(?:\/\(tabs\)\/(?:home|learning|plan|progress|practice|certificates)|\/learning-plan|\/placement-test|\/catalog|\/lessons(?:\/[^/]+)?|\/certifications(?:\/(?:topics\/)?[^/]+)?|\/quiz\/[^/]+|\/test-result\/[^/]+|\/flashcards(?:\/(?:dashboard|explore|history|words))?|\/profile\/(?:edit|history))$/.test(pathname) || /(?:^|\/)\.\.?(?:\/|$)/.test(pathname)) return '/learning-plan';
+  if (!/^(?:\/\(tabs\)\/(?:home|learning|plan|progress|practice|certificates)|\/progress|\/learning-plan|\/placement-test|\/catalog|\/lessons(?:\/[^/]+)?|\/certifications(?:\/(?:topics\/)?[^/]+)?|\/quiz\/[^/]+|\/test-result\/[^/]+|\/flashcards(?:\/(?:dashboard|explore|history|words))?|\/profile\/(?:edit|history))$/.test(pathname) || /(?:^|\/)\.\.?(?:\/|$)/.test(pathname)) return '/learning-plan';
   // Older server and local reminders point to Home, which may already be open.
   return pathname === '/(tabs)/home' ? destination.replace('/(tabs)/home', '/learning-plan') : destination;
 }

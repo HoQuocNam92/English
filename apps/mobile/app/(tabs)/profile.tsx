@@ -123,7 +123,7 @@ export default function MobileProfileScreen() {
         {/* Action List */}
         <View style={[styles.menuList, { backgroundColor: colors.surfaceContainerLowest, borderColor: colors.outlineVariant }]}>
           {[
-            ['monitoring', 'Tiến độ học tập', '/(tabs)/progress'],
+            ['monitoring', 'Tiến độ học tập', '/progress'],
             ['security', 'Chính sách bảo mật', '/privacy'],
             ['article', 'Điều khoản sử dụng', '/terms'],
           ].map(([icon, label, route], index, list) => (

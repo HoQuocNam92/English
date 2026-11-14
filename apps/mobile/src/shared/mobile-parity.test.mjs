@@ -6,6 +6,7 @@ import { runInNewContext } from 'node:vm';
 import { mobileNotificationRoute } from './navigation.ts';
 import * as lessonPresentation from '../../../../packages/shared-kernel/src/lesson-presentation.ts';
 import * as richText from '../../../../packages/shared-kernel/src/rich-text.ts';
+import * as reportBuilder from '../../../../packages/shared-kernel/src/learning-report.ts';
 import { matchesFilterOption } from './utils/filter-options.ts';
 
 const require = createRequire(import.meta.url);
@@ -36,6 +37,71 @@ function mount(file, mocks, exportName = 'default') {
 }
 const ui = { Text: 'text', Button: 'button', Badge: 'badge', Tabs: 'tabs', ListTools: 'list-tools', controlStyles: { card: {}, footer: {} } };
 const feature = { FeatureScreen: 'screen', EmptyState: 'empty' };
+
+test('profile progress button opens the standalone report instead of a hidden tab', async () => {
+  const routes = [];
+  let focus;
+  const screen = mount('../../app/(tabs)/profile.tsx', {
+    '../../src/shared/ui/primitives': { ...ui, TouchableOpacity: 'button' },
+    '../../src/shared/ui/ProfileAvatar': { ProfileAvatar: 'avatar' },
+    '../../src/shared/ui/icon-colors': { featureIconColor: () => 'blue' },
+    '../../src/shared/ui/AppIcon': { MaterialIcons: 'icon' },
+    'react-native-safe-area-context': { useSafeAreaInsets: () => ({ top: 0, bottom: 0 }) },
+    'expo-status-bar': { StatusBar: 'status' },
+    'react-native': { View: 'view', ScrollView: 'scroll', StyleSheet: { create: value => value }, ActivityIndicator: 'spinner', Alert: {} },
+    '@techenglish/design-tokens': { spacing: {} },
+    '../../src/shared/store/theme-context': { useTheme: () => ({ colors: {} }) },
+    '../../src/shared/store/auth-context': { useAuth: () => ({ user: { displayName: 'Learner' }, logout() {} }) },
+    '../../src/shared/api/api-client': { api: { get: async () => ({}) } },
+    'expo-router': { useFocusEffect: callback => { focus = callback; }, useRouter: () => ({ push: route => routes.push(route) }) },
+  });
+  screen.render(); focus(); await screen.flush();
+  const button = screen.render().find(n => n.type === 'button' && label(n) === 'Tiến độ học tập');
+  assert.ok(button);
+  button.props.onPress();
+  assert.deepEqual(routes, ['/progress']);
+  assert.equal(mobileNotificationRoute('/(tabs)/progress'), '/progress');
+  assert.equal(mobileNotificationRoute('/learn/progress'), '/progress');
+});
+
+test('progress shows real totals before the optional course report arrives and preserves them on refresh failure', async () => {
+  let finishPath;
+  let failProgress = false;
+  const routes = [];
+  const payload = { summary: { completedLessons: 2, startedLessons: 3, studiedWords: 20 }, recentAttempts: [{ id: 'attempt1', exam: { title: 'Cloud test' }, passed: true, scorePercent: 80 }] };
+  const screen = mount('../../app/progress.tsx', {
+    '../src/shared/ui/primitives': ui, '../src/shared/ui/FeatureScreen': feature,
+    '../src/shared/ui/AppIcon': { MaterialIcons: 'icon' },
+    '../../../packages/shared-kernel/src/learning-report': reportBuilder,
+    'expo-router': { useFocusEffect: callback => { focus = callback; }, useRouter: () => ({ push: route => routes.push(route) }) },
+    '../src/shared/api/api-client': { api: { get: path => path === '/progress/me'
+      ? failProgress ? Promise.reject(new Error('Network unavailable')) : Promise.resolve(payload)
+      : new Promise(resolve => { finishPath = resolve; }) } },
+  });
+  let focus;
+  screen.render({ embedded: false });
+  focus();
+  await screen.flush();
+  let tree = screen.render({ embedded: false });
+  assert.equal(tree.find(n => n.type === 'screen').props.loading, false);
+  assert.equal(tree.find(n => n.type === 'screen').props.embedded, false);
+  assert.ok(tree.some(n => n.type === 'text' && label(n) === '20'));
+  assert.ok(tree.some(n => n.props?.accessibilityLabel === 'Đang tải kết quả cấp hiện tại'));
+  tree.find(n => n.type === 'button' && label(n) === 'Xem kết quả').props.onPress();
+  assert.equal(routes.pop(), '/test-result/attempt1');
+  finishPath({ configured: true, level: { name: 'Beginner' }, domains: [{ id: 'cloud', name: 'Cloud', state: 'assessment_due', completedLessons: 2, totalLessons: 2, assessment: null }] });
+  await screen.flush();
+  tree = screen.render({ embedded: false });
+  assert.ok(tree.some(n => n.props?.accessibilityRole === 'progressbar' && n.props.accessibilityValue.now === 100));
+  failProgress = true;
+  tree.find(n => n.type === 'button' && label(n) === 'Làm mới tiến độ').props.onPress();
+  await screen.flush();
+  tree = screen.render({ embedded: false });
+  assert.ok(tree.some(n => n.type === 'text' && label(n) === '20'));
+  assert.ok(tree.some(n => n.props?.accessibilityRole === 'alert' && label(n) === 'Network unavailable'));
+  finishPath({ configured: false });
+  await screen.flush();
+});
 
 test('native and EAS profiles use the deployed HTTPS API without a LAN override', () => {
   const apiUrl = 'https://api.techenglish.click/api/v1';

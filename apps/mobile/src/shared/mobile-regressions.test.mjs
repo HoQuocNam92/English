@@ -104,7 +104,7 @@ test('Google browser authentication never starts when opening native auth screen
 
 test('web agenda and recommendation links resolve to native screens without losing context', () => {
   assert.equal(mobileRoute('/learn'), '/(tabs)/home');
-  assert.equal(mobileRoute('/learn/progress'), '/(tabs)/progress');
+  assert.equal(mobileRoute('/learn/progress'), '/progress');
   assert.equal(mobileRoute('/learn/plan'), '/learning-plan');
   assert.equal(mobileRoute('/learn/flashcards/lesson-1'), '/flashcards/words?sourceLessonId=lesson-1');
   assert.equal(mobileRoute('/learn/flashcards/review/practice'), '/flashcards?mode=review');
@@ -127,7 +127,7 @@ test('every learning menu destination exists and covers the learner areas', () =
     const base = new URL(`../../app${route}`, import.meta.url);
     assert.ok(existsSync(new URL(`${base.href}.tsx`)) || existsSync(new URL(`${base.href}/index.tsx`)), `Missing menu destination ${route}`);
   }
-  for (const route of ['/lessons', '/flashcards/dashboard', '/flashcards/explore', '/flashcards/history', '/certifications', '/catalog', '/learning-plan', '/placement-test', '/profile/edit', '/profile/history', '/(tabs)/progress']) {
+  for (const route of ['/lessons', '/flashcards/dashboard', '/flashcards/explore', '/flashcards/history', '/certifications', '/catalog', '/learning-plan', '/placement-test', '/profile/edit', '/profile/history', '/progress']) {
     assert.ok(links.includes(route), `Learner feature not reachable: ${route}`);
   }
 });
