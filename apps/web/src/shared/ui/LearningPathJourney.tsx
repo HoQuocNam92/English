@@ -79,7 +79,7 @@ export function LearningPathJourney({ full = false, lessonId, onAvailability }: 
   const readAll = path.domains.every(domain => domain.available) && path.totalLessons > 0 && path.completedLessons === path.totalLessons;
   const percent = path.totalLessons ? Math.round(path.completedLessons / path.totalLessons * 100) : 0;
   const title = path.allCompleted
-    ? path.finalLevel ? 'Bạn đã hoàn thành lộ trình Chuyên nghiệp' : `Đã hoàn thành cấp ${learningLevelLabel(path.level)}`
+    ? `Bạn đã hoàn thành trình độ ${learningLevelLabel(path.level)}.`
     : readAll ? 'Đã học xong bài — tiếp tục kiểm tra tổng kết' : 'Bước học tiếp theo';
 
   return <div className="space-y-5">
@@ -111,7 +111,7 @@ export function LearningPathJourney({ full = false, lessonId, onAvailability }: 
 
       {path.allCompleted && <p className="mt-3 text-sm leading-6">Bạn đã học đủ chuỗi bài và đạt bài tổng kết. Đây là kết quả học tập trên nền tảng, không phải chứng chỉ nghề nghiệp.</p>}
       {path.canAdvance && path.nextLevel && <div className="mt-4 space-y-3">
-        {confirm ? <div className="rounded-xl border border-primary/20 bg-white p-4"><p className="text-sm leading-6">Chuyển từ <strong>{learningLevelLabel(path.level)}</strong> sang <strong>{learningLevelLabel(path.nextLevel)}</strong>? Lịch sử và bài đã hoàn thành được giữ lại. Các bài mới bắt đầu theo tiến độ riêng.</p><div className="mt-3 flex flex-wrap gap-2"><button type="button" disabled={advancing} onClick={() => void advance()} className={actionClass}>{advancing ? 'Đang chuyển…' : 'Chuyển trình độ'}</button><button type="button" disabled={advancing} onClick={() => setConfirm(false)} className={secondaryClass}>Tiếp tục ôn tập</button></div></div>
+        {confirm ? <div className="rounded-xl border border-primary/20 bg-white p-4"><p className="text-sm leading-6">Bạn muốn chuyển lên trình độ <strong>{learningLevelLabel(path.nextLevel)}</strong>? Kết quả đã học sẽ được lưu lại.</p><div className="mt-3 flex flex-wrap gap-2"><button type="button" disabled={advancing} onClick={() => void advance()} className={actionClass}>{advancing ? 'Đang chuyển…' : 'Chuyển trình độ'}</button><button type="button" disabled={advancing} onClick={() => setConfirm(false)} className={secondaryClass}>Tiếp tục ôn tập</button></div></div>
           : <button type="button" onClick={() => setConfirm(true)} className={actionClass}>Chuyển lên trình độ {learningLevelLabel(path.nextLevel)} <AppIcon className="text-lg">arrow_forward</AppIcon></button>}
       </div>}
       {path.allCompleted && !path.finalLevel && !path.nextLevel && <p className="mt-3 text-sm">Nội dung cấp tiếp theo đang được bổ sung. Bạn có thể tiếp tục ôn tập.</p>}
