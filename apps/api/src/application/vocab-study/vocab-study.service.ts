@@ -25,8 +25,8 @@ export class VocabStudyService {
       const where = { status: 'published' as const, levelId: profile.level!.id, OR: [{ domainId: domain.id }, { domains: { some: { domainId: domain.id } } }] }
       const [total, remaining, samples] = await Promise.all([
         this.prisma.vocabulary.count({ where }),
-        this.prisma.vocabulary.count({ where: { ...where, vocabProgress: { none: { learnerId } } } }),
-        this.prisma.vocabulary.findMany({ where: { ...where, vocabProgress: { none: { learnerId } } }, select: { id: true, term: true }, orderBy: { term: 'asc' }, take: 6 }),
+        this.prisma.vocabulary.count({ where: { ...where, vocabProgress: { none: { learnerId, lastRating: { not: null } } } } }),
+        this.prisma.vocabulary.findMany({ where: { ...where, vocabProgress: { none: { learnerId, lastRating: { not: null } } } }, select: { id: true, term: true }, orderBy: { term: 'asc' }, take: 6 }),
       ])
       return { domain, level: profile.level, total, remaining, samples }
     }))
@@ -59,6 +59,26 @@ export class VocabStudyService {
       vocabWhere.level = { code: filters.levelCode }
     }
 
+    const profile = await this.prisma.learnerProfile.findUnique({
+      where: { userId: learnerId },
+      select: {
+        dailyVocabularyTarget: true, levelId: true, levelSelectedAt: true, learningGoal: true,
+        domains: { select: { domainId: true } },
+        certGoals: { select: { certificate: { select: { domains: { select: { domainId: true } } } } } },
+      },
+    })
+    // Lessons/topics define their own vocabulary. General new-word sessions follow
+    // the saved learning path; SRS still includes words from previous levels.
+    if (!filters?.sourceLessonId && !filters?.topicId && !filters?.reviewOnly) {
+      if (!filters?.levelCode && profile?.levelId && profile.levelSelectedAt !== null) vocabWhere.levelId = profile.levelId
+      if (!filters?.domainCode) {
+        const selected = profile?.domains?.map(link => link.domainId) ?? []
+        const certificates = profile?.certGoals?.flatMap(link => link.certificate.domains.map(domain => domain.domainId)) ?? []
+        const domainIds = [...new Set(profile?.learningGoal === 'certification' ? certificates : profile?.learningGoal === 'vocabulary' ? selected : [...selected, ...certificates])]
+        if (domainIds.length) vocabWhere.OR = [{ domainId: { in: domainIds } }, { domains: { some: { domainId: { in: domainIds } } } }]
+      }
+    }
+
     if (filters?.onlyNew === false && !filters?.reviewOnly && !fullLessonReview) {
       vocabWhere.AND = [{ OR: [
         { vocabProgress: { none: { learnerId, lastRating: { not: null } } } },
@@ -83,9 +103,6 @@ export class VocabStudyService {
     const { today: todayStart, tomorrow } = vietnamPeriods()
     const studiedToday = await this.prisma.vocabularyProgress.count({
       where: { learnerId, lastRating: { not: null }, lastReviewAt: { gte: todayStart, lt: tomorrow } },
-    })
-    const profile = await this.prisma.learnerProfile.findUnique({
-      where: { userId: learnerId }, select: { dailyVocabularyTarget: true },
     })
     const dailyTarget = profile?.dailyVocabularyTarget ?? 10
     const remainingToday = filters?.continueLearning ? dailyTarget : Math.max(0, dailyTarget - studiedToday)

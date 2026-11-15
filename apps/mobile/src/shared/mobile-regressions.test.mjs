@@ -302,7 +302,7 @@ test('flashcard audio is separate from flipping and only the selected rating lig
   const ts = require('typescript');
   const code = ts.transpileModule(readFileSync(new URL('../../app/flashcards/index.tsx', import.meta.url), 'utf8'), { compilerOptions: { module: ts.ModuleKind.CommonJS, jsx: ts.JsxEmit.ReactJSX } }).outputText;
   const state = [], effects = [], requests = [], routes = [];
-  let cursor = 0, focus, failCount = false, completeRate;
+  let cursor = 0, focus, failCount = false, completeRate; let params = {};
   const saving = new Promise(resolve => { completeRate = resolve; });
   const jsx = (type, props) => ({ type, props });
   class Value { interpolate() { return 0; } setValue() {} }
@@ -317,7 +317,7 @@ test('flashcard audio is separate from flipping and only the selected rating lig
       useCallback: callback => callback, useRef: current => ({ current }), useEffect: callback => effects.push(callback),
     },
     'react-native': { ScrollView: 'scroll', View: 'view', KeyboardAvoidingView: 'keyboard', Animated: { Value, View: 'animated' }, Alert: { alert() {} }, Dimensions: { get: () => ({ width: 390 }) }, Platform: { OS: 'ios' }, StyleSheet: { create: value => value } },
-    'expo-router': { useLocalSearchParams: () => ({}), useRouter: () => ({ push: route => routes.push(route) }), useFocusEffect: callback => { focus = callback; } },
+    'expo-router': { useLocalSearchParams: () => params, useRouter: () => ({ push: route => routes.push(route) }), useFocusEffect: callback => { focus = callback; } },
     'expo-speech': { stop: async () => {}, speak() {} },
     '../../src/shared/api/api-client': { api: { get: async path => {
       requests.push(path);
@@ -361,4 +361,13 @@ test('flashcard audio is separate from flipping and only the selected rating lig
   assert.ok(label(screen).includes('Hôm nay: 1/10'));
   assert.ok(label(screen).includes('TLS'));
   assert.deepEqual(JSON.parse(JSON.stringify(requests.find(item => item?.path))), { path: '/vocab-study/rate', body: { vocabularyId: 'one', rating: 'easy' } });
+  // Opening a lesson from the learning path must include its studied words.
+  params = { sourceLessonId: 'linked-lesson' };
+  state.length = 0; effects.length = 0; requests.length = 0;
+  render(); effects[0]();
+  await new Promise(resolve => setImmediate(resolve));
+  const session = requests.find(item => typeof item === 'string' && item.startsWith('/vocab-study/session'));
+  assert.ok(session.includes('sourceLessonId=linked-lesson'));
+  assert.ok(session.includes('onlyNew=false'), 'lesson review must not silently filter out all previously studied words');
+
 });

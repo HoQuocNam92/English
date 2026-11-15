@@ -71,7 +71,7 @@ export default function FlashcardsScreen() {
 
   // Learn phase
   const [flipped, setFlipped] = useState(false);
-  const [onlyNew, setOnlyNew] = useState(params.mode !== 'review'); const [autoPronounce, setAutoPronounce] = useState(false); const [knownCount, setKnownCount] = useState<number | null>(null);
+  const [onlyNew, setOnlyNew] = useState(params.mode !== 'review' && !params.sourceLessonId && !params.lessonId); const [autoPronounce, setAutoPronounce] = useState(false); const [knownCount, setKnownCount] = useState<number | null>(null);
   const [knownError, setKnownError] = useState(false);
   const loadKnownCount = useCallback(async () => {
     try {
@@ -404,7 +404,9 @@ export default function FlashcardsScreen() {
   const renderLearnPhase = () => {
     const daily = dailyVocabularyProgress(sessionMeta?.studiedToday, sessionMeta?.maxDailyNewWords);
     if (!currentWord || currentBatch.length === 0 || allDone) {
-      return <View style={styles.emptySession}><EmptyState icon="school" title={isReview ? "Chưa có từ đến hạn ôn" : "Không còn từ mới"} detail={isReview ? "Quay lại sau hoặc tiếp tục học từ mới." : "Những từ đã học và đã biết đã được loại khỏi phiên mặc định."} />
+      const lessonScoped = Boolean(params.sourceLessonId || params.lessonId);
+      return <View style={styles.emptySession}><EmptyState icon="school" title={isReview ? 'Chưa có từ đến hạn ôn' : lessonScoped ? onlyNew ? 'Bạn đã học hết từ mới trong bài này' : 'Bài học chưa có từ vựng' : 'Chưa có từ mới phù hợp'} detail={isReview ? 'Quay lại sau hoặc tiếp tục học từ mới.' : lessonScoped && onlyNew ? 'Bạn có thể ôn lại những từ đã học trong bài.' : lessonScoped ? 'Chưa có từ vựng được xuất bản cho bài này.' : 'Bạn có thể xem lại từ đã học hoặc chọn bộ từ khác.'} />
+        {lessonScoped && onlyNew && !isReview && <Button onPress={() => setOnlyNew(false)}>Ôn lại từ trong bài</Button>}
         <TouchableOpacity onPress={() => router.push('/flashcards/history' as any)} style={styles.textBtn}><Text style={[styles.textBtnText, { color: colors.primary }]}>Xem từ đã học</Text></TouchableOpacity>
       </View>;
     }
@@ -658,7 +660,7 @@ export default function FlashcardsScreen() {
 
   return (
     <FeatureScreen title={phaseTitle} subtitle={phaseSubtitle} loading={loading} error={error} onRetry={loadSession}>
-      {phase === 'learn' && !isReview && !isPreview && <TouchableOpacity onPress={() => setOnlyNew(value => !value)} accessibilityRole="checkbox" accessibilityState={{ checked: onlyNew }} style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}><MaterialIcons name={onlyNew ? 'check-box' : 'check-box-outline-blank'} size={22} color={colors.primary} /><Text>Chỉ ôn từ mới</Text></TouchableOpacity>}
+      {phase === 'learn' && !isReview && !isPreview && <TouchableOpacity onPress={() => setOnlyNew(value => !value)} accessibilityRole="checkbox" accessibilityState={{ checked: onlyNew }} style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}><MaterialIcons name={onlyNew ? 'check-box' : 'check-box-outline-blank'} size={22} color={colors.primary} /><Text>Chỉ hiện từ chưa học</Text></TouchableOpacity>}
       {phase === 'learn' && renderLearnPhase()}
       {phase === 'quiz' && renderQuizPhase()}
       {phase === 'summary' && renderSummaryPhase()}

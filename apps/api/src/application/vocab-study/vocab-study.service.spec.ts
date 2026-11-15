@@ -101,7 +101,7 @@ test('vocabulary recommendations use the exact profile level and selected domain
   assert.equal(result.groups[0].remaining, 7)
   assert.ok(queries.every(query => query.where.levelId === 'intermediate-id'))
   assert.deepEqual(queries[0].where.OR, [{ domainId: 'software-id' }, { domains: { some: { domainId: 'software-id' } } }])
-  assert.deepEqual(queries[2].where.vocabProgress, { none: { learnerId: 'learner' } })
+  assert.deepEqual(queries[2].where.vocabProgress, { none: { learnerId: 'learner', lastRating: { not: null } } })
 })
 
 
@@ -282,4 +282,38 @@ test('lesson review returns all eight linked words even after the daily target a
   const newOnly = await service.getStudySession('learner', { sourceLessonId: 'lesson', onlyNew: true })
   assert.equal(newOnly.words.length, 0, 'new-word mode still respects the daily target')
   assert.ok(query.where.vocabProgress.none)
+})
+
+test('general new-word sessions use the saved domain and level while lesson and SRS scopes stay intact', async () => {
+  let query: any
+  const profile = {
+    dailyVocabularyTarget: 20, learningGoal: 'vocabulary', levelId: 'beginner-id', levelSelectedAt: new Date(),
+    domains: [{ domainId: 'software-id' }], certGoals: [{ certificate: { domains: [{ domainId: 'cloud-id' }] } }],
+  }
+  const service = new VocabStudyService({
+    vocabulary: { findMany: async (args: any) => { query = args; return [] } },
+    vocabularyProgress: { count: async () => 0 },
+    learnerProfile: { findUnique: async () => profile },
+    lesson: { findUnique: async () => ({ status: 'published', vocabularies: [{ vocabularyId: 'earlier-level-word' }] }) },
+  } as any)
+  await service.getStudySession('learner', { onlyNew: true })
+  assert.equal(query.where.levelId, 'beginner-id')
+  assert.deepEqual(query.where.OR, [{ domainId: { in: ['software-id'] } }, { domains: { some: { domainId: { in: ['software-id'] } } } }])
+  await service.getStudySession('learner', { sourceLessonId: 'lesson', onlyNew: false })
+  assert.equal(query.where.levelId, undefined)
+  assert.equal(query.where.OR, undefined)
+  assert.deepEqual(query.where.id.in, ['earlier-level-word'])
+  await service.getStudySession('learner', { reviewOnly: true })
+  assert.equal(query.where.levelId, undefined, 'SRS must retain words studied at earlier levels')
+  assert.equal(query.where.OR, undefined)
+  await service.getStudySession('learner', { domainCode: 'CLOUD', levelCode: 'advanced' })
+  assert.equal(query.where.levelId, undefined)
+  assert.deepEqual(query.where.level, { code: 'advanced' })
+  assert.deepEqual(query.where.OR[0], { domain: { code: 'CLOUD' } })
+  profile.learningGoal = 'certification'
+  await service.getStudySession('learner')
+  assert.deepEqual(query.where.OR[0], { domainId: { in: ['cloud-id'] } })
+  profile.learningGoal = 'both'
+  await service.getStudySession('learner')
+  assert.deepEqual(query.where.OR[0], { domainId: { in: ['software-id', 'cloud-id'] } })
 })
