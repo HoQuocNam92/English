@@ -93,9 +93,9 @@ export default function LearnerHomePage() {
     : wordsLeft > 0 ? `Còn ${wordsLeft} từ nữa là đạt mục tiêu hôm nay`
     : `Còn ${minutesLeft} phút nữa là đạt mục tiêu hôm nay`;
   const metrics = configured ? [
-    { label: 'Từ vựng', value: progress?.vocabularyToday ?? 0, target: targets.vocabularyPerDay, unit: 'từ', percent: progress?.vocabularyPercent, detail: wordsLeft ? `Học ${wordsLeft} từ nữa` : 'Đã đạt mục tiêu', href: studyHref },
+    { label: 'Từ vựng', value: progress?.vocabularyToday ?? 0, target: targets.vocabularyPerDay, unit: 'từ', percent: progress?.vocabularyPercent, detail: wordsLeft ? 'Học từ vựng' : 'Đã đạt mục tiêu', href: studyHref },
     { label: 'Thời gian học', value: progress?.studyMinutesToday ?? 0, target: targets.minutesPerDay, unit: 'phút', percent: progress?.studyMinutesPercent, detail: minutesLeft ? `Còn ${minutesLeft} phút` : 'Đã đạt mục tiêu', href: undefined },
-    { label: 'Bài thi tuần này', value: progress?.examsWeek ?? 0, target: targets.examsPerWeek, unit: 'bài', percent: progress?.examWeekPercent, detail: examsLeft ? `Làm ${examsLeft} bài nữa` : 'Đã đạt mục tiêu', href: '/learn/certifications' },
+    { label: 'Bài thi tuần này', value: progress?.examsWeek ?? 0, target: targets.examsPerWeek, unit: 'bài', percent: progress?.examWeekPercent, detail: examsLeft ? 'Làm bài thi' : 'Đã đạt mục tiêu', href: '/learn/certifications' },
   ] : [];
 
   return <LearnerShell>

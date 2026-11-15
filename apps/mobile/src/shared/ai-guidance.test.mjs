@@ -45,9 +45,9 @@ test('mobile reuses home hero and provides real lesson and exam actions with saf
   assert.ok(!label(actionable).includes('Bài thi catalog trùng'), 'same exam must only appear once');
   actions.find(node => node.type === 'touch' && label(node).includes('Bài học API kế tiếp')).props.onPress();
   assert.equal(routes.at(-1), '/lessons/core');
-  actions.find(node => node.type === 'touch' && label(node) === 'Học bài ngay').props.onPress();
+  actions.find(node => node.type === 'touch' && label(node) === 'Học bài').props.onPress();
   assert.equal(routes.at(-1), '/lessons/core');
-  actions.find(node => node.type === 'touch' && label(node) === 'Làm 2 bài nữa').props.onPress();
+  actions.find(node => node.type === 'touch' && label(node) === 'Làm bài thi').props.onPress();
   assert.equal(routes.at(-1), '/quiz/recommended');
   actions.find(node => node.type === 'touch' && label(node).includes('Bài kiểm tra API đề xuất')).props.onPress();
   assert.equal(routes.at(-1), '/quiz/recommended');
@@ -55,9 +55,9 @@ test('mobile reuses home hero and provides real lesson and exam actions with saf
   guidance.agenda.tasks = []; guidance.recommendations = []; data.exams = [];
   cursor = 0;
   const empty = nodes(exports.default());
-  empty.find(node => node.type === 'touch' && label(node) === 'Học bài ngay').props.onPress();
+  empty.find(node => node.type === 'touch' && label(node) === 'Học bài').props.onPress();
   assert.equal(routes.at(-1), '/(tabs)/learning');
-  empty.find(node => node.type === 'touch' && label(node) === 'Làm 2 bài nữa').props.onPress();
+  empty.find(node => node.type === 'touch' && label(node) === 'Làm bài thi').props.onPress();
   assert.equal(routes.at(-1), '/certifications');
   data.journey.targets.vocabularyPerDay = 20;
   data.journey.progress.vocabularyToday = 0;
