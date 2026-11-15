@@ -1,3 +1,4 @@
+import { selectionPopupPosition } from './ui/selection-popup.ts';
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
@@ -21,13 +22,14 @@ function harness() {
   const mocks = {
     react,
     'react/jsx-runtime': { jsx: (type, props) => ({ type, props }), jsxs: (type, props) => ({ type, props }) },
-    'react-native': { ActivityIndicator: 'spinner', KeyboardAvoidingView: 'keyboard', Modal: 'modal', Platform: { OS: 'android' }, ScrollView: 'scroll', StyleSheet: { create: value => value }, Text: 'text', TextInput: 'input', TouchableOpacity: 'button', View: 'view', useWindowDimensions: () => ({ width: 390 }) },
+    'react-native': { ActivityIndicator: 'spinner', KeyboardAvoidingView: 'keyboard', Modal: 'modal', Platform: { OS: 'android' }, ScrollView: 'scroll', StyleSheet: { create: value => value }, Text: 'text', TextInput: 'input', TouchableOpacity: 'button', View: 'view', useWindowDimensions: () => ({ width: 390, height: 844 }) },
     'react-native-safe-area-context': { useSafeAreaInsets: () => ({ top: 24, bottom: 24 }) },
     '@techenglish/design-tokens': { colors: { primary: '#4338ca', text: '#111827', mutedText: '#64748b', error: '#be123c' } },
     './AppIcon': { MaterialIcons: 'icon' }, './font-styles': { compactTextSize: value => value, interFontStyle: () => ({}) },
     'expo-speech': { stop: async () => {}, speak() {} },
     '../api/api-client': { subscribeSessionExpired: () => () => {}, api: { post: (path, body) => new Promise(resolve => requests.push({ path, body, resolve })) } },
     './rich-text': { renderRichTextChildren: value => value },
+    './selection-popup': { selectionPopupPosition },
   };
   const exports = {};
   const code = ts.transpileModule(readFileSync(new URL('./ui/TranslationProvider.tsx', import.meta.url), 'utf8'), { compilerOptions: { module: ts.ModuleKind.CommonJS, jsx: ts.JsxEmit.ReactJSX, target: ts.ScriptTarget.ES2022 } }).outputText;
@@ -45,9 +47,37 @@ test('selected phrase translates immediately with context and no editable field'
   assert.equal(h.requests[0].body.text, 'steps');
   assert.equal(h.requests[0].body.context, context);
   const preview = all.find(node => node.type === 'text' && node.props.children === context);
-  assert.equal(preview.props.numberOfLines, 3);
+  assert.equal(preview, undefined);
+  const sheet = all.find(node => node.props.accessibilityViewIsModal);
+  assert.equal(sheet.props.style.maxWidth, 360);
+  assert.equal(sheet.props.style.maxHeight, '72%');
   all.find(node => node.props.accessibilityLabel === 'Xem toàn bộ ngữ cảnh').props.onPress();
-  assert.equal(h.all().find(node => node.type === 'text' && node.props.children === context).props.numberOfLines, undefined);
+  assert.ok(h.all().find(node => node.type === 'text' && node.props.children === context));
+});
+
+test('native lookup floats outside passage and only sends one translation when pressed', () => {
+  const h = harness();
+  let tree = h.render();
+  tree.props.children.props.ref.current = { measureInWindow: callback => callback(0, 24, 390, 820) };
+  tree.props.value('steps', context, { x: 300, y: 700, width: 55, height: 24 }, 'passage');
+  const pill = h.all().find(node => node.props.accessibilityLabel === 'Dịch steps');
+  assert.ok(pill);
+  assert.equal(pill.props.style[0].position, 'absolute');
+  assert.equal(pill.props.style[1].height, 44);
+  assert.equal(pill.props.style[1].width, 100);
+  assert.equal(h.requests.length, 0);
+  pill.props.onPressIn(); pill.props.onPress();
+  assert.equal(h.requests.length, 1);
+  assert.equal(h.requests[0].body.text, 'steps');
+});
+
+test('lookup placement stays within a narrow phone screen at each edge', () => {
+  for (const rect of [{ x: 0, y: 0, width: 30, height: 20 }, { x: 285, y: 530, width: 35, height: 20 }]) {
+    const p = selectionPopupPosition(rect, { width: 320, height: 568 }, { top: 24, bottom: 24 });
+    assert.ok(p.left >= 12 && p.left + p.width <= 308);
+    assert.ok(p.top >= 32 && p.top + p.height <= 536);
+    assert.equal(p.height, 44);
+  }
 });
 
 test('changing selected phrase and closing discard stale translation responses', async () => {

@@ -14,6 +14,9 @@ const TextDepth = React.createContext(false);
 type AppTextProps = TextProps & { focusable?: boolean };
 export function Text({ style, children, focusable, ...props }: AppTextProps) {
   const translate = useTranslation();
+  const selectionHost = React.useRef<React.ElementRef<typeof View>>(null);
+  const selectionRequest = React.useRef(0);
+  const selectionOwner = React.useId();
   const nested = React.useContext(TextDepth);
   const resolved = StyleSheet.flatten(style);
   const baseFontSize = !nested ? Math.max(11, resolved?.fontSize ?? 15) : resolved?.fontSize;
@@ -23,7 +26,13 @@ export function Text({ style, children, focusable, ...props }: AppTextProps) {
   const text = isCode ? plainText(children) : richTextToPlainText(plainText(children));
   const nativeProps = { ...props, ...(focusable === undefined ? {} : { focusable }) } as TextProps;
   if (props.selectable && !nested && text.trim() && !props.onPress && !props.onLongPress) {
-    return <View style={{ alignSelf: 'stretch', flexShrink: 1 }}><SelectedText content={plainText(children)} monospace={isCode} fontSize={fontSize ?? 15} lineHeight={lineHeight ?? 21} color={typeof resolved?.color === 'string' ? resolved.color : colors.text} fontWeight={String(resolved?.fontWeight ?? '400')} onLookup={async (selection, context) => { translate(selection, context); }} onOpenLink={async href => { await Linking.openURL(href).catch(() => {}); }} dom={{ matchContents: true, scrollEnabled: false }} /></View>;
+    return <View ref={selectionHost} collapsable={false} style={{ alignSelf: 'stretch', flexShrink: 1 }}><SelectedText content={plainText(children)} monospace={isCode} fontSize={fontSize ?? 15} lineHeight={lineHeight ?? 21} color={typeof resolved?.color === 'string' ? resolved.color : colors.text} fontWeight={String(resolved?.fontWeight ?? '400')} onSelection={async (selection, context, rect) => {
+      const current = ++selectionRequest.current;
+      if (!rect) { translate('', '', null, selectionOwner); return; }
+      selectionHost.current?.measureInWindow((x, y) => {
+        if (current === selectionRequest.current) translate(selection, context, { ...rect, x: x + rect.x, y: y + rect.y }, selectionOwner);
+      });
+    }} onOpenLink={async href => { await Linking.openURL(href).catch(() => {}); }} dom={{ matchContents: true, scrollEnabled: false }} /></View>;
   }
   return <NativeText {...nativeProps} style={[
     !nested && { fontFamily: typography.fontFamily, fontSize: typography.body.fontSize, lineHeight: typography.body.lineHeight, color: colors.text },
