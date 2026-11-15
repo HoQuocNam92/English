@@ -244,7 +244,10 @@ export default function FlashcardPracticePage({ params }: { params: Promise<{ id
       await apiClient.post('/vocab-study/rate', { vocabularyId: question.vocabularyId, rating: 'mastered' });
       setQuizMarkedMastered(true); setQuizFeedback(true);
       setQuizResponses(previous => ({ ...previous, [quizIndex]: { answer: '', correct: true, mastered: true } }));
-      setQuizQuestions(previous => previous.filter((item, index) => index <= quizIndex || item.vocabularyId !== question.vocabularyId));
+      const remainingQuestions = quizQuestions.filter((item, index) => index <= quizIndex || item.vocabularyId !== question.vocabularyId);
+      setQuizQuestions(remainingQuestions);
+      if (quizIndex + 1 < remainingQuestions.length) goToQuizQuestion(quizIndex + 1);
+      else { setQuizMode(false); setIsFinished(true); showToast('Bạn đã hoàn thành phiên luyện từ vựng.', 'success', 'Hoàn thành'); }
     } catch { showToast('Chưa lưu được tiến độ. Vui lòng thử lại.', 'error'); }
     finally { savingRef.current = false; setSaving(false); }
   };

@@ -270,10 +270,13 @@ export default function FlashcardsScreen() {
       setResponses(previous => ({ ...previous, [quizIndex]: { answer: currentQuestion.answer, mastered: true } }));
       setMasteredSet(previous => new Set(previous).add(currentQuestion.vocabularyId));
       const result = { vocabId: currentQuestion.vocabularyId, term: words.find(word => word.id === currentQuestion.vocabularyId)?.term ?? currentQuestion.answer, correct: true, selfReported: true };
-      setQuizResults(previous => [...previous, result]);
+      const updatedResults = [...quizResults, result];
+      setQuizResults(updatedResults);
       setAllTimeResults(previous => [...previous, result]);
-      setQuestions(previous => previous.filter((question, index) => index <= quizIndex || question.vocabularyId !== currentQuestion.vocabularyId));
-      setShowResult(true);
+      const remainingQuestions = questions.filter((question, index) => index <= quizIndex || question.vocabularyId !== currentQuestion.vocabularyId);
+      setQuestions(remainingQuestions);
+      if (quizIndex + 1 < remainingQuestions.length) navigateQuiz(quizIndex + 1);
+      else handleQuizComplete(updatedResults);
     } catch (cause) {
       Alert.alert('Chưa lưu được đánh giá', cause instanceof Error ? cause.message : 'Vui lòng thử lại.');
     } finally { savingRef.current = false; setSaving(false); }
@@ -281,9 +284,9 @@ export default function FlashcardsScreen() {
 
   // ── Handle quiz completion ──────────────────────────────────────────────────
 
-  const handleQuizComplete = () => {
-    if (params.mode === 'quiz') { setMasteredSet(new Set(quizResults.filter(result => result.correct).map(result => result.vocabId))); setPhase('summary'); return; }
-    const latest = new Map(quizResults.map(result => [result.vocabId, result]));
+  const handleQuizComplete = (results = quizResults) => {
+    if (params.mode === 'quiz') { setMasteredSet(new Set(results.filter(result => result.correct).map(result => result.vocabId))); setPhase('summary'); return; }
+    const latest = new Map(results.map(result => [result.vocabId, result]));
     const correctIds = [...latest.values()].filter(r => r.correct).map(r => r.vocabId);
     const wrongIds = [...latest.values()].filter(r => !r.correct).map(r => r.vocabId);
 
