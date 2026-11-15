@@ -1,9 +1,10 @@
 import { MaterialIcons } from './AppIcon';
 import { ClearFiltersButton } from './ClearFiltersButton';
 import { useTranslation } from './TranslationProvider';
+import SelectedText from './SelectedText';
 import React from 'react';
 import { Button as PaperButton, Chip, Searchbar, TouchableRipple } from 'react-native-paper';
-import { Text as NativeText, TextInput as NativeInput, TouchableOpacity as NativeButton, ScrollView, View, StyleSheet, type StyleProp, type ViewStyle, type TextProps, type TextInputProps, type TouchableOpacityProps } from 'react-native';
+import { Text as NativeText, TextInput as NativeInput, TouchableOpacity as NativeButton, ScrollView, View, Linking, StyleSheet, type StyleProp, type ViewStyle, type TextProps, type TextInputProps, type TouchableOpacityProps } from 'react-native';
 import { colors, radius, typography } from '@techenglish/design-tokens';
 import { renderRichTextChildren, richTextToPlainText } from './rich-text';
 import { compactTextSize, interFontStyle } from './font-styles';
@@ -21,7 +22,10 @@ export function Text({ style, children, focusable, ...props }: AppTextProps) {
   const isCode = resolved?.fontFamily === 'monospace';
   const text = isCode ? plainText(children) : richTextToPlainText(plainText(children));
   const nativeProps = { ...props, ...(focusable === undefined ? {} : { focusable }) } as TextProps;
-  return <NativeText {...nativeProps} onLongPress={props.onLongPress ?? (props.selectable && text.trim() ? () => translate(text) : undefined)} style={[
+  if (props.selectable && !nested && text.trim() && !props.onPress && !props.onLongPress) {
+    return <View style={{ alignSelf: 'stretch', flexShrink: 1 }}><SelectedText content={plainText(children)} monospace={isCode} fontSize={fontSize ?? 15} lineHeight={lineHeight ?? 21} color={typeof resolved?.color === 'string' ? resolved.color : colors.text} fontWeight={String(resolved?.fontWeight ?? '400')} onLookup={async (selection, context) => { translate(selection, context); }} onOpenLink={async href => { await Linking.openURL(href).catch(() => {}); }} dom={{ matchContents: true, scrollEnabled: false }} /></View>;
+  }
+  return <NativeText {...nativeProps} style={[
     !nested && { fontFamily: typography.fontFamily, fontSize: typography.body.fontSize, lineHeight: typography.body.lineHeight, color: colors.text },
     style, { fontSize, lineHeight }, (!nested || resolved?.fontWeight || resolved?.fontFamily) && interFontStyle(resolved?.fontWeight, resolved?.fontFamily),
   ]}><TextDepth.Provider value={true}>{isCode ? children : renderRichTextChildren(children)}</TextDepth.Provider></NativeText>;

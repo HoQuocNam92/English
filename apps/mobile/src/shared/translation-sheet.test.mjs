@@ -34,37 +34,29 @@ function harness() {
   runInNewContext(code, { exports, require: name => { assert.ok(name in mocks, name); return mocks[name]; } });
   const render = () => { cursor = 0; return exports.TranslationProvider({ children: null }); };
   const all = () => nodes(render());
-  return { render, all, requests, open: value => render().props.value(value) };
+  return { render, all, requests, open: (value, source = context) => render().props.value(value, source) };
 }
 
-test('translation sheet puts input first, collapses long context and keeps action outside scrolling content', () => {
-  const h = harness(); h.open(context);
+test('selected phrase translates immediately with context and no editable field', () => {
+  const h = harness(); h.open('steps');
   const all = h.all();
-  const scroll = all.find(node => node.type === 'scroll');
-  const input = all.find(node => node.type === 'input');
+  assert.equal(all.some(node => node.type === 'input'), false);
+  assert.equal(h.requests.length, 1);
+  assert.equal(h.requests[0].body.text, 'steps');
+  assert.equal(h.requests[0].body.context, context);
   const preview = all.find(node => node.type === 'text' && node.props.children === context);
   assert.equal(preview.props.numberOfLines, 3);
-  assert.ok(all.indexOf(input) < all.indexOf(preview));
-  assert.equal(input.props.underlineColorAndroid, 'transparent');
-  assert.equal(nodes(scroll).some(node => node.type === 'button' && node.props.onPress && node.props.accessibilityState?.disabled !== undefined), false);
-  const expand = all.find(node => node.props.accessibilityLabel === 'Xem toàn bộ ngữ cảnh');
-  expand.props.onPress();
+  all.find(node => node.props.accessibilityLabel === 'Xem toàn bộ ngữ cảnh').props.onPress();
   assert.equal(h.all().find(node => node.type === 'text' && node.props.children === context).props.numberOfLines, undefined);
 });
 
-test('editing selection and closing the sheet discard stale translation responses', async () => {
-  const h = harness(); h.open(context);
-  h.all().find(node => node.type === 'input').props.onChangeText('step');
-  let translate = h.all().find(node => node.type === 'button' && node.props.accessibilityState?.disabled === false);
-  translate.props.onPress();
-  assert.equal(h.requests[0].body.text, 'step');
-  assert.equal(h.requests[0].body.context, context);
-  h.all().find(node => node.type === 'input').props.onChangeText('release');
+test('changing selected phrase and closing discard stale translation responses', async () => {
+  const h = harness(); h.open('steps');
+  h.open('release');
   h.requests[0].resolve({ translation: 'stale-result' });
   await new Promise(resolve => setTimeout(resolve, 0));
   assert.equal(h.all().some(node => node.props.children === 'stale-result'), false);
-  translate = h.all().find(node => node.type === 'button' && node.props.accessibilityState?.disabled === false);
-  translate.props.onPress();
+  assert.equal(h.requests[1].body.text, 'release');
   h.all().find(node => node.props.accessibilityLabel === 'Đóng bản dịch').props.onPress();
   h.requests[1].resolve({ translation: 'closed-result' });
   await new Promise(resolve => setTimeout(resolve, 0));

@@ -171,6 +171,7 @@ test('native buttons wrap interpolated quiz labels and numbers in Text while pre
     './AppIcon': { MaterialIcons: 'material-icon' },
     './ClearFiltersButton': { ClearFiltersButton: 'clear-filters' },
     './TranslationProvider': { useTranslation: () => () => {} },
+    './SelectedText': { default: 'selected-text' },
     './rich-text': { renderRichTextChildren: value => value, richTextToPlainText: value => value },
     './font-styles': { compactTextSize, interFontStyle },
     'react-native-paper': { Button: 'paper-button', TouchableRipple: 'paper-ripple', Chip: 'chip', Searchbar: 'searchbar' },

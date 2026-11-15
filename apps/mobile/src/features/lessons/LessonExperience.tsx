@@ -17,7 +17,8 @@ function sectionText(section: any) {
 }
 function LessonText({ text, style }: { text: string; style?: any }) {
   if (isRichText(text)) return <Text selectable style={style}>{text}</Text>;
-  return <Text selectable style={style}>{lessonSourceParts(text).map((part, index) => {
+  const parts = lessonSourceParts(text);
+  return <Text selectable={!parts.some(part => part.href)} style={style}>{parts.map((part, index) => {
     if (!part.href) return part.text;
     const url = part.href;
     return <Text key={index} accessibilityRole="link" accessibilityLabel={`Mở nguồn tham khảo: ${part.text}`} style={{ color: '#1d4ed8', fontWeight: '700', textDecorationLine: 'underline' }} onPress={() => { void Linking.openURL(url).catch(() => Alert.alert('Không mở được liên kết', 'Vui lòng kiểm tra kết nối mạng và thử lại.')); }}>{part.text}</Text>;
