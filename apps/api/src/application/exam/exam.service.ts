@@ -53,7 +53,8 @@ export class ExamsService {
     if (levelCode) where.level = { code: levelCode }
     if (status) where.status = status
     if (!canPreview) where.status = 'published'
-    if (kind === 'course_final' && canPreview) {
+    if (kind === 'course_final') {
+      if (!canPreview) throw new ForbiddenException('Bộ lọc tổng kết lộ trình chỉ dành cho quản trị nội dung')
       where.certificateId = null
       where.kind = { in: ['domain_test', 'practice'] }
     } else if (kind) where.kind = kind

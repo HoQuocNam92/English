@@ -39,6 +39,7 @@ test('admin can manage course finals while learner exam listings stay certificat
   await service.findAll({ status: 'draft' })
   assert.deepEqual(queries[2].certificateId, { not: null })
   assert.equal(queries[2].status, 'published')
+  await assert.rejects(() => service.findAll({ kind: 'course_final' }), (error: any) => error.getStatus?.() === 403)
 })
 
 test('course finals use the existing exam and question links without requiring a certificate', async () => {
