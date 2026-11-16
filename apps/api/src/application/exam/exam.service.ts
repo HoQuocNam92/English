@@ -138,7 +138,20 @@ export class ExamsService {
     })
   }
 
-  async delete(id: string) { await this.findOne(id); await this.prisma.exam.delete({ where: { id } }) }
+  async delete(id: string) {
+    await this.findOne(id)
+    const message = 'Không thể xóa bài thi đã có lượt làm bài của học viên. Hãy chuyển bài thi về bản nháp để ngừng cho làm bài và giữ lại lịch sử kết quả.'
+    if (await this.prisma.examAttempt.count({ where: { examId: id } })) {
+      throw new ConflictException(message)
+    }
+    try {
+      await this.prisma.exam.delete({ where: { id } })
+    } catch (error) {
+      // A learner can start an attempt between the count and the delete.
+      if ((error as { code?: string })?.code === 'P2003') throw new ConflictException(message)
+      throw error
+    }
+  }
   async publish(id: string) {
     const existing = await this.findOne(id)
     if (existing.status === 'published') return existing

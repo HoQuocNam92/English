@@ -24,6 +24,38 @@ function setup() {
 }
 const dto = { title: 'Cloud quiz', domainId: 'cloud', levelId: 'intermediate', certificateId: 'cert', questions: [{ questionId: 'q1', order: 1 }] }
 
+test('delete preserves attempts and reports a conflict, including a concurrently started attempt', async () => {
+  let attempts = 1
+  let deletes = 0
+  let deleteError: unknown
+  const db: any = {
+    exam: {
+      findUnique: async () => ({ id: 'exam' }),
+      delete: async ({ where }: any) => {
+        assert.equal(where.id, 'exam')
+        deletes++
+        if (deleteError) throw deleteError
+      },
+    },
+    examAttempt: { count: async ({ where }: any) => {
+      assert.equal(where.examId, 'exam')
+      return attempts
+    } },
+  }
+  const service = new ExamsService(db)
+  const isConflict = (error: any) => error.getStatus?.() === 409 && /bản nháp/.test(error.message)
+  await assert.rejects(() => service.delete('exam'), isConflict)
+  assert.equal(deletes, 0)
+  attempts = 0
+  deleteError = { code: 'P2003' }
+  await assert.rejects(() => service.delete('exam'), isConflict)
+  deleteError = new Error('database unavailable')
+  await assert.rejects(() => service.delete('exam'), /database unavailable/)
+  deleteError = undefined
+  await service.delete('exam')
+  assert.equal(deletes, 3)
+})
+
 test('create accepts matching questions and rejects other domains, levels and missing IDs before writing', async () => {
   const { service, writes } = setup()
   for (const questionId of ['q2', 'q3', 'missing']) {
