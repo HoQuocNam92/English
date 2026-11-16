@@ -23,3 +23,18 @@ allprojects {
 
 apply plugin: "expo-root-project"
 apply plugin: "com.facebook.react.rootproject"
+
+// Native libraries also need short object paths when building on Windows.
+if (System.getProperty('os.name').toLowerCase().contains('windows')) {
+  subprojects { nativeProject ->
+    nativeProject.plugins.withId('com.android.library') {
+      def androidExtension = nativeProject.extensions.getByName('android')
+      androidExtension.externalNativeBuild.cmake.buildStagingDirectory = new File(rootProject.projectDir, "../../../artifacts/cxx/${nativeProject.name}")
+      androidExtension.defaultConfig.externalNativeBuild.cmake.arguments.add('-DCMAKE_OBJECT_PATH_MAX=240')
+      def ninjaPath = rootProject.findProperty('windowsNinjaPath')
+      if (ninjaPath) {
+        androidExtension.defaultConfig.externalNativeBuild.cmake.arguments.add("-DCMAKE_MAKE_PROGRAM=${ninjaPath.toString().replace('\\', '/')}")
+      }
+    }
+  }
+}
