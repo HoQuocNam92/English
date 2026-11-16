@@ -211,7 +211,7 @@ export default function AdminTestsPage() {
                 <span>{new Date(exam.createdAt).toLocaleDateString('vi-VN')}</span>
               </div>
               <ActionGroup className="content-card-footer">
-                <Link href={`/admin/questions?examId=${exam.id}`} className="text-sm font-semibold text-primary">Xem {exam._count?.questions ?? 0} câu hỏi</Link><ActionButton action="edit" href={`/admin/tests/builder?id=${exam.id}`} />
+                <ActionButton action="view" href={`/admin/questions?examId=${exam.id}`} label={`Xem ${exam._count?.questions ?? 0} câu hỏi`} /><ActionButton action="edit" href={`/admin/tests/builder?id=${exam.id}`} />
                 <ActionButton action="delete" onClick={() => void removeExam(exam)} />
               </ActionGroup>
             </div>

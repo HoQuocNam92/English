@@ -175,7 +175,7 @@ export default function TestBuilderPage() {
       await (isEdit
         ? await apiClient.patch(`/exams/${examId}`, payload)
         : await apiClient.post('/exams', payload));
-      showToast(targetStatus === 'published' ? 'Đã xuất bản bài kiểm tra.' : 'Đã lưu bản nháp.', 'success');
+      showToast(isEdit ? 'Đã lưu thay đổi.' : targetStatus === 'published' ? 'Đã tạo và xuất bản bài kiểm tra.' : 'Đã lưu bản nháp.', 'success');
       router.push('/admin/tests');
     } catch (e) {
       setGlobalError(e instanceof ApiClientError ? e.message : 'Lỗi khi lưu bài thi');
