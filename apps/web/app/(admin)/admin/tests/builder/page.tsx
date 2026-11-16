@@ -56,7 +56,6 @@ export default function TestBuilderPage() {
   const [errors, setErrors] = React.useState<Record<string, string>>({});
   const [loading, setLoading] = React.useState(false);
   const [saving, setSaving] = React.useState(false);
-  const [savedExam, setSavedExam] = React.useState<{ id: string; title: string; certificateId: string; certificateName: string; certificateActive: boolean; published: boolean; topicPractice: boolean } | null>(null);
   const [globalError, setGlobalError] = React.useState('');
 
   const changeScope = (nextDomainId: string, nextLevelId: string) => {
@@ -173,10 +172,11 @@ export default function TestBuilderPage() {
         questions: selectedQuestionIds.map((id, idx) => ({ questionId: id, order: idx + 1 })),
       };
 
-      const saved: any = isEdit
+      await (isEdit
         ? await apiClient.patch(`/exams/${examId}`, payload)
-        : await apiClient.post('/exams', payload);
-      setSavedExam({ id: saved?.id ?? saved?.data?.id ?? examId ?? '', title: title.trim(), certificateId: kind === 'course_final' ? '' : certificateId, certificateName: selectedCertificate?.name || 'Chứng chỉ đã chọn', certificateActive: selectedCertificate?.isActive !== false, published: targetStatus === 'published', topicPractice: kind === 'practice' && Boolean(certificateId) });
+        : await apiClient.post('/exams', payload));
+      showToast(targetStatus === 'published' ? 'Đã xuất bản bài kiểm tra.' : 'Đã lưu bản nháp.', 'success');
+      router.push('/admin/tests');
     } catch (e) {
       setGlobalError(e instanceof ApiClientError ? e.message : 'Lỗi khi lưu bài thi');
     } finally {
@@ -224,38 +224,6 @@ export default function TestBuilderPage() {
     setQFilterSkill('');
     setQOnlySelected(false);
   };
-
-  if (savedExam && !savedExam.certificateId) {
-    return <FormPageLayout className="max-w-3xl"><PageHeader title={savedExam.published ? 'Đã xuất bản bài tổng kết lộ trình' : 'Đã lưu bản nháp'} description={savedExam.title} /><section role="status" className="mt-6 space-y-4 rounded-2xl border border-outline-variant bg-white p-6"><p>{savedExam.published ? 'Lộ trình dùng bài tổng kết đã xuất bản theo chuyên ngành và trình độ đã chọn. Nếu có nhiều bài tổng kết, bài mới nhất được ưu tiên.' : 'Xuất bản bài tổng kết để sử dụng trong lộ trình.'}</p><p>Các câu đã chọn được lưu vào bộ đề này. Thêm câu vào ngân hàng không tự thêm vào bộ đề.</p><a className="ui-button ui-button-primary" href={`/admin/tests/builder?id=${savedExam.id}`}>Xem và chỉnh sửa câu hỏi trong đề</a><Link className="ui-button ui-button-outline" href="/admin/tests">Về danh sách bài kiểm tra</Link></section></FormPageLayout>;
-  }
-  if (savedExam) {
-    return <FormPageLayout className="max-w-3xl">
-      <PageHeader title={savedExam.published ? 'Đã xuất bản bài kiểm tra' : 'Đã lưu bản nháp'} description={savedExam.title} />
-      <section role="status" className="mt-6 space-y-4 rounded-2xl border border-outline-variant bg-white p-6">
-        <p className="font-semibold">{savedExam.published ? 'Bài kiểm tra đã được xuất bản trong chứng chỉ liên quan.' : 'Học viên chưa thấy bài này. Hãy xuất bản bài kiểm tra để mở cho học viên.'}</p>
-        {!savedExam.certificateActive && <p className="rounded-xl bg-amber-50 p-3 text-sm text-amber-900">Chứng chỉ đang tắt. Hãy bật chứng chỉ trong Quản lý chứng chỉ trước khi giới thiệu bài kiểm tra cho học viên.</p>}
-        <div className="rounded-xl bg-primary/5 p-4 text-sm leading-7">
-          <p className="font-bold">Học viên tìm bài ở đâu?</p>
-          <p>Chứng chỉ → tìm “{savedExam.title}” → chọn đúng tên bài kiểm tra trong kết quả.</p>
-          <p className="text-on-surface-variant">Bài kiểm tra đã xuất bản có thể tìm bằng tên bài trên trang Chứng chỉ.</p>
-        </div>
-        {savedExam.topicPractice && <p className="text-sm text-on-surface-variant">Bài luyện tập chỉ mở khi học viên hoàn thành các bài học kiến thức đã xuất bản của chủ đề được chọn (hoặc của chứng chỉ nếu không chọn chủ đề). Hãy tạo bài học ôn chứng chỉ, gắn đúng chứng chỉ/chủ đề và xuất bản trong Quản lý bài học.</p>}
-        <div className="flex flex-wrap gap-3">
-          <button type="button" className="ui-button ui-button-primary" onClick={async () => {
-            try {
-              await navigator.clipboard.writeText(`${window.location.origin}/learn/certifications/${savedExam.certificateId}?tab=exams&examId=${encodeURIComponent(savedExam.id)}`);
-              showToast('Đã sao chép đường dẫn. Học viên đăng nhập rồi mở đường dẫn này để xem bài kiểm tra.', 'success');
-            } catch { showToast('Không thể sao chép tự động. Bạn có thể chọn và sao chép đường dẫn bên dưới.', 'error'); }
-          }}>Sao chép đường dẫn cho học viên</button>
-          <Link className="ui-button ui-button-outline" href="/admin/tests">Về danh sách quản trị</Link>
-        </div>
-        <label className="block text-sm font-semibold">Đường dẫn trực tiếp tới bài kiểm tra
-          <input readOnly aria-label="Đường dẫn bài kiểm tra dành cho học viên" onFocus={event => event.target.select()} value={`${window.location.origin}/learn/certifications/${savedExam.certificateId}?tab=exams&examId=${encodeURIComponent(savedExam.id)}`} className="mt-2 h-11 w-full rounded-xl border border-outline-variant px-3 text-sm font-normal" />
-        </label>
-        <p className="text-xs text-on-surface-variant">Mở đường dẫn bằng tài khoản học viên. Bài còn ở bản nháp sẽ chưa xuất hiện.</p>
-      </section>
-    </FormPageLayout>;
-  }
 
   if (loading) {
     return (
