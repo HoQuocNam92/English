@@ -16,7 +16,7 @@ import { confirmDialog, PageHeader, SearchInput, Pagination } from '@/shared/ui'
 import { apiClient, ApiClientError } from '@/shared/api/api-client';
 import type { ExamItem, PaginatedResponse } from '@/shared/api/api-client';
 
-const EXAM_KINDS: Record<string, string> = { practice: 'Luyện tập chủ đề', domain_test: 'Kiểm tra chuyên ngành', mock_exam: 'Thi thử chứng chỉ', scenario_assessment: 'Tình huống thực tế' };
+const EXAM_KINDS: Record<string, string> = { course_final: 'Tổng kết lộ trình', practice: 'Luyện tập chủ đề', domain_test: 'Kiểm tra chuyên ngành', mock_exam: 'Thi thử chứng chỉ', scenario_assessment: 'Tình huống thực tế' };
 
 const STATUSES = [
   { value: '', label: 'Tất cả trạng thái' },
@@ -89,7 +89,7 @@ export default function AdminTestsPage() {
   return (
     <div className="admin-page-stack">
       <div className="flex items-start justify-between gap-4">
-        <PageHeader title="Bài kiểm tra chứng chỉ" />
+        <PageHeader title="Bài kiểm tra" />
         <Link href="/admin/tests/builder" className="inline-flex shrink-0 items-center gap-2 rounded-xl bg-primary px-4 py-2.5 text-sm font-semibold !text-white shadow-sm"><AppIcon className=" text-[19px]">add</AppIcon>Tạo bài kiểm tra</Link>
       </div>
       {/* Filters */}
@@ -154,11 +154,12 @@ export default function AdminTestsPage() {
                   <h3 className="font-bold text-on-surface text-base line-clamp-2 flex-1">{exam.title}</h3>
                   <StatusBadge status={exam.status} />
                 </div>
-                <span className="mb-3 inline-flex rounded-full bg-violet-50 px-2.5 py-1 text-[11px] font-bold text-violet-700">{EXAM_KINDS[exam.kind] ?? exam.kind}</span>
+                <span className="mb-3 inline-flex rounded-full bg-violet-50 px-2.5 py-1 text-[11px] font-bold text-violet-700">{!exam.certificateId && ['domain_test', 'practice'].includes(exam.kind) ? 'Tổng kết lộ trình' : EXAM_KINDS[exam.kind] ?? exam.kind}</span>
+                {exam.isCourseAssessment && <p className="mb-3 text-xs font-semibold text-emerald-700">Đang dùng làm tổng kết trong lộ trình</p>}
                 <div className="mb-3 rounded-xl bg-surface-container p-3 text-xs leading-5 text-on-surface-variant">
-                  <p>Chứng chỉ: <strong className="text-on-surface">{exam.certificate?.name ?? 'Chưa gắn chứng chỉ'}</strong>{exam.certificate?.isActive === false && <span className="ml-1 font-semibold text-amber-700">(đang tắt)</span>}</p>
-                  <p>{exam.status === 'published' ? `${exam._count?.questions ?? 0} câu hỏi · Học viên mở chứng chỉ → Bài kiểm tra` : 'Bản nháp · Học viên chưa thấy bài này'}</p>
-                  {exam.status === 'published' && exam.kind === 'practice' && <p>Cần bài học kiến thức đã xuất bản; học viên phải học xong trước khi làm.</p>}
+                  <p>Chứng chỉ: <strong className="text-on-surface">{exam.certificate?.name ?? 'Không áp dụng — bài kiểm tra theo chuyên ngành, trình độ'}</strong>{exam.certificate?.isActive === false && <span className="ml-1 font-semibold text-amber-700">(đang tắt)</span>}</p>
+                  <p>{exam.status === 'published' ? `${exam._count?.questions ?? 0} câu hỏi · Học viên mở ${exam.certificateId ? 'Chứng chỉ → Bài kiểm tra' : 'Lộ trình → Làm tổng kết'}` : 'Bản nháp · Học viên chưa thấy bài này'}</p>
+                  {exam.status === 'published' && exam.certificateId && exam.kind === 'practice' && <p>Cần bài học kiến thức đã xuất bản; học viên phải học xong trước khi làm.</p>}
                 </div>
 
                 <div className="mb-3 min-h-10">
@@ -210,7 +211,7 @@ export default function AdminTestsPage() {
                 <span>{new Date(exam.createdAt).toLocaleDateString('vi-VN')}</span>
               </div>
               <ActionGroup className="content-card-footer">
-                <ActionButton action="edit" href={`/admin/tests/builder?id=${exam.id}`} />
+                <Link href={`/admin/questions?examId=${exam.id}`} className="text-sm font-semibold text-primary">Xem {exam._count?.questions ?? 0} câu hỏi</Link><ActionButton action="edit" href={`/admin/tests/builder?id=${exam.id}`} />
                 <ActionButton action="delete" onClick={() => void removeExam(exam)} />
               </ActionGroup>
             </div>

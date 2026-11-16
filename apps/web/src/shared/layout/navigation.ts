@@ -53,7 +53,7 @@ export const adminNavigation: NavigationGroup[] = [
       { label: 'Cấp độ học tập', href: '/admin/levels', icon: 'stairs', adminOnly: true },
       { label: 'Quản lý chứng chỉ', href: '/admin/certifications', icon: 'workspace_premium', adminOnly: true },
       { label: 'Ngân hàng câu hỏi', href: '/admin/questions', icon: 'help' },
-      { label: 'Bài kiểm tra chứng chỉ', href: '/admin/tests', icon: 'quiz' },
+      { label: 'Bài kiểm tra', href: '/admin/tests', icon: 'quiz' },
     ],
   },
   {
@@ -110,7 +110,7 @@ export const combinedNavigation: NavigationGroup[] = [
       { label: 'Cấp độ học tập', href: '/admin/levels', icon: 'stairs', adminOnly: true },
       { label: 'Quản lý chứng chỉ', href: '/admin/certifications', icon: 'workspace_premium', adminOnly: true },
       { label: 'Ngân hàng câu hỏi', href: '/admin/questions', icon: 'help' },
-      { label: 'Bài kiểm tra chứng chỉ', href: '/admin/tests', icon: 'quiz' },
+      { label: 'Bài kiểm tra', href: '/admin/tests', icon: 'quiz' },
     ],
   },
   {
@@ -141,7 +141,7 @@ export const teacherNavigation: NavigationGroup[] = [
     { label: 'Nội dung học tập', href: '/admin/learning-content', icon: 'library_books' },
     { label: 'Quản lý bài học', href: '/admin/lessons', icon: 'auto_stories' },
     { label: 'Ngân hàng câu hỏi', href: '/admin/questions', icon: 'help' },
-    { label: 'Bài kiểm tra chứng chỉ', href: '/admin/tests', icon: 'quiz' },
+    { label: 'Bài kiểm tra', href: '/admin/tests', icon: 'quiz' },
   ] },
   { group: 'Học viên phụ trách', items: [
     { label: 'Kết quả bài thi', href: '/admin/test-results', icon: 'fact_check' },

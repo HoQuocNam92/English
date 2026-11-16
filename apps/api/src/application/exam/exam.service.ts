@@ -47,13 +47,16 @@ export class ExamsService {
     const limit = Math.min(Math.max(1, Number(params.limit) || 20), 100)
     const { search, domainCode, levelCode, status, kind } = params
     const skip = (page - 1) * limit
-    const where: any = { certificateId: { not: null } }
+    const where: any = canPreview ? {} : { certificateId: { not: null } }
     if (search) where.title = { contains: search, mode: 'insensitive' }
     if (domainCode) where.domain = { code: domainCode }
     if (levelCode) where.level = { code: levelCode }
     if (status) where.status = status
     if (!canPreview) where.status = 'published'
-    if (kind) where.kind = kind
+    if (kind === 'course_final' && canPreview) {
+      where.certificateId = null
+      where.kind = { in: ['domain_test', 'practice'] }
+    } else if (kind) where.kind = kind
     if (params.certificateId) where.certificateId = params.certificateId
     const [data, total] = await Promise.all([
       this.prisma.exam.findMany({
@@ -70,6 +73,20 @@ export class ExamsService {
       }),
       this.prisma.exam.count({ where }),
     ])
+    if (canPreview && data.length) {
+      const finals = await this.prisma.exam.findMany({
+        where: { certificateId: null, status: 'published', kind: { in: ['domain_test', 'practice'] }, questions: { some: {} } },
+        orderBy: [{ createdAt: 'desc' }, { id: 'asc' }],
+        select: { id: true, domainId: true, levelId: true, kind: true },
+      })
+      const chosen = new Map<string, typeof finals[number]>()
+      for (const exam of finals) {
+        const key = `${exam.domainId}:${exam.levelId}`
+        if (!chosen.has(key) || (exam.kind === 'domain_test' && chosen.get(key)!.kind !== 'domain_test')) chosen.set(key, exam)
+      }
+      const ids = new Set([...chosen.values()].map(exam => exam.id))
+      return { data: data.map(exam => ({ ...exam, isCourseAssessment: ids.has(exam.id) })), meta: { total, page, limit, totalPages: Math.ceil(total / limit) } }
+    }
     return { data, meta: { total, page, limit, totalPages: Math.ceil(total / limit) } }
   }
 
@@ -102,7 +119,7 @@ export class ExamsService {
   async create(dto: any, createdById: string) {
     this.assertUniqueExamQuestions(dto.questions)
     this.assertValidAvailabilityWindow(dto.availableFrom, dto.availableUntil)
-    if (!dto.certificateId) throw new BadRequestException('Quiz hoặc đề thi phải thuộc một chứng chỉ')
+    if (!dto.certificateId && dto.kind !== 'domain_test') throw new BadRequestException('Bài tổng kết lộ trình phải chọn loại kiểm tra chuyên ngành; các bài khác cần chứng chỉ')
     const domain = await this.prisma.domain.findUnique({ where: { id: dto.domainId } })
     const level = await this.prisma.level.findUnique({ where: { id: dto.levelId } })
     if (!domain||!level) throw new NotFoundException('Chuyên ngành hoặc cấp độ không tồn tại')

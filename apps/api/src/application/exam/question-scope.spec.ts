@@ -24,6 +24,44 @@ function setup() {
 }
 const dto = { title: 'Cloud quiz', domainId: 'cloud', levelId: 'intermediate', certificateId: 'cert', questions: [{ questionId: 'q1', order: 1 }] }
 
+test('admin can manage course finals while learner exam listings stay certificate scoped', async () => {
+  const queries: any[] = []
+  const db: any = { exam: {
+    findMany: async ({ where }: any) => { queries.push(where); return [] },
+    count: async () => 0,
+  } }
+  const service = new ExamsService(db)
+  await service.findAll({}, true)
+  assert.equal(queries[0].certificateId, undefined)
+  await service.findAll({ kind: 'course_final', domainCode: 'SOFTWARE_ENG', levelCode: 'intermediate' }, true)
+  assert.equal(queries[1].certificateId, null)
+  assert.deepEqual(queries[1].kind, { in: ['domain_test', 'practice'] })
+  await service.findAll({ status: 'draft' })
+  assert.deepEqual(queries[2].certificateId, { not: null })
+  assert.equal(queries[2].status, 'published')
+})
+
+test('course finals use the existing exam and question links without requiring a certificate', async () => {
+  const { service, writes } = setup()
+  await service.create({ ...dto, certificateId: null, kind: 'domain_test' }, 'admin')
+  assert.equal(writes(), 1)
+  await assert.rejects(() => service.create({ ...dto, certificateId: null, kind: 'mock_exam' }, 'admin'), /chứng chỉ/)
+})
+
+test('admin marks the same course final that the learning path selects across pages', async () => {
+  const finals = [
+    { id: 'new-practice', domainId: 'd', levelId: 'l', kind: 'practice' },
+    { id: 'final', domainId: 'd', levelId: 'l', kind: 'domain_test' },
+    { id: 'old-final', domainId: 'd', levelId: 'l', kind: 'domain_test' },
+  ]
+  const db: any = { exam: {
+    findMany: async (query: any) => query.select ? finals : finals,
+    count: async () => 3,
+  } }
+  const result = await new ExamsService(db).findAll({}, true)
+  assert.deepEqual(result.data.filter((exam: any) => exam.isCourseAssessment).map(exam => exam.id), ['final'])
+})
+
 test('delete preserves attempts and reports a conflict, including a concurrently started attempt', async () => {
   let attempts = 1
   let deletes = 0

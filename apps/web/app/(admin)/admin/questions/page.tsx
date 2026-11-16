@@ -63,6 +63,7 @@ export default function AdminQuestionsPage() {
   const [domains, setDomains] = React.useState<FilterOption[]>([]);
   const [levels, setLevels] = React.useState<FilterOption[]>([]);
   const [exams, setExams] = React.useState<FilterOption[]>([]);
+  React.useEffect(() => { const id = new URLSearchParams(window.location.search).get('examId'); if (id) setExamId(id); }, []);
   const [expanded, setExpanded] = React.useState<string | null>(null);
   const [loading, setLoading] = React.useState(true);
   const [error, setError] = React.useState<string | null>(null);

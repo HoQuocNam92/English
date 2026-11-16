@@ -249,6 +249,7 @@ export interface QuestionItem {
 
 // Exams
 export interface ExamItem {
+  isCourseAssessment?: boolean;
   id: string;
   certificateId?: string | null;
   certificate?: { id: string; name: string; code: string; isActive: boolean } | null;

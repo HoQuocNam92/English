@@ -99,8 +99,9 @@ export default function TestBuilderPage() {
           setCertificateId(exam.certificateId ?? '');
           setTopics((exam.topics ?? []).join(', '));
           setStatus(exam.status === 'published' ? 'published' : 'draft');
-          setKind(exam.kind ?? 'practice');
+          setKind(!exam.certificateId && ['practice', 'domain_test'].includes(exam.kind) ? 'course_final' : exam.kind ?? 'practice');
           setSelectedQuestionIds((exam.questions ?? []).map((q: any) => q.questionId ?? q.question?.id));
+          setQOnlySelected(true);
           setOriginalScope({ domainId: exam.domainId, levelId: exam.levelId, questionIds: (exam.questions ?? []).map((q: any) => q.questionId ?? q.question?.id) });
           setAvailableQuestions(current => Array.from(new Map([...current, ...(exam.questions ?? []).map((q: any) => q.question).filter(Boolean)].map(q => [q.id, q])).values()));
         }
@@ -133,7 +134,7 @@ export default function TestBuilderPage() {
     if (!title.trim()) errs.title = 'Tiêu đề không được để trống';
     if (!domainId) errs.domainId = 'Vui lòng chọn chuyên ngành';
     if (!levelId) errs.levelId = 'Vui lòng chọn cấp độ';
-    if (!certificateId) errs.certificateId = 'Quiz hoặc đề thi phải thuộc một chứng chỉ';
+    if (kind !== 'course_final' && !certificateId) errs.certificateId = 'Quiz hoặc đề thi phải thuộc một chứng chỉ';
     if (!durationMinutes || isNaN(Number(durationMinutes)) || Number(durationMinutes) < 1 || Number(durationMinutes) > 300) {
       errs.durationMinutes = 'Thời gian phải từ 1 đến 300 phút';
     }
@@ -165,17 +166,17 @@ export default function TestBuilderPage() {
         maxAttempts: Number(maxAttempts),
         domainId: domainId || undefined,
         levelId: levelId || undefined,
-        certificateId: certificateId || undefined,
+        certificateId: kind === 'course_final' ? null : certificateId || undefined,
         topics: topics.trim() ? topics.split(',').map(t => t.trim()).filter(Boolean) : [],
         status: targetStatus,
-        kind,
+        kind: kind === 'course_final' ? 'domain_test' : kind,
         questions: selectedQuestionIds.map((id, idx) => ({ questionId: id, order: idx + 1 })),
       };
 
       const saved: any = isEdit
         ? await apiClient.patch(`/exams/${examId}`, payload)
         : await apiClient.post('/exams', payload);
-      setSavedExam({ id: saved?.id ?? saved?.data?.id ?? examId ?? '', title: title.trim(), certificateId, certificateName: selectedCertificate?.name || 'Chứng chỉ đã chọn', certificateActive: selectedCertificate?.isActive !== false, published: targetStatus === 'published', topicPractice: kind === 'practice' && Boolean(certificateId) });
+      setSavedExam({ id: saved?.id ?? saved?.data?.id ?? examId ?? '', title: title.trim(), certificateId: kind === 'course_final' ? '' : certificateId, certificateName: selectedCertificate?.name || 'Chứng chỉ đã chọn', certificateActive: selectedCertificate?.isActive !== false, published: targetStatus === 'published', topicPractice: kind === 'practice' && Boolean(certificateId) });
     } catch (e) {
       setGlobalError(e instanceof ApiClientError ? e.message : 'Lỗi khi lưu bài thi');
     } finally {
@@ -224,6 +225,9 @@ export default function TestBuilderPage() {
     setQOnlySelected(false);
   };
 
+  if (savedExam && !savedExam.certificateId) {
+    return <FormPageLayout className="max-w-3xl"><PageHeader title={savedExam.published ? 'Đã xuất bản bài tổng kết lộ trình' : 'Đã lưu bản nháp'} description={savedExam.title} /><section role="status" className="mt-6 space-y-4 rounded-2xl border border-outline-variant bg-white p-6"><p>{savedExam.published ? 'Lộ trình dùng bài tổng kết đã xuất bản theo chuyên ngành và trình độ đã chọn. Nếu có nhiều bài tổng kết, bài mới nhất được ưu tiên.' : 'Xuất bản bài tổng kết để sử dụng trong lộ trình.'}</p><p>Các câu đã chọn được lưu vào bộ đề này. Thêm câu vào ngân hàng không tự thêm vào bộ đề.</p><a className="ui-button ui-button-primary" href={`/admin/tests/builder?id=${savedExam.id}`}>Xem và chỉnh sửa câu hỏi trong đề</a><Link className="ui-button ui-button-outline" href="/admin/tests">Về danh sách bài kiểm tra</Link></section></FormPageLayout>;
+  }
   if (savedExam) {
     return <FormPageLayout className="max-w-3xl">
       <PageHeader title={savedExam.published ? 'Đã xuất bản bài kiểm tra' : 'Đã lưu bản nháp'} description={savedExam.title} />
@@ -270,7 +274,7 @@ export default function TestBuilderPage() {
         title={isEdit ? 'Chỉnh sửa bài thi' : 'Tạo bài thi mới'}
       />
 
-      <section className="mt-6 rounded-2xl border border-primary/20 bg-primary/5 p-5 text-sm leading-6" aria-label="Các bước để học viên thấy và làm được bài kiểm tra">
+      {kind !== 'course_final' && <section className="mt-6 rounded-2xl border border-primary/20 bg-primary/5 p-5 text-sm leading-6" aria-label="Các bước để học viên thấy và làm được bài kiểm tra">
         <h2 className="font-bold text-on-surface">Để học viên thấy và làm được bài kiểm tra</h2>
         <ol className="mt-2 list-inside list-decimal space-y-1 text-on-surface-variant">
           <li>Chọn đúng chứng chỉ đang hoạt động: <strong className="text-on-surface">{selectedCertificate ? `${selectedCertificate.name}${selectedCertificate.isActive === false ? ' (đang tắt)' : ''}` : 'chưa chọn'}</strong>.</li>
@@ -279,7 +283,7 @@ export default function TestBuilderPage() {
           {kind === 'practice' && <li>Với bài luyện tập chủ đề, tạo và xuất bản bài học kiến thức gắn đúng chứng chỉ/chủ đề trong <Link href="/admin/lessons" className="font-semibold text-primary underline">Quản lý bài học</Link>; học viên cần học xong trước khi làm bài.</li>}
         </ol>
         <p className="mt-2 text-on-surface-variant">Học viên có thể tìm theo <strong>tên chứng chỉ hoặc tên bài kiểm tra đã xuất bản</strong> ở trang Chứng chỉ. Chọn tên bài trong kết quả sẽ mở đúng bài kiểm tra.</p>
-      </section>
+      </section>}
 
       <form onSubmit={handleSubmit} className="mt-6 space-y-6">
         {globalError && (
@@ -360,12 +364,12 @@ export default function TestBuilderPage() {
             {/* Certificate */}
             <div>
               <label className="block text-sm font-semibold text-slate-900 mb-1.5">Loại bài kiểm tra</label>
-              <Dropdown value={kind} onChange={e => setKind(e.target.value)} className="w-full rounded-xl border border-slate-300 bg-white px-3.5 py-2.5 text-sm font-medium text-slate-900 shadow-2xs focus:outline-none focus:border-primary">
-                <option value="practice">Luyện tập theo chủ đề</option><option value="domain_test">Kiểm tra chuyên ngành</option><option value="mock_exam">Thi thử chứng chỉ</option><option value="scenario_assessment">Bài tập tình huống thực tế</option>
+              <Dropdown value={kind} onChange={e => { setKind(e.target.value); if (e.target.value === 'course_final') setCertificateId(''); }} className="w-full rounded-xl border border-slate-300 bg-white px-3.5 py-2.5 text-sm font-medium text-slate-900 shadow-2xs focus:outline-none focus:border-primary">
+                <option value="course_final">Tổng kết lộ trình</option><option value="practice">Luyện tập theo chủ đề</option><option value="domain_test">Kiểm tra chuyên ngành</option><option value="mock_exam">Thi thử chứng chỉ</option><option value="scenario_assessment">Bài tập tình huống thực tế</option>
               </Dropdown>
             </div>
-            <p className="text-xs leading-5 text-on-surface-variant">{kind === 'practice' ? 'Điều kiện mở: xuất bản đề có câu hỏi và học viên hoàn thành bài học kiến thức. Trong Quản lý bài học, tạo bài ôn chứng chỉ, gắn đúng chứng chỉ/chủ đề rồi xuất bản. Nếu không chọn chủ đề, học viên cần hoàn thành các bài học của chứng chỉ. Muốn kiểm tra độc lập, chọn Kiểm tra chuyên ngành hoặc Thi thử chứng chỉ.' : 'Học viên có thể làm ngay sau khi xuất bản đề có câu hỏi, trong thời gian mở và khi còn lượt làm bài.'} Số lượt làm bài chỉ giới hạn số lần thử, không bỏ qua điều kiện mở.</p>
-            <div>
+            <p className="text-xs leading-5 text-on-surface-variant">{kind === 'course_final' ? 'Học viên vào Lộ trình → Làm tổng kết. Chọn chuyên ngành, trình độ và các câu hỏi ở bên dưới; xuất bản để dùng cho lộ trình. Bài tổng kết mới nhất đã xuất bản được ưu tiên.' : kind === 'practice' ? 'Điều kiện mở: xuất bản đề có câu hỏi và học viên hoàn thành bài học kiến thức. Trong Quản lý bài học, tạo bài ôn chứng chỉ, gắn đúng chứng chỉ/chủ đề rồi xuất bản. Nếu không chọn chủ đề, học viên cần hoàn thành các bài học của chứng chỉ. Muốn kiểm tra độc lập, chọn Kiểm tra chuyên ngành hoặc Thi thử chứng chỉ.' : 'Học viên có thể làm ngay sau khi xuất bản đề có câu hỏi, trong thời gian mở và khi còn lượt làm bài.'} Số lượt làm bài chỉ giới hạn số lần thử, không bỏ qua điều kiện mở.</p>
+            {kind !== 'course_final' && <div>
               <label className="block text-sm font-semibold text-slate-900 mb-1.5">Chứng chỉ liên quan <span className="text-error">*</span></label>
               <Dropdown
                 value={certificateId}
@@ -377,7 +381,7 @@ export default function TestBuilderPage() {
               </Dropdown>
               <FieldError msg={errors.certificateId} />
               <p className="mt-2 text-xs leading-5 text-on-surface-variant">Sau khi xuất bản, học viên vào Chứng chỉ → {certificates.find(item => item.id === certificateId)?.name || 'chứng chỉ đã chọn'} → Bài kiểm tra để tìm và làm bài. Bản nháp chỉ hiển thị trong trang quản trị.</p>
-            </div>
+            </div>}
 
             {/* Duration & Pass score */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
