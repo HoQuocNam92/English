@@ -184,10 +184,6 @@ export default function MobileQuizScreen() {
             <Text style={styles.questionTitle}>
               {safeText((currentQuestion as any).prompt || currentQuestion.text)}
             </Text>
-            <Text style={styles.questionSubtitle}>
-              {currentQuestion.type === 'short_answer' ? 'Nhập câu trả lời ngắn.' : isMultipleChoice ? 'Chọn các đáp án đúng bên dưới.' : 'Chọn một đáp án đúng bên dưới.'}
-            </Text>
-
             {(currentQuestion as any).context && <Text style={{ marginBottom: 16, lineHeight: 22 }}>{safeText((currentQuestion as any).context)}</Text>}
             {currentQuestion.type === 'short_answer' && <TextInput multiline value={textAnswers[currentQuestion.id] ?? ''} onChangeText={value => setTextAnswers(previous => ({ ...previous, [currentQuestion.id]: value }))} placeholder="Nhập câu trả lời..." style={{ minHeight: 100, padding: 12, borderWidth: 1, borderColor: colors.outlineVariant, borderRadius: 10, textAlignVertical: 'top' }} />}
             {/* Options */}
@@ -390,11 +386,6 @@ const styles = StyleSheet.create({
     marginBottom: spacing.md,
     lineHeight: 32,
     letterSpacing: -0.2
-  },
-  questionSubtitle: {
-    fontSize: 14,
-    color: '#464555',
-    marginBottom: spacing.xl
   },
   optionsList: {
     gap: spacing.sm
