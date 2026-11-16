@@ -8,7 +8,7 @@ import { FormPageLayout } from '@/shared/ui/CreatePage';
 import { Dropdown } from '@/shared/ui/Dropdown';
 import * as React from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { PageHeader } from '@/shared/ui';
+import { PageHeader, showToast } from '@/shared/ui';
 import { apiClient, ApiClientError } from '@/shared/api/api-client';
 import { CONTENT_TYPES } from '@/shared/lib/admin-content-types';
 import { createStudioTemplate, hasStudioContent, hydrateStudioSections, LessonContentStudio, type StudioSection } from './LessonContentStudio';
@@ -40,7 +40,7 @@ export default function LessonEditorPage() {
     if (!sections.length || sections.some(section => !hasStudioContent(section))) { setError('Hãy hoàn thành nội dung chính của từng khối trước khi lưu.'); return; }
     if (form.type === 'certification_review' && form.topicIds.length === 0) { setError('Hãy chọn chủ đề chứng chỉ để bài học xuất hiện đúng trong lộ trình.'); return; }
     if (form.type === 'certification_review' && form.certificateIds.length === 0) { setError('Chuyên đề ôn tập cần liên kết ít nhất một chứng chỉ.'); return; }
-    setSaving(true); try { const payload = { ...form, topicIds: form.type === 'certification_review' ? form.topicIds.filter(topicId => topicOptions.some(topic => topic.id === topicId)) : [], title: form.title.trim(), summary: form.summary.trim(), keyConcepts: form.keyConcepts.split(',').map(x => x.trim()).filter(Boolean), sections: sections.map((section, order) => ({ type: section.type, order, title: section.title.trim() || undefined, content: Object.fromEntries(Object.entries(section.content).map(([key, value]) => [key, typeof value === 'string' ? value.trim() : value])) })) }; if (lessonId) await apiClient.patch(`/lessons/${lessonId}`, payload); else await apiClient.post('/lessons', payload); router.push(`/admin/lessons?type=${form.type}`); } catch (e) { setError(e instanceof ApiClientError ? e.message : 'Không thể lưu nội dung'); } finally { setSaving(false); }
+    setSaving(true); try { const payload = { ...form, topicIds: form.type === 'certification_review' ? form.topicIds.filter(topicId => topicOptions.some(topic => topic.id === topicId)) : [], title: form.title.trim(), summary: form.summary.trim(), keyConcepts: form.keyConcepts.split(',').map(x => x.trim()).filter(Boolean), sections: sections.map((section, order) => ({ type: section.type, order, title: section.title.trim() || undefined, content: Object.fromEntries(Object.entries(section.content).map(([key, value]) => [key, typeof value === 'string' ? value.trim() : value])) })) }; if (lessonId) await apiClient.patch(`/lessons/${lessonId}`, payload); else await apiClient.post('/lessons', payload); showToast(lessonId ? 'Đã lưu thay đổi bài học.' : 'Đã thêm bài học.', 'success'); router.push(`/admin/lessons?type=${form.type}`); } catch (e) { setError(e instanceof ApiClientError ? e.message : 'Không thể lưu nội dung'); } finally { setSaving(false); }
   };
   const field = (key: keyof typeof form, value: unknown) => setForm(current => ({ ...current, [key]: value }));
   const category = CONTENT_TYPES[form.type];

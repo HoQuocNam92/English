@@ -9,7 +9,7 @@ import { FormPageLayout } from '@/shared/ui/CreatePage';
 import { Dropdown } from '@/shared/ui/Dropdown';
 import * as React from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { PageHeader } from '@/shared/ui';
+import { PageHeader, showToast } from '@/shared/ui';
 import { apiClient, ApiClientError } from '@/shared/api/api-client';
 
 interface SelectOption { id: string; code: string; name: string }
@@ -162,6 +162,7 @@ export default function QuestionEditorPage() {
       } else {
         await apiClient.post('/questions', payload);
       }
+      showToast(isEdit ? 'Đã lưu thay đổi câu hỏi.' : 'Đã thêm câu hỏi.', 'success');
       router.push('/admin/questions');
     } catch (e) {
       setGlobalError(e instanceof ApiClientError ? e.message : 'Lỗi khi lưu câu hỏi');
