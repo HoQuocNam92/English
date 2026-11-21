@@ -139,10 +139,10 @@ export class RolesService {
         await tx.userRole.upsert({ where: { userId_roleId: { userId: dto.userId, roleId: admin.id } }, update: { expiresAt: null }, create: { userId: dto.userId, roleId: admin.id, grantedById: dto.grantedById } })
       }
       if (hasSuperAdminRole(current) && (role.code === 'teacher' || role.code === 'learner' || (role.code === 'admin' && dto.expiresAt))) throw new ForbiddenException('Không thể hạ quyền hoặc giới hạn vai trò của Super Admin')
-      if (coreRoleCodes.includes(role.code)) {
-        if (role.code !== 'admin' && await tx.userRole.count({ where: { userId: dto.userId, role: { code: 'admin' } } })) throw new ForbiddenException('Không thể tự động thay thế vai trò quản trị viên')
+      if (coreRoleCodes.includes(role.code) || role.code === SUPER_ADMIN) {
+        if (role.code !== 'admin' && role.code !== SUPER_ADMIN && await tx.userRole.count({ where: { userId: dto.userId, role: { code: 'admin' } } })) throw new ForbiddenException('Không thể tự động thay thế vai trò quản trị viên')
         const otherCoreRoles = await tx.role.findMany({
-          where: { code: { in: coreRoleCodes.filter(code => code !== role.code) } },
+          where: { code: { in: coreRoleCodes.filter(code => code !== role.code && !(role.code === SUPER_ADMIN && code === 'admin')) } },
           select: { id: true },
         })
         await tx.userRole.deleteMany({

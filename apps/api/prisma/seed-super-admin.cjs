@@ -20,6 +20,7 @@ async function seedSuperAdmin(prisma, email = process.env.INITIAL_ADMIN_EMAIL ||
     if (owner.deletedAt || owner.status !== 'active') throw new Error('Tài khoản quản trị gốc phải đang hoạt động trước khi cấp SUPER_ADMIN.');
     const admin = await tx.role.findUnique({ where: { code: 'admin' } });
     if (!admin) throw new Error('Chưa cấu hình vai trò admin.');
+    await tx.userRole.deleteMany({ where: { userId: owner.id, role: { code: { in: ['learner', 'teacher'] } } } });
     for (const roleId of [admin.id, role.id]) await tx.userRole.upsert({
       where: { userId_roleId: { userId: owner.id, roleId } },
       update: { expiresAt: null },

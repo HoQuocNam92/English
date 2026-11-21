@@ -112,6 +112,7 @@ test('only a live Super Admin may grant the protected role, never with expiry or
   await f.service.assignRoleToUser({ userId: 'target', roleId: SUPER_ADMIN, grantedById: 'owner' })
   assert.ok(f.writes.some(([type, args]) => type === 'userRole.upsert' && args.create.roleId === SUPER_ADMIN))
   assert.ok(f.writes.some(([type, args]) => type === 'userRole.upsert' && args.create.roleId === 'admin'))
+  assert.ok(f.writes.some(([type, args]) => type === 'userRole.deleteMany' && args.where.roleId?.in?.includes('learner') && args.where.roleId?.in?.includes('teacher') && !args.where.roleId.in.includes('admin')))
 })
 
 test('last active Super Admin, self membership and underlying admin membership cannot be removed', async () => {
@@ -153,6 +154,7 @@ test('Super Admin is the primary login role even when the account was originally
   const profile = await auth.me('owner')
   assert.equal(profile.roles[0], SUPER_ADMIN)
   assert.ok(profile.roles.includes('admin'))
+  assert.equal(profile.roles.includes('learner'), false)
 })
 
 test('seed is repeatable, assigns only the configured initial owner and never changes a password', async () => {

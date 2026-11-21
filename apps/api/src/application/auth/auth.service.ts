@@ -41,7 +41,9 @@ export class AuthService {
   }
 
   private buildPayload(user: any) {
-    const activeRoles = user.userRoles.filter((link: any) => link.role.isActive !== false && (!link.expiresAt || link.expiresAt > new Date()))
+    const validRoles = user.userRoles.filter((link: any) => link.role.isActive !== false && (!link.expiresAt || link.expiresAt > new Date()))
+    const isStaff = validRoles.some((link: any) => ['SUPER_ADMIN', 'admin', 'teacher'].includes(link.role.code))
+    const activeRoles = validRoles.filter((link: any) => !isStaff || link.role.code !== 'learner')
     const roles = activeRoles.map((ur: any) => ur.role.code)
     if (roles.includes('SUPER_ADMIN') && !roles.includes('admin')) roles.push('admin')
     const priority = ['SUPER_ADMIN', 'admin', 'teacher', 'learner']

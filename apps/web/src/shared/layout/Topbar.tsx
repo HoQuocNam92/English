@@ -7,6 +7,7 @@ import Link from 'next/link';
 import * as React from 'react';
 import { useAuth } from '@/features/auth/presentation';
 import { apiClient } from '@/shared/api/api-client';
+import { roleLabel } from '@/shared/auth/permission-labels';
 
 export interface TopbarProps {
   onToggleMobileMenu?: () => void;
@@ -119,7 +120,7 @@ export function Topbar({ onToggleMobileMenu }: TopbarProps) {
               {session?.user?.displayName ?? 'Người dùng'}
             </p>
             <p className="text-[10px] text-on-surface-variant leading-tight capitalize">
-              {session?.user?.role === 'admin' ? 'Quản trị viên' : session?.user?.role === 'teacher' ? 'Giảng viên' : 'Người học'}
+              {roleLabel(session?.user?.role ?? 'learner')}
             </p>
           </div>
           <button
