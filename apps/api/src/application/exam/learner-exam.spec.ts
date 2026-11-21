@@ -1,6 +1,32 @@
 import { test } from 'node:test'
 import { strict as assert } from 'node:assert'
 import { ExamsService } from './exam.service'
+
+test('result breakdown hides import markers and scores real topics regardless of tag position', async () => {
+  let certificateId: string | null = 'cert'
+  const snapshot = [
+    { domainId: 'd', topics: ['software-20261028-intermediate-q0', 'real-topic'], isUserCorrect: true },
+    { domainId: 'd', topics: ['coverage-20261009', 'real-topic'], isUserCorrect: false },
+  ]
+  const db: any = {
+    examAttempt: { findUnique: async () => ({ learnerId: 'learner', status: 'graded', exam: { certificateId }, questionsSnapshot: snapshot }) },
+    domain: { findMany: async () => [{ id: 'd', name: 'Software Engineering' }] },
+    certificationTopic: { findMany: async ({ where }: any) => {
+      assert.equal(where.certificateId, 'cert')
+      return [{ code: 'real-topic', name: 'Thiết kế API' }]
+    } },
+  }
+  const service = new ExamsService(db)
+  const result = await service.getAttemptById('attempt', 'learner')
+  assert.deepEqual(result.performanceByTopic, [{ key: 'real-topic', name: 'Thiết kế API', total: 2, correct: 1, incorrect: 1, scorePercent: 50 }])
+  assert.equal(result.weakTopics.length, 1)
+  certificateId = null
+  const course = await service.getAttemptById('attempt', 'learner')
+  assert.deepEqual(course.performanceByTopic, [])
+  assert.deepEqual(course.weakTopics, [])
+  assert.equal(course.performanceByDomain[0].scorePercent, 50)
+  assert.equal(course.questionsSnapshot.length, 2)
+})
 function fixture(o: any = {}) {
   const exam = { id: 'exam', status: 'published', kind: 'practice', certificateId: 'cert', topics: ['1.1'], maxAttempts: 5, durationMinutes: 30, _count: { questions: 1 }, questions: [{ weight: 1, question: { id: 'q', points: 1, options: [] } }], ...o.exam }
   let writes = 0

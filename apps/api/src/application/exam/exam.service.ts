@@ -455,17 +455,19 @@ export class ExamsService {
     const topicCodes = [...new Set(snapshot.flatMap((question: any) => Array.isArray(question.topics) ? question.topics : []).filter(Boolean))] as string[]
     const [domains, topics] = await Promise.all([
       domainIds.length ? this.prisma.domain.findMany({ where: { id: { in: domainIds } }, select: { id: true, name: true } }) : [],
-      topicCodes.length ? this.prisma.certificationTopic.findMany({ where: { code: { in: topicCodes }, certificateId: attempt.exam.certificateId ?? undefined }, select: { code: true, name: true } }) : [],
+      topicCodes.length && attempt.exam.certificateId ? this.prisma.certificationTopic.findMany({ where: { code: { in: topicCodes }, certificateId: attempt.exam.certificateId }, select: { code: true, name: true } }) : [],
     ])
     const domainNames = new Map<string, string>(domains.map((domain): [string, string] => [domain.id, domain.name]))
     const topicNames = new Map<string, string>(topics.map((topic): [string, string] => [topic.code, topic.name]))
-    const summarize = (keys: string[], keyOf: (question: any) => string | undefined, nameOf: (key: string) => string) => keys.map((key) => {
-      const questions = snapshot.filter((question: any) => keyOf(question) === key)
+    const summarize = (keys: string[], belongs: (question: any, key: string) => boolean, nameOf: (key: string) => string) => keys.map((key) => {
+      const questions = snapshot.filter((question: any) => belongs(question, key))
       const correct = questions.filter((question: any) => question.isUserCorrect === true).length
       return { key, name: nameOf(key), total: questions.length, correct, incorrect: questions.length - correct, scorePercent: questions.length ? Math.round(correct / questions.length * 100) : 0 }
-    })
-    const performanceByDomain = summarize(domainIds, (question) => question.domainId, (key) => domainNames.get(key) ?? key)
-    const performanceByTopic = summarize(topicCodes, (question) => question.topics?.[0], (key) => topicNames.get(key) ?? key)
+    }).filter(item => item.total > 0)
+    const performanceByDomain = summarize(domainIds, (question, key) => question.domainId === key, (key) => domainNames.get(key) ?? 'Chuyên ngành khác')
+    // Question topics also contain import/seed markers. Only real topics belonging
+    // to this certificate are suitable for learner-facing performance reports.
+    const performanceByTopic = summarize(topicCodes.filter(key => topicNames.has(key)), (question, key) => question.topics?.includes(key), (key) => topicNames.get(key)!)
 
     return {
       ...(!isAdminOrStaff && attempt.status === 'in_progress' ? this.toLearnerAttempt(attempt) : attempt),
