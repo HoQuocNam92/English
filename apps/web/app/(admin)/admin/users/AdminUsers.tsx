@@ -24,12 +24,6 @@ const STATUS_OPTS = [
   { value: 'deleted', label: 'Đã xóa' },
 ];
 
-const CREATE_ROLE_OPTS = [
-  { value: 'learner', label: 'Học viên' },
-  { value: 'teacher', label: 'Giảng viên' },
-  { value: 'admin', label: 'Quản trị viên' },
-];
-
 function SkeletonRow() {
   return (
     <tr>
@@ -84,7 +78,7 @@ function validateCreateForm(form: CreateUserForm): CreateUserErrors {
   return errors;
 }
 
-const EMPTY_FORM: CreateUserForm = { email: '', displayName: '', password: '', role: 'learner' };
+const EMPTY_FORM: CreateUserForm = { email: '', displayName: '', password: '', role: '' };
 
 interface CreateUserModalProps {
   onClose: () => void;
@@ -93,6 +87,20 @@ interface CreateUserModalProps {
 }
 
 function CreateUserModal({ onClose, onCreated, page = false }: CreateUserModalProps) {
+  const [roles, setRoles] = React.useState<{ code: string; name: string }[]>([]);
+  const [rolesLoading, setRolesLoading] = React.useState(true);
+  const [rolesError, setRolesError] = React.useState('');
+  const [rolesRequest, setRolesRequest] = React.useState(0);
+  React.useEffect(() => {
+    let active = true;
+    setRolesLoading(true); setRolesError('');
+    apiClient.get<any>('/users/role-options').then(response => {
+      if (active) setRoles(Array.isArray(response) ? response : response.data ?? []);
+    }).catch(() => {
+      if (active) { setRoles([]); setRolesError('Không thể tải vai trò. Vui lòng thử lại.'); }
+    }).finally(() => { if (active) setRolesLoading(false); });
+    return () => { active = false; };
+  }, [rolesRequest]);
   const [form, setForm] = React.useState<CreateUserForm>(EMPTY_FORM);
   const [errors, setErrors] = React.useState<CreateUserErrors>({});
   const [submitting, setSubmitting] = React.useState(false);
@@ -116,6 +124,10 @@ function CreateUserModal({ onClose, onCreated, page = false }: CreateUserModalPr
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (rolesLoading || rolesError || !roles.some(role => role.code === form.role)) {
+      setErrors(previous => ({ ...previous, role: 'Vui lòng chọn một vai trò đang hoạt động.' }));
+      return;
+    }
     const errs = validateCreateForm(form);
     if (Object.keys(errs).length > 0) { setErrors(errs); return; }
 
@@ -126,7 +138,6 @@ function CreateUserModal({ onClose, onCreated, page = false }: CreateUserModalPr
         email: form.email.trim(),
         displayName: form.displayName.trim(),
         password: form.password,
-        role: form.role,
         roleCode: form.role,
       });
       onCreated();
@@ -215,11 +226,15 @@ function CreateUserModal({ onClose, onCreated, page = false }: CreateUserModalPr
             <Dropdown
               className={`admin-select ${inputCls(!!errors.role)}`}
               {...field('role')}
+              disabled={rolesLoading || !!rolesError || roles.length === 0}
             >
-              {CREATE_ROLE_OPTS.map((r) => (
-                <option key={r.value} value={r.value}>{r.label}</option>
+              <option value="">{rolesLoading ? 'Đang tải vai trò…' : 'Chọn vai trò'}</option>
+              {roles.map((r) => (
+                <option key={r.code} value={r.code}>{r.name}</option>
               ))}
             </Dropdown>
+            {rolesError && <p role="alert" className="mt-1 text-xs text-red-700">{rolesError} <button type="button" onClick={() => setRolesRequest(value => value + 1)} className="font-semibold underline">Thử lại</button></p>}
+            {!rolesLoading && !rolesError && roles.length === 0 && <p className="mt-1 text-xs text-on-surface-variant">Chưa có vai trò đang hoạt động để tạo tài khoản.</p>}
             {errors.role && <p className="mt-1 text-xs text-red-700">{errors.role}</p>}
           </div>
 
@@ -242,7 +257,7 @@ function CreateUserModal({ onClose, onCreated, page = false }: CreateUserModalPr
             </button>
             <button
               type="submit"
-              disabled={submitting}
+              disabled={submitting || rolesLoading || !!rolesError || roles.length === 0}
               className="px-4 py-2 rounded-xl text-sm bg-primary text-white hover:opacity-90 transition-opacity disabled:opacity-70 flex items-center gap-2"
             >
               {submitting && (

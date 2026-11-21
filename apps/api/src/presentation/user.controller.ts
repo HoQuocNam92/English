@@ -41,6 +41,13 @@ export class UsersController {
     return this.usersService.changePassword(user.sub, dto)
   }
 
+  @Get('role-options')
+  @RequirePermissions('users:manage')
+  @ApiOperation({ summary: 'List active roles allowed when creating a user' })
+  creationRoles() {
+    return this.usersService.creationRoles()
+  }
+
   @Get(':id')
   @RequirePermissions('users:read')
   @ApiOperation({ summary: 'Get user by id' })

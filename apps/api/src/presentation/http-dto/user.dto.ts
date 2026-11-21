@@ -8,7 +8,7 @@ export class CreateUserDto {
   @IsEmail() @MaxLength(254) email: string
   @ApiProperty({ example: 'Password123!' }) @IsString() @MinLength(6) password: string
   @ApiProperty({ example: 'Nguyen Van A' }) @IsString() displayName: string
-  @ApiPropertyOptional({ example: 'learner', enum: ['admin','teacher','learner'] }) @IsOptional() @IsString() roleCode?: string
+  @ApiPropertyOptional({ example: 'learner', description: 'Mã vai trò đang hoạt động trong hệ thống' }) @IsOptional() @IsString() roleCode?: string
   @ApiPropertyOptional() @IsOptional() @IsString() phoneNumber?: string
   @ApiPropertyOptional() @IsOptional() @IsString() bio?: string
   @ApiPropertyOptional() @IsOptional() @IsString() locale?: string

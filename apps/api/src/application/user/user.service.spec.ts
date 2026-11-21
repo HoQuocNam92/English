@@ -61,6 +61,32 @@ test('profile updates preserve matching personal names and allow clearing option
   assert.equal(updates[1].update.phoneNumber, null)
 })
 
+test('account creation offers active database roles and accepts a custom role code', async () => {
+  const f = accountFixture()
+  f.db.role = {
+    findMany: async ({ where }: any) => {
+      assert.equal(where.isActive, true)
+      assert.equal(where.code.not, 'SUPER_ADMIN')
+      return [{ id: 'custom-id', code: 'content_reviewer', name: 'Người duyệt nội dung' }]
+    },
+    findUnique: async ({ where }: any) => {
+      assert.equal(where.code, 'content_reviewer')
+      return { id: 'custom-id', code: 'content_reviewer', isActive: true }
+    },
+  }
+  assert.deepEqual(await f.service.creationRoles(), [{ id: 'custom-id', code: 'content_reviewer', name: 'Người duyệt nội dung' }])
+  f.db.user.findFirst = async () => null
+  let created: any
+  f.db.user.create = async ({ data }: any) => { created = data; return { id: 'created-user' } }
+  await f.service.create({ email: 'custom@example.com', password: 'Password123!', displayName: 'Custom', roleCode: 'content_reviewer' })
+  assert.equal(created.userRoles.create.roleId, 'custom-id')
+  assert.equal(created.learnerProfile, undefined)
+  f.db.role.findUnique = async () => ({ id: 'custom-id', isActive: false })
+  created = null
+  await assert.rejects(() => f.service.create({ email: 'other@example.com', password: 'Password123!', displayName: 'Other', roleCode: 'content_reviewer' }), /ngừng hoạt động/)
+  assert.equal(created, null)
+})
+
 test('admin account creation handles a concurrent normalized email collision', async () => {
   const f = accountFixture()
   f.db.user.findFirst = async ({ where }: any) => { assert.equal(where.email.equals, 'same@gmail.com'); return null }

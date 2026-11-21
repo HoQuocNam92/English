@@ -9,6 +9,14 @@ import { SUPER_ADMIN, protectSuperAdmin } from '../auth/super-admin.policy'
 export class UsersService {
   constructor(private prisma: PrismaService) {}
 
+  async creationRoles() {
+    return this.prisma.role.findMany({
+      where: { isActive: true, code: { not: SUPER_ADMIN } },
+      select: { id: true, code: true, name: true },
+      orderBy: [{ createdAt: 'asc' }, { id: 'asc' }],
+    })
+  }
+
   async findAll(params: { page?: number; limit?: number; search?: string; role?: string; status?: string }) {
     const page = Math.max(1, Number(params.page) || 1)
     const limit = Math.min(Math.max(1, Number(params.limit) || 20), 100)
@@ -72,7 +80,7 @@ export class UsersService {
     const roleToAssign = dto.roleCode || dto.role || 'learner'
     if (String(roleToAssign).toUpperCase() === SUPER_ADMIN) throw new BadRequestException('Cấp Super Admin qua chức năng phân quyền được bảo vệ')
     const role = await this.prisma.role.findUnique({ where: { code: roleToAssign } })
-    if (!role) throw new BadRequestException('Vai trò không tồn tại')
+    if (!role || role.isActive === false) throw new BadRequestException('Vai trò không tồn tại hoặc đã ngừng hoạt động')
     const defaultLevel = roleToAssign === 'learner'
       ? await this.prisma.level.findFirst({ orderBy: { order: 'asc' } })
       : null
