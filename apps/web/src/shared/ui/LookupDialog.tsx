@@ -2,6 +2,7 @@
 import { useEffect, useRef } from 'react';
 import { Lightbulb, RotateCcw, Volume2, X } from 'lucide-react';
 import type { LookupResult } from './SelectionTranslator';
+import { contextExcerpt } from '../../../../../packages/shared-kernel/src/context-excerpt.cjs';
 
 type Props = {
   text: string; context: string; result: LookupResult | null; loading: boolean; error: string;
@@ -21,6 +22,7 @@ export function LookupDialog(props: Props) {
     return () => { document.body.style.overflow = previousOverflow; };
   }, []);
   const result = props.result;
+  const excerpt = contextExcerpt(props.context, props.text);
   return <dialog ref={dialog} data-selection-translation aria-label="Tra cứu từ theo ngữ cảnh" onCancel={event => { event.preventDefault(); close.current(); }} onClick={event => { if (event.target === dialog.current) { const rect = dialog.current.getBoundingClientRect(); if (event.clientX < rect.left || event.clientX > rect.right || event.clientY < rect.top || event.clientY > rect.bottom) close.current(); } }} className="m-auto max-h-[90dvh] w-[680px] max-w-[calc(100vw-24px)] overflow-y-auto rounded-2xl border-0 bg-white p-0 text-slate-900 shadow-2xl backdrop:bg-slate-900/40 backdrop:backdrop-blur-sm">
     <div className="sticky top-0 z-10 flex items-center justify-between gap-4 border-b border-slate-100 bg-white px-5 py-4"><h2 className="font-bold">Tra cứu theo ngữ cảnh</h2><button type="button" autoFocus onClick={props.onClose} aria-label="Đóng hộp tra cứu" className="rounded-lg p-2 hover:bg-slate-100"><X size={18} /></button></div>
     <div className="space-y-4 p-5" aria-busy={props.loading}>
@@ -33,7 +35,7 @@ export function LookupDialog(props: Props) {
         {(result?.exampleEn || !result?.sourceSentence) && <><Field label="Ví dụ (EN)" value={result?.exampleEn} /><Field label="Dịch ví dụ (VI)" value={result?.exampleVi} /></>}
       </div>
       {props.speechError && <p role="alert" className="text-sm text-red-600">{props.speechError}</p>}
-      <details className="rounded-xl border border-slate-200 p-3 text-sm"><summary className="cursor-pointer font-semibold text-slate-600">Ngữ cảnh trong bài</summary><p className="mt-2 whitespace-pre-wrap leading-7 text-slate-600">{props.context}</p></details>
+      <section className="rounded-xl border border-slate-200 p-3 text-sm"><h3 className="font-semibold text-slate-600">Ngữ cảnh trong bài</h3><p className="mt-2 leading-7 text-slate-600">{excerpt.before}<mark className="rounded bg-violet-100 font-bold text-violet-950">{excerpt.highlight}</mark>{excerpt.after}</p></section>
     </div>
     <div className="sticky bottom-0 flex justify-end border-t border-slate-100 bg-white px-5 py-4"><button type="button" onClick={props.onClose} className="rounded-lg bg-primary px-5 py-2.5 text-sm font-bold text-white">Đóng</button></div>
   </dialog>;

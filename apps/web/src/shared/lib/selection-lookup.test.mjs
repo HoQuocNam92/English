@@ -86,6 +86,7 @@ test('lookup modal shows dictionary fields and examples without note or save con
   assert.match(html, /<dialog/);
   assert.match(html, /These requests are independent\./);
   assert.match(html, /Phiên âm/);
+  assert.match(html, /<mark[^>]*>independent<\/mark>/);
   assert.doesNotMatch(html, /Ghi chú|Lưu từ|<textarea|<form/);
 });
 

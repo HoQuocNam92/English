@@ -8,6 +8,7 @@ import * as Speech from 'expo-speech';
 import { api, subscribeSessionExpired } from '../api/api-client';
 import { renderRichTextChildren } from './rich-text';
 import { selectionPopupPosition, type SelectionRect } from './selection-popup';
+import { contextExcerpt } from '../../../../../packages/shared-kernel/src/context-excerpt.cjs';
 
 const TranslationContext = createContext<(text: string, context: string, rect?: SelectionRect | null, owner?: string) => void>(() => {});
 export const useTranslation = () => useContext(TranslationContext);
@@ -22,7 +23,6 @@ export function TranslationProvider({ children }: { children: React.ReactNode })
   const [context, setContext] = useState('');
   const [text, setText] = useState('');
   const [visible, setVisible] = useState(false);
-  const [expanded, setExpanded] = useState(false);
   const [result, setResult] = useState<any>(null);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
@@ -34,7 +34,7 @@ export function TranslationProvider({ children }: { children: React.ReactNode })
     const selection = value.trim().replace(/\s+/g, ' ');
     if (!selection || selection.length > 120 || !source.replace(/\s+/g, ' ').includes(selection)) return;
     dismissOffer(); request.current++; void Speech.stop(); setContext(source); setText(selection);
-    setResult(null); setError(''); setExpanded(false); setVisible(true);
+    setResult(null); setError(''); setVisible(true);
     void translate(selection, source);
   };
   const select = (value: string, source: string, rect?: SelectionRect | null, owner = '') => {
@@ -71,6 +71,7 @@ export function TranslationProvider({ children }: { children: React.ReactNode })
   const pronounce = () => { void Speech.stop().then(() => Speech.speak(text.trim(), { language: 'en-US', rate: 0.8, onError: () => setError('Chưa phát được giọng tiếng Anh. Kiểm tra dịch vụ đọc trên điện thoại.') })); };
   const partLabels: Record<string, string> = { noun: 'Danh từ', verb: 'Động từ', adjective: 'Tính từ', adverb: 'Trạng từ', phrase: 'Cụm từ', acronym: 'Từ viết tắt' };
   const disabled = loading || !text.trim();
+  const excerpt = contextExcerpt(context, text);
   return <TranslationContext.Provider value={select}><View ref={popupRoot} collapsable={false} style={{ flex: 1 }} onTouchStart={dismissOffer} onTouchMove={dismissOffer}>{children}
     {offer && !visible && <View pointerEvents="box-none" onTouchStart={event => event.stopPropagation()} style={StyleSheet.absoluteFill}><TouchableOpacity accessibilityRole="button" accessibilityLabel={`Dịch ${offer.text}`} onPressIn={activateOffer} onPress={activateOffer} style={[s.lookup, selectionPopupPosition(offer.rect, offer.viewport, insets)]}><MaterialIcons name="translate" size={17} color="#ffffff" /><Text style={s.lookupLabel}>Dịch</Text></TouchableOpacity></View>}
     <Modal visible={visible} transparent animationType="fade" onRequestClose={close} statusBarTranslucent>
@@ -94,8 +95,8 @@ export function TranslationProvider({ children }: { children: React.ReactNode })
               {result.exampleEn && <View style={s.definition}><Text style={s.label}>Ví dụ</Text><Text selectable style={s.bodyText}>{renderRichTextChildren(result.exampleEn)}</Text>{result.exampleVi && <Text selectable style={s.subtitle}>{renderRichTextChildren(result.exampleVi)}</Text>}</View>}
             </View>}
             <View style={s.context}>
-              <TouchableOpacity accessibilityRole="button" accessibilityLabel={expanded ? 'Thu gọn ngữ cảnh' : 'Xem toàn bộ ngữ cảnh'} accessibilityState={{ expanded }} onPress={() => setExpanded(value => !value)} style={s.contextHeader}><MaterialIcons name="article" size={18} color={colors.mutedText} /><Text style={[s.label, { flex: 1 }]}>Ngữ cảnh trong bài</Text><MaterialIcons name={expanded ? 'expand-less' : 'expand-more'} size={21} color={colors.mutedText} /></TouchableOpacity>
-              {expanded && <Text selectable style={s.contextText}>{context}</Text>}
+              <View style={s.contextHeader}><MaterialIcons name="article" size={18} color={colors.mutedText} /><Text style={s.label}>Ngữ cảnh trong bài</Text></View>
+              <Text selectable style={s.contextText}>{excerpt.before}<Text style={s.contextHighlight}>{excerpt.highlight}</Text>{excerpt.after}</Text>
             </View>
           </ScrollView>
           {!!error && <View style={s.footer}><TouchableOpacity accessibilityRole="button" accessibilityState={{ disabled, busy: loading }} disabled={disabled} onPress={() => void translate()} style={[s.button, disabled && { opacity: 0.55 }]}><Text style={s.buttonText}>Thử lại</Text></TouchableOpacity></View>}
@@ -135,6 +136,7 @@ const s = StyleSheet.create({
   context: { borderTopWidth: 1, borderColor: '#edf0f5', paddingTop: 4, gap: 8 },
   contextHeader: { flexDirection: 'row', alignItems: 'center', gap: 8, minHeight: 44 },
   contextText: { ...regular, color: '#626c80', fontSize: compactTextSize(13), lineHeight: 22 },
+  contextHighlight: { ...interFontStyle('700'), color: '#29204d', backgroundColor: '#e5ddff' },
   footer: { borderTopWidth: 1, borderColor: '#edf0f5', padding: 12, backgroundColor: '#ffffff' },
   button: { minHeight: 52, padding: 14, borderRadius: 16, backgroundColor: colors.primary, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 10 },
   buttonText: { ...interFontStyle('700'), color: '#ffffff', fontSize: compactTextSize(15) },

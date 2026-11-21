@@ -8,6 +8,7 @@ import { lessonSourceParts } from '../../../../packages/shared-kernel/src/lesson
 
 const require = createRequire(import.meta.url);
 const ts = require('typescript');
+const { contextExcerpt } = require('../../../../packages/shared-kernel/src/context-excerpt.cjs');
 const nodes = value => Array.isArray(value) ? value.flatMap(nodes) : value && typeof value === 'object' ? [value, ...nodes(value.props?.children)] : [];
 const context = 'A release has several steps. '.repeat(20);
 function harness() {
@@ -30,6 +31,7 @@ function harness() {
     '../api/api-client': { subscribeSessionExpired: () => () => {}, api: { post: (path, body) => new Promise(resolve => requests.push({ path, body, resolve })) } },
     './rich-text': { renderRichTextChildren: value => value },
     './selection-popup': { selectionPopupPosition },
+    '../../../../../packages/shared-kernel/src/context-excerpt.cjs': { contextExcerpt },
   };
   const exports = {};
   const code = ts.transpileModule(readFileSync(new URL('./ui/TranslationProvider.tsx', import.meta.url), 'utf8'), { compilerOptions: { module: ts.ModuleKind.CommonJS, jsx: ts.JsxEmit.ReactJSX, target: ts.ScriptTarget.ES2022 } }).outputText;
@@ -51,8 +53,21 @@ test('selected phrase translates immediately with context and no editable field'
   const sheet = all.find(node => node.props.accessibilityViewIsModal);
   assert.equal(sheet.props.style.maxWidth, 360);
   assert.equal(sheet.props.style.maxHeight, '72%');
-  all.find(node => node.props.accessibilityLabel === 'Xem toàn bộ ngữ cảnh').props.onPress();
-  assert.ok(h.all().find(node => node.type === 'text' && node.props.children === context));
+  const highlighted = all.find(node => node.type === 'text' && node.props.children === 'steps' && node.props.style.backgroundColor);
+  assert.equal(highlighted.props.style.backgroundColor, '#e5ddff');
+  assert.equal(all.some(node => node.props.accessibilityLabel === 'Xem toàn bộ ngữ cảnh'), false);
+});
+
+test('lookup excerpts preserve technical phrases and show one short paragraph around the match', () => {
+  const source = 'An unrelated paragraph.\n\n' + 'Earlier sentences. '.repeat(40) + 'Use STATUS=open to filter tickets. ' + 'Later sentences. '.repeat(40);
+  const excerpt = contextExcerpt(source, 'status=open');
+  assert.equal(excerpt.highlight, 'STATUS=open');
+  const shown = excerpt.before + excerpt.highlight + excerpt.after;
+  assert.ok(shown.length <= 304);
+  assert.equal(shown.includes('unrelated'), false);
+  assert.equal(shown.includes('\n'), false);
+  assert.equal(contextExcerpt('Select a  pull\n request.', 'pull request').highlight, 'pull request');
+  assert.equal(contextExcerpt('No match here.', 'missing').highlight, '');
 });
 
 test('native lookup floats outside passage and only sends one translation when pressed', () => {
