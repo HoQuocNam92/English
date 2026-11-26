@@ -1,0 +1,1059 @@
+0 [normal] BỘ CÔNG THƯƠNG
+1 [normal] TRƯỜNG ĐẠI HỌC CÔNG THƯƠNG THÀNH PHỐ HỒ CHÍ MINH
+2 [normal] KHOA CÔNG NGHỆ THÔNG TIN
+3 [normal] -----o0o----
+4 [normal] 
+5 [normal] 
+6 [normal] KHÓA LUẬN CỬ NHÂN
+7 [normal]  
+8 [normal] XÂY DỰNG HỆ THỐNG HỌC TIẾNG ANH CHUYÊN NGÀNH CÔNG NGHỆ THÔNG TIN
+9 [normal] Ngành: Công nghệ thông tin
+10 [normal]  
+11 [normal] GIẢNG VIÊN HƯỚNG DẪN:ThS. Huỳnh Thị Cẩm Dung
+12 [normal] SINH VIÊN THỰC HIỆN:
+13 [normal] 1.  2001230536 – Hồ Quốc Nam   – 14DHTH05
+14 [normal]          2.  2001230858 – Trần Lê Anh Tuấn – 14DHTH05
+15 [normal] 3.  2001230951 – Nguyễn Đẩu Thủy – 14DHTH05
+16 [normal] 
+17 [normal]  TP. HỒ CHÍ MINH, tháng 10 năm 2026
+18 [normal] BỘ CÔNG THƯƠNG
+19 [normal] TRƯỜNG ĐẠI HỌC CÔNG THƯƠNG THÀNH PHỐ HỒ CHÍ MINH
+20 [normal] KHOA CÔNG NGHỆ THÔNG TIN
+21 [normal] -----o0o----
+22 [normal] 
+23 [normal] 
+24 [normal] KHÓA LUẬN CỬ NHÂN
+25 [normal]  
+26 [normal] XÂY DỰNG HỆ THỐNG HỌC TIẾNG ANH CHUYÊN NGÀNH CÔNG NGHỆ THÔNG TIN
+27 [normal] Ngành: Công nghệ thông tin
+28 [normal]  
+29 [normal] GIẢNG VIÊN HƯỚNG DẪN:ThS. Huỳnh Thị Cẩm Dung
+30 [normal] SINH VIÊN THỰC HIỆN:
+31 [normal] 1.  2001230536 – Hồ Quốc Nam   – 14DHTH05
+32 [normal]          2.  2001230858 – Trần Lê Anh Tuấn – 14DHTH05
+33 [normal] 3.  2001230951 – Nguyễn Đẩu Thủy – 14DHTH05
+34 [normal] 
+35 [normal]  TP. HỒ CHÍ MINH, tháng 10 năm 2026
+36 [normal] 
+37 [normal] 
+38 [normal] MỤC LỤC
+39 [Heading 1] DANH MỤC CÁC KÝ HIỆU VÀ CHỮ VIẾT TẮT
+40 [normal] 
+41 [Heading 1] DANH MỤC HÌNH
+42 [normal] 
+43 [Heading 1] DANH MỤC BẢNG
+44 [Heading 1] CHƯƠNG 1: KHẢO SÁT HỆ THỐNG 
+45 [Heading 2] 1.1. Giới thiệu 
+46 [normal] Hiện nay có nhiều ứng dụng hỗ trợ học tiếng Anh trên nền tảng di động và web, cung cấp các chức năng như học từ vựng, luyện nghe, đọc, nói và theo dõi tiến độ. Theo định hướng khảo sát các ứng dụng học tiếng Anh phổ biến, nhóm lựa chọn 4English, Duolingo và Cambly dựa trên mức độ phổ biến được thể hiện qua số lượt tải trên Google Play. Tại thời điểm khảo sát, 4English đạt trên 1 triệu lượt tải [5], Duolingo đạt trên 500 triệu lượt tải [6] và Cambly đạt trên 10 triệu lượt tải [7]. Các số liệu này cho thấy ba ứng dụng có mức độ phổ biến đáng kể và phù hợp để nhóm lựa chọn làm đối tượng khảo sát. 
+47 [normal] Bên cạnh mức độ phổ biến, ba ứng dụng còn có những cách tổ chức học tập khác nhau. 4English tập trung vào việc học tiếng Anh thông qua các nguồn nội dung thực tế như tin tức, video và podcast, kết hợp với tra cứu và ôn tập từ vựng. Duolingo tổ chức nội dung thành các bài học ngắn theo lộ trình và sử dụng các yếu tố trò chơi nhằm duy trì động lực học tập. Cambly tập trung vào luyện giao tiếp tiếng Anh thông qua các cuộc hội thoại trực tiếp với tutor.
+48 [normal] Việc khảo sát ba ứng dụng trên giúp nhóm phân tích cách tổ chức chức năng, phương pháp hỗ trợ học tập, ưu điểm và hạn chế của các hệ thống hiện có. Kết quả khảo sát được sử dụng làm cơ sở để xác định những chức năng có thể tham khảo, đồng thời nhận diện các khoảng trống cần bổ sung khi xây dựng hệ thống học tiếng Anh chuyên ngành Công nghệ thông tin của đề tài. 
+49 [Heading 3] 1.1.1. Phạm vi nghiên cứu
+50 [normal] Đề tài tập trung nghiên cứu và xây dựng hệ thống hỗ trợ sinh viên Công nghệ thông tin học tiếng Anh trong các ngữ cảnh chuyên môn. Nội dung của hệ thống tập trung vào từ vựng tiếng Anh chuyên ngành CNTT, đọc hiểu tài liệu kỹ thuật, luyện nghe nói trong các tình huống học tập và nghề nghiệp, theo dõi tiến độ và cá nhân hóa quá trình học. Về phạm vi triển khai, hệ thống được xây dựng trên nền tảng web và ứng dụng, nhằm tạo điều kiện cho người học truy cập và sử dụng các chức năng học tập trên nhiều hình thức khác nhau.
+51 [Heading 3] 1.1.2. Phương pháp nghiên cứu
+52 [normal] Đề tài sử dụng phương pháp khảo sát, nghiên cứu tài liệu, so sánh và phân tích yêu cầu hệ thống. Nhóm tiến hành khảo sát các ứng dụng 4English, Duolingo và Cambly nhằm tìm hiểu cách tổ chức chức năng, phương pháp hỗ trợ học tập, ưu điểm và hạn chế của từng hệ thống. Bên cạnh đó, nhóm tham khảo các nghiên cứu, chương trình đào tạo và báo cáo liên quan đến việc học tiếng Anh của sinh viên và yêu cầu sử dụng tiếng Anh trong lĩnh vực Công nghệ thông tin. Từ các kết quả thu thập được, nhóm tiến hành so sánh, tổng hợp và xác định những nội dung phù hợp làm cơ sở cho việc phân tích chức năng, thiết kế và xây dựng hệ thống đề xuất.
+53 [Heading 2] 1.2. Khảo sát ứng dụng  4English
+54 [Heading 3] 1.2.1. Mô tả cấu trúc chức năng của ứng dụng 4English
+55 [normal] Để có cái nhìn chi tiết về cách thức hoạt động và các chức năng chính của ứng dụng 4English, nhóm tiến hành khảo sát các chức năng được cung cấp cho người học. Qua khảo sát, các chức năng của 4English được phân chia thành các nhóm chức năng chính gồm: Quản lý tài khoản và cài đặt, Quản lý nội dung học tập, Tra cứu và quản lý từ vựng, Luyện tập và ôn tập. 
+56 [normal] 
+57 [normal] Hình 1. Sơ đồ phân rã chức năng của ứng dụng 4English
+58 [normal] Sơ đồ trên thể hiện bốn nhóm chức năng chính của ứng dụng 4English, được khái quát như sau: 
+59 [normal] Quản lý tài khoản và cài đặt: Hỗ trợ người dùng đăng nhập, quản lý tài khoản, đồng bộ dữ liệu học tập giữa các thiết bị và điều chỉnh các thiết lập giao diện. Ngoài ra, ứng dụng cung cấp gói tài khoản trả phí để người dùng sử dụng những chức năng mở rộng.
+60 [normal] Quản lý nội dung học tập: Cung cấp các nguồn học liệu tiếng Anh như bài báo, video, podcast và sách điện tử. Người học có thể tiếp cận nội dung thông qua hoạt động đọc, nghe và sử dụng các công cụ hỗ trợ tra cứu trong quá trình học.
+61 [normal] Tra cứu và quản lý từ vựng: Cho phép người học tra cứu nghĩa, phiên âm và phát âm của từ vựng trực tiếp trong nội dung đang học. Bên cạnh đó, ứng dụng hỗ trợ lưu trữ từ mới và quản lý danh sách từ vựng cá nhân theo từng chủ đề.
+62 [normal] Luyện tập và ôn tập: Cung cấp các hoạt động củng cố kiến thức thông qua thẻ ghi nhớ, luyện nghe chép chính tả, nối từ và trắc nghiệm. Người học có thể sử dụng những hoạt động này để ôn lại từ vựng đã lưu.
+63 [Heading 3] 1.2.2 Phân rã chi tiết chức năng của ứng dụng 4English 
+64 [normal] Từ bốn nhóm chức năng chính đã xác định, ứng dụng 4English được phân rã thành các chức năng cụ thể nhằm làm rõ những hoạt động mà người học có thể thực hiện. Sơ đồ phân rã chi tiết chức năng của ứng dụng được trình bày trong Hình 1.2.
+65 [normal] 
+66 [normal] 
+67 [normal] Hình 2. Sơ đồ phân rã chi tiết chức năng ứng dụng 4English
+68 [normal]  
+69 [normal] Sơ đồ chức năng trên được mô tả chi tiết như sau:
+70 [normal] Quản lý tài khoản và cài đặt
+71 [normal] Nhóm chức năng này đảm bảo việc định danh, xác thực và cá nhân hóa trải nghiệm của người học, từ lúc đăng ký tham gia hệ thống đến quá trình đồng bộ dữ liệu đa nền tảng.
+72 [normal] Đăng nhập và đồng bộ dữ liệu: Ghi nhận thông tin xác thực của người dùng qua Email, Google và tự động đồng bộ tiến độ học tập trên nhiều thiết bị.
+73 [normal] Nâng cấp gói tài khoản PRO: Xử lý giao dịch thanh toán mua gói tài khoản trả phí, mở khóa các tính năng nâng cao và loại bỏ quảng cáo.
+74 [normal] Cài đặt giao diện và hiển thị: Hỗ trợ người dùng tùy biến chế độ hiển thị sáng/tối , căn chỉnh cỡ chữ và bật/tắt các tiện ích dịch tự động.
+75 [normal] Quản lý nội dung học tập
+76 [normal] Nhóm chức năng này quản lý toàn bộ kho học liệu đa phương tiện từ các nguồn quốc tế, giúp người học tiếp cận tiếng Anh trong ngữ cảnh thực tế.
+77 [normal] Đọc báo song ngữ: Cung cấp bài viết từ các trang tin uy tín, hỗ trợ hiển thị song song văn bản tiếng Anh và bản dịch tiếng Việt theo từng đoạn văn.
+78 [normal] Xem video kèm phụ đề: Tích hợp nguồn video từ YouTube với dải phụ đề chạy theo thời gian thực, hỗ trợ tua lại và lặp lại từng câu thoại.
+79 [normal] Nghe podcast có kịch bản: Cung cấp các bài nghe kèm văn bản kịch bản (transcript) đầy đủ và cho phép tùy chỉnh tốc độ phát âm thanh.
+80 [normal] Đọc sách điện tử: Cung cấp kho sách truyện kinh điển dạng văn bản phục vụ nhu cầu đọc hiểu chuyên sâu.
+81 [normal] Tự thêm nội dung học tập cá nhân: Cho phép người dùng nhập liên kết website hoặc đường dẫn video ngoài để hệ thống tự động bóc tách nội dung phục vụ tra cứu.
+82 [normal] Tra cứu và quản lý từ vựng
+83 [normal] Nhóm chức năng này hỗ trợ người học giải nghĩa từ mới tức thì và xây dựng kho từ vựng cá nhân có hệ thống.
+84 [normal] Tra nhanh từ vựng: Cho phép người dùng chạm trực tiếp vào bất kỳ từ nào trên bài báo, phụ đề video hoặc podcast để tra cứu nghĩa, phiên âm và nghe phát âm mẫu ngay tại chỗ.
+85 [normal] Hệ thống đa từ điển tra cứu: Tích hợp và liên kết nhiều nguồn dữ liệu từ điển uy tín và tìm kiếm hình ảnh minh họa.
+86 [normal] Bộ từ vựng có sẵn: Cung cấp các gói từ vựng được biên soạn sẵn theo các chứng chỉ và chủ đề thông dụng .
+87 [normal] Quản lý sổ từ vựng cá nhân: Hỗ trợ tạo các thư mục (Folder) theo chủ đề, lưu trữ từ mới, ghi chú ngữ nghĩa cá nhân và quản lý danh sách từ cần học.
+88 [normal] Luyện tập và ôn tập
+89 [normal] Nhóm chức năng này đảm bảo việc ghi nhớ và củng cố kiến thức từ vựng của người học thông qua các phương pháp khoa học và tương tác trực quan.
+90 [normal] Ôn tập Flashcards: Ứng dụng thuật toán lặp lại ngắt quãng để tự động phân bổ lịch ôn từ vựng theo mức độ ghi nhớ của người dùng.
+91 [normal] Luyện nghe chép chính tả: Phát đoạn âm thanh ngắn trích xuất từ bài học và yêu cầu người học gõ lại chính xác từ ngữ còn thiếu vào chỗ trống.
+92 [normal] Game nối từ và trắc nghiệm: Cung cấp các trò chơi ghép từ vựng với nghĩa tương ứng và các bài kiểm tra trắc nghiệm nhanh nhằm tăng phản xạ ngôn ngữ.
+93 [Heading 3] 1.2.3 Đánh giá ứng dụng 4English
+94 [normal] Qua quá trình khảo sát và trải nghiệm các chức năng của ứng dụng 4English, nhóm ghi nhận một số ưu điểm và hạn chế khi xem xét khả năng hỗ trợ học tiếng Anh chuyên ngành Công nghệ thông tin như sau:
+95 [normal] Ưu điểm:
+96 [normal] Chức năng tra cứu trực tiếp trên bài báo và phụ đề video cho phép người học tìm hiểu nghĩa của từ ngay trong nội dung đang tiếp cận mà không cần chuyển sang ứng dụng từ điển khác.
+97 [normal] Nội dung học tập được khai thác từ các nguồn thực tế như báo chí quốc tế và YouTube, giúp người học tiếp cận từ vựng và cấu trúc tiếng Anh trong những ngữ cảnh sử dụng cụ thể.
+98 [normal] Chức năng ôn tập bằng thẻ ghi nhớ kết hợp cơ chế lặp lại ngắt quãng hỗ trợ người học củng cố những từ vựng đã lưu theo chu kỳ.
+99 [normal] Ứng dụng cho phép người học tạo thư mục để phân loại từ vựng cá nhân và bổ sung liên kết bài viết từ nguồn bên ngoài để phục vụ quá trình học tập.
+100 [normal] Hạn chế khi áp dụng cho người học tiếng Anh chuyên ngành CNTT:
+101 [normal] 4English đã cung cấp một số nội dung và bộ từ vựng liên quan đến Information Technology. Tuy nhiên, tiếng Anh CNTT chưa phải trọng tâm xuyên suốt của ứng dụng.
+102 [normal] Nội dung từ vựng CNTT chưa được tổ chức thành một lộ trình chuyên sâu theo từng lĩnh vực như lập trình, cơ sở dữ liệu, mạng máy tính, kiểm thử phần mềm hoặc an toàn thông tin.
+103 [normal] Ứng dụng có thế mạnh về bài báo, video, podcast và nội dung thực tế nhưng chưa tập trung vào các dạng tài liệu kỹ thuật đặc thù như documentation, README, API documentation hoặc specification.
+104 [normal] Các hoạt động từ vựng, đọc và luyện tập chưa được tổ chức thành một lộ trình tiếng Anh CNTT thống nhất.
+105 [Heading 2] 1.3. Khảo sát ứng dụng  Duolingo
+106 [normal] Duolingo là ứng dụng học ngôn ngữ được tổ chức theo lộ trình, kết hợp các bài học ngắn với hoạt động luyện tập và cơ chế trò chơi nhằm khuyến khích người học duy trì thói quen học tập. Nội dung được phân chia thành các bài học theo trình tự, giúp người học từng bước tiếp cận kiến thức và theo dõi quá trình học tập.
+107 [normal] Qua khảo sát, nhóm xác định năm nhóm chức năng chính của Duolingo gồm quản lý tài khoản và thiết lập mục tiêu, quản lý lộ trình học tập, luyện tập các kỹ năng ngôn ngữ, ôn tập và củng cố kiến thức, theo dõi tiến độ và cơ chế trò chơi. Các nhóm chức năng này được thể hiện trong Hình 1.3.
+108 [normal] 
+109 [normal] 
+110 [normal] Hình 3. Sơ đồ cơ cấu tổ chức của ứng dụng Duolingo
+111 [normal] Các nhóm chức năng của Duolingo tập trung vào việc tổ chức lộ trình học tập, luyện tập các kỹ năng ngôn ngữ và củng cố kiến thức. Người học có thể thiết lập mục tiêu, thực hiện các bài học theo trình tự và ôn tập những nội dung đã học. Bên cạnh đó, ứng dụng sử dụng điểm kinh nghiệm, chuỗi ngày học liên tiếp và bảng xếp hạng để khuyến khích người học duy trì hoạt động học tập thường xuyên.
+112 [normal] Qua khảo sát, nhóm nhận thấy Duolingo có ưu điểm là lộ trình học tập rõ ràng, các bài học ngắn và hoạt động luyện tập đa dạng. Việc kết hợp cơ chế trò chơi với theo dõi tiến độ giúp người học nhận biết kết quả học tập và duy trì thói quen học. Tuy nhiên, nội dung của ứng dụng chủ yếu phục vụ việc học ngôn ngữ nói chung, chưa tập trung vào tiếng Anh chuyên ngành Công nghệ thông tin. Các bài học chưa được xây dựng chuyên biệt cho việc đọc hiểu tài liệu kỹ thuật, sử dụng thuật ngữ trong ngữ cảnh chuyên môn và luyện thi chứng chỉ CNTT.
+113 [normal] Từ kết quả khảo sát, nhóm tham khảo cách tổ chức lộ trình theo cấp độ, phương pháp chia nhỏ nội dung bài học, hoạt động ôn tập và theo dõi tiến độ của Duolingo. Những đặc điểm này được xem xét khi xây dựng hệ thống học tiếng Anh chuyên ngành Công nghệ thông tin, kết hợp với nội dung học tập theo từng lĩnh vực và mục tiêu của người học.
+114 [Heading 2] 1.4. khảo sát ứng dụng  Camply
+115 [normal] Cambly là nền tảng học tiếng Anh trực tuyến, tập trung vào hoạt động luyện giao tiếp giữa người học và gia sư. Khác với các ứng dụng chủ yếu cung cấp bài học tự học, Cambly tổ chức hoạt động học tập thông qua các buổi hội thoại trực tiếp, giúp người học rèn luyện khả năng sử dụng tiếng Anh trong những tình huống thực tế.
+116 [normal] Qua khảo sát, nhóm xác định năm nhóm chức năng chính của Cambly gồm quản lý tài khoản và gói học, tìm kiếm và lựa chọn gia sư, quản lý buổi học trực tuyến, quản lý khóa học và nội dung học tập, theo dõi và hỗ trợ sau buổi học. Các nhóm chức năng này được thể hiện trong Hình 1.4.
+117 [normal] 
+118 [normal] Hình 4. Sơ đồ cơ cấu tổ chức của ứng dụng CAMBLY
+119 [normal] Các chức năng của Cambly tập trung vào việc kết nối người học với gia sư và tổ chức các buổi học trực tuyến. Người học có thể tìm kiếm gia sư, lựa chọn lịch học và tham gia các buổi hội thoại theo mục tiêu cá nhân. Bên cạnh đó, nền tảng cung cấp những khóa học theo chủ đề và hỗ trợ người học xem lại nội dung, nhận phản hồi sau buổi học tùy theo gói dịch vụ sử dụng.
+120 [normal] Qua khảo sát, nhóm nhận thấy ưu điểm của Cambly là tạo điều kiện cho người học thực hành giao tiếp trực tiếp và nhận phản hồi từ gia sư. Việc lựa chọn người hướng dẫn và nội dung học tập giúp người học chủ động hơn trong quá trình luyện tập. Tuy nhiên, hình thức học này phụ thuộc vào lịch của gia sư, thời lượng buổi học và chi phí đăng ký. Mặc dù có một số nội dung dành cho các lĩnh vực nghề nghiệp, Cambly chưa tập trung chuyên sâu vào việc học từ vựng, đọc hiểu tài liệu kỹ thuật và luyện tập kiến thức tiếng Anh chuyên ngành Công nghệ thông tin.
+121 [normal] Từ kết quả khảo sát, nhóm tham khảo cách xây dựng nội dung học tập gắn với các tình huống sử dụng tiếng Anh trong thực tế. Đối với hệ thống đề xuất, định hướng này được vận dụng vào việc tổ chức nội dung theo các chủ đề chuyên ngành Công nghệ thông tin, giúp người học tiếp cận thuật ngữ và luyện tập kiến thức trong ngữ cảnh chuyên môn.
+122 [Heading 2] 1.5. khảo sát nhu cầu học tiếng anh qua ứng dụng của sinh viên Việt Nam
+123 [normal] Bên cạnh việc khảo sát các hệ thống học tiếng Anh hiện có, nhóm tiến hành tham khảo các nghiên cứu liên quan nhằm xác định nhu cầu thực tế của sinh viên Việt Nam đối với hình thức học tiếng Anh thông qua ứng dụng. Việc khảo sát này là cơ sở để đánh giá mức độ phù hợp của mô hình học tập trên nền tảng số và xác định những nhóm kỹ năng cần được ưu tiên khi xây dựng hệ thống.
+124 [normal] Nghiên cứu của Bui và cộng sự (2023) [1] khảo sát mục đích sử dụng và thái độ của sinh viên Việt Nam đối với các ứng dụng học tiếng Anh trên điện thoại thông minh. Nghiên cứu thu được 123 phản hồi hợp lệ từ sinh viên thuộc ba trường đại học tại Thành phố Hồ Chí Minh. Độ tuổi của người tham gia nằm trong khoảng từ 18 đến 21 tuổi, trong đó phần lớn là sinh viên năm thứ nhất và năm thứ hai.
+125 [normal] Kết quả cho thấy việc sử dụng ứng dụng di động để hỗ trợ học tiếng Anh đã xuất hiện phổ biến trong nhóm sinh viên được khảo sát. Tất cả người tham gia nghiên cứu đều có ít nhất một ứng dụng học tiếng Anh được cài đặt trên điện thoại. Trong đó, 64% sinh viên cài đặt từ một đến hai ứng dụng, 27% cài đặt từ ba đến bốn ứng dụng và 9% còn lại cài đặt từ năm ứng dụng trở lên.
+126 [normal] Về thời gian sử dụng, 77% người tham gia cho biết dành dưới một giờ mỗi ngày cho các ứng dụng học tiếng Anh. Điều này cho thấy ứng dụng di động thường được sử dụng dưới hình thức các phiên học ngắn, phù hợp với đặc điểm học tập linh hoạt và khả năng sử dụng trong nhiều khoảng thời gian khác nhau của sinh viên.
+127 [Heading 3] 1.5.1. Nhu cầu luyện tập các kỹ năng tiếng Anh
+128 [normal] Kết quả nghiên cứu của Bui và cộng sự [1] cho thấy sinh viên sử dụng ứng dụng học tiếng Anh để hỗ trợ nhiều thành phần và kỹ năng khác nhau. Trong đó, học và cải thiện từ vựng là mục đích được đánh giá cao nhất với giá trị trung bình (Mean – M) = 4,26. Luyện phát âm và luyện nghe cũng được đánh giá ở mức cao, lần lượt đạt M = 4,11 và M = 4,05.
+129 [normal] Các kết quả trên cho thấy sinh viên sử dụng ứng dụng không chỉ để học từ vựng mà còn để hỗ trợ nhiều hoạt động luyện tập khác nhau. Đối với đề tài, đây là cơ sở tham khảo để hệ thống được xây dựng theo hướng kết hợp nội dung từ vựng chuyên ngành CNTT với các hoạt động luyện nghe, nói và các kỹ năng có liên quan, thay vì chỉ tập trung vào một nội dung học tập riêng lẻ.
+130 [Heading 3] 1.5.2. Thái độ của sinh viên đối với ứng dụng học tiếng Anh
+131 [normal] Bên cạnh mục đích sử dụng, nghiên cứu của Bui và cộng sự [1] cũng ghi nhận thái độ tích cực của sinh viên đối với việc học tiếng Anh thông qua ứng dụng. Người học đánh giá cao tính linh hoạt và khả năng học mọi lúc, mọi nơi, qua đó có thể chủ động lựa chọn thời gian và địa điểm học phù hợp với điều kiện cá nhân.
+132 [normal] Kết quả này cho thấy tính linh hoạt là một yếu tố cần được xem xét khi xây dựng hệ thống học tiếng Anh. Vì vậy, hệ thống của đề tài cần tạo điều kiện để người học chủ động tiếp cận nội dung, thực hiện các hoạt động học và theo dõi quá trình học tập theo thời gian phù hợp với bản thân.
+133 [Heading 3] 1.5.3. Các yếu tố ảnh hưởng đến việc sử dụng ứng dụng học tiếng Anh 
+134 [normal] Bên cạnh đó, Ho-Minh (2024) [2] đã khảo sát việc sử dụng các ứng dụng học tiếng Anh trên thiết bị di động của sinh viên khối ngành kinh doanh tại Việt Nam. Nghiên cứu tập trung xác định những khó khăn của người học và các yếu tố cần cải thiện trong quá trình phát triển ứng dụng học tiếng Anh.
+135 [normal] Kết quả nghiên cứu cho thấy các ứng dụng học tiếng Anh trên thiết bị di động nhìn chung có khả năng hỗ trợ quá trình học của sinh viên. Tuy nhiên, mức độ hài lòng của người học đối với nội dung học tập và phương pháp tổ chức học thấp hơn so với các phương diện còn lại. Điều này cho thấy một ứng dụng học tiếng Anh không chỉ cần cung cấp đầy đủ chức năng kỹ thuật mà còn cần chú trọng đến chất lượng nội dung và cách tổ chức hoạt động học tập phù hợp với đối tượng người sử dụng.
+136 [normal] Ngoài ra, kết quả nghiên cứu định tính cho thấy động lực học tập, mức độ tương tác, tính linh hoạt và trải nghiệm người dùng là những yếu tố quan trọng ảnh hưởng đến việc sinh viên lựa chọn và tiếp tục sử dụng ứng dụng học tiếng Anh. Do đó, việc thiết kế ứng dụng cần tạo điều kiện để người học có thể chủ động lựa chọn thời gian học, duy trì sự tương tác trong quá trình học và có trải nghiệm sử dụng thuận tiện.
+137 [normal] Đối với hệ thống học tiếng Anh chuyên ngành Công nghệ thông tin của đề tài, kết quả trên gợi ý rằng nội dung cần được xây dựng phù hợp với nhu cầu chuyên môn của người học thay vì chỉ sử dụng các nội dung tiếng Anh tổng quát. Các bài học có thể được tổ chức theo những chủ đề CNTT cụ thể như lập trình, cơ sở dữ liệu, mạng máy tính, phát triển Web, kiểm thử phần mềm và trí tuệ nhân tạo. Đồng thời, hệ thống cần kết hợp nội dung chuyên ngành với phương pháp học có tính tương tác, khả năng học linh hoạt và cơ chế theo dõi quá trình học nhằm duy trì động lực cho người sử dụng.
+138 [normal] Từ kết quả nghiên cứu trên, nhóm nhận thấy việc xây dựng hệ thống học tiếng Anh cần quan tâm đến chất lượng nội dung, phương pháp tổ chức học tập và trải nghiệm người dùng. Đối với đề tài, các yếu tố này được xem xét nhằm xây dựng nội dung tiếng Anh chuyên ngành Công nghệ thông tin phù hợp với nhu cầu của người học, đồng thời hỗ trợ quá trình học tập và theo dõi tiến độ.
+139 [Heading 3] 1.5.4. Nhận xét và khả năng áp dụng vào đề tài 
+140 [normal] Qua khảo sát các nghiên cứu trên , nhóm nhận thấy một số đặc điểm của hình thức học tiếng Anh qua ứng dụng có thể được sử dụng làm cơ sở định hướng cho hệ thống đề xuất. 
+141 [normal] Đối với hệ thống học tiếng Anh chuyên ngành Công nghệ thông tin của đề tài, các kết quả trên là cơ sở để nhóm định hướng hệ thống theo mô hình học tập linh hoạt, hỗ trợ nhiều kỹ năng và tổ chức nội dung thành các hoạt động học ngắn, thuận tiện cho việc học thường xuyên. Đồng thời, nội dung và phương pháp học cần được xây dựng phù hợp với mục tiêu học tiếng Anh trong lĩnh vực Công nghệ thông tin, thay vì chỉ cung cấp nội dung tiếng Anh tổng quát.
+142 [normal] Tuy nhiên, cả hai nghiên cứu được tham khảo đều không tập trung riêng vào sinh viên Công nghệ thông tin. Vì vậy, các kết quả này được sử dụng làm cơ sở tham khảo về nhu cầu sử dụng ứng dụng, các kỹ năng được quan tâm và những yếu tố ảnh hưởng đến trải nghiệm học tập của sinh viên Việt Nam, không được sử dụng để kết luận trực tiếp về nhu cầu tiếng Anh chuyên ngành CNTT. Các yêu cầu cụ thể đối với hệ thống học tiếng Anh chuyên ngành CNTT sẽ được tiếp tục xác định dựa trên đặc thù đào tạo, yêu cầu nghề nghiệp và kết quả khảo sát các hệ thống hiện có ở các phần tiếp theo.
+143 [Heading 2] 1.6. xác định nhu cầu đối với hệ thống học tiếng Anh chuyên ngành CNTT
+144 [normal] Từ kết quả khảo sát các ứng dụng 4English, Duolingo và Cambly kết hợp với kết quả nghiên cứu về việc sử dụng ứng dụng học tiếng Anh của sinh viên Việt Nam, nhóm xác định một số định hướng cần xem xét khi xây dựng hệ thống học tiếng Anh chuyên ngành CNTT.
+145 [normal] Đối với sinh viên Công nghệ thông tin, năng lực tiếng Anh không chỉ phục vụ việc học ngoại ngữ nói chung mà còn gắn với yêu cầu đào tạo và môi trường nghề nghiệp. Chương trình đào tạo ngành Công nghệ thông tin của Trường Đại học Công Thương Thành phố Hồ Chí Minh xác định năng lực sử dụng ngoại ngữ phục vụ công việc trong lĩnh vực CNTT [3] là một trong những chuẩn đầu ra của chương trình. Đồng thời, chương trình cũng bố trí học phần Anh văn chuyên ngành nhằm hỗ trợ người học sử dụng tiếng Anh trong bối cảnh chuyên môn.
+146 [normal] Nhu cầu sử dụng tiếng Anh còn được thể hiện trong thị trường lao động CNTT. Báo cáo Vietnam IT Salary & Recruitment Market 2024–2025 [4] của ITviec cho thấy 40,3% doanh nghiệp tham gia khảo sát ưu tiên năng lực tiếng Anh khi tuyển dụng nhân sự IT mới. Kết quả này cho thấy năng lực tiếng Anh không chỉ có ý nghĩa trong quá trình đào tạo mà còn liên quan đến khả năng đáp ứng yêu cầu nghề nghiệp trong lĩnh vực Công nghệ thông tin.
+147 [normal] Từ các căn cứ trên, kết hợp với kết quả khảo sát các ứng dụng hiện có, nhóm xác định hệ thống đề xuất cần tập trung vào những ngữ cảnh sử dụng tiếng Anh gắn với lĩnh vực CNTT như từ vựng chuyên ngành, đọc hiểu tài liệu kỹ thuật, luyện nghe – nói trong các tình huống chuyên môn và tổ chức quá trình học phù hợp với nhu cầu của người học.
+148 [Heading 3] 1.6.1. Từ vựng tiếng Anh chuyên ngành CNTT
+149 [normal] Nghiên cứu của Bui và cộng sự [1] cho thấy từ vựng là mục đích sử dụng ứng dụng được đánh giá cao nhất. Qua khảo sát, 4English đã cung cấp một số bộ từ vựng theo chủ đề, trong đó có nội dung Information Technology, trong khi Duolingo chủ yếu tổ chức từ vựng trong lộ trình học ngôn ngữ tổng quát. Tuy nhiên, nhóm chưa ghi nhận một lộ trình từ vựng CNTT được tổ chức xuyên suốt theo từng lĩnh vực chuyên môn và liên kết trực tiếp với các kỹ năng khác. 
+150 [normal] Đối với người học CNTT, hệ thống đề xuất cần tổ chức từ vựng theo các chủ đề chuyên môn như lập trình, cơ sở dữ liệu, mạng máy tính, phát triển Web, trí tuệ nhân tạo, kiểm thử phần mềm và các lĩnh vực liên quan. Từ vựng không chỉ được trình bày dưới dạng từ và nghĩa mà cần được đặt trong ngữ cảnh kỹ thuật để giúp người học hiểu cách sử dụng thuật ngữ trong tài liệu chuyên ngành.
+151 [Heading 3] 1.6.2. Cá nhân hóa quá trình học tập
+152 [normal] Qua khảo sát các hệ thống hiện có, nhóm nhận thấy khả năng hỗ trợ người học xác định nội dung cần ưu tiên có ý nghĩa trong quá trình tự học. Mỗi học viên có trình độ, mục tiêu và kết quả học tập khác nhau, do đó hệ thống cần khai thác dữ liệu học tập thực tế để hỗ trợ quá trình lựa chọn nội dung tiếp theo.
+153 [normal] Hệ thống sử dụng tiến độ và kết quả làm bài của học viên để xác định những nội dung còn hạn chế. Các nội dung có kết quả thấp hơn ngưỡng quy định được ưu tiên đề xuất để học viên tiếp tục củng cố, trong khi những nội dung đã đạt kết quả tốt không được ưu tiên lặp lại.
+154 [normal] Chức năng gợi ý được triển khai bằng các quy tắc nghiệp vụ xác định trước, không sử dụng mô hình học máy hoặc mô hình ngôn ngữ lớn.
+155 [Heading 3] 1.6.3. Hỗ trợ học tập bằng AI
+156 [normal] Trong quá trình học tiếng Anh chuyên ngành công nghệ thông tin, người học thường gặp những thuật ngữ có nghĩa thay đổi tùy theo ngữ cảnh sử dụng. Việc tra cứu bằng các bản dịch có sẵn đôi khi chưa thể hiện đầy đủ ý nghĩa của thuật ngữ trong tài liệu kỹ thuật. Vì vậy, hệ thống cần hỗ trợ người học tìm hiểu nghĩa từ vựng dựa trên ngữ cảnh của nội dung đang học.
+157 [normal] Trong phạm vi đề tài, nhóm tích hợp OpenAI API để hỗ trợ dịch và giải thích từ vựng tiếng Anh theo ngữ cảnh chuyên ngành công nghệ thông tin. Thông qua chức năng này, người học có thể tham khảo nghĩa của thuật ngữ trong câu hoặc đoạn nội dung cụ thể, từ đó hiểu rõ hơn cách sử dụng từ trong lĩnh vực chuyên môn.
+158 [normal] Việc ứng dụng AI được giới hạn ở chức năng hỗ trợ tra cứu và dịch từ vựng theo ngữ cảnh. Các chức năng theo dõi tiến độ và gợi ý nội dung học tập được thực hiện dựa trên kết quả học tập cùng các quy tắc nghiệp vụ của hệ thống, không sử dụng AI để tự động tạo lộ trình hay đánh giá năng lực người học.
+159 [Heading 2] 1.7. So sánh các hệ thống và xác định khoảng trống
+160 [normal] Sau khi khảo sát 4English, Duolingo, Cambly và tham khảo nghiên cứu về nhu cầu sử dụng ứng dụng học tiếng Anh của sinh viên Việt Nam, nhóm tiến hành tổng hợp các đặc điểm có liên quan trực tiếp đến định hướng của đề tài.
+161 [normal] Bảng 1. Bảng so sánh các hệ thống học tiếng anh
+162 [normal] Kết quả so sánh cho thấy mỗi hệ thống hiện có giải quyết tốt một nhóm nhu cầu khác nhau. 4English có ưu điểm trong việc khai thác nội dung thực tế, tra cứu và quản lý từ vựng. Duolingo nổi bật với Learning Path, bài học ngắn, luyện tập nhiều kỹ năng và gamification. Cambly tạo môi trường giao tiếp trực tiếp với gia sư và cung cấp các khóa học gắn với một số mục tiêu nghề nghiệp.
+163 [normal] Tuy nhiên, qua phạm vi ba hệ thống được khảo sát, nhóm chưa ghi nhận một hệ thống nào đồng thời lấy tiếng Anh chuyên ngành CNTT làm trọng tâm và kết hợp đầy đủ các nội dung như từ vựng chuyên ngành, đọc tài liệu kỹ thuật, luyện nghe nói trong tình huống CNTT, luyện tập và kiểm tra kiến thức, theo dõi tiến độ và gợi ý nội dung học dựa trên kết quả của người học. 
+164 [normal] Từ kết quả khảo sát và so sánh trên, nhóm định hướng xây dựng hệ thống học tiếng Anh chuyên ngành công nghệ thông tin nhằm hỗ trợ sinh viên học tập trong các ngữ cảnh chuyên môn. Hệ thống tham khảo cách tra cứu từ vựng trong nội dung của 4English, phương pháp tổ chức bài học theo lộ trình và theo dõi tiến độ của Duolingo, đồng thời tiếp cận cách xây dựng nội dung gắn với tình huống thực tế của Cambly. Trên cơ sở đó, nhóm tổ chức các bài học, hoạt động luyện tập và nội dung từ vựng theo từng chủ đề chuyên ngành, phù hợp với mục tiêu học tập của người sử dụng.
+165 [Heading 2] 1.8. Kết luận chương
+166 [normal] Chương 1 đã trình bày kết quả khảo sát ba ứng dụng học tiếng Anh gồm 4English, Duolingo và Cambly, đồng thời tham khảo các nghiên cứu về việc sử dụng ứng dụng học tiếng Anh của sinh viên Việt Nam. Qua khảo sát, nhóm nhận thấy mỗi ứng dụng có cách tổ chức bài học và hỗ trợ người học khác nhau. Tuy nhiên, các ứng dụng này chưa tập trung vào nhu cầu học tiếng Anh chuyên ngành công nghệ thông tin, đặc biệt là từ vựng chuyên môn và đọc hiểu tài liệu kỹ thuật. Bên cạnh đó, việc tìm hiểu nhu cầu của sinh viên, yêu cầu ngoại ngữ trong chương trình đào tạo và môi trường làm việc ngành CNTT giúp nhóm xác định những nội dung cần thiết khi xây dựng hệ thống. Từ kết quả trên, nhóm lựa chọn tổ chức bài học theo chủ đề chuyên ngành, kết hợp học từ vựng, đọc hiểu tài liệu kỹ thuật, luyện tập kiến thức và theo dõi tiến độ. Hệ thống cũng sử dụng AI để hỗ trợ dịch từ vựng theo ngữ cảnh, giúp người học hiểu nghĩa của thuật ngữ trong tài liệu chuyên môn. Đây là cơ sở để nhóm xác định yêu cầu và xây dựng các mô hình hệ thống trong chương 2.
+167 [normal] 
+168 [normal] 
+169 [normal] 
+170 [normal] 
+171 [normal] 
+172 [normal] 
+173 [normal] 
+174 [Heading 1] CHƯƠNG 2: PHÂN TÍCH HỆ THỐNG 
+175 [Heading 2] 2.1. Phân tích yêu cầu chi tiết của hệ thống
+176 [normal] Dựa trên kết quả khảo sát nhu cầu học tiếng Anh chuyên ngành Công nghệ thông tin và yêu cầu của đề tài, hệ thống được phân tích nhằm hỗ trợ người học trong quá trình học tập, luyện tập và ôn thi các chứng chỉ nghề nghiệp quốc tế, đồng thời hỗ trợ giảng viên và quản trị viên trong việc quản lý nội dung, ngân hàng câu hỏi, bài kiểm tra và theo dõi kết quả học tập.
+177 [normal] Hệ thống được triển khai trên hai nền tảng, học viên có thể sử dụng website hoặc ứng dụng di động để học tập, Giảng viên và Quản trị viên chủ yếu sử dụng website cho các chức năng quản lý.Các yêu cầu của hệ thống được phân loại thành yêu cầu chức năng và yêu cầu phi chức năng.
+178 [normal] Yêu cầu chức năng: Hệ thống cần cung cấp các chức năng chính để hỗ trợ toàn bộ quá trình quản lý và học tập tiếng Anh chuyên ngành CNTT, bao gồm:
+179 [normal] Quản lý tài khoản và phân quyền: Hệ thống cho phép quản lý tài khoản của người học, giảng viên và quản trị viên. Các chức năng bao gồm thêm mới, cập nhật, khóa và mở khóa , tìm kiếm tài khoản người dùng, đăng nhập, đăng xuất và thay đổi mật khẩu. Hệ thống đồng thời hỗ trợ phân quyền người dùng theo các vai trò quản trị viên, giảng viên và người học nhằm đảm bảo mỗi đối tượng được sử dụng các chức năng phù hợp với vai trò của mình.
+180 [normal] Quản lý hồ sơ học tập: Hệ thống hỗ trợ quản lý thông tin hồ sơ của người học, bao gồm trình độ tiếng Anh, lĩnh vực Công nghệ thông tin quan tâm, mục tiêu nghề nghiệp và mục tiêu chứng chỉ nghề nghiệp. Người học có thể cập nhật thông tin hồ sơ học tập của mình trên ứng dụng di động, đồng thời các thông tin này được sử dụng làm cơ sở để theo dõi và hỗ trợ quá trình học tập.
+181 [normal] Quản lý nội dung học tập: Hệ thống hỗ trợ quản lý các nội dung phục vụ việc học tiếng Anh chuyên ngành CNTT. Nội dung bao gồm từ vựng, thuật ngữ chuyên ngành, bài đọc hiểu tài liệu kỹ thuật, bài học theo tình huống thực tế: API documentation, technical documentation và system design cơ bản. Nội dung được phân loại theo các lĩnh vực CNTT như Cloud Computing, Cybersecurity, Networking, Data Engineering, Data Science, Software Engineering và DevOps.
+182 [normal] Quản lý cấp độ học: Hệ thống hỗ trợ phân loại và quản lý nội dung học tập theo các cấp độ: Beginner, Intermediate, Advanced và Professional. Việc phân loại cấp độ giúp người học lựa chọn nội dung phù hợp với trình độ hiện tại.
+183 [normal] Quản lý nội dung ôn tập theo mục tiêu chứng chỉ: Hệ thống hỗ trợ xây dựng và quản lý nội dung ôn tập theo các chủ đề và lĩnh vực CNTT phục vụ mục tiêu chứng chỉ của người học. Nội dung ôn tập có thể được tổ chức theo các lĩnh vực như Cloud Computing, Cybersecurity, Networking, Data Engineering, Data Science, Software Engineering và DevOps.
+184 [normal] Quản lý ngân hàng câu hỏi: Hệ thống hỗ trợ xây dựng và quản lý ngân hàng câu hỏi phục vụ quá trình luyện tập và kiểm tra. Câu hỏi được phân loại theo kỹ năng vocabulary, reading, technical understanding và dạng tình huống thực tế. Hệ thống cho phép thêm mới, cập nhật, xóa, tìm kiếm và phân loại câu hỏi theo chủ đề, lĩnh vực CNTT, cấp độ học và mục tiêu chứng chỉ.
+185 [normal] Quản lý bài kiểm tra và đánh giá: Giảng viên có thể tạo bài kiểm tra theo chủ đề hoặc mục tiêu chứng chỉ, quản lý bài thi trắc nghiệm và bài tập tình huống thực tế. Hệ thống hỗ trợ chấm điểm tự động và quản lý kết quả làm bài của người học.
+186 [normal] Học tiếng Anh chuyên ngành CNTT: Người học có thể sử dụng ứng dụng di động để học từ vựng theo lĩnh vực CNTT, học thuật ngữ trong tài liệu kỹ thuật, đọc hiểu bài viết và technical documentation, API documentation, system design cơ bản và các tình huống thực tế trong công việc CNTT. Nội dung học tập được cung cấp theo các cấp độ từ Beginner đến Professional.
+187 [normal] Luyện tập và làm bài kiểm tra: Người học có thể luyện tập các nội dung theo lĩnh vực và mục tiêu chứng chỉ, trả lời các câu hỏi kỹ thuật bằng tiếng Anh, làm bài trắc nghiệm thuật ngữ CNTT và thực hiện các bài kiểm tra theo chủ đề hoặc mục tiêu chứng chỉ. Sau khi hoàn thành bài làm, hệ thống cung cấp điểm tự động và giải thích đáp án để hỗ trợ người học hiểu rõ kết quả.
+188 [normal] Theo dõi tiến độ học tập: Hệ thống hỗ trợ người học theo dõi tiến độ học tập cá nhân, mức độ hoàn thành nội dung theo mục tiêu chứng chỉ, lịch sử kết quả bài kiểm tra và điểm theo từng nội dung hoặc chủ đề. Đối với giảng viên, hệ thống hỗ trợ theo dõi tiến độ của từng người học, mức độ hoàn thành nội dung theo chứng chỉ mục tiêu và kết quả bài kiểm tra.
+189 [normal] Báo cáo và thống kê: Hệ thống cung cấp chức năng thống kê số lượng người học theo lĩnh vực CNTT quan tâm, thống kê điểm theo từng mục tiêu chứng chỉ và thống kê tiến độ học tập. Các báo cáo được sử dụng để phục vụ việc quản lý và đánh giá hoạt động học tập của người học.
+190 [normal] Gợi ý học tập cá nhân hóa: Hệ thống hỗ trợ Học viên xác định các nội dung cần ưu tiên dựa trên tiến độ và kết quả học tập đã được ghi nhận. Các nội dung có kết quả thấp hơn ngưỡng quy định được đưa vào danh sách cần củng cố và sắp xếp theo mức độ ưu tiên. Học viên có thể lựa chọn bài học hoặc nội dung được gợi ý để tiếp tục luyện tập. 
+191 [normal] Yêu cầu phi chức năng: Bên cạnh các chức năng nghiệp vụ, hệ thống cần đáp ứng một số yêu cầu về chất lượng và khả năng sử dụng:
+192 [normal] Tính dễ sử dụng: Giao diện Website và ứng dụng di động cần được thiết kế thân thiện, trực quan và dễ sử dụng, phù hợp với hoạt động học tiếng Anh chuyên ngành CNTT.
+193 [normal] Tính bảo mật và phân quyền: Thông tin tài khoản và dữ liệu học tập cần được quản lý theo đúng vai trò của người sử dụng. Hệ thống phải hỗ trợ đăng nhập, đăng xuất, thay đổi mật khẩu và phân quyền giữa quản trị viên, giảng viên và người học.
+194 [normal] Tính nhất quán dữ liệu: Thông tin người học, nội dung học tập, ngân hàng câu hỏi, bài kiểm tra, kết quả và tiến độ học tập cần được quản lý thống nhất trên hệ thống. Website và ứng dụng di động sử dụng mô hình dữ liệu và API dùng chung theo định hướng triển khai của đề tài.
+195 [normal] Khả năng mở rộng: Hệ thống cần có khả năng bổ sung nội dung học tập, lĩnh vực CNTT, cấp độ học, mục tiêu chứng chỉ và ngân hàng câu hỏi trong quá trình phát triển. Đề cương cũng định hướng hệ thống có thể quản lý nhiều lĩnh vực như Cloud Computing, Cybersecurity, Networking, Data Engineering, Data Science, Software Engineering và DevOps.
+196 [Heading 2] 2.2. Xây dựng mô hình nghiệp vụ
+197 [normal] Để làm rõ hoạt động của hệ thống và sự tương tác giữa các tác nhân, các quy trình nghiệp vụ chính được xác định dựa trên ba nhóm người sử dụng chính của hệ thống: người học, giảng viên, quản trị viên. Việc mô hình hóa các quy trình giúp xác định rõ vai trò của từng tác nhân, các chức năng được thực hiện và thông tin được xử lý trong từng nghiệp vụ.
+198 [normal] Quy trình đăng ký và thiết lập hồ sơ học tập: Quy trình bắt đầu khi người học đăng ký tài khoản trên ứng dụng di động và đăng nhập vào hệ thống. Sau khi đăng nhập, người học cập nhật thông tin hồ sơ học tập, trình độ tiếng Anh, lĩnh vực CNTT quan tâm, mục tiêu nghề nghiệp và mục tiêu chứng chỉ.
+199 [normal] Quy trình quản lý và biên soạn nội dung học tập: Giảng viên thực hiện quản lý và biên soạn nội dung phục vụ việc học tiếng Anh chuyên ngành CNTT. Nội dung có thể bao gồm từ vựng, thuật ngữ chuyên ngành, bài đọc hiểu tài liệu kỹ thuật, API documentation, technical documentation, system design và các case study thực tế.
+200 [normal] Quy trình luyện tập và làm bài kiểm tra: Người học lựa chọn nội dung luyện tập theo lĩnh vực CNTT, chủ đề hoặc mục tiêu chứng chỉ. Hệ thống cung cấp các câu hỏi thuộc ngân hàng câu hỏi để người học thực hiện luyện tập, bao gồm câu hỏi vocabulary, reading, technical understanding và scenario-based. Đối với bài kiểm tra, giảng viên có thể tạo bài kiểm tra theo chủ đề hoặc mục tiêu chứng chỉ. 
+201 [normal] Quy trình theo dõi tiến độ và kết quả học tập: Trong quá trình học, hệ thống ghi nhận tiến độ và kết quả của người học. Người học có thể xem tiến độ cá nhân, mức độ hoàn thành nội dung theo mục tiêu chứng chỉ, lịch sử làm bài và điểm theo từng nội dung hoặc chủ đề. Giảng viên có thể theo dõi tiến độ học tập của từng người học, xem mức độ hoàn thành theo chứng chỉ mục tiêu và kết quả bài kiểm tra.
+202 [normal] Quy trình báo cáo và thống kê: Dựa trên dữ liệu học tập được ghi nhận trong hệ thống, chức năng báo cáo và thống kê cung cấp các thông tin phục vụ quản lý như số lượng người học theo lĩnh vực CNTT quan tâm, điểm theo từng mục tiêu chứng chỉ và tiến độ học tập. Các kết quả thống kê giúp giảng viên và quản trị viên có cơ sở theo dõi tình hình học tập và đánh giá hoạt động của hệ thống.
+203 [normal] 
+204 [normal] Việc sử dụng các biểu đồ nghiệp vụ như biểu đồ Use case, biểu đồ trình tự và biểu đồ hoạt động sẽ giúp trực quan hóa các quy trình trên.
+205 [normal] Tiếp theo phần mô tả quy trình nghiệp vụ, các biểu đồ Use case được xây dựng để trực quan hóa các chức năng chính và sự tương tác giữa các tác nhân với hệ thống ở hai mức độ: Use case nghiệp vụ và Use case hệ thống.
+206 [Heading 2] 2.2.1. Biểu đồ Usecase nghiệp vụ
+207 [normal] Biểu đồ Usecase nghiệp vụ tập trung vào việc mô tả các quy trình nghiệp vụ mà hệ thống sẽ hỗ trợ và không đi sâu vào chi tiết kỹ thuật của hệ thống. Nó giúp làm rõ các hoạt động chính diễn ra trong thực tế và ai là người sẽ thực hiện các hoạt động đó.
+208 [normal] 
+209 [normal] Hình 5. Usecase nghiệp vụ học tiếng anh chuyên ngành CNTT
+210 [normal] Nhìn vào hình 1.5 , chúng ta có thể thấy ba tác nhân chính tham gia vào quy trình của ứng dụng học tiếng anh chuyên ngành CNTT ở mức nghiệp vụ:
+211 [normal] Học viên: Tác nhân này đại diện cho vai trò của sinh viên, học viên ngành CNTT trong các hoạt động nghiệp vụ. Các Usecase nghiệp vụ chính liên quan đến học viên bao gồm:
+212 [normal] Quản lý hồ sơ học tập: Hoạt động người học cập nhật và quản lý thông tin hồ sơ học tập, bao gồm trình độ Tiếng Anh, lĩnh vực CNTT quan tâm và mục tiêu học tập.
+213 [normal] Bảng 2. Bảng đặc tả usecase Quản lý hồ sơ học tập.
+214 [normal] 
+215 [normal] Hình 6. Sơ đồ hoạt động UC Quản lý hồ sơ học tập
+216 [normal] 
+217 [normal] Hình 7.Sơ đồ tuần tự UC Quản lý hồ sơ học tập
+218 [normal] Học bài học chuyên ngành: Hoạt động người học lựa chọn và học các nội dung tiếng Anh chuyên ngành CNTT theo lĩnh vực và cấp độ. Nội dung bài học bao gồm thuật ngữ chuyên ngành, tài liệu kỹ thuật, bài đọc hiểu, API documentation, system design cơ bản và các tình huống thực tế trong công việc CNTT. 
+219 [normal] Bảng 3. Bảng đặc tả usecase Học bài học chuyên ngành
+220 [normal] 
+221 [normal] Hình 8. Sơ đồ hoạt động UC Học bài học chuyên ngành
+222 [normal] 
+223 [normal] Hình 9. Sơ đồ tuần tự UC Học bài học chuyên ngành
+224 [normal] Học từ vựng chuyên ngành: Hoạt động người học học và ôn tập các từ vựng, thuật ngữ tiếng Anh chuyên ngành CNTT theo các lĩnh vực như Cloud Computing, Cybersecurity, Networking, Data Engineering, Data Science, Software Engineering và DevOps.
+225 [normal] Bảng 4. Bảng đặc tả usecase Học từ vựng chuyên ngành
+226 [normal] 
+227 [normal] Hình 10. Sơ đồ hoạt động UC Học từ vựng chuyên ngành
+228 [normal] 
+229 [normal] Hình 11. Sơ đồ tuần tự UC Học từ vựng chuyên ngành
+230 [normal] 
+231 [normal] Theo dõi tiến độ học tập: Hoạt động người học xem và theo dõi tiến độ học tập cá nhân, mức độ hoàn thành nội dung theo mục tiêu chứng chỉ, lịch sử kết quả bài kiểm tra và điểm theo từng nội dung hoặc chủ đề.
+232 [normal] Bảng 5. Bảng đặc tả usecase Theo dõi tiến độ học tập
+233 [normal] 
+234 [normal] 
+235 [normal] Hình 12. Sơ đồ hoạt động UC Theo dõi tiến độ học tập
+236 [normal] 
+237 [normal] Hình 13. Sơ đồ tuần tự UC Theo dõi tiến độ học tập
+238 [normal] 
+239 [normal] Luyện tập câu hỏi: Hoạt động người học thực hiện các câu hỏi luyện tập tiếng Anh chuyên ngành CNTT nhằm củng cố kiến thức và nâng cao khả năng vận dụng, bao gồm các câu hỏi về Vocabulary, Reading, Technical Understanding và tình huống thực tế. 
+240 [normal] Bảng 6. Bảng đặc tả usecase Luyện tập câu hỏi
+241 [normal] 
+242 [normal] Hình 14. Sơ đồ hoạt động UC Luyện tập câu hỏi
+243 [normal] 
+244 [normal] Hình 15. Sơ đồ tuần tự UC Luyện tập câu hỏi
+245 [normal] Làm đề thi thử: Hoạt động người học thực hiện bài kiểm tra theo chủ đề hoặc mục tiêu chứng chỉ để đánh giá kiến thức và mức độ sẵn sàng cho kỳ thi chứng chỉ nghề nghiệp quốc tế. Hệ thống hỗ trợ chấm điểm tự động và hiển thị giải thích đáp án sau khi hoàn thành bài làm. 
+246 [normal] Bảng 7. Bảng đặc tả usecase Làm đề thi thử
+247 [normal] 
+248 [normal] 
+249 [normal] Hình 16. Sơ đồ hoạt động UC Làm đề thi thử
+250 [normal] 
+251 [normal] Hình 17. Sơ đồ tuần tự UC Làm đề thi thử
+252 [normal] Giảng viên: Tác nhân này đại diện cho vai trò của giảng viên trong các hoạt động nghiệp vụ. Các Usecase nghiệp vụ chính liên quan đến giảng viên bao gồm:
+253 [normal] Biên soạn bài học: Hoạt động giảng viên tạo mới, cập nhật và quản lý nội dung các bài học tiếng Anh chuyên ngành CNTT theo lĩnh vực và cấp độ, phục vụ quá trình học tập của người học.
+254 [normal] Bảng 8. Bảng đặc tả usecase Biên soạn bài học
+255 [normal] 
+256 [normal] 
+257 [normal] Hình 18. Sơ đồ hoạt động UC Biên soạn bài học
+258 [normal] 
+259 [normal] Hình 19. Sơ đồ tuần tự UC Biên soạn bài học
+260 [normal] Biên soạn câu hỏi: Hoạt động giảng viên tạo mới, cập nhật và quản lý ngân hàng câu hỏi tiếng Anh chuyên ngành CNTT theo dạng câu hỏi, chủ đề, lĩnh vực và cấp độ.
+261 [normal] Bảng 9. Bảng đặc tả usecase Biên soạn câu hỏi
+262 [normal] 
+263 [normal] Hình 20. Sơ đồ hoạt động UC Biên soạn câu hỏi
+264 [normal] 
+265 [normal] 
+266 [normal] Hình 21. Sơ đồ tuần tự UC Biên soạn câu hỏi
+267 [normal] Thiết lập đề thi: Hoạt động giảng viên tạo và thiết lập các bài kiểm tra, đề thi theo chủ đề, lĩnh vực và mục tiêu chứng chỉ, bao gồm lựa chọn câu hỏi và thiết lập các thông tin của đề thi.
+268 [normal] Bảng 10. Bảng đặc tả usecase Thiết lập đề thi
+269 [normal] 
+270 [normal] 
+271 [normal] Hình 22. Sơ đồ hoạt động UC Thiết lập đề thi
+272 [normal] 
+273 [normal] Hình 23. Sơ đồ tuần tự UC Thiết lập đề thi
+274 [normal] Theo dõi tiến độ học tập: Hoạt động giảng viên theo dõi quá trình học tập, mức độ hoàn thành nội dung và kết quả học tập của người học theo mục tiêu học tập và chứng chỉ.
+275 [normal] Bảng 11. Bảng đặc tả usecase Theo dõi tiến độ học của học viên
+276 [normal] 
+277 [normal] Hình 24. Sơ đồ hoạt động UC Theo dõi tiến độ của học viên
+278 [normal] 
+279 [normal] Hình 25. Sơ đồ tuần tự UC Theo dõi tiến độ của học viên
+280 [normal] Quản trị viên:
+281 [normal] Xem báo cáo thống kê: Hoạt động quản trị viên xem các báo cáo và số liệu thống kê về tình hình sử dụng hệ thống, người học, kết quả học tập và tiến độ học tập để hỗ trợ quản lý và đánh giá hoạt động của hệ thống. 
+282 [normal] Bảng 12. Bảng đặc tả usecase Xem báo cáo thống kê
+283 [normal] 
+284 [normal] Hình 26. Sơ đồ hoạt động UC Xem báo cáo thống kê
+285 [normal] 
+286 [normal] Hình 27. Sơ đồ tuần tự UC Xem báo cáo thống kê
+287 [normal] 
+288 [normal] 
+289 [Heading 2] 2.2.2. Biểu đồ Usecase hệ thống
+290 [normal] 
+291 [normal] Hình 28. Biểu đồ Use Case hệ thống học tiếng Anh chuyên ngành CNTT
+292 [normal] Biểu đồ Use Case hệ thống mô tả các chức năng mà phần mềm cung cấp và cách người dùng tương tác với hệ thống. So với Use Case nghiệp vụ, biểu đồ ở mức hệ thống thể hiện cụ thể hơn các chức năng mà phần mềm cần hỗ trợ cho từng vai trò.
+293 [normal] Hệ thống có ba tác nhân chính gồm Học viên, Giảng viên và Quản trị viên. Học viên có thể học tập, luyện tập và thực hiện các bài kiểm tra trên Website hoặc ứng dụng di động. Giảng viên và Quản trị viên chủ yếu sử dụng Website để quản lý nội dung, theo dõi hoạt động học tập và thực hiện các chức năng quản trị. Các nền tảng sử dụng chung dữ liệu để bảo đảm thông tin được đồng bộ trong toàn hệ thống.
+294 [Heading 4] 2.2.2.1. Các tác nhân của hệ thống
+295 [normal] Học viên: sử dụng hệ thống để quản lý hồ sơ học tập, học và luyện tập các nội dung tiếng Anh chuyên ngành CNTT theo lĩnh vực, cấp độ và mục tiêu cá nhân. Học viên có thể làm đề thi thử, xem kết quả và giải thích đáp án, theo dõi tiến độ học tập và nhận các gợi ý nội dung cần ưu tiên dựa trên kết quả học tập đã được ghi nhận.  
+296 [normal] Giảng viên: sử dụng hệ thống để quản lý các nội dung chuyên môn như bài học, từ vựng, ngân hàng câu hỏi và đề thi. Giảng viên có thể theo dõi kết quả học tập của Học viên, xem báo cáo thống kê và sử dụng các thông tin này để đánh giá tình hình học tập cũng như điều chỉnh nội dung khi cần thiết. 
+297 [normal] Quản trị viên: sử dụng hệ thống để quản lý tài khoản và phân quyền người dùng, quản lý thông tin Học viên và các danh mục dùng chung của hệ thống. Quản trị viên đồng thời có thể theo dõi các báo cáo thống kê nhằm hỗ trợ việc quản lý và giám sát hoạt động chung của hệ thốn
+298 [Heading 4] 2.2.2.2. Phân hệ học tập và khảo thí
+299 [normal] Phân hệ học tập và khảo thí cung cấp các chức năng phục vụ quá trình học, luyện tập và tự đánh giá của học viên. Nội dung được tổ chức theo lĩnh vực CNTT, cấp độ và mục tiêu học tập nhằm giúp học viên lựa chọn nội dung phù hợp với nhu cầu của bản thân.
+300 [normal] Use Case học và luyện tập nội dung chuyên ngành bao gồm các hoạt động học bài học chuyên ngành, học từ vựng chuyên ngành và luyện tập câu hỏi. Các hoạt động này sử dụng những loại nội dung khác nhau nhưng cùng phục vụ mục tiêu học và củng cố tiếng Anh chuyên ngành CNTT của học viên.
+301 [normal] Trong quá trình học, hệ thống ghi nhận tiến độ và kết quả học tập. Dựa trên những dữ liệu này, chức năng nhận gợi ý học tập cá nhân hóa xác định các nội dung học viên cần tiếp tục củng cố và sắp xếp các gợi ý theo mức độ ưu tiên. Cơ chế gợi ý được thực hiện dựa trên các quy tắc nghiệp vụ đã xác định.
+302 [normal] Bên cạnh các hoạt động học tập, học viên có thể thực hiện đề thi thử để tự đánh giá kiến thức. Sau khi học viên nộp bài, hệ thống thực hiện chấm điểm tự động, lưu kết quả và cho phép học viên xem kết quả bài làm. Khi cần, học viên có thể xem thêm phần giải thích đáp án. Kết quả bài làm đồng thời được sử dụng để cập nhật tiến độ học tập.
+303 [Heading 4] 2.2.2.3. Phân hệ Quản lý chuyên môn
+304 [normal] Phân hệ Quản lý chuyên môn hỗ trợ Giảng viên xây dựng và quản lý các nội dung phục vụ quá trình học tiếng Anh chuyên ngành CNTT. Giảng viên có thể quản lý bài học, từ vựng và ngân hàng câu hỏi. Các nội dung được phân loại theo lĩnh vực CNTT và cấp độ nhằm bảo đảm phù hợp với từng nhóm nội dung học tập.
+305 [normal] Dựa trên ngân hàng câu hỏi, Giảng viên có thể thiết lập đề thi theo chủ đề, lĩnh vực, cấp độ hoặc mục tiêu chứng chỉ. Giảng viên đồng thời có thể theo dõi kết quả học tập của Học viên và xem các báo cáo thống kê liên quan để hỗ trợ việc đánh giá và điều chỉnh nội dung khi cần thiết.
+306 [Heading 4] 2.2.2.4. Phân hệ Quản trị hệ thống
+307 [normal] Phân hệ quản trị hệ thống hỗ trợ quản trị viên quản lý các thông tin và dữ liệu dùng chung của hệ thống. Quản trị viên có thể quản lý tài khoản người dùng, thực hiện phân quyền, quản lý thông tin học viên và kiểm soát trạng thái của các tài khoản khi cần thiết.
+308 [normal] Bên cạnh đó, quản trị viên quản lý các danh mục dùng chung gồm lĩnh vực CNTT, cấp độ học, mục tiêu nghề nghiệp và chứng chỉ. Các danh mục này được sử dụng trong quá trình tổ chức nội dung học tập, xác định mục tiêu của học viên và phân loại dữ liệu trong hệ thống.
+309 [normal] Quản trị viên cũng có thể xem các báo cáo thống kê về tình hình sử dụng hệ thống, kết quả và tiến độ học tập của học viên nhằm hỗ trợ việc theo dõi và quản lý hoạt động chung.
+310 [Heading 4] 2.2.2.5. Các mối quan hệ trong biểu đồ Use Case
+311 [normal] Association thể hiện sự tương tác trực tiếp giữa tác nhân và các chức năng mà tác nhân được phép sử dụng. Một số chức năng dùng chung như đăng nhập, đăng xuất và đổi mật khẩu có thể được sử dụng bởi nhiều vai trò khác nhau.
+312 [normal] Quan hệ extend được sử dụng giữa xem giải thích đáp án và xem kết quả bài làm. Sau khi xem kết quả, học viên có thể lựa chọn xem thêm phần giải thích đáp án khi có nhu cầu. Đây là hành vi mở rộng và không bắt buộc trong mọi lần xem kết quả.
+313 [Heading 4] 2.2.2.6. Đặc tả một số Use Case hệ thống tiêu biểu
+314 [normal] Bốn use case dưới đây được lựa chọn để làm rõ cách hệ thống xử lý những chức năng chính liên quan đến làm bài thi thử, thiết lập đề thi, quản lý tài khoản và gợi ý học tập cá nhân hóa. Mỗi use case được trình bày theo tác nhân tham gia, điều kiện thực hiện, luồng xử lý chính và các trường hợp phát sinh. Qua đó, nhóm có cơ sở xác định cách tương tác giữa người dùng và hệ thống, phục vụ cho việc thiết kế và cài đặt các chức năng tương ứng.
+315 [normal] 
+316 [normal] 
+317 [normal] Bảng 13. Đặc tả use case làm đề thi thử
+318 [normal] 
+319 [normal] Bảng 14. Đặc tả use case thiết lập đề thi
+320 [normal] 
+321 [normal] Bảng 15. Đặc tả use case quản lý tài khoản và phân quyền
+322 [normal] 
+323 [normal] Bảng 16. Đặc tả use case nhận gợi ý học tập cá nhân hóa
+324 [Heading 2] 2.3. Mô hình dữ liệu mức phân tích
+325 [normal] Mô hình dữ liệu mức phân tích được xây dựng nhằm xác định các lớp đối tượng, thuộc tính nghiệp vụ và mối quan hệ cần thiết cho hệ thống hỗ trợ học tiếng Anh chuyên ngành công nghệ thông tin. Để thuận tiện cho việc trình bày, các lớp được tổ chức thành sáu nhóm tương ứng với những phạm vi dữ liệu chính của hệ thống. Mỗi nhóm được thể hiện bằng một sơ đồ lớp riêng, tập trung vào các đối tượng có liên quan, những thuộc tính cần thiết để mô tả nghiệp vụ và bội số giữa các lớp. Các sơ đồ trong chương 2 làm cơ sở để cụ thể hóa cấu trúc dữ liệu và ràng buộc ở mức thiết kế trong chương 3.
+326 [Heading 3] 2.3.1. Tài khoản và phân quyền
+327 [normal] Nhóm tài khoản và phân quyền thể hiện những đối tượng phục vụ quản lý người dùng, thông tin cá nhân, vai trò và quyền truy cập. Lớp users lưu thông tin tài khoản và trạng thái sử dụng, trong khi user_details bổ sung những thông tin cá nhân của người dùng. Các lớp roles và permissions lần lượt thể hiện vai trò và quyền thao tác. Việc gán vai trò cho tài khoản được ghi nhận thông qua user_roles. Quyền tương ứng của từng vai trò được xác định qua role_permissions.
+328 [normal] Bên cạnh đó, refresh_tokens và password_reset_tokens mô tả thông tin liên quan đến việc duy trì phiên xác thực và đặt lại mật khẩu, còn push_subscriptions lưu đăng ký nhận thông báo đẩy. Quan hệ giữa users và user_details có bội số một với tối đa một và các bản ghi về vai trò, mã xác thực và đăng ký thông báo có thể phát sinh nhiều lần đối với một tài khoản. Khi thể hiện quan hệ users với user_roles, cần phân biệt tài khoản được gán vai trò và tài khoản thực hiện việc cấp vai trò, vì chúng có ý nghĩa nghiệp vụ khác nhau.
+329 [normal] 
+330 [normal] Hình 29. Sơ đồ lớp mức phân tích tài khoản và phân quyền
+331 [Heading 3] 2.3.2. Danh mục nền tảng
+332 [normal] Nhóm danh mục nền tảng gồm các lớp phục vụ phân loại nội dung và tổ chức định hướng học tập. Lớp domains xác định các lĩnh vực công nghệ thông tin, levels mô tả cấp độ học tập, còn career_goals lưu danh mục mục tiêu nghề nghiệp. Lớp certificates chứa thông tin về các chứng chỉ, được liên kết với lĩnh vực thông qua certificate_domains. Những mối liên hệ này giúp tổ chức học liệu và yêu cầu học tập theo những danh mục dùng chung.
+333 [normal] Các chủ đề thuộc chứng chỉ được thể hiện bởi certification_topics. Nội dung của từng chủ đề có thể gắn với bài học, câu hỏi và từ vựng thông qua certification_topic_lessons,certification_topic_questions,certification_topic_vocabularies. Đối với certification_topics, cặp chứng chỉ và lĩnh vực phải phù hợp với một bản ghi trong certificate_domains. Những lớp như lessons, questions hoặc vocabularies có thể xuất hiện dưới dạng lớp tham chiếu để làm rõ mối quan hệ, không được hiểu là các nhóm dữ liệu tách biệt khỏi mô hình chung. 
+334 [normal] 
+335 [normal] Hình 30. Sơ đồ lớp mức phân tích danh mục nền tảng
+336 [Heading 3] 2.3.3. Hồ sơ học viên và định hướng cá nhân
+337 [normal] Nhóm hồ sơ học viên và định hướng cá nhân tập trung vào learner_profiles, là lớp lưu thông tin học tập và những thiết lập liên quan đến mục tiêu cá nhân. Mỗi tài khoản có thể có tối đa một hồ sơ học viên. Hồ sơ có thể gắn với cấp độ học tập và nhiều lĩnh vực quan tâm, mục tiêu nghề nghiệp hoặc chứng chỉ mà người học dự định đạt được. Các mối liên hệ này lần lượt được thể hiện qua learner_profile_domains,learner_profile_career_goals,learner_certificate_goals.
+338 [normal] Hoạt động học theo nhóm được mô tả bằng learner_groups và learner_group_members. Lớp learner_groups lưu thông tin nhóm học và tài khoản sở hữu. Lớp learner_group_members ghi nhận thành viên tham gia từng nhóm. Một tài khoản có thể tham gia nhiều nhóm và một nhóm có thể có nhiều thành viên. Trong sơ đồ, các lớp users, domains, levels, career_goals và certificates được sử dụng làm đối tượng tham chiếu để thể hiện đầy đủ mối liên hệ với hồ sơ và mục tiêu học tập. 
+339 [normal] Hình 31. Sơ đồ lớp mức phân tích hồ sơ học viên và định hướng cá nhân
+340 [Heading 3] 2.3.4. Nội dung học tập và từ vựng chuyên ngành
+341 [normal] Nhóm nội dung học tập và từ vựng chuyên ngành thể hiện cách hệ thống tổ chức bài học và thuật ngữ chuyên môn. Lớp lessons lưu thông tin cơ bản của bài học và liên hệ với lĩnh vực, cấp độ tương ứng. Nội dung trong từng bài học được chia thành các phần thông qua lesson_sections. Quan hệ giữa bài học với từ vựng được ghi nhận bởi lesson_vocabularies, còn lesson_certificates thể hiện sự liên kết giữa bài học và chứng chỉ.
+342 [normal] Lớp vocabularies mô tả thuật ngữ và những thông tin cần thiết để tra cứu trong ngữ cảnh chuyên ngành. Lớp vocabulary_examples lưu các câu ví dụ gắn với từng từ. Một từ vựng có thể được phân loại vào nhiều lĩnh vực thông qua vocabulary_domains.
+343 [normal] Trong mô hình dữ liệu được đối chiếu, vocabularies.domain_id xác định lĩnh vực chính của từ, còn vocabulary_domains thể hiện những lĩnh vực được gán bổ sung. Sơ đồ phân tích chỉ cần thể hiện thông tin loại từ theo cách biểu diễn đang sử dụng, không xem part_of_speech và parts_of_speech là hai khái niệm nghiệp vụ độc lập.
+344 [normal] 
+345 [normal] Hình 32. Sơ đồ lớp mức phân tích nội dung học tập và từ vựng chuyên ngành
+346 [Heading 3] 2.3.5. Ngân hàng câu hỏi và khảo thí
+347 [normal] Nhóm ngân hàng câu hỏi và khảo thí mô tả các đối tượng dùng để tổ chức câu hỏi, đề thi và ghi nhận kết quả làm bài. Lớp questions lưu thông tin câu hỏi, còn question_options lưu các phương án trả lời của câu hỏi có lựa chọn. Lớp exams đại diện cho đề thi và những thiết lập liên quan. Một đề thi có thể gồm nhiều câu hỏi và một câu hỏi có thể được sử dụng trong nhiều đề thi. Quan hệ này được thể hiện thông qua exam_questions, kèm thông tin như thứ tự và trọng số.
+348 [normal] Khi học viên thực hiện bài kiểm tra, exam_attempts ghi nhận lượt làm bài và kết quả, trong khi attempt_answers lưu câu trả lời tương ứng. Lớp saved_questions biểu diễn các câu hỏi được người học đánh dấu lưu. Lớp placement_assessments ghi nhận hoạt động đánh giá trình độ và kết quả liên quan đến tài khoản học viên. Các lớp users, domains, levels và certificates được thể hiện khi cần làm rõ nguồn gốc, phân loại hoặc phạm vi áp dụng của dữ liệu khảo thí và những quan hệ không được ràng buộc trực tiếp trong mô hình dữ liệu không nên được diễn giải thành khóa ngoại vật lý.
+349 [normal] 
+350 [normal] Hình 33. Sơ đồ lớp mức phân tích ngân hàng câu hỏi và khảo thí
+351 [Heading 3] 2.3.6. Tiến độ học tập và cá nhân hóa
+352 [normal] Nhóm tiến độ học tập và cá nhân hóa bao gồm các lớp ghi nhận quá trình học và việc nhắc nhở người dùng. Lớp learning_progress lưu trạng thái và mức độ hoàn thành tài nguyên học tập. Lớp vocabulary_progress ghi nhận tiến độ luyện tập, ôn tập đối với từng từ vựng và liên kết với tài khoản học viên. Lớp learning_notifications lưu những thông báo học tập và trạng thái tiếp nhận của người dùng. Các quan hệ với users và vocabularies giúp xác định đối tượng sở hữu dữ liệu và từ vựng đang được theo dõi.
+353 [normal] Riêng learning_progress sử dụng cặp thuộc tính resource_type và resource_id để xác định tài nguyên được theo dõi theo từng loại. Đây là quan hệ tham chiếu logic, không phải một khóa ngoại vật lý trỏ đến đồng thời nhiều bảng. Do đó, khi chuyển sang mức thiết kế và xử lý dữ liệu, cần làm rõ cách kiểm tra sự tồn tại của tài nguyên và xử lý dữ liệu tiến độ khi tài nguyên liên quan bị xóa. Sơ đồ này chỉ trình bày ba lớp tiến độ, ôn tập từ vựng và thông báo theo phạm vi mô hình 42 bảng của khóa luận.
+354 [normal] 
+355 [normal] Hình 34. Sơ đồ lớp mức phân tích tiến độ học tập và cá nhân hóa
+356 [Heading 3] 2.3.7. Các mối quan hệ và ràng buộc trong mô hình
+357 [normal] Quan hệ giữa các lớp được thể hiện thông qua bội số ở hai đầu đường nối. Ký hiệu 1 xác định một đối tượng tham gia bắt buộc, 0..1 thể hiện đối tượng tham gia không bắt buộc và có tối đa một bản ghi tương ứng, còn 0..* thể hiện khả năng tồn tại nhiều bản ghi liên quan. Chẳng hạn, users có quan hệ một với tối đa một với user_details và learner_profiles. Một bài học có thể có nhiều phần nội dung trong lesson_sections, trong khi mỗi phần nội dung thuộc về một bài học. Các trường hợp tham chiếu tùy chọn cần được thể hiện phù hợp, không mặc định tất cả quan hệ đều có bội số 1 ở phía lớp được tham chiếu.
+358 [normal] Quan hệ nhiều - nhiều có thể được thể hiện bằng bảng liên kết hoặc bằng quan hệ trực tiếp ở mức khái niệm, tùy thuộc ý nghĩa của từng đối tượng trung gian. Trong mô hình này, user_roles chứa thông tin về việc cấp vai trò, exam_questions chứa thứ tự và trọng số câu hỏi, còn lesson_vocabularies thể hiện quan hệ giữa bài học và từ vựng. Vì vậy, việc giữ những lớp trung gian có thuộc tính nghiệp vụ là cần thiết để không làm mất ý nghĩa của dữ liệu. Các lớp và quan hệ thuộc những sơ đồ thành phần vẫn là các phần của cùng một mô hình phân tích và việc xuất hiện lại một lớp trong nhiều sơ đồ chỉ nhằm làm rõ mối liên hệ giữa các nhóm.
+359 [normal] Một số ràng buộc cần được chú ý khi triển khai gồm việc thống nhất lĩnh vực chính của từ vựng với danh sách lĩnh vực được gán, cách lưu loại từ đang sử dụng và việc kiểm soát tham chiếu logic trong learning_progress. Những vấn đề này được phân tích ở mức khái niệm trong chương 2 và được cụ thể hóa ở chương 3 bằng cấu trúc bảng, kiểu dữ liệu, khóa và các biện pháp bảo đảm tính nhất quán phù hợp với hệ thống.
+360 [normal] 
+361 [Heading 2] 2.4. Kết chương
+362 [normal] Chương 2 đã trình bày quá trình phân tích hệ thống hỗ trợ học tiếng Anh chuyên ngành công nghệ thông tin, tập trung làm rõ các yêu cầu chức năng, yêu cầu phi chức năng và những nghiệp vụ liên quan đến học viên, giảng viên và quản trị viên. Thông qua các sơ đồ ca sử dụng, đặc tả chức năng và sơ đồ hoạt động, chương đã xác định cách thức tương tác của các tác nhân với hệ thống cũng như trình tự xử lý của những nghiệp vụ chính. Bên cạnh đó, mô hình dữ liệu mức phân tích được tổ chức thành sáu nhóm, thể hiện các đối tượng dữ liệu, thuộc tính nghiệp vụ và mối quan hệ giữa chúng trong quá trình quản lý tài khoản, tổ chức học liệu, khảo thí và theo dõi tiến độ học tập. Những kết quả phân tích này là cơ sở để thực hiện thiết kế kiến trúc hệ thống, xây dựng mô hình dữ liệu mức thiết kế và xác định các ràng buộc cần thiết trong chương 3.
+363 [normal] 
+364 [normal] 
+365 [normal] 
+366 [Heading 1] CHƯƠNG 3: THIẾT KẾ HỆ THỐNG
+367 [Heading 2] 3.1 Giới thiệu
+368 [normal] Chương 3 trình bày thiết kế cơ sở dữ liệu của hệ thống học tiếng Anh chuyên ngành công nghệ thông tin dựa trên kết quả phân tích ở Chương 2. Nội dung gồm cấu trúc dữ liệu, các sơ đồ lớp mức thiết kế theo nhóm chức năng và những ràng buộc cần thiết để quản lý thống nhất dữ liệu tài khoản, học liệu, khảo thí và tiến độ học tập trên PostgreSQL.
+369 [Heading 2] 3.2. Thiết kế cơ sở dữ liệu
+370 [Heading 3] 3.2.1. Mô tả tổng quan cơ sở dữ liệu
+371 [normal] Theo lược đồ hiện tại, cơ sở dữ liệu PostgreSQL của hệ thống gồm 42 bảng nghiệp vụ, 62 khóa ngoại và 12 kiểu dữ liệu liệt kê. Các bảng được chia thành sáu nhóm chức năng như trình bày ở Bảng 
+372 [normal] Bảng 17. Phân nhóm các bảng trong cơ sở dữ liệu
+373 [normal] 
+374 [Heading 3] 3.2.2. Tổ chức mô hình lớp mức thiết kế
+375 [normal] Từ các đối tượng dữ liệu đã xác định ở Chương 2, mô hình lớp mức thiết kế được thể hiện bằng sáu sơ đồ Rational Rose theo nhóm chức năng. Mỗi lớp tương ứng với một bảng, các liên kết thể hiện quan hệ tham chiếu. Các lớp dùng chung có thể xuất hiện trong nhiều sơ đồ nhưng chỉ được tính một lần trong danh mục 42 bảng.
+376 [Heading 3] 3.2.3. Thiết kế các nhóm dữ liệu chính
+377 [normal] Mỗi nhóm dữ liệu được giới thiệu bằng sơ đồ lớp mức thiết kế và danh mục các bảng. Các bảng giữ vai trò chính trong nghiệp vụ được chọn để mô tả chi tiết thuộc tính, kiểu dữ liệu và khóa. Trong bảng thuộc tính, cột Ghi chú dùng PK cho khóa chính, FK cho khóa ngoại và PK, FK khi thuộc tính đồng thời tham gia cả hai loại khóa.
+378 [Heading 4] 3.2.3.1. Nhóm tài khoản và phân quyền
+379 [normal] Nhóm này quản lý tài khoản và phân quyền truy cập. users lưu thông tin xác thực, roles, permissions và các bảng liên kết xác định vai trò, quyền của tài khoản. Các bảng còn lại phục vụ hồ sơ cá nhân, phiên đăng nhập, đặt lại mật khẩu và đăng ký thông báo.
+380 [normal] 
+381 [normal] Hình 35. Sơ đồ lớp mức thiết kế nhóm tài khoản và phân quyền
+382 [normal] Bảng 18. Danh sách các bảng thuộc nhóm tài khoản và phân quyền
+383 [normal] 
+384 [normal] Bảng 19. Mô tả bảng users
+385 [normal] 
+386 [normal] Bảng 20. Mô tả bảng role_permissions
+387 [normal] 
+388 [normal] Bảng 21. Mô tả bảng user_roles
+389 [normal] 
+390 [Heading 4] 3.2.3.2. Nhóm danh mục nền tảng
+391 [normal] Nhóm danh mục cung cấp các lĩnh vực, cấp độ, mục tiêu nghề nghiệp, chứng chỉ và chủ đề chứng chỉ. Các bảng liên kết giúp gắn chứng chỉ và chủ đề với nội dung học tập, từ vựng và câu hỏi.
+392 [normal] 
+393 [normal] Hình 36. Sơ đồ lớp mức thiết kế nhóm danh mục nền tảng
+394 [normal] 	
+395 [normal] Bảng 22. Danh sách các bảng thuộc nhóm danh mục nền tảng
+396 [normal] 
+397 [normal] Bảng 23. Mô tả bảng certificates
+398 [normal] 
+399 [normal] Bảng 24. Mô tả bảng certification_topics
+400 [normal] 
+401 [Heading 4] 3.2.3.3. Nhóm hồ sơ học viên và định hướng cá nhân
+402 [normal] Nhóm hồ sơ học viên lưu thông tin học tập, lĩnh vực quan tâm, mục tiêu nghề nghiệp, chứng chỉ hướng đến và việc tham gia nhóm học. learner_profiles là bảng chính, được liên kết với các bảng ghi nhận lựa chọn của học viên.
+403 [normal] 
+404 [normal] Hình 37. Sơ đồ lớp mức thiết kế nhóm hồ sơ học viên và định hướng cá nhân
+405 [normal] Bảng 25. Danh sách các bảng thuộc nhóm hồ sơ học viên và định hướng cá nhân
+406 [normal] 
+407 [normal] Bảng 26. Mô tả bảng learner_profiles
+408 [normal] 
+409 [Heading 4] 3.2.3.4. Nhóm nội dung học tập và từ vựng chuyên ngành
+410 [normal] Nhóm nội dung học tập quản lý bài học và từ vựng chuyên ngành. lessons và vocabularies lưu các nội dung chính; các bảng liên kết và bảng nội dung chi tiết hỗ trợ tổ chức bài học, ví dụ sử dụng từ và phân loại theo chứng chỉ, lĩnh vực.
+411 [normal] 
+412 [normal] Hình 38. Sơ đồ lớp mức thiết kế nhóm nội dung học tập và từ vựng chuyên ngành
+413 [normal] Bảng 27. Danh sách các bảng thuộc nhóm nội dung học tập và từ vựng chuyên ngành
+414 [normal] 
+415 [normal] Bảng 28. Mô tả bảng lessons
+416 [normal] 
+417 [normal] Bảng 29. Mô tả bảng lesson_vocabularies
+418 [normal] 
+419 [normal] 
+420 [normal] Bảng 30. Mô tả bảng vocabularies
+421 [Heading 4] 3.2.3.5. Nhóm ngân hàng câu hỏi và khảo thí
+422 [normal] Nhóm khảo thí quản lý câu hỏi, đáp án, đề thi và lượt làm bài. questions và exams xác định nội dung kiểm tra; exam_attempts và attempt_answers ghi nhận kết quả thực hiện, còn placement_assessments phục vụ đánh giá trình độ.
+423 [normal] 
+424 [normal] Hình 39. Sơ đồ lớp mức thiết kế nhóm ngân hàng câu hỏi và khảo thí
+425 [normal] Bảng 31. Danh sách các bảng thuộc nhóm ngân hàng câu hỏi và khảo thí
+426 [normal] 
+427 [normal] Bảng 32. Mô tả bảng questions
+428 [normal] 
+429 [normal] Bảng 33. Mô tả bảng question_options
+430 [normal] 
+431 [normal] Bảng 34. Mô tả bảng exams
+432 [normal] 
+433 [normal] Bảng 35. Mô tả bảng exam_attempts
+434 [normal] 
+435 [normal] Bảng 36. Mô tả bảng attempt_answers
+436 [normal] 
+437 [normal] Bảng 37. Mô tả bảng placement_assessments
+438 [normal] 
+439 [Heading 4] 3.2.3.6. Nhóm tiến độ học tập và cá nhân hóa
+440 [normal] Nhóm tiến độ ghi nhận quá trình học và ôn tập. learning_progress theo dõi mức độ hoàn thành tài nguyên học tập; vocabulary_progress ghi nhận trạng thái ôn luyện từ vựng, còn learning_notifications lưu thông báo liên quan.
+441 [normal] 
+442 [normal] Hình 40. Sơ đồ lớp mức thiết kế nhóm tiến độ học tập và cá nhân hóa
+443 [normal] Bảng 38. Danh sách các bảng thuộc nhóm tiến độ học tập và cá nhân hóa
+444 [normal] 
+445 [normal] Bảng 39. Mô tả bảng learning_progress
+446 [normal] 
+447 [normal] Bảng 40. Mô tả bảng vocabulary_progress
+448 [Heading 3] 3.2.4. Ràng buộc toàn vẹn
+449 [Heading 4] 3.2.4.1. Ràng buộc khóa chính
+450 [normal] Mỗi bảng có khóa chính để xác định duy nhất bản ghi. Những bảng dữ liệu chính như users, learner_profiles, lessons và exams thường dùng cột id; các bảng liên kết như user_roles và role_permissions sử dụng khóa chính ghép từ các cột tham chiếu.
+451 [Heading 4] 3.2.4.2. Ràng buộc khóa ngoại
+452 [normal] Lược đồ khai báo 62 khóa ngoại để liên kết dữ liệu giữa các nhóm. Chẳng hạn, user_roles nối tài khoản với vai trò; lesson_vocabularies nối bài học với từ vựng; exam_questions nối đề thi với câu hỏi và attempt_answers liên kết câu trả lời với lượt làm bài.
+453 [normal] Một số quan hệ có khóa ngoại cho phép NULL, như exams.certificate_id và learner_groups.career_goal_id. Hai trường user_details.user_id và learner_profiles.user_id có ràng buộc duy nhất để giới hạn số hồ sơ tương ứng với một tài khoản.
+454 [normal] Đáng lưu ý, attempt_answers.question_id chỉ lưu mã câu hỏi và không khai báo khóa ngoại vật lý trực tiếp đến questions.id; do đó không tính cột này là một khóa ngoại độc lập.
+455 [Heading 4] 3.2.4.3. Ràng buộc miền giá trị và giá trị mặc định
+456 [normal] Hệ thống sử dụng 12 kiểu dữ liệu liệt kê để giới hạn các trạng thái và loại dữ liệu hợp lệ. Danh sách các kiểu liệt kê được nêu ở bảng sau.
+457 [normal] Bảng 41. Các kiểu enum được sử dụng trong cơ sở dữ liệu
+458 [normal] 
+459 [normal] Một số trường được quy định giá trị mặc định khi tạo bản ghi. Chẳng hạn, users.status mặc định là active, exam_attempts.status mặc định là in_progress và learning_progress.status mặc định là not_started. Những trường thời gian có thể sử dụng current_timestamp, dữ liệu có cấu trúc linh hoạt ở một số bảng được lưu dưới dạng JSONB.
+460 [normal] Ngoài ra, learner_profiles.learning_goal có ràng buộc check, chỉ chấp nhận null hoặc một trong các giá trị vocabulary, certification và both.
+461 [Heading 4] 3.2.4.4. Ràng buộc duy nhất (UNIQUE)
+462 [normal] Lược đồ có 22 chỉ mục unique độc lập ngoài các khóa chính. Chỉ mục trên exam_attempts là chỉ mục duy nhất có điều kiện, áp dụng cho lượt thi có trạng thái in_progress.
+463 [normal] Bảng 42. Các chỉ mục UNIQUE trong cơ sở dữ liệu
+464 [normal] 
+465 [Heading 4] 3.2.4.5. Một số ràng buộc nghiệp vụ đáng chú ý
+466 [normal] exam_attempts lưu bản chụp cấu hình đề và danh sách câu hỏi tại thời điểm bắt đầu lượt thi, giúp lưu lại nội dung của lượt làm bài khi dữ liệu đề thi thay đổi.
+467 [normal] Các bảng user_roles và role_permissions tách quan hệ phân quyền khỏi bảng users. Ràng buộc duy nhất trên user_details.user_id và learner_profiles.user_id giới hạn mỗi tài khoản tối đa một bản ghi hồ sơ tương ứng.
+468 [normal] learning_progress không cho phép trùng tổ hợp learner_id, resource_type và resource_id. attempt_answers không cho phép trùng (attempt_id, question_id); exam_attempts có chỉ mục duy nhất có điều kiện trên các lượt đang thực hiện.
+469 [Heading 3] 3.2.5. Chuyển đổi từ mô hình phân tích sang mô hình thiết kế
+470 [normal] Ở mức thiết kế, các đối tượng chính trong mô hình phân tích được tổ chức thành bảng dữ liệu có định danh riêng. Các quan hệ nhiều - nhiều được thể hiện qua bảng liên kết như user_roles, role_permissions và lesson_vocabularies. Các bảng ghi nhận hoạt động, gồm exam_attempts và learning_progress, lưu dữ liệu phát sinh trong quá trình sử dụng hệ thống.
+471 [Heading 2] 3.3. Kết chương
+472 [normal] Chương 3 đã trình bày cách tổ chức 42 bảng nghiệp vụ thành sáu nhóm dữ liệu, các sơ đồ lớp mức thiết kế và những ràng buộc chính trong PostgreSQL. Phần mô tả thuộc tính tập trung vào các bảng tiêu biểu cho phân quyền, học liệu, khảo thí và tiến độ, làm cơ sở đối chiếu với quá trình cài đặt và kiểm thử hệ thống.
+
+473 [normal] 
+474 [Heading 1] CHƯƠNG 4: CÀI ĐẶT THỰC NGHIỆM 
+475 [Heading 2] 4.1. Giới thiệu
+476 [normal] Chương này trình bày toàn bộ kết quả cài đặt thực nghiệm hệ thống học tiếng Anh chuyên ngành công nghệ thông tin TechEnglish (nền tảng học tiếng Anh chuyên ngành công nghệ thông tin và luyện thi chứng chỉ quốc tế).
+477 [normal] Mục tiêu trọng tâm là hiện thực hóa các mô hình phân tích yêu cầu ở Chương 2 và thiết kế hệ thống, cơ sở dữ liệu ở Chương 3 thành một sản phẩm phần mềm hoàn chỉnh, hoạt động đồng bộ trên cả nền tảng website và ứng dụng di động.
+478 [normal] Phạm vi cài đặt thực nghiệm bao gồm:
+479 [normal] Kiến trúc tổng thể hệ thống: Mô hình phân tầng kết nối giữa ứng dụng web, ứng dụng di động, hệ quản trị cơ sở dữ liệu PostgreSQL, cùng các dịch vụ tích hợp bên thứ ba (OpenAI GPT-6 Luna, Firebase Cloud Messaging, Cloudinary CDN).
+480 [normal] Các mô-đun chức năng đã cài đặt: Tổng hợp chi tiết 9 phân hệ chức năng đã hoàn thiện trong mã nguồn, bao gồm: quản lý xác thực & phân quyền (RBAC), khảo sát trình độ ban đầu của học viên, bài học chuyên ngành & trình soạn thảo RichText, từ vựng & thẻ nhớ lặp lại (Flashcard SRS), luyện thi chứng chỉ quốc tế CNTT, ngân hàng câu hỏi & khảo thí trực tuyến, theo dõi tiến độ học, AI trợ lý học tập thích ứng, và hệ thống thông báo tự động.
+481 [normal] Các luồng nghiệp vụ cốt lõi (Core Business Flows): Mô tả chi tiết trình tự xử lý dữ liệu từ giao diện người dùng đến các tầng dịch vụ và cơ sở dữ liệu cho 4 luồng quan trọng nhất: Onboarding và khảo sát trình độ ban đầu -> học bài học kỹ thuật & rèn luyện từ vựng -> khảo thí, làm bài kiểm tra & chấm điểm tự động -> ghi nhận tiến độ, vòng ôn tập hàng ngày & đề xuất thích ứng.
+482 [normal] Kết quả giao diện tiêu biểu: Liệt kê các giao diện lập trình ứng dụng trọng yếu và giới thiệu hệ thống giao diện trực quan trên website và ứng dụng di động.
+483 [normal] Các quyết định kỹ thuật quan trọng và lý do lựa chọn: Giải thích các giải pháp kỹ thuật quan trọng như kiến trúc Monorepo (pnpm workspaces), kiến trúc phân lớp Clean Architecture trên NestJS, cơ chế Snapshot câu hỏi trong thi cử, chiến lược Spaced Repetition kết hợp Daily Refresh, và kiến trúc tích hợp AI an toàn có cơ chế dự phòng (Controlled AI with Fallback).
+484 [Heading 2] 4.2. Cài đặt môi trường lập trình
+485 [normal] Bảng 4.1 Bảng tổng hợp công nghệ, phiên bản và mục đích sử dụng trong hệ thống
+486 [Heading 2] 4.3. Kiến trúc tổng thể và mô hình triển khai
+487 [Heading 3] 4.3.1. Sơ đồ kiến trúc 4 tầng của hệ thống TechEnglish
+488 [normal] 
+489 [normal] Hình 4.1 Sơ đồ kiến trúc 4 tầng của hệ thống 
+490 [Heading 3] 4.3.2. Phân tích các tầng thành phần
+491 [Heading 4] 4.3.2.1. Tầng Trình diễn (Client Tier):
+492 [normal] Web Application: Xây dựng bằng Next.js 15 với React 19, áp dụng mô hình phân nhóm route. Các trang học tập tận dụng Server-Side Rendering (SSR) để tăng tốc độ tải trang ban đầu, kết hợp Client Components cho các tương tác phức tạp như lật thẻ Flashcard, nghe phát âm, và làm bài trắc nghiệm có đồng hồ đếm ngược.
+493 [normal] Mobile Application: Triển khai trên nền tảng Expo SDK 58 và React Native 0.81, chạy với Hermes JavaScript Engine giúp tối ưu dung lượng bộ nhớ và khởi động tức thì. Giao diện thân thiện với người dùng, dễ thao tác, bảo đảm trải nghiệm đồng nhất 100% về bảng màu, kiểu chữ và độ tương phản với nền tảng Web.
+494 [Heading 4] 4.3.2.2. Tầng Dịch vụ Ứng dụng (Application & API Tier):
+495 [normal] Sử dụng kiến trúc hướng mô-đun của NestJS 11. Các yêu cầu từ client trước khi vào Controller đều phải đi kiểm tra kiểu dữ liệu và các ràng buộc, xác thực chữ ký số của Access Token, và kiểm tra quyền hạn RBAC đối với các tài nguyên quản trị.
+496 [normal] Tầng Application Services chứa toàn bộ logic xử lý nghiệp vụ: thuật toán chấm điểm bài thi, tính toán Spaced Repetition cho từ vựng,và điều phối dữ liệu với AI.
+497 [Heading 4] 4.3.2.3. Tầng Dữ liệu và Lưu trữ (Data & Storage Tier):
+498 [normal] PostgreSQL 16: Lưu trữ bền vững toàn bộ tất cả các bảng nghiệp vụ. Tất cả các thao tác đọc ghi được quản lý chặt chẽ thông qua Prisma ORM, đảm bảo tính toàn vẹn tham chiếu và ràng buộc khóa ngoại.
+499 [Heading 4] 4.3.2.4. Tầng Tích hợp Dịch vụ Bên ngoài (External & AI Tier):
+500 [normal] OpenAI API: Tích hợp mô hình “gpt-6-luna” thông qua adapter “ai-connection.ts” tại backend. Hệ thống sử dụng AI để cá nhân hóa lộ trình học phù hợp cho học viên, gợi ý các bài học và từ vựng cần ôn tập dựa trên trình độ hiện tại của học viên, và cung cấp tính năng dịch thuật ngữ tức thì khi người học bôi đen văn bản.
+501 [normal] Firebase Cloud Messaging (FCM): Đồng bộ cơ chế thông báo trên cả Service Worker của trình duyệt Web và hệ thống push notification native của Android/IOS.
+502 [Heading 2] 4.4. Các mô-đun hệ thống đã cài đặt thực tế
+503 [normal] Hệ thống TechEnglish bao gồm 9 mô-đun nghiệp vụ chính đã được hiện thực hóa đầy đủ trong mã nguồn.
+504 [Heading 3] 4.4.1. Mô-đun xác thực và phân quyền
+505 [normal] Chức năng: Đăng ký tài khoản mới (hỗ trợ kiểm tra trùng lặp email và thời hạn xóa tài khoản), đăng nhập bằng email/mật khẩu hoặc tài khoản Google, cấp phát cặp khóa JWT (Access Token với thời hạn tồn tại là 15 phút và Refresh Token với thời hạn là 7 ngày). Hỗ trợ quy trình quên mật khẩu và đặt lại mật khẩu.
+506 [normal] Phân quyền Role-Based Access Control (RBAC) giúp quản lý 3 vai trò chính: Học viên (learner), giảng viên (teacher), và quản trị viên (admin) thông qua các bảng “roles”, “permissions”, “user_roles” và “role_permissions”. Cho phép admin thêm/xóa/sửa quyền hạn linh hoạt, kích hoạt/khóa tài khoản hoặc phục hồi người dùng bị xóa trong vòng 30 ngày.
+507 [Heading 3] 4.4.2. Mô-đun hồ sơ học viên và khảo sát trình độ ban đầu
+508 [normal] Chức năng thu thập thông tin cá nhân học viên trong giai đoạn Onboarding: chuyên ngành CNTT theo đuổi (Cloud, DevOps, Software Engineering, Data,...), mục tiêu chứng chỉ (AWS, Azure, CCNA) và thời gian cam kết học mỗi ngày.
+509 [Heading 3] 4.4.3. Mô-đun quản lý và học bài học chuyên ngành
+510 [normal] Chức năng quản lý kho bài học kỹ thuật chuyên sâu theo các chủ đề CNTT. Mỗi bài học được cấu trúc thành nhiều phân đoạn (sections) phong phú với tiêu đề (heading), văn bản giàu định dạng (rich text), hình ảnh kiến trúc, đoạn mã nguồn (code snippet với cú pháp kỹ thuật), hộp chú thích (callout), và danh sách từ vựng trọng tâm.
+511 [normal] Admin Content Studio: Tích hợp trình soạn thảo Quill Editor cho phép quản trị viên và giảng viên soạn bài trực quan, nhúng liên kết, định dạng mã code và xuất bản hoặc lưu trữ bài học. Phía người học, hệ thống hỗ trợ tính năng theo dõi thời gian đọc, phát âm audio mẫu và ghi nhận hoàn thành bài.
+512 [Heading 3] 4.4.4. Mô-đun từ vựng chuyên ngành và thẻ nhớ Flashcard SRS
+513 [normal] Chức năng quản lý cơ sở dữ liệu từ vựng chuyên ngành CNTT chuẩn hóa, bao gồm: Thuật ngữ tiếng Anh, phiên âm IPA, nghĩa tiếng Việt ngữ cảnh, từ loại, định nghĩa tiếng Anh chuyên ngành, câu ví dụ thực tế và liên kết đến bài học nguồn.
+514 [normal] Thuật toán Spaced Repetition System (SRS): Triển khai phiên học lật thẻ Flashcard hai mặt. Sau khi xem từ, học viên tự đánh giá mức độ ghi nhớ qua 3 mức là khó (Hard), nhớ (Good), đã thuộc (Easy) và ngoài ra có thể skip nếu từ đó đã biết từ trước. Hệ thống tự động tính toán khoảng thời gian lặp lại tối ưu để đưa từ vào danh sách cần ôn tập hàng ngày, giúp chuyển hóa từ vựng ngắn hạn thành trí nhớ dài hạn.
+515 [Heading 3] 4.4.5. Mô-đun luyện thi chứng chỉ quốc tế CNTT
+516 [normal] Chức năng cung cấp lộ trình ôn luyện bám sát cấu trúc đề thi chứng chỉ thực tế (điển hình như AWS Certified Cloud Practitioner CLF-C02, Azure Fundamentals AZ-900). Hệ thống phân cấp chứng chỉ thành các lĩnh vực (Domains) và chủ đề (Topics).
+517 [normal] Liên kết bài học và quiz theo chủ đề: Mỗi chủ đề bao gồm các bài học kiến thức chuyên sâu và bài kiểm tra ngắn (Topic Quiz) nhằm củng cố ngay kiến thức lý thuyết trước khi chuyển sang chủ đề tiếp theo.
+518 [Heading 3] 4.4.6. Mô-đun ngân hàng câu hỏi và khảo thí
+519 [normal] Ngân hàng câu hỏi: Hỗ trợ nhiều dạng câu hỏi như trắc nghiệm 1 lựa chọn (single choice), nhiều lựa chọn (multiple choice), đúng/sai (true/false), điền ngắn (short answer), và câu hỏi tình huống thực tế (scenario). Mỗi câu hỏi đều đi kèm lời giải thích chi tiết đáp án đúng.
+520 [normal] Động cơ khảo thí (Exam Engine): Quản lý các đề thi thử tổng hợp có giới hạn thời gian. Khi học viên bắt đầu thi, hệ thống chụp lại bản sao snapshot toàn bộ câu hỏi và đáp án để đảm bảo tính bất biến. Hệ thống chấm điểm tự động ở phía máy chủ ngay sau khi nộp bài, lưu lịch sử từng câu trả lời và hiển thị phân tích kết quả cho người học.
+521 [Heading 3] 4.4.7. Mô-đun theo dõi tiến độ học tập
+522 [normal] Tiến độ học tập: Ghi nhận trạng thái hoàn thành bài học, tỷ lệ hoàn thành lộ trình chứng chỉ và điểm số trung bình các bài thi theo thời gian thực.
+523 [normal] Vòng ôn tập hàng ngày (Daily Refresh): Đối với học viên đã hoàn thành lộ trình hoặc đạt mức Chuyên nghiệp, hệ thống kích hoạt chế độ Daily Refresh luân phiên tối đa 3 chuyên ngành và các từ vựng đến hạn ôn tập vào đúng 00:00 mỗi ngày, đảm bảo việc duy trì phản xạ tiếng Anh liên tục.
+524 [Heading 3] 4.4.8. Mô-đun AI trợ lý học tập và đề xuất lộ trình
+525 [normal] Tối ưu hóa lộ trình học: Kết nối với mô hình AI “gpt-6-luna” thông qua adapter bảo mật ở backend. AI sẽ hỗ trợ dịch từ vựng theo ngữ cảnh khi bôi đen văn bản, gợi ý kế hoạch học 4 tuần theo mục tiêu cá nhân, sắp xếp việc học hôm nay, và cá nhân hóa gợi ý học liệu (bài học, từ vựng yếu, quiz) theo tiến độ thực tế.
+526 [normal] Dịch thuật ngữ theo ngữ cảnh (Contextual Inline Translator): Tích hợp công cụ dịch nổi trên toàn bộ giao diện Web. Khi người học bôi đen một từ hoặc cụm từ kỹ thuật trong bài học hoặc câu hỏi thi, hệ thống sẽ ưu tiên tra cứu từ điển nội bộ, nếu là cụm từ phức tạp, backend sẽ gửi ngữ cảnh ngắn tới OpenAI để trả về nghĩa tiếng Việt theo chuyên ngành CNTT mà không làm gián đoạn luồng đọc.
+527 [normal] Gợi ý kế hoạch học 4 tuần (Learning Planner): Phân tích mục tiêu học tập, chuyên ngành, chứng chỉ và trình độ tự chọn của học viên để sắp xếp thứ tự ưu tiên các bài học và quiz theo từng tuần kèm lời giải thích lý do đề xuất.
+528 [normal] Sắp xếp việc học hôm nay (Daily Agenda): Phân tích nhịp học và các nhiệm vụ trong ngày (bài học tiếp theo, từ vựng SRS đến hạn ôn, làm quiz khi xong lý thuyết) để sắp xếp thứ tự thực hiện tối ưu và viết lời tóm tắt hướng dẫn học tự nhiên.
+529 [normal] Cá nhân hóa gợi ý học liệu (Adaptive Recommendation): Tự động phát hiện các chủ đề có điểm thi quiz dưới 70% và các từ vựng hay trả lời sai để xếp hạng ưu tiên các bài đọc bổ trợ và bộ từ vựng cần củng cố gấp.
+530 [Heading 3] 4.4.9. Mô-đun thông báo và tác vụ định kỳ 
+531 [normal] Thông báo cá nhân và hệ thống: Quản lý danh sách thông báo gửi đến người dùng, thông báo cập nhật bài học mới, và kết quả bài thi.
+532 [normal] Tác vụ nền tự động (Background Cron Jobs): Hệ thống sẽ chạy ngầm định kỳ kiểm tra tiến độ học viên trong ngày, tự động phát lệnh gửi thông báo qua Firebase Cloud Messaging (FCM) đến thiết bị di động và trình duyệt web của những học viên chưa hoàn thành mục tiêu học trong ngày.
+533 [Heading 2] 4.5. Các luồng nghiệp vụ cốt lõi
+534 [normal] Bốn luồng nghiệp vụ chính của hệ thống TechEnglish thể hiện được chu trình học tập khép kín của người học: Onboarding -> học bài & rèn từ vựng -> khảo thí làm bài -> ghi nhận tiến độ & đề xuất thích ứng.
+535 [normal] 
+536 [normal] Hình 4.2 Luồng nghiệp vụ chính của hệ thống
+537 [Heading 3] 4.5.1. Luồng 1: Khảo sát trình độ của học viên
+538 [normal] Luồng này hướng dẫn người dùng mới từ khi hoàn tất đăng ký tài khoản đến khi thiết lập thành công mục tiêu và nhận lộ trình học tập cá nhân hóa trên giao diện:
+539 [normal] Bước 1 - Thiết lập lộ trình học tập: Ngay sau khi đăng ký tài khoản thành công, người dùng được chuyển hướng đến màn hình lựa chọn mục tiêu học. Tại đây, người học có thể chọn học từ vựng CNTT, luyện chứng chỉ hoặc cả 2, chọn chuyên ngành CNTT quan tâm như (Cloud, DevOps, Software Engineering), chọn chứng chỉ mục tiêu (AWS, Azure, CCNA) và đặt mục tiêu thời gian học mỗi ngày (15, 30, 45 hoặc 60 phút).
+540 [normal] Bước 2 - Lựa chọn chuyên ngành IT và chứng chỉ mục tiêu: Tiếp theo, người học chuyển được sang màn hình lựa chọn chuyên ngành CNTT quan tâm như (Cloud, DevOps, Software Engineering) và lựa chọn chứng chỉ mục tiêu (AWS, Azure, CCNA).
+541 [normal] Bước 3 - Tự đánh giá và lựa chọn trình độ tiếng Anh ban đầu: Tiếp theo, người học tự đánh giá năng lực hiện tại và lựa chọn một trong bốn cấp độ là cơ bản (Beginner - bắt đầu từ gốc), trung cấp (Intermediate - đọc hiểu tài liệu ngắn), nâng cao (Advanced - đọc tài liệu chuyên sâu), hoặc chuyên nghiệp (Professional - thành thạo thuật ngữ kỹ thuật).
+542 [normal] Bước 4 - Thiết lập kế hoạch học tập và chỉ tiêu cá nhân: Tiếp theo, người học nhập các chỉ tiêu học tập mỗi ngày gồm: số từ vựng mới học mỗi ngày, số bài kiểm tra mỗi tuần, số phút học mỗi ngày (15, 30, 45 hoặc 60 phút), đồng thời có thể bật tính năng thông báo và chọn khung giờ nhắc nhở học hàng ngày (ví dụ 20:00).
+543 [normal] Bước 5 - Nhận lộ trình học tập cá nhân hóa: Cuối cùng, người học chọn “Tạo lộ trình” để hệ thống lưu hồ sơ học viên sau đó AI sẽ phân tích các thông số mục tiêu để đưa ra lộ trình học phù hợp với học viên. Sau khi chọn tạo lộ trình, người học sẽ được chuyển hướng tới màn hình lộ trình. Tại đây sẽ hiển thị danh sách bài học và chủ đề ưu tiên theo từng chủ đề kèm lời giải thích lý do đề xuất từ AI.
+544 [Heading 3] 4.5.2. Luồng 2: Quá trình học bài học kỹ thuật & rèn luyện từ vựng
+545 [normal] Luồng này mô tả trải nghiệm của học viên khi đọc nội dung kiến thức chuyên ngành và luyện tập ghi nhớ từ vựng trên giao diện:
+546 [normal] Bước 1 - Chọn bài học: Tại trang danh mục bài học hoặc lộ trình chứng chỉ, người dùng lướt qua danh sách các chủ đề công nghệ và bấm vào nội dung muốn học.
+547 [normal] Bước 2 - Đọc nội dung kỹ thuật: Màn hình bài học mở ra với cấu trúc bài đọc rõ ràng gồm các đoạn lý thuyết, các khối mã nguồn kỹ thuật và hộp lưu ý. Ở cột bên cạnh hiển thị danh sách các từ vựng trọng tâm xuất hiện trong bài.
+548 [normal] Bước 3 - Tra cứu thuật ngữ và nghe phát âm tức thì: Trong quá trình đọc, nếu gặp từ hoặc cụm từ tiếng Anh chuyên ngành chưa rõ nghĩa, người học dùng chuột (trên Web) hoặc chạm giữ (trên Mobile) để bôi đen từ đó. Một hộp dịch nổi lập tức xuất hiện ngay trên dòng chữ hiển thị nghĩa tiếng Việt chuyên ngành theo ngữ cảnh. Người học có thể bấm biểu tượng chiếc loa trong hộp dịch để nghe phát âm chuẩn của từ.
+549 [normal] Bước 4 - Đánh dấu hoàn thành bài học: Sau khi đọc xong toàn bộ nội dung, người học bấm nút "Đánh dấu hoàn thành" ở cuối bài để hoàn thành bài học. Sau đó người học có thể quay lại lộ trình học để học bài tiếp theo hoặc có thể làm bài kiểm tra thử nếu chọn học theo chứng chỉ mục tiêu.
+550 [normal] Bước 5 - Luyện tập thẻ nhớ Flashcard: Người học chọn “Luyện từ vựng” ở mục bài học để mở phiên học thẻ nhớ. Màn hình hiển thị các thẻ chủ đề từ vựng, người học có thể chọn chủ đề từ vựng muốn học. Màn hình sẽ hiển thị thẻ Flashcards với từ tiếng Anh và phiên âm để học. Người học có thể bấm vào “Xem nghĩa” để lật sang mặt sau xem giải nghĩa tiếng Việt, định nghĩa tiếng Anh và câu ví dụ.
+551 [normal] Bước 6 - Đánh giá mức độ ghi nhớ: Sau khi xem mặt sau của thẻ, người dùng có thể chọn một trong ba nút đánh giá: “dễ”, “trung bình”, “khó” hoặc có thể chọn “Đã biết, loại khỏi danh sách ôn tập” để bỏ qua các từ vựng đã biết trước. Sau đó thẻ tiếp theo sẽ tự động xuất hiện kèm theo số lượng từ còn lại để hoàn thành phiên học cho đến khi học hết bộ từ.
+552 [Heading 3] 4.5.3. Luồng 3: Khảo thí, kiểm tra đánh giá và xem kết quả
+553 [normal] Luồng này mô tả thao tác của người học khi tham gia các bài kiểm tra Quiz chủ đề hoặc các bài thi thử chứng chỉ có giới hạn thời gian:
+554 [normal] Bước 1 - Lựa chọn bài kiểm tra: Tại mục chứng chỉ, người học chọn chứng chỉ mục tiêu muốn ôn. Màn hình sẽ hiển thị lộ trình học của chứng chỉ, tại đây người học tiếp tục chọn “Bài kiểm tra” để hiển thị danh sách các bài kiểm tra hoặc mở một chủ đề bài học đã học xong, tại mỗi chủ đề bài học đã học xong ở phía bên trái sẽ có lựa chọn “Luyện tập” người học có thể chọn để bắt đầu làm bài kiểm tra.
+555 [normal] Bước 2 - Xem thông tin tổng quan bài thi: Khi người học chọn “Bài kiểm tra”, màn hình sẽ hiển thị danh sách các đề thi với các thông số quan trọng của đề thi gồm: tên chứng chỉ, số lượng câu hỏi, thời gian làm bài quy định (tính bằng phút) và tỷ lệ phần trăm điểm cần đạt để vượt qua. Người học có thể chọn “Bắt đầu làm bài” để vào phòng thi. Lưu ý đề thi có yêu cầu phải hoàn thành bài học chủ đề liên quan tới đề thi thì mới được lựa chọn bắt đầu làm.
+556 [normal] Bước 3 - Thao tác làm bài và theo dõi đồng hồ đếm ngược: Khi người học bắt đầu làm bài, màn hình làm bài hiển thị thanh đồng hồ đếm ngược ở góc trên. Người học đọc từng câu hỏi, bấm chọn đáp án mong muốn. Danh sách câu hỏi dạng lưới ở góc màn hình đổi màu các câu đã làm giúp người học dễ dàng theo dõi và bấm nhảy nhanh đến câu hỏi cần xem lại.
+557 [normal] Bước 4 - Xác nhận nộp bài: Sau khi hoàn thành hoặc khi đồng hồ sắp hết giờ, người học bấm nút “Nộp bài”. Giao diện xuất hiện hộp thoại thông báo số lượng câu đã trả lời và câu còn trống để người dùng xác nhận nộp bài thi.
+558 [normal] Bước 5 - Xem thông báo kết quả thi: Sau khi chọn “Nộp bài”, giao diện chuyển sang màn hình tổng kết bài thi với điểm số đạt được, số câu đúng trên tổng số câu, thời gian hoàn thành và nhãn xếp loại “đạt” hoặc “chưa đạt”, ngoài ra còn hiển thị kết quả theo chuyên ngành và theo chủ đề.
+559 [normal] Bước 6 - Xem lại chi tiết từng câu và lời giải thích: Người học chọn “Xem chi tiết kết quả” để xem lại toàn bộ bài thi. Giao diện tô màu xanh lá cho câu trả lời đúng, màu đỏ cho câu trả lời sai của người dùng, đồng thời hiển thị khung giải thích chi tiết lý do phương án chính xác.
+560 [Heading 3] 4.5.4. Luồng 4: Ghi nhận tiến độ, kế hoạch học tập hàng ngày & đề xuất thích ứng
+561 [normal] Luồng này mô tả cách người học theo dõi tiến trình học tập thực tế, kiểm soát các chỉ tiêu cá nhân hóa và tiếp nhận các nhiệm vụ ôn tập ngay trên bảng mục tiêu hôm nay:
+562 [normal] Bước 1 - Khởi động ngày học trên Trang chủ: Khi mở ứng dụng Web hoặc App Mobile, người học sẽ thấy bảng mục tiêu hôm nay. Tại đây hiển thị tổng quan tiến độ hiện tại với mức độ hoàn thành mục tiêu học tập trong ngày (thời gian học, số từ vựng), trạng thái bài học đang học dở để tiếp tục học, giúp người học dễ dàng quản lý và duy trì kế hoạch cá nhân mà không bị ngắt quãng.
+563 [normal] Bước 2 - Thực hiện Kế hoạch học tập hôm nay : Ở khu vực trung tâm trang chủ, mục “Mục tiêu hôm nay” liệt kê rõ ràng các nhiệm vụ học tập ưu tiên được hệ thống tổng hợp tự động mỗi ngày, các từ vựng còn lại cần học, thời gian cần học thêm, số lượng bài thi cần làm trong một tuần. Người học có thể chọn trực tiếp vào các nút hành động trên thẻ nhiệm vụ để thực hiện ngay mà không cần tìm kiếm thủ công.
+564 [normal] Bước 3 - Theo dõi tiến độ học tập toàn diện: Người học bấm vào mục “Tiến độ” trên thanh điều hướng để mở trang báo cáo. Màn hình sẽ hiển thị hành trình học tập: biểu đồ phần trăm hoàn thành các chứng chỉ đang theo học, tỷ lệ bài học đã đọc, tổng số từ vựng chuyên ngành đã học, số bài đang học, và lịch sử kết quả các lượt thi thử.
+565 [normal] Bước 4 - Tiếp nhận gợi ý học tập thông minh: Hệ thống ứng dụng AI để cá nhân hóa gợi ý học liệu như phân tích kết quả bài thi gần nhất (đặc biệt là các chủ đề có điểm dưới 70%) và các từ vựng hay làm sai để tự động xếp hạng ưu tiên hiển thị các bài đọc và câu hỏi cần củng cố. Người học chỉ cần bấm vào thẻ đề xuất để ôn luyện ngay phần kiến thức còn thiếu sót.
+566 [Heading 2] 4.6. Kết quả cài đặt trên website
+567 [normal] 
+568 [normal] Hình 4.3 Giao diện form đăng nhập
+569 [normal] Trang đăng nhập: Người dùng nhập email và mật khẩu để đăng nhập vào hệ thống. Có thể bấm vào biểu tượng con mắt để xem lại mật khẩu vừa nhập. Nếu chưa có tài khoản, người dùng có thể bấm “Đăng ký ngay” hoặc chọn đăng nhập nhanh bằng tài khoản Google. Ngoài ra trang còn có liên kết “Quên mật khẩu?” để lấy lại mật khẩu khi cần.
+570 [normal] 
+571 [normal] Hình 4.4 Giao diện form đăng ký
+572 [normal] Trang đăng ký: Tại đây người dùng đăng ký tài khoản mới bằng cách điền họ tên, email, mật khẩu và xác nhận lại mật khẩu. Mật khẩu cần có ít nhất 8 ký tự gồm chữ hoa, chữ thường, số và ký tự đặc biệt. Sau khi bấm “Đăng ký”, hệ thống sẽ tạo tài khoản và chuyển sang bước thiết lập lộ trình học.
+573 [normal] 
+574 [normal] Hình 4.5 Giao diện thiết lập lộ trình sau khi đăng ký thành công
+575 [normal] Trang thiết lập lộ trình: Sau khi đăng ký thành công, học viên được chuyển sang trang này để bắt đầu thiết lập lộ trình học phù hợp với nhu cầu của bản thân. Học viên có thể chọn những thông tin cần thiết để bắt đầu thiết lập.
+576 [normal] 
+577 [normal] Hình 4.6 Giao diện chọn nội dung và chứng chỉ
+578 [normal] Trang chọn nội dung và chứng chỉ: Học viên lựa chọn chuyên ngành CNTT và các chứng chỉ mình muốn ôn luyện như AWS, Azure, CCNA,... Bằng cách tích chọn vào các thẻ chứng chỉ tương ứng, hệ thống sẽ gợi ý các bài học và bộ từ vựng phù hợp nhất.
+579 [normal] 
+580 [normal] Hình 4.7 Giao diện xác định trình độ tiếng Anh
+581 [normal] Trang xác định trình độ tiếng Anh: Học viên chọn mức trình độ tiếng Anh hiện tại của mình (từ cơ bản đến nâng cao) hoặc có thể chọn làm bài kiểm tra nhanh để hệ thống tự đánh giá và sắp xếp bài học cho phù hợp.
+582 [normal] 
+583 [normal] Hình 4.8 Giao diện thiết lập kế hoạch học
+584 [normal] Trang thiết lập kế hoạch học: Tại đây học viên đặt mục tiêu thời gian học mỗi ngày (15, 30, 45 hoặc 60 phút) và chọn các ngày học trong tuần. Học viên cũng có thể chọn thời gian nhắc nhở học tập mỗi ngày.
+585 [normal] 
+586 [normal] Hình 4.9 Giao diện trang chủ
+587 [normal] Trang chủ: Nơi hiển thị tổng quan tiến độ học tập của học viên như thời gian đã học trong tuần và bài học gần nhất để tiếp tục học. Ngoài ra còn có danh sách các chứng chỉ đang học và các từ vựng gợi ý trong ngày. Menu bên trái giúp chuyển nhanh sang các mục bài học, từ vựng, chứng chỉ và cá nhân.
+588 [normal] 
+589 [normal] Hình 4.10 Giao diện bài học
+590 [normal] Trang bài học: Hiển thị nội dung chi tiết của một bài học kỹ thuật bao gồm phần lý thuyết, các đoạn mã code ví dụ và hình ảnh minh họa. Bên cạnh có danh sách từ vựng chuyên ngành trong bài kèm phát âm để học viên nghe và học. Cuối bài có nút đánh dấu hoàn thành để chuyển sang bài tiếp theo.
+591 [normal] 
+592 [normal] Hình 4.11 Giao diện học từ vựng
+593 [normal] Trang học từ vựng: Học viên học từ vựng chuyên ngành qua thẻ Flashcard. Nhấp vào thẻ để lật mặt sau xem nghĩa tiếng Việt, giải thích tiếng Anh và câu ví dụ. Có nút loa để nghe phát âm từ. Sau khi xem, học viên chọn mức độ ghi nhớ (Khó, Nhớ, Đã thuộc) để hệ thống sắp xếp lịch ôn tập lại.
+594 [normal] 
+595 [normal] Hình 4.12 Giao diện chứng chỉ
+596 [normal] Trang chứng chỉ: Hiển thị danh sách các chứng chỉ CNTT mà hệ thống hỗ trợ như AWS, Azure, CCNA,... Học viên có thể tìm kiếm hoặc lọc theo từng hãng. Mỗi chứng chỉ đều hiển thị số bài học, số câu hỏi ôn thi và nút xem lộ trình chi tiết.
+597 [normal] 
+598 [normal] Hình 4.13 Giao diện lộ trình học của chứng chỉ
+599 [normal] Trang lộ trình học của chứng chỉ: Hiển thị các chặng học tập (domain) theo chuẩn của chứng chỉ đó. Mỗi chặng gồm danh sách bài học và bài kiểm tra nhỏ. Học viên có thể theo dõi được những bài nào đã học xong (tích xanh) và xem điểm sẵn sàng đi thi ở góc trên.
+600 [normal] 
+601 [normal] Hình 4.14 Giao diện bắt đầu học của chứng chỉ
+602 [normal] Trang bắt đầu học / làm bài thi: Hiển thị thông tin trước khi bắt đầu bài thi thử hoặc học phần chứng chỉ, gồm số lượng câu hỏi, thời gian làm bài và điểm số cần đạt. Học viên bấm “Bắt đầu làm bài” để vào thi với đồng hồ đếm ngược.
+603 [normal] 
+604 [normal] Hình 4.15 Giao diện tiến độ học
+605 [normal] Trang tiến độ học: Thống kê chi tiết quá trình học của học viên như tổng số giờ học, số bài đã hoàn thành, số từ vựng đã thuộc và biểu đồ học tập theo từng ngày. Học viên cũng xem được tỷ lệ nắm vững kiến thức ở từng phần để biết phần nào cần ôn thêm.
+606 [normal] 
+607 [normal] Hình 4.16 Giao diện thông tin cá nhân
+608 [normal] Trang thông tin cá nhân: Cho phép học viên xem và chỉnh sửa thông tin tài khoản như họ tên, email, ảnh đại diện và mục tiêu học tập. Tại đây học viên cũng có thể đổi mật khẩu và xem các huy hiệu mình đã đạt được.
+609 [normal] 
+610 [normal] Hình 4.17 Giao diện trang dashboard
+611 [normal] Trang Dashboard: Dành cho quản trị viên theo dõi tổng quan hệ thống như tổng số học viên, số lượng chứng chỉ, ngân hàng câu hỏi và lượt làm bài thi. Có biểu đồ thống kê học viên mới và tỷ lệ đậu rớt các bài thi.
+612 [normal] 
+613 [normal] Hình 4.18 Giao diện trang quản lý người dùng
+614 [normal] Trang quản lý người dùng: Admin có thể xem danh sách tất cả người dùng trong hệ thống gồm học viên, giảng viên và admin. Có thể tìm kiếm theo tên, email, lọc theo vai trò, thêm người dùng mới, sửa thông tin hoặc khóa tài khoản khi cần.
+615 [normal] 
+616 [normal] Hình 4.19 Giao diện trang phân quyền
+617 [normal] Trang phân quyền: Admin có thể tạo vai trò mới và phân quyền chi tiết cho từng vai trò bằng cách tích chọn các quyền tương ứng (như xem, thêm, sửa, xóa người dùng, bài học, đề thi) rồi lưu lại.
+618 [normal] 
+619 [normal] Hình 4.20 Giao diện trang quản lý nội dung học tập
+620 [normal] Trang quản lý nội dung học tập: Hiển thị cây danh mục nội dung theo từng lĩnh vực, cấp độ và chứng chỉ. Admin có thể thêm danh mục mới, chỉnh sửa hoặc sắp xếp lại thứ tự các bài học cho hợp lý.
+621 [normal] 
+622 [normal] Hình 4.21 Giao diện trang quản lý bài học
+623 [normal] Trang quản lý bài học: Hiển thị danh sách các bài học hiện có trên hệ thống kèm theo chứng chỉ trực thuộc và trạng thái xuất bản. Admin hoặc giảng viên có thể bấm “Thêm bài học mới” để soạn nội dung bài đọc, chèn code, gắn từ vựng và lưu lại.
+624 [normal] 
+625 [normal] Hình 4.22 Giao diện trang quản lý cấp độ học tập
+626 [normal] Trang quản lý cấp độ học tập: Admin có thể quản lý các mức trình độ tiếng Anh trong hệ thống (Beginner, Intermediate, Advanced,...). Tại đây có thể thêm, sửa, xóa hoặc kích hoạt các cấp độ để áp dụng cho bài học.
+627 [normal] 
+628 [normal] Hình 4.23 Giao diện trang quản lý chứng chỉ
+629 [normal] Trang quản lý chứng chỉ: Admin có thể thêm mới hoặc chỉnh sửa thông tin các chứng chỉ quốc tế như tên chứng chỉ, mã đề thi, điểm đậu, thời gian thi và tải lên logo chứng chỉ. Có thể ẩn hoặc hiện chứng chỉ trên trang của học viên.
+630 [normal] 
+631 [normal] Hình 4.24 Giao diện trang quản lý ngân hàng câu hỏi 
+632 [normal] Trang quản lý ngân hàng câu hỏi: Nơi quản lý toàn bộ câu hỏi trắc nghiệm của hệ thống. Giảng viên có thể lọc câu hỏi theo chứng chỉ, độ khó, thêm câu hỏi mới kèm đáp án và giải thích. Ngoài ra có thể import nhanh danh sách câu hỏi từ file Excel.
+633 [normal] 
+634 [normal] Hình 4.25 Giao diện trang quản lý bài kiểm tra chứng chỉ
+635 [normal] Trang quản lý bài kiểm tra chứng chỉ: Cho phép tạo và quản lý các đề thi thử. Giảng viên có thể đặt tên đề thi, thời gian làm bài, điểm đậu và chọn các câu hỏi từ ngân hàng câu hỏi để đưa vào đề thi rồi xuất bản cho học viên làm.
+636 [normal] 
+637 [normal] Hình 4.26 Giao diện trang danh sách học viên
+638 [normal] Trang danh sách học viên: Hiển thị thông tin học tập của các học viên gồm chứng chỉ đang học, tiến độ hoàn thành, số bài thi đã làm và điểm trung bình. Admin có thể lọc danh sách để xem những học viên học tốt hoặc những bạn cần hỗ trợ.
+639 [normal] 
+640 [normal] Hình 4.27 Giao diện trang kết quả bài thi
+641 [normal] Trang kết quả bài thi: Lưu lại lịch sử tất cả các lượt làm bài thi của học viên gồm thời gian nộp bài, điểm số và kết quả đạt hay chưa đạt. Bấm “Xem chi tiết” để xem lại từng câu hỏi, đáp án học viên chọn và đáp án đúng kèm giải thích.
+642 [normal] 
+643 [normal] Hình 4.28 Giao diện trang quản lý tiến độ học tập toàn hệ thống 
+644 [normal] Trang quản lý tiến độ toàn hệ thống: Giúp admin theo dõi tỷ lệ hoàn thành khóa học của học viên ở từng chứng chỉ và tỷ lệ học viên đạt chuẩn sẵn sàng đi thi, từ đó đánh giá được mức độ hiệu quả của các khóa học.
+645 [normal] 
+646 [normal] Hình 4.29 Giao diện trang báo cáo thống kê
+647 [normal] Trang báo cáo thống kê: Admin có thể xem báo cáo số liệu theo ngày, tuần, tháng hoặc năm về số lượng học viên, kết quả thi và tình hình học từ vựng. Trang hỗ trợ xuất dữ liệu ra file Excel hoặc Word để làm báo cáo.
+648 [Heading 2] 4.7. Kết quả cài đặt trên mobile
+649 [normal] 
+650 [normal] 
+651 [normal] 
+652 [normal] 
+653 [normal] 
+654 [normal] Hình 4.30 Giao diện splash screen
+655 [normal] Giao diện splash screen: Hiển thị logo và tên ứng dụng TechEnglish khi vừa mở app trên điện thoại. Trong lúc này, app sẽ kiểm tra xem người dùng đã đăng nhập trước đó chưa, nếu đã đăng nhập thì vào thẳng trang chủ, còn chưa thì chuyển sang trang đăng nhập.
+656 [normal] 
+657 [normal] 
+658 [normal] Hình 4.31 Giao diện đăng nhập
+659 [normal] Giao diện đăng nhập: Người dùng nhập email và mật khẩu để vào app, có nút bật/tắt để xem mật khẩu. Dưới cùng có liên kết “Quên mật khẩu?”, nút đăng nhập nhanh bằng Google và dòng chữ chuyển sang trang đăng ký cho người dùng mới.
+660 [normal] 
+661 [normal] 
+662 [normal] 
+663 [normal] 
+664 [normal] Hình 4.32 Giao diện đăng ký
+665 [normal] Giao diện đăng ký: Người dùng mới điền họ tên, email, mật khẩu và nhập lại mật khẩu để tạo tài khoản. Các ô nhập liệu sẽ báo đỏ nếu nhập sai hoặc mật khẩu quá ngắn. Bấm nút “Đăng ký” để tạo tài khoản và chuyển sang bước thiết lập lộ trình.
+666 [normal] 
+667 [normal] Hình 4.33 Giao diện trang chủ
+668 [normal] Giao diện trang chủ: Hiển thị lời chào, thẻ bài học đang học dở để bấm vào học tiếp. Phía dưới là các mục truy cập nhanh vào luyện thi chứng chỉ, học từ vựng Flashcard và thanh menu dưới đáy màn hình để chuyển tab.
+669 [normal] 
+670 [normal] Hình 4.34 Giao diện đổi mật khẩu
+671 [normal] Giao diện đổi mật khẩu: Người dùng nhập mật khẩu hiện tại, sau đó nhập mật khẩu mới và xác nhận lại mật khẩu mới. Bấm nút “Cập nhật mật khẩu” để đổi mật khẩu và bảo vệ tài khoản.
+672 [normal] 
+673 [normal] Hình 4.35 Giao diện bài học
+674 [normal] Giao diện bài học: Danh sách các bài học kỹ thuật được phân loại theo chủ đề như Cloud, DevOps, Lập trình,... Có thanh tìm kiếm ở trên để gõ tìm bài học. Mỗi bài học đều ghi rõ thời gian đọc ước tính và số từ vựng có trong bài.
+675 [normal] 
+676 [normal] Hình 4.36 Giao diện chứng chỉ
+677 [normal] Giao diện chứng chỉ: Danh sách các chứng chỉ quốc tế như AWS, Azure,... hiển thị kèm logo và tiến độ hoàn thành của học viên. Học viên có thể bấm vào chứng chỉ mình quan tâm để xem lộ trình học chi tiết.
+678 [normal] 
+679 [normal] Hình 4.37 Giao diện lộ trình của chứng chỉ
+680 [normal] Giao diện lộ trình của chứng chỉ: Hiển thị các chặng học theo từng domain của chứng chỉ. Các bài học đã hoàn thành có dấu tích xanh, bài đang học sáng lên và bài chưa mở có biểu tượng ổ khóa. Bấm vào từng chặng để xem các bài học bên trong.
+681 [normal] 
+682 [normal] Hình 4.38 Giao diện bài học chứng chỉ
+683 [normal] Giao diện bài học chứng chỉ: Hiển thị tóm tắt kiến thức của từng phần và danh sách các câu hỏi luyện tập. Học viên có thể bấm “Luyện tập theo chủ đề” để làm nhanh các câu trắc nghiệm của phần đó ngay trên điện thoại.
+684 [normal] 
+685 [normal] Hình 4.39 Giao diện tiến độ học
+686 [normal] Giao diện tiến độ học: Thống kê số phút học trong tuần so với mục tiêu đặt ra, điểm sẵn sàng đi thi và số từ vựng đã học. Có biểu đồ cột thể hiện thời gian học qua các ngày trong tuần từ thứ 2 đến chủ nhật.
+687 [normal] 
+688 [normal] Hình 4.40 Giao diện cá nhân
+689 [normal] Giao diện cá nhân: Hiển thị thông tin cá nhân của học viên kèm ảnh đại diện và trình độ hiện tại. Phía dưới là các mục cài đặt như sửa hồ sơ, xem lịch sử thi, kho từ vựng đã học, đổi mật khẩu và nút đăng xuất.
+690 [normal] 
+691 [normal] Hình 4.41 Giao diện danh mục học tập
+692 [normal] Giao diện danh mục học tập: Nơi tổng hợp tất cả tài liệu học tập gồm bài đọc kỹ thuật, bộ từ vựng theo chủ đề và các đề thi thử. Học viên có thể tìm kiếm nhanh và chọn nội dung mình muốn học thêm.
+693 [normal] 
+694 [normal] Hình 4.42 Giao diện tổng quan từ vựng
+695 [normal] Giao diện tổng quan từ vựng: Cho biết tổng số từ vựng học viên đang có, số từ cần ôn tập hôm nay và số từ đã ghi nhớ thành thạo. Học viên có thể bấm “Học từ mới hôm nay” để bắt đầu luyện tập.
+696 [normal] 
+697 [normal] Hình 4.43 Giao diện học từ vựng
+698 [normal] Giao diện học từ vựng: Học từ qua thẻ Flashcard, chạm vào thẻ để lật xem nghĩa tiếng Việt và câu ví dụ. Có nút loa để nghe phát âm giọng chuẩn. Sau đó bấm chọn Khó, Nhớ hoặc Tốt để app tự lên lịch nhắc ôn lại.
+699 [normal] 
+700 [normal] Hình 4.44 Giao diện từ vựng đã học
+701 [normal] Giao diện từ vựng đã học: Danh sách toàn bộ các từ vựng học viên đã từng học kèm phiên âm, nghĩa tiếng Việt và trạng thái đã thuộc hay chưa. Có thanh tìm kiếm để tra cứu lại từ khi cần.
+702 [normal] 
+703 [normal] Hình 4.45 Giao diện kiểm tra trình độ
+704 [normal] Giao diện kiểm tra trình độ: Màn hình làm bài test nhanh gồm các câu hỏi trắc nghiệm tiếng Anh chuyên ngành có đồng hồ đếm ngược. Sau khi nộp bài, app sẽ chấm điểm và gợi ý lộ trình học phù hợp với kết quả đạt được.
+705 [normal] 
+706 [normal] Hình 4.46 Giao diện thông tin, chỉnh sửa hồ sơ
+707 [normal] Giao diện thông tin, chỉnh sửa hồ sơ: Học viên có thể đổi ảnh đại diện, cập nhật họ tên, số điện thoại, lĩnh vực quan tâm và chứng chỉ mục tiêu. Bấm “Lưu thay đổi” để cập nhật thông tin.
+708 [normal] 
+709 [normal] Hình 4.47 Giao diện bài học
+710 [normal] Giao diện bài học: Hiển thị danh sách các bài học con trong một chuyên đề kèm thanh tiến độ hoàn thành. Học viên chọn bài học muốn học để mở nội dung chi tiết.
+711 [normal] 
+712 [normal] Hình 4.48 Giao diện học một bài học
+713 [normal] Giao diện học một bài học: Trình bày nội dung chi tiết của bài đọc kỹ thuật và các đoạn mã code rõ ràng, dễ đọc trên điện thoại. Các từ vựng quan trọng được làm nổi bật để học viên bấm vào xem nghĩa và nghe phát âm. Cuối bài có nút bấm hoàn thành.
+714 [normal] 
+715 [normal] Hình 4.49 Giao diện chính sách bảo mật
+716 [normal] Giao diện chính sách bảo mật: Hiển thị các quy định về việc bảo vệ thông tin cá nhân và dữ liệu học tập của học viên khi sử dụng ứng dụng TechEnglish.
+717 [normal] 
+718 [normal] Hình 4.50 Giao diện điều khoản sử dụng
+719 [normal] Giao diện điều khoản sử dụng: Cung cấp các điều khoản, quy định và quyền lợi của người dùng khi tham gia học tập và sử dụng các tài nguyên trên hệ thống.
+720 [Heading 2] 4.8. Các quyết định kỹ thuật quan trong và lý do lựa chọn
+721 [normal] Quá trình xây dựng hệ thống TechEnglish yêu cầu nhiều quyết định kiến trúc then chốt nhằm đáp ứng tốt các yêu cầu phi chức năng về hiệu năng, khả năng mở rộng, độ tin cậy và trải nghiệm người dùng:
+722 [Heading 3] 4.8.1. Áp dụng mô hình Monorepo và chia sẻ mã nguồn dùng chung
+723 [normal] Quyết định: Tổ chức toàn bộ dự án dưới dạng một Monorepo duy nhất bằng “pnpm workspaces”, chia tách thành 3 ứng dụng thực thi API, Web, Mobile và 3 package (“packages/contracts”, “packages/shared-kernel”, “packages/design-tokens”).
+724 [normal] Lý do lựa chọn:
+725 [normal] Đồng bộ hợp đồng dữ liệu: Các DTO, Interfaces và Enums định nghĩa tại “packages/contracts” được Backend, Web và Mobile tái sử dụng trực tiếp. Khi backend thay đổi một trường dữ liệu, TypeScript sẽ phát hiện các điểm xung đột trên Web và Mobile trước khi ứng dụng được triển khai.
+726 [normal] Tái sử dụng logic nghiệp vụ cốt lõi: Các thuật toán tính ngày giờ, tính toán chu kỳ Spaced Repetition, đánh giá trạng thái hoàn thành cấp độ và định dạng nhãn trình độ trong “packages/shared-kernel”, đảm bảo tính nhất quán giữa Web và Mobile.
+727 [normal] Tối ưu hóa quản lý thư viện: “pnpm” sử dụng cơ chế liên kết cứng (hard link) và chia sẻ bộ nhớ cục bộ, giúp tiết kiệm dung lượng ổ đĩa và tăng tốc độ cài đặt phụ thuộc hơn so với npm truyền thống.
+728 [Heading 3] 4.8.2. Lựa chọn kiến trúc phân lớp hướng Clean Architecture trên NestJS và Prisma ORM
+729 [normal] Quyết định: Xây dựng backend dựa trên NestJS theo cấu trúc phân tầng rõ rệt: tầng trình diễn (Presentation - Controllers, DTOs, Guards), tầng ứng dụng (Application - Services, Business Logic), và tầng hạ tầng (Infrastructure - Prisma ORM, Cloudinary).
+730 [normal] Lý do lựa chọn:
+731 [normal] Khả năng kiểm thử độc lập (Testability): Phân tách rõ ràng giữa HTTP controller và logic nghiệp vụ giúp việc viết Unit Tests và Integration Tests dễ dàng bằng cách mock các dependencies.
+732 [normal] Bảo đảm toàn vẹn dữ liệu: Prisma ORM tự động sinh ra mã TypeScript tương ứng với các model của cơ sở dữ liệu PostgreSQL, loại bỏ các lỗi chính tả trong câu lệnh truy vấn và hỗ trợ tương tác với cơ sở dữ liệu an toàn.
+733 [Heading 3] 4.8.3. Thiết kế cơ chế Snapshot câu hỏi trong khảo thí và kiểm tra xếp lớp
+734 [normal] Quyết định: Khi học viên bắt đầu một lượt làm bài thi hoặc bài Quiz theo chủ đề, hệ thống sao lưu toàn bộ nội dung câu hỏi, thứ tự các phương án và đáp án đúng vào một trường JSON snapshot trong cơ sở dữ liệu tại thời điểm đó.
+735 [normal] Lý do lựa chọn:
+736 [normal] Trong môi trường thực tế, ngân hàng câu hỏi luôn được quản trị viên cập nhật, chỉnh sửa lỗi chính tả hoặc điều chỉnh phương án. Nếu hệ thống chỉ lưu “question_id” và truy vấn động lúc chấm điểm, mọi thay đổi sau này của giảng viên sẽ làm sai lệch điểm số lịch sử của học viên. Cơ chế snapshot bảo đảm tính độc lập, bất biến và công bằng tuyệt đối cho mọi bài thi đã diễn ra.
+737 [Heading 3] 4.8.4. Chiến lược Spaced Repetition kết hợp lộ trình tiếp nối và vòng ôn tập hàng ngày
+738 [normal] Quyết định: Kết hợp thuật toán lặp lại ngắt quãng (Spaced Repetition) với cơ chế Vòng ôn tập hàng ngày (Daily Refresh) được kích hoạt vào đúng 00:00 theo múi giờ Việt Nam.
+739 [normal] Lý do lựa chọn:
+740 [normal] Việc học tiếng Anh chuyên ngành thường gặp hiện tượng “nhanh quên” nếu không được vận dụng thường xuyên. Bằng việc kết hợp SRS với Daily Refresh, hệ thống chủ động gợi ý đúng các từ vựng yếu và các bài đọc liên quan vào đầu mỗi ngày. Học viên không cần phải băn khoăn “hôm nay phải học gì”, qua đó hình thành thói quen học tập bền vững.
+741 [Heading 3] 4.8.5. Tích hợp AI có kiểm soát và bảo mật dữ liệu riêng tư
+742 [normal] Quyết định: Tích hợp mô hình ngôn ngữ lớn (OpenAI GPT-6 Luna) thông qua một lớp trung gian an toàn với cơ chế dự phòng theo quy tắc (Rule-based Fallback) và chính sách bảo vệ dữ liệu riêng tư nghiêm ngặt.
+743 [normal] Lý do lựa chọn:
+744 [normal] Độ tin cậy và Khả năng chịu lỗi: Dịch vụ AI bên thứ ba có thể gặp sự cố quá tải mạng hoặc vượt quá thời gian phản hồi (timeout). Hệ thống thiết lập timeout tối đa 45 giây và cơ chế Fallback tự động. Nếu AI không phản hồi kịp, backend sẽ kích hoạt thuật toán dự phòng dựa trên quy tắc cố định (Rule-based) để tự động sinh kế hoạch học 4 tuần, sắp xếp việc học hôm nay và xếp hạng gợi ý học liệu mà không làm gián đoạn trải nghiệm người dùng.
+745 [normal] Bảo mật thông tin người dùng: Khi thực hiện 4 nhiệm vụ của AI, backend chỉ gửi các dữ liệu kỹ thuật cần thiết (đoạn văn bản bôi đen cần dịch, điểm thành phần, danh mục yếu, thời gian học cam kết) lên OpenAI API, tuyệt đối không gửi các thông tin định danh cá nhân như họ tên, email, mật khẩu hay mã định danh của người học.
+746 [Heading 2] 4.9. Tổng kết chương
+747 [normal] Chương 4 đã trình bày toàn diện và chi tiết quá trình cài đặt thực nghiệm hệ thống TechEnglish. Các kết quả đạt được bao gồm:
+748 [normal] Hiện thực hóa thành công kiến trúc đa tầng hiện đại, kết nối liền mạch giữa ứng dụng web (Next.js 15), ứng dụng di động (Expo SDK 58), dịch vụ máy chủ Backend (NestJS 11) và cơ sở dữ liệu quan hệ PostgreSQL.
+749 [normal] Xây dựng hoàn chỉnh 9 mô-đun chức năng đáp ứng đầy đủ các yêu cầu nghiệp vụ chuyên sâu về học tập tiếng Anh chuyên ngành CNTT và luyện thi chứng chỉ quốc tế.
+750 [normal] Chuẩn hóa và làm rõ cơ chế xử lý của 4 luồng nghiệp vụ cốt lõi, bảo đảm chu trình học tập khép kín từ đánh giá đầu vào đến duy trì thói quen học tập hàng ngày.
+751 [normal] Triển khai hệ thống giao diện người dùng thân thiện, dễ thao tác nhằm nâng cao trải nghiệm người dùng và đồng bộ trên cả nền tảng web và di động.
+752 [normal] Lí giải các quyết định kỹ thuật then chốt, khẳng định tính đúng đắn và khả thi của giải pháp trong thực tiễn.
+753 [normal] 
+754 [normal] 
+755 [Heading 1] 
+756 [Title] CHƯƠNG 5: KIỂM THỬ HỆ THỐNG
+757 [Heading 1] 5.1. MỤC TIÊU VÀ MÔI TRƯỜNG KIỂM THỬ
+758 [Heading 2] 5.1.1. Mục tiêu
+759 [normal] Mục tiêu của quá trình kiểm thử là đảm bảo hệ thống học tiếng Anh và ôn tập chuyên ngành CNTT TechEnglish Pro hoạt động ổn định, đáp ứng đúng các yêu cầu chức năng đã phân tích và thiết kế. Quá trình này giúp phát hiện và khắc phục các lỗi về logic nghiệp vụ, giao diện người dùng và cơ sở dữ liệu trước khi đưa vào vận hành thực tế.
+760 [Heading 2] 5.1.2. Môi trường kiểm thử
+761 [normal] Web Application:
+762 [normal] –   Thiết bị: Máy tính Windows, trình duyệt web.
+763 [normal] –   Server: Node.js, NestJS, PostgreSQL, giao diện Next.js và React.
+764 [normal] Mobile Application:
+765 [normal] –   Thiết bị: Android / iOS (thiết bị thật hoặc Emulator/Simulator).
+766 [normal] –   Framework: Expo SDK 57, React Native 0.86.3.
+767 [normal] –   Backend API: NestJS, PostgreSQL.
+768 [Heading 1] 5.2. CÁC TRƯỜNG HỢP KIỂM THỬ
+769 [normal] Dưới đây là các ca kiểm thử TechEnglish Pro đã thực hiện và có kết quả ghi nhận. Mã TC được đánh liên tục trong toàn chương. Phạm vi xác nhận của từng ca căn cứ vào cột Kết quả thực tế.
+770 [normal] Dữ liệu dùng chung
+771 [normal] HV1 và HV2 là hai học viên khác nhau.
+772 [normal] Quản trị viên và giảng viên dùng tài khoản chuyên dùng cho kiểm thử.
+773 [normal] D1 và D2 là hai lĩnh vực thử nghiệm.
+774 [normal] C1 và C2 là hai chứng chỉ thử nghiệm.
+775 [normal] V1 là từ vựng thử nghiệm, E1 là đề thi thử nghiệm.
+776 [normal] Tạo các tài khoản và dữ liệu tương ứng trước khi thực hiện từng ca kiểm thử.
+777 [normal] Dữ liệu nhập trong các bước thực hiện sử dụng bộ dữ liệu đầu vào của từng ca. Kết quả ở mức API không thay thế xác nhận giao diện hoặc thiết bị di động.
+778 [normal] 5.2.1. Chức năng đăng ký
+779 [normal] Bảng 5.1. Kiểm thử đăng ký
+780 [normal] 5.2.2. Chức năng đăng nhập và quản lý phiên
+781 [normal] Bảng 5.2. Kiểm thử đăng nhập và quản lý phiên
+782 [normal] 5.2.3. Chức năng khôi phục và đổi mật khẩu
+783 [normal] Bảng 5.3. Kiểm thử khôi phục và đổi mật khẩu
+784 [normal] 5.2.4. Chức năng vai trò và phân quyền
+785 [normal] Bảng 5.4. Kiểm thử vai trò và phân quyền
+786 [normal] 5.2.5. Chức năng người dùng và nhóm học viên
+787 [normal] Bảng 5.5. Kiểm thử người dùng và nhóm học viên
+788 [normal] 5.2.6. Chức năng onboarding và hồ sơ học tập
+789 [normal] Bảng 5.6. Kiểm thử onboarding và hồ sơ học tập
+790 [normal] 5.2.7. Chức năng kiểm tra trình độ
+791 [normal] Bảng 5.7. Kiểm thử kiểm tra trình độ
+792 [normal] 5.2.8. Chức năng danh mục và chứng chỉ
+793 [normal] Bảng 5.8. Kiểm thử danh mục và chứng chỉ
+794 [normal] 5.2.9. Chức năng quản lý và học bài
+795 [normal] Bảng 5.9. Kiểm thử quản lý và học bài
+796 [normal] 5.2.10. Chức năng học chứng chỉ
+797 [normal] Bảng 5.10. Kiểm thử học chứng chỉ
+798 [normal] 5.2.11. Chức năng từ vựng và ôn tập
+799 [normal] Bảng 5.11. Kiểm thử từ vựng và ôn tập
+800 [normal] 5.2.12. Chức năng dịch và phát âm
+801 [normal] Bảng 5.12. Kiểm thử dịch và phát âm
+802 [normal] 5.2.13. Chức năng ngân hàng và import câu hỏi
+803 [normal] Bảng 5.13. Kiểm thử ngân hàng và import câu hỏi
+804 [normal] 5.2.14. Chức năng soạn đề và làm bài
+805 [normal] Bảng 5.14. Kiểm thử soạn đề và làm bài
+806 [normal] 5.2.15. Chức năng tiến độ, dashboard và gợi ý
+807 [normal] Bảng 5.15. Kiểm thử tiến độ, dashboard và gợi ý
+808 [normal] 5.2.16. Chức năng quản trị kết quả và báo cáo
+809 [normal] Bảng 5.16. Kiểm thử quản trị kết quả và báo cáo
+810 [normal] 5.2.17. Chức năng nhắc học và thông báo
+811 [normal] Bảng 5.17. Kiểm thử nhắc học và thông báo
+812 [normal] 5.2.18. Chức năng thông báo
+813 [normal] Bảng 5.18. Kiểm thử thông báo
+814 [normal] 5.2.19. Chức năng job nhắc học
+815 [normal] Bảng 5.19. Kiểm thử job nhắc học
+816 [normal] 5.2.20. Chức năng bảo mật và tính toàn vẹn
+817 [normal] Bảng 5.20. Kiểm thử bảo mật và tính toàn vẹn
+818 [normal] 5.2.21. Chức năng vận hành và phi chức năng
+819 [normal] Bảng 5.21. Kiểm thử vận hành và phi chức năng
+820 [Heading 1] 5.3. KẾT QUẢ VÀ ĐÁNH GIÁ CHUNG
+821 [normal] Đợt kiểm thử ngày 23/10/2026 sử dụng bản triển khai Docker và cơ sở dữ liệu QA tách biệt với dữ liệu đang sử dụng. Các Bảng 5.1 đến 5.21 trình bày 216 ca đã thực hiện có kết quả ghi nhận.
+822 [normal] 5.3.1. Tổng hợp kết quả kiểm thử
+823 [normal] Bảng 5.22. Tổng hợp kết quả kiểm thử theo nhóm
+824 [normal] 
+825 [normal] Tổng cộng 216 ca đã thực hiện thuộc 21 nhóm: 216 ca Đạt, 0 ca Không đạt. Tỷ lệ đạt 100% tính trên các ca được trình bày trong chương này.
+826 [normal] Kết quả phản ánh phạm vi đã kiểm tra trong từng ca. Các kiểm tra ở mức API xác nhận xử lý nghiệp vụ và dữ liệu, không suy rộng thành kết quả nghiệm thu toàn bộ giao diện web hoặc ứng dụng di động.
+827 [normal] 5.3.2. Đánh giá kết quả kiểm thử
+828 [normal] Về xử lý nghiệp vụ, các kết quả đã ghi nhận cho thấy hệ thống thực hiện được xác thực tài khoản, phân quyền thao tác, tính điểm theo trọng số và lưu tiến độ học tập. Các kiểm tra đã thực hiện ở mức API xác nhận việc giới hạn quyền xem và nộp bài, xử lý lượt thi quá hạn và chấm bài theo bản đề được lưu tại thời điểm bắt đầu.
+829 [normal] Về ràng buộc dữ liệu, hệ thống từ chối đăng ký bằng email không có đúng tên miền gmail.com, không cho hoàn tất hồ sơ khi thiếu mục tiêu học tập và từ chối lô nhập câu hỏi có mã chuyên ngành hoặc cấp độ không tồn tại. Những ràng buộc này hỗ trợ hạn chế dữ liệu sai và giữ tính nhất quán giữa các chức năng.
+830 [normal] Hồ sơ kiểm thử tự động ghi nhận 189/189 kiểm thử đạt (160 máy chủ, 29 web, ứng dụng và thành phần dùng chung), cùng 304 kiểm tra luồng xử lý và 8 kiểm tra quy tắc Gmail thành công. Các lượt chạy này có phạm vi riêng, không cộng vào 216 ca trong bảng tổng hợp.
+831 [normal] Về chức năng đã quan sát trên giao diện, bản web Docker đã xác nhận các luồng đăng nhập, đăng xuất, xem hồ sơ và tìm kiếm chứng chỉ khi không có kết quả. Hộp thư SMTP QA nhận được email đặt lại mật khẩu, API tra nghĩa từ và tạo âm thanh WAV có kết quả hoạt động trong môi trường thử nghiệm.
+832 [Heading 1]  KẾT LUẬN 
+833 [normal] Kết quả đạt được
+834 [normal] Đề tài đã xây dựng TechEnglish Pro gồm website, ứng dụng di động và API dùng chung, hỗ trợ học tiếng Anh chuyên ngành CNTT và ôn tập chứng chỉ. Hệ thống cung cấp bài học, từ vựng, đề luyện tập, lộ trình và theo dõi tiến độ, đồng thời hỗ trợ quản lý người dùng, phân quyền, học liệu và báo cáo. Chương kiểm thử trình bày 216 ca đã thực hiện thuộc 21 nhóm, đều ghi nhận kết quả Đạt trong phạm vi đã kiểm tra.
+835 [normal] Hạn chế
+836 [normal] Phạm vi kiểm chứng hiện tập trung vào nghiệp vụ, API và một số luồng web. Chưa có đánh giá dài hạn trên người học thực tế để định lượng hiệu quả học tập. Bài xếp trình độ phục vụ định hướng học, chưa thay thế đánh giá ngoại ngữ toàn diện hoặc chứng nhận chuẩn hóa.
+837 [normal] Hướng phát triển
+838 [normal] Hướng phát triển tiếp theo là mở rộng kiểm chứng trên thiết bị di động và dịch vụ tích hợp, đánh giá hiệu năng và bảo mật theo tiêu chí nghiệm thu cụ thể. Về học liệu, cần phối hợp với giảng viên thẩm định nội dung, bổ sung hoạt động nghe và nói, cải thiện cá nhân hóa và khảo sát hiệu quả trên người học thực tế.
+839 [Heading 1] TÀI LIỆU THAM KHẢO
+840 [normal] [1] P. H. Bui, H. H. P. Bui, and P. D. Dinh, “Vietnamese students’ use of smartphone apps in English learning,” LEARN Journal: Language Education and Acquisition Research Network, vol. 16, no. 1, pp. 28–46, 2023. [Online]. Available: https://files.eric.ed.gov/fulltext/EJ1380978.pdf
+841 [normal] [2] T. Ho-Minh, “English-learning mobile apps for business students: A case study from Vietnam,” Computer-Assisted Language Learning Electronic Journal, vol. 25, no. 2, pp. 173–200, 2024. [Online]. Available: https://callej.org/index.php/journal/article/view/443
+842 [normal] [3] Trường Đại học Công Thương Thành phố Hồ Chí Minh, Chương trình đào tạo ngành Công nghệ thông tin, TP. Hồ Chí Minh, Việt Nam, 2024. [Online]. Available: https://fit.huit.edu.vn/app_web/images/documents/n00ct/2024_ctdt-nganh-cong-nghe-thong-tin.pdf
+843 [normal] [4] ITviec, “Vietnam IT Salary & Recruitment Market 2024–2025.” Accessed: Oct. 29, 2026. [Online]. Available: https://itviec.com/salary-reports/download/56c31df8-0ce5-448e-8e78-a19310be7ff0
+844 [normal] [5] 4English Technology Company Limited, “4English - Learn English Daily,” Google Play. Accessed: Oct. 29, 2026. [Online]. Available: https://play.google.com/store/apps/details?id=com.new4english.learnenglish
+845 [normal] [6] Duolingo, Inc., “Duolingo: Learn Languages,” Google Play. Accessed: Oct. 29, 2026. [Online]. Available: https://play.google.com/store/apps/details?id=com.duolingo
+846 [normal] [7] Cambly Inc., “Cambly – Learn English,” Google Play. Accessed: Oct. 29, 2026. [Online]. Available: https://play.google.com/store/apps/details?id=com.cambly.cambly
+
+847 [Heading 1] PHỤ LỤC A
+848 [Heading 2] A.1. Cài đặt Node.js
+849 [normal] Bước 1: Tải xuống và cài đặt
+850 [normal] Truy cập trang chủ Node.js: https://nodejs.org/en/download
+851 [normal] Tải bản cài đặt Windows Installer (.msi) phiên bản LTS (Long Term Support).
+852 [normal] Chạy file cài đặt, chọn các tùy chọn mặc định và next, tick chọn tự động cài đặt các công cụ bổ trợ (Tools for Native Modules).
+853 [normal] Bước 2: Kiểm tra cài đặt
+854 [normal] Mở PowerShell hoặc Command Prompt.
+855 [normal] Chạy lệnh:	
+856 [normal] Kết quả mong đợi:
+857 [normal] Chạy lệnh:
+858 [normal] Kết quả mong đợi:
+859 [Heading 2] A.2. Cài đặt pnpm Package Manager
+860 [normal] Bước 1: Tải xuống và cài đặt
+861 [normal] Mở Powershell hoặc Command Prompt.
+862 [normal] Chạy lệnh:
+863 [normal] Kết quả mong đợi:
+864 [normal] Bước 2: Kiểm tra cài đặt
+865 [normal] Mở Powershell hoặc Command Prompt.
+866 [normal] Chạy lệnh:
+867 [normal] Kết quả mong đợi:
+868 [normal] Nếu hiển thị phiên bản -> Cài đặt thành công
+869 [normal] Xử lý lỗi thực thi script trên Windows PowerShell:
+870 [normal] Nếu gặp lỗi: ‘File ...\pnpm.ps1 cannot be loaded because running scripts is disabled on this system’.
+871 [normal] Giải pháp: Mở PowerShell với quyền Administrator và chạy lệnh:
+872 [normal] Sau đó thử lại Bước 1.
+873 [Heading 2] A.3. Cài đặt Visual Studio Code và các Extension thiết yếu
+874 [normal] Tải và cài đặt VS Code từ: https://code.visualstudio.com/
+875 [normal] Cài đặt các tiện ích mở rộng khuyến nghị sau để phục vụ phát triển dự án:
+876 [normal] Prisma (Prisma.prisma): Tô màu cú pháp, tự động hoàn thiện và định dạng file schema.prisma.
+877 [normal] Tailwind CSS IntelliSense (bradlc.vscode-tailwindcss): Gợi ý class CSS cho Next.js.
+878 [normal] ESLint & Prettier - Code formatter: Chuẩn hóa phong cách viết mã nguồn TypeScript.
+879 [normal] REST Client hoặc Thunder Client: Hỗ trợ gọi thử nghiệm các endpoint API ngay trong IDE.
+880 [Heading 2] A.4. Cài đặt và cấu hình hệ quản trị cơ sở dữ liệu PostgreSQL
+881 [normal] PostgreSQL là hệ quản trị cơ sở dữ liệu quan hệ được sử dụng để lưu trữ các bảng nghiệp vụ cùng một bảng kỹ thuật của Prisma. Các bảng nghiệp vụ có các chỉ mục và các khóa ngoại phục vụ quản lý dữ liệu theo cấu trúc đã thiết kế.
+882 [normal] Bước 1: Tải và cài đặt PostgreSQL
+883 [normal] Truy cập Website EnterpriseDB: https://www.enterprisedb.com/downloads/postgres-postgresql-downloads
+884 [normal] Tải phiên bản PostgreSQL cho Windows (khuyến nghị PostgreSQL 16 hoặc 17).
+885 [normal] Chạy trình cài đặt:
+886 [normal] Thư mục cài đặt mặc định: C:\Program Files\PostgreSQL\16
+887 [normal] Chọn đầy đủ các thành phần: PostgreSQL Server, pgAdmin 4, Command Line Tools.
+888 [normal] Thiết lập mật khẩu cho tài khoản siêu quản trị postgres (Ví dụ trong môi trường phát triển: 123456).
+889 [normal] Cổng kết nối mặc định: 5432.
+890 [normal] Locale mặc định: [Default locale].
+891 [normal] Nhấn Next và hoàn tất quá trình cài đặt.
+892 [normal] Bước 2: Khởi tạo cơ sở dữ liệu
+893 [normal] Mở công cụ dòng lệnh psql hoặc giao diện pgAdmin 4:
+894 [normal] Cách 1: Sử dụng Command Line (psql)
+895 [normal] Nhập mật khẩu 123456, sau đó thực thi câu lệnh SQL:
+896 [normal] Cách 2: Sử dụng pgAdmin 4 (Giao diện đồ họa)
+897 [normal] Mở ứng dụng pgAdmin 4 từ menu Start.
+898 [normal] Đăng nhập với mật khẩu tài khoản postgres.
+899 [normal] Nhấp chuột phải vào Databases -> Chọn Create -> Database…
+900 [normal] Đặt tên Database: techenglish.
+901 [normal] Tab Definition: Chọn Encoding là UTF8.
+902 [normal] Nhấn Save để hoàn tất.
+903 [Heading 2] A.5. Cài đặt Docker Desktop
+904 [normal] Bước 1: Kiểm tra và cài đặt WSL 2
+905 [normal] Mở PowerShell với quyền Administrator và thực hiện:
+906 [normal] Sau khi quá trình cài đặt hoàn tất, khởi động lại máy tính.
+907 [normal] Kiểm tra phiên bản WSL bằng lệnh:
+908 [normal] Kết quả mong đợi:
+909 [normal] Bước 2: Tải và cài đặt Docker Desktop
+910 [normal] Truy cập trang chủ Docker Desktop: https://docs.docker.com/desktop/setup/install/windows-install/
+911 [normal] Tải bản cài đặt Docker Desktop for Windows - x84_64.
+912 [normal] Chạy file cài đặt
+913 [normal] Trong quá trình cài đặt:
+914 [normal] Chọn chế độ Per-user để cài đặt Docker Desktop.
+915 [normal] Chọn Use WSL 2 instead of Hyper-V làm backend.
+916 [normal] Chọn Install để bắt đầu quá trình cài đặt.
+917 [normal] Sau khi cài đặt hoàn tất, chọn Close và khởi động Docker Desktop.
+918 [normal] Bước 3: Cấu hình WSL Integration 
+919 [normal] Mở Docker Desktop.
+920 [normal] 
+921 [normal] Bật tích hợp WSL cho distribution đang sử dụng.
+922 [normal] Chọn Apply & Restart để lưu cấu hình.
+923 [normal] Bước 4: Kiểm tra Docker Desktop
+924 [normal] Mở PowerShell bằng quyền Administrator.
+925 [normal] Chạy lệnh:
+926 [normal] Kết quả mong đợi:
+927 [normal] Chạy lệnh:
+928 [normal] Kết quả mong đợi:
+929 [normal] Chạy lệnh để tạo và chạy container từ image mẫu hello-world, qua đó kiểm tra Docker hoạt động chính xác.
+930 [normal] Do lần đầu chạy và khởi tạo Docker kiểm tra local chưa có image hello-world nên sẽ hiện thông báo.
+931 [normal] Sau đó Docker sẽ pull image hello-world từ Docker Hub (Registry mặc định của Docker) và tiếp tục chạy.
+932 [normal] Kết quả mong đợi:
+933 [Heading 2] A.6. Cài đặt cấu trúc Monorepo và cấu hình biến môi trường
+934 [normal] Bước 1: Cài đặt toàn bộ dependencies trong Monorepo
+935 [normal] Tại thư mục gốc của dự án, mở terminal
+936 [normal] Chạy lệnh:
+937 [normal] 	
+938 [normal] Quá trình này sẽ:
+939 [normal] Phân tích cây phụ thuộc của toàn bộ 3 ứng dụng (api, web, mobile) và 3 gói dùng chung.
+940 [normal] Liên kết cục bộ các package nội bộ thông qua liên kết ảo.
+941 [normal] Lưu trữ các gói dùng chung vào kho tập trung, tiết kiệm tối đa dung lượng ổ cứng.
+942 [normal] Bước 2: Cấu hình biến môi trường cho Backend API
+943 [normal] Tạo file apps/api/.env
+944 [normal] sao chép và dán vào file .env để cấu hình
+945 [normal] Bước 3: Cấu hình biến môi trường cho Web Application
+946 [normal] Tạo file apps/web/.env.local:
+947 [normal] Sao chép và dán vào file .env.local để cấu hình
+948 [Heading 2] A.7. Khởi tạo, đồng bộ cơ sở dữ liệu và nạp dữ liệu mẫu
+949 [normal] Bước 1: Sinh mã Prisma Client
+950 [normal] Tại thư mục gốc của dự án, mở terminal
+951 [normal] Chạy lệnh:
+952 [normal] Lệnh này sẽ phân tích file apps/api/prisma/schema.prisma và tạo ra thư viện @prisma/client chuẩn kiểu dữ liệu trong node_modules.
+953 [normal] Bước 2: Đồng bộ cấu trúc các bảng vào PostgreSQL
+954 [normal] Tại thư mục gốc của dự án, mở terminal
+955 [normal] Chạy lệnh:
+956 [normal] Prisma sẽ đồng bộ toàn bộ bảng, khóa chính UUID, chỉ mục và kiểu dữ liệu Enum vào cơ sở dữ liệu techenglish:
+957 [normal] Kết quả mong đợi:
+958 [normal] Bước 3: Nạp dữ liệu mẫu ban đầu (Seed Data)
+959 [normal] Nạp dữ liệu cốt lõi
+960 [normal] Tại thư mục gốc của dự án, mở terminal
+961 [normal] Chạy lệnh:
+962 [normal] Kết quả mong đợi:
+963 [normal] 8 Tài khoản kiểm thử mẫu:
+964 [normal] Nạp bộ câu hỏi và đề thi chuẩn chứng chỉ:
+965 [normal] Tại thư mục gốc của dự án, mở terminal
+966 [normal] Chạy lệnh:
+967 [normal] Nạp bài học ôn thi chứng chỉ
+968 [normal] Tại thư mục gốc của dự án, mở terminal
+969 [normal] Chạy lệnh:
+970 [normal] Nạp ngân hàng câu hỏi khảo sát đầu vào (Placement Test):
+971 [normal] Tại thư mục gốc của dự án, mở terminal
+972 [normal] Chạy lệnh:
+973 [normal] Bước 4: Kiểm tra dữ liệu trực quan qua Prisma Studio
+974 [normal] Tại thư mục gốc của dự án, mở terminal
+975 [normal] Chạy lệnh:
+976 [normal] Truy cập: http://localhost:5555 để xem, lọc và quản lý trực tiếp dữ liệu các bảng.
+977 [Heading 2] A.8. Khởi chạy và kiểm thử Backend API server (NestJS 11)
+978 [normal] Bước 1: Khởi động Development Server
+979 [normal] Tại thư mục gốc của dự án, mở terminal
+980 [normal] Chạy lệnh:
+981 [normal] Kết quả mong đợi:
+982 [normal] Bước 2: Kiểm tra tài liệu Swagger OpenAPI
+983 [normal] Truy cập: http://localhost:8080/api/docs
+984 [normal] Hiển thị đầy đủ danh mục API của các phân hệ: Auth, Users, LearnerProfile, Taxonomy, Lessons, Vocabulary, Questions, Exams, Progress, Reports.
+985 [normal] Hỗ trợ công cụ Authorize (gắn Bearer Token) và Try it out để kiểm thử trực tiếp các yêu cầu HTTP GET/POST/PATCH/DELETE.
+986 [Heading 2] A.9. Cài đặt và khởi chạy ứng dụng Web Frontend (Next.js 15)
+987 [normal] Bước 1: Khởi động Next.js Development Server
+988 [normal] Tại thư mục gốc của dự án, mở terminal
+989 [normal] Chạy lệnh:
+990 [normal] Kết quả mong đợi:
+991 [normal] Bước 2: Truy cập các phân hệ giao diện chính
+992 [normal] Trang đích giới thiệu (Landing Page): http://localhost:3000/landing
+993 [normal] Cổng Đăng nhập / Đăng ký: http://localhost:3000/login
+994 [normal] Cổng Quản trị & Giảng viên (Admin / Teacher Portal): http://localhost:3000/admin (Đăng nhập tài khoản admin@techenglish.pro hoặc nguyen.thanh@techenglish.pro).
+995 [normal] Cổng Học tập Học viên (Learner Portal): http://localhost:3000/learn (Đăng nhập tài khoản learner1@techenglish.pro).
+996 [Heading 2] A.10. Cài đặt Android Studio và Android SDK Platforms / Tools
+997 [normal] Bước 1: Cài đặt Android Studio
+998 [normal] Truy cập trang chính thức: https://developer.android.com/studio
+999 [normal] Tải bản cài đặt Android Studio cho Windows.
+1000 [normal] Chạy file cài đặt, chọn loại cài đặt Standard và chấp nhận các điều khoản bản quyền.
+1001 [normal] Bước 2: Cài đặt các gói SDK thiết yếu
+1002 [normal] Mở Android Studio, tại màn hình Welcome chọn More Actions, SDK Manager.
+1003 [normal] Thẻ SDK Platforms: tick chọn Android 14.0 ("UpsideDownCake") - API level 34 (hoặc API 35).
+1004 [normal] Thẻ SDK Tools, tick chọn:    
+1005 [normal] Android SDK Build-Tools (34.0.0 trở lên).    
+1006 [normal] Android SDK Command-line Tools (latest).    
+1007 [normal] Android SDK Platform-Tools (chứa tiện ích adb).
+1008 [normal] Android Emulator.
+1009 [normal] Nhấn Apply, OK để tải về và cài đặt hoàn tất.
+1010 [Heading 2] A.11. Cấu hình biến môi trường hệ thống Android
+1011 [normal] Nhấn tổ hợp phím Windows + R, gõ sysdm.cpl và nhấn Enter.
+1012 [normal] Chọn thẻ Advanced -> Chọn Environment Variables...
+1013 [normal] Trong mục User variables, nhấn New... tạo biến ANDROID_HOME:    
+1014 [normal] Variable name: ANDROID_HOME.
+1015 [normal] Variable value: C:\Users\<TênUser>\AppData\Local\Android\Sdk.
+1016 [normal] Chọn biến Path -> Nhấn Edit... -> Nhấn New và thêm các đường dẫn:
+1017 [normal] %ANDROID_HOME%\platform-tools.
+1018 [normal] %ANDROID_HOME%\emulator.
+1019 [normal] %ANDROID_HOME%\cmdline-tools\latest\bin.
+1020 [normal] %ANDROID_HOME%\tools. 
+1021 [normal] %ANDROID_HOME%\tools\bin.   
+1022 [normal] Nhấn OK liên tiếp để lưu cấu hình.
+1023 [normal] Mở cửa sổ PowerShell mới và kiểm tra:
+1024 [normal] Chạy lệnh:
+1025 [normal] Kết quả mong đợi:
+1026 [normal] Chấp nhận bản quyền SDK bằng lệnh:
+1027 [normal] Nhấn phím y và Enter cho tất cả các câu hỏi xác nhận.
+1028 [Heading 2] A.12. Tạo và khởi chạy máy ảo Android
+1029 [normal] Trong Android Studio, chọn More Actions -> Virtual Device Manager.
+1030 [normal] Nhấn nút Create Device -> Chọn thiết bị: Pixel 7 hoặc Pixel 8.
+1031 [normal] Chọn System Image: API Level 34 (x86_64).
+1032 [normal] Đặt tên thiết bị: Pixel_7_API_34.
+1033 [normal] Tại mục Emulated Performance, chọn Graphics: Hardware - GLES 2.0 để tận dụng card đồ họa phần cứng.
+1034 [normal] Nhấn Finish, sau đó nhấn nút Play để khởi động máy ảo.
+1035 [Heading 2] A.13. Cài đặt dự án Mobile và cấu hình kết nối API (.env.local)
+1036 [normal] Bước 1: Kiểm tra dependencies của ứng dụng di động
+1037 [normal] Mở PowerShell tại thư mục apps/mobile.
+1038 [normal] Chạy lệnh:
+1039 [normal] Bước 2: Cấu hình địa chỉ IP kết nối Backend API
+1040 [normal] Tạo file apps/mobile/.env.local (sao chép từ apps/mobile/.env.local.example).
+1041 [normal] Trường hợp 1: Chạy trên máy ảo Android Emulator, dán đoạn mã sau vào file .env.local
+1042 [normal] Trường hợp 2: Chạy trên điện thoại Android thật, xác định địa chỉ IP mạng nội bộ (LAN IPv4) của máy tính bằng lệnh ipconfig (Ví dụ 192.168.1.10), sau đó sửa lại cấu hình:
+1043 [normal] Trường hợp 3: Sử dụng Expo Tunneling khi thiết bị khác lớp mạng hoặc có tường lửa chặn, khởi động với chế độ đường hầm an toàn:
+1044 [Heading 2] A.14. Khởi chạy và kiểm thử ứng dụng Mobile
+1045 [normal] Cách 1: Chạy trực tiếp trên máy ảo Android Emulator
+1046 [normal] Đảm bảo máy ảo Android Emulator đã được khởi động.
+1047 [normal] Tại thư mục apps/mobile, mở terminal.
+1048 [normal] Chạy lệnh:
+1049 [normal] Cách 2: Chạy trên điện thoại thật bằng ứng dụng Expo Go
+1050 [normal] Tải ứng dụng Expo Go từ Google Play trên điện thoại Android hoặc Apple Store trên điện thoại Ios.
+1051 [normal] Tại thư mục apps/mobile, mở terminal.
+1052 [normal] Chạy lệnh:
+1053 [normal] Màn hình console terminal hiển thị một mã QR Code.
+1054 [normal] Mở ứng dụng Expo Go, chọn Scan QR Code, quét mã QR trên màn hình máy tính để nạp ứng dụng.
+1055 [normal] 
+1056 [normal] 

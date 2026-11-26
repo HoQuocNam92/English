@@ -10,13 +10,17 @@
         "buildType": "apk"
       },
       "env": {
-        "EXPO_PUBLIC_API_URL": "https://api.techenglish.click/api/v1"
-      }
+        "EXPO_PUBLIC_API_URL": "https://api.techenglish.click/api/v1",
+        "EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID": "24321796752-k99358g78v14olkbmaqf0dhvmvii4b33.apps.googleusercontent.com"
+      },
+      "environment": "preview"
     },
     "production": {
       "env": {
-        "EXPO_PUBLIC_API_URL": "https://api.techenglish.click/api/v1"
-      }
+        "EXPO_PUBLIC_API_URL": "https://api.techenglish.click/api/v1",
+        "EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID": "24321796752-k99358g78v14olkbmaqf0dhvmvii4b33.apps.googleusercontent.com"
+      },
+      "environment": "production"
     },
     "development": {
       "developmentClient": true,
@@ -25,8 +29,10 @@
         "buildType": "apk"
       },
       "env": {
-        "EXPO_PUBLIC_API_URL": "https://api.techenglish.click/api/v1"
-      }
+        "EXPO_PUBLIC_API_URL": "https://api.techenglish.click/api/v1",
+        "EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID": "24321796752-k99358g78v14olkbmaqf0dhvmvii4b33.apps.googleusercontent.com"
+      },
+      "environment": "development"
     }
   }
 }

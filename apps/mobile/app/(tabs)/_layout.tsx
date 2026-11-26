@@ -1,14 +1,46 @@
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { Tabs } from 'expo-router';
+import { Tabs, useRouter } from 'expo-router';
+import { useEffect, useState } from 'react';
+import { useAuth } from '../../src/shared/store/auth-context';
+import { api } from '../../src/shared/api/api-client';
+import { postLoginDestination } from '../../../../packages/shared-kernel/src/post-login-destination';
+import { hasCompletedOnboarding, isOnboardingCompletionCached, rememberCompletedOnboarding } from '../../src/shared/store/onboarding-cache';
+import { Button, Text } from '../../src/shared/ui/primitives';
 import { MaterialIcons } from '../../src/shared/ui/AppIcon';
 import { useTheme } from '../../src/shared/store/theme-context';
-import { View } from 'react-native';
+import { ActivityIndicator, View } from 'react-native';
 import { iconColors } from '../../src/shared/ui/icon-colors';
 import { interFontStyle } from '../../src/shared/ui/font-styles';
 
 export default function TabsLayout() {
   const { colors } = useTheme();
   const insets = useSafeAreaInsets();
+  const { user, isLoading, isLoggedIn } = useAuth();
+  const router = useRouter();
+  const [checkedUser, setCheckedUser] = useState<string | null>(null);
+  const [error, setError] = useState(false);
+  const [retry, setRetry] = useState(0);
+  useEffect(() => {
+    if (isLoading) return;
+    if (!isLoggedIn || !user) { router.replace('/(auth)/login' as any); return; }
+    if (checkedUser === user.id || isOnboardingCompletionCached(user.id)) return;
+    let active = true;
+    setError(false);
+    void (async () => {
+      if (await hasCompletedOnboarding(user.id)) return '/(tabs)/home';
+      const destination = await postLoginDestination({ mobile: true, loadProfile: () => api.get<any>('/learner-profiles/me') });
+      if (destination === '/(tabs)/home') await rememberCompletedOnboarding(user.id);
+      return destination;
+    })()
+      .then(destination => {
+        if (!active) return;
+        if (destination !== '/(tabs)/home') router.replace(destination as any);
+        else setCheckedUser(user.id);
+      })
+      .catch(() => { if (active) setError(true); });
+    return () => { active = false; };
+  }, [isLoading, isLoggedIn, user?.id, checkedUser, router, retry]);
+  if (isLoading || !isLoggedIn || !user || (checkedUser !== user.id && !isOnboardingCompletionCached(user.id))) return <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', padding: 24, gap: 16 }}>{error ? <><Text>Chưa kiểm tra được lộ trình học. Vui lòng thử lại.</Text><Button onPress={() => setRetry(value => value + 1)}>Thử lại</Button></> : <ActivityIndicator size="large" color={colors.primary} accessibilityLabel="Đang tải" />}</View>;
 
   return (
     <Tabs

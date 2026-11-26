@@ -1,0 +1,2073 @@
+0: CHƯƠNG 5: KIỂM THỬ HỆ THỐNG
+1: 5.1. MỤC TIÊU VÀ MÔI TRƯỜNG KIỂM THỬ
+2: 5.1.1. Mục tiêu
+3: Mục tiêu của quá trình kiểm thử là đảm bảo hệ thống học tiếng Anh và ôn tập chuyên ngành CNTT TechEnglish Pro hoạt động ổn định, đáp ứng đúng các yêu cầu chức năng đã phân tích và thiết kế. Quá trình này giúp phát hiện và khắc phục các lỗi về logic nghiệp vụ, giao diện người dùng và cơ sở dữ liệu trước khi đưa vào vận hành thực tế.
+4: 5.1.2. Môi trường kiểm thử
+5: Web Application:
+6: –   Thiết bị: Máy tính Windows, trình duyệt web.
+7: –   Server: Node.js, NestJS, PostgreSQL, giao diện Next.js và React.
+8: Mobile Application:
+9: –   Thiết bị: Android / iOS (thiết bị thật hoặc Emulator/Simulator).
+10: –   Framework: Expo SDK 57, React Native 0.86.3.
+11: –   Backend API: NestJS, PostgreSQL.
+12: 5.2. CÁC TRƯỜNG HỢP KIỂM THỬ
+13: Dưới đây là các trường hợp kiểm thử của TechEnglish Pro. Kết quả thực tế mô tả thông báo hoặc dữ liệu xử lý đã ghi nhận. Những thao tác chưa kiểm tra trên giao diện hoặc thiết bị được ghi rõ, các ca chưa thực hiện giữ trạng thái Chưa chạy.
+14: Dữ liệu dùng chung: HV1 và HV2 là hai học viên khác nhau, quản trị viên và giảng viên sử dụng tài khoản QA riêng. D1/D2 là lĩnh vực, C1/C2 là chứng chỉ, V1 là từ vựng, E1 là đề thi thử nghiệm. Tạo dữ liệu tương ứng trước khi chạy. Với trường hợp áp dụng trên cả web và ứng dụng, kiểm tra từng nền tảng trước khi kết luận.
+15: 5.2.1. Chức năng đăng ký
+16: Bảng 5.1. Kiểm thử đăng ký
+17: STT
+18: Tên kịch bản
+19: Dữ liệu đầu vào(Input)
+20: Các bước thực hiện
+21: Kết quả mong đợi
+22: Kết quả thực tế
+23: Trạng thái
+24: 1
+25: Đăng ký thành công
+26: Họ tên: Nguyễn AnEmail: an.qa@gmail.com (chưa tồn tại)Mật khẩu: Abcd@1234Bấm Đăng ký.
+27: B1. Mở trang Đăng ký tài khoản.B2. Nhập họ tên, email và mật khẩu theo dữ liệu đầu vào (giữ nguyên các giá trị rỗng hoặc không hợp lệ của ca thử).B3. Nhấn Đăng ký và quan sát thông báo.B4. Kiểm tra tài khoản/khả năng đăng nhập theo kết quả mong đợi.
+28: Tạo một tài khoản học viên, đăng nhập được bằng thông tin vừa tạo.
+29: Hệ thống tạo tài khoản học viên và trả thông tin đăng nhập. Chuyển trang sau đăng ký trên cả web và ứng dụng.
+30: Đạt
+31: 2
+32: Đăng ký trùng email
+33: Email: an.qa@gmail.com (đã tồn tại)Mật khẩu: Abcd@1234Bấm Đăng ký.
+34: B1. Mở trang Đăng ký tài khoản.B2. Nhập họ tên, email và mật khẩu theo dữ liệu đầu vào (giữ nguyên các giá trị rỗng hoặc không hợp lệ của ca thử).B3. Nhấn Đăng ký và quan sát thông báo.B4. Kiểm tra tài khoản/khả năng đăng nhập theo kết quả mong đợi.
+35: Báo email đã được sử dụng, không tạo thêm tài khoản.
+36: Hệ thống báo “Email đã được sử dụng”, không tạo thêm tài khoản.
+37: Đạt
+38: 3
+39: Đăng ký email trùng khác chữ hoa
+40: Email: AN.QA@gmail.com, đã có an.qa@gmail.com.Bấm Đăng ký.
+41: B1. Mở trang Đăng ký tài khoản.B2. Nhập họ tên, email và mật khẩu theo dữ liệu đầu vào (giữ nguyên các giá trị rỗng hoặc không hợp lệ của ca thử).B3. Nhấn Đăng ký và quan sát thông báo.B4. Kiểm tra tài khoản/khả năng đăng nhập theo kết quả mong đợi.
+42: Từ chối email trùng, tài khoản cũ không thay đổi.
+43: Hệ thống báo “Email đã được sử dụng” khi email chỉ khác chữ hoa, không tạo tài khoản trùng.
+44: Đạt
+45: 4
+46: Mật khẩu quá ngắn
+47: Tài khoản mới, mật khẩu: Abc12 (5 ký tự).Bấm Đăng ký.
+48: B1. Mở trang Đăng ký tài khoản.B2. Nhập họ tên, email và mật khẩu theo dữ liệu đầu vào (giữ nguyên các giá trị rỗng hoặc không hợp lệ của ca thử).B3. Nhấn Đăng ký và quan sát thông báo.B4. Kiểm tra tài khoản/khả năng đăng nhập theo kết quả mong đợi.
+49: Báo mật khẩu phải có ít nhất 6 ký tự, không tạo tài khoản.
+50: Hệ thống báo “Mật khẩu phải có ít nhất 6 ký tự”, không tạo tài khoản.
+51: Đạt
+52: 5
+53: Mật khẩu ở giới hạn tối thiểu
+54: Tài khoản mới, mật khẩu: Abc123 (6 ký tự).Bấm Đăng ký.
+55: B1. Mở trang Đăng ký tài khoản.B2. Nhập họ tên, email và mật khẩu theo dữ liệu đầu vào (giữ nguyên các giá trị rỗng hoặc không hợp lệ của ca thử).B3. Nhấn Đăng ký và quan sát thông báo.B4. Kiểm tra tài khoản/khả năng đăng nhập theo kết quả mong đợi.
+56: Chấp nhận mật khẩu, tạo tài khoản và đăng nhập được.
+57: Hệ thống chấp nhận mật khẩu 6 ký tự và tạo tài khoản thành công.
+58: Đạt
+59: 6
+60: Mật khẩu ở giới hạn tối đa
+61: Tài khoản mới, mật khẩu gồm 72 ký tự ASCII.Bấm Đăng ký.
+62: B1. Mở trang Đăng ký tài khoản.B2. Nhập họ tên, email và mật khẩu theo dữ liệu đầu vào (giữ nguyên các giá trị rỗng hoặc không hợp lệ của ca thử).B3. Nhấn Đăng ký và quan sát thông báo.B4. Kiểm tra tài khoản/khả năng đăng nhập theo kết quả mong đợi.
+63: Chấp nhận mật khẩu 72 ký tự, đăng nhập lại được.
+64: Hệ thống tạo tài khoản với mật khẩu 72 ký tự, đăng nhập lại bằng mật khẩu đó thành công.
+65: Đạt
+66: 7
+67: Mật khẩu vượt giới hạn
+68: Tài khoản mới, mật khẩu gồm 73 ký tự ASCII.Bấm Đăng ký.
+69: B1. Mở trang Đăng ký tài khoản.B2. Nhập họ tên, email và mật khẩu theo dữ liệu đầu vào (giữ nguyên các giá trị rỗng hoặc không hợp lệ của ca thử).B3. Nhấn Đăng ký và quan sát thông báo.B4. Kiểm tra tài khoản/khả năng đăng nhập theo kết quả mong đợi.
+70: Báo mật khẩu tối đa 72 ký tự, không tạo tài khoản.
+71: Hệ thống báo “Mật khẩu tối đa 72 ký tự”, không tạo tài khoản.
+72: Đạt
+73: 8
+74: Đăng ký bỏ trống thông tin
+75: Họ tên: [Rỗng]Email: [Rỗng]Mật khẩu: [Rỗng]Bấm Đăng ký.
+76: B1. Mở trang Đăng ký tài khoản.B2. Nhập họ tên, email và mật khẩu theo dữ liệu đầu vào (giữ nguyên các giá trị rỗng hoặc không hợp lệ của ca thử).B3. Nhấn Đăng ký và quan sát thông báo.B4. Kiểm tra tài khoản/khả năng đăng nhập theo kết quả mong đợi.
+77: Hiển thị lỗi ở các trường bắt buộc, không tạo tài khoản.
+78: Hệ thống báo “Tên không được để trống”, “Email không hợp lệ” và “Mật khẩu phải có ít nhất 6 ký tự”, không tạo tài khoản. Chưa đối chiếu hiển thị lỗi trên giao diện.
+79: Đạt
+80: 9
+81: Đăng ký sai định dạng email
+82: Họ tên: Nguyễn AnEmail: nguyenvanaMật khẩu: Abcd@1234
+83: B1. Mở trang Đăng ký tài khoản.B2. Nhập họ tên, email và mật khẩu theo dữ liệu đầu vào (giữ nguyên các giá trị rỗng hoặc không hợp lệ của ca thử).B3. Nhấn Đăng ký và quan sát thông báo.B4. Kiểm tra tài khoản/khả năng đăng nhập theo kết quả mong đợi.
+84: Báo email không hợp lệ, không tạo tài khoản.
+85: Hệ thống báo “Email không hợp lệ”, không tạo tài khoản.
+86: Đạt
+87: 10
+88: Họ tên quá ngắn
+89: Họ tên: A (1 ký tự), email mới, mật khẩu hợp lệ.
+90: B1. Mở trang Đăng ký tài khoản.B2. Nhập họ tên, email và mật khẩu theo dữ liệu đầu vào (giữ nguyên các giá trị rỗng hoặc không hợp lệ của ca thử).B3. Nhấn Đăng ký và quan sát thông báo.B4. Kiểm tra tài khoản/khả năng đăng nhập theo kết quả mong đợi.
+91: Báo tên phải có ít nhất 2 ký tự, không tạo tài khoản.
+92: Hệ thống báo “Tên phải có ít nhất 2 ký tự”, không tạo tài khoản.
+93: Đạt
+94: 11
+95: Họ tên vượt giới hạn
+96: Họ tên gồm 101 ký tự, email mới, mật khẩu hợp lệ.
+97: B1. Mở trang Đăng ký tài khoản.B2. Nhập họ tên, email và mật khẩu theo dữ liệu đầu vào (giữ nguyên các giá trị rỗng hoặc không hợp lệ của ca thử).B3. Nhấn Đăng ký và quan sát thông báo.B4. Kiểm tra tài khoản/khả năng đăng nhập theo kết quả mong đợi.
+98: Báo tên tối đa 100 ký tự, không tạo tài khoản.
+99: Hệ thống báo “Tên tối đa 100 ký tự”, không tạo tài khoản.
+100: Đạt
+101: 12
+102: Họ tên chỉ gồm khoảng trắng
+103: Họ tên: ba dấu cách, email mới, mật khẩu hợp lệ.
+104: B1. Mở trang Đăng ký tài khoản.B2. Nhập họ tên, email và mật khẩu theo dữ liệu đầu vào (giữ nguyên các giá trị rỗng hoặc không hợp lệ của ca thử).B3. Nhấn Đăng ký và quan sát thông báo.B4. Kiểm tra tài khoản/khả năng đăng nhập theo kết quả mong đợi.
+105: Không chấp nhận tên chỉ có khoảng trắng, không tạo tài khoản không có tên hiển thị.
+106: Hệ thống báo “Tên không được để trống” và “Tên phải có ít nhất 2 ký tự”, không tạo tài khoản.
+107: Đạt
+108: 13
+109: Đăng ký email ngoài Gmail
+110: Họ tên: Học viên thử nghiệm, email: hocvien@yahoo.com hoặc hocvien@outlook.com, mật khẩu hợp lệ.
+111: B1. Mở trang Đăng ký tài khoản.B2. Nhập họ tên, email và mật khẩu theo dữ liệu đầu vào (giữ nguyên các giá trị rỗng hoặc không hợp lệ của ca thử).B3. Nhấn Đăng ký và quan sát thông báo.B4. Kiểm tra tài khoản/khả năng đăng nhập theo kết quả mong đợi.
+112: Báo “Chỉ chấp nhận địa chỉ email @gmail.com”, không tạo tài khoản.
+113: Hiển thị “Chỉ chấp nhận địa chỉ email @gmail.com” khi rời ô email, hệ thống từ chối tạo tài khoản.
+114: Đạt
+115: 14
+116: Đăng ký email giả đuôi Gmail
+117: Email: hocvien@gmail.com.tenkhac hoặc hocvien@sub.gmail.com, các trường khác hợp lệ.
+118: B1. Mở trang Đăng ký tài khoản.B2. Nhập họ tên, email và mật khẩu theo dữ liệu đầu vào (giữ nguyên các giá trị rỗng hoặc không hợp lệ của ca thử).B3. Nhấn Đăng ký và quan sát thông báo.B4. Kiểm tra tài khoản/khả năng đăng nhập theo kết quả mong đợi.
+119: Từ chối email không có đúng tên miền gmail.com, không tạo tài khoản.
+120: Hiển thị “Chỉ chấp nhận địa chỉ email @gmail.com”, hệ thống từ chối tên miền phụ và tên miền gắn thêm sau gmail.com.
+121: Đạt
+122: 15
+123: Gmail có chữ hoa và khoảng trắng ngoài
+124: Email: [khoảng trắng]hocvien@GMAIL.COM[khoảng trắng], họ tên và mật khẩu hợp lệ.
+125: B1. Mở trang Đăng ký tài khoản.B2. Nhập họ tên, email và mật khẩu theo dữ liệu đầu vào (giữ nguyên các giá trị rỗng hoặc không hợp lệ của ca thử).B3. Nhấn Đăng ký và quan sát thông báo.B4. Kiểm tra tài khoản/khả năng đăng nhập theo kết quả mong đợi.
+126: Chuẩn hóa email thành chữ thường và bỏ khoảng trắng ngoài, tạo tài khoản.
+127: Hệ thống tạo tài khoản thành công và lưu địa chỉ Gmail ở dạng chữ thường, không có khoảng trắng ngoài.
+128: Đạt
+129: 5.2.2. Chức năng đăng nhập và quản lý phiên
+130: Bảng 5.2. Kiểm thử đăng nhập và quản lý phiên
+131: STT
+132: Tên kịch bản
+133: Dữ liệu đầu vào(Input)
+134: Các bước thực hiện
+135: Kết quả mong đợi
+136: Kết quả thực tế
+137: Trạng thái
+138: 1
+139: Học viên đăng nhập thành công
+140: Email: hv1.qa@gmail.comMật khẩu đúng của HV1.Bấm Đăng nhập.
+141: B1. Chuẩn bị trạng thái tài khoản/phiên theo dữ liệu đầu vào.B2. Mở màn hình Đăng nhập và nhập thông tin tài khoản được chỉ định.B3. Nhấn Đăng nhập; kiểm tra thông báo, điều hướng và quyền truy cập.
+142: Mở giao diện học tập của HV1, không mở trang quản trị trái quyền.
+143: Đăng nhập thành công và chuyển sang trang học tập của học viên.
+144: Đạt
+145: 2
+146: Quản trị viên đăng nhập thành công
+147: Email: admin.qa@gmail.comMật khẩu đúng của tài khoản quản trị.
+148: B1. Chuẩn bị trạng thái tài khoản/phiên theo dữ liệu đầu vào.B2. Mở màn hình Đăng nhập và nhập thông tin tài khoản được chỉ định.B3. Nhấn Đăng nhập; kiểm tra thông báo, điều hướng và quyền truy cập.
+149: Mở trang quản trị, hiển thị đúng tài khoản.
+150: Hệ thống xác thực thành công và trả đúng vai trò quản trị viên. Chuyển trang quản trị trên giao diện.
+151: Đạt
+152: 3
+153: Giảng viên đăng nhập thành công
+154: Tài khoản giảng viên đã được gán quyền, mật khẩu đúng.
+155: B1. Chuẩn bị trạng thái tài khoản/phiên theo dữ liệu đầu vào.B2. Mở màn hình Đăng nhập và nhập thông tin tài khoản được chỉ định.B3. Nhấn Đăng nhập; kiểm tra thông báo, điều hướng và quyền truy cập.
+156: Mở trang được phép, chỉ hiển thị và sử dụng các chức năng được cấp quyền.
+157: Hệ thống xác thực thành công . Chuyển trang quản trị trên giao diện.
+158: Đạt
+159: 4
+160: Đăng nhập sai mật khẩu
+161: Email của HV1, mật khẩu: Sai@1234.
+162: B1. Chuẩn bị trạng thái tài khoản/phiên theo dữ liệu đầu vào.B2. Mở màn hình Đăng nhập và nhập thông tin tài khoản được chỉ định.B3. Nhấn Đăng nhập; kiểm tra thông báo, điều hướng và quyền truy cập.
+163: Báo thông tin đăng nhập không đúng, không cho vào tài khoản.
+164: Hiển thị “Mật khẩu không chính xác”, người dùng vẫn ở trang đăng nhập.
+165: Đạt
+166: 5
+167: Đăng nhập email chưa tồn tại
+168: Email: khongtontai.qa@gmail.comMật khẩu: Abcd@1234.
+169: B1. Chuẩn bị trạng thái tài khoản/phiên theo dữ liệu đầu vào.B2. Mở màn hình Đăng nhập và nhập thông tin tài khoản được chỉ định.B3. Nhấn Đăng nhập; kiểm tra thông báo, điều hướng và quyền truy cập.
+170: Báo đăng nhập thất bại, không tạo tài khoản và không mở phiên mới.
+171: Hệ thống báo “Không tìm thấy tài khoản với email này”, không cho đăng nhập.
+172: Đạt
+173: 6
+174: Đăng nhập tài khoản bị khóa
+175: Khóa HV1, dùng thông tin đúng để đăng nhập.
+176: B1. Chuẩn bị trạng thái tài khoản/phiên theo dữ liệu đầu vào.B2. Mở màn hình Đăng nhập và nhập thông tin tài khoản được chỉ định.B3. Nhấn Đăng nhập; kiểm tra thông báo, điều hướng và quyền truy cập.
+177: Từ chối đăng nhập, báo tài khoản không được phép hoạt động.
+178: Hệ thống báo tài khoản đã bị khóa và yêu cầu liên hệ quản trị viên, không cho đăng nhập.
+179: Đạt
+180: 7
+181: Tiếp tục dùng phiên sau khi bị khóa
+182: HV1 đã đăng nhập, quản trị viên khóa HV1, HV1 lưu hồ sơ.
+183: B1. Mở chức năng “Tiếp tục dùng phiên sau khi bị khóa” với tài khoản và trạng thái dữ liệu được nêu.B2. Nhập/chọn dữ liệu kiểm thử ở cột Input và thực hiện thao tác tương ứng.B3. Xác nhận hoặc gửi yêu cầu; kiểm tra thông báo và dữ liệu trả về.B4. Đối chiếu với kết quả mong đợi, tải lại nếu cần.
+184: Không cho ghi dữ liệu sau khi khóa, giao diện thông báo hoặc kết thúc phiên.
+185: Hệ thống từ chối yêu cầu sử dụng phiên của tài khoản đã bị khóa.
+186: Đạt
+187: 8
+188: Đăng nhập tài khoản đã xóa
+189: Xóa mềm HV1, thử đăng nhập lại và gọi bằng phiên cũ.
+190: B1. Chuẩn bị trạng thái tài khoản/phiên theo dữ liệu đầu vào.B2. Mở màn hình Đăng nhập và nhập thông tin tài khoản được chỉ định.B3. Nhấn Đăng nhập; kiểm tra thông báo, điều hướng và quyền truy cập.
+191: Không truy cập được dữ liệu được bảo vệ, dữ liệu lịch sử không bị lộ.
+192: Hệ thống báo tài khoản đã bị vô hiệu hóa hoặc chưa được kích hoạt, không cho đăng nhập.
+193: Đạt
+194: 9
+195: Refresh phiên
+196: HV1 đăng nhập, access token hết hạnThao tác: Gọi một API cần xác thực
+197: B1. Mở màn hình/chức năng hoặc chuẩn bị API kiểm thử cho “Refresh phiên”; thiết lập dữ liệu và quyền theo Input.B2. Gọi một API cần xác thực.B3. Quan sát phản hồi và đối chiếu với kết quả mong đợi.
+198: Refresh thành công khi refresh token hợp lệ, gửi lại request đúng một lần, không vòng lặp.
+199: Hệ thống cấp lại thông tin phiên từ phiên hợp lệ. 
+200: Đạt
+201: 10
+202: Refresh đồng thời
+203: Access token hết hạn, dashboard có nhiều requestThao tác: Mở dashboard, ghi network khi các request cùng trả 401
+204: B1. Mở màn hình/chức năng hoặc chuẩn bị API kiểm thử cho “Refresh đồng thời”; thiết lập dữ liệu và quyền theo Input.B2. Mở dashboard, ghi network khi các request cùng trả 401.B3. Quan sát phản hồi và đối chiếu với kết quả mong đợi.
+205: Các request phục hồi nhất quán, không đăng xuất nhầm do refresh cạnh tranh, không lặp vô hạn.
+206: Hai yêu cầu làm mới đồng thời đều được chấp nhận. 
+207: Đạt
+208: 11
+209: Refresh token sai/hết hạn
+210: Token giả và token hết hạnThao tác: Gọi refresh, mở lại màn bảo vệ
+211: B1. Mở màn hình/chức năng hoặc chuẩn bị API kiểm thử cho “Refresh token sai/hết hạn”; thiết lập dữ liệu và quyền theo Input.B2. Gọi refresh.B3. Mở lại màn bảo vệ.B4. Quan sát phản hồi và đối chiếu với kết quả mong đợi.
+212: Từ chối, xóa trạng thái phiên không hợp lệ, không giữ dữ liệu người cũ.
+213: Hệ thống từ chối mã làm mới giả. 
+214: Đạt
+215: 12
+216: Đăng xuất
+217: HV1 có phiênThao tác: Đăng xuất, gọi lại API và refresh bằng phiên cũ, nhấn Back
+218: B1. Đăng nhập HV1 và mở trang được bảo vệ.B2. Chọn Đăng xuất; thử truy cập API, làm mới phiên và nhấn Back bằng phiên cũ.B3. Đối chiếu quyền truy cập và thông tin hiển thị.
+219: Refresh cũ không tạo phiên mới, màn bảo vệ yêu cầu đăng nhập, không hiển thị cache nhạy cảm.
+220: Đăng xuất thành công, chuyển về trang đăng nhập, phiên làm mới bị thu hồi.
+221: Đạt
+222: 13
+223: Đăng nhập Google trên web
+224: Tài khoản Google thử nghiệm, bấm Đăng nhập Google trên web.
+225: B1. Mở màn hình đăng nhập trên nền tảng được nêu.B2. Nhấn Đăng nhập Google và thực hiện hoặc hủy luồng xác thực như dữ liệu thử.B3. Kiểm tra phiên đăng nhập, màn hình điều hướng và tài khoản được trả về.
+226: Xác thực thành công, quay về đúng tài khoản, không tạo tài khoản trùng.
+227: Hệ thống xác thực thành công. Chuyển về trang chủ
+228: Đạt
+229: 14
+230: Đăng nhập Google trên ứng dụng
+231: Tài khoản Google thử nghiệm, đăng nhập trên Android/iOS.
+232: B1. Mở màn hình đăng nhập trên nền tảng được nêu.B2. Nhấn Đăng nhập Google và thực hiện hoặc hủy luồng xác thực như dữ liệu thử.B3. Kiểm tra phiên đăng nhập, màn hình điều hướng và tài khoản được trả về.
+233: Đăng nhập được, trả về ứng dụng và đúng tài khoản.
+234: Chưa chạy xác thực Google thực tế, cần tài khoản Google thử nghiệm và cấu hình đăng nhập phù hợp.
+235: Chưa chạy
+236: 15
+237: Hủy đăng nhập Google
+238: Mở đăng nhập Google rồi bấm Hủy.
+239: B1. Mở màn hình đăng nhập trên nền tảng được nêu.B2. Nhấn Đăng nhập Google và thực hiện hoặc hủy luồng xác thực như dữ liệu thử.B3. Kiểm tra phiên đăng nhập, màn hình điều hướng và tài khoản được trả về.
+240: Quay về màn hình đăng nhập, không tạo phiên hoặc báo thành công.
+241: Chưa chạy xác thực Google thực tế, cần tài khoản Google thử nghiệm và cấu hình đăng nhập phù hợp.
+242: Chưa chạy
+243: 16
+244: Lỗi mạng khi đăng nhập
+245: API test có thể ngắt kết nốiThao tác: Gửi đăng nhập khi offline, bật mạng, thử lại
+246: B1. Chuẩn bị trạng thái tài khoản/phiên theo dữ liệu đầu vào.B2. Mở màn hình Đăng nhập và nhập thông tin tài khoản được chỉ định.B3. Nhấn Đăng nhập; kiểm tra thông báo, điều hướng và quyền truy cập.
+247: Thông báo hữu ích, nút thoát loading, không nhân đôi phiên/tài khoản.
+248: Chưa chạy.
+249: Chưa chạy
+250: 5.2.3. Chức năng khôi phục và đổi mật khẩu
+251: Bảng 5.3. Kiểm thử khôi phục và đổi mật khẩu
+252: STT
+253: Tên kịch bản
+254: Dữ liệu đầu vào(Input)
+255: Các bước thực hiện
+256: Kết quả mong đợi
+257: Kết quả thực tế
+258: Trạng thái
+259: 1
+260: Khôi phục mật khẩu bằng liên kết
+261: Tài khoản có mật khẩu, SMTP thử nghiệm.Thao tác: Yêu cầu liên kết đặt lại mật khẩu, mở liên kết nhận trong email, nhập mật khẩu mới, đăng nhập lại.
+262: B1. Mở chức năng Quên mật khẩu hoặc Đổi mật khẩu theo kịch bản.B2. Thực hiện yêu cầu đặt lại/nhập mật khẩu hoặc mở liên kết với trạng thái token đã chỉ định.B3. Xác nhận thao tác và kiểm tra thông báo.B4. Thử đăng nhập lại hoặc dùng lại liên kết nếu ca thử yêu cầu.
+263: Email chứa liên kết với token dùng một lần, hiệu lực 15 phút, mật khẩu mới dùng được và mật khẩu cũ không còn hợp lệ.
+264: Gữi đường link tới email người dùng liên kết đổi mật khẩu.
+265: Đạt
+266: 2
+267: Mở liên kết reset sai
+268: Mở liên kết có token bị thay đổi một ký tự.
+269: B1. Mở chức năng Quên mật khẩu hoặc Đổi mật khẩu theo kịch bản.B2. Thực hiện yêu cầu đặt lại/nhập mật khẩu hoặc mở liên kết với trạng thái token đã chỉ định.B3. Xác nhận thao tác và kiểm tra thông báo.B4. Thử đăng nhập lại hoặc dùng lại liên kết nếu ca thử yêu cầu.
+270: Thông báo liên kết không hợp lệ, không đổi mật khẩu.
+271: Hệ thống từ chối liên kết đặt lại mật khẩu không hợp lệ.
+272: Đạt
+273: 3
+274: Mở liên kết reset hết hạn
+275: Mở liên kết đã vượt thời hạn sử dụng.
+276: B1. Mở chức năng Quên mật khẩu hoặc Đổi mật khẩu theo kịch bản.B2. Thực hiện yêu cầu đặt lại/nhập mật khẩu hoặc mở liên kết với trạng thái token đã chỉ định.B3. Xác nhận thao tác và kiểm tra thông báo.B4. Thử đăng nhập lại hoặc dùng lại liên kết nếu ca thử yêu cầu.
+277: Thông báo liên kết hết hạn, yêu cầu gửi lại.
+278: Hệ thống từ chối liên kết đặt lại mật khẩu đã hết hạn.
+279: Đạt
+280: 4
+281: Dùng lại liên kết reset
+282: Đổi mật khẩu thành công, sau đó mở lại cùng liên kết.
+283: B1. Mở chức năng Quên mật khẩu hoặc Đổi mật khẩu theo kịch bản.B2. Thực hiện yêu cầu đặt lại/nhập mật khẩu hoặc mở liên kết với trạng thái token đã chỉ định.B3. Xác nhận thao tác và kiểm tra thông báo.B4. Thử đăng nhập lại hoặc dùng lại liên kết nếu ca thử yêu cầu.
+284: Liên kết đã dùng không cho đổi mật khẩu lần nữa.
+285: Hệ thống từ chối sử dụng lại liên kết đặt lại mật khẩu đã dùng.
+286: Đạt
+287: 5
+288: Đổi mật khẩu thành công
+289: Đăng nhập HV1, nhập đúng mật khẩu cũ, mật khẩu mới: New@1234.
+290: B1. Mở chức năng Quên mật khẩu hoặc Đổi mật khẩu theo kịch bản.B2. Thực hiện yêu cầu đặt lại/nhập mật khẩu hoặc mở liên kết với trạng thái token đã chỉ định.B3. Xác nhận thao tác và kiểm tra thông báo.B4. Thử đăng nhập lại hoặc dùng lại liên kết nếu ca thử yêu cầu.
+291: Lưu mật khẩu mới, đăng nhập được bằng mật khẩu mới, mật khẩu cũ bị từ chối.
+292: Đổi mật khẩu thành công, hệ thống chấp nhận thông tin mật khẩu mới.
+293: Đạt
+294: 6
+295: Đổi mật khẩu khi sai mật khẩu cũ
+296: Nhập mật khẩu cũ: Sai@1234, mật khẩu mới hợp lệ.
+297: B1. Mở chức năng Quên mật khẩu hoặc Đổi mật khẩu theo kịch bản.B2. Thực hiện yêu cầu đặt lại/nhập mật khẩu hoặc mở liên kết với trạng thái token đã chỉ định.B3. Xác nhận thao tác và kiểm tra thông báo.B4. Thử đăng nhập lại hoặc dùng lại liên kết nếu ca thử yêu cầu.
+298: Báo mật khẩu hiện tại không đúng, giữ nguyên mật khẩu cũ.
+299: Hệ thống báo mật khẩu hiện tại không chính xác, không đổi mật khẩu.
+300: Đạt
+301: 7
+302: Mở liên kết reset hợp lệ
+303: Gửi quên mật khẩu, mở liên kết mới nhận được, chưa hết hạn và chưa sử dụng.
+304: B1. Mở chức năng Quên mật khẩu hoặc Đổi mật khẩu theo kịch bản.B2. Thực hiện yêu cầu đặt lại/nhập mật khẩu hoặc mở liên kết với trạng thái token đã chỉ định.B3. Xác nhận thao tác và kiểm tra thông báo.B4. Thử đăng nhập lại hoặc dùng lại liên kết nếu ca thử yêu cầu.
+305: Hiển thị màn hình nhập mật khẩu mới, không đổi mật khẩu trước khi xác nhận.
+306: Hệ thống chấp nhận liên kết đặt lại mật khẩu còn hiệu lực.
+307: Đạt
+308: 5.2.4. Chức năng vai trò và phân quyền
+309: Bảng 5.4. Kiểm thử vai trò và phân quyền
+310: STT
+311: Tên kịch bản
+312: Dữ liệu đầu vào(Input)
+313: Các bước thực hiện
+314: Kết quả mong đợi
+315: Kết quả thực tế
+316: Trạng thái
+317: 1
+318: Chưa xác thực
+319: Không có AuthorizationThao tác: Gọi lần lượt các route có JwtAuthGuard trong inventory
+320: B1. Mở màn hình/chức năng hoặc chuẩn bị API kiểm thử cho “Chưa xác thực”; thiết lập dữ liệu và quyền theo Input.B2. Gọi lần lượt các route có JwtAuthGuard trong inventory.B3. Quan sát phản hồi và đối chiếu với kết quả mong đợi.
+321: 401, không trả dữ liệu bảo vệ hoặc thực hiện ghi.
+322: Hệ thống từ chối truy cập danh sách người dùng, vai trò, bài thi, hồ sơ, tiến độ và kết quả khi chưa đăng nhập.
+323: Đạt
+324: 2
+325: Learner gọi API quản trị
+326: HV1 không có quyền quản trịThao tác: Gọi trực tiếp create/update/delete users, roles, lessons, questions, exams và báo cáo
+327: B1. Mở màn hình/chức năng hoặc chuẩn bị API kiểm thử cho “Learner gọi API quản trị”; thiết lập dữ liệu và quyền theo Input.B2. Gọi trực tiếp create/update/delete users, roles, lessons, questions, exams và báo cáo.B3. Quan sát phản hồi và đối chiếu với kết quả mong đợi.
+328: 403 ở các thao tác thiếu quyền, DB không thay đổi, ẩn menu không phải cơ chế bảo vệ duy nhất.
+329: Học viên bị từ chối đọc báo cáo quản trị và tạo người dùng, vai trò, bài học, câu hỏi hoặc bài thi. 
+330: Đạt
+331: 3
+332: Kiểm quyền từng thao tác
+333: Role test chỉ có lessons:createThao tác: Gọi tạo bài, sửa bài, xóa bài
+334: B1. Mở màn hình/chức năng hoặc chuẩn bị API kiểm thử cho “Kiểm quyền từng thao tác”; thiết lập dữ liệu và quyền theo Input.B2. Gọi tạo bài.B3. Sửa bài.B4. Xóa bài.B5. Quan sát phản hồi và đối chiếu với kết quả mong đợi.
+335: Chỉ tạo thành công, sửa/xóa bị từ chối nếu không có quyền tương ứng.
+336: Quyền tạo bài học mới có hiệu lực với phiên đang dùng, quyền tạo không cho phép sửa bài. 
+337: Đạt
+338: 4
+339: Tạo vai trò
+340: Tên vai trò: Giảng viên QA, chọn quyền xem bài học, lưu.
+341: B1. Đăng nhập tài khoản có quyền và mở chức năng liên quan đến “Tạo vai trò”.B2. Nhập/chọn đúng dữ liệu thử được mô tả ở cột Input.B3. Nhấn Tạo/Thêm/Lưu/Xuất bản theo kịch bản.B4. Mở lại danh sách hoặc chi tiết để kiểm tra kết quả.
+342: Vai trò xuất hiện trong danh sách với đúng quyền đã chọn.
+343: Hệ thống lưu vai trò mới và trả đúng thông tin đã nhập.
+344: Đạt
+345: 5
+346: Sửa vai trò
+347: Mở vai trò Giảng viên QA, đổi tên rồi lưu.
+348: B1. Mở danh sách và chọn bản ghi mục tiêu của “Sửa vai trò”.B2. Thay đổi giá trị theo dữ liệu đầu vào.B3. Nhấn Lưu/Xác nhận; tải lại chi tiết bản ghi.B4. Kiểm tra dữ liệu mới và những dữ liệu phải được giữ nguyên.
+349: Tên mới hiển thị, các quyền không chỉnh sửa được giữ nguyên.
+350: Hệ thống lưu nội dung vai trò sau khi sửa.
+351: Đạt
+352: 6
+353: Xóa vai trò chưa sử dụng
+354: Chọn vai trò QA chưa gán cho người dùng, xóa và xác nhận.
+355: B1. Mở chức năng quản lý tương ứng và chọn đối tượng của “Xóa vai trò chưa sử dụng”.B2. Thực hiện Xóa/Khóa/Thu hồi rồi xác nhận nếu được yêu cầu.B3. Tải lại danh sách, thử truy cập hoặc thao tác liên quan.B4. Kiểm tra trạng thái dữ liệu và thông báo.
+356: Vai trò bị xóa, các vai trò và tài khoản khác không thay đổi.
+357: Hệ thống xóa vai trò thử nghiệm chưa sử dụng thành công.
+358: Đạt
+359: 7
+360: Gán và thu hồi quyền
+361: Role QA, user QA có phiênThao tác: Gán quyền, đăng nhập lại, thử thao tác, thu hồi quyền, thử token cũ và mới
+362: B1. Mở màn hình/chức năng hoặc chuẩn bị API kiểm thử cho “Gán và thu hồi quyền”; thiết lập dữ liệu và quyền theo Input.B2. Gán quyền.B3. Đăng nhập lại.B4. Thử thao tác.B5. Thu hồi quyền.B6. Thử token cũ và mới.B7. Quan sát phản hồi và đối chiếu với kết quả mong đợi.
+363: Quyền hiệu lực đúng chính sách, quyền đã thu hồi không tiếp tục cho phép thao tác ngoài chính sách phiên.
+364: Sau khi thu hồi quyền tạo bài học, phiên đang dùng không tạo được bài mới. 
+365: Đạt
+366: 8
+367: Gán và thu hồi role
+368: quản trị viên, HV1Thao tác: Gán role QA, kiểm quyền, thu hồi, kiểm lại
+369: B1. Mở màn hình/chức năng hoặc chuẩn bị API kiểm thử cho “Gán và thu hồi role”; thiết lập dữ liệu và quyền theo Input.B2. Gán role QA.B3. Kiểm quyền.B4. Thu hồi.B5. Kiểm lại.B6. Quan sát phản hồi và đối chiếu với kết quả mong đợi.
+370: Chỉ thay đổi quyền của HV1, không tạo liên kết role trùng.
+371: Hệ thống gán và gỡ vai trò thử nghiệm thành công. 
+372: Đạt
+373: 9
+374: Tự nâng quyền
+375: HV1Thao tác: Gửi roleIds/permissions/isAdmin khi đăng ký và PATCH users/me
+376: B1. Mở màn hình/chức năng hoặc chuẩn bị API kiểm thử cho “Tự nâng quyền”; thiết lập dữ liệu và quyền theo Input.B2. Gửi roleIds/permissions/isAdmin khi đăng ký và PATCH users/me.B3. Quan sát phản hồi và đối chiếu với kết quả mong đợi.
+377: Không tự nâng quyền, server loại bỏ hoặc từ chối trường không được phép.
+378: Hệ thống từ chối yêu cầu tự gán quyền quản trị qua dữ liệu cập nhật.
+379: Đạt
+380: 10
+381: Quyền không tồn tại
+382: quản trị viênThao tác: Gán UUID quyền không tồn tại, gán trùng, thay toàn bộ tập quyền
+383: B1. Mở màn hình/chức năng hoặc chuẩn bị API kiểm thử cho “Quyền không tồn tại”; thiết lập dữ liệu và quyền theo Input.B2. Gán UUID quyền không tồn tại, gán trùng, thay toàn bộ tập quyền.B3. Quan sát phản hồi và đối chiếu với kết quả mong đợi.
+384: Không tạo liên kết mồ côi, không trùng, tập quyền sau thay thế đúng dữ liệu gửi.
+385: Hệ thống từ chối gán quyền không tồn tại.
+386: Đạt
+387: 11
+388: Role hệ thống đang dùng
+389: quản trị viên, role hệ thống có usersThao tác: Thử sửa/xóa quyền hoặc role được bảo vệ
+390: B1. Mở màn hình/chức năng hoặc chuẩn bị API kiểm thử cho “Role hệ thống đang dùng”; thiết lập dữ liệu và quyền theo Input.B2. Thử sửa/xóa quyền hoặc role được bảo vệ.B3. Quan sát phản hồi và đối chiếu với kết quả mong đợi.
+391: Không phá vỡ ràng buộc bảo vệ, nếu thao tác được phép phải không làm mất khả năng quản trị ngoài chủ đích.
+392: Hệ thống không cho xóa vai trò hệ thống đang được sử dụng.
+393: Đạt
+394: 12
+395: Tạo quyền thử nghiệm
+396: Quản trị viên, tạo mã quyền QA mới và tên hiển thị.
+397: B1. Đăng nhập tài khoản có quyền và mở chức năng liên quan đến “Tạo quyền thử nghiệm”.B2. Nhập/chọn đúng dữ liệu thử được mô tả ở cột Input.B3. Nhấn Tạo/Thêm/Lưu/Xuất bản theo kịch bản.B4. Mở lại danh sách hoặc chi tiết để kiểm tra kết quả.
+398: Quyền được tạo một lần và xuất hiện trong danh sách.
+399: Hệ thống lưu quyền thử nghiệm mới thành công.
+400: Đạt
+401: 13
+402: Sửa quyền thử nghiệm
+403: Đổi tên hiển thị của quyền QA rồi lưu.
+404: B1. Mở danh sách và chọn bản ghi mục tiêu của “Sửa quyền thử nghiệm”.B2. Thay đổi giá trị theo dữ liệu đầu vào.B3. Nhấn Lưu/Xác nhận; tải lại chi tiết bản ghi.B4. Kiểm tra dữ liệu mới và những dữ liệu phải được giữ nguyên.
+405: Tên quyền được cập nhật, không thay đổi quyền khác.
+406: Hệ thống lưu tên quyền thử nghiệm sau khi sửa.
+407: Đạt
+408: 14
+409: Xóa quyền thử nghiệm
+410: Chọn quyền QA không sử dụng, xóa và xác nhận.
+411: B1. Mở chức năng quản lý tương ứng và chọn đối tượng của “Xóa quyền thử nghiệm”.B2. Thực hiện Xóa/Khóa/Thu hồi rồi xác nhận nếu được yêu cầu.B3. Tải lại danh sách, thử truy cập hoặc thao tác liên quan.B4. Kiểm tra trạng thái dữ liệu và thông báo.
+412: Quyền bị xóa, không làm mất các quyền không liên quan.
+413: Hệ thống xóa quyền thử nghiệm thành công.
+414: Đạt
+415: 5.2.5. Chức năng người dùng và nhóm học viên
+416: Bảng 5.5. Kiểm thử người dùng và nhóm học viên
+417: STT
+418: Tên kịch bản
+419: Dữ liệu đầu vào(Input)
+420: Các bước thực hiện
+421: Kết quả mong đợi
+422: Kết quả thực tế
+423: Trạng thái
+424: 1
+425: Thêm học viên
+426: Quản trị viên, họ tên Nguyễn Bình, email binh.qa@gmail.com chưa tồn tại, mật khẩu hợp lệ.Lưu người dùng.
+427: B1. Đăng nhập tài khoản có quyền và mở chức năng liên quan đến “Thêm học viên”.B2. Nhập/chọn đúng dữ liệu thử được mô tả ở cột Input.B3. Nhấn Tạo/Thêm/Lưu/Xuất bản theo kịch bản.B4. Mở lại danh sách hoặc chi tiết để kiểm tra kết quả.
+428: Người dùng mới xuất hiện trong danh sách, mở lại thấy đúng dữ liệu.
+429: Hệ thống tạo học viên mới, dữ liệu trả về không chứa mật khẩu hoặc mật khẩu đã mã hóa.
+430: Đạt
+431: 2
+432: Sửa người dùng
+433: Mở người dùng Nguyễn Bình, đổi tên thành Nguyễn Bình An rồi lưu.
+434: B1. Mở danh sách và chọn bản ghi mục tiêu của “Sửa người dùng”.B2. Thay đổi giá trị theo dữ liệu đầu vào.B3. Nhấn Lưu/Xác nhận; tải lại chi tiết bản ghi.B4. Kiểm tra dữ liệu mới và những dữ liệu phải được giữ nguyên.
+435: Danh sách và trang chi tiết hiển thị tên mới sau khi tải lại.
+436: Hệ thống thông báo sửa thành công
+437: Đạt
+438: 3
+439: Tìm kiếm và phân trang
+440: 35 người dùng QA gồm tên tiếng ViệtThao tác: Tìm tên/email, lọc role/trạng thái, chuyển trang và đổi bộ lọc
+441: B1. Mở màn hình/chức năng hoặc chuẩn bị API kiểm thử cho “Tìm kiếm và phân trang”; thiết lập dữ liệu và quyền theo Input.B2. Tìm tên/email.B3. Lọc role/trạng thái.B4. Chuyển trang và đổi bộ lọc.B5. Quan sát phản hồi và đối chiếu với kết quả mong đợi.
+442: Kết quả đúng điều kiện, tổng và số trang nhất quán, không lặp hoặc bỏ sót bản ghi.
+443: Tìm kiếm bằng email thử nghiệm trả đúng học viên. 
+444: Đạt
+445: 4
+446: Khóa người dùng
+447: Chọn HV1 đang hoạt động, bấm Khóa và xác nhận.
+448: B1. Mở chức năng quản lý tương ứng và chọn đối tượng của “Khóa người dùng”.B2. Thực hiện Xóa/Khóa/Thu hồi rồi xác nhận nếu được yêu cầu.B3. Tải lại danh sách, thử truy cập hoặc thao tác liên quan.B4. Kiểm tra trạng thái dữ liệu và thông báo.
+449: Trạng thái chuyển sang bị khóa, HV1 không tiếp tục truy cập chức năng được bảo vệ.
+450: Hệ thống lưu trạng thái khóa tài khoản thành công.
+451: Đạt
+452: 5
+453: Mở khóa người dùng
+454: Chọn HV1 bị khóa, bấm Kích hoạt.
+455: B1. Mở chức năng quản lý tương ứng và chọn đối tượng của “Mở khóa người dùng”.B2. Thực hiện Xóa/Khóa/Thu hồi rồi xác nhận nếu được yêu cầu.B3. Tải lại danh sách, thử truy cập hoặc thao tác liên quan.B4. Kiểm tra trạng thái dữ liệu và thông báo.
+456: Trạng thái hoạt động được khôi phục, HV1 đăng nhập lại được.
+457: Hệ thống kích hoạt lại tài khoản thành công.
+458: Đạt
+459: 6
+460: Soft-delete người dùng
+461: HV1 có bài thi và tiến độThao tác: quản trị viên xóa HV1, đọc danh sách và báo cáo, thử login
+462: B1. Mở màn hình/chức năng hoặc chuẩn bị API kiểm thử cho “Soft-delete người dùng”; thiết lập dữ liệu và quyền theo Input.B2. Quản trị viên xóa HV1.B3. Đọc danh sách và báo cáo.B4. Thử login.B5. Quan sát phản hồi và đối chiếu với kết quả mong đợi.
+463: Không login được, không xuất hiện như user hoạt động, lịch sử không gây lỗi FK hoặc mất dữ liệu người khác.
+464: Hệ thống đánh dấu tài khoản đã xóa, phiên cũ không tiếp tục truy cập được.
+465: Đạt
+466: 7
+467: Tạo email trùng
+468: quản trị viên, email HV1 tồn tạiThao tác: Tạo người dùng trùng, sửa HV2 sang email HV1
+469: B1. Mở màn hình/chức năng hoặc chuẩn bị API kiểm thử cho “Tạo email trùng”; thiết lập dữ liệu và quyền theo Input.B2. Tạo người dùng trùng.B3. Sửa HV2 sang email HV1.B4. Quan sát phản hồi và đối chiếu với kết quả mong đợi.
+470: Từ chối, không ghi đè hoặc hợp nhất hai tài khoản.
+471: Hệ thống từ chối tạo học viên có email đã tồn tại.
+472: Đạt
+473: 8
+474: Tạo nhóm học viên
+475: Tên nhóm: Cloud QA, giảng viên có quyền quản lý nhóm.Bấm Tạo nhóm.
+476: B1. Đăng nhập tài khoản có quyền và mở chức năng liên quan đến “Tạo nhóm học viên”.B2. Nhập/chọn đúng dữ liệu thử được mô tả ở cột Input.B3. Nhấn Tạo/Thêm/Lưu/Xuất bản theo kịch bản.B4. Mở lại danh sách hoặc chi tiết để kiểm tra kết quả.
+477: Nhóm mới xuất hiện, tên và người quản lý đúng.
+478: Hệ thống tạo nhóm học viên và lưu đúng tên nhóm.
+479: Đạt
+480: 9
+481: Sửa nhóm học viên
+482: Đổi tên Cloud QA thành Cloud QA 02 rồi lưu.
+483: B1. Mở danh sách và chọn bản ghi mục tiêu của “Sửa nhóm học viên”.B2. Thay đổi giá trị theo dữ liệu đầu vào.B3. Nhấn Lưu/Xác nhận; tải lại chi tiết bản ghi.B4. Kiểm tra dữ liệu mới và những dữ liệu phải được giữ nguyên.
+484: Hiển thị tên mới, danh sách thành viên được giữ nguyên.
+485: Hệ thống lưu tên nhóm sau khi sửa.
+486: Đạt
+487: 10
+488: Thêm thành viên vào nhóm
+489: Nhóm Cloud QA, HV1 chưa là thành viên.Chọn HV1 và thêm vào nhóm.
+490: B1. Đăng nhập tài khoản có quyền và mở chức năng liên quan đến “Thêm thành viên vào nhóm”.B2. Nhập/chọn đúng dữ liệu thử được mô tả ở cột Input.B3. Nhấn Tạo/Thêm/Lưu/Xuất bản theo kịch bản.B4. Mở lại danh sách hoặc chi tiết để kiểm tra kết quả.
+491: HV1 xuất hiện một lần trong nhóm, số thành viên tăng 1.
+492: Hệ thống thêm học viên hợp lệ vào nhóm thành công.
+493: Đạt
+494: 11
+495: Xóa thành viên khỏi nhóm
+496: HV1 đang thuộc nhóm Cloud QA.Xóa HV1 khỏi nhóm.
+497: B1. Mở chức năng quản lý tương ứng và chọn đối tượng của “Xóa thành viên khỏi nhóm”.B2. Thực hiện Xóa/Khóa/Thu hồi rồi xác nhận nếu được yêu cầu.B3. Tải lại danh sách, thử truy cập hoặc thao tác liên quan.B4. Kiểm tra trạng thái dữ liệu và thông báo.
+498: HV1 không còn trong nhóm, số thành viên giảm 1, tài khoản HV1 vẫn tồn tại.
+499: Hệ thống gỡ học viên khỏi nhóm thành công.
+500: Đạt
+501: 12
+502: Thành viên không hợp lệ
+503: Nhóm QAThao tác: Thêm UUID không tồn tại hoặc tài khoản không phải học viên
+504: B1. Mở màn hình/chức năng hoặc chuẩn bị API kiểm thử cho “Thành viên không hợp lệ”; thiết lập dữ liệu và quyền theo Input.B2. Thêm UUID không tồn tại hoặc tài khoản không phải học viên.B3. Quan sát phản hồi và đối chiếu với kết quả mong đợi.
+505: Báo lỗi có kiểm soát, không tạo thành viên mồ côi.
+506: Hệ thống từ chối thêm học viên không tồn tại vào nhóm. 
+507: Đạt
+508: 13
+509: Xóa nhóm
+510: Nhóm QA có thành viênThao tác: Xóa nhóm, kiểm users và học tập HV1
+511: B1. Mở màn hình/chức năng hoặc chuẩn bị API kiểm thử cho “Xóa nhóm”; thiết lập dữ liệu và quyền theo Input.B2. Xóa nhóm.B3. Kiểm users và học tập HV1.B4. Quan sát phản hồi và đối chiếu với kết quả mong đợi.
+512: Nhóm biến mất, không xóa tài khoản hoặc tiến độ của thành viên.
+513: Hệ thống xóa nhóm thử nghiệm thành công.
+514: Đạt
+515: 14
+516: Quyền quản lý nhóm
+517: Role chỉ users:read, role có users:updateThao tác: Cùng gọi list và các thao tác ghi nhóm
+518: B1. Mở màn hình/chức năng hoặc chuẩn bị API kiểm thử cho “Quyền quản lý nhóm”; thiết lập dữ liệu và quyền theo Input.B2. Cùng gọi list và các thao tác ghi nhóm.B3. Quan sát phản hồi và đối chiếu với kết quả mong đợi.
+519: users:read đọc được nhưng không ghi, users:update ghi theo guard, kiểm độc lập với users:manage.
+520: Học viên không có quyền bị từ chối truy cập chức năng quản lý nhóm.
+521: Đạt
+522: 5.2.6. Chức năng onboarding và hồ sơ học tập
+523: Bảng 5.6. Kiểm thử onboarding và hồ sơ học tập
+524: STT
+525: Tên kịch bản
+526: Dữ liệu đầu vào(Input)
+527: Các bước thực hiện
+528: Kết quả mong đợi
+529: Kết quả thực tế
+530: Trạng thái
+531: 1
+532: Onboarding người mới
+533: học viên mới chưa cấu hìnhThao tác: Login, chọn trình độ, lĩnh vực, mục tiêu, kế hoạch, hoàn tất
+534: B1. Mở màn hình/chức năng hoặc chuẩn bị API kiểm thử cho “Onboarding người mới”; thiết lập dữ liệu và quyền theo Input.B2. Login.B3. Chọn trình độ, lĩnh vực, mục tiêu, kế hoạch.B4. Hoàn tất.B5. Quan sát phản hồi và đối chiếu với kết quả mong đợi.
+535: Lưu profile và onboardingCompleted, lần đăng nhập sau vào ứng dụng đúng luồng.
+536: Hệ thống lưu mục tiêu kết hợp và đánh dấu hoàn tất thiết lập. 
+537: Đạt
+538: 2
+539: Quay lại onboarding
+540: học viên mới đang điềnThao tác: Chọn dữ liệu, Back/Next, đóng và mở lại app
+541: B1. Mở màn hình/chức năng hoặc chuẩn bị API kiểm thử cho “Quay lại onboarding”; thiết lập dữ liệu và quyền theo Input.B2. Chọn dữ liệu, Back/Next, đóng và mở lại app.B3. Quan sát phản hồi và đối chiếu với kết quả mong đợi.
+542: Không lưu nhầm hoàn tất khi chưa gửi, dữ liệu không bị gán mục tiêu tùy ý.
+543: Mở lại dữ liệu thiết lập vẫn giữ các lựa chọn đã lưu. 
+544: Đạt
+545: 3
+546: Mục tiêu từ vựng
+547: HV1, domain D1Thao tác: Chọn vocabulary, D1 và level, lưu, đọc GET me và journey
+548: B1. Mở màn hình/chức năng hoặc chuẩn bị API kiểm thử cho “Mục tiêu từ vựng”; thiết lập dữ liệu và quyền theo Input.B2. Chọn vocabulary, D1 và level.B3. Lưu.B4. Đọc GET me và journey.B5. Quan sát phản hồi và đối chiếu với kết quả mong đợi.
+549: learningGoal=vocabulary, domain D1 còn, mục tiêu và journey phản ánh lựa chọn.
+550: Hệ thống lưu mục tiêu học từ vựng và chuyên ngành đã chọn, đọc lại đúng dữ liệu.
+551: Đạt
+552: 4
+553: Mục tiêu chứng chỉ
+554: HV1, C1 và D1Thao tác: Chọn certification, C1, D1, lưu mobile, mở web
+555: B1. Mở màn hình/chức năng hoặc chuẩn bị API kiểm thử cho “Mục tiêu chứng chỉ”; thiết lập dữ liệu và quyền theo Input.B2. Chọn certification, C1, D1.B3. Lưu mobile.B4. Mở web.B5. Quan sát phản hồi và đối chiếu với kết quả mong đợi.
+556: learningGoal=certification, giữ lĩnh vực, chứng chỉ đúng, không xóa domain ngoài ý muốn.
+557: Hệ thống lưu mục tiêu ôn chứng chỉ và chứng chỉ đã chọn, đọc lại đúng dữ liệu.
+558: Đạt
+559: 5
+560: Mục tiêu kết hợp
+561: HV1Thao tác: Chọn both, C1, D1, lưu web, sửa tên trên mobile, mở lại web
+562: B1. Mở màn hình/chức năng hoặc chuẩn bị API kiểm thử cho “Mục tiêu kết hợp”; thiết lập dữ liệu và quyền theo Input.B2. Chọn both, C1, D1.B3. Lưu web.B4. Sửa tên trên mobile.B5. Mở lại web.B6. Quan sát phản hồi và đối chiếu với kết quả mong đợi.
+563: both, certificate và domains được bảo toàn sau chỉnh sửa.
+564: Hệ thống lưu mục tiêu kết hợp cùng chuyên ngành và chứng chỉ đã chọn.
+565: Đạt
+566: 6
+567: Thiếu trường mục tiêu
+568: HV1Thao tác: Lưu thiếu trình độ/lĩnh vực/chứng chỉ cần thiết, gọi API trực tiếp cùng payload
+569: B1. Mở màn hình/chức năng hoặc chuẩn bị API kiểm thử cho “Thiếu trường mục tiêu”; thiết lập dữ liệu và quyền theo Input.B2. Lưu thiếu trình độ/lĩnh vực/chứng chỉ cần thiết.B3. Gọi API trực tiếp cùng payload.B4. Quan sát phản hồi và đối chiếu với kết quả mong đợi.
+570: Lỗi rõ cho dữ liệu bắt buộc, không báo hoàn tất hoặc ghi mục tiêu không hợp lệ.
+571: Hệ thống báo thiếu mục tiêu học tập hoặc lựa chọn bắt buộc, hồ sơ giữ nguyên và không được đánh dấu hoàn tất.
+572: Đạt
+573: 7
+574: Mã tham chiếu sai
+575: HV1Thao tác: Gửi level/domain/certificate/career code không tồn tại
+576: B1. Mở màn hình/chức năng hoặc chuẩn bị API kiểm thử cho “Mã tham chiếu sai”; thiết lập dữ liệu và quyền theo Input.B2. Gửi level/domain/certificate/career code không tồn tại.B3. Quan sát phản hồi và đối chiếu với kết quả mong đợi.
+577: Từ chối có kiểm soát, không liên kết sai hoặc lưu một phần quan hệ.
+578: Hệ thống từ chối mã chuyên ngành, chứng chỉ hoặc mục tiêu nghề nghiệp không tồn tại, không lưu liên kết sai.
+579: Đạt
+580: 8
+581: Biên kế hoạch
+582: HV1Thao tác: Thử từ/ngày 0,1,200,201, quiz/tuần 0,1,50,51, phút/ngày 4,5,1440,1441
+583: B1. Mở màn hình/chức năng hoặc chuẩn bị API kiểm thử cho “Biên kế hoạch”; thiết lập dữ liệu và quyền theo Input.B2. Thử từ/ngày 0,1,200,201, quiz/tuần 0,1,50,51, phút/ngày 4,5,1440,1441.B3. Quan sát phản hồi và đối chiếu với kết quả mong đợi.
+584: Chấp nhận biên 1–200,1–50,5–1440 tương ứng, ngoài khoảng bị từ chối ở server.
+585: Hệ thống chấp nhận các mốc mục tiêu nằm trong giới hạn và từ chối mốc ngoài giới hạn đã thử. 
+586: Đạt
+587: 9
+588: Giờ nhắc không hợp lệ
+589: HV1Thao tác: Gửi 00:00,23:59,24:00,12:60 và chuỗi rỗng khi tắt nhắc
+590: B1. Mở màn hình/chức năng hoặc chuẩn bị API kiểm thử cho “Giờ nhắc không hợp lệ”; thiết lập dữ liệu và quyền theo Input.B2. Gửi 00:00,23:59,24:00,12:60 và chuỗi rỗng khi tắt nhắc.B3. Quan sát phản hồi và đối chiếu với kết quả mong đợi.
+591: Giờ hợp lệ lưu đúng, giờ sai không tạo lịch, tắt nhắc không bị tự bật lại.
+592: Hệ thống từ chối giờ nhắc sai định dạng hoặc nằm ngoài khoảng giờ hợp lệ.
+593: Đạt
+594: 10
+595: Cập nhật thông tin cá nhân
+596: HV1Thao tác: Đổi tên tiếng Việt, bio và điện thoại, tải lại web/mobile
+597: B1. Mở màn hình/chức năng hoặc chuẩn bị API kiểm thử cho “Cập nhật thông tin cá nhân”; thiết lập dữ liệu và quyền theo Input.B2. Đổi tên tiếng Việt, bio và điện thoại.B3. Tải lại web/mobile.B4. Quan sát phản hồi và đối chiếu với kết quả mong đợi.
+598: Dữ liệu đồng nhất, tên 2–100, bio tối đa 500, điện thoại đúng quy tắc quy định nhập liệu.
+599: Hệ thống lưu tên hiển thị mới, đọc lại hồ sơ có đúng tên và số điện thoại đã cập nhật. 
+600: Đạt
+601: 11
+602: Xóa số điện thoại
+603: HV1 có số đã lưuThao tác: Xóa nội dung số điện thoại, lưu, đọc users/me
+604: B1. Mở màn hình/chức năng hoặc chuẩn bị API kiểm thử cho “Xóa số điện thoại”; thiết lập dữ liệu và quyền theo Input.B2. Xóa nội dung số điện thoại.B3. Lưu.B4. Đọc users/me.B5. Quan sát phản hồi và đối chiếu với kết quả mong đợi.
+605: Giá trị được xóa/null, không giữ số cũ hoặc báo lỗi cho chuỗi trống.
+606: Đọc lại hồ sơ không còn số điện thoại đã xóa. 
+607: Đạt
+608: 12
+609: Sửa hồ sơ người khác
+610: HV1 và HV2Thao tác: HV1 PUT học viên-profiles/HV2/goals, gọi admin route cùng payload bằng quản trị viên đủ quyền
+611: B1. Mở màn hình/chức năng hoặc chuẩn bị API kiểm thử cho “Sửa hồ sơ người khác”; thiết lập dữ liệu và quyền theo Input.B2. HV1 PUT học viên-profiles/HV2/goals.B3. Gọi admin route cùng payload bằng quản trị viên đủ quyền.B4. Quan sát phản hồi và đối chiếu với kết quả mong đợi.
+612: HV1 bị cấm, quản trị viên đủ quyền sửa đúng HV2, HV1 không bị thay đổi.
+613: Học viên bị từ chối sửa hồ sơ của người khác.
+614: Đạt
+615: 13
+616: Lưu lỗi giữa hai API
+617: HV1, giả lập API goals lỗi nhưng users/me thành côngThao tác: Sửa tên và mục tiêu, lưu, tải lại
+618: B1. Mở màn hình/chức năng hoặc chuẩn bị API kiểm thử cho “Lưu lỗi giữa hai API”; thiết lập dữ liệu và quyền theo Input.B2. Sửa tên và mục tiêu.B3. Lưu.B4. Tải lại.B5. Quan sát phản hồi và đối chiếu với kết quả mong đợi.
+619: Không báo toàn bộ thành công, thông báo lỗi và trạng thái thực tế rõ, retry không làm mất dữ liệu đã lưu.
+620: Chưa chạy.
+621: Chưa chạy
+622: 14
+623: Đổi ảnh đại diện bằng ảnh hợp lệ
+624: Ảnh anh-qa.jpg, dung lượng dưới 5 MB.Chọn ảnh và lưu.
+625: B1. Mở danh sách và chọn bản ghi mục tiêu của “Đổi ảnh đại diện bằng ảnh hợp lệ”.B2. Thay đổi giá trị theo dữ liệu đầu vào.B3. Nhấn Lưu/Xác nhận; tải lại chi tiết bản ghi.B4. Kiểm tra dữ liệu mới và những dữ liệu phải được giữ nguyên.
+626: Ảnh hiển thị trên hồ sơ, tải lại hoặc mở nền tảng còn lại vẫn thấy ảnh mới.
+627: Chưa chạy.
+628: Chưa chạy
+629: 15
+630: Upload ảnh sai loại
+631: Chọn tập tin tailieu.docx làm ảnh đại diện.
+632: B1. Mở chức năng “Upload ảnh sai loại” với tài khoản và trạng thái dữ liệu được nêu.B2. Nhập/chọn dữ liệu kiểm thử ở cột Input và thực hiện thao tác tương ứng.B3. Xác nhận hoặc gửi yêu cầu; kiểm tra thông báo và dữ liệu trả về.B4. Đối chiếu với kết quả mong đợi, tải lại nếu cần.
+633: Từ chối tập tin, giữ nguyên ảnh hiện tại.
+634: Hệ thống từ chối yêu cầu tải ảnh không hợp lệ.
+635: Đạt
+636: 16
+637: Upload ảnh quá dung lượng
+638: Chọn ảnh có dung lượng lớn hơn 5 MB.
+639: B1. Mở chức năng “Upload ảnh quá dung lượng” với tài khoản và trạng thái dữ liệu được nêu.B2. Nhập/chọn dữ liệu kiểm thử ở cột Input và thực hiện thao tác tương ứng.B3. Xác nhận hoặc gửi yêu cầu; kiểm tra thông báo và dữ liệu trả về.B4. Đối chiếu với kết quả mong đợi, tải lại nếu cần.
+640: Báo vượt dung lượng cho phép, không làm mất ảnh hiện tại.
+641: Chưa trực tiếp tải ảnh vượt dung lượng, kiểm tra yêu cầu ảnh không hợp lệ chưa đủ xác nhận giới hạn dung lượng.
+642: Chưa hoàn tất
+643: 5.2.7. Chức năng kiểm tra trình độ
+644: Bảng 5.7. Kiểm thử kiểm tra trình độ
+645: STT
+646: Tên kịch bản
+647: Dữ liệu đầu vào(Input)
+648: Các bước thực hiện
+649: Kết quả mong đợi
+650: Kết quả thực tế
+651: Trạng thái
+652: 1
+653: Làm bài xếp trình độ theo phiên
+654: Có đủ câu hỏi placement đã xuất bản, phù hợp chuyên ngành và cấp độ.Thao tác: GET placement-test để nhận assessmentId, trả lời đủ câu trong phiên, nộp và đọc hồ sơ.
+655: B1. Mở màn hình/chức năng hoặc chuẩn bị API kiểm thử cho “Làm bài xếp trình độ theo phiên”; thiết lập dữ liệu và quyền theo Input.B2. GET placement-test để nhận assessmentId, trả lời đủ câu trong phiên.B3. Nộp và đọc hồ sơ.B4. Quan sát phản hồi và đối chiếu với kết quả mong đợi.
+656: Bộ chọn lấy tối đa 15 câu, cần ít nhất 10 câu để mở phiên, kết quả gồm correct, total, percent và levelCode, hồ sơ đúng học viên được cập nhật.
+657: Hệ thống tạo phiên xếp trình độ và trả câu hỏi không kèm đáp án đúng, trả kết quả 100% và trình độ nâng cao khi làm đúng toàn bộ. 
+658: Đạt
+659: 2
+660: Không lộ đáp án
+661: Có câu placementThao tác: GET placement-test và xem network trước khi nộp
+662: B1. Mở màn hình/chức năng hoặc chuẩn bị API kiểm thử cho “Không lộ đáp án”; thiết lập dữ liệu và quyền theo Input.B2. GET placement-test và xem network trước khi nộp.B3. Quan sát phản hồi và đối chiếu với kết quả mong đợi.
+663: Không có isCorrect hoặc lời giải cho phép biết trước đáp án.
+664: Dữ liệu câu hỏi đầu phiên không chứa đáp án đúng. 
+665: Đạt
+666: 3
+667: Xếp trình độ dưới 40%
+668: Phiên có 10 câu, trả lời đúng 3 câu và nộp đủ 10 câu.
+669: B1. Mở chức năng “Xếp trình độ dưới 40%” với tài khoản và trạng thái dữ liệu được nêu.B2. Nhập/chọn dữ liệu kiểm thử ở cột Input và thực hiện thao tác tương ứng.B3. Xác nhận hoặc gửi yêu cầu; kiểm tra thông báo và dữ liệu trả về.B4. Đối chiếu với kết quả mong đợi, tải lại nếu cần.
+670: Hiển thị 3/10, 30%, xếp trình độ beginner.
+671: Hệ thống ghi nhận đúng 3/10 câu, tính 30% và xếp trình độ sơ cấp.
+672: Đạt
+673: 4
+674: Xếp trình độ từ 40% đến dưới 70%
+675: Phiên có 10 câu, trả lời đúng 4 câu và nộp đủ 10 câu.
+676: B1. Mở chức năng “Xếp trình độ từ 40% đến dưới 70%” với tài khoản và trạng thái dữ liệu được nêu.B2. Nhập/chọn dữ liệu kiểm thử ở cột Input và thực hiện thao tác tương ứng.B3. Xác nhận hoặc gửi yêu cầu; kiểm tra thông báo và dữ liệu trả về.B4. Đối chiếu với kết quả mong đợi, tải lại nếu cần.
+677: Hiển thị 4/10, 40%, xếp trình độ intermediate.
+678: Hệ thống ghi nhận đúng 4/10 câu, tính 40% và xếp trình độ trung cấp.
+679: Đạt
+680: 5
+681: Xếp trình độ từ 70%
+682: Phiên có 10 câu, trả lời đúng 7 câu và nộp đủ 10 câu.
+683: B1. Mở chức năng “Xếp trình độ từ 70%” với tài khoản và trạng thái dữ liệu được nêu.B2. Nhập/chọn dữ liệu kiểm thử ở cột Input và thực hiện thao tác tương ứng.B3. Xác nhận hoặc gửi yêu cầu; kiểm tra thông báo và dữ liệu trả về.B4. Đối chiếu với kết quả mong đợi, tải lại nếu cần.
+684: Hiển thị 7/10, 70%, xếp trình độ advanced.
+685: Hệ thống ghi nhận đúng 7/10 câu, tính 70% và xếp trình độ nâng cao.
+686: Đạt
+687: 6
+688: Payload và quyền sở hữu phiên placement
+689: Phiên placement của HV1 và token HV2.Thao tác: Thử answers rỗng, câu trùng, option không thuộc câu, thiếu câu và assessmentId của HV1 bằng HV2.
+690: B1. Mở màn hình/chức năng hoặc chuẩn bị API kiểm thử cho “Payload và quyền sở hữu phiên placement”; thiết lập dữ liệu và quyền theo Input.B2. Thử answers rỗng, câu trùng, option không thuộc câu, thiếu câu và assessmentId của HV1 bằng HV2.B3. Quan sát phản hồi và đối chiếu với kết quả mong đợi.
+691: Chỉ chấm câu trong bản đề tại thời điểm bắt đầu và đúng chủ phiên. Lượt hợp lệ đã nộp được trả lại kết quả đã lưu khi gửi lặp, không chấm thành lượt mới.
+692: Hệ thống từ chối nộp phiên của học viên khác, nộp lại phiên đã chấm trả kết quả ổn định. 
+693: Đạt
+694: 7
+695: Không có câu hỏi
+696: Không có placement publishedThao tác: Mở màn kiểm tra
+697: B1. Mở màn hình/chức năng hoặc chuẩn bị API kiểm thử cho “Không có câu hỏi”; thiết lập dữ liệu và quyền theo Input.B2. Mở màn kiểm tra.B3. Quan sát phản hồi và đối chiếu với kết quả mong đợi.
+698: Empty state rõ, không chia cho 0, không tự gán level hoặc cho nộp bài rỗng.
+699: Hệ thống báo chưa đủ 10 câu kiểm tra cho chuyên ngành đã chọn và yêu cầu bổ sung câu hỏi.
+700: Đạt
+701: 8
+702: Không nộp thiếu câu để nâng trình độ
+703: Phiên thực tế có từ 10 đến 15 câu.Thao tác: Chỉ gửi một câu đúng trong bộ câu của phiên qua API.
+704: B1. Mở màn hình/chức năng hoặc chuẩn bị API kiểm thử cho “Không nộp thiếu câu để nâng trình độ”; thiết lập dữ liệu và quyền theo Input.B2. Chỉ gửi một câu đúng trong bộ câu của phiên qua API.B3. Quan sát phản hồi và đối chiếu với kết quả mong đợi.
+705: Từ chối do chưa trả lời đủ câu, không cập nhật trình độ bằng mẫu một câu.
+706: Hệ thống từ chối bài xếp trình độ chưa trả lời đủ câu hỏi, không nâng trình độ.
+707: Đạt
+708: 9
+709: Xem lại kết quả xếp trình độ
+710: HV1 đã nộp bài, thoát và mở lại trang kết quả.
+711: B1. Mở chức năng “Xem lại kết quả xếp trình độ” với tài khoản và trạng thái dữ liệu được nêu.B2. Nhập/chọn dữ liệu kiểm thử ở cột Input và thực hiện thao tác tương ứng.B3. Xác nhận hoặc gửi yêu cầu; kiểm tra thông báo và dữ liệu trả về.B4. Đối chiếu với kết quả mong đợi, tải lại nếu cần.
+712: Hiển thị đúng kết quả lần nộp gần nhất của HV1, HV2 không thấy kết quả của HV1.
+713: Hệ thống trả lại đúng kết quả xếp trình độ đã lưu của học viên.
+714: Đạt
+715: 10
+716: Tạo kế hoạch học cá nhân
+717: HV1 đã hoàn tất thiết lập mục tiêu, yêu cầu tạo kế hoạch học.
+718: B1. Đăng nhập tài khoản có quyền và mở chức năng liên quan đến “Tạo kế hoạch học cá nhân”.B2. Nhập/chọn đúng dữ liệu thử được mô tả ở cột Input.B3. Nhấn Tạo/Thêm/Lưu/Xuất bản theo kịch bản.B4. Mở lại danh sách hoặc chi tiết để kiểm tra kết quả.
+719: Hiển thị kế hoạch tương ứng mục tiêu và trình độ của HV1, lưu lại để xem được sau đó.
+720: Hệ thống tạo kế hoạch học cá nhân theo hồ sơ đã thiết lập.
+721: Đạt
+722: 11
+723: Tạo kế hoạch khi chưa thiết lập mục tiêu
+724: Học viên mới chưa hoàn tất onboarding, yêu cầu tạo kế hoạch.
+725: B1. Đăng nhập tài khoản có quyền và mở chức năng liên quan đến “Tạo kế hoạch khi chưa thiết lập mục tiêu”.B2. Nhập/chọn đúng dữ liệu thử được mô tả ở cột Input.B3. Nhấn Tạo/Thêm/Lưu/Xuất bản theo kịch bản.B4. Mở lại danh sách hoặc chi tiết để kiểm tra kết quả.
+726: Yêu cầu hoàn thành thiết lập mục tiêu, không tạo kế hoạch thiếu dữ liệu.
+727: Hệ thống yêu cầu thiết lập mục tiêu trước khi tạo kế hoạch học.
+728: Đạt
+729: 5.2.8. Chức năng danh mục và chứng chỉ
+730: Bảng 5.8. Kiểm thử danh mục và chứng chỉ
+731: STT
+732: Tên kịch bản
+733: Dữ liệu đầu vào(Input)
+734: Các bước thực hiện
+735: Kết quả mong đợi
+736: Kết quả thực tế
+737: Trạng thái
+738: 1
+739: Thêm cấp độ
+740: Quản trị viên có quyền, mã và tên cấp độ mới hợp lệ.Bấm Thêm.
+741: B1. Đăng nhập tài khoản có quyền và mở chức năng liên quan đến “Thêm cấp độ”.B2. Nhập/chọn đúng dữ liệu thử được mô tả ở cột Input.B3. Nhấn Tạo/Thêm/Lưu/Xuất bản theo kịch bản.B4. Mở lại danh sách hoặc chi tiết để kiểm tra kết quả.
+742: Lưu được một cấp độ, hiển thị đúng mã, tên.
+743: Hệ thống lưu cấp độ mới thành công.
+744: Đạt
+745: 2
+746: Sửa cấp độ
+747: Chọn cấp độ thử nghiệm, đổi tên rồi lưu.
+748: B1. Mở danh sách và chọn bản ghi mục tiêu của “Sửa cấp độ”.B2. Thay đổi giá trị theo dữ liệu đầu vào.B3. Nhấn Lưu/Xác nhận; tải lại chi tiết bản ghi.B4. Kiểm tra dữ liệu mới và những dữ liệu phải được giữ nguyên.
+749: Tên mới hiển thị sau khi tải lại, mã tham chiếu vẫn đúng.
+750: Hệ thống lưu tên cấp độ sau khi sửa.
+751: Đạt
+752: 3
+753: Xóa cấp độ chưa sử dụng
+754: Cấp độ QA chưa gắn với hồ sơ hoặc nội dung.Bấm Xóa và xác nhận.
+755: B1. Mở chức năng quản lý tương ứng và chọn đối tượng của “Xóa cấp độ chưa sử dụng”.B2. Thực hiện Xóa/Khóa/Thu hồi rồi xác nhận nếu được yêu cầu.B3. Tải lại danh sách, thử truy cập hoặc thao tác liên quan.B4. Kiểm tra trạng thái dữ liệu và thông báo.
+756: Cấp độ được xóa khỏi danh sách, không ảnh hưởng cấp độ khác.
+757: Hệ thống xóa cấp độ thử nghiệm chưa sử dụng thành công.
+758: Đạt
+759: 4
+760: Xóa cấp độ đang dùng
+761: Level gắn HV1 và lessonThao tác: Xóa level
+762: B1. Mở màn hình/chức năng hoặc chuẩn bị API kiểm thử cho “Xóa cấp độ đang dùng”; thiết lập dữ liệu và quyền theo Input.B2. Xóa level.B3. Quan sát phản hồi và đối chiếu với kết quả mong đợi.
+763: Chặn hoặc xử lý theo ràng buộc, không làm mồ côi profile/content, UI nêu lý do.
+764: Hệ thống không cho xóa cấp độ đang được sử dụng.
+765: Đạt
+766: 5
+767: Thêm mục tiêu nghề nghiệp
+768: Tên: Cloud Engineer QA, mã mới, thông tin bắt buộc hợp lệ.
+769: B1. Đăng nhập tài khoản có quyền và mở chức năng liên quan đến “Thêm mục tiêu nghề nghiệp”.B2. Nhập/chọn đúng dữ liệu thử được mô tả ở cột Input.B3. Nhấn Tạo/Thêm/Lưu/Xuất bản theo kịch bản.B4. Mở lại danh sách hoặc chi tiết để kiểm tra kết quả.
+770: Mục tiêu xuất hiện trong danh sách và chọn được khi thiết lập hồ sơ.
+771: Hệ thống lưu mục tiêu nghề nghiệp mới thành công.
+772: Đạt
+773: 6
+774: Sửa mục tiêu nghề nghiệp
+775: Đổi tên Cloud Engineer QA rồi lưu.
+776: B1. Mở danh sách và chọn bản ghi mục tiêu của “Sửa mục tiêu nghề nghiệp”.B2. Thay đổi giá trị theo dữ liệu đầu vào.B3. Nhấn Lưu/Xác nhận; tải lại chi tiết bản ghi.B4. Kiểm tra dữ liệu mới và những dữ liệu phải được giữ nguyên.
+777: Hiển thị tên mới, hồ sơ liên kết vẫn tham chiếu đúng mục tiêu.
+778: Hệ thống lưu nội dung mục tiêu nghề nghiệp sau khi sửa.
+779: Đạt
+780: 7
+781: Thêm chứng chỉ
+782: Tên: Chứng chỉ Cloud QA, mã mới, các trường bắt buộc hợp lệ.Bấm Lưu.
+783: B1. Đăng nhập tài khoản có quyền và mở chức năng liên quan đến “Thêm chứng chỉ”.B2. Nhập/chọn đúng dữ liệu thử được mô tả ở cột Input.B3. Nhấn Tạo/Thêm/Lưu/Xuất bản theo kịch bản.B4. Mở lại danh sách hoặc chi tiết để kiểm tra kết quả.
+784: Chứng chỉ xuất hiện trong danh sách và chọn được khi thiết lập mục tiêu.
+785: Hệ thống tạo chứng chỉ thử nghiệm thành công. 
+786: Đạt
+787: 8
+788: Sửa chứng chỉ
+789: Đổi tên chứng chỉ Cloud QA thành Cloud QA 02 rồi lưu.
+790: B1. Mở danh sách và chọn bản ghi mục tiêu của “Sửa chứng chỉ”.B2. Thay đổi giá trị theo dữ liệu đầu vào.B3. Nhấn Lưu/Xác nhận; tải lại chi tiết bản ghi.B4. Kiểm tra dữ liệu mới và những dữ liệu phải được giữ nguyên.
+791: Hiển thị tên mới, nội dung đã liên kết được giữ nguyên.
+792: Chưa chạy trực tiếp thao tác sửa chứng chỉ, kiểm tra tạo và đọc chứng chỉ chưa đủ xác nhận thao tác sửa.
+793: Chưa hoàn tất
+794: 9
+795: Domain và topic chứng chỉ
+796: C1Thao tác: Tạo domain, tạo topic thuộc domain, mở lộ trình C1
+797: B1. Mở màn hình/chức năng hoặc chuẩn bị API kiểm thử cho “Domain và topic chứng chỉ”; thiết lập dữ liệu và quyền theo Input.B2. Tạo domain, tạo topic thuộc domain.B3. Mở lộ trình C1.B4. Quan sát phản hồi và đối chiếu với kết quả mong đợi.
+798: Đúng phân cấp và thứ tự, không lẫn domain/topic C2.
+799: Hệ thống tạo và liên kết chuyên ngành, chủ đề với chứng chỉ thành công. 
+800: Đạt
+801: 10
+802: Liên kết nội dung
+803: C1,T1 và lesson/vocabulary/exam fixturesThao tác: Sửa content-links cấp certificate và topic, tải lại học viên
+804: B1. Mở màn hình/chức năng hoặc chuẩn bị API kiểm thử cho “Liên kết nội dung”; thiết lập dữ liệu và quyền theo Input.B2. Sửa content-links cấp certificate và topic.B3. Tải lại học viên.B4. Quan sát phản hồi và đối chiếu với kết quả mong đợi.
+805: Lesson/từ vựng/quiz liên kết đúng, không mất liên kết khác ngoài payload chủ đích.
+806: Hệ thống lưu liên kết bài học vào chủ đề và đọc lại được bài đã liên kết. 
+807: Đạt
+808: 11
+809: Liên kết không hợp lệ
+810: C1,T1Thao tác: Gửi ID nội dung không tồn tại hoặc topic từ C2
+811: B1. Mở màn hình/chức năng hoặc chuẩn bị API kiểm thử cho “Liên kết không hợp lệ”; thiết lập dữ liệu và quyền theo Input.B2. Gửi ID nội dung không tồn tại hoặc topic từ C2.B3. Quan sát phản hồi và đối chiếu với kết quả mong đợi.
+812: Từ chối liên kết sai, không ghi nửa chừng hoặc tạo bản ghi mồ côi.
+813: Hệ thống từ chối liên kết bằng mã bài học hoặc chủ đề không tồn tại.
+814: Đạt
+815: 12
+816: Chi tiết chứng chỉ rỗng
+817: CEMPTY không có topicThao tác: Mở list và detail CEMPTY
+818: B1. Mở màn hình/chức năng hoặc chuẩn bị API kiểm thử cho “Chi tiết chứng chỉ rỗng”; thiết lập dữ liệu và quyền theo Input.B2. Mở list và detail CEMPTY.B3. Quan sát phản hồi và đối chiếu với kết quả mong đợi.
+819: Empty state và điều hướng quay lại hoạt động, không crash.
+820: Hệ thống trả chi tiết chứng chỉ chưa có nội dung mà không phát sinh lỗi. 
+821: Đạt
+822: 13
+823: Xóa chứng chỉ đã sử dụng
+824: C1 có attempt và mục tiêu HV1Thao tác: quản trị viên xóa C1, kiểm lịch sử và profile
+825: B1. Mở màn hình/chức năng hoặc chuẩn bị API kiểm thử cho “Xóa chứng chỉ đã sử dụng”; thiết lập dữ liệu và quyền theo Input.B2. Quản trị viên xóa C1.B3. Kiểm lịch sử và profile.B4. Quan sát phản hồi và đối chiếu với kết quả mong đợi.
+826: Không mất lịch sử sai chủ đích, ràng buộc được báo rõ, không còn liên kết hỏng.
+827: Hệ thống không cho xóa chứng chỉ đang được tham chiếu.
+828: Đạt
+829: 5.2.9. Chức năng quản lý và học bài
+830: Bảng 5.9. Kiểm thử quản lý và học bài
+831: STT
+832: Tên kịch bản
+833: Dữ liệu đầu vào(Input)
+834: Các bước thực hiện
+835: Kết quả mong đợi
+836: Kết quả thực tế
+837: Trạng thái
+838: 1
+839: Tạo bài từ vựng
+840: Quản trị viên, chọn loại vocabulary, tiêu đề: từ vựng QA, chọn lĩnh vực, cấp độ và các trường bắt buộc hợp lệ. Lưu nháp.
+841: B1. Đăng nhập tài khoản có quyền và mở chức năng liên quan đến “Tạo bài từ vựng”.B2. Nhập/chọn đúng dữ liệu thử được mô tả ở cột Input.B3. Nhấn Tạo/Thêm/Lưu/Xuất bản theo kịch bản.B4. Mở lại danh sách hoặc chi tiết để kiểm tra kết quả.
+842: Lưu được bài đúng loại, mở lại thấy đủ nội dung, chưa hiển thị cho học viên khi còn nháp.
+843: Hệ thống tạo và lưu bài học từ vựng thành công.
+844: Đạt
+845: 2
+846: Tạo bài thuật ngữ
+847: Quản trị viên, chọn loại terminology, tiêu đề: thuật ngữ QA, chọn lĩnh vực, cấp độ và các trường bắt buộc hợp lệ. Lưu nháp.
+848: B1. Đăng nhập tài khoản có quyền và mở chức năng liên quan đến “Tạo bài thuật ngữ”.B2. Nhập/chọn đúng dữ liệu thử được mô tả ở cột Input.B3. Nhấn Tạo/Thêm/Lưu/Xuất bản theo kịch bản.B4. Mở lại danh sách hoặc chi tiết để kiểm tra kết quả.
+849: Lưu được bài đúng loại, mở lại thấy đủ nội dung, chưa hiển thị cho học viên khi còn nháp.
+850: Hệ thống tạo và lưu bài học thuật ngữ thành công.
+851: Đạt
+852: 3
+853: Tạo bài đọc hiểu kỹ thuật
+854: Quản trị viên, chọn loại technical_reading, tiêu đề: đọc hiểu kỹ thuật QA, chọn lĩnh vực, cấp độ và các trường bắt buộc hợp lệ. Lưu nháp.
+855: B1. Đăng nhập tài khoản có quyền và mở chức năng liên quan đến “Tạo bài đọc hiểu kỹ thuật”.B2. Nhập/chọn đúng dữ liệu thử được mô tả ở cột Input.B3. Nhấn Tạo/Thêm/Lưu/Xuất bản theo kịch bản.B4. Mở lại danh sách hoặc chi tiết để kiểm tra kết quả.
+856: Lưu được bài đúng loại, mở lại thấy đủ nội dung, chưa hiển thị cho học viên khi còn nháp.
+857: Hệ thống tạo và lưu bài đọc hiểu kỹ thuật thành công.
+858: Đạt
+859: 4
+860: Tạo bài tài liệu API
+861: Quản trị viên, chọn loại api_documentation, tiêu đề: tài liệu API QA, chọn lĩnh vực, cấp độ và các trường bắt buộc hợp lệ. Lưu nháp.
+862: B1. Đăng nhập tài khoản có quyền và mở chức năng liên quan đến “Tạo bài tài liệu API”.B2. Nhập/chọn đúng dữ liệu thử được mô tả ở cột Input.B3. Nhấn Tạo/Thêm/Lưu/Xuất bản theo kịch bản.B4. Mở lại danh sách hoặc chi tiết để kiểm tra kết quả.
+863: Lưu được bài đúng loại, mở lại thấy đủ nội dung, chưa hiển thị cho học viên khi còn nháp.
+864: Hệ thống tạo và lưu bài học tài liệu API thành công.
+865: Đạt
+866: 5
+867: Tạo bài thiết kế hệ thống
+868: Quản trị viên, chọn loại system_design, tiêu đề: thiết kế hệ thống QA, chọn lĩnh vực, cấp độ và các trường bắt buộc hợp lệ. Lưu nháp.
+869: B1. Đăng nhập tài khoản có quyền và mở chức năng liên quan đến “Tạo bài thiết kế hệ thống”.B2. Nhập/chọn đúng dữ liệu thử được mô tả ở cột Input.B3. Nhấn Tạo/Thêm/Lưu/Xuất bản theo kịch bản.B4. Mở lại danh sách hoặc chi tiết để kiểm tra kết quả.
+870: Lưu được bài đúng loại, mở lại thấy đủ nội dung, chưa hiển thị cho học viên khi còn nháp.
+871: Hệ thống tạo và lưu bài học thiết kế hệ thống thành công.
+872: Đạt
+873: 6
+874: Tạo bài tình huống
+875: Quản trị viên, chọn loại case_study, tiêu đề: tình huống QA, chọn lĩnh vực, cấp độ và các trường bắt buộc hợp lệ. Lưu nháp.
+876: B1. Đăng nhập tài khoản có quyền và mở chức năng liên quan đến “Tạo bài tình huống”.B2. Nhập/chọn đúng dữ liệu thử được mô tả ở cột Input.B3. Nhấn Tạo/Thêm/Lưu/Xuất bản theo kịch bản.B4. Mở lại danh sách hoặc chi tiết để kiểm tra kết quả.
+877: Lưu được bài đúng loại, mở lại thấy đủ nội dung, chưa hiển thị cho học viên khi còn nháp.
+878: Hệ thống tạo và lưu bài học tình huống thành công.
+879: Đạt
+880: 7
+881: Tạo bài ôn chứng chỉ
+882: Quản trị viên, chọn loại certification_review, tiêu đề: ôn chứng chỉ QA, chọn lĩnh vực, cấp độ và các trường bắt buộc hợp lệ. Lưu nháp.
+883: B1. Đăng nhập tài khoản có quyền và mở chức năng liên quan đến “Tạo bài ôn chứng chỉ”.B2. Nhập/chọn đúng dữ liệu thử được mô tả ở cột Input.B3. Nhấn Tạo/Thêm/Lưu/Xuất bản theo kịch bản.B4. Mở lại danh sách hoặc chi tiết để kiểm tra kết quả.
+884: Lưu được bài đúng loại, mở lại thấy đủ nội dung, chưa hiển thị cho học viên khi còn nháp.
+885: Hệ thống tạo và lưu bài học ôn chứng chỉ thành công.
+886: Đạt
+887: 8
+888: Sửa nội dung và thứ tự section
+889: Lesson QA nhiều sectionThao tác: Đổi title/summary, thêm, sắp xếp, xóa section, tải lại
+890: B1. Mở màn hình/chức năng hoặc chuẩn bị API kiểm thử cho “Sửa nội dung và thứ tự section”; thiết lập dữ liệu và quyền theo Input.B2. Đổi title/summary.B3. Thêm, sắp xếp.B4. Xóa section.B5. Tải lại.B6. Quan sát phản hồi và đối chiếu với kết quả mong đợi.
+891: Thứ tự và nội dung giữ đúng, không mất section còn lại.
+892: Hệ thống lưu nội dung bài học đã sửa. 
+893: Đạt
+894: 9
+895: Biên thời lượng và dữ liệu
+896: quản trị viênThao tác: Gửi estimatedMinutes 0,1,480,481, thiếu title, type sai, domain sai
+897: B1. Mở màn hình/chức năng hoặc chuẩn bị API kiểm thử cho “Biên thời lượng và dữ liệu”; thiết lập dữ liệu và quyền theo Input.B2. Gửi estimatedMinutes 0,1,480,481, thiếu title, type sai, domain sai.B3. Quan sát phản hồi và đối chiếu với kết quả mong đợi.
+898: 1–480 hợp lệ, dữ liệu sai bị từ chối ở API.
+899: Hệ thống từ chối thời lượng 0 và 481 phút. 
+900: Đạt
+901: 10
+902: Publish/draft/archive
+903: Lesson QAThao tác: Chuyển trạng thái, mở list và URL detail trực tiếp bằng học viên
+904: B1. Mở màn hình/chức năng hoặc chuẩn bị API kiểm thử cho “Publish/draft/archive”; thiết lập dữ liệu và quyền theo Input.B2. Chuyển trạng thái.B3. Mở list và URL detail trực tiếp bằng học viên.B4. Quan sát phản hồi và đối chiếu với kết quả mong đợi.
+905: Learner chỉ đọc nội dung được phép, draft/archive không bị lộ qua deep link.
+906: Sau khi xuất bản, bài học được phép đọc, bài nháp bị từ chối với khách và học viên. 
+907: Đạt
+908: 11
+909: Tìm và lọc catalog
+910: Nhiều lesson thuộc 5 track,D1,D2Thao tác: Chọn từng track, tìm từ khóa tiếng Việt trong title/summary/concepts, xóa bộ lọc
+911: B1. Mở màn hình/chức năng hoặc chuẩn bị API kiểm thử cho “Tìm và lọc catalog”; thiết lập dữ liệu và quyền theo Input.B2. Chọn từng track, tìm từ khóa tiếng Việt trong title/summary/concepts.B3. Xóa bộ lọc.B4. Quan sát phản hồi và đối chiếu với kết quả mong đợi.
+912: Kết quả và số lượng khớp, không lẫn track, empty state đúng.
+913: Hệ thống trả danh sách bài học theo điều kiện tìm kiếm và lọc đã gửi.
+914: Đạt
+915: 12
+916: Card chuyên đề web/mobile
+917: Các track có số bài khác nhauThao tác: Mở tất cả bài học, chạm từng card
+918: B1. Mở màn hình/chức năng hoặc chuẩn bị API kiểm thử cho “Card chuyên đề web/mobile”; thiết lập dữ liệu và quyền theo Input.B2. Mở tất cả bài học, chạm từng card.B3. Quan sát phản hồi và đối chiếu với kết quả mong đợi.
+919: Label, số bài và nội dung tương ứng, card mở đúng track trên cả hai nền tảng.
+920: Chưa chạy.
+921: Chưa chạy
+922: 13
+923: Trải nghiệm từng loại bài
+924: Một bài published cho mỗi loạiThao tác: Mở, đọc nội dung, làm hoạt động, chuyển section, hoàn tất
+925: B1. Mở màn hình/chức năng hoặc chuẩn bị API kiểm thử cho “Trải nghiệm từng loại bài”; thiết lập dữ liệu và quyền theo Input.B2. Mở.B3. Đọc nội dung, làm hoạt động.B4. Chuyển section.B5. Hoàn tất.B6. Quan sát phản hồi và đối chiếu với kết quả mong đợi.
+926: Nội dung/hoạt động tương ứng loại, không hiển thị placeholder hoặc công cụ không hoạt động.
+927: Hệ thống trả nội dung bài học đã xuất bản.
+928: Đạt
+929: 14
+930: Tài liệu kỹ thuật dài
+931: Lesson có code, bảng, URL dài và ảnhThao tác: Mở trên màn 360px và desktop, cuộn, chọn đoạn code
+932: B1. Mở màn hình/chức năng hoặc chuẩn bị API kiểm thử cho “Tài liệu kỹ thuật dài”; thiết lập dữ liệu và quyền theo Input.B2. Mở trên màn 360px và desktop, cuộn.B3. Chọn đoạn code.B4. Quan sát phản hồi và đối chiếu với kết quả mong đợi.
+933: Nội dung không mất, bảng/code cuộn phù hợp, nút chính không ra ngoài màn hình.
+934: Chưa chạy.
+935: Chưa chạy
+936: 15
+937: Ghi nhận hoàn thành bài học
+938: HV1 mở một bài chưa học, hoàn tất bài và tải lại trang.
+939: B1. Đăng nhập tài khoản kiểm thử và mở chức năng “Ghi nhận hoàn thành bài học”.B2. Chuẩn bị nội dung/bộ câu hỏi và nhập hoặc chọn dữ liệu đã chỉ định.B3. Thực hiện thao tác học/làm bài/nộp/đánh giá theo tình huống.B4. Kiểm tra kết quả, tiến độ hoặc thông báo sau khi tải lại.
+940: Bài hiển thị đã hoàn thành, tiến độ được giữ khi mở lại.
+941: Hệ thống lưu trạng thái hoàn thành bài học cho học viên.
+942: Đạt
+943: 16
+944: Hoàn thành lại bài đã học
+945: HV1 hoàn thành lại cùng một bài.
+946: B1. Đăng nhập tài khoản kiểm thử và mở chức năng “Hoàn thành lại bài đã học”.B2. Chuẩn bị nội dung/bộ câu hỏi và nhập hoặc chọn dữ liệu đã chỉ định.B3. Thực hiện thao tác học/làm bài/nộp/đánh giá theo tình huống.B4. Kiểm tra kết quả, tiến độ hoặc thông báo sau khi tải lại.
+947: Không tăng số bài đã hoàn thành thêm lần nữa.
+948: Hoàn thành lại bài đã học không tạo thêm bản ghi tiến độ trùng.
+949: Đạt
+950: 17
+951: Xóa bài đang tham chiếu
+952: Lesson có progress và topic linkThao tác: quản trị viên xóa, học viên mở URL cũ
+953: B1. Mở màn hình/chức năng hoặc chuẩn bị API kiểm thử cho “Xóa bài đang tham chiếu”; thiết lập dữ liệu và quyền theo Input.B2. Quản trị viên xóa, học viên mở URL cũ.B3. Quan sát phản hồi và đối chiếu với kết quả mong đợi.
+954: Không crash, thông báo không tồn tại hoặc ràng buộc rõ, không hỏng dữ liệu liên quan.
+955: Hệ thống từ chối xóa bài đang được tham chiếu. 
+956: Đạt
+957: 18
+958: Xuất bản nhiều bài học
+959: Chọn 2 bài học nháp hợp lệ, thực hiện Xuất bản hàng loạt.
+960: B1. Đăng nhập tài khoản có quyền và mở chức năng liên quan đến “Xuất bản nhiều bài học”.B2. Nhập/chọn đúng dữ liệu thử được mô tả ở cột Input.B3. Nhấn Tạo/Thêm/Lưu/Xuất bản theo kịch bản.B4. Mở lại danh sách hoặc chi tiết để kiểm tra kết quả.
+961: Cả hai mục chuyển sang xuất bản, tải lại vẫn đúng trạng thái, mục không chọn không thay đổi.
+962: Hệ thống chuyển các bài đã chọn sang trạng thái xuất bản.
+963: Đạt
+964: 19
+965: Chuyển nhiều bài học về nháp
+966: Chọn 2 bài học đang xuất bản, chuyển hàng loạt về Nháp.
+967: B1. Đăng nhập tài khoản kiểm thử và mở chức năng “Chuyển nhiều bài học về nháp”.B2. Chuẩn bị nội dung/bộ câu hỏi và nhập hoặc chọn dữ liệu đã chỉ định.B3. Thực hiện thao tác học/làm bài/nộp/đánh giá theo tình huống.B4. Kiểm tra kết quả, tiến độ hoặc thông báo sau khi tải lại.
+968: Hai mục chuyển về nháp, học viên không truy cập được nội dung không được phép, mục khác giữ nguyên.
+969: Hệ thống chuyển các bài đã chọn về nháp, học viên không còn đọc được bài nháp.
+970: Đạt
+971: 5.2.10. Chức năng học chứng chỉ
+972: Bảng 5.10. Kiểm thử học chứng chỉ
+973: STT
+974: Tên kịch bản
+975: Dữ liệu đầu vào(Input)
+976: Các bước thực hiện
+977: Kết quả mong đợi
+978: Kết quả thực tế
+979: Trạng thái
+980: 1
+981: Tiến độ theo học viên
+982: HV1 đã học một bài chứng chỉ, HV2 chưa họcThao tác: Mở cùng chứng chỉ bằng HV1 và HV2, hoàn tất bài bằng HV1, tải lại
+983: B1. Mở màn hình/chức năng hoặc chuẩn bị API kiểm thử cho “Tiến độ theo học viên”; thiết lập dữ liệu và quyền theo Input.B2. Mở cùng chứng chỉ bằng HV1 và HV2.B3. Hoàn tất bài bằng HV1.B4. Tải lại.B5. Quan sát phản hồi và đối chiếu với kết quả mong đợi.
+984: Tiến độ đúng từng người, số bài hoàn tất đúng, không cộng theo số từ vựng.
+985: Sau khi hoàn thành bài, hệ thống ghi nhận số bài đã hoàn thành của học viên là 1.
+986: Đạt
+987: 2
+988: Nội dung được phép hiển thị
+989: Chủ đề có bài published, draft, archived, chứng chỉ active/inactiveThao tác: Mở chủ đề và trang tiến độ, thử ID sai, ID không tồn tại và chứng chỉ inactive
+990: B1. Mở màn hình/chức năng hoặc chuẩn bị API kiểm thử cho “Nội dung được phép hiển thị”; thiết lập dữ liệu và quyền theo Input.B2. Mở chủ đề và trang tiến độ.B3. Thử ID sai, ID không tồn tại và chứng chỉ inactive.B4. Quan sát phản hồi và đối chiếu với kết quả mong đợi.
+991: Chỉ hiện bài ôn chứng chỉ được xuất bản, không lộ nháp, đối tượng không khả dụng báo lỗi phù hợp, không lỗi 500.
+992: Sau khi chuyển bài về nháp, dữ liệu chủ đề không trả bài đó cho học viên. 
+993: Đạt
+994: 3
+995: Đề luyện tập đúng chủ đề
+996: Hai chứng chỉ có chủ đề và đề khác nhauThao tác: Mở từng chủ đề, mở đề luyện tập, học một bài rồi quay lại
+997: B1. Mở màn hình/chức năng hoặc chuẩn bị API kiểm thử cho “Đề luyện tập đúng chủ đề”; thiết lập dữ liệu và quyền theo Input.B2. Mở từng chủ đề.B3. Mở đề luyện tập, học một bài rồi quay lại.B4. Quan sát phản hồi và đối chiếu với kết quả mong đợi.
+998: Bài và đề thuộc đúng chứng chỉ/chủ đề, điều hướng và tiến độ đồng bộ.
+999: Dữ liệu chủ đề trả đúng chứng chỉ và bài luyện tập đã liên kết. 
+1000: Đạt
+1001: 5.2.11. Chức năng từ vựng và ôn tập
+1002: Bảng 5.11. Kiểm thử từ vựng và ôn tập
+1003: STT
+1004: Tên kịch bản
+1005: Dữ liệu đầu vào(Input)
+1006: Các bước thực hiện
+1007: Kết quả mong đợi
+1008: Kết quả thực tế
+1009: Trạng thái
+1010: 1
+1011: Thêm từ vựng
+1012: Từ: autoscaling-qa, định nghĩa tiếng Anh và nghĩa tiếng Việt, lĩnh vực và cấp độ hợp lệ.Bấm Lưu.
+1013: B1. Đăng nhập tài khoản có quyền và mở chức năng liên quan đến “Thêm từ vựng”.B2. Nhập/chọn đúng dữ liệu thử được mô tả ở cột Input.B3. Nhấn Tạo/Thêm/Lưu/Xuất bản theo kịch bản.B4. Mở lại danh sách hoặc chi tiết để kiểm tra kết quả.
+1014: Từ xuất hiện trong danh sách, mở chi tiết thấy đúng dữ liệu.
+1015: Hệ thống thêm và lưu từ vựng mới thành công.
+1016: Đạt
+1017: 2
+1018: Sửa từ vựng
+1019: Mở từ QA, thay nghĩa tiếng Việt và lưu.
+1020: B1. Mở danh sách và chọn bản ghi mục tiêu của “Sửa từ vựng”.B2. Thay đổi giá trị theo dữ liệu đầu vào.B3. Nhấn Lưu/Xác nhận; tải lại chi tiết bản ghi.B4. Kiểm tra dữ liệu mới và những dữ liệu phải được giữ nguyên.
+1021: Hiển thị nghĩa mới, không thay đổi từ khác.
+1022: Hệ thống lưu nội dung từ vựng sau khi sửa.
+1023: Đạt
+1024: 3
+1025: Xóa từ vựng thử nghiệm
+1026: Chọn từ QA không cần giữ dữ liệu học, bấm Xóa và xác nhận.
+1027: B1. Mở chức năng quản lý tương ứng và chọn đối tượng của “Xóa từ vựng thử nghiệm”.B2. Thực hiện Xóa/Khóa/Thu hồi rồi xác nhận nếu được yêu cầu.B3. Tải lại danh sách, thử truy cập hoặc thao tác liên quan.B4. Kiểm tra trạng thái dữ liệu và thông báo.
+1028: Từ không còn trong danh sách, tải lại không xuất hiện lại.
+1029: Tải lại danh sách không còn từ đã xóa xuất hiện.
+1030: Đạt
+1031: 4
+1032: Đổi trạng thái hàng loạt
+1033: V1,V2 draft, V3 publishedThao tác: Chọn V1,V2, bulk published, kiểm V3, gửi status sai
+1034: B1. Mở màn hình/chức năng hoặc chuẩn bị API kiểm thử cho “Đổi trạng thái hàng loạt”; thiết lập dữ liệu và quyền theo Input.B2. Chọn V1,V2, bulk published.B3. Kiểm V3.B4. Gửi status sai.B5. Quan sát phản hồi và đối chiếu với kết quả mong đợi.
+1035: Chỉ ID chọn thay đổi, status sai bị từ chối.
+1036: Hệ thống xuất bản các từ vựng đã chọn.
+1037: Đạt
+1038: 5
+1039: Học từ theo bộ lọc
+1040: HV1, từ published D1 và D2Thao tác: Mở session D1/level, lật thẻ, chuyển từ, nghe phát âm
+1041: B1. Mở màn hình/chức năng hoặc chuẩn bị API kiểm thử cho “Học từ theo bộ lọc”; thiết lập dữ liệu và quyền theo Input.B2. Mở session D1/level, lật thẻ.B3. Chuyển từ, nghe phát âm.B4. Quan sát phản hồi và đối chiếu với kết quả mong đợi.
+1042: Đúng bộ từ, front/back đúng, không crash nếu âm thanh không khả dụng.
+1043: Hệ thống trả phiên học theo bộ lọc chuyên ngành và trình độ đã chọn. 
+1044: Đạt
+1045: 6
+1046: Đánh giá từ ở mức Dễ
+1047: Từ QA chưa có lần trả lời đúng, chọn Dễ ở thời điểm T.
+1048: B1. Mở chức năng “Đánh giá từ ở mức Dễ” với tài khoản và trạng thái dữ liệu được nêu.B2. Nhập/chọn dữ liệu kiểm thử ở cột Input và thực hiện thao tác tương ứng.B3. Xác nhận hoặc gửi yêu cầu; kiểm tra thông báo và dữ liệu trả về.B4. Đối chiếu với kết quả mong đợi, tải lại nếu cần.
+1049: Lưu mức Dễ, lịch ôn tiếp theo T + 3 ngày, lịch sử của đúng học viên được cập nhật.
+1050: Hệ thống lưu mức Dễ và lên lịch ôn lại từ sau 3 ngày.
+1051: Đạt
+1052: 7
+1053: Đánh giá từ ở mức Trung bình
+1054: Từ QA riêng, chọn Trung bình ở thời điểm T.
+1055: B1. Mở chức năng “Đánh giá từ ở mức Trung bình” với tài khoản và trạng thái dữ liệu được nêu.B2. Nhập/chọn dữ liệu kiểm thử ở cột Input và thực hiện thao tác tương ứng.B3. Xác nhận hoặc gửi yêu cầu; kiểm tra thông báo và dữ liệu trả về.B4. Đối chiếu với kết quả mong đợi, tải lại nếu cần.
+1056: Lưu mức Trung bình, lịch ôn tiếp theo T + 1 ngày.
+1057: Hệ thống lưu mức Trung bình và lên lịch ôn lại từ sau 1 ngày.
+1058: Đạt
+1059: 8
+1060: Đánh giá từ ở mức Khó
+1061: Từ QA riêng, chọn Khó ở thời điểm T.
+1062: B1. Mở chức năng “Đánh giá từ ở mức Khó” với tài khoản và trạng thái dữ liệu được nêu.B2. Nhập/chọn dữ liệu kiểm thử ở cột Input và thực hiện thao tác tương ứng.B3. Xác nhận hoặc gửi yêu cầu; kiểm tra thông báo và dữ liệu trả về.B4. Đối chiếu với kết quả mong đợi, tải lại nếu cần.
+1063: Lưu mức Khó, lịch ôn tiếp theo T + 10 phút.
+1064: Hệ thống lưu mức Khó và đưa từ vào lịch ôn lại sau 10 phút.
+1065: Đạt
+1066: 9
+1067: Đánh giá từ Đã thuộc
+1068: Từ QA riêng, chọn Đã thuộc ở thời điểm T.
+1069: B1. Mở chức năng “Đánh giá từ Đã thuộc” với tài khoản và trạng thái dữ liệu được nêu.B2. Nhập/chọn dữ liệu kiểm thử ở cột Input và thực hiện thao tác tương ứng.B3. Xác nhận hoặc gửi yêu cầu; kiểm tra thông báo và dữ liệu trả về.B4. Đối chiếu với kết quả mong đợi, tải lại nếu cần.
+1070: Lưu mức Đã thuộc, không xuất hiện trong danh sách cần ôn ngay, lịch ôn tiếp theo T + 365 ngày.
+1071: Hệ thống lưu mức Đã thuộc và chuyển từ sang trạng thái đã thuộc.
+1072: Đạt
+1073: 10
+1074: Rate sai dữ liệu
+1075: HV1Thao tác: Gửi rating lạ, vocabularyId không tồn tại, payload thiếu trường
+1076: B1. Mở màn hình/chức năng hoặc chuẩn bị API kiểm thử cho “Rate sai dữ liệu”; thiết lập dữ liệu và quyền theo Input.B2. Gửi rating lạ, vocabularyId không tồn tại, payload thiếu trường.B3. Quan sát phản hồi và đối chiếu với kết quả mong đợi.
+1077: Lỗi 4xx có kiểm soát, không ghi tiến độ rác hoặc trả 500 do dữ liệu đầu vào.
+1078: Hệ thống từ chối mức đánh giá hoặc mã từ vựng không hợp lệ.
+1079: Đạt
+1080: 11
+1081: Trả lời quiz đúng
+1082: Tạo quiz từ bộ từ QA có đáp án biết trước, chọn đáp án đúng.
+1083: B1. Đăng nhập tài khoản kiểm thử và mở chức năng “Trả lời quiz đúng”.B2. Chuẩn bị nội dung/bộ câu hỏi và nhập hoặc chọn dữ liệu đã chỉ định.B3. Thực hiện thao tác học/làm bài/nộp/đánh giá theo tình huống.B4. Kiểm tra kết quả, tiến độ hoặc thông báo sau khi tải lại.
+1084: Ghi nhận câu trả lời đúng, tổng số câu đúng tăng 1, lưu tiến độ đúng HV1.
+1085: Hệ thống tạo được câu hỏi ôn từ đã học. 
+1086: Đạt
+1087: 12
+1088: Trả lời quiz sai
+1089: Chọn đáp án sai của một câu trong bộ từ QA.
+1090: B1. Đăng nhập tài khoản kiểm thử và mở chức năng “Trả lời quiz sai”.B2. Chuẩn bị nội dung/bộ câu hỏi và nhập hoặc chọn dữ liệu đã chỉ định.B3. Thực hiện thao tác học/làm bài/nộp/đánh giá theo tình huống.B4. Kiểm tra kết quả, tiến độ hoặc thông báo sau khi tải lại.
+1091: Ghi nhận câu sai, không tính thành câu đúng, kết quả tổng hợp khớp lượt làm.
+1092: Hệ thống tạo được câu hỏi ôn từ đã học. 
+1093: Đạt
+1094: 13
+1095: Bộ quiz rỗng/ít từ
+1096: Bộ 0,1,2 từThao tác: Tạo quiz và mở giao diện
+1097: B1. Mở màn hình/chức năng hoặc chuẩn bị API kiểm thử cho “Bộ quiz rỗng/ít từ”; thiết lập dữ liệu và quyền theo Input.B2. Tạo quiz và mở giao diện.B3. Quan sát phản hồi và đối chiếu với kết quả mong đợi.
+1098: Empty state hoặc bài hợp lệ, không vòng lặp tạo distractor, không chia cho 0.
+1099: Hệ thống từ chối tạo bộ câu hỏi khi danh sách từ đầu vào rỗng.
+1100: Đạt
+1101: 14
+1102: Tiếp tục phiên học
+1103: HV1 đang học dởThao tác: Rời màn, gọi session với continue=true, mở trên nền tảng khác
+1104: B1. Mở màn hình/chức năng hoặc chuẩn bị API kiểm thử cho “Tiếp tục phiên học”; thiết lập dữ liệu và quyền theo Input.B2. Rời màn.B3. Gọi session với continue=true.B4. Mở trên nền tảng khác.B5. Quan sát phản hồi và đối chiếu với kết quả mong đợi.
+1105: Nội dung tiếp tục phù hợp dữ liệu đã ghi, không tự đánh dấu các từ chưa học.
+1106: Chưa chạy trên thiết bị Android/iOS thật hoặc máy giả lập.
+1107: Chưa chạy
+1108: 15
+1109: Ôn từ đến hạn
+1110: Có từ quá hạn,hôm nay,tương laiThao tác: GET review-session
+1111: B1. Mở màn hình/chức năng hoặc chuẩn bị API kiểm thử cho “Ôn từ đến hạn”; thiết lập dữ liệu và quyền theo Input.B2. GET review-session.B3. Quan sát phản hồi và đối chiếu với kết quả mong đợi.
+1112: Bộ ôn phù hợp thời điểm, không bỏ từ quá hạn hoặc trộn người học khác.
+1113: Hệ thống trả các từ đã đến hạn ôn của học viên.
+1114: Đạt
+1115: 16
+1116: Lịch sử theo thời gian/rating
+1117: Fixture các ngày/tháng/năm và nhiều ratingThao tác: Lọc history từng period và rating
+1118: B1. Mở màn hình/chức năng hoặc chuẩn bị API kiểm thử cho “Lịch sử theo thời gian/rating”; thiết lập dữ liệu và quyền theo Input.B2. Lọc history từng period và rating.B3. Quan sát phản hồi và đối chiếu với kết quả mong đợi.
+1119: Kết quả, số lượng và empty state đúng, dữ liệu ranh giới ngày được đối chiếu theo múi giờ đã chốt.
+1120: Hệ thống trả lịch sử học và bản ghi đánh giá từ. 
+1121: Đạt
+1122: 17
+1123: Tách dữ liệu người học
+1124: HV1 học V1, HV2 chưa họcThao tác: Mở dashboard/history/summary bằng HV2
+1125: B1. Mở màn hình/chức năng hoặc chuẩn bị API kiểm thử cho “Tách dữ liệu người học”; thiết lập dữ liệu và quyền theo Input.B2. Mở dashboard/history/summary bằng HV2.B3. Quan sát phản hồi và đối chiếu với kết quả mong đợi.
+1126: Không thấy tiến độ cá nhân HV1, nội dung từ dùng chung vẫn truy cập đúng.
+1127: Lịch sử trả về chỉ thuộc học viên đang đăng nhập, không chứa dữ liệu của học viên khác.
+1128: Đạt
+1129: 18
+1130: Nội dung bị gỡ giữa phiên
+1131: HV1 đang học V1, quản trị viên archive V1Thao tác: Tiếp tục/rate/refresh
+1132: B1. Mở màn hình/chức năng hoặc chuẩn bị API kiểm thử cho “Nội dung bị gỡ giữa phiên”; thiết lập dữ liệu và quyền theo Input.B2. Tiếp tục/rate/refresh.B3. Quan sát phản hồi và đối chiếu với kết quả mong đợi.
+1133: Lỗi hoặc xử lý nhất quán, không crash, không tạo progress trỏ tới dữ liệu mất.
+1134: Hệ thống từ chối tiếp tục xử lý từ vựng đã chuyển khỏi trạng thái cho phép học.
+1135: Đạt
+1136: 19
+1137: Tiến độ từ vựng theo chứng chỉ
+1138: Chứng chỉ có 4 từ QA, HV1 đã học 2 từ, mở tiến độ từ vựng của chứng chỉ.
+1139: B1. Đăng nhập tài khoản kiểm thử và mở chức năng “Tiến độ từ vựng theo chứng chỉ”.B2. Chuẩn bị nội dung/bộ câu hỏi và nhập hoặc chọn dữ liệu đã chỉ định.B3. Thực hiện thao tác học/làm bài/nộp/đánh giá theo tình huống.B4. Kiểm tra kết quả, tiến độ hoặc thông báo sau khi tải lại.
+1140: Hiển thị đúng 2 từ đã học trên tổng 4 từ, không tính lẫn tiến độ bài học hoặc học viên khác.
+1141: Hệ thống trả tiến độ từ vựng theo chứng chỉ của học viên hiện tại.
+1142: Đạt
+1143: 20
+1144: Xem lại thẻ từ đã học
+1145: HV1 đã học một từ, mở thẻ từ đó từ lịch sử.
+1146: B1. Mở chức năng “Xem lại thẻ từ đã học” với tài khoản và trạng thái dữ liệu được nêu.B2. Nhập/chọn dữ liệu kiểm thử ở cột Input và thực hiện thao tác tương ứng.B3. Xác nhận hoặc gửi yêu cầu; kiểm tra thông báo và dữ liệu trả về.B4. Đối chiếu với kết quả mong đợi, tải lại nếu cần.
+1147: Hiển thị đúng từ và tiến độ cá nhân của HV1, không tạo thêm lượt học chỉ vì mở thẻ.
+1148: Hệ thống trả lại các thẻ từ đã học của học viên.
+1149: Đạt
+1150: 5.2.12. Chức năng dịch và phát âm
+1151: Bảng 5.12. Kiểm thử dịch và phát âm
+1152: STT
+1153: Tên kịch bản
+1154: Dữ liệu đầu vào(Input)
+1155: Các bước thực hiện
+1156: Kết quả mong đợi
+1157: Kết quả thực tế
+1158: Trạng thái
+1159: 1
+1160: Dịch từ trong từ điển
+1161: Từ published có nghĩa, từ nháp, từ chưa có nghĩaThao tác: Bôi chọn trên web/mobile, dịch từ có sẵn, từ hoa/thường và khoảng trắng
+1162: B1. Mở màn hình/chức năng hoặc chuẩn bị API kiểm thử cho “Dịch từ trong từ điển”; thiết lập dữ liệu và quyền theo Input.B2. Bôi chọn trên web/mobile, dịch từ có sẵn, từ hoa/thường và khoảng trắng.B3. Quan sát phản hồi và đối chiếu với kết quả mong đợi.
+1163: Hiện nghĩa đúng từ, không lộ nội dung nháp, giao diện không treo.
+1164: Hệ thống trả nghĩa của từ có trong từ điển nội bộ.
+1165: Đạt
+1166: 2
+1167: Dịch theo ngữ cảnh
+1168: Cùng một từ ở hai đoạn có nghĩa khác nhau, dịch vụ thử có cấu hìnhThao tác: Chọn từ và cụm từ trong hai ngữ cảnh, dịch lại cùng một lựa chọn
+1169: B1. Mở màn hình/chức năng hoặc chuẩn bị API kiểm thử cho “Dịch theo ngữ cảnh”; thiết lập dữ liệu và quyền theo Input.B2. Chọn từ và cụm từ trong hai ngữ cảnh, dịch lại cùng một lựa chọn.B3. Quan sát phản hồi và đối chiếu với kết quả mong đợi.
+1170: Chỉ dịch phần được chọn, nghĩa phù hợp ngữ cảnh, cache không lẫn ngữ cảnh.
+1171: Chưa chạy.
+1172: Chưa chạy
+1173: 3
+1174: Dữ liệu không hợp lệ và dịch vụ lỗi
+1175: Text rỗng, sai kiểu, hơn 500 byte, ngữ cảnh sai kiểuThao tác: Gửi từng dữ liệu, thử thiếu cấu hình dịch, nhà cung cấp lỗi và timeout
+1176: B1. Mở màn hình/chức năng hoặc chuẩn bị API kiểm thử cho “Dữ liệu không hợp lệ và dịch vụ lỗi”; thiết lập dữ liệu và quyền theo Input.B2. Gửi từng dữ liệu.B3. Thử thiếu cấu hình dịch, nhà cung cấp lỗi và timeout.B4. Quan sát phản hồi và đối chiếu với kết quả mong đợi.
+1177: Dữ liệu lỗi bị từ chối, fallback hoặc thông báo rõ, không lộ khóa hay phản hồi nội bộ.
+1178: Hệ thống từ chối dữ liệu dịch rỗng, sai kiểu hoặc quá dài, từ không có trong từ điển được xử lý khi chưa cấu hình dịch vụ ngoài. 
+1179: Đạt
+1180: 4
+1181: Giới hạn tần suất
+1182: Chỉ dùng môi trường QA, cùng địa chỉ IPThao tác: Gửi trên 60 yêu cầu dịch/phát âm trong một phút rồi đợi cửa sổ mới
+1183: B1. Mở màn hình/chức năng hoặc chuẩn bị API kiểm thử cho “Giới hạn tần suất”; thiết lập dữ liệu và quyền theo Input.B2. Gửi trên 60 yêu cầu dịch/phát âm trong một phút rồi đợi cửa sổ mới.B3. Quan sát phản hồi và đối chiếu với kết quả mong đợi.
+1184: Bị giới hạn 429 theo thiết kế, hết cửa sổ có thể gọi lại, UI báo rõ.
+1185: Khi gửi nhiều yêu cầu liên tiếp vượt giới hạn, hệ thống từ chối yêu cầu tiếp theo để giới hạn tần suất.
+1186: Đạt
+1187: 5
+1188: Phát âm thực tế
+1189: Máy chủ có runtime phát âm, web và thiết bị mobileThao tác: Chọn từ/cụm từ, phát âm, nghe lại, thử máy chủ thiếu runtime hoặc timeout
+1190: B1. Mở màn hình/chức năng hoặc chuẩn bị API kiểm thử cho “Phát âm thực tế”; thiết lập dữ liệu và quyền theo Input.B2. Chọn từ/cụm từ.B3. Phát âm, nghe lại.B4. Thử máy chủ thiếu runtime hoặc timeout.B5. Quan sát phản hồi và đối chiếu với kết quả mong đợi.
+1191: Âm thanh phát được, đúng từ, phát lại ổn định, lỗi dịch vụ báo rõ, không treo.
+1192: Hệ thống tạo được dữ liệu âm thanh phát âm. 
+1193: Đạt
+1194: 6
+1195: Biên phát âm
+1196: Text rỗng, sai kiểu, hơn 500 byte, UnicodeThao tác: Gọi phát âm từng bộ dữ liệu, thử ngắt mạng khi đang tải
+1197: B1. Mở màn hình/chức năng hoặc chuẩn bị API kiểm thử cho “Biên phát âm”; thiết lập dữ liệu và quyền theo Input.B2. Gọi phát âm từng bộ dữ liệu.B3. Thử ngắt mạng khi đang tải.B4. Quan sát phản hồi và đối chiếu với kết quả mong đợi.
+1198: Chặn input không hợp lệ, Unicode hợp lệ xử lý rõ, phục hồi khi mạng trở lại.
+1199: Hệ thống từ chối nội dung phát âm rỗng, sai kiểu hoặc vượt độ dài cho phép.
+1200: Đạt
+1201: 5.2.13. Chức năng ngân hàng và import câu hỏi
+1202: Bảng 5.13. Kiểm thử ngân hàng và import câu hỏi
+1203: STT
+1204: Tên kịch bản
+1205: Dữ liệu đầu vào(Input)
+1206: Các bước thực hiện
+1207: Kết quả mong đợi
+1208: Kết quả thực tế
+1209: Trạng thái
+1210: 1
+1211: Tạo câu hỏi một đáp án
+1212: Chọn loại single_choice, nội dung: Câu QA, nhập dữ liệu và đáp án tương ứng, chọn phân loại hợp lệ, lưu.
+1213: B1. Đăng nhập tài khoản có quyền và mở chức năng liên quan đến “Tạo câu hỏi một đáp án”.B2. Nhập/chọn đúng dữ liệu thử được mô tả ở cột Input.B3. Nhấn Tạo/Thêm/Lưu/Xuất bản theo kịch bản.B4. Mở lại danh sách hoặc chi tiết để kiểm tra kết quả.
+1214: Lưu đúng loại câu hỏi, mở lại đủ nội dung và dữ liệu chấm, phần xem trước không mất dữ liệu.
+1215: Hệ thống tạo và lưu câu hỏi một đáp án thành công.
+1216: Đạt
+1217: 2
+1218: Tạo câu hỏi nhiều đáp án
+1219: Chọn loại multiple_choice, nội dung: Câu QA, nhập dữ liệu và đáp án tương ứng, chọn phân loại hợp lệ, lưu.
+1220: B1. Đăng nhập tài khoản có quyền và mở chức năng liên quan đến “Tạo câu hỏi nhiều đáp án”.B2. Nhập/chọn đúng dữ liệu thử được mô tả ở cột Input.B3. Nhấn Tạo/Thêm/Lưu/Xuất bản theo kịch bản.B4. Mở lại danh sách hoặc chi tiết để kiểm tra kết quả.
+1221: Lưu đúng loại câu hỏi, mở lại đủ nội dung và dữ liệu chấm, phần xem trước không mất dữ liệu.
+1222: Hệ thống tạo và lưu câu hỏi nhiều đáp án thành công.
+1223: Đạt
+1224: 3
+1225: Tạo câu hỏi đúng sai
+1226: Chọn loại true_false, nội dung: Câu QA, nhập dữ liệu và đáp án tương ứng, chọn phân loại hợp lệ, lưu.
+1227: B1. Đăng nhập tài khoản có quyền và mở chức năng liên quan đến “Tạo câu hỏi đúng sai”.B2. Nhập/chọn đúng dữ liệu thử được mô tả ở cột Input.B3. Nhấn Tạo/Thêm/Lưu/Xuất bản theo kịch bản.B4. Mở lại danh sách hoặc chi tiết để kiểm tra kết quả.
+1228: Lưu đúng loại câu hỏi, mở lại đủ nội dung và dữ liệu chấm, phần xem trước không mất dữ liệu.
+1229: Hệ thống tạo và lưu câu hỏi đúng sai thành công.
+1230: Đạt
+1231: 4
+1232: Tạo câu hỏi trả lời ngắn
+1233: Chọn loại short_answer, nội dung: Câu QA, nhập dữ liệu và đáp án tương ứng, chọn phân loại hợp lệ, lưu.
+1234: B1. Đăng nhập tài khoản có quyền và mở chức năng liên quan đến “Tạo câu hỏi trả lời ngắn”.B2. Nhập/chọn đúng dữ liệu thử được mô tả ở cột Input.B3. Nhấn Tạo/Thêm/Lưu/Xuất bản theo kịch bản.B4. Mở lại danh sách hoặc chi tiết để kiểm tra kết quả.
+1235: Lưu đúng loại câu hỏi, mở lại đủ nội dung và dữ liệu chấm, phần xem trước không mất dữ liệu.
+1236: Hệ thống tạo và lưu câu hỏi trả lời ngắn thành công.
+1237: Đạt
+1238: 5
+1239: Tạo câu hỏi tình huống
+1240: Chọn loại scenario, nội dung: Câu QA, nhập dữ liệu và đáp án tương ứng, chọn phân loại hợp lệ, lưu.
+1241: B1. Đăng nhập tài khoản có quyền và mở chức năng liên quan đến “Tạo câu hỏi tình huống”.B2. Nhập/chọn đúng dữ liệu thử được mô tả ở cột Input.B3. Nhấn Tạo/Thêm/Lưu/Xuất bản theo kịch bản.B4. Mở lại danh sách hoặc chi tiết để kiểm tra kết quả.
+1242: Lưu đúng loại câu hỏi, mở lại đủ nội dung và dữ liệu chấm, phần xem trước không mất dữ liệu.
+1243: Hệ thống tạo và lưu câu hỏi tình huống thành công.
+1244: Đạt
+1245: 6
+1246: Phân loại kỹ năng
+1247: Có câu vocabulary,reading,technical_understanding,scenario_basedThao tác: Tạo/lọc theo skill,domain,level,topic,certificate
+1248: B1. Mở màn hình/chức năng hoặc chuẩn bị API kiểm thử cho “Phân loại kỹ năng”; thiết lập dữ liệu và quyền theo Input.B2. Tạo/lọc theo skill,domain,level,topic,certificate.B3. Quan sát phản hồi và đối chiếu với kết quả mong đợi.
+1249: Bộ lọc và dữ liệu sau reload khớp lựa chọn.
+1250: Hệ thống lưu đúng kỹ năng được gán cho câu hỏi.
+1251: Đạt
+1252: 7
+1253: Validate đáp án
+1254: quản trị viênThao tác: Tạo câu không có đáp án đúng, option trùng key, single choice nhiều đáp án đúng
+1255: B1. Mở màn hình/chức năng hoặc chuẩn bị API kiểm thử cho “Validate đáp án”; thiết lập dữ liệu và quyền theo Input.B2. Tạo câu không có đáp án đúng, option trùng key, single choice nhiều đáp án đúng.B3. Quan sát phản hồi và đối chiếu với kết quả mong đợi.
+1256: Từ chối cấu hình mâu thuẫn, không tạo câu không thể chấm đúng.
+1257: Hệ thống từ chối câu hỏi một lựa chọn không có đáp án đúng. 
+1258: Đạt
+1259: 8
+1260: Biên difficulty/điểm
+1261: quản trị viênThao tác: Gửi difficulty 0,1,100,101, điểm liên kết đề 0,0.01,100,101
+1262: B1. Mở màn hình/chức năng hoặc chuẩn bị API kiểm thử cho “Biên difficulty/điểm”; thiết lập dữ liệu và quyền theo Input.B2. Gửi difficulty 0,1,100,101, điểm liên kết đề 0,0.01,100,101.B3. Quan sát phản hồi và đối chiếu với kết quả mong đợi.
+1263: Chấp nhận đúng khoảng quy định nhập liệu, dữ liệu ngoài khoảng bị từ chối.
+1264: Hệ thống từ chối điểm câu hỏi 0 và 101.
+1265: Đạt
+1266: 9
+1267: Sửa/xóa câu đã dùng
+1268: Q1 có attempt đã nộpThao tác: Sửa đáp án Q1 rồi mở kết quả cũ, thử xóa Q1
+1269: B1. Mở màn hình/chức năng hoặc chuẩn bị API kiểm thử cho “Sửa/xóa câu đã dùng”; thiết lập dữ liệu và quyền theo Input.B2. Sửa đáp án Q1 rồi mở kết quả cũ.B3. Thử xóa Q1.B4. Quan sát phản hồi và đối chiếu với kết quả mong đợi.
+1270: Kết quả lịch sử giữ bản đề tại thời điểm bắt đầu, thao tác tham chiếu không gây lỗi dữ liệu.
+1271: Hệ thống lưu câu hỏi chưa dùng sau khi sửa. 
+1272: Đạt
+1273: 10
+1274: Import Excel mẫu
+1275: Tải template, điền 3 câu hợp lệThao tác: Upload, xem preview, xác nhận import, lọc câu vừa nhập
+1276: B1. Mở màn hình/chức năng hoặc chuẩn bị API kiểm thử cho “Import Excel mẫu”; thiết lập dữ liệu và quyền theo Input.B2. Upload.B3. Xem preview, xác nhận import.B4. Lọc câu vừa nhập.B5. Quan sát phản hồi và đối chiếu với kết quả mong đợi.
+1277: Tạo đúng 3 câu, skill/type/options/đáp án đúng giữ nguyên.
+1278: Hệ thống nhận và lưu 3 câu hỏi hợp lệ qua chức năng nhập dữ liệu phía máy chủ. 
+1279: Đạt
+1280: 11
+1281: Import sai cột/kiểu
+1282: Excel thiếu cột, sai enum, option rỗngThao tác: Upload từng file, xem báo lỗi
+1283: B1. Mở màn hình/chức năng hoặc chuẩn bị API kiểm thử cho “Import sai cột/kiểu”; thiết lập dữ liệu và quyền theo Input.B2. Upload từng file.B3. Xem báo lỗi.B4. Quan sát phản hồi và đối chiếu với kết quả mong đợi.
+1284: Chỉ rõ file/sheet/dòng/trường lỗi khi có thể, không âm thầm nhập dữ liệu sai.
+1285: Hệ thống từ chối loại câu hỏi không hợp lệ và mã chuyên ngành không tồn tại. 
+1286: Đạt
+1287: 12
+1288: Import nhiều file có lỗi
+1289: File A hợp lệ, B có dòng saiThao tác: Chọn cả hai, sửa hoặc loại dòng lỗi, xác nhận
+1290: B1. Mở màn hình/chức năng hoặc chuẩn bị API kiểm thử cho “Import nhiều file có lỗi”; thiết lập dữ liệu và quyền theo Input.B2. Chọn cả hai.B3. Sửa hoặc loại dòng lỗi, xác nhận.B4. Quan sát phản hồi và đối chiếu với kết quả mong đợi.
+1291: Số thành công/thất bại khớp, người dùng biết phần được nhập, không bỏ mất file A.
+1292: Lô có dòng lỗi bị từ chối, số câu trước và sau đều bằng 0.
+1293: Đạt
+1294: 13
+1295: Import file rỗng/hỏng/sai loại
+1296: XLSX rỗng, file hỏng, TXT đổi đuôiThao tác: Upload mỗi file
+1297: B1. Mở màn hình/chức năng hoặc chuẩn bị API kiểm thử cho “Import file rỗng/hỏng/sai loại”; thiết lập dữ liệu và quyền theo Input.B2. Upload mỗi file.B3. Quan sát phản hồi và đối chiếu với kết quả mong đợi.
+1298: Báo lỗi có kiểm soát, preview cũ không được gửi nhầm.
+1299: Chưa chạy.
+1300: Chưa chạy
+1301: 14
+1302: Import nhấn nhiều lần
+1303: File hợp lệ, mạng chậmThao tác: Bấm xác nhận liên tiếp hoặc retry sau timeout
+1304: B1. Mở màn hình/chức năng hoặc chuẩn bị API kiểm thử cho “Import nhấn nhiều lần”; thiết lập dữ liệu và quyền theo Input.B2. Bấm xác nhận liên tiếp hoặc retry sau timeout.B3. Quan sát phản hồi và đối chiếu với kết quả mong đợi.
+1305: UI ngăn gửi lặp, kiểm số bản ghi, nếu API không có idempotency thì ghi rõ nguy cơ duplicate.
+1306: Chưa chạy.
+1307: Chưa chạy
+1308: 15
+1309: Phân trang và tìm câu
+1310: 35 câu với prompt tiếng ViệtThao tác: Tìm/lọc rồi chuyển trang, đổi bộ lọc ở trang cuối
+1311: B1. Mở màn hình/chức năng hoặc chuẩn bị API kiểm thử cho “Phân trang và tìm câu”; thiết lập dữ liệu và quyền theo Input.B2. Tìm/lọc rồi chuyển trang.B3. Đổi bộ lọc ở trang cuối.B4. Quan sát phản hồi và đối chiếu với kết quả mong đợi.
+1312: Page reset hoặc được hiệu chỉnh, tổng chính xác, không báo rỗng giả.
+1313: Hệ thống trả danh sách câu hỏi theo điều kiện tìm kiếm và phân trang đã gửi.
+1314: Đạt
+1315: 16
+1316: Xuất bản nhiều câu hỏi
+1317: Chọn 2 câu hỏi nháp hợp lệ, thực hiện Xuất bản hàng loạt.
+1318: B1. Đăng nhập tài khoản có quyền và mở chức năng liên quan đến “Xuất bản nhiều câu hỏi”.B2. Nhập/chọn đúng dữ liệu thử được mô tả ở cột Input.B3. Nhấn Tạo/Thêm/Lưu/Xuất bản theo kịch bản.B4. Mở lại danh sách hoặc chi tiết để kiểm tra kết quả.
+1319: Cả hai mục chuyển sang xuất bản, tải lại vẫn đúng trạng thái, mục không chọn không thay đổi.
+1320: Hệ thống chuyển các câu hỏi đã chọn sang trạng thái xuất bản.
+1321: Đạt
+1322: 17
+1323: Chuyển nhiều câu hỏi về nháp
+1324: Chọn 2 câu hỏi đang xuất bản, chuyển hàng loạt về Nháp.
+1325: B1. Mở chức năng “Chuyển nhiều câu hỏi về nháp” với tài khoản và trạng thái dữ liệu được nêu.B2. Nhập/chọn dữ liệu kiểm thử ở cột Input và thực hiện thao tác tương ứng.B3. Xác nhận hoặc gửi yêu cầu; kiểm tra thông báo và dữ liệu trả về.B4. Đối chiếu với kết quả mong đợi, tải lại nếu cần.
+1326: Hai mục chuyển về nháp, học viên không truy cập được nội dung không được phép, mục khác giữ nguyên.
+1327: Hệ thống chuyển các câu hỏi đã chọn về nháp.
+1328: Đạt
+1329: 18
+1330: Import mã chuyên ngành không tồn tại
+1331: Mã chuyên ngành: DOMAIN_NOT_FOUND_QA, các trường câu hỏi còn lại hợp lệ. Nhập qua chức năng import.
+1332: B1. Mở chức năng “Import mã chuyên ngành không tồn tại” với tài khoản và trạng thái dữ liệu được nêu.B2. Nhập/chọn dữ liệu kiểm thử ở cột Input và thực hiện thao tác tương ứng.B3. Xác nhận hoặc gửi yêu cầu; kiểm tra thông báo và dữ liệu trả về.B4. Đối chiếu với kết quả mong đợi, tải lại nếu cần.
+1333: Từ chối mã không tồn tại, không lưu câu hỏi vào chuyên ngành khác.
+1334: Hệ thống báo chuyên ngành không tồn tại, không lưu câu hỏi nào trong lô có dòng sai. Dữ liệu hợp lệ vẫn được lưu đúng chuyên ngành và cấp độ.
+1335: Đạt
+1336: 5.2.14. Chức năng soạn đề và làm bài
+1337: Bảng 5.14. Kiểm thử soạn đề và làm bài
+1338: STT
+1339: Tên kịch bản
+1340: Dữ liệu đầu vào(Input)
+1341: Các bước thực hiện
+1342: Kết quả mong đợi
+1343: Kết quả thực tế
+1344: Trạng thái
+1345: 1
+1346: Tạo đề theo loại
+1347: quản trị viên có exams:create, C1 và câu hợp lệThao tác: Tạo practice,domain_test,mock_exam,scenario_assessment, thêm câu, publish
+1348: B1. Mở màn hình/chức năng hoặc chuẩn bị API kiểm thử cho “Tạo đề theo loại”; thiết lập dữ liệu và quyền theo Input.B2. Tạo practice,domain_test,mock_exam,scenario_assessment.B3. Thêm câu.B4. Publish.B5. Quan sát phản hồi và đối chiếu với kết quả mong đợi.
+1349: Đề gắn C1, thứ tự/điểm câu đúng, học viên mở từ lộ trình tương ứng.
+1350: Hệ thống tạo được đề thi thử có câu hỏi và trọng số. 
+1351: Đạt
+1352: 2
+1353: Không tạo đề độc lập
+1354: quản trị viênThao tác: Tạo đề thiếu certificateId
+1355: B1. Mở màn hình/chức năng hoặc chuẩn bị API kiểm thử cho “Không tạo đề độc lập”; thiết lập dữ liệu và quyền theo Input.B2. Tạo đề thiếu certificateId.B3. Quan sát phản hồi và đối chiếu với kết quả mong đợi.
+1356: Bị từ chối, không xuất hiện đề độc lập ngoài mô hình chứng chỉ hiện tại.
+1357: Hệ thống từ chối tạo đề độc lập khi thiếu liên kết chứng chỉ hoặc chủ đề bắt buộc.
+1358: Đạt
+1359: 3
+1360: Câu trùng và lịch sai
+1361: quản trị viênThao tác: Gắn cùng questionId hai lần, đặt đóng trước mở
+1362: B1. Mở màn hình/chức năng hoặc chuẩn bị API kiểm thử cho “Câu trùng và lịch sai”; thiết lập dữ liệu và quyền theo Input.B2. Gắn cùng questionId hai lần, đặt đóng trước mở.B3. Quan sát phản hồi và đối chiếu với kết quả mong đợi.
+1363: Từ chối, không lưu đề mâu thuẫn.
+1364: Hệ thống từ chối gắn trùng một câu hỏi vào đề. 
+1365: Đạt
+1366: 4
+1367: Biên cấu hình đề
+1368: quản trị viênThao tác: durationMinutes 0,1,300,301, passingScorePercent 0,1,100,101, maxAttempts 0,1
+1369: B1. Mở màn hình/chức năng hoặc chuẩn bị API kiểm thử cho “Biên cấu hình đề”; thiết lập dữ liệu và quyền theo Input.B2. DurationMinutes 0,1,300,301, passingScorePercent 0,1,100,101, maxAttempts 0,1.B3. Quan sát phản hồi và đối chiếu với kết quả mong đợi.
+1370: Chấp nhận đúng khoảng, API chặn giá trị sai.
+1371: Hệ thống từ chối thời lượng đề 0 và 301 phút. 
+1372: Đạt
+1373: 5
+1374: Bắt đầu đề
+1375: HV1, E1 published đang mởThao tác: Mở E1, bắt đầu, xem request/response
+1376: B1. Mở màn hình/chức năng hoặc chuẩn bị API kiểm thử cho “Bắt đầu đề”; thiết lập dữ liệu và quyền theo Input.B2. Mở E1, bắt đầu.B3. Xem request/response.B4. Quan sát phản hồi và đối chiếu với kết quả mong đợi.
+1377: Tạo attempt của HV1, thời gian và bộ câu đúng, không lộ đáp án đúng trước nộp.
+1378: Hệ thống tạo lượt làm bài và không trả đáp án đúng khi bắt đầu. 
+1379: Đạt
+1380: 6
+1381: Đề chưa mở/đã đóng/draft
+1382: Eearly,Elate,EdraftThao tác: HV1 gọi start trực tiếp từng đề
+1383: B1. Mở màn hình/chức năng hoặc chuẩn bị API kiểm thử cho “Đề chưa mở/đã đóng/draft”; thiết lập dữ liệu và quyền theo Input.B2. HV1 gọi start trực tiếp từng đề.B3. Quan sát phản hồi và đối chiếu với kết quả mong đợi.
+1384: Bị từ chối dù biết ID, không tạo attempt trái điều kiện.
+1385: Hệ thống từ chối bắt đầu đề chưa mở, đã đóng hoặc đang ở trạng thái nháp. 
+1386: Đạt
+1387: 7
+1388: Start đồng thời
+1389: HV1, E1 chưa có active attemptThao tác: Gửi hai POST start đồng thời từ web/mobile
+1390: B1. Mở màn hình/chức năng hoặc chuẩn bị API kiểm thử cho “Start đồng thời”; thiết lập dữ liệu và quyền theo Input.B2. Gửi hai POST start đồng thời từ web/mobile.B3. Quan sát phản hồi và đối chiếu với kết quả mong đợi.
+1391: Chỉ một active attempt cho cặp học viên/exam, trả cùng phiên hoặc lỗi có kiểm soát.
+1392: Hai yêu cầu bắt đầu đồng thời trả về cùng một lượt làm bài, chỉ có một lượt đang làm được lưu.
+1393: Đạt
+1394: 8
+1395: Giới hạn lượt làm
+1396: E1 maxAttempts=1, HV1 đã có lượt kết thúcThao tác: Gọi start lần nữa, thử hai request đồng thời sát giới hạn
+1397: B1. Mở màn hình/chức năng hoặc chuẩn bị API kiểm thử cho “Giới hạn lượt làm”; thiết lập dữ liệu và quyền theo Input.B2. Gọi start lần nữa.B3. Thử hai request đồng thời sát giới hạn.B4. Quan sát phản hồi và đối chiếu với kết quả mong đợi.
+1398: Không vượt số lượt cho phép, không tạo thêm lượt do race condition.
+1399: Hệ thống từ chối tạo lượt mới khi học viên đã dùng hết số lượt cho phép.
+1400: Đạt
+1401: 9
+1402: Nộp bài và tính điểm
+1403: Đề 4 câu trắc nghiệm một đáp án, mỗi câu 1 điểm, trả lời đúng 3 câu, sai 1 câu.Bấm Nộp bài.
+1404: B1. Đăng nhập tài khoản kiểm thử và mở chức năng “Nộp bài và tính điểm”.B2. Chuẩn bị nội dung/bộ câu hỏi và nhập hoặc chọn dữ liệu đã chỉ định.B3. Thực hiện thao tác học/làm bài/nộp/đánh giá theo tình huống.B4. Kiểm tra kết quả, tiến độ hoặc thông báo sau khi tải lại.
+1405: Điểm bằng 75%, hiển thị đúng 3 câu đúng, 1 câu sai, kết quả được lưu.
+1406: Hệ thống chấm đúng bài thử một câu đúng với kết quả 100%.
+1407: Đạt
+1408: 10
+1409: Tính điểm theo trọng số
+1410: Đề 2 câu có trọng số 1 và 3. Chỉ làm đúng câu trọng số 3.
+1411: B1. Mở chức năng “Tính điểm theo trọng số” với tài khoản và trạng thái dữ liệu được nêu.B2. Nhập/chọn dữ liệu kiểm thử ở cột Input và thực hiện thao tác tương ứng.B3. Xác nhận hoặc gửi yêu cầu; kiểm tra thông báo và dữ liệu trả về.B4. Đối chiếu với kết quả mong đợi, tải lại nếu cần.
+1412: Điểm = 3/(1+3) × 100 = 75%, không tính thành 50%.
+1413: Hệ thống tính 75% khi chỉ đúng câu có trọng số 3 trong đề có hai câu trọng số 1 và 3.
+1414: Đạt
+1415: 11
+1416: Chọn đủ đáp án đúng
+1417: Câu nhiều đáp án đúng A và C, chọn A, C.
+1418: B1. Mở chức năng “Chọn đủ đáp án đúng” với tài khoản và trạng thái dữ liệu được nêu.B2. Nhập/chọn dữ liệu kiểm thử ở cột Input và thực hiện thao tác tương ứng.B3. Xác nhận hoặc gửi yêu cầu; kiểm tra thông báo và dữ liệu trả về.B4. Đối chiếu với kết quả mong đợi, tải lại nếu cần.
+1419: Câu được tính đúng.
+1420: Hệ thống chấm đúng khi chọn đầy đủ tập đáp án đúng của câu nhiều lựa chọn.
+1421: Đạt
+1422: 12
+1423: Chọn thiếu đáp án đúng
+1424: Câu có đáp án đúng A và C, chỉ chọn A.
+1425: B1. Mở chức năng “Chọn thiếu đáp án đúng” với tài khoản và trạng thái dữ liệu được nêu.B2. Nhập/chọn dữ liệu kiểm thử ở cột Input và thực hiện thao tác tương ứng.B3. Xác nhận hoặc gửi yêu cầu; kiểm tra thông báo và dữ liệu trả về.B4. Đối chiếu với kết quả mong đợi, tải lại nếu cần.
+1426: Câu không được tính đúng.
+1427: Hệ thống không tính đúng cho câu nhiều lựa chọn khi chọn thiếu đáp án đúng.
+1428: Đạt
+1429: 13
+1430: Chọn thừa đáp án
+1431: Câu có đáp án đúng A và C, chọn A, C, D.
+1432: B1. Mở chức năng “Chọn thừa đáp án” với tài khoản và trạng thái dữ liệu được nêu.B2. Nhập/chọn dữ liệu kiểm thử ở cột Input và thực hiện thao tác tương ứng.B3. Xác nhận hoặc gửi yêu cầu; kiểm tra thông báo và dữ liệu trả về.B4. Đối chiếu với kết quả mong đợi, tải lại nếu cần.
+1433: Câu không được tính đúng.
+1434: Hệ thống không tính đúng cho câu nhiều lựa chọn khi chọn thừa đáp án.
+1435: Đạt
+1436: 14
+1437: Bỏ trống câu khi nộp
+1438: Đề có một câu chưa chọn đáp án, bấm Nộp bài.
+1439: B1. Đăng nhập tài khoản kiểm thử và mở chức năng “Bỏ trống câu khi nộp”.B2. Chuẩn bị nội dung/bộ câu hỏi và nhập hoặc chọn dữ liệu đã chỉ định.B3. Thực hiện thao tác học/làm bài/nộp/đánh giá theo tình huống.B4. Kiểm tra kết quả, tiến độ hoặc thông báo sau khi tải lại.
+1440: Câu bỏ trống không được tính đúng, kết quả không cộng điểm cho câu đó.
+1441: Câu không chọn đáp án được chấm 0 điểm, bài thử đạt 0%.
+1442: Đạt
+1443: 15
+1444: Chấm câu trả lời ngắn
+1445: Câu trả lời ngắn có đáp án và quy tắc đối sánh đã được xác định.Nhập đáp án đúng rồi thử đáp án sai ở lượt khác.
+1446: B1. Đăng nhập tài khoản kiểm thử và mở chức năng “Chấm câu trả lời ngắn”.B2. Chuẩn bị nội dung/bộ câu hỏi và nhập hoặc chọn dữ liệu đã chỉ định.B3. Thực hiện thao tác học/làm bài/nộp/đánh giá theo tình huống.B4. Kiểm tra kết quả, tiến độ hoặc thông báo sau khi tải lại.
+1447: Điểm khớp đáp án và quy tắc đã xác định. Nếu chưa có quy tắc chấm, ghi Bị chặn, không tự kết luận Đạt.
+1448: Hệ thống chấm câu trả lời ngắn theo dữ liệu đáp án thử nghiệm đã cấu hình.
+1449: Đạt
+1450: 16
+1451: Chấm câu tình huống
+1452: Câu tình huống có tiêu chí chấm đã được phê duyệt, nhập bài trả lời mẫu.
+1453: B1. Đăng nhập tài khoản kiểm thử và mở chức năng “Chấm câu tình huống”.B2. Chuẩn bị nội dung/bộ câu hỏi và nhập hoặc chọn dữ liệu đã chỉ định.B3. Thực hiện thao tác học/làm bài/nộp/đánh giá theo tình huống.B4. Kiểm tra kết quả, tiến độ hoặc thông báo sau khi tải lại.
+1454: Đánh giá khớp tiêu chí chấm. Nếu chưa có tiêu chí hoặc chức năng chấm, ghi Bị chặn.
+1455: Chưa có tiêu chí chấm tình huống được thống nhất để đối chiếu, không tự kết luận Đạt.
+1456: Bị chặn
+1457: 17
+1458: Nộp payload giả
+1459: Attempt HV1Thao tác: Gửi câu ngoài bản đề tại thời điểm bắt đầu, trùng questionId, option của câu khác và trường score giả
+1460: B1. Mở màn hình/chức năng hoặc chuẩn bị API kiểm thử cho “Nộp payload giả”; thiết lập dữ liệu và quyền theo Input.B2. Gửi câu ngoài bản đề tại thời điểm bắt đầu, trùng questionId, option của câu khác và trường score giả.B3. Quan sát phản hồi và đối chiếu với kết quả mong đợi.
+1461: Câu/option sai bị từ chối, server tự tính điểm, không tin score do client gửi.
+1462: Hệ thống từ chối dữ liệu nộp bài giả hoặc không thuộc câu hỏi trong lượt làm.
+1463: Đạt
+1464: 18
+1465: Nộp đồng thời/lặp
+1466: Attempt đang làmThao tác: Gửi hai submit đồng thời, retry submit sau thành công
+1467: B1. Mở màn hình/chức năng hoặc chuẩn bị API kiểm thử cho “Nộp đồng thời/lặp”; thiết lập dữ liệu và quyền theo Input.B2. Gửi hai submit đồng thời.B3. Retry submit sau thành công.B4. Quan sát phản hồi và đối chiếu với kết quả mong đợi.
+1468: Chỉ chấm/ghi tiến độ một lần, request sau lỗi có kiểm soát, điểm không cộng đôi.
+1469: Trong hai yêu cầu nộp đồng thời, chỉ một yêu cầu được chấm, yêu cầu còn lại bị từ chối, không chấm lặp.
+1470: Đạt
+1471: 19
+1472: Người khác nộp/xem bài
+1473: Attempt thuộc HV1, token HV2Thao tác: HV2 submit và GET attempt bằng ID HV1
+1474: B1. Mở màn hình/chức năng hoặc chuẩn bị API kiểm thử cho “Người khác nộp/xem bài”; thiết lập dữ liệu và quyền theo Input.B2. HV2 submit và GET attempt bằng ID HV1.B3. Quan sát phản hồi và đối chiếu với kết quả mong đợi.
+1475: 403/404, không lộ bản đề tại thời điểm bắt đầu, điểm hoặc sửa bài HV1.
+1476: Học viên khác không đọc được hoặc nộp thay lượt làm bài.
+1477: Đạt
+1478: 20
+1479: Hết giờ và sửa đồng hồ máy
+1480: Đề thời lượng 1 phútThao tác: Đợi hết giờ, chỉnh đồng hồ client, thử nộp trễ trực tiếp API
+1481: B1. Mở màn hình/chức năng hoặc chuẩn bị API kiểm thử cho “Hết giờ và sửa đồng hồ máy”; thiết lập dữ liệu và quyền theo Input.B2. Đợi hết giờ, chỉnh đồng hồ client.B3. Thử nộp trễ trực tiếp API.B4. Quan sát phản hồi và đối chiếu với kết quả mong đợi.
+1482: Thời hạn do server quyết định, không kéo dài bằng đồng hồ client, chính sách xử lý bài quá hạn phải được chốt và kiểm, không chỉ kiểm countdown UI.
+1483: Hệ thống từ chối nộp bài sau thời điểm hết hạn do máy chủ lưu. 
+1484: Đạt
+1485: 21
+1486: Snapshot đề
+1487: HV1 đã start E1Thao tác: quản trị viên sửa câu/đáp án/điểm đạt, HV1 nộp
+1488: B1. Mở màn hình/chức năng hoặc chuẩn bị API kiểm thử cho “Snapshot đề”; thiết lập dữ liệu và quyền theo Input.B2. Quản trị viên sửa câu/đáp án/điểm đạt, HV1 nộp.B3. Quan sát phản hồi và đối chiếu với kết quả mong đợi.
+1489: Bài đang làm được chấm theo bản đề tại thời điểm bắt đầu ban đầu, kết quả cũ không thay đổi.
+1490: Sau khi quản trị viên sửa đáp án gốc, nộp đáp án đúng theo đề lúc bắt đầu vẫn được 100%.
+1491: Đạt
+1492: 22
+1493: Resume sau reload/background
+1494: Attempt chưa hết giờThao tác: Reload web, background/kill mobile rồi mở lại E1
+1495: B1. Mở màn hình/chức năng hoặc chuẩn bị API kiểm thử cho “Resume sau reload/background”; thiết lập dữ liệu và quyền theo Input.B2. Reload web.B3. Background/kill mobile rồi mở lại E1.B4. Quan sát phản hồi và đối chiếu với kết quả mong đợi.
+1496: Không tạo lượt trùng, thời gian còn lại đúng server, hành vi lưu câu chưa nộp đúng cam kết UI.
+1497: Hệ thống trả lại lượt đang làm khi truy vấn tiếp tục. 
+1498: Đạt
+1499: 23
+1500: Mạng mất khi submit
+1501: Attempt hợp lệThao tác: Gửi rồi ngắt mạng, nối lại, kiểm trạng thái trước retry
+1502: B1. Mở màn hình/chức năng hoặc chuẩn bị API kiểm thử cho “Mạng mất khi submit”; thiết lập dữ liệu và quyền theo Input.B2. Gửi rồi ngắt mạng, nối lại.B3. Kiểm trạng thái trước retry.B4. Quan sát phản hồi và đối chiếu với kết quả mong đợi.
+1503: Không tạo kết quả trùng, cho xem kết quả nếu server đã nhận, không mất khả năng phục hồi.
+1504: Chưa chạy.
+1505: Chưa chạy
+1506: 24
+1507: Xem lại kết quả
+1508: HV1 đã nộp, nhiều câu hơn một trangThao tác: Mở result, phân trang, xem đáp án/lời giải/domain/topic
+1509: B1. Mở màn hình/chức năng hoặc chuẩn bị API kiểm thử cho “Xem lại kết quả”; thiết lập dữ liệu và quyền theo Input.B2. Mở result, phân trang.B3. Xem đáp án/lời giải/domain/topic.B4. Quan sát phản hồi và đối chiếu với kết quả mong đợi.
+1510: Dữ liệu khớp bản đề tại thời điểm bắt đầu, trang đúng, nút quay lại tới màn phù hợp.
+1511: Đọc lại lượt đã chấm vẫn trả đúng kết quả 100% đã lưu.
+1512: Đạt
+1513: 25
+1514: Xuất bản nhiều đề thi
+1515: Chọn 2 đề thi nháp hợp lệ, thực hiện Xuất bản hàng loạt.
+1516: B1. Đăng nhập tài khoản có quyền và mở chức năng liên quan đến “Xuất bản nhiều đề thi”.B2. Nhập/chọn đúng dữ liệu thử được mô tả ở cột Input.B3. Nhấn Tạo/Thêm/Lưu/Xuất bản theo kịch bản.B4. Mở lại danh sách hoặc chi tiết để kiểm tra kết quả.
+1517: Cả hai mục chuyển sang xuất bản, tải lại vẫn đúng trạng thái, mục không chọn không thay đổi.
+1518: Hệ thống chuyển các đề thi đã chọn sang trạng thái xuất bản.
+1519: Đạt
+1520: 26
+1521: Chuyển nhiều đề thi về nháp
+1522: Chọn 2 đề thi đang xuất bản, chuyển hàng loạt về Nháp.
+1523: B1. Đăng nhập tài khoản kiểm thử và mở chức năng “Chuyển nhiều đề thi về nháp”.B2. Chuẩn bị nội dung/bộ câu hỏi và nhập hoặc chọn dữ liệu đã chỉ định.B3. Thực hiện thao tác học/làm bài/nộp/đánh giá theo tình huống.B4. Kiểm tra kết quả, tiến độ hoặc thông báo sau khi tải lại.
+1524: Hai mục chuyển về nháp, học viên không truy cập được nội dung không được phép, mục khác giữ nguyên.
+1525: Hệ thống chuyển các đề thi đã chọn về nháp.
+1526: Đạt
+1527: 27
+1528: Kiểm tra điều kiện làm đề
+1529: HV1 còn lượt làm, mở một đề đã xuất bản và nằm trong thời gian cho phép.
+1530: B1. Mở chức năng “Kiểm tra điều kiện làm đề” với tài khoản và trạng thái dữ liệu được nêu.B2. Nhập/chọn dữ liệu kiểm thử ở cột Input và thực hiện thao tác tương ứng.B3. Xác nhận hoặc gửi yêu cầu; kiểm tra thông báo và dữ liệu trả về.B4. Đối chiếu với kết quả mong đợi, tải lại nếu cần.
+1531: Hiển thị được phép bắt đầu, bấm Bắt đầu mở được lượt làm.
+1532: Hệ thống trả thông tin điều kiện bắt đầu đề theo tài khoản đang đăng nhập.
+1533: Đạt
+1534: 28
+1535: Thông báo hết lượt làm đề
+1536: HV1 đã dùng hết lượt của đề có giới hạn, mở lại đề.
+1537: B1. Mở chức năng “Thông báo hết lượt làm đề” với tài khoản và trạng thái dữ liệu được nêu.B2. Nhập/chọn dữ liệu kiểm thử ở cột Input và thực hiện thao tác tương ứng.B3. Xác nhận hoặc gửi yêu cầu; kiểm tra thông báo và dữ liệu trả về.B4. Đối chiếu với kết quả mong đợi, tải lại nếu cần.
+1538: Hiển thị không còn lượt, không tạo thêm lượt làm khi gửi lại yêu cầu.
+1539: Hệ thống trả thông tin đã hết lượt và không cho bắt đầu thêm lượt làm.
+1540: Đạt
+1541: 5.2.15. Chức năng tiến độ, dashboard và gợi ý
+1542: Bảng 5.15. Kiểm thử tiến độ, dashboard và gợi ý
+1543: STT
+1544: Tên kịch bản
+1545: Dữ liệu đầu vào(Input)
+1546: Các bước thực hiện
+1547: Kết quả mong đợi
+1548: Kết quả thực tế
+1549: Trạng thái
+1550: 1
+1551: Dashboard người mới
+1552: học viên mới không có progressThao tác: Mở home/progress
+1553: B1. Mở màn hình/chức năng hoặc chuẩn bị API kiểm thử cho “Dashboard người mới”; thiết lập dữ liệu và quyền theo Input.B2. Mở home/progress.B3. Quan sát phản hồi và đối chiếu với kết quả mong đợi.
+1554: Hiển thị 0 hoặc chưa thiết lập, không gán chứng chỉ đầu danh sách làm mục tiêu, không NaN/Infinity.
+1555: Hệ thống trả số liệu học tập của học viên mới mà không phát sinh lỗi.
+1556: Đạt
+1557: 2
+1558: Đồng bộ tiến độ
+1559: HV1 học lesson và nộp exam trên mobileThao tác: Mở web progress/home, so GET progress/me
+1560: B1. Mở màn hình/chức năng hoặc chuẩn bị API kiểm thử cho “Đồng bộ tiến độ”; thiết lập dữ liệu và quyền theo Input.B2. Mở web progress/home.B3. So GET progress/me.B4. Quan sát phản hồi và đối chiếu với kết quả mong đợi.
+1561: Cùng dữ liệu sau refresh, completion và averageScore không bị đánh đồng.
+1562: Hệ thống trả tiến độ của học viên hiện tại.
+1563: Đạt
+1564: 3
+1565: Ghi tiến độ sai
+1566: HV1Thao tác: POST progress/me với resourceId sai,resourceType lạ,completion -1/101
+1567: B1. Mở màn hình/chức năng hoặc chuẩn bị API kiểm thử cho “Ghi tiến độ sai”; thiết lập dữ liệu và quyền theo Input.B2. POST progress/me với resourceId sai,resourceType lạ,completion -1/101.B3. Quan sát phản hồi và đối chiếu với kết quả mong đợi.
+1568: Từ chối, không lưu tiến độ mồ côi hoặc phần trăm ngoài 0–100.
+1569: Hệ thống từ chối dữ liệu tiến độ không hợp lệ.
+1570: Đạt
+1571: 4
+1572: Không giả danh học viên
+1573: HV1,HV2Thao tác: HV1 POST progress kèm học viênId=HV2
+1574: B1. Mở màn hình/chức năng hoặc chuẩn bị API kiểm thử cho “Không giả danh học viên”; thiết lập dữ liệu và quyền theo Input.B2. HV1 POST progress kèm học viênId=HV2.B3. Quan sát phản hồi và đối chiếu với kết quả mong đợi.
+1575: Chỉ dùng danh tính token hoặc từ chối, tiến độ HV2 không đổi.
+1576: Hệ thống từ chối dữ liệu ghi tiến độ nhằm giả danh học viên khác.
+1577: Đạt
+1578: 5
+1579: Hoàn thành và ghi lặp
+1580: HV1 hoàn tất lessonThao tác: POST cùng trạng thái nhiều lần, tải tổng tiến độ
+1581: B1. Mở màn hình/chức năng hoặc chuẩn bị API kiểm thử cho “Hoàn thành và ghi lặp”; thiết lập dữ liệu và quyền theo Input.B2. POST cùng trạng thái nhiều lần.B3. Tải tổng tiến độ.B4. Quan sát phản hồi và đối chiếu với kết quả mong đợi.
+1582: Không nhân đôi số hoàn thành, resource khác không đổi.
+1583: Ghi hoàn thành bài học lặp lại không tạo bản ghi trùng. 
+1584: Đạt
+1585: 6
+1586: Mục tiêu ngày/tuần
+1587: Fixture có hoạt động hôm nay và tuần trướcThao tác: Mở journey/home
+1588: B1. Mở màn hình/chức năng hoặc chuẩn bị API kiểm thử cho “Mục tiêu ngày/tuần”; thiết lập dữ liệu và quyền theo Input.B2. Mở journey/home.B3. Quan sát phản hồi và đối chiếu với kết quả mong đợi.
+1589: Từ vựng, phút học, bài thi tuần đúng kỳ, thanh không vượt 100% dù vượt chỉ tiêu.
+1590: Hệ thống trả lịch học cá nhân.
+1591: Đạt
+1592: 7
+1593: Ranh giới ngày/tuần
+1594: Clock test và múi giờ đã thống nhấtThao tác: Tạo hoạt động sát 00:00 và đầu tuần, đổi thời gian test qua mốc
+1595: B1. Mở màn hình/chức năng hoặc chuẩn bị API kiểm thử cho “Ranh giới ngày/tuần”; thiết lập dữ liệu và quyền theo Input.B2. Tạo hoạt động sát 00:00 và đầu tuần.B3. Đổi thời gian test qua mốc.B4. Quan sát phản hồi và đối chiếu với kết quả mong đợi.
+1596: Hoạt động thuộc đúng kỳ, số cũ không mang sang sai, ghi rõ múi giờ trong bằng chứng.
+1597: Chưa chạy.
+1598: Chưa chạy
+1599: 8
+1600: Kết quả gần đây
+1601: HV1 có graded,submitted,in_progressThao tác: Mở home và activities, bấm kết quả
+1602: B1. Mở màn hình/chức năng hoặc chuẩn bị API kiểm thử cho “Kết quả gần đây”; thiết lập dữ liệu và quyền theo Input.B2. Mở home và activities.B3. Bấm kết quả.B4. Quan sát phản hồi và đối chiếu với kết quả mong đợi.
+1603: Danh sách đúng trạng thái được hỗ trợ, route dùng attemptId, chưa chấm không hiển thị 0% giả.
+1604: Chưa chạy.
+1605: Chưa chạy
+1606: 9
+1607: Gợi ý cá nhân hóa
+1608: HV1 mục tiêu C1,yếu topic T1, HV2 mục tiêu khácThao tác: GET recommendations và mở UI từng học viên
+1609: B1. Mở màn hình/chức năng hoặc chuẩn bị API kiểm thử cho “Gợi ý cá nhân hóa”; thiết lập dữ liệu và quyền theo Input.B2. GET recommendations và mở UI từng học viên.B3. Quan sát phản hồi và đối chiếu với kết quả mong đợi.
+1610: Gợi ý liên quan profile/goals/performance, không rò thông tin HV1 sang HV2.
+1611: Hệ thống trả danh sách gợi ý khi không dùng dịch vụ AI. 
+1612: Đạt
+1613: 10
+1614: AI không khả dụng
+1615: Mock provider timeout/trả JSON sai, không dùng khóa thậtThao tác: Gọi recommendations
+1616: B1. Mở màn hình/chức năng hoặc chuẩn bị API kiểm thử cho “AI không khả dụng”; thiết lập dữ liệu và quyền theo Input.B2. Gọi recommendations.B3. Quan sát phản hồi và đối chiếu với kết quả mong đợi.
+1617: Fallback hoặc lỗi có kiểm soát, dashboard vẫn dùng được, không hiển thị raw prompt/secret.
+1618: Khi không cấu hình AI, hệ thống vẫn trả gợi ý theo quy tắc.
+1619: Đạt
+1620: 11
+1621: Gợi ý self/smart
+1622: HV1 lần lượt có learningPathMode self,smartThao tác: Mở home hai nền tảng
+1623: B1. Mở màn hình/chức năng hoặc chuẩn bị API kiểm thử cho “Gợi ý self/smart”; thiết lập dữ liệu và quyền theo Input.B2. Mở home hai nền tảng.B3. Quan sát phản hồi và đối chiếu với kết quả mong đợi.
+1624: Trạng thái hiển thị phù hợp mode, URL gợi ý giữ bộ lọc và mở route có thật.
+1625: Hệ thống trả kết quả cho cả chế độ tự chọn và thông minh.
+1626: Đạt
+1627: 12
+1628: Quyền đọc progress người khác
+1629: HV1, nhân viên có/không reports:readThao tác: GET progress/học viêns/HV2 bằng mỗi token
+1630: B1. Mở màn hình/chức năng hoặc chuẩn bị API kiểm thử cho “Quyền đọc progress người khác”; thiết lập dữ liệu và quyền theo Input.B2. GET progress/học viêns/HV2 bằng mỗi token.B3. Quan sát phản hồi và đối chiếu với kết quả mong đợi.
+1631: HV1 và nhân viên thiếu quyền bị chặn, người đủ quyền xem đúng HV2.
+1632: Học viên bị từ chối đọc tiến độ của người khác.
+1633: Đạt
+1634: 13
+1635: Xem lịch học cá nhân
+1636: HV1 có mục tiêu và hoạt động học, mở lịch học, đổi sang HV2.
+1637: B1. Đăng nhập tài khoản kiểm thử và mở chức năng “Xem lịch học cá nhân”.B2. Chuẩn bị nội dung/bộ câu hỏi và nhập hoặc chọn dữ liệu đã chỉ định.B3. Thực hiện thao tác học/làm bài/nộp/đánh giá theo tình huống.B4. Kiểm tra kết quả, tiến độ hoặc thông báo sau khi tải lại.
+1638: Lịch hiển thị nội dung của đúng tài khoản, không giữ dữ liệu HV1 sau khi đổi tài khoản.
+1639: Hệ thống trả lịch học của học viên đang đăng nhập.
+1640: Đạt
+1641: 5.2.16. Chức năng quản trị kết quả và báo cáo
+1642: Bảng 5.16. Kiểm thử quản trị kết quả và báo cáo
+1643: STT
+1644: Tên kịch bản
+1645: Dữ liệu đầu vào(Input)
+1646: Các bước thực hiện
+1647: Kết quả mong đợi
+1648: Kết quả thực tế
+1649: Trạng thái
+1650: 1
+1651: Số liệu dashboard
+1652: Dataset QA biết số users/attempt/progressThao tác: Mở analytics/dashboard và UI quản trị, đối chiếu truy vấn DB chỉ đọc
+1653: B1. Mở màn hình/chức năng hoặc chuẩn bị API kiểm thử cho “Số liệu dashboard”; thiết lập dữ liệu và quyền theo Input.B2. Mở analytics/dashboard và UI quản trị.B3. Đối chiếu truy vấn DB chỉ đọc.B4. Quan sát phản hồi và đối chiếu với kết quả mong đợi.
+1654: Số liệu cùng định nghĩa, cùng kỳ, không cộng bản ghi soft-delete sai quy tắc.
+1655: Hệ thống trả số liệu tổng quan quản trị.
+1656: Đạt
+1657: 2
+1658: Danh sách học viên
+1659: HV1,HV2 khác domain/career/certificateThao tác: Mở students, tìm/lọc, mở chi tiết
+1660: B1. Mở màn hình/chức năng hoặc chuẩn bị API kiểm thử cho “Danh sách học viên”; thiết lập dữ liệu và quyền theo Input.B2. Mở students, tìm/lọc.B3. Mở chi tiết.B4. Quan sát phản hồi và đối chiếu với kết quả mong đợi.
+1661: Kết quả đúng người và mục tiêu, pagination đúng tổng.
+1662: Hệ thống trả danh sách học viên cho tài khoản quản trị. 
+1663: Đạt
+1664: 3
+1665: Kết quả bài thi quản trị
+1666: quản trị viên/nhân viên có exams:gradeThao tác: Mở test-results, lọc, mở attempt cụ thể
+1667: B1. Mở màn hình/chức năng hoặc chuẩn bị API kiểm thử cho “Kết quả bài thi quản trị”; thiết lập dữ liệu và quyền theo Input.B2. Mở test-results.B3. Lọc.B4. Mở attempt cụ thể.B5. Quan sát phản hồi và đối chiếu với kết quả mong đợi.
+1668: Điểm, trạng thái, học viên và bản đề tại thời điểm bắt đầu khớp kết quả học viên.
+1669: Hệ thống trả danh sách kết quả bài thi cho quản trị viên. 
+1670: Đạt
+1671: 4
+1672: Báo cáo theo lĩnh vực
+1673: D1 có học viêns, D2 rỗngThao tác: Mở reports/domain/D1 và D2
+1674: B1. Mở màn hình/chức năng hoặc chuẩn bị API kiểm thử cho “Báo cáo theo lĩnh vực”; thiết lập dữ liệu và quyền theo Input.B2. Mở reports/domain/D1 và D2.B3. Quan sát phản hồi và đối chiếu với kết quả mong đợi.
+1675: D1 tính đúng từ fixture, D2 hiển thị 0/empty, không lỗi chia 0.
+1676: Hệ thống trả báo cáo theo chuyên ngành được yêu cầu. 
+1677: Đạt
+1678: 5
+1679: Tổng quan tiến độ
+1680: Learners ở nhiều mức hoàn thànhThao tác: Mở progress-overview, đối chiếu dữ liệu từng học viên
+1681: B1. Mở màn hình/chức năng hoặc chuẩn bị API kiểm thử cho “Tổng quan tiến độ”; thiết lập dữ liệu và quyền theo Input.B2. Mở progress-overview.B3. Đối chiếu dữ liệu từng học viên.B4. Quan sát phản hồi và đối chiếu với kết quả mong đợi.
+1682: Completion, điểm trung bình, tổng học viên đúng định nghĩa, không trộn score và completion.
+1683: Hệ thống trả dữ liệu tổng quan tiến độ.
+1684: Đạt
+1685: 6
+1686: Xuất Excel
+1687: Báo cáo có tiếng Việt và bộ lọc đang chọnThao tác: Xuất file, mở bằng Excel, so bảng UI
+1688: B1. Mở màn hình/chức năng hoặc chuẩn bị API kiểm thử cho “Xuất Excel”; thiết lập dữ liệu và quyền theo Input.B2. Xuất file.B3. Mở bằng Excel.B4. So bảng UI.B5. Quan sát phản hồi và đối chiếu với kết quả mong đợi.
+1689: File đọc được, cột, Unicode, số và dữ liệu phù hợp phạm vi xuất được mô tả trên UI.
+1690: Chưa chạy.
+1691: Chưa chạy
+1692: 7
+1693: Quyền báo cáo
+1694: Role thiếu reports:read/exams:gradeThao tác: Mở URL trực tiếp và gọi API từng loại
+1695: B1. Mở màn hình/chức năng hoặc chuẩn bị API kiểm thử cho “Quyền báo cáo”; thiết lập dữ liệu và quyền theo Input.B2. Mở URL trực tiếp và gọi API từng loại.B3. Quan sát phản hồi và đối chiếu với kết quả mong đợi.
+1696: Thiếu quyền tương ứng bị chặn, không tải dữ liệu rồi chỉ ẩn UI.
+1697: Học viên bị từ chối đọc báo cáo quản trị. 
+1698: Đạt
+1699: 8
+1700: Báo cáo rỗng/lỗi API
+1701: Dataset rỗng, giả lập 500Thao tác: Mở báo cáo, retry
+1702: B1. Mở màn hình/chức năng hoặc chuẩn bị API kiểm thử cho “Báo cáo rỗng/lỗi API”; thiết lập dữ liệu và quyền theo Input.B2. Mở báo cáo.B3. Retry.B4. Quan sát phản hồi và đối chiếu với kết quả mong đợi.
+1703: Empty/error rõ, không hiển thị số mẫu như dữ liệu thật, không cho xuất file sai im lặng.
+1704: Chưa chạy.
+1705: Chưa chạy
+1706: 5.2.17. Chức năng nhắc học và thông báo
+1707: Bảng 5.17. Kiểm thử nhắc học và thông báo
+1708: STT
+1709: Tên kịch bản
+1710: Dữ liệu đầu vào(Input)
+1711: Các bước thực hiện
+1712: Kết quả mong đợi
+1713: Kết quả thực tế
+1714: Trạng thái
+1715: 1
+1716: Bật nhắc học
+1717: HV1, thiết bị thật bản build có notificationsThao tác: Bật nhắc với giờ sắp tới, cấp quyền, đợi tới giờ
+1718: B1. Mở màn hình/chức năng hoặc chuẩn bị API kiểm thử cho “Bật nhắc học”; thiết lập dữ liệu và quyền theo Input.B2. Bật nhắc với giờ sắp tới, cấp quyền.B3. Đợi tới giờ.B4. Quan sát phản hồi và đối chiếu với kết quả mong đợi.
+1719: Lưu giờ/enabled, thông báo đến đúng người và lịch, chạm mở đúng màn.
+1720: Khi bật nhắc học, tác vụ thử nghiệm tạo một thông báo..
+1721: Đạt
+1722: 2
+1723: Tắt nhắc học
+1724: HV1 đã lên lịchThao tác: Tắt trên mobile, lưu, mở web, đợi tới giờ cũ
+1725: B1. Mở màn hình/chức năng hoặc chuẩn bị API kiểm thử cho “Tắt nhắc học”; thiết lập dữ liệu và quyền theo Input.B2. Tắt trên mobile.B3. Lưu.B4. Mở web.B5. Đợi tới giờ cũ.B6. Quan sát phản hồi và đối chiếu với kết quả mong đợi.
+1726: enabled=false đồng bộ, lịch local cũ bị hủy, sửa hồ sơ không tự bật lại.
+1727: Khi tắt nhắc học, tác vụ thử nghiệm không tạo thông báo mới. 
+1728: Đạt
+1729: 3
+1730: Đổi giờ nhắc
+1731: Có lịch cũThao tác: Đổi giờ hai lần, liệt kê lịch trên thiết bị
+1732: B1. Mở màn hình/chức năng hoặc chuẩn bị API kiểm thử cho “Đổi giờ nhắc”; thiết lập dữ liệu và quyền theo Input.B2. Đổi giờ hai lần, liệt kê lịch trên thiết bị.B3. Quan sát phản hồi và đối chiếu với kết quả mong đợi.
+1733: Chỉ lịch cuối còn hiệu lực, không tạo nhiều thông báo cùng ngày.
+1734: Chưa chạy.
+1735: Chưa chạy
+1736: 4
+1737: Từ chối quyền/Expo Go
+1738: Thiết bị không cấp permission hoặc Expo GoThao tác: Bật nhắc, lưu hồ sơ
+1739: B1. Mở màn hình/chức năng hoặc chuẩn bị API kiểm thử cho “Từ chối quyền/Expo Go”; thiết lập dữ liệu và quyền theo Input.B2. Bật nhắc.B3. Lưu hồ sơ.B4. Quan sát phản hồi và đối chiếu với kết quả mong đợi.
+1740: Không crash, không tuyên bố đã nhận push khi nền tảng không hỗ trợ, hồ sơ vẫn lưu được.
+1741: Chưa chạy.
+1742: Chưa chạy
+1743: 5
+1744: Token subscription hợp lệ và trùng
+1745: HV1, token testThao tác: POST cùng token hai lần, DELETE, gọi DELETE lần nữa
+1746: B1. Mở màn hình/chức năng hoặc chuẩn bị API kiểm thử cho “Token subscription hợp lệ và trùng”; thiết lập dữ liệu và quyền theo Input.B2. POST cùng token hai lần.B3. DELETE.B4. Gọi DELETE lần nữa.B5. Quan sát phản hồi và đối chiếu với kết quả mong đợi.
+1747: Không nhân đôi subscription, unsubscribe đúng token, thao tác lặp không lỗi 500.
+1748: Đăng ký mã nhận thông báo lặp không tạo bản ghi trùng, xóa lặp không phát sinh lỗi.
+1749: Đạt
+1750: 6
+1751: Token/platform sai
+1752: HV1Thao tác: Gửi token rỗng hoặc >4096 ký tự, platform desktop
+1753: B1. Mở màn hình/chức năng hoặc chuẩn bị API kiểm thử cho “Token/platform sai”; thiết lập dữ liệu và quyền theo Input.B2. Gửi token rỗng hoặc >4096 ký tự, platform desktop.B3. Quan sát phản hồi và đối chiếu với kết quả mong đợi.
+1754: API từ chối, không ghi subscription sai.
+1755: Hệ thống từ chối nền tảng không hợp lệ và mã nhận thông báo rỗng. 
+1756: Đạt
+1757: 7
+1758: Đổi tài khoản trên cùng thiết bị
+1759: HV1 đăng ký token, logout, HV2 loginThao tác: Đăng ký token cho HV2, phát thông báo test cho HV1/HV2
+1760: B1. Mở màn hình/chức năng hoặc chuẩn bị API kiểm thử cho “Đổi tài khoản trên cùng thiết bị”; thiết lập dữ liệu và quyền theo Input.B2. Đăng ký token cho HV2.B3. Phát thông báo test cho HV1/HV2.B4. Quan sát phản hồi và đối chiếu với kết quả mong đợi.
+1761: Không gửi thông tin cá nhân HV1 cho HV2, quyền sở hữu token và lịch được xử lý đúng.
+1762: Chưa chạy.
+1763: Chưa chạy
+1764: 5.2.18. Chức năng thông báo
+1765: Bảng 5.18. Kiểm thử thông báo
+1766: STT
+1767: Tên kịch bản
+1768: Dữ liệu đầu vào(Input)
+1769: Các bước thực hiện
+1770: Kết quả mong đợi
+1771: Kết quả thực tế
+1772: Trạng thái
+1773: 1
+1774: Hộp thông báo và quyền sở hữu
+1775: HV1/HV2 có thông báo riêngThao tác: Đăng nhập HV1, xem pending, đánh dấu đọc, dùng HV1 thử đánh dấu thông báo của HV2
+1776: B1. Mở màn hình/chức năng hoặc chuẩn bị API kiểm thử cho “Hộp thông báo và quyền sở hữu”; thiết lập dữ liệu và quyền theo Input.B2. Đăng nhập HV1.B3. Xem pending, đánh dấu đọc, dùng HV1 thử đánh dấu thông báo của HV2.B4. Quan sát phản hồi và đối chiếu với kết quả mong đợi.
+1777: Chỉ đọc và sửa thông báo của mình, số chưa đọc cập nhật đúng, không lộ dữ liệu HV2.
+1778: Hệ thống chỉ trả thông báo của học viên hiện tại và từ chối sửa thông báo của người khác. 
+1779: Đạt
+1780: 2
+1781: Đánh dấu đọc lặp và ID lỗi
+1782: Một thông báo chưa đọc của HV1Thao tác: Đánh dấu hai lần, tải lại, thử ID sai định dạng và ID không tồn tại
+1783: B1. Mở màn hình/chức năng hoặc chuẩn bị API kiểm thử cho “Đánh dấu đọc lặp và ID lỗi”; thiết lập dữ liệu và quyền theo Input.B2. Đánh dấu hai lần.B3. Tải lại.B4. Thử ID sai định dạng và ID không tồn tại.B5. Quan sát phản hồi và đối chiếu với kết quả mong đợi.
+1784: Không tạo dữ liệu trùng, trạng thái ổn định, lỗi rõ, không 500.
+1785: Đánh dấu đã đọc lặp không gây lỗi, mã thông báo không hợp lệ không làm thay đổi dữ liệu người khác.
+1786: Đạt
+1787: 5.2.19. Chức năng job nhắc học
+1788: Bảng 5.19. Kiểm thử job nhắc học
+1789: STT
+1790: Tên kịch bản
+1791: Dữ liệu đầu vào(Input)
+1792: Các bước thực hiện
+1793: Kết quả mong đợi
+1794: Kết quả thực tế
+1795: Trạng thái
+1796: 1
+1797: Xác thực scheduler
+1798: Môi trường QA riêng, khóa scheduler thử nghiệmThao tác: Gọi job thiếu khóa, khóa sai, khóa đúng, thử cấu hình thiếu khóa
+1799: B1. Mở màn hình/chức năng hoặc chuẩn bị API kiểm thử cho “Xác thực scheduler”; thiết lập dữ liệu và quyền theo Input.B2. Gọi job thiếu khóa, khóa sai, khóa đúng.B3. Thử cấu hình thiếu khóa.B4. Quan sát phản hồi và đối chiếu với kết quả mong đợi.
+1800: Thiếu/sai khóa bị từ chối, cấu hình thiếu báo không khả dụng, chỉ khóa hợp lệ chạy job.
+1801: Tác vụ nhắc học chấp nhận khóa xác thực hợp lệ và từ chối yêu cầu không có quyền.
+1802: Đạt
+1803: 2
+1804: Đúng giờ, tắt nhắc và chống lặp
+1805: HV1 bật nhắc, HV2 tắt nhắc, có thiết bị nhận push thửThao tác: Chạy job quanh giờ nhắc và ranh giới ngày, chạy lặp, đổi giờ/tắt nhắc rồi chạy lại
+1806: B1. Mở màn hình/chức năng hoặc chuẩn bị API kiểm thử cho “Đúng giờ, tắt nhắc và chống lặp”; thiết lập dữ liệu và quyền theo Input.B2. Chạy job quanh giờ nhắc và ranh giới ngày.B3. Chạy lặp.B4. Đổi giờ/tắt nhắc rồi chạy lại.B5. Quan sát phản hồi và đối chiếu với kết quả mong đợi.
+1807: Gửi đúng đối tượng, thời điểm và múi giờ theo chính sách, không gửi cho người tắt nhắc, không gửi lặp ngoài chủ đích.
+1808: Gọi tác vụ nhắc học hai lần không tạo thông báo trùng, người đã tắt nhắc không nhận bản ghi mới. 
+1809: Đạt
+1810: 5.2.20. Chức năng giao diện và đồng bộ nền tảng
+1811: Bảng 5.20. Kiểm thử giao diện và đồng bộ nền tảng
+1812: STT
+1813: Tên kịch bản
+1814: Dữ liệu đầu vào(Input)
+1815: Các bước thực hiện
+1816: Kết quả mong đợi
+1817: Kết quả thực tế
+1818: Trạng thái
+1819: 1
+1820: Điều hướng chính
+1821: HV1 có dữ liệuThao tác: Đi Home→Bài học→Chứng chỉ→Tiến độ→Cá nhân, Back, mở deep link
+1822: B1. Mở màn hình/chức năng hoặc chuẩn bị API kiểm thử cho “Điều hướng chính”; thiết lập dữ liệu và quyền theo Input.B2. Đi Home→Bài học→Chứng chỉ→Tiến độ→Cá nhân, Back.B3. Mở deep link.B4. Quan sát phản hồi và đối chiếu với kết quả mong đợi.
+1823: Mọi màn đúng nội dung, tab chọn đúng, không route trắng hoặc vòng lặp redirect.
+1824: Chưa chạy.
+1825: Chưa chạy
+1826: 2
+1827: Menu dư và chức năng bị thiếu
+1828: Web học viên làm chuẩn chức năngThao tác: So từng màn tương ứng mobile, kiểm tab và menu Cá nhân
+1829: B1. Mở màn hình/chức năng hoặc chuẩn bị API kiểm thử cho “Menu dư và chức năng bị thiếu”; thiết lập dữ liệu và quyền theo Input.B2. So từng màn tương ứng mobile.B3. Kiểm tab và menu Cá nhân.B4. Quan sát phản hồi và đối chiếu với kết quả mong đợi.
+1830: Bài học/Chứng chỉ không lặp không cần thiết trong Cá nhân, chức năng học chính vẫn tiếp cận được.
+1831: Chưa chạy trên thiết bị Android/iOS thật hoặc máy giả lập.
+1832: Chưa chạy
+1833: 3
+1834: Safe area và màn nhỏ
+1835: Android có navigation bar, iPhone có notchThao tác: Mở màn chính/form/quiz, bật keyboard, xoay màn nếu hỗ trợ
+1836: B1. Mở màn hình/chức năng hoặc chuẩn bị API kiểm thử cho “Safe area và màn nhỏ”; thiết lập dữ liệu và quyền theo Input.B2. Mở màn chính/form/quiz, bật keyboard, xoay màn nếu hỗ trợ.B3. Quan sát phản hồi và đối chiếu với kết quả mong đợi.
+1837: Không che header/nút lưu, nội dung cuộn được, không tràn ngang ngoài vùng code/bảng.
+1838: Chưa chạy trên thiết bị Android/iOS thật hoặc máy giả lập.
+1839: Chưa chạy
+1840: 4
+1841: Chữ dài và cỡ chữ lớn
+1842: Tên 100 ký tự, title dài, font hệ thống 150–200%Thao tác: Mở home,profile,list,quiz
+1843: B1. Mở màn hình/chức năng hoặc chuẩn bị API kiểm thử cho “Chữ dài và cỡ chữ lớn”; thiết lập dữ liệu và quyền theo Input.B2. Mở home,profile,list,quiz.B3. Quan sát phản hồi và đối chiếu với kết quả mong đợi.
+1844: Nội dung đọc được, không chồng chữ hoặc che nút, truncation có thể mở xem đầy đủ.
+1845: Chưa chạy.
+1846: Chưa chạy
+1847: 5
+1848: Trạng thái tải/rỗng/lỗi
+1849: Mock slow,empty,500 cho từng màn chínhThao tác: Mở màn, retry, đổi tab trong lúc tải
+1850: B1. Mở màn hình/chức năng hoặc chuẩn bị API kiểm thử cho “Trạng thái tải/rỗng/lỗi”; thiết lập dữ liệu và quyền theo Input.B2. Mở màn.B3. Retry.B4. Đổi tab trong lúc tải.B5. Quan sát phản hồi và đối chiếu với kết quả mong đợi.
+1851: Không loading vô hạn, không render dữ liệu cũ của người khác, retry hoạt động.
+1852: Chưa chạy.
+1853: Chưa chạy
+1854: 6
+1855: Keyboard và accessibility web
+1856: Chỉ bàn phím, screen readerThao tác: Tab qua login,form,bộ lọc,dialog,quiz, Enter/Escape
+1857: B1. Mở màn hình/chức năng hoặc chuẩn bị API kiểm thử cho “Keyboard và accessibility web”; thiết lập dữ liệu và quyền theo Input.B2. Tab qua login,form,bộ lọc,dialog,quiz, Enter/Escape.B3. Quan sát phản hồi và đối chiếu với kết quả mong đợi.
+1858: Có label/focus rõ, thứ tự hợp lý, dialog không làm mất focus, thông báo lỗi được nhận biết.
+1859: Chưa chạy.
+1860: Chưa chạy
+1861: 7
+1862: Accessibility mobile
+1863: TalkBack/VoiceOverThao tác: Đọc tab,icon button,flashcard,radio đáp án,nút submit
+1864: B1. Mở màn hình/chức năng hoặc chuẩn bị API kiểm thử cho “Accessibility mobile”; thiết lập dữ liệu và quyền theo Input.B2. Đọc tab,icon button,flashcard,radio đáp án,nút submit.B3. Quan sát phản hồi và đối chiếu với kết quả mong đợi.
+1865: Control có tên và trạng thái, thao tác thực hiện được không chỉ dựa vào màu.
+1866: Chưa chạy trên thiết bị Android/iOS thật hoặc máy giả lập.
+1867: Chưa chạy
+1868: 8
+1869: API URL trên thiết bị
+1870: Điện thoại cùng LAN, API test chạyThao tác: Mở app dùng EXPO_PUBLIC_API_URL, login và tải lesson
+1871: B1. Mở màn hình/chức năng hoặc chuẩn bị API kiểm thử cho “API URL trên thiết bị”; thiết lập dữ liệu và quyền theo Input.B2. Mở app dùng EXPO_PUBLIC_API_URL, login và tải lesson.B3. Quan sát phản hồi và đối chiếu với kết quả mong đợi.
+1872: Thiết bị truy cập được host API, không dùng localhost điện thoại nhầm server, lỗi mạng nêu rõ.
+1873: Chưa chạy trên thiết bị Android/iOS thật hoặc máy giả lập.
+1874: Chưa chạy
+1875: 9
+1876: Cache khi chuyển tài khoản
+1877: HV1 có progress, HV2 chưa họcThao tác: Logout HV1, login HV2, quay lại từng tab
+1878: B1. Mở màn hình/chức năng hoặc chuẩn bị API kiểm thử cho “Cache khi chuyển tài khoản”; thiết lập dữ liệu và quyền theo Input.B2. Logout HV1, login HV2.B3. Quay lại từng tab.B4. Quan sát phản hồi và đối chiếu với kết quả mong đợi.
+1879: Không lóe dữ liệu HV1, mỗi request lấy đúng session HV2.
+1880: Chưa chạy.
+1881: Chưa chạy
+1882: 5.2.21. Chức năng bảo mật và tính toàn vẹn
+1883: Bảng 5.21. Kiểm thử bảo mật và tính toàn vẹn
+1884: STT
+1885: Tên kịch bản
+1886: Dữ liệu đầu vào(Input)
+1887: Các bước thực hiện
+1888: Kết quả mong đợi
+1889: Kết quả thực tế
+1890: Trạng thái
+1891: 1
+1892: Tách dữ liệu cá nhân giữa học viên
+1893: HV1, HV2 và định danh bài làm, hồ sơ, tiến độ của HV2.Thao tác: HV1 thay định danh trong các API cá nhân và bài làm thuộc HV2.
+1894: B1. Mở màn hình/chức năng hoặc chuẩn bị API kiểm thử cho “Tách dữ liệu cá nhân giữa học viên”; thiết lập dữ liệu và quyền theo Input.B2. HV1 thay định danh trong các API cá nhân và bài làm thuộc HV2.B3. Quan sát phản hồi và đối chiếu với kết quả mong đợi.
+1895: Không đọc hoặc sửa dữ liệu cá nhân của HV2 khi thiếu quyền. Chỉ kiểm các module đang có trong AppModule, không đưa subscription thanh toán vào phạm vi hiện hành.
+1896: Chưa chạy.
+1897: Chưa chạy
+1898: 2
+1899: JWT giả mạo
+1900: Token hết hạn, sửa payload/signature,sai định dạngThao tác: Gọi mọi nhóm API bảo vệ bằng từng token
+1901: B1. Mở màn hình/chức năng hoặc chuẩn bị API kiểm thử cho “JWT giả mạo”; thiết lập dữ liệu và quyền theo Input.B2. Gọi mọi nhóm API bảo vệ bằng từng token.B3. Quan sát phản hồi và đối chiếu với kết quả mong đợi.
+1902: Không truy cập được, không lỗi 500, server không tin role từ payload chưa xác minh.
+1903: Hệ thống từ chối mã đăng nhập giả. 
+1904: Đạt
+1905: 3
+1906: Lộ dữ liệu nhạy cảm
+1907: quản trị viên và HV1, có lỗi testThao tác: Kiểm response auth/users/reports,console,server log và bundle client
+1908: B1. Mở màn hình/chức năng hoặc chuẩn bị API kiểm thử cho “Lộ dữ liệu nhạy cảm”; thiết lập dữ liệu và quyền theo Input.B2. Kiểm response auth/users/reports,console,server log và bundle client.B3. Quan sát phản hồi và đối chiếu với kết quả mong đợi.
+1909: Không chứa password/hash,refresh token ngoài kênh dự kiến,SMTP/DB/AI secrets hoặc dữ liệu học viên không được phép.
+1910: Chưa chạy.
+1911: Chưa chạy
+1912: 4
+1913: XSS nội dung học
+1914: Fixture title/bio/lesson có script và HTML event handlerThao tác: Lưu qua API test, mở admin/web học viên/mobile renderer
+1915: B1. Mở màn hình/chức năng hoặc chuẩn bị API kiểm thử cho “XSS nội dung học”; thiết lập dữ liệu và quyền theo Input.B2. Lưu qua API test.B3. Mở admin/web học viên/mobile renderer.B4. Quan sát phản hồi và đối chiếu với kết quả mong đợi.
+1916: Không thực thi script không tin cậy, nội dung hiển thị an toàn, không đánh cắp phiên.
+1917: Chưa chạy.
+1918: Chưa chạy
+1919: 5
+1920: Injection và input lớn
+1921: Search và ID chứa ký tự đặc biệt, JSON saiThao tác: Gửi chuỗi SQL-like vô hại,UUID sai,limit âm/khổng lồ,JSON hỏng
+1922: B1. Mở màn hình/chức năng hoặc chuẩn bị API kiểm thử cho “Injection và input lớn”; thiết lập dữ liệu và quyền theo Input.B2. Gửi chuỗi SQL-like vô hại,UUID sai,limit âm/khổng lồ,JSON hỏng.B3. Quan sát phản hồi và đối chiếu với kết quả mong đợi.
+1923: Không thực thi dữ liệu như truy vấn, lỗi 4xx có kiểm soát, không trả toàn bộ DB hoặc stack.
+1924: Mã định danh sai và tham số phân trang bất thường được xử lý mà không làm máy chủ lỗi. 
+1925: Đạt
+1926: 6
+1927: Endpoint public lộ draft/đáp án
+1928: Có content draft và exam chưa làmThao tác: GET list/detail lesson,vocabulary,question,exam bằng guest và HV1
+1929: B1. Mở màn hình/chức năng hoặc chuẩn bị API kiểm thử cho “Endpoint public lộ draft/đáp án”; thiết lập dữ liệu và quyền theo Input.B2. GET list/detail lesson,vocabulary,question,exam bằng guest và HV1.B3. Quan sát phản hồi và đối chiếu với kết quả mong đợi.
+1930: Chỉ trả dữ liệu được phép, không lộ isCorrect/answer trước thời điểm được phép.
+1931: Khách và học viên không đọc được bài nháp, dữ liệu đề chưa nộp không trả đáp án đúng. 
+1932: Đạt
+1933: 7
+1934: Upload giả MIME
+1935: File văn bản khai image/pngThao tác: Upload qua multipart và base64 vào môi trường test
+1936: B1. Mở màn hình/chức năng hoặc chuẩn bị API kiểm thử cho “Upload giả MIME”; thiết lập dữ liệu và quyền theo Input.B2. Upload qua multipart và base64 vào môi trường test.B3. Quan sát phản hồi và đối chiếu với kết quả mong đợi.
+1937: Không phục vụ nội dung thực thi như tài sản tin cậy, báo lỗi đọc ảnh hoặc xử lý an toàn.
+1938: Chưa chạy.
+1939: Chưa chạy
+1940: 8
+1941: Hạn chế thử sai đăng nhập liên tiếp
+1942: Tài khoản QA, thử sai mật khẩu liên tiếp trong môi trường QA.
+1943: B1. Mở chức năng “Hạn chế thử sai đăng nhập liên tiếp” với tài khoản và trạng thái dữ liệu được nêu.B2. Nhập/chọn dữ liệu kiểm thử ở cột Input và thực hiện thao tác tương ứng.B3. Xác nhận hoặc gửi yêu cầu; kiểm tra thông báo và dữ liệu trả về.B4. Đối chiếu với kết quả mong đợi, tải lại nếu cần.
+1944: Đối chiếu giới hạn theo yêu cầu bảo mật được thống nhất, ghi Bị chặn nếu chưa xác định giới hạn, không tự coi là Đạt.
+1945: Chưa chạy.
+1946: Chưa chạy
+1947: 5.2.22. Chức năng vận hành và phi chức năng
+1948: Bảng 5.22. Kiểm thử vận hành và phi chức năng
+1949: STT
+1950: Tên kịch bản
+1951: Dữ liệu đầu vào(Input)
+1952: Các bước thực hiện
+1953: Kết quả mong đợi
+1954: Kết quả thực tế
+1955: Trạng thái
+1956: 1
+1957: Build và typecheck
+1958: Checkout và dependencies đúng lockfile, env testThao tác: Chạy typecheck packages/mobile/web và build API theo scripts hiện có
+1959: B1. Mở màn hình/chức năng hoặc chuẩn bị API kiểm thử cho “Build và typecheck”; thiết lập dữ liệu và quyền theo Input.B2. Chạy typecheck packages/mobile/web và build API theo scripts hiện có.B3. Quan sát phản hồi và đối chiếu với kết quả mong đợi.
+1960: Lệnh exit 0, không coi typecheck là bằng chứng E2E.
+1961: Biên dịch máy chủ, web và kiểm tra kiểu dữ liệu ứng dụng thành công. 
+1962: Đạt
+1963: 2
+1964: Migration trên DB sạch
+1965: Database test dùng riêng, có backup nếu cầnThao tác: Apply migrations vào DB trống, seed test, chạy smoke
+1966: B1. Mở màn hình/chức năng hoặc chuẩn bị API kiểm thử cho “Migration trên DB sạch”; thiết lập dữ liệu và quyền theo Input.B2. Apply migrations vào DB trống, seed test.B3. Chạy smoke.B4. Quan sát phản hồi và đối chiếu với kết quả mong đợi.
+1967: Schema tạo thành công, seed nhất quán, login/học/nộp bài hoạt động.
+1968: Tạo cấu trúc dữ liệu trên cơ sở dữ liệu trống thành công, đăng nhập và các luồng thử nghiệm hoạt động.
+1969: Đạt
+1970: 3
+1971: Migration nâng cấp
+1972: Bản sao DB test phiên bản trước có dữ liệuThao tác: Backup, apply migration, kiểm số lượng và khóa ngoại
+1973: B1. Mở màn hình/chức năng hoặc chuẩn bị API kiểm thử cho “Migration nâng cấp”; thiết lập dữ liệu và quyền theo Input.B2. Backup, apply migration.B3. Kiểm số lượng và khóa ngoại.B4. Quan sát phản hồi và đối chiếu với kết quả mong đợi.
+1974: Không mất dữ liệu ngoài thay đổi được mô tả, schema mới tương thích API.
+1975: Chưa chạy nâng cấp từ bản DB cũ, cần bản sao DB phiên bản trước.
+1976: Chưa chạy
+1977: 4
+1978: Hiệu năng danh sách
+1979: 10000 bản ghi test, tải 20 user đồng thời, môi trường ghi rõThao tác: Đo list lesson/users/questions trang đầu/cuối và bộ lọc trong 10 phút
+1980: B1. Mở màn hình/chức năng hoặc chuẩn bị API kiểm thử cho “Hiệu năng danh sách”; thiết lập dữ liệu và quyền theo Input.B2. Đo list lesson/users/questions trang đầu/cuối và bộ lọc trong 10 phút.B3. Quan sát phản hồi và đối chiếu với kết quả mong đợi.
+1981: Báo p50/p95/error rate, mục tiêu đề xuất p95<2s và lỗi<1%, chỉ kết luận SLA khi được chốt.
+1982: Chưa chạy.
+1983: Chưa chạy
+1984: 5
+1985: Hiệu năng dashboard/report
+1986: Dataset test lớn, query logging đã ẩn thông tin nhạy cảmThao tác: Đo thời gian và số query khi tăng học viên 100→1000
+1987: B1. Mở màn hình/chức năng hoặc chuẩn bị API kiểm thử cho “Hiệu năng dashboard/report”; thiết lập dữ liệu và quyền theo Input.B2. Đo thời gian và số query khi tăng học viên 100→1000.B3. Quan sát phản hồi và đối chiếu với kết quả mong đợi.
+1988: Không phát sinh N+1 tăng tuyến tính không cần thiết, lưu số đo, ngân sách query cần chốt trước nghiệm thu.
+1989: Chưa chạy.
+1990: Chưa chạy
+1991: 6
+1992: API/DB gián đoạn
+1993: Môi trường test có quyền restart dịch vụThao tác: Ngắt DB ngắn, gọi API, khôi phục, retry
+1994: B1. Mở màn hình/chức năng hoặc chuẩn bị API kiểm thử cho “API/DB gián đoạn”; thiết lập dữ liệu và quyền theo Input.B2. Ngắt DB ngắn.B3. Gọi API, khôi phục.B4. Retry.B5. Quan sát phản hồi và đối chiếu với kết quả mong đợi.
+1995: Không lỗi treo vô hạn, phản hồi không lộ connection string, thao tác phục hồi không ghi trùng.
+1996: Chưa chạy.
+1997: Chưa chạy
+1998: 7
+1999: Restore dữ liệu
+2000: Backup QA chứa HV1/attempt/progress, DB đích riêngThao tác: Restore, login và xem kết quả, đối chiếu record counts
+2001: B1. Mở màn hình/chức năng hoặc chuẩn bị API kiểm thử cho “Restore dữ liệu”; thiết lập dữ liệu và quyền theo Input.B2. Restore, login và xem kết quả.B3. Đối chiếu record counts.B4. Quan sát phản hồi và đối chiếu với kết quả mong đợi.
+2002: Dữ liệu và quan hệ phục hồi đúng, ghi RPO/RTO đo được, không tự đặt đạt SLA.
+2003: Khôi phục sang cơ sở dữ liệu thử nghiệm khác thành công, số người dùng, câu hỏi và lượt làm bài lần lượt cùng bằng 31, 164 và 22. 
+2004: Đạt
+2005: 8
+2006: Tương thích trình duyệt/thiết bị
+2007: Chrome,Firefox,Safari, Android/iOS được hỗ trợThao tác: Chạy smoke trên từng cấu hình, ghi phiên bản và kích thước màn
+2008: B1. Mở màn hình/chức năng hoặc chuẩn bị API kiểm thử cho “Tương thích trình duyệt/thiết bị”; thiết lập dữ liệu và quyền theo Input.B2. Chạy smoke trên từng cấu hình, ghi phiên bản và kích thước màn.B3. Quan sát phản hồi và đối chiếu với kết quả mong đợi.
+2009: Không lỗi chặn luồng chính, vấn đề đặc thù được ghi riêng từng nền tảng.
+2010: Chưa chạy.
+2011: Chưa chạy
+2012: 5.2.23. Chức năng luồng xuyên suốt toàn hệ thống
+2013: Bảng 5.23. Kiểm thử luồng xuyên suốt toàn hệ thống
+2014: STT
+2015: Tên kịch bản
+2016: Dữ liệu đầu vào(Input)
+2017: Các bước thực hiện
+2018: Kết quả mong đợi
+2019: Kết quả thực tế
+2020: Trạng thái
+2021: 1
+2022: Quản trị xuất bản đến học viên hoàn tất
+2023: quản trị viên, học viên mới, fixture QA riêngThao tác: quản trị viên tạo lesson,question,exam thuộc C1 và liên kết T1, publish, học viên mới đăng ký/onboarding, học lesson trên mobile, làm exam trên web, quản trị viên xem report
+2024: B1. Mở màn hình/chức năng hoặc chuẩn bị API kiểm thử cho “Quản trị xuất bản đến học viên hoàn tất”; thiết lập dữ liệu và quyền theo Input.B2. Quản trị viên tạo lesson,question,exam thuộc C1 và liên kết T1.B3. Publish, học viên mới đăng ký/onboarding, học lesson trên mobile, làm exam trên web, quản trị viên xem report.B4. Quan sát phản hồi và đối chiếu với kết quả mong đợi.
+2025: Nội dung mới xuất hiện đúng người học, điểm và progress nhất quán, báo cáo phản ánh đúng hoạt động, không cần sửa DB thủ công để hoàn thành luồng.
+2026: Chưa chạy.
+2027: Chưa chạy
+2028: 2
+2029: Web-mobile cùng một hành trình
+2030: HV1 mới chọn both,C1,D1Thao tác: Web lưu mục tiêu và tắt nhắc, mobile sửa tên, học từ, web tiếp tục lesson, mobile nộp exam, web xem kết quả
+2031: B1. Mở màn hình/chức năng hoặc chuẩn bị API kiểm thử cho “Web-mobile cùng một hành trình”; thiết lập dữ liệu và quyền theo Input.B2. Web lưu mục tiêu và tắt nhắc, mobile sửa tên, học từ, web tiếp tục lesson, mobile nộp exam, web xem kết quả.B3. Quan sát phản hồi và đối chiếu với kết quả mong đợi.
+2032: Không mất mục tiêu/lĩnh vực hoặc bật nhắc trở lại, lịch sử từ,lesson,attempt và kết quả đúng một tài khoản.
+2033: Chưa chạy.
+2034: Chưa chạy
+2035: 3
+2036: Thu hồi quyền trong lúc thao tác
+2037: giảng viên đang mở editor, quản trị viên quản lý roleThao tác: quản trị viên thu quyền sửa nội dung, giảng viên gửi form cũ, login lại và thử URL trực tiếp
+2038: B1. Mở màn hình/chức năng hoặc chuẩn bị API kiểm thử cho “Thu hồi quyền trong lúc thao tác”; thiết lập dữ liệu và quyền theo Input.B2. Quản trị viên thu quyền sửa nội dung, giảng viên gửi form cũ, login lại và thử URL trực tiếp.B3. Quan sát phản hồi và đối chiếu với kết quả mong đợi.
+2039: Server từ chối theo chính sách phiên/quyền, nội dung không bị ghi trái phép, UI phản ánh quyền mới.
+2040: Chưa chạy.
+2041: Chưa chạy
+2042: 4
+2043: Nội dung thay đổi trong lúc làm bài
+2044: HV1 bắt đầu exam C1, quản trị viên mở builderThao tác: quản trị viên sửa đề, HV1 mất mạng rồi kết nối lại và nộp, xem học viên result và admin result
+2045: B1. Mở màn hình/chức năng hoặc chuẩn bị API kiểm thử cho “Nội dung thay đổi trong lúc làm bài”; thiết lập dữ liệu và quyền theo Input.B2. Quản trị viên sửa đề, HV1 mất mạng rồi kết nối lại và nộp.B3. Xem học viên result và admin result.B4. Quan sát phản hồi và đối chiếu với kết quả mong đợi.
+2046: Cả hai kết quả cùng bản đề tại thời điểm bắt đầu, chỉ một lần chấm, không dùng đáp án mới để chấm lượt cũ.
+2047: Chưa chạy.
+2048: Chưa chạy
+2049: 5
+2050: Khóa người dùng khi đang học
+2051: HV1 có phiên web/mobile và attempt, quản trị viênThao tác: quản trị viên suspend HV1, trên hai client thử lưu profile,start,submit, quản trị viên activate, HV1 login lại
+2052: B1. Mở màn hình/chức năng hoặc chuẩn bị API kiểm thử cho “Khóa người dùng khi đang học”; thiết lập dữ liệu và quyền theo Input.B2. Quản trị viên suspend HV1, trên hai client thử lưu profile,start,submit, quản trị viên activate, HV1 login lại.B3. Quan sát phản hồi và đối chiếu với kết quả mong đợi.
+2053: Các request sau khóa bị chặn, dữ liệu trước khóa không hỏng, sau kích hoạt luồng phục hồi rõ, không tự tạo attempt/điểm trùng.
+2054: Chưa chạy.
+2055: Chưa chạy
+2056: 5.3. KẾT QUẢ VÀ ĐÁNH GIÁ CHUNG
+2057: Đợt kiểm thử ngày 23/10/2026 sử dụng image Docker có sẵn, database QA riêng và web trên localhost. Các kết quả dưới đây phân biệt kiểm tra API, giao diện web và các phần chưa xác nhận trên thiết bị di động.
+2058: Độ ổn định: Sau các lần sửa, 189/189 kiểm thử tự động đạt (160 kiểm thử máy chủ, 29 kiểm thử web, ứng dụng và thành phần dùng chung). Chạy lại 304 kiểm tra luồng xử lý và 8 kiểm tra quy tắc Gmail đều thành công. Kết quả này không thay thế các ca giao diện và thiết bị chưa thực hiện.
+2059: Tính chính xác: Các kiểm tra API đã thực hiện xác nhận việc tính điểm theo trọng số, giới hạn quyền xem và nộp bài, xử lý lượt thi quá hạn và cập nhật dữ liệu học tập theo đúng kết quả mong đợi. Các biến thể nghiệp vụ chưa thực thi vẫn cần được kiểm tra bổ sung.
+2060: Ràng buộc dữ liệu: Hệ thống từ chối đăng ký bằng email không có đúng tên miền gmail.com và thông báo “Chỉ chấp nhận địa chỉ email @gmail.com”. Dữ liệu thiếu mục tiêu học tập không được hoàn tất hồ sơ. Nhập câu hỏi có chuyên ngành hoặc cấp độ không tồn tại bị từ chối, không lưu một phần lô.
+2061: Chức năng web và di động: Web Docker đã xác nhận đăng nhập, đăng xuất, trang hồ sơ và trạng thái tìm kiếm chứng chỉ rỗng. SMTP QA nhận được email reset, API dịch từ điển và tạo âm thanh WAV hoạt động. Chưa xác nhận Google OAuth, push thật, dịch AI ngoài và Android/iOS native.
+2064: KẾT LUẬN 
+2066: TÀI LIỆU THAM KHẢO
+2067: [1] Bui, P. H., Bui, H. H. P., & Dinh, P. D. (2023). Vietnamese Students’ Use of Smartphone Apps in English Learning. LEARN Journal: Language Education and Acquisition Research Network, 16(1). https://files.eric.ed.gov/fulltext/EJ1380978.pdf
+2068: [2] Ho-Minh, T. (2024). English-Learning Mobile Apps for Business Students: A Case Study from Vietnam. Computer-Assisted Language Learning Electronic Journal, 25(2), 173–200. https://callej.org/index.php/journal/article/view/443
+2069: [3] Trường Đại học Công Thương Thành phố Hồ Chí Minh. (2024). Chương trình đào tạo ngành Công nghệ thông tin. Khoa Công nghệ Thông tin. https://fit.huit.edu.vn/app_web/images/documents/n00ct/2024_ctdt-nganh-cong-nghe-thong-tin.pdf
+2070: [4] ITviec. (2024). Vietnam IT Salary & Recruitment Market 2024–2025. ITviec. https://itviec.com/salary-reports/download/56c31df8-0ce5-448e-8e78-a19310be7ff0
+2071: [5] 4English. (2026). 4English – Learn English Daily. Google Play. https://play.google.com/store/apps/details?id=com.new4english.learnenglish
+2072: [6] Duolingo. (2026). Duolingo: Ngoại ngữ & Cờ vua. Google Play.
+2073: https://play.google.com/store/apps/details?id=com.duolingo 
+2074: [7] Cambly Inc. (2026). Cambly - Giáo Viên Tiếng Anh. Google Play.
+2075: https://play.google.com/store/apps/details?id=com.cambly.cambly 

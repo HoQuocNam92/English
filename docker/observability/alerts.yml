@@ -1,0 +1,123 @@
+groups:
+  - name: techenglish
+    rules:
+      - alert: ExporterUnavailable
+        expr: up == 0
+        for: 3m
+        labels: {severity: warning}
+        annotations: {summary: 'Monitoring exporter unavailable', description: 'A monitoring target has stopped responding for three minutes.'}
+      - alert: ApplicationEndpointDown
+        expr: probe_success{job="http"} == 0
+        for: 2m
+        labels: {severity: critical}
+        annotations: {summary: 'TechEnglish public endpoint is unavailable', description: 'HTTPS endpoint checks have failed for two minutes.'}
+      - alert: ContainerUnhealthy
+        expr: techenglish_container_healthy == 0
+        for: 2m
+        labels: {severity: critical}
+        annotations: {summary: 'Application container is unhealthy', description: 'The API, web, or database container is stopped or unhealthy.'}
+      - alert: ContainerRestarting
+        expr: increase(techenglish_container_restarts_total[15m]) >= 3
+        for: 1m
+        labels: {severity: warning}
+        annotations: {summary: 'Application container is repeatedly restarting', description: 'At least three container restarts occurred in fifteen minutes.'}
+      - alert: DiskSpaceLow
+        expr: 100 * node_filesystem_avail_bytes{mountpoint="/",fstype!="rootfs"} / node_filesystem_size_bytes{mountpoint="/",fstype!="rootfs"} < 15
+        for: 5m
+        labels: {severity: warning}
+        annotations: {summary: 'VPS disk free space is below 15 percent', description: 'Check log retention, backup retention and image usage.'}
+      - alert: DiskSpaceCritical
+        expr: 100 * node_filesystem_avail_bytes{mountpoint="/",fstype!="rootfs"} / node_filesystem_size_bytes{mountpoint="/",fstype!="rootfs"} < 8
+        for: 2m
+        labels: {severity: critical}
+        annotations: {summary: 'VPS disk free space is below 8 percent', description: 'Storage capacity needs immediate attention.'}
+      - alert: MemoryPressure
+        expr: node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes < 0.1
+        for: 10m
+        labels: {severity: warning}
+        annotations: {summary: 'VPS available memory is below 10 percent', description: 'Memory pressure has remained high for ten minutes.'}
+      - alert: HighCpuUsage
+        expr: 100 * (1 - avg(rate(node_cpu_seconds_total{mode="idle"}[5m]))) > 90
+        for: 10m
+        labels: {severity: warning}
+        annotations: {summary: 'VPS CPU usage has exceeded 90 percent', description: 'Sustained high CPU usage may affect application response times.'}
+      - alert: TLSCertificateExpiring
+        expr: (probe_ssl_earliest_cert_expiry - time()) / 86400 < 14
+        for: 30m
+        labels: {severity: warning}
+        annotations: {summary: 'HTTPS certificate expires within 14 days', description: 'Check Certbot renewal and certificate deployment.'}
+      - alert: DatabaseUnavailable
+        expr: techenglish_database_up == 0
+        for: 2m
+        labels: {severity: critical}
+        annotations: {summary: 'PostgreSQL is not responding', description: 'The local database monitoring query has failed.'}
+      - alert: DatabaseDeadlocks
+        expr: increase(techenglish_database_deadlocks_total[10m]) > 0
+        for: 1m
+        labels: {severity: warning}
+        annotations: {summary: 'PostgreSQL reported deadlocks', description: 'Review transactions and database logs for conflicting access.'}
+      - alert: BackupFailed
+        expr: techenglish_backup_last_run_success == 0
+        for: 2m
+        labels: {severity: critical}
+        annotations: {summary: 'The automated database backup failed', description: 'Inspect the TechEnglish backup service and available disk space.'}
+      - alert: BackupStale
+        expr: time() - techenglish_backup_last_success_timestamp_seconds > 108000
+        for: 5m
+        labels: {severity: critical}
+        annotations: {summary: 'No successful backup in 30 hours', description: 'The daily backup schedule has missed its expected recovery point.'}
+      - alert: RestoreVerificationFailed
+        expr: techenglish_restore_last_run_success == 0
+        for: 2m
+        labels: {severity: critical}
+        annotations: {summary: 'Backup restore verification failed', description: 'Inspect the isolated restore test before relying on the latest backup.'}
+      - alert: RestoreVerificationStale
+        expr: time() - techenglish_restore_last_success_timestamp_seconds > 691200
+        for: 10m
+        labels: {severity: warning}
+        annotations: {summary: 'Restore verification is older than eight days', description: 'The scheduled weekly restoration test needs attention.'}
+      - alert: OperationsCollectorStale
+        expr: time() - techenglish_ops_collection_timestamp_seconds > 180
+        for: 2m
+        labels: {severity: critical}
+        annotations: {summary: 'The operations collector has stopped updating', description: 'Inspect the TechEnglish collector timer and service.'}
+      - alert: S3BackupFailed
+        expr: techenglish_s3_last_run_success == 0
+        for: 5m
+        labels: {severity: critical}
+        annotations: {summary: 'S3 backup upload failed', description: 'Check IAM role permissions, S3 connectivity and the backup synchronization service.'}
+      - alert: S3BackupStale
+        expr: time() - techenglish_s3_snapshot_timestamp_seconds > 108000
+        for: 5m
+        labels: {severity: critical}
+        annotations: {summary: 'No verified S3 backup in 30 hours', description: 'The offsite database backup is older than the daily recovery target.'}
+      - alert: S3RestoreVerificationFailed
+        expr: techenglish_s3_restore_last_run_success == 0
+        for: 5m
+        labels: {severity: critical}
+        annotations: {summary: 'S3 backup restore verification failed', description: 'The downloaded offsite backup could not pass checksum and isolated restoration checks.'}
+      - alert: S3RestoreVerificationStale
+        expr: time() - techenglish_s3_restore_last_success_timestamp_seconds > 691200
+        for: 10m
+        labels: {severity: warning}
+        annotations: {summary: 'S3 restore verification is older than eight days', description: 'Check the scheduled weekly offsite restoration test.'}
+      - alert: ApiHighServerErrorRate
+        expr: techenglish_api_server_errors_per_second / clamp_min(techenglish_api_requests_per_second, 0.001) > 0.05 and techenglish_api_requests_per_second > 0.1
+        for: 5m
+        labels: {severity: critical}
+        annotations: {summary: 'API server error rate exceeds five percent', description: 'Inspect HTTP 5xx and API logs. The condition excludes very low traffic.'}
+      - alert: ApiHighLatency
+        expr: techenglish_api_latency_p95_seconds > 2 and techenglish_api_requests_per_second > 0.1
+        for: 10m
+        labels: {severity: warning}
+        annotations: {summary: 'API p95 response time exceeds two seconds', description: 'Check the slow endpoint dashboard, PostgreSQL activity and upstream services.'}
+      - alert: PostgreSQLLongRunningQuery
+        expr: techenglish_database_longest_active_query_seconds > 30
+        for: 2m
+        labels: {severity: warning}
+        annotations: {summary: 'PostgreSQL has a long running query', description: 'A database query has remained active beyond thirty seconds; check query activity and locks.'}
+      - alert: PostgreSQLConnectionPressure
+        expr: techenglish_database_connections / techenglish_database_max_connections > 0.8
+        for: 5m
+        labels: {severity: warning}
+        annotations: {summary: 'PostgreSQL connections exceed eighty percent of capacity', description: 'Check connection pool limits and long running transactions.'}

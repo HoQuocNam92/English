@@ -16,6 +16,7 @@ type PathDomain = {
   assessment: { id: string; title: string; href: string; passingScorePercent: number; passed: boolean; scorePercent: number | null } | null;
 };
 type Path = {
+  certificates?: Array<{ id: string; code: string; name: string; href: string }>;
   dailyMinutes: number; configured: true; level: { code: string; name: string }; domains: PathDomain[];
   completedLessons: number; totalLessons: number; allCompleted: boolean; canAdvance: boolean;
   nextLevel: { code: string; name: string } | null; finalLevel: boolean;
@@ -82,6 +83,8 @@ export function LearningPathJourney({ full = false, lessonId, onAvailability }: 
     : readAll ? 'Đã học xong bài — tiếp tục kiểm tra tổng kết' : 'Bước học tiếp theo';
 
   return <div className="space-y-5">
+    {path.certificates?.map(certificate => <section key={certificate.id} className="space-y-3 rounded-3xl border border-outline-variant bg-white p-5"><p className="text-xs font-bold uppercase text-primary">Lộ trình chứng chỉ</p><h2 className="text-xl font-bold">{certificate.name}</h2><p className="text-sm text-on-surface-variant">Học theo chủ đề và luyện tập trong lộ trình chứng chỉ đã chọn.</p><Link href={certificate.href} className={actionClass}>Mở lộ trình</Link></section>)}
+    {path.domains.length > 0 && <>
     {(!full || path.allCompleted) && <section aria-label="Tổng kết và bước học tiếp theo" className={`rounded-3xl border p-4 shadow-sm sm:p-6 ${path.allCompleted ? 'border-emerald-200 bg-emerald-50' : 'border-outline-variant bg-white'}`}>
       <div className="flex items-start gap-3"><AppIcon className={`mt-1 text-2xl ${path.allCompleted ? 'text-emerald-700' : 'text-primary'}`}>{path.allCompleted ? 'workspace_premium' : 'route'}</AppIcon><div className="min-w-0"><p className="text-xs font-bold uppercase text-primary">Lộ trình · {path.level.name}</p><h2 className="mt-1 text-xl font-bold leading-7">{title}</h2><p className="mt-2 text-sm leading-6 text-on-surface-variant">{path.totalLessons > 0 ? `Bạn đã học ${path.completedLessons}/${path.totalLessons} bài học trong tổng số ${path.domains.length} chuyên ngành đã chọn. Để chuyển cấp, hãy hoàn thành bài học và đạt điểm yêu cầu của bài tổng kết ở từng ngành.` : 'Chưa có bài học đã xuất bản cho trình độ và chuyên ngành bạn đã chọn.'}</p></div></div>
       <div className="mt-5 flex items-center justify-between gap-3 text-xs font-semibold text-on-surface-variant"><span>Tiến độ bài học</span><span className="text-primary">{path.completedLessons}/{path.totalLessons} bài · {percent}%</span></div>
@@ -120,5 +123,6 @@ export function LearningPathJourney({ full = false, lessonId, onAvailability }: 
     {path.allCompleted && path.finalLevel && <ContinuationPlans />}
 
     {full && <LearningTrail domains={path.domains} />}
+    </>}
   </div>;
 }

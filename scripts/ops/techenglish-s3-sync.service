@@ -1,0 +1,17 @@
+[Unit]
+Description=Synchronize the latest verified TechEnglish backup to S3
+After=docker.service network-online.target
+Wants=network-online.target
+[Service]
+Type=oneshot
+User=ubuntu
+Environment=HOME=/home/ubuntu
+Environment=AWS_RETRY_MODE=standard
+Environment=AWS_MAX_ATTEMPTS=3
+ExecStart=/usr/bin/python3 /home/ubuntu/techenglish-ops/bin/backup_s3.py upload
+TimeoutStartSec=30min
+NoNewPrivileges=true
+PrivateTmp=true
+UMask=0077
+StandardOutput=append:/home/ubuntu/techenglish-ops/state/jobs.log
+StandardError=append:/home/ubuntu/techenglish-ops/state/jobs.log

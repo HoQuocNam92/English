@@ -35,7 +35,6 @@ function LessonCatalog() {
   const [searchInput, setSearchInput] = useState('');
   const [domainCode, setDomainCode] = useState('');
   const [certificateId, setCertificateId] = useState('');
-  const [vocabulary, setVocabulary] = useState('all');
   const [scope, setScope] = useState('path');
   const [profile, setProfile] = useState<LessonProfile | null>(null);
   const [completedIds, setCompletedIds] = useState<string[]>([]);
@@ -77,9 +76,8 @@ function LessonCatalog() {
 
   const domains = Array.from(new Map(items.filter(item => item.domain).map(item => [item.domain!.code, item.domain!])).values());
   const certificates = Array.from(new Map(items.flatMap(item => item.certificates ?? []).map(link => [link.certificate.id, link.certificate])).values());
-  const vocabularyOptions = Array.from(new Map(items.flatMap(item => item.vocabularies ?? []).map(link => [link.vocabulary.id, link.vocabulary])).values());
   const hasPath = Boolean(profile?.domains?.length || profile?.certGoals?.length);
-  const visible = useMemo(() => filterLessons(items, profile, { query, domainCode, certificateId, vocabulary, scope }), [items, profile, query, domainCode, certificateId, vocabulary, scope]);
+  const visible = useMemo(() => filterLessons(items, profile, { query, domainCode, certificateId, vocabulary: 'all', scope }), [items, profile, query, domainCode, certificateId, scope]);
 
   return <LearnerShell><div className="pb-12">
     <header className="grid items-end gap-4 md:grid-cols-[minmax(0,1fr)_minmax(20rem,36rem)]">
@@ -101,8 +99,7 @@ function LessonCatalog() {
       <Dropdown aria-label="Phạm vi bài học" value={scope} onChange={event => setScope(event.target.value)}><option value="path">Theo lộ trình của tôi</option><option value="all">Tất cả bài học</option></Dropdown>
       <Dropdown aria-label="Lọc chuyên ngành" value={domainCode} onChange={event => setDomainCode(event.target.value)}><option value="">Tất cả chuyên ngành</option>{domains.map(domain => <option key={domain.code} value={domain.code}>{domain.name}</option>)}</Dropdown>
       <Dropdown aria-label="Lọc chứng chỉ" value={certificateId} onChange={event => setCertificateId(event.target.value)}><option value="">Tất cả chứng chỉ</option>{certificates.map(certificate => <option key={certificate.id} value={certificate.id}>{certificate.name}</option>)}</Dropdown>
-      <Dropdown aria-label="Lọc từ vựng" value={vocabulary} onChange={event => setVocabulary(event.target.value)}><option value="all">Tất cả nội dung từ vựng</option><option value="with">Có từ vựng liên kết</option><option value="without">Chưa có từ vựng liên kết</option>{vocabularyOptions.map(word => <option key={word.id} value={word.id}>{word.term}</option>)}</Dropdown>
-      <ClearFiltersButton onClick={() => { setQuery(''); setSearchInput(''); setDomainCode(''); setCertificateId(''); setVocabulary('all'); }} />
+      <ClearFiltersButton onClick={() => { setQuery(''); setSearchInput(''); setDomainCode(''); setCertificateId(''); }} />
     </div>
     {!loading && scope === 'path' && <p className="mt-3 text-sm text-on-surface-variant">{hasPath ? 'Đề xuất theo chuyên ngành, chứng chỉ mục tiêu và trình độ trong hồ sơ của bạn.' : 'Bạn chưa chọn lộ trình. Cập nhật mục tiêu trong hồ sơ hoặc chọn Tất cả bài học để khám phá.'} <Link href="/learn/profile" className="font-semibold text-primary">Cập nhật lộ trình</Link></p>}
 

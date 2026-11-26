@@ -35,12 +35,20 @@ test('home action buttons retain their destinations and consistently include ico
   for (const progress of [null, { vocabularyToday: 8, studyMinutesToday: 8, examsWeek: 1 }, { vocabularyToday: 16, studyMinutesToday: 16, examsWeek: 5 }, { vocabularyToday: 16, studyMinutesToday: 30, examsWeek: 5 }]) {
     const nodes = render(progress ? { configured: true, targets: { vocabularyPerDay: 10, minutesPerDay: 30, examsPerWeek: 2 }, progress } : { configured: false });
     const buttons = nodes.filter(node => node.name === 'a' && /min-h-\d/.test(node.attribs?.class ?? ''));
-    assert.ok(buttons.length >= 4);
+    assert.ok(buttons.length >= (progress ? 4 : 1));
     for (const button of buttons) {
       assert.ok(walk(button).some(node => node.name === 'svg'), `Missing icon: ${text(button)}`);
-      assert.ok(button.attribs.href.startsWith('/learn/'));
+      assert.ok(button.attribs.href.startsWith('/learn/') || button.attribs.href === '/onboarding');
     }
   }
+});
+
+test('unfinished learners see one setup action leading to the onboarding wizard', () => {
+  const nodes = render({ configured: false });
+  const setup = nodes.filter(node => node.name === 'a' && /Thiết lập/.test(text(node)));
+  assert.equal(setup.length, 1);
+  assert.equal(setup[0].attribs.href, '/onboarding');
+  assert.ok(!nodes.some(node => node.attribs?.id === 'goals-heading'));
 });
 
 test('home renders a prominent actual total with a smaller target and explicit exceeded-goal text', () => {

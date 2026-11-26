@@ -11,10 +11,9 @@ function localizeLoginError(message: unknown, status: number): string {
   const raw = Array.isArray(message) ? message.join(', ') : String(message ?? '').trim();
   if (raw.startsWith('Tài khoản đã bị khóa.')) return raw;
   const normalized = raw.toLowerCase();
-  if (!raw && status === 401) return 'Email hoặc mật khẩu không chính xác.';
-  if (/invalid credentials|bad credentials|unauthorized/.test(normalized)) return 'Email hoặc mật khẩu không chính xác. Vui lòng kiểm tra lại.';
-  if (/password.*incorrect|incorrect.*password/.test(normalized)) return 'Mật khẩu không chính xác. Vui lòng thử lại.';
-  if (/user.*not found|account.*not found/.test(normalized)) return 'Không tìm thấy tài khoản với email này.';
+  if ((!raw && status === 401) || /invalid credentials|bad credentials|unauthorized|password.*incorrect|incorrect.*password|user.*not found|account.*not found|không tìm thấy tài khoản với email này|mật khẩu không chính xác/.test(normalized)) {
+    return 'Email hoặc mật khẩu không chính xác. Vui lòng kiểm tra và thử lại.';
+  }
   if (/suspended|locked/.test(normalized)) return 'Tài khoản đã bị khóa. Vui lòng liên hệ quản trị viên.';
   if (/inactive|disabled|not activated/.test(normalized)) return 'Tài khoản chưa được kích hoạt hoặc đã bị vô hiệu hóa.';
   return toVietnameseErrorMessage(raw, status);

@@ -1,0 +1,46 @@
+logging { level = "warn" }
+
+discovery.file "application_logs" {
+  files = ["/discovery/docker-targets.json"]
+  refresh_interval = "30s"
+}
+loki.source.file "application" {
+  targets = discovery.file.application_logs.targets
+  forward_to = [loki.process.docker.receiver]
+}
+loki.process "docker" {
+  stage.docker {}
+  stage.drop {
+    older_than = "168h"
+    drop_counter_reason = "outside_retention"
+  }
+  stage.replace {
+    expression = "(?i)(?:password|token|secret|authorization)[\"=: ]+(?P<secret>[^ ,\"}]+)"
+    replace = "[REDACTED]"
+  }
+  stage.label_drop { values = ["filename"] }
+  forward_to = [loki.write.local.receiver]
+}
+loki.source.file "host" {
+  targets = [
+    {__path__ = "/var/log/nginx/access.log", job = "nginx", service = "nginx-access", environment = "production"},
+    {__path__ = "/var/log/nginx/error.log", job = "nginx", service = "nginx-error", environment = "production"},
+    {__path__ = "/var/log/techenglish-ops/jobs.log", job = "operations", service = "backup-and-collector", environment = "production"},
+  ]
+  forward_to = [loki.process.host.receiver]
+}
+loki.process "host" {
+  stage.replace {
+    expression = "\\?(?P<query>[^ ]+)"
+    replace = "[REDACTED]"
+  }
+  forward_to = [loki.write.local.receiver]
+}
+loki.write "local" {
+  endpoint { url = "http://loki:3100/loki/api/v1/push" }
+}
+
+loki.source.file "performance" {
+  targets = [{__path__ = "/var/log/nginx/techenglish-performance.log", job = "http-performance", environment = "production"}]
+  forward_to = [loki.write.local.receiver]
+}

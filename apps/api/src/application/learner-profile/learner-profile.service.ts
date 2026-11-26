@@ -139,8 +139,8 @@ export class LearnerProfilesService {
 
   private assertCompleteGoal(goal: unknown, domainCount: number, certificateCount: number) {
     if (!['vocabulary', 'certification', 'both'].includes(String(goal))) throw new BadRequestException('Vui lòng chọn mục tiêu học tập')
-    if ((goal === 'vocabulary' || goal === 'both') && domainCount === 0) throw new BadRequestException('Vui lòng chọn ít nhất một chuyên ngành')
-    if ((goal === 'certification' || goal === 'both') && certificateCount === 0) throw new BadRequestException('Vui lòng chọn ít nhất một chứng chỉ mục tiêu')
+    if (goal === 'vocabulary' && domainCount === 0) throw new BadRequestException('Vui lòng chọn ít nhất một chuyên ngành')
+    if (goal === 'certification' && certificateCount === 0) throw new BadRequestException('Vui lòng chọn ít nhất một chứng chỉ mục tiêu')
   }
 
   async updateGoals(userId: string, dto: UpdateLearnerGoalsDto) {
@@ -208,11 +208,11 @@ export class LearnerProfilesService {
     await this.assertLearner(userId)
     if (typeof sessionId !== 'string' || !/^[a-zA-Z0-9-]{10,100}$/.test(sessionId) || !Number.isInteger(seconds) || seconds < 0 || seconds > 86400) throw new BadRequestException('Phiên học không hợp lệ')
     // Cumulative heartbeats are idempotent and capped by elapsed server time.
-    await this.prisma.$executeRaw`
-      INSERT INTO study_time_sessions (id, learner_id, seconds) VALUES (${sessionId}, ${userId}::uuid, 0)
-      ON CONFLICT (id) DO UPDATE SET seconds = GREATEST(study_time_sessions.seconds, LEAST(${seconds}, GREATEST(0, FLOOR(EXTRACT(EPOCH FROM (CURRENT_TIMESTAMP - study_time_sessions.started_at)))::int)))
-      WHERE study_time_sessions.learner_id = ${userId}::uuid
-    `
+    await this.prisma.$transaction(async tx => {
+      const current = await tx.studyTimeSession.findUnique({ where: { id: sessionId } })
+      if (!current) await tx.studyTimeSession.create({ data: { id: sessionId, learnerId: userId, seconds: 0, startedAt: new Date() } })
+      else if (current.learnerId === userId) await tx.studyTimeSession.update({ where: { id: sessionId }, data: { seconds: Math.max(current.seconds, Math.min(seconds, Math.max(0, Math.floor((Date.now() - current.startedAt.getTime()) / 1000)))) } })
+    })
     return { saved: true }
   }
 
@@ -234,17 +234,14 @@ export class LearnerProfilesService {
     const startYear = new Date(now.getFullYear(), 0, 1)
 
     const [vocabularyToday, examsWeek, examsMonth, examsYear] = await Promise.all([
-      this.prisma.vocabularyProgress.count({ where: { learnerId: userId, updatedAt: { gte: startToday }, status: { in: ['learning', 'mastered'] } } }),
+      this.prisma.vocabularyProgress.count({ where: { learnerId: userId, lastRating: { not: null }, lastReviewAt: { gte: vietnamPeriods(now).today, lt: vietnamPeriods(now).tomorrow } } }),
       this.prisma.examAttempt.count({ where: { learnerId: userId, submittedAt: { gte: startWeek } } }),
       this.prisma.examAttempt.count({ where: { learnerId: userId, submittedAt: { gte: startMonth } } }),
       this.prisma.examAttempt.count({ where: { learnerId: userId, submittedAt: { gte: startYear } } }),
     ])
     const period = vietnamPeriods(now)
-    const measured = await this.prisma.$queryRaw<{ seconds: number }[]>`
-      SELECT COALESCE(SUM(seconds), 0)::int AS seconds FROM study_time_sessions
-      WHERE learner_id = ${userId}::uuid AND started_at >= ${period.today} AND started_at < ${period.tomorrow}
-    `
-    const studyMinutesToday = Math.floor((measured[0]?.seconds ?? 0) / 60)
+    const measured = await this.prisma.studyTimeSession.findMany({ where: { learnerId: userId, startedAt: { gte: period.today, lt: period.tomorrow } } })
+    const studyMinutesToday = Math.floor(measured.reduce((sum: number, row: any) => sum + row.seconds, 0) / 60)
     const weeklyExamTarget = profile.weeklyExamTarget
     const monthlyExamTarget = weeklyExamTarget * 4
     const yearlyExamTarget = weeklyExamTarget * 52

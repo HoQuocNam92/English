@@ -1,0 +1,7 @@
+services:
+  api:
+    logging: &application-logging
+      driver: json-file
+      options: {max-size: "20m", max-file: "5"}
+  web:
+    logging: *application-logging

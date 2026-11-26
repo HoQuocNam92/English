@@ -1,0 +1,19 @@
+[Unit]
+Description=TechEnglish verified database backup
+After=docker.service
+Requires=docker.service
+[Service]
+Type=oneshot
+User=ubuntu
+Environment=HOME=/home/ubuntu
+ExecStart=/usr/bin/python3 /home/ubuntu/techenglish-ops/bin/ops.py backup
+ExecStartPost=/usr/bin/python3 /home/ubuntu/techenglish-ops/bin/backup_s3.py upload
+TimeoutStartSec=30min
+Nice=10
+IOSchedulingClass=best-effort
+IOSchedulingPriority=7
+NoNewPrivileges=true
+PrivateTmp=true
+UMask=0077
+StandardOutput=append:/home/ubuntu/techenglish-ops/state/jobs.log
+StandardError=append:/home/ubuntu/techenglish-ops/state/jobs.log

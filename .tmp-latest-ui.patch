@@ -1,0 +1,205 @@
+diff --git a/apps/api/src/application/progress/learning-path.service.spec.ts b/apps/api/src/application/progress/learning-path.service.spec.ts
+index 584516e..1e46f56 100644
+--- a/apps/api/src/application/progress/learning-path.service.spec.ts
++++ b/apps/api/src/application/progress/learning-path.service.spec.ts
+@@ -35,6 +35,33 @@ function fixture(options: { completed?: boolean; passed?: boolean; final?: boole
+   db.$transaction = async (run: any) => run(db)
+   return { service: new LearningPathService(db), db, profile, get updates() { return updates } }
+ }
++
++test('saved certification goals appear without vocabulary domains and cannot upgrade vocabulary levels', async () => {
++  const f = fixture()
++  f.profile.learningGoal = 'certification'
++  f.profile.domains = []
++  f.profile.certGoals = [{ certificate: { id: 'aws', code: 'AWS', name: 'AWS Developer', isActive: true } }]
++  const path = await f.service.getPath('learner')
++  if (!path.configured) return assert.fail('certification path should be configured')
++  assert.deepEqual(path.certificates.map((item: any) => item.href), ['/learn/certifications/aws'])
++  assert.deepEqual(path.domains, [])
++  assert.equal(path.canAdvance, false)
++  await assert.rejects(() => f.service.advance('learner', 'intermediate'))
++  assert.equal(f.updates, 0)
++})
++
++test('combined goals retain vocabulary and active certificate paths', async () => {
++  const f = fixture()
++  f.profile.learningGoal = 'both'
++  f.profile.certGoals = [
++    { certificate: { id: 'aws', name: 'AWS', isActive: true } },
++    { certificate: { id: 'old', name: 'Old', isActive: false } },
++  ]
++  const path = await f.service.getPath('learner')
++  if (!path.configured) return assert.fail('path')
++  assert.equal(path.domains.length, 1)
++  assert.deepEqual(path.certificates.map((item: any) => item.id), ['aws'])
++})
+ test('recommends an unfinished lesson at the current level', async () => {
+   const f = fixture(); const path = await f.service.getPath('learner')
+   if (!path.configured) return assert.fail('path')
+diff --git a/apps/api/src/application/progress/learning-path.service.ts b/apps/api/src/application/progress/learning-path.service.ts
+index 6feb8bc..f27f613 100644
+--- a/apps/api/src/application/progress/learning-path.service.ts
++++ b/apps/api/src/application/progress/learning-path.service.ts
+@@ -11,8 +11,13 @@ export class LearningPathService {
+   async getPath(learnerId: string, db: any = this.prisma) {
+     const user = await db.user.findFirst({ where: { id: learnerId, status: 'active', userRoles: { some: { role: { code: 'learner', isActive: true } } } }, select: { id: true } })
+     if (!user) throw new ForbiddenException('Chỉ học viên mới có lộ trình học tập.')
+-    const profile = await db.learnerProfile.findUnique({ where: { userId: learnerId }, include: { level: true, domains: { include: { domain: true } }, careerGoals: { include: { careerGoal: true } } } })
+-    if (!profile?.onboardingCompleted || profile.levelSelectedAt === null || profile.learningGoal === 'certification' || profile.level.isActive === false) return { configured: false as const }
++    const profile = await db.learnerProfile.findUnique({ where: { userId: learnerId }, include: { level: true, domains: { include: { domain: true } }, certGoals: { include: { certificate: true } }, careerGoals: { include: { careerGoal: true } } } })
++    if (!profile?.onboardingCompleted || profile.levelSelectedAt === null || !profile.level || profile.level.isActive === false) return { configured: false as const }
++    const certificates = ['certification', 'both'].includes(profile.learningGoal) ? (profile.certGoals ?? []).filter((link: any) => link.certificate?.isActive !== false && link.certificate).map((link: any) => ({ id: link.certificate.id, code: link.certificate.code, name: link.certificate.name, href: `/learn/certifications/${link.certificate.id}` })) : []
++    if (profile.learningGoal === 'certification') {
++      if (!certificates.length) return { configured: false as const }
++      return { configured: true as const, level: { id: profile.level.id, code: profile.level.code, name: profile.level.name }, certificates, domains: [], completedLessons: 0, totalLessons: 0, allCompleted: false, canAdvance: false, nextLevel: null, finalLevel: false, dailyMinutes: profile.dailyStudyTargetMinutes ?? 30 }
++    }
+     const focus = careerFocus(profile.careerGoals)
+     const selected = profile.domains.filter((link: any) => link.domain.isActive)
+       .sort((a: any, b: any) => focus.score(b.domain.code) - focus.score(a.domain.code))
+@@ -60,7 +65,7 @@ export class LearningPathService {
+     const nextLessons = next ? await db.lesson.findMany({ where: { status: 'published', type: { not: 'certification_review' }, levelId: next.id, domainId: { in: domainIds } }, select: { domainId: true, slug: true } }) : []
+     const nextAvailable = !!next && selected.every((link: any) => nextLessons.some((lesson: any) => lesson.domainId === link.domainId))
+     return {
+-      configured: true as const, level: { id: profile.level.id, code: profile.level.code, name: profile.level.name }, domains,
++      configured: true as const, level: { id: profile.level.id, code: profile.level.code, name: profile.level.name }, domains, certificates,
+       completedLessons: domains.reduce((total: number, domain: any) => total + domain.completedLessons, 0),
+       totalLessons: domains.reduce((total: number, domain: any) => total + domain.totalLessons, 0),
+       allCompleted, canAdvance: allCompleted && nextAvailable,
+diff --git a/apps/mobile/app/(auth)/login.tsx b/apps/mobile/app/(auth)/login.tsx
+index eefb9f3..e85aae3 100644
+--- a/apps/mobile/app/(auth)/login.tsx
++++ b/apps/mobile/app/(auth)/login.tsx
+@@ -138,7 +138,7 @@ export default function MobileLoginScreen() {
+             <MaterialIcons name="mail-outline" size={20} color={colors.outline} style={styles.inputIcon} />
+             <TextInput
+               style={styles.input}
+-              placeholder="email@example.com"
++              placeholder="yourname@gmail.com"
+               value={email}
+               onChangeText={setEmail}
+               autoCapitalize="none"
+diff --git a/apps/mobile/app/(auth)/register.tsx b/apps/mobile/app/(auth)/register.tsx
+index 9060412..4dd0127 100644
+--- a/apps/mobile/app/(auth)/register.tsx
++++ b/apps/mobile/app/(auth)/register.tsx
+@@ -119,7 +119,7 @@ export default function MobileRegisterScreen() {
+               <MaterialIcons name="mail-outline" size={20} color={colors.outline} style={styles.inputIcon} />
+               <TextInput
+                 style={styles.input}
+-                placeholder="email@example.com"
++                placeholder="yourname@gmail.com"
+                 value={email}
+                 onChangeText={setEmail}
+                 autoCapitalize="none"
+diff --git a/apps/mobile/app/notifications.tsx b/apps/mobile/app/notifications.tsx
+index 4d1511c..6df61dd 100644
+--- a/apps/mobile/app/notifications.tsx
++++ b/apps/mobile/app/notifications.tsx
+@@ -2,20 +2,19 @@ import { View } from 'react-native';
+ import { useRouter } from 'expo-router';
+ import { useNotificationHistory } from '../src/shared/notifications/NotificationHistoryProvider';
+ import { mobileNotificationRoute } from '../src/shared/navigation';
+-import { EmptyState, FeatureScreen } from '../src/shared/ui/FeatureScreen';
++import { FeatureScreen } from '../src/shared/ui/FeatureScreen';
+ import { Text, Button, TouchableOpacity, controlStyles } from '../src/shared/ui/primitives';
+ 
+ export default function NotificationsScreen() {
+   const { items, loaded, error, markRead } = useNotificationHistory(); const router = useRouter();
+   const unread = items.filter(item => !item.read).length;
+   return <FeatureScreen title="Thông báo" loading={!loaded}><View style={{ gap: 16 }}>
+-    <Text>{unread} thông báo chưa đọc</Text>
++    {!!items.length && <Text>{unread} thông báo chưa đọc</Text>}
+     {unread > 0 && <View style={controlStyles.footer}><Button onPress={() => void markRead()}>Đọc tất cả</Button></View>}
+     {!!error && <Text accessibilityRole="alert">{error}</Text>}
+-    {!items.length && <EmptyState icon="notifications-none" title="Chưa có thông báo nào" detail="Nhắc học và thông báo nhận được sẽ xuất hiện tại đây." />}
++    {!items.length && <View style={{ paddingVertical: 48, alignItems: 'center' }}><Text>Chưa có thông báo</Text></View>}
+     {items.map(item => <TouchableOpacity key={item.id} accessibilityLabel={`${item.read ? '' : 'Chưa đọc: '}${item.title}. ${item.message}`} onPress={() => { void markRead(item.id); router.push(mobileNotificationRoute(item.href) as any); }} style={[controlStyles.card, { gap: 8, backgroundColor: item.read ? '#fff' : '#eef2ff' }]}>
+       <Text style={{ fontWeight: '700', color: '#17213a' }}>{item.read ? '' : '● '}{item.title}</Text><Text>{item.message}</Text><Text style={{ color: '#59657c', fontSize: 12 }}>{new Date(item.createdAt).toLocaleString('vi-VN')}</Text>
+     </TouchableOpacity>)}
+-    <Text style={{ fontSize: 12, color: '#59657c' }}>Lưu tối đa 100 thông báo gần nhất trên thiết bị này.</Text>
+   </View></FeatureScreen>;
+ }
+diff --git a/apps/mobile/src/features/learning/LearningPathJourney.tsx b/apps/mobile/src/features/learning/LearningPathJourney.tsx
+index f1bc1f7..a84a29b 100644
+--- a/apps/mobile/src/features/learning/LearningPathJourney.tsx
++++ b/apps/mobile/src/features/learning/LearningPathJourney.tsx
+@@ -41,9 +41,12 @@ export function LearningPathJourney({ full = false, refreshKey = 0, onAvailabili
+   };
+   if (loading) return <ActivityIndicator accessibilityLabel="Đang tải lộ trình" />;
+   if (!path) return error ? <View><Text accessibilityRole="alert">{error}</Text><Button onPress={load}>Thử lại</Button></View> : null;
++  const certificatePaths = path.certificates?.length ? <View style={{ gap: 12 }}>{path.certificates.map((certificate: any) => <View key={certificate.id} style={[controlStyles.card, { gap: 12 }]}><Text style={{ fontSize: 12, fontWeight: '700' }}>LỘ TRÌNH CHỨNG CHỈ</Text><Text style={{ fontSize: 20, fontWeight: '800' }}>{certificate.name}</Text><Text>Học theo chủ đề và luyện tập trong lộ trình chứng chỉ đã chọn.</Text><Button onPress={() => open(certificate.href)}>Mở lộ trình</Button></View>)}</View> : null;
++  if (!path.domains.length && certificatePaths) return certificatePaths;
+   const practiceStep = buildLearningTrail(path.domains).next;
+   const domain = path.domains.find((item: any) => item.state !== 'complete');
+   return <View style={{ gap: 16 }}>
++    {certificatePaths}
+     <View style={[controlStyles.card, { gap: 12 }]}>
+       <Text style={{ fontSize: 21, fontWeight: '800' }}>Lộ trình · {path.level.name}</Text>
+       <Text>{path.totalLessons > 0 ? `Bạn đã học ${path.completedLessons}/${path.totalLessons} bài học trong tổng số ${path.domains.length} chuyên ngành đã chọn. Để chuyển cấp, hãy hoàn thành bài học và đạt điểm yêu cầu của bài tổng kết ở từng ngành.` : 'Chưa có bài học đã xuất bản cho trình độ và chuyên ngành bạn đã chọn.'}</Text>
+diff --git a/apps/web/app/(auth)/forgot-password/page.tsx b/apps/web/app/(auth)/forgot-password/page.tsx
+index e7885eb..b3dffb0 100644
+--- a/apps/web/app/(auth)/forgot-password/page.tsx
++++ b/apps/web/app/(auth)/forgot-password/page.tsx
+@@ -95,7 +95,7 @@ export default function ForgotPasswordPage() {
+                       type="email"
+                       value={email}
+                       onChange={(e) => setEmail(e.target.value)}
+-                      placeholder="email@example.com"
++                      placeholder="yourname@gmail.com"
+                       required
+                       className="w-full h-12 pl-11 pr-4 rounded-xl border border-outline-variant bg-surface-container-lowest text-sm text-on-surface focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition-all placeholder:text-outline/60"
+                     />
+diff --git a/apps/web/app/(auth)/login/page.tsx b/apps/web/app/(auth)/login/page.tsx
+index 408220a..ceec4da 100644
+--- a/apps/web/app/(auth)/login/page.tsx
++++ b/apps/web/app/(auth)/login/page.tsx
+@@ -120,7 +120,7 @@ export default function LoginPage() {
+                   id="email"
+                   name="email"
+                   autoComplete="email"
+-                  placeholder="email@example.com"
++                  placeholder="yourname@gmail.com"
+                   type="email"
+                   value={email}
+                   onChange={(event) => setEmail(event.target.value)}
+diff --git a/apps/web/app/(auth)/register/page.tsx b/apps/web/app/(auth)/register/page.tsx
+index 2506f29..ffb128a 100644
+--- a/apps/web/app/(auth)/register/page.tsx
++++ b/apps/web/app/(auth)/register/page.tsx
+@@ -159,7 +159,7 @@ export default function RegisterPage() {
+                   id="email"
+                   name="email"
+                   autoComplete="email"
+-                  placeholder="email@gmail.com"
++                  placeholder="yourname@gmail.com"
+                   type="email"
+                   value={email}
+                   onChange={(e) => setEmail(e.target.value)}
+diff --git a/apps/web/src/shared/ui/LearningPathJourney.tsx b/apps/web/src/shared/ui/LearningPathJourney.tsx
+index 18605d9..4596270 100644
+--- a/apps/web/src/shared/ui/LearningPathJourney.tsx
++++ b/apps/web/src/shared/ui/LearningPathJourney.tsx
+@@ -16,6 +16,7 @@ type PathDomain = {
+   assessment: { id: string; title: string; href: string; passingScorePercent: number; passed: boolean; scorePercent: number | null } | null;
+ };
+ type Path = {
++  certificates?: Array<{ id: string; code: string; name: string; href: string }>;
+   dailyMinutes: number; configured: true; level: { code: string; name: string }; domains: PathDomain[];
+   completedLessons: number; totalLessons: number; allCompleted: boolean; canAdvance: boolean;
+   nextLevel: { code: string; name: string } | null; finalLevel: boolean;
+@@ -82,6 +83,8 @@ export function LearningPathJourney({ full = false, lessonId, onAvailability }:
+     : readAll ? 'Đã học xong bài — tiếp tục kiểm tra tổng kết' : 'Bước học tiếp theo';
+ 
+   return <div className="space-y-5">
++    {path.certificates?.map(certificate => <section key={certificate.id} className="space-y-3 rounded-3xl border border-outline-variant bg-white p-5"><p className="text-xs font-bold uppercase text-primary">Lộ trình chứng chỉ</p><h2 className="text-xl font-bold">{certificate.name}</h2><p className="text-sm text-on-surface-variant">Học theo chủ đề và luyện tập trong lộ trình chứng chỉ đã chọn.</p><Link href={certificate.href} className={actionClass}>Mở lộ trình</Link></section>)}
++    {path.domains.length > 0 && <>
+     {(!full || path.allCompleted) && <section aria-label="Tổng kết và bước học tiếp theo" className={`rounded-3xl border p-4 shadow-sm sm:p-6 ${path.allCompleted ? 'border-emerald-200 bg-emerald-50' : 'border-outline-variant bg-white'}`}>
+       <div className="flex items-start gap-3"><AppIcon className={`mt-1 text-2xl ${path.allCompleted ? 'text-emerald-700' : 'text-primary'}`}>{path.allCompleted ? 'workspace_premium' : 'route'}</AppIcon><div className="min-w-0"><p className="text-xs font-bold uppercase text-primary">Lộ trình · {path.level.name}</p><h2 className="mt-1 text-xl font-bold leading-7">{title}</h2><p className="mt-2 text-sm leading-6 text-on-surface-variant">{path.totalLessons > 0 ? `Bạn đã học ${path.completedLessons}/${path.totalLessons} bài học trong tổng số ${path.domains.length} chuyên ngành đã chọn. Để chuyển cấp, hãy hoàn thành bài học và đạt điểm yêu cầu của bài tổng kết ở từng ngành.` : 'Chưa có bài học đã xuất bản cho trình độ và chuyên ngành bạn đã chọn.'}</p></div></div>
+       <div className="mt-5 flex items-center justify-between gap-3 text-xs font-semibold text-on-surface-variant"><span>Tiến độ bài học</span><span className="text-primary">{path.completedLessons}/{path.totalLessons} bài · {percent}%</span></div>
+@@ -120,5 +123,6 @@ export function LearningPathJourney({ full = false, lessonId, onAvailability }:
+     {path.allCompleted && path.finalLevel && <ContinuationPlans />}
+ 
+     {full && <LearningTrail domains={path.domains} />}
++    </>}
+   </div>;
+ }

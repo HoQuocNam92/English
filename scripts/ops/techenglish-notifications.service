@@ -1,0 +1,12 @@
+[Unit]
+Description=Reload TechEnglish email and Telegram notification settings
+After=docker.service techenglish-observability.service
+[Service]
+Type=oneshot
+User=ubuntu
+Environment=HOME=/home/ubuntu
+ExecStart=/usr/bin/python3 /home/ubuntu/techenglish-ops/bin/configure-notifications.py
+TimeoutStartSec=2min
+UMask=0077
+StandardOutput=append:/home/ubuntu/techenglish-ops/state/jobs.log
+StandardError=append:/home/ubuntu/techenglish-ops/state/jobs.log

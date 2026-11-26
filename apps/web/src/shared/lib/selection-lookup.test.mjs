@@ -6,7 +6,7 @@ import { runInNewContext } from 'node:vm';
 const require = createRequire(import.meta.url);
 const ts = require('typescript');
 
-function harness() {
+function harness(response = { translation: 'độc lập', contextual: true }) {
   let slot = 0, calls = 0, effects = [], timers = [];
   const state = [], listeners = new Map();
   class FakeNode { contains() { return false; } }
@@ -26,7 +26,7 @@ function harness() {
     'next/navigation': { usePathname: () => '/learn/lessons/test' },
     'lucide-react': { Languages: () => null, X: () => null },
     '@/shared/ui/LookupDialog': { LookupDialog: Dialog },
-    '@/shared/api/api-client': { apiClient: { post: async () => { calls++; return { translation: 'độc lập', contextual: true }; } } },
+    '@/shared/api/api-client': { apiClient: { post: async () => { calls++; if (response instanceof Error) throw response; return response; } } },
     '@/shared/lib/use-pronunciation': { usePronunciation: () => ({ speaking: false, speechError: '', play() {}, stop() {} }) },
     '@/shared/lib/english-selection': { isEnglishSelection: text => !!text },
     '@/shared/lib/selection-context': { getSelectionContext: () => 'The page starts two independent requests.' },
@@ -62,13 +62,18 @@ test('scrolling or changing the browser selection inside an open lookup does not
   assert.equal(h.render(), null);
 });
 
-test('a reviewed contextual reading sense opens directly without a generic AI lookup overwriting it', () => {
-  const h = harness(); h.render();
+test('a reviewed contextual reading sense receives missing metadata without replacing its meaning', async () => {
+  const h = harness({ translation: 'hình ảnh', source: 'openai', contextual: true, partOfSpeech: 'danh từ', pronunciationIpa: '/ˈɪmɪdʒ/', definitionEn: 'a picture' }); h.render();
   h.event('reading-lookup', { detail: { text: 'image', context: 'The team releases a new image with a rolling update.', result: { translation: 'bản đóng gói phần mềm', contextDependent: true, standaloneMeaning: 'hình ảnh', sourceSentence: 'The team releases a new image with a rolling update.', source: 'reading', contextual: true } } });
-  assert.equal(h.calls(), 0);
+  assert.equal(h.calls(), 1);
+  assert.equal(h.render().props.result.translation, 'bản đóng gói phần mềm');
+  await new Promise(setImmediate);
   const modal = h.render();
   assert.equal(modal.props.result.translation, 'bản đóng gói phần mềm');
   assert.equal(modal.props.result.standaloneMeaning, 'hình ảnh');
+  assert.equal(modal.props.result.source, 'reading');
+  assert.equal(modal.props.result.partOfSpeech, 'danh từ');
+  assert.equal(modal.props.result.pronunciationIpa, '/ˈɪmɪdʒ/');
 });
 
 test('lookup modal shows dictionary fields and examples without note or save controls', () => {
@@ -82,4 +87,17 @@ test('lookup modal shows dictionary fields and examples without note or save con
   assert.match(html, /These requests are independent\./);
   assert.match(html, /Phiên âm/);
   assert.doesNotMatch(html, /Ghi chú|Lưu từ|<textarea|<form/);
+});
+
+const reviewedSense = { translation: 'đưa giá trị về hàm gọi', source: 'reading', contextual: true, contextDependent: true, sourceSentence: 'The function returns a number.', standaloneMeaning: 'quay trở lại' };
+test('complete reading metadata avoids a redundant request', () => {
+ const h=harness();h.render();h.event('reading-lookup',{detail:{text:'returns',context:reviewedSense.sourceSentence,result:{...reviewedSense,partOfSpeech:'động từ',pronunciationIpa:'/rɪˈtɜːrnz/'}}});assert.equal(h.calls(),0);assert.equal(h.render().props.result.translation,reviewedSense.translation);
+});
+test('failed metadata enrichment preserves the reviewed sense through retry', async () => {
+ const h=harness(new Error('offline'));h.render();h.event('reading-lookup',{detail:{text:'returns',context:reviewedSense.sourceSentence,result:reviewedSense}});await new Promise(setImmediate);let modal=h.render();assert.equal(modal.props.result.translation,reviewedSense.translation);assert.match(modal.props.error,/từ loại và phiên âm/);modal.props.onRetry();await new Promise(setImmediate);modal=h.render();assert.equal(h.calls(),2);assert.equal(modal.props.result.source,'reading');assert.equal(modal.props.result.sourceSentence,reviewedSense.sourceSentence);
+});
+
+test('an incomplete metadata response is retried instead of remaining cached', async () => {
+ const response={translation:'trả về',contextual:true,partOfSpeech:'động từ'};
+ const h=harness(response);h.render();h.event('reading-lookup',{detail:{text:'returns',context:reviewedSense.sourceSentence,result:reviewedSense}});await new Promise(setImmediate);let modal=h.render();assert.match(modal.props.error,/Chưa có đủ/);response.pronunciationIpa='/rɪˈtɜːrnz/';modal.props.onRetry();await new Promise(setImmediate);modal=h.render();assert.equal(h.calls(),2);assert.equal(modal.props.result.pronunciationIpa,response.pronunciationIpa);assert.equal(modal.props.result.translation,reviewedSense.translation);assert.equal(modal.props.error,'');
 });

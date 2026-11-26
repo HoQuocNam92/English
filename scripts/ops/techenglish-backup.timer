@@ -1,0 +1,7 @@
+[Unit]
+Description=Daily TechEnglish database backup at 02:00 Asia/Bangkok
+[Timer]
+OnCalendar=*-*-* 02:00:00 Asia/Bangkok
+Persistent=true
+[Install]
+WantedBy=timers.target

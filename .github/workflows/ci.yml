@@ -20,6 +20,7 @@ jobs:
       NEXT_PUBLIC_API_URL: http://localhost:8080/api/v1
       EXPO_PUBLIC_API_URL: http://localhost:8080/api/v1
       DATABASE_URL: postgresql://techenglish:ci-password@localhost:5432/techenglish
+      TECHENGLISH_STATE_DIR: /tmp/techenglish-ci-state
     services:
       postgres:
         image: postgres:16-alpine
@@ -45,7 +46,9 @@ jobs:
         working-directory: apps/api
         env:
           ADMIN_SECURITY_QA: '1'
-        run: node --test -r ts-node/register src/application/auth/admin-security.integration.spec.ts src/infrastructure/audit/business-audit.integration.spec.ts src/infrastructure/audit/business-audit-http.integration.spec.ts src/application/auth/session-revocation.integration.spec.ts
+        # These files share one database; parallel fixtures can conflict with Serializable audit transactions.
+        # Concurrency scenarios within each file still run concurrently.
+        run: node --test --test-concurrency=1 -r ts-node/register src/application/auth/admin-security.integration.spec.ts src/infrastructure/audit/business-audit.integration.spec.ts src/infrastructure/audit/business-audit-http.integration.spec.ts src/application/auth/session-revocation.integration.spec.ts
       - name: Check identity constraints and reporting queries against PostgreSQL
         env:
           ACCOUNT_IDENTITY_QA: '1'
@@ -57,6 +60,8 @@ jobs:
       - run: pnpm --filter web test
       - run: pnpm --filter mobile test
       - run: pnpm --filter @techenglish/api test
+      - run: node --test -r ts-node/register src/infrastructure/database/file-state.spec.ts
+        working-directory: apps/api
       - run: pnpm --filter @techenglish/api test:agenda
       - run: pnpm --filter @techenglish/api test:learning-path
       - run: node --test apps/api/prisma/seed-software-curriculum.test.cjs

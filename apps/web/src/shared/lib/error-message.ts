@@ -28,7 +28,7 @@ function translateValidationMessage(raw: string): string | null {
 }
 
 const translations: Array<[RegExp, string]> = [
-  [/invalid credentials|bad credentials/i, 'Email hoặc mật khẩu không chính xác. Vui lòng kiểm tra lại.'],
+  [/invalid credentials|bad credentials/i, 'Email hoặc mật khẩu không chính xác. Vui lòng kiểm tra và thử lại.'],
   [/invalid or expired refresh token/i, 'Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.'],
   [/invalid google token/i, 'Thông tin đăng nhập Google không hợp lệ hoặc đã hết hạn.'],
   [/current password is incorrect/i, 'Mật khẩu hiện tại không chính xác.'],

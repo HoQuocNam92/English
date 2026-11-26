@@ -16,6 +16,12 @@ development build or preview APK. Email/password login remains available in Expo
    - `EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID=<Web OAuth client ID used by the backend>`
    The existing `EXPO_PUBLIC_GOOGLE_CLIENT_ID` is also accepted as a fallback.
    Never put the Google client secret in the app.
+   The registered public Web client ID is also included in each build profile's
+   `env` in `eas.json`, so GitHub/EAS builds do not depend on an untracked
+   `.env.local`. When changing Google projects, update these profiles and the
+   backend's allowed audience together, then rebuild the APK. An installed APK
+   keeps the configuration bundled when it was built; pushing code alone does
+   not change that APK.
 3. From `apps/mobile`, sign in and link the EAS project if needed:
    ```sh
    npx eas-cli@latest login

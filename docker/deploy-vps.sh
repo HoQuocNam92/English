@@ -49,7 +49,16 @@ mkdir -p "$HOME/techenglish-backups"
 backup="$HOME/techenglish-backups/$(date -u +%Y%m%dT%H%M%SZ)-$sha.dump"
 "${compose[@]}" exec -T --interactive=false db pg_dump -U techenglish -d techenglish -Fc < /dev/null > "$backup"
 test -s "$backup"
-"${compose[@]}" run --rm --no-deps -T migrate < /dev/null
+if [[ "$("${compose[@]}" exec -T --interactive=false db psql -U techenglish -d techenglish -Atc "SELECT to_regclass('public.admin_mfa') IS NULL" < /dev/null)" == t ]]; then
+  "${compose[@]}" exec -T --interactive=false api node /app/docker/checkpoint-file-state.cjs < /dev/null > "$backup.file-state.json"
+  test -s "$backup.file-state.json"
+fi
+"${compose[@]}" stop api < /dev/null
+if ! "${compose[@]}" run --rm --no-deps -T migrate < /dev/null; then
+  echo 'Migration failed; restarting the previously running API container.' >&2
+  "${compose[@]}" start api < /dev/null
+  exit 1
+fi
 "${compose[@]}" up -d --no-build --no-deps --wait api web < /dev/null
 for service in api web; do
   container_id=$("${compose[@]}" ps -q "$service" < /dev/null)

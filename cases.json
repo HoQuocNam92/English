@@ -1,0 +1,1836 @@
+[
+  {
+    "t": 0,
+    "r": 1,
+    "name": "Đăng ký thành công",
+    "input": "Họ tên: Nguyễn An\nEmail: an.qa@gmail.com (chưa tồn tại)\nMật khẩu: Abcd@1234\nBấm Đăng ký.",
+    "expected": "Tạo một tài khoản học viên, đăng nhập được bằng thông tin vừa tạo."
+  },
+  {
+    "t": 0,
+    "r": 2,
+    "name": "Đăng ký trùng email",
+    "input": "Email: an.qa@gmail.com (đã tồn tại)\nMật khẩu: Abcd@1234\nBấm Đăng ký.",
+    "expected": "Báo email đã được sử dụng, không tạo thêm tài khoản."
+  },
+  {
+    "t": 0,
+    "r": 3,
+    "name": "Đăng ký email trùng khác chữ hoa",
+    "input": "Email: AN.QA@gmail.com, đã có an.qa@gmail.com.\nBấm Đăng ký.",
+    "expected": "Từ chối email trùng, tài khoản cũ không thay đổi."
+  },
+  {
+    "t": 0,
+    "r": 4,
+    "name": "Mật khẩu quá ngắn",
+    "input": "Tài khoản mới, mật khẩu: Abc12 (5 ký tự).\nBấm Đăng ký.",
+    "expected": "Báo mật khẩu phải có ít nhất 6 ký tự, không tạo tài khoản."
+  },
+  {
+    "t": 0,
+    "r": 5,
+    "name": "Mật khẩu ở giới hạn tối thiểu",
+    "input": "Tài khoản mới, mật khẩu: Abc123 (6 ký tự).\nBấm Đăng ký.",
+    "expected": "Chấp nhận mật khẩu, tạo tài khoản và đăng nhập được."
+  },
+  {
+    "t": 0,
+    "r": 6,
+    "name": "Mật khẩu ở giới hạn tối đa",
+    "input": "Tài khoản mới, mật khẩu gồm 72 ký tự ASCII.\nBấm Đăng ký.",
+    "expected": "Chấp nhận mật khẩu 72 ký tự, đăng nhập lại được."
+  },
+  {
+    "t": 0,
+    "r": 7,
+    "name": "Mật khẩu vượt giới hạn",
+    "input": "Tài khoản mới, mật khẩu gồm 73 ký tự ASCII.\nBấm Đăng ký.",
+    "expected": "Báo mật khẩu tối đa 72 ký tự, không tạo tài khoản."
+  },
+  {
+    "t": 0,
+    "r": 8,
+    "name": "Đăng ký bỏ trống thông tin",
+    "input": "Họ tên: [Rỗng]\nEmail: [Rỗng]\nMật khẩu: [Rỗng]\nBấm Đăng ký.",
+    "expected": "Hiển thị lỗi ở các trường bắt buộc, không tạo tài khoản."
+  },
+  {
+    "t": 0,
+    "r": 9,
+    "name": "Đăng ký sai định dạng email",
+    "input": "Họ tên: Nguyễn An\nEmail: nguyenvana\nMật khẩu: Abcd@1234",
+    "expected": "Báo email không hợp lệ, không tạo tài khoản."
+  },
+  {
+    "t": 0,
+    "r": 10,
+    "name": "Họ tên quá ngắn",
+    "input": "Họ tên: A (1 ký tự), email mới, mật khẩu hợp lệ.",
+    "expected": "Báo tên phải có ít nhất 2 ký tự, không tạo tài khoản."
+  },
+  {
+    "t": 0,
+    "r": 11,
+    "name": "Họ tên vượt giới hạn",
+    "input": "Họ tên gồm 101 ký tự, email mới, mật khẩu hợp lệ.",
+    "expected": "Báo tên tối đa 100 ký tự, không tạo tài khoản."
+  },
+  {
+    "t": 0,
+    "r": 12,
+    "name": "Họ tên chỉ gồm khoảng trắng",
+    "input": "Họ tên: ba dấu cách, email mới, mật khẩu hợp lệ.",
+    "expected": "Không chấp nhận tên chỉ có khoảng trắng, không tạo tài khoản không có tên hiển thị."
+  },
+  {
+    "t": 0,
+    "r": 13,
+    "name": "Đăng ký email ngoài Gmail",
+    "input": "Họ tên: Học viên thử nghiệm, email: hocvien@yahoo.com hoặc hocvien@outlook.com, mật khẩu hợp lệ.",
+    "expected": "Báo “Chỉ chấp nhận địa chỉ email @gmail.com”, không tạo tài khoản."
+  },
+  {
+    "t": 0,
+    "r": 14,
+    "name": "Đăng ký email giả đuôi Gmail",
+    "input": "Email: hocvien@gmail.com.tenkhac hoặc hocvien@sub.gmail.com, các trường khác hợp lệ.",
+    "expected": "Từ chối email không có đúng tên miền gmail.com, không tạo tài khoản."
+  },
+  {
+    "t": 0,
+    "r": 15,
+    "name": "Gmail có chữ hoa và khoảng trắng ngoài",
+    "input": "Email: [khoảng trắng]hocvien@GMAIL.COM[khoảng trắng], họ tên và mật khẩu hợp lệ.",
+    "expected": "Chuẩn hóa email thành chữ thường và bỏ khoảng trắng ngoài, tạo tài khoản."
+  },
+  {
+    "t": 1,
+    "r": 1,
+    "name": "Học viên đăng nhập thành công",
+    "input": "Email: hv1.qa@gmail.com\nMật khẩu đúng của HV1.\nBấm Đăng nhập.",
+    "expected": "Mở giao diện học tập của HV1, không mở trang quản trị trái quyền."
+  },
+  {
+    "t": 1,
+    "r": 2,
+    "name": "Quản trị viên đăng nhập thành công",
+    "input": "Email: admin.qa@gmail.com\nMật khẩu đúng của tài khoản quản trị.",
+    "expected": "Mở trang quản trị, hiển thị đúng tài khoản."
+  },
+  {
+    "t": 1,
+    "r": 3,
+    "name": "Giảng viên đăng nhập thành công",
+    "input": "Tài khoản giảng viên đã được gán quyền, mật khẩu đúng.",
+    "expected": "Mở trang được phép, chỉ hiển thị và sử dụng các chức năng được cấp quyền."
+  },
+  {
+    "t": 1,
+    "r": 4,
+    "name": "Đăng nhập sai mật khẩu",
+    "input": "Email của HV1, mật khẩu: Sai@1234.",
+    "expected": "Báo thông tin đăng nhập không đúng, không cho vào tài khoản."
+  },
+  {
+    "t": 1,
+    "r": 5,
+    "name": "Đăng nhập email chưa tồn tại",
+    "input": "Email: khongtontai.qa@gmail.com\nMật khẩu: Abcd@1234.",
+    "expected": "Báo đăng nhập thất bại, không tạo tài khoản và không mở phiên mới."
+  },
+  {
+    "t": 1,
+    "r": 6,
+    "name": "Đăng nhập tài khoản bị khóa",
+    "input": "Khóa HV1, dùng thông tin đúng để đăng nhập.",
+    "expected": "Từ chối đăng nhập, báo tài khoản không được phép hoạt động."
+  },
+  {
+    "t": 1,
+    "r": 7,
+    "name": "Tiếp tục dùng phiên sau khi bị khóa",
+    "input": "HV1 đã đăng nhập, quản trị viên khóa HV1, HV1 lưu hồ sơ.",
+    "expected": "Không cho ghi dữ liệu sau khi khóa, giao diện thông báo hoặc kết thúc phiên."
+  },
+  {
+    "t": 1,
+    "r": 8,
+    "name": "Đăng nhập tài khoản đã xóa",
+    "input": "Xóa mềm HV1, thử đăng nhập lại và gọi bằng phiên cũ.",
+    "expected": "Không truy cập được dữ liệu được bảo vệ, dữ liệu lịch sử không bị lộ."
+  },
+  {
+    "t": 1,
+    "r": 9,
+    "name": "Refresh phiên",
+    "input": "HV1 đăng nhập, access token hết hạn\nThao tác: Gọi một API cần xác thực",
+    "expected": "Refresh thành công khi refresh token hợp lệ, gửi lại request đúng một lần, không vòng lặp."
+  },
+  {
+    "t": 1,
+    "r": 10,
+    "name": "Refresh đồng thời",
+    "input": "Access token hết hạn, dashboard có nhiều request\nThao tác: Mở dashboard, ghi network khi các request cùng trả 401",
+    "expected": "Các request phục hồi nhất quán, không đăng xuất nhầm do refresh cạnh tranh, không lặp vô hạn."
+  },
+  {
+    "t": 1,
+    "r": 11,
+    "name": "Refresh token sai/hết hạn",
+    "input": "Token giả và token hết hạn\nThao tác: Gọi refresh, mở lại màn bảo vệ",
+    "expected": "Từ chối, xóa trạng thái phiên không hợp lệ, không giữ dữ liệu người cũ."
+  },
+  {
+    "t": 1,
+    "r": 12,
+    "name": "Đăng xuất",
+    "input": "HV1 có phiên\nThao tác: Đăng xuất, gọi lại API và refresh bằng phiên cũ, nhấn Back",
+    "expected": "Refresh cũ không tạo phiên mới, màn bảo vệ yêu cầu đăng nhập, không hiển thị cache nhạy cảm."
+  },
+  {
+    "t": 1,
+    "r": 13,
+    "name": "Đăng nhập Google trên web",
+    "input": "Tài khoản Google thử nghiệm, bấm Đăng nhập Google trên web.",
+    "expected": "Xác thực thành công, quay về đúng tài khoản, không tạo tài khoản trùng."
+  },
+  {
+    "t": 1,
+    "r": 14,
+    "name": "Đăng nhập Google trên ứng dụng",
+    "input": "Tài khoản Google thử nghiệm, đăng nhập trên Android/iOS.",
+    "expected": "Đăng nhập được, trả về ứng dụng và đúng tài khoản."
+  },
+  {
+    "t": 1,
+    "r": 15,
+    "name": "Hủy đăng nhập Google",
+    "input": "Mở đăng nhập Google rồi bấm Hủy.",
+    "expected": "Quay về màn hình đăng nhập, không tạo phiên hoặc báo thành công."
+  },
+  {
+    "t": 1,
+    "r": 16,
+    "name": "Lỗi mạng khi đăng nhập",
+    "input": "API test có thể ngắt kết nối\nThao tác: Gửi đăng nhập khi offline, bật mạng, thử lại",
+    "expected": "Thông báo hữu ích, nút thoát loading, không nhân đôi phiên/tài khoản."
+  },
+  {
+    "t": 2,
+    "r": 1,
+    "name": "Khôi phục mật khẩu bằng liên kết",
+    "input": "Tài khoản có mật khẩu, SMTP thử nghiệm.\nThao tác: Yêu cầu liên kết đặt lại mật khẩu, mở liên kết nhận trong email, nhập mật khẩu mới, đăng nhập lại.",
+    "expected": "Email chứa liên kết với token dùng một lần, hiệu lực 15 phút, mật khẩu mới dùng được và mật khẩu cũ không còn hợp lệ."
+  },
+  {
+    "t": 2,
+    "r": 2,
+    "name": "Mở liên kết reset sai",
+    "input": "Mở liên kết có token bị thay đổi một ký tự.",
+    "expected": "Thông báo liên kết không hợp lệ, không đổi mật khẩu."
+  },
+  {
+    "t": 2,
+    "r": 3,
+    "name": "Mở liên kết reset hết hạn",
+    "input": "Mở liên kết đã vượt thời hạn sử dụng.",
+    "expected": "Thông báo liên kết hết hạn, yêu cầu gửi lại."
+  },
+  {
+    "t": 2,
+    "r": 4,
+    "name": "Dùng lại liên kết reset",
+    "input": "Đổi mật khẩu thành công, sau đó mở lại cùng liên kết.",
+    "expected": "Liên kết đã dùng không cho đổi mật khẩu lần nữa."
+  },
+  {
+    "t": 2,
+    "r": 5,
+    "name": "Đổi mật khẩu thành công",
+    "input": "Đăng nhập HV1, nhập đúng mật khẩu cũ, mật khẩu mới: New@1234.",
+    "expected": "Lưu mật khẩu mới, đăng nhập được bằng mật khẩu mới, mật khẩu cũ bị từ chối."
+  },
+  {
+    "t": 2,
+    "r": 6,
+    "name": "Đổi mật khẩu khi sai mật khẩu cũ",
+    "input": "Nhập mật khẩu cũ: Sai@1234, mật khẩu mới hợp lệ.",
+    "expected": "Báo mật khẩu hiện tại không đúng, giữ nguyên mật khẩu cũ."
+  },
+  {
+    "t": 2,
+    "r": 7,
+    "name": "Mở liên kết reset hợp lệ",
+    "input": "Gửi quên mật khẩu, mở liên kết mới nhận được, chưa hết hạn và chưa sử dụng.",
+    "expected": "Hiển thị màn hình nhập mật khẩu mới, không đổi mật khẩu trước khi xác nhận."
+  },
+  {
+    "t": 3,
+    "r": 1,
+    "name": "Chưa xác thực",
+    "input": "Không có Authorization\nThao tác: Gọi lần lượt các route có JwtAuthGuard trong inventory",
+    "expected": "401, không trả dữ liệu bảo vệ hoặc thực hiện ghi."
+  },
+  {
+    "t": 3,
+    "r": 2,
+    "name": "Learner gọi API quản trị",
+    "input": "HV1 không có quyền quản trị\nThao tác: Gọi trực tiếp create/update/delete users, roles, lessons, questions, exams và báo cáo",
+    "expected": "403 ở các thao tác thiếu quyền, DB không thay đổi, ẩn menu không phải cơ chế bảo vệ duy nhất."
+  },
+  {
+    "t": 3,
+    "r": 3,
+    "name": "Kiểm quyền từng thao tác",
+    "input": "Role test chỉ có lessons:create\nThao tác: Gọi tạo bài, sửa bài, xóa bài",
+    "expected": "Chỉ tạo thành công, sửa/xóa bị từ chối nếu không có quyền tương ứng."
+  },
+  {
+    "t": 3,
+    "r": 4,
+    "name": "Tạo vai trò",
+    "input": "Tên vai trò: Giảng viên QA, chọn quyền xem bài học, lưu.",
+    "expected": "Vai trò xuất hiện trong danh sách với đúng quyền đã chọn."
+  },
+  {
+    "t": 3,
+    "r": 5,
+    "name": "Sửa vai trò",
+    "input": "Mở vai trò Giảng viên QA, đổi tên rồi lưu.",
+    "expected": "Tên mới hiển thị, các quyền không chỉnh sửa được giữ nguyên."
+  },
+  {
+    "t": 3,
+    "r": 6,
+    "name": "Xóa vai trò chưa sử dụng",
+    "input": "Chọn vai trò QA chưa gán cho người dùng, xóa và xác nhận.",
+    "expected": "Vai trò bị xóa, các vai trò và tài khoản khác không thay đổi."
+  },
+  {
+    "t": 3,
+    "r": 7,
+    "name": "Gán và thu hồi quyền",
+    "input": "Role QA, user QA có phiên\nThao tác: Gán quyền, đăng nhập lại, thử thao tác, thu hồi quyền, thử token cũ và mới",
+    "expected": "Quyền hiệu lực đúng chính sách, quyền đã thu hồi không tiếp tục cho phép thao tác ngoài chính sách phiên."
+  },
+  {
+    "t": 3,
+    "r": 8,
+    "name": "Gán và thu hồi role",
+    "input": "quản trị viên, HV1\nThao tác: Gán role QA, kiểm quyền, thu hồi, kiểm lại",
+    "expected": "Chỉ thay đổi quyền của HV1, không tạo liên kết role trùng."
+  },
+  {
+    "t": 3,
+    "r": 9,
+    "name": "Tự nâng quyền",
+    "input": "HV1\nThao tác: Gửi roleIds/permissions/isAdmin khi đăng ký và PATCH users/me",
+    "expected": "Không tự nâng quyền, server loại bỏ hoặc từ chối trường không được phép."
+  },
+  {
+    "t": 3,
+    "r": 10,
+    "name": "Quyền không tồn tại",
+    "input": "quản trị viên\nThao tác: Gán UUID quyền không tồn tại, gán trùng, thay toàn bộ tập quyền",
+    "expected": "Không tạo liên kết mồ côi, không trùng, tập quyền sau thay thế đúng dữ liệu gửi."
+  },
+  {
+    "t": 3,
+    "r": 11,
+    "name": "Role hệ thống đang dùng",
+    "input": "quản trị viên, role hệ thống có users\nThao tác: Thử sửa/xóa quyền hoặc role được bảo vệ",
+    "expected": "Không phá vỡ ràng buộc bảo vệ, nếu thao tác được phép phải không làm mất khả năng quản trị ngoài chủ đích."
+  },
+  {
+    "t": 3,
+    "r": 12,
+    "name": "Tạo quyền thử nghiệm",
+    "input": "Quản trị viên, tạo mã quyền QA mới và tên hiển thị.",
+    "expected": "Quyền được tạo một lần và xuất hiện trong danh sách."
+  },
+  {
+    "t": 3,
+    "r": 13,
+    "name": "Sửa quyền thử nghiệm",
+    "input": "Đổi tên hiển thị của quyền QA rồi lưu.",
+    "expected": "Tên quyền được cập nhật, không thay đổi quyền khác."
+  },
+  {
+    "t": 3,
+    "r": 14,
+    "name": "Xóa quyền thử nghiệm",
+    "input": "Chọn quyền QA không sử dụng, xóa và xác nhận.",
+    "expected": "Quyền bị xóa, không làm mất các quyền không liên quan."
+  },
+  {
+    "t": 4,
+    "r": 1,
+    "name": "Thêm học viên",
+    "input": "Quản trị viên, họ tên Nguyễn Bình, email binh.qa@gmail.com chưa tồn tại, mật khẩu hợp lệ.\nLưu người dùng.",
+    "expected": "Người dùng mới xuất hiện trong danh sách, mở lại thấy đúng dữ liệu."
+  },
+  {
+    "t": 4,
+    "r": 2,
+    "name": "Sửa người dùng",
+    "input": "Mở người dùng Nguyễn Bình, đổi tên thành Nguyễn Bình An rồi lưu.",
+    "expected": "Danh sách và trang chi tiết hiển thị tên mới sau khi tải lại."
+  },
+  {
+    "t": 4,
+    "r": 3,
+    "name": "Tìm kiếm và phân trang",
+    "input": "35 người dùng QA gồm tên tiếng Việt\nThao tác: Tìm tên/email, lọc role/trạng thái, chuyển trang và đổi bộ lọc",
+    "expected": "Kết quả đúng điều kiện, tổng và số trang nhất quán, không lặp hoặc bỏ sót bản ghi."
+  },
+  {
+    "t": 4,
+    "r": 4,
+    "name": "Khóa người dùng",
+    "input": "Chọn HV1 đang hoạt động, bấm Khóa và xác nhận.",
+    "expected": "Trạng thái chuyển sang bị khóa, HV1 không tiếp tục truy cập chức năng được bảo vệ."
+  },
+  {
+    "t": 4,
+    "r": 5,
+    "name": "Mở khóa người dùng",
+    "input": "Chọn HV1 bị khóa, bấm Kích hoạt.",
+    "expected": "Trạng thái hoạt động được khôi phục, HV1 đăng nhập lại được."
+  },
+  {
+    "t": 4,
+    "r": 6,
+    "name": "Soft-delete người dùng",
+    "input": "HV1 có bài thi và tiến độ\nThao tác: quản trị viên xóa HV1, đọc danh sách và báo cáo, thử login",
+    "expected": "Không login được, không xuất hiện như user hoạt động, lịch sử không gây lỗi FK hoặc mất dữ liệu người khác."
+  },
+  {
+    "t": 4,
+    "r": 7,
+    "name": "Tạo email trùng",
+    "input": "quản trị viên, email HV1 tồn tại\nThao tác: Tạo người dùng trùng, sửa HV2 sang email HV1",
+    "expected": "Từ chối, không ghi đè hoặc hợp nhất hai tài khoản."
+  },
+  {
+    "t": 4,
+    "r": 8,
+    "name": "Tạo nhóm học viên",
+    "input": "Tên nhóm: Cloud QA, giảng viên có quyền quản lý nhóm.\nBấm Tạo nhóm.",
+    "expected": "Nhóm mới xuất hiện, tên và người quản lý đúng."
+  },
+  {
+    "t": 4,
+    "r": 9,
+    "name": "Sửa nhóm học viên",
+    "input": "Đổi tên Cloud QA thành Cloud QA 02 rồi lưu.",
+    "expected": "Hiển thị tên mới, danh sách thành viên được giữ nguyên."
+  },
+  {
+    "t": 4,
+    "r": 10,
+    "name": "Thêm thành viên vào nhóm",
+    "input": "Nhóm Cloud QA, HV1 chưa là thành viên.\nChọn HV1 và thêm vào nhóm.",
+    "expected": "HV1 xuất hiện một lần trong nhóm, số thành viên tăng 1."
+  },
+  {
+    "t": 4,
+    "r": 11,
+    "name": "Xóa thành viên khỏi nhóm",
+    "input": "HV1 đang thuộc nhóm Cloud QA.\nXóa HV1 khỏi nhóm.",
+    "expected": "HV1 không còn trong nhóm, số thành viên giảm 1, tài khoản HV1 vẫn tồn tại."
+  },
+  {
+    "t": 4,
+    "r": 12,
+    "name": "Thành viên không hợp lệ",
+    "input": "Nhóm QA\nThao tác: Thêm UUID không tồn tại hoặc tài khoản không phải học viên",
+    "expected": "Báo lỗi có kiểm soát, không tạo thành viên mồ côi."
+  },
+  {
+    "t": 4,
+    "r": 13,
+    "name": "Xóa nhóm",
+    "input": "Nhóm QA có thành viên\nThao tác: Xóa nhóm, kiểm users và học tập HV1",
+    "expected": "Nhóm biến mất, không xóa tài khoản hoặc tiến độ của thành viên."
+  },
+  {
+    "t": 4,
+    "r": 14,
+    "name": "Quyền quản lý nhóm",
+    "input": "Role chỉ users:read, role có users:update\nThao tác: Cùng gọi list và các thao tác ghi nhóm",
+    "expected": "users:read đọc được nhưng không ghi, users:update ghi theo guard, kiểm độc lập với users:manage."
+  },
+  {
+    "t": 5,
+    "r": 1,
+    "name": "Onboarding người mới",
+    "input": "học viên mới chưa cấu hình\nThao tác: Login, chọn trình độ, lĩnh vực, mục tiêu, kế hoạch, hoàn tất",
+    "expected": "Lưu profile và onboardingCompleted, lần đăng nhập sau vào ứng dụng đúng luồng."
+  },
+  {
+    "t": 5,
+    "r": 2,
+    "name": "Quay lại onboarding",
+    "input": "học viên mới đang điền\nThao tác: Chọn dữ liệu, Back/Next, đóng và mở lại app",
+    "expected": "Không lưu nhầm hoàn tất khi chưa gửi, dữ liệu không bị gán mục tiêu tùy ý."
+  },
+  {
+    "t": 5,
+    "r": 3,
+    "name": "Mục tiêu từ vựng",
+    "input": "HV1, domain D1\nThao tác: Chọn vocabulary, D1 và level, lưu, đọc GET me và journey",
+    "expected": "learningGoal=vocabulary, domain D1 còn, mục tiêu và journey phản ánh lựa chọn."
+  },
+  {
+    "t": 5,
+    "r": 4,
+    "name": "Mục tiêu chứng chỉ",
+    "input": "HV1, C1 và D1\nThao tác: Chọn certification, C1, D1, lưu mobile, mở web",
+    "expected": "learningGoal=certification, giữ lĩnh vực, chứng chỉ đúng, không xóa domain ngoài ý muốn."
+  },
+  {
+    "t": 5,
+    "r": 5,
+    "name": "Mục tiêu kết hợp",
+    "input": "HV1\nThao tác: Chọn both, C1, D1, lưu web, sửa tên trên mobile, mở lại web",
+    "expected": "both, certificate và domains được bảo toàn sau chỉnh sửa."
+  },
+  {
+    "t": 5,
+    "r": 6,
+    "name": "Thiếu trường mục tiêu",
+    "input": "HV1\nThao tác: Lưu thiếu trình độ/lĩnh vực/chứng chỉ cần thiết, gọi API trực tiếp cùng payload",
+    "expected": "Lỗi rõ cho dữ liệu bắt buộc, không báo hoàn tất hoặc ghi mục tiêu không hợp lệ."
+  },
+  {
+    "t": 5,
+    "r": 7,
+    "name": "Mã tham chiếu sai",
+    "input": "HV1\nThao tác: Gửi level/domain/certificate/career code không tồn tại",
+    "expected": "Từ chối có kiểm soát, không liên kết sai hoặc lưu một phần quan hệ."
+  },
+  {
+    "t": 5,
+    "r": 8,
+    "name": "Biên kế hoạch",
+    "input": "HV1\nThao tác: Thử từ/ngày 0,1,200,201, quiz/tuần 0,1,50,51, phút/ngày 4,5,1440,1441",
+    "expected": "Chấp nhận biên 1–200,1–50,5–1440 tương ứng, ngoài khoảng bị từ chối ở server."
+  },
+  {
+    "t": 5,
+    "r": 9,
+    "name": "Giờ nhắc không hợp lệ",
+    "input": "HV1\nThao tác: Gửi 00:00,23:59,24:00,12:60 và chuỗi rỗng khi tắt nhắc",
+    "expected": "Giờ hợp lệ lưu đúng, giờ sai không tạo lịch, tắt nhắc không bị tự bật lại."
+  },
+  {
+    "t": 5,
+    "r": 10,
+    "name": "Cập nhật thông tin cá nhân",
+    "input": "HV1\nThao tác: Đổi tên tiếng Việt, bio và điện thoại, tải lại web/mobile",
+    "expected": "Dữ liệu đồng nhất, tên 2–100, bio tối đa 500, điện thoại đúng quy tắc quy định nhập liệu."
+  },
+  {
+    "t": 5,
+    "r": 11,
+    "name": "Xóa số điện thoại",
+    "input": "HV1 có số đã lưu\nThao tác: Xóa nội dung số điện thoại, lưu, đọc users/me",
+    "expected": "Giá trị được xóa/null, không giữ số cũ hoặc báo lỗi cho chuỗi trống."
+  },
+  {
+    "t": 5,
+    "r": 12,
+    "name": "Sửa hồ sơ người khác",
+    "input": "HV1 và HV2\nThao tác: HV1 PUT học viên-profiles/HV2/goals, gọi admin route cùng payload bằng quản trị viên đủ quyền",
+    "expected": "HV1 bị cấm, quản trị viên đủ quyền sửa đúng HV2, HV1 không bị thay đổi."
+  },
+  {
+    "t": 5,
+    "r": 13,
+    "name": "Lưu lỗi giữa hai API",
+    "input": "HV1, giả lập API goals lỗi nhưng users/me thành công\nThao tác: Sửa tên và mục tiêu, lưu, tải lại",
+    "expected": "Không báo toàn bộ thành công, thông báo lỗi và trạng thái thực tế rõ, retry không làm mất dữ liệu đã lưu."
+  },
+  {
+    "t": 5,
+    "r": 14,
+    "name": "Đổi ảnh đại diện bằng ảnh hợp lệ",
+    "input": "Ảnh anh-qa.jpg, dung lượng dưới 5 MB.\nChọn ảnh và lưu.",
+    "expected": "Ảnh hiển thị trên hồ sơ, tải lại hoặc mở nền tảng còn lại vẫn thấy ảnh mới."
+  },
+  {
+    "t": 5,
+    "r": 15,
+    "name": "Upload ảnh sai loại",
+    "input": "Chọn tập tin tailieu.docx làm ảnh đại diện.",
+    "expected": "Từ chối tập tin, giữ nguyên ảnh hiện tại."
+  },
+  {
+    "t": 5,
+    "r": 16,
+    "name": "Upload ảnh quá dung lượng",
+    "input": "Chọn ảnh có dung lượng lớn hơn 5 MB.",
+    "expected": "Báo vượt dung lượng cho phép, không làm mất ảnh hiện tại."
+  },
+  {
+    "t": 6,
+    "r": 1,
+    "name": "Làm bài xếp trình độ theo phiên",
+    "input": "Có đủ câu hỏi placement đã xuất bản, phù hợp chuyên ngành và cấp độ.\nThao tác: GET placement-test để nhận assessmentId, trả lời đủ câu trong phiên, nộp và đọc hồ sơ.",
+    "expected": "Bộ chọn lấy tối đa 15 câu, cần ít nhất 10 câu để mở phiên, kết quả gồm correct, total, percent và levelCode, hồ sơ đúng học viên được cập nhật."
+  },
+  {
+    "t": 6,
+    "r": 2,
+    "name": "Không lộ đáp án",
+    "input": "Có câu placement\nThao tác: GET placement-test và xem network trước khi nộp",
+    "expected": "Không có isCorrect hoặc lời giải cho phép biết trước đáp án."
+  },
+  {
+    "t": 6,
+    "r": 3,
+    "name": "Xếp trình độ dưới 40%",
+    "input": "Phiên có 10 câu, trả lời đúng 3 câu và nộp đủ 10 câu.",
+    "expected": "Hiển thị 3/10, 30%, xếp trình độ beginner."
+  },
+  {
+    "t": 6,
+    "r": 4,
+    "name": "Xếp trình độ từ 40% đến dưới 70%",
+    "input": "Phiên có 10 câu, trả lời đúng 4 câu và nộp đủ 10 câu.",
+    "expected": "Hiển thị 4/10, 40%, xếp trình độ intermediate."
+  },
+  {
+    "t": 6,
+    "r": 5,
+    "name": "Xếp trình độ từ 70%",
+    "input": "Phiên có 10 câu, trả lời đúng 7 câu và nộp đủ 10 câu.",
+    "expected": "Hiển thị 7/10, 70%, xếp trình độ advanced."
+  },
+  {
+    "t": 6,
+    "r": 6,
+    "name": "Payload và quyền sở hữu phiên placement",
+    "input": "Phiên placement của HV1 và token HV2.\nThao tác: Thử answers rỗng, câu trùng, option không thuộc câu, thiếu câu và assessmentId của HV1 bằng HV2.",
+    "expected": "Chỉ chấm câu trong bản đề tại thời điểm bắt đầu và đúng chủ phiên. Lượt hợp lệ đã nộp được trả lại kết quả đã lưu khi gửi lặp, không chấm thành lượt mới."
+  },
+  {
+    "t": 6,
+    "r": 7,
+    "name": "Không có câu hỏi",
+    "input": "Không có placement published\nThao tác: Mở màn kiểm tra",
+    "expected": "Empty state rõ, không chia cho 0, không tự gán level hoặc cho nộp bài rỗng."
+  },
+  {
+    "t": 6,
+    "r": 8,
+    "name": "Không nộp thiếu câu để nâng trình độ",
+    "input": "Phiên thực tế có từ 10 đến 15 câu.\nThao tác: Chỉ gửi một câu đúng trong bộ câu của phiên qua API.",
+    "expected": "Từ chối do chưa trả lời đủ câu, không cập nhật trình độ bằng mẫu một câu."
+  },
+  {
+    "t": 6,
+    "r": 9,
+    "name": "Xem lại kết quả xếp trình độ",
+    "input": "HV1 đã nộp bài, thoát và mở lại trang kết quả.",
+    "expected": "Hiển thị đúng kết quả lần nộp gần nhất của HV1, HV2 không thấy kết quả của HV1."
+  },
+  {
+    "t": 6,
+    "r": 10,
+    "name": "Tạo kế hoạch học cá nhân",
+    "input": "HV1 đã hoàn tất thiết lập mục tiêu, yêu cầu tạo kế hoạch học.",
+    "expected": "Hiển thị kế hoạch tương ứng mục tiêu và trình độ của HV1, lưu lại để xem được sau đó."
+  },
+  {
+    "t": 6,
+    "r": 11,
+    "name": "Tạo kế hoạch khi chưa thiết lập mục tiêu",
+    "input": "Học viên mới chưa hoàn tất onboarding, yêu cầu tạo kế hoạch.",
+    "expected": "Yêu cầu hoàn thành thiết lập mục tiêu, không tạo kế hoạch thiếu dữ liệu."
+  },
+  {
+    "t": 7,
+    "r": 1,
+    "name": "Thêm cấp độ",
+    "input": "Quản trị viên có quyền, mã và tên cấp độ mới hợp lệ.\nBấm Thêm.",
+    "expected": "Lưu được một cấp độ, hiển thị đúng mã, tên."
+  },
+  {
+    "t": 7,
+    "r": 2,
+    "name": "Sửa cấp độ",
+    "input": "Chọn cấp độ thử nghiệm, đổi tên rồi lưu.",
+    "expected": "Tên mới hiển thị sau khi tải lại, mã tham chiếu vẫn đúng."
+  },
+  {
+    "t": 7,
+    "r": 3,
+    "name": "Xóa cấp độ chưa sử dụng",
+    "input": "Cấp độ QA chưa gắn với hồ sơ hoặc nội dung.\nBấm Xóa và xác nhận.",
+    "expected": "Cấp độ được xóa khỏi danh sách, không ảnh hưởng cấp độ khác."
+  },
+  {
+    "t": 7,
+    "r": 4,
+    "name": "Xóa cấp độ đang dùng",
+    "input": "Level gắn HV1 và lesson\nThao tác: Xóa level",
+    "expected": "Chặn hoặc xử lý theo ràng buộc, không làm mồ côi profile/content, UI nêu lý do."
+  },
+  {
+    "t": 7,
+    "r": 5,
+    "name": "Thêm mục tiêu nghề nghiệp",
+    "input": "Tên: Cloud Engineer QA, mã mới, thông tin bắt buộc hợp lệ.",
+    "expected": "Mục tiêu xuất hiện trong danh sách và chọn được khi thiết lập hồ sơ."
+  },
+  {
+    "t": 7,
+    "r": 6,
+    "name": "Sửa mục tiêu nghề nghiệp",
+    "input": "Đổi tên Cloud Engineer QA rồi lưu.",
+    "expected": "Hiển thị tên mới, hồ sơ liên kết vẫn tham chiếu đúng mục tiêu."
+  },
+  {
+    "t": 7,
+    "r": 7,
+    "name": "Thêm chứng chỉ",
+    "input": "Tên: Chứng chỉ Cloud QA, mã mới, các trường bắt buộc hợp lệ.\nBấm Lưu.",
+    "expected": "Chứng chỉ xuất hiện trong danh sách và chọn được khi thiết lập mục tiêu."
+  },
+  {
+    "t": 7,
+    "r": 8,
+    "name": "Sửa chứng chỉ",
+    "input": "Đổi tên chứng chỉ Cloud QA thành Cloud QA 02 rồi lưu.",
+    "expected": "Hiển thị tên mới, nội dung đã liên kết được giữ nguyên."
+  },
+  {
+    "t": 7,
+    "r": 9,
+    "name": "Domain và topic chứng chỉ",
+    "input": "C1\nThao tác: Tạo domain, tạo topic thuộc domain, mở lộ trình C1",
+    "expected": "Đúng phân cấp và thứ tự, không lẫn domain/topic C2."
+  },
+  {
+    "t": 7,
+    "r": 10,
+    "name": "Liên kết nội dung",
+    "input": "C1,T1 và lesson/vocabulary/exam fixtures\nThao tác: Sửa content-links cấp certificate và topic, tải lại học viên",
+    "expected": "Lesson/từ vựng/quiz liên kết đúng, không mất liên kết khác ngoài payload chủ đích."
+  },
+  {
+    "t": 7,
+    "r": 11,
+    "name": "Liên kết không hợp lệ",
+    "input": "C1,T1\nThao tác: Gửi ID nội dung không tồn tại hoặc topic từ C2",
+    "expected": "Từ chối liên kết sai, không ghi nửa chừng hoặc tạo bản ghi mồ côi."
+  },
+  {
+    "t": 7,
+    "r": 12,
+    "name": "Chi tiết chứng chỉ rỗng",
+    "input": "CEMPTY không có topic\nThao tác: Mở list và detail CEMPTY",
+    "expected": "Empty state và điều hướng quay lại hoạt động, không crash."
+  },
+  {
+    "t": 7,
+    "r": 13,
+    "name": "Xóa chứng chỉ đã sử dụng",
+    "input": "C1 có attempt và mục tiêu HV1\nThao tác: quản trị viên xóa C1, kiểm lịch sử và profile",
+    "expected": "Không mất lịch sử sai chủ đích, ràng buộc được báo rõ, không còn liên kết hỏng."
+  },
+  {
+    "t": 8,
+    "r": 1,
+    "name": "Tạo bài từ vựng",
+    "input": "Quản trị viên, chọn loại vocabulary, tiêu đề: từ vựng QA, chọn lĩnh vực, cấp độ và các trường bắt buộc hợp lệ. Lưu nháp.",
+    "expected": "Lưu được bài đúng loại, mở lại thấy đủ nội dung, chưa hiển thị cho học viên khi còn nháp."
+  },
+  {
+    "t": 8,
+    "r": 2,
+    "name": "Tạo bài thuật ngữ",
+    "input": "Quản trị viên, chọn loại terminology, tiêu đề: thuật ngữ QA, chọn lĩnh vực, cấp độ và các trường bắt buộc hợp lệ. Lưu nháp.",
+    "expected": "Lưu được bài đúng loại, mở lại thấy đủ nội dung, chưa hiển thị cho học viên khi còn nháp."
+  },
+  {
+    "t": 8,
+    "r": 3,
+    "name": "Tạo bài đọc hiểu kỹ thuật",
+    "input": "Quản trị viên, chọn loại technical_reading, tiêu đề: đọc hiểu kỹ thuật QA, chọn lĩnh vực, cấp độ và các trường bắt buộc hợp lệ. Lưu nháp.",
+    "expected": "Lưu được bài đúng loại, mở lại thấy đủ nội dung, chưa hiển thị cho học viên khi còn nháp."
+  },
+  {
+    "t": 8,
+    "r": 4,
+    "name": "Tạo bài tài liệu API",
+    "input": "Quản trị viên, chọn loại api_documentation, tiêu đề: tài liệu API QA, chọn lĩnh vực, cấp độ và các trường bắt buộc hợp lệ. Lưu nháp.",
+    "expected": "Lưu được bài đúng loại, mở lại thấy đủ nội dung, chưa hiển thị cho học viên khi còn nháp."
+  },
+  {
+    "t": 8,
+    "r": 5,
+    "name": "Tạo bài thiết kế hệ thống",
+    "input": "Quản trị viên, chọn loại system_design, tiêu đề: thiết kế hệ thống QA, chọn lĩnh vực, cấp độ và các trường bắt buộc hợp lệ. Lưu nháp.",
+    "expected": "Lưu được bài đúng loại, mở lại thấy đủ nội dung, chưa hiển thị cho học viên khi còn nháp."
+  },
+  {
+    "t": 8,
+    "r": 6,
+    "name": "Tạo bài tình huống",
+    "input": "Quản trị viên, chọn loại case_study, tiêu đề: tình huống QA, chọn lĩnh vực, cấp độ và các trường bắt buộc hợp lệ. Lưu nháp.",
+    "expected": "Lưu được bài đúng loại, mở lại thấy đủ nội dung, chưa hiển thị cho học viên khi còn nháp."
+  },
+  {
+    "t": 8,
+    "r": 7,
+    "name": "Tạo bài ôn chứng chỉ",
+    "input": "Quản trị viên, chọn loại certification_review, tiêu đề: ôn chứng chỉ QA, chọn lĩnh vực, cấp độ và các trường bắt buộc hợp lệ. Lưu nháp.",
+    "expected": "Lưu được bài đúng loại, mở lại thấy đủ nội dung, chưa hiển thị cho học viên khi còn nháp."
+  },
+  {
+    "t": 8,
+    "r": 8,
+    "name": "Sửa nội dung và thứ tự section",
+    "input": "Lesson QA nhiều section\nThao tác: Đổi title/summary, thêm, sắp xếp, xóa section, tải lại",
+    "expected": "Thứ tự và nội dung giữ đúng, không mất section còn lại."
+  },
+  {
+    "t": 8,
+    "r": 9,
+    "name": "Biên thời lượng và dữ liệu",
+    "input": "quản trị viên\nThao tác: Gửi estimatedMinutes 0,1,480,481, thiếu title, type sai, domain sai",
+    "expected": "1–480 hợp lệ, dữ liệu sai bị từ chối ở API."
+  },
+  {
+    "t": 8,
+    "r": 10,
+    "name": "Publish/draft/archive",
+    "input": "Lesson QA\nThao tác: Chuyển trạng thái, mở list và URL detail trực tiếp bằng học viên",
+    "expected": "Learner chỉ đọc nội dung được phép, draft/archive không bị lộ qua deep link."
+  },
+  {
+    "t": 8,
+    "r": 11,
+    "name": "Tìm và lọc catalog",
+    "input": "Nhiều lesson thuộc 5 track,D1,D2\nThao tác: Chọn từng track, tìm từ khóa tiếng Việt trong title/summary/concepts, xóa bộ lọc",
+    "expected": "Kết quả và số lượng khớp, không lẫn track, empty state đúng."
+  },
+  {
+    "t": 8,
+    "r": 12,
+    "name": "Card chuyên đề web/mobile",
+    "input": "Các track có số bài khác nhau\nThao tác: Mở tất cả bài học, chạm từng card",
+    "expected": "Label, số bài và nội dung tương ứng, card mở đúng track trên cả hai nền tảng."
+  },
+  {
+    "t": 8,
+    "r": 13,
+    "name": "Trải nghiệm từng loại bài",
+    "input": "Một bài published cho mỗi loại\nThao tác: Mở, đọc nội dung, làm hoạt động, chuyển section, hoàn tất",
+    "expected": "Nội dung/hoạt động tương ứng loại, không hiển thị placeholder hoặc công cụ không hoạt động."
+  },
+  {
+    "t": 8,
+    "r": 14,
+    "name": "Tài liệu kỹ thuật dài",
+    "input": "Lesson có code, bảng, URL dài và ảnh\nThao tác: Mở trên màn 360px và desktop, cuộn, chọn đoạn code",
+    "expected": "Nội dung không mất, bảng/code cuộn phù hợp, nút chính không ra ngoài màn hình."
+  },
+  {
+    "t": 8,
+    "r": 15,
+    "name": "Ghi nhận hoàn thành bài học",
+    "input": "HV1 mở một bài chưa học, hoàn tất bài và tải lại trang.",
+    "expected": "Bài hiển thị đã hoàn thành, tiến độ được giữ khi mở lại."
+  },
+  {
+    "t": 8,
+    "r": 16,
+    "name": "Hoàn thành lại bài đã học",
+    "input": "HV1 hoàn thành lại cùng một bài.",
+    "expected": "Không tăng số bài đã hoàn thành thêm lần nữa."
+  },
+  {
+    "t": 8,
+    "r": 17,
+    "name": "Xóa bài đang tham chiếu",
+    "input": "Lesson có progress và topic link\nThao tác: quản trị viên xóa, học viên mở URL cũ",
+    "expected": "Không crash, thông báo không tồn tại hoặc ràng buộc rõ, không hỏng dữ liệu liên quan."
+  },
+  {
+    "t": 8,
+    "r": 18,
+    "name": "Xuất bản nhiều bài học",
+    "input": "Chọn 2 bài học nháp hợp lệ, thực hiện Xuất bản hàng loạt.",
+    "expected": "Cả hai mục chuyển sang xuất bản, tải lại vẫn đúng trạng thái, mục không chọn không thay đổi."
+  },
+  {
+    "t": 8,
+    "r": 19,
+    "name": "Chuyển nhiều bài học về nháp",
+    "input": "Chọn 2 bài học đang xuất bản, chuyển hàng loạt về Nháp.",
+    "expected": "Hai mục chuyển về nháp, học viên không truy cập được nội dung không được phép, mục khác giữ nguyên."
+  },
+  {
+    "t": 9,
+    "r": 1,
+    "name": "Tiến độ theo học viên",
+    "input": "HV1 đã học một bài chứng chỉ, HV2 chưa học\nThao tác: Mở cùng chứng chỉ bằng HV1 và HV2, hoàn tất bài bằng HV1, tải lại",
+    "expected": "Tiến độ đúng từng người, số bài hoàn tất đúng, không cộng theo số từ vựng."
+  },
+  {
+    "t": 9,
+    "r": 2,
+    "name": "Nội dung được phép hiển thị",
+    "input": "Chủ đề có bài published, draft, archived, chứng chỉ active/inactive\nThao tác: Mở chủ đề và trang tiến độ, thử ID sai, ID không tồn tại và chứng chỉ inactive",
+    "expected": "Chỉ hiện bài ôn chứng chỉ được xuất bản, không lộ nháp, đối tượng không khả dụng báo lỗi phù hợp, không lỗi 500."
+  },
+  {
+    "t": 9,
+    "r": 3,
+    "name": "Đề luyện tập đúng chủ đề",
+    "input": "Hai chứng chỉ có chủ đề và đề khác nhau\nThao tác: Mở từng chủ đề, mở đề luyện tập, học một bài rồi quay lại",
+    "expected": "Bài và đề thuộc đúng chứng chỉ/chủ đề, điều hướng và tiến độ đồng bộ."
+  },
+  {
+    "t": 10,
+    "r": 1,
+    "name": "Thêm từ vựng",
+    "input": "Từ: autoscaling-qa, định nghĩa tiếng Anh và nghĩa tiếng Việt, lĩnh vực và cấp độ hợp lệ.\nBấm Lưu.",
+    "expected": "Từ xuất hiện trong danh sách, mở chi tiết thấy đúng dữ liệu."
+  },
+  {
+    "t": 10,
+    "r": 2,
+    "name": "Sửa từ vựng",
+    "input": "Mở từ QA, thay nghĩa tiếng Việt và lưu.",
+    "expected": "Hiển thị nghĩa mới, không thay đổi từ khác."
+  },
+  {
+    "t": 10,
+    "r": 3,
+    "name": "Xóa từ vựng thử nghiệm",
+    "input": "Chọn từ QA không cần giữ dữ liệu học, bấm Xóa và xác nhận.",
+    "expected": "Từ không còn trong danh sách, tải lại không xuất hiện lại."
+  },
+  {
+    "t": 10,
+    "r": 4,
+    "name": "Đổi trạng thái hàng loạt",
+    "input": "V1,V2 draft, V3 published\nThao tác: Chọn V1,V2, bulk published, kiểm V3, gửi status sai",
+    "expected": "Chỉ ID chọn thay đổi, status sai bị từ chối."
+  },
+  {
+    "t": 10,
+    "r": 5,
+    "name": "Học từ theo bộ lọc",
+    "input": "HV1, từ published D1 và D2\nThao tác: Mở session D1/level, lật thẻ, chuyển từ, nghe phát âm",
+    "expected": "Đúng bộ từ, front/back đúng, không crash nếu âm thanh không khả dụng."
+  },
+  {
+    "t": 10,
+    "r": 6,
+    "name": "Đánh giá từ ở mức Dễ",
+    "input": "Từ QA chưa có lần trả lời đúng, chọn Dễ ở thời điểm T.",
+    "expected": "Lưu mức Dễ, lịch ôn tiếp theo T + 3 ngày, lịch sử của đúng học viên được cập nhật."
+  },
+  {
+    "t": 10,
+    "r": 7,
+    "name": "Đánh giá từ ở mức Trung bình",
+    "input": "Từ QA riêng, chọn Trung bình ở thời điểm T.",
+    "expected": "Lưu mức Trung bình, lịch ôn tiếp theo T + 1 ngày."
+  },
+  {
+    "t": 10,
+    "r": 8,
+    "name": "Đánh giá từ ở mức Khó",
+    "input": "Từ QA riêng, chọn Khó ở thời điểm T.",
+    "expected": "Lưu mức Khó, lịch ôn tiếp theo T + 10 phút."
+  },
+  {
+    "t": 10,
+    "r": 9,
+    "name": "Đánh giá từ Đã thuộc",
+    "input": "Từ QA riêng, chọn Đã thuộc ở thời điểm T.",
+    "expected": "Lưu mức Đã thuộc, không xuất hiện trong danh sách cần ôn ngay, lịch ôn tiếp theo T + 365 ngày."
+  },
+  {
+    "t": 10,
+    "r": 10,
+    "name": "Rate sai dữ liệu",
+    "input": "HV1\nThao tác: Gửi rating lạ, vocabularyId không tồn tại, payload thiếu trường",
+    "expected": "Lỗi 4xx có kiểm soát, không ghi tiến độ rác hoặc trả 500 do dữ liệu đầu vào."
+  },
+  {
+    "t": 10,
+    "r": 11,
+    "name": "Trả lời quiz đúng",
+    "input": "Tạo quiz từ bộ từ QA có đáp án biết trước, chọn đáp án đúng.",
+    "expected": "Ghi nhận câu trả lời đúng, tổng số câu đúng tăng 1, lưu tiến độ đúng HV1."
+  },
+  {
+    "t": 10,
+    "r": 12,
+    "name": "Trả lời quiz sai",
+    "input": "Chọn đáp án sai của một câu trong bộ từ QA.",
+    "expected": "Ghi nhận câu sai, không tính thành câu đúng, kết quả tổng hợp khớp lượt làm."
+  },
+  {
+    "t": 10,
+    "r": 13,
+    "name": "Bộ quiz rỗng/ít từ",
+    "input": "Bộ 0,1,2 từ\nThao tác: Tạo quiz và mở giao diện",
+    "expected": "Empty state hoặc bài hợp lệ, không vòng lặp tạo distractor, không chia cho 0."
+  },
+  {
+    "t": 10,
+    "r": 14,
+    "name": "Tiếp tục phiên học",
+    "input": "HV1 đang học dở\nThao tác: Rời màn, gọi session với continue=true, mở trên nền tảng khác",
+    "expected": "Nội dung tiếp tục phù hợp dữ liệu đã ghi, không tự đánh dấu các từ chưa học."
+  },
+  {
+    "t": 10,
+    "r": 15,
+    "name": "Ôn từ đến hạn",
+    "input": "Có từ quá hạn,hôm nay,tương lai\nThao tác: GET review-session",
+    "expected": "Bộ ôn phù hợp thời điểm, không bỏ từ quá hạn hoặc trộn người học khác."
+  },
+  {
+    "t": 10,
+    "r": 16,
+    "name": "Lịch sử theo thời gian/rating",
+    "input": "Fixture các ngày/tháng/năm và nhiều rating\nThao tác: Lọc history từng period và rating",
+    "expected": "Kết quả, số lượng và empty state đúng, dữ liệu ranh giới ngày được đối chiếu theo múi giờ đã chốt."
+  },
+  {
+    "t": 10,
+    "r": 17,
+    "name": "Tách dữ liệu người học",
+    "input": "HV1 học V1, HV2 chưa học\nThao tác: Mở dashboard/history/summary bằng HV2",
+    "expected": "Không thấy tiến độ cá nhân HV1, nội dung từ dùng chung vẫn truy cập đúng."
+  },
+  {
+    "t": 10,
+    "r": 18,
+    "name": "Nội dung bị gỡ giữa phiên",
+    "input": "HV1 đang học V1, quản trị viên archive V1\nThao tác: Tiếp tục/rate/refresh",
+    "expected": "Lỗi hoặc xử lý nhất quán, không crash, không tạo progress trỏ tới dữ liệu mất."
+  },
+  {
+    "t": 10,
+    "r": 19,
+    "name": "Tiến độ từ vựng theo chứng chỉ",
+    "input": "Chứng chỉ có 4 từ QA, HV1 đã học 2 từ, mở tiến độ từ vựng của chứng chỉ.",
+    "expected": "Hiển thị đúng 2 từ đã học trên tổng 4 từ, không tính lẫn tiến độ bài học hoặc học viên khác."
+  },
+  {
+    "t": 10,
+    "r": 20,
+    "name": "Xem lại thẻ từ đã học",
+    "input": "HV1 đã học một từ, mở thẻ từ đó từ lịch sử.",
+    "expected": "Hiển thị đúng từ và tiến độ cá nhân của HV1, không tạo thêm lượt học chỉ vì mở thẻ."
+  },
+  {
+    "t": 11,
+    "r": 1,
+    "name": "Dịch từ trong từ điển",
+    "input": "Từ published có nghĩa, từ nháp, từ chưa có nghĩa\nThao tác: Bôi chọn trên web/mobile, dịch từ có sẵn, từ hoa/thường và khoảng trắng",
+    "expected": "Hiện nghĩa đúng từ, không lộ nội dung nháp, giao diện không treo."
+  },
+  {
+    "t": 11,
+    "r": 2,
+    "name": "Dịch theo ngữ cảnh",
+    "input": "Cùng một từ ở hai đoạn có nghĩa khác nhau, dịch vụ thử có cấu hình\nThao tác: Chọn từ và cụm từ trong hai ngữ cảnh, dịch lại cùng một lựa chọn",
+    "expected": "Chỉ dịch phần được chọn, nghĩa phù hợp ngữ cảnh, cache không lẫn ngữ cảnh."
+  },
+  {
+    "t": 11,
+    "r": 3,
+    "name": "Dữ liệu không hợp lệ và dịch vụ lỗi",
+    "input": "Text rỗng, sai kiểu, hơn 500 byte, ngữ cảnh sai kiểu\nThao tác: Gửi từng dữ liệu, thử thiếu cấu hình dịch, nhà cung cấp lỗi và timeout",
+    "expected": "Dữ liệu lỗi bị từ chối, fallback hoặc thông báo rõ, không lộ khóa hay phản hồi nội bộ."
+  },
+  {
+    "t": 11,
+    "r": 4,
+    "name": "Giới hạn tần suất",
+    "input": "Chỉ dùng môi trường QA, cùng địa chỉ IP\nThao tác: Gửi trên 60 yêu cầu dịch/phát âm trong một phút rồi đợi cửa sổ mới",
+    "expected": "Bị giới hạn 429 theo thiết kế, hết cửa sổ có thể gọi lại, UI báo rõ."
+  },
+  {
+    "t": 11,
+    "r": 5,
+    "name": "Phát âm thực tế",
+    "input": "Máy chủ có runtime phát âm, web và thiết bị mobile\nThao tác: Chọn từ/cụm từ, phát âm, nghe lại, thử máy chủ thiếu runtime hoặc timeout",
+    "expected": "Âm thanh phát được, đúng từ, phát lại ổn định, lỗi dịch vụ báo rõ, không treo."
+  },
+  {
+    "t": 11,
+    "r": 6,
+    "name": "Biên phát âm",
+    "input": "Text rỗng, sai kiểu, hơn 500 byte, Unicode\nThao tác: Gọi phát âm từng bộ dữ liệu, thử ngắt mạng khi đang tải",
+    "expected": "Chặn input không hợp lệ, Unicode hợp lệ xử lý rõ, phục hồi khi mạng trở lại."
+  },
+  {
+    "t": 12,
+    "r": 1,
+    "name": "Tạo câu hỏi một đáp án",
+    "input": "Chọn loại single_choice, nội dung: Câu QA, nhập dữ liệu và đáp án tương ứng, chọn phân loại hợp lệ, lưu.",
+    "expected": "Lưu đúng loại câu hỏi, mở lại đủ nội dung và dữ liệu chấm, phần xem trước không mất dữ liệu."
+  },
+  {
+    "t": 12,
+    "r": 2,
+    "name": "Tạo câu hỏi nhiều đáp án",
+    "input": "Chọn loại multiple_choice, nội dung: Câu QA, nhập dữ liệu và đáp án tương ứng, chọn phân loại hợp lệ, lưu.",
+    "expected": "Lưu đúng loại câu hỏi, mở lại đủ nội dung và dữ liệu chấm, phần xem trước không mất dữ liệu."
+  },
+  {
+    "t": 12,
+    "r": 3,
+    "name": "Tạo câu hỏi đúng sai",
+    "input": "Chọn loại true_false, nội dung: Câu QA, nhập dữ liệu và đáp án tương ứng, chọn phân loại hợp lệ, lưu.",
+    "expected": "Lưu đúng loại câu hỏi, mở lại đủ nội dung và dữ liệu chấm, phần xem trước không mất dữ liệu."
+  },
+  {
+    "t": 12,
+    "r": 4,
+    "name": "Tạo câu hỏi trả lời ngắn",
+    "input": "Chọn loại short_answer, nội dung: Câu QA, nhập dữ liệu và đáp án tương ứng, chọn phân loại hợp lệ, lưu.",
+    "expected": "Lưu đúng loại câu hỏi, mở lại đủ nội dung và dữ liệu chấm, phần xem trước không mất dữ liệu."
+  },
+  {
+    "t": 12,
+    "r": 5,
+    "name": "Tạo câu hỏi tình huống",
+    "input": "Chọn loại scenario, nội dung: Câu QA, nhập dữ liệu và đáp án tương ứng, chọn phân loại hợp lệ, lưu.",
+    "expected": "Lưu đúng loại câu hỏi, mở lại đủ nội dung và dữ liệu chấm, phần xem trước không mất dữ liệu."
+  },
+  {
+    "t": 12,
+    "r": 6,
+    "name": "Phân loại kỹ năng",
+    "input": "Có câu vocabulary,reading,technical_understanding,scenario_based\nThao tác: Tạo/lọc theo skill,domain,level,topic,certificate",
+    "expected": "Bộ lọc và dữ liệu sau reload khớp lựa chọn."
+  },
+  {
+    "t": 12,
+    "r": 7,
+    "name": "Validate đáp án",
+    "input": "quản trị viên\nThao tác: Tạo câu không có đáp án đúng, option trùng key, single choice nhiều đáp án đúng",
+    "expected": "Từ chối cấu hình mâu thuẫn, không tạo câu không thể chấm đúng."
+  },
+  {
+    "t": 12,
+    "r": 8,
+    "name": "Biên difficulty/điểm",
+    "input": "quản trị viên\nThao tác: Gửi difficulty 0,1,100,101, điểm liên kết đề 0,0.01,100,101",
+    "expected": "Chấp nhận đúng khoảng quy định nhập liệu, dữ liệu ngoài khoảng bị từ chối."
+  },
+  {
+    "t": 12,
+    "r": 9,
+    "name": "Sửa/xóa câu đã dùng",
+    "input": "Q1 có attempt đã nộp\nThao tác: Sửa đáp án Q1 rồi mở kết quả cũ, thử xóa Q1",
+    "expected": "Kết quả lịch sử giữ bản đề tại thời điểm bắt đầu, thao tác tham chiếu không gây lỗi dữ liệu."
+  },
+  {
+    "t": 12,
+    "r": 10,
+    "name": "Import Excel mẫu",
+    "input": "Tải template, điền 3 câu hợp lệ\nThao tác: Upload, xem preview, xác nhận import, lọc câu vừa nhập",
+    "expected": "Tạo đúng 3 câu, skill/type/options/đáp án đúng giữ nguyên."
+  },
+  {
+    "t": 12,
+    "r": 11,
+    "name": "Import sai cột/kiểu",
+    "input": "Excel thiếu cột, sai enum, option rỗng\nThao tác: Upload từng file, xem báo lỗi",
+    "expected": "Chỉ rõ file/sheet/dòng/trường lỗi khi có thể, không âm thầm nhập dữ liệu sai."
+  },
+  {
+    "t": 12,
+    "r": 12,
+    "name": "Import nhiều file có lỗi",
+    "input": "File A hợp lệ, B có dòng sai\nThao tác: Chọn cả hai, sửa hoặc loại dòng lỗi, xác nhận",
+    "expected": "Số thành công/thất bại khớp, người dùng biết phần được nhập, không bỏ mất file A."
+  },
+  {
+    "t": 12,
+    "r": 13,
+    "name": "Import file rỗng/hỏng/sai loại",
+    "input": "XLSX rỗng, file hỏng, TXT đổi đuôi\nThao tác: Upload mỗi file",
+    "expected": "Báo lỗi có kiểm soát, preview cũ không được gửi nhầm."
+  },
+  {
+    "t": 12,
+    "r": 14,
+    "name": "Import nhấn nhiều lần",
+    "input": "File hợp lệ, mạng chậm\nThao tác: Bấm xác nhận liên tiếp hoặc retry sau timeout",
+    "expected": "UI ngăn gửi lặp, kiểm số bản ghi, nếu API không có idempotency thì ghi rõ nguy cơ duplicate."
+  },
+  {
+    "t": 12,
+    "r": 15,
+    "name": "Phân trang và tìm câu",
+    "input": "35 câu với prompt tiếng Việt\nThao tác: Tìm/lọc rồi chuyển trang, đổi bộ lọc ở trang cuối",
+    "expected": "Page reset hoặc được hiệu chỉnh, tổng chính xác, không báo rỗng giả."
+  },
+  {
+    "t": 12,
+    "r": 16,
+    "name": "Xuất bản nhiều câu hỏi",
+    "input": "Chọn 2 câu hỏi nháp hợp lệ, thực hiện Xuất bản hàng loạt.",
+    "expected": "Cả hai mục chuyển sang xuất bản, tải lại vẫn đúng trạng thái, mục không chọn không thay đổi."
+  },
+  {
+    "t": 12,
+    "r": 17,
+    "name": "Chuyển nhiều câu hỏi về nháp",
+    "input": "Chọn 2 câu hỏi đang xuất bản, chuyển hàng loạt về Nháp.",
+    "expected": "Hai mục chuyển về nháp, học viên không truy cập được nội dung không được phép, mục khác giữ nguyên."
+  },
+  {
+    "t": 12,
+    "r": 18,
+    "name": "Import mã chuyên ngành không tồn tại",
+    "input": "Mã chuyên ngành: DOMAIN_NOT_FOUND_QA, các trường câu hỏi còn lại hợp lệ. Nhập qua chức năng import.",
+    "expected": "Từ chối mã không tồn tại, không lưu câu hỏi vào chuyên ngành khác."
+  },
+  {
+    "t": 13,
+    "r": 1,
+    "name": "Tạo đề theo loại",
+    "input": "quản trị viên có exams:create, C1 và câu hợp lệ\nThao tác: Tạo practice,domain_test,mock_exam,scenario_assessment, thêm câu, publish",
+    "expected": "Đề gắn C1, thứ tự/điểm câu đúng, học viên mở từ lộ trình tương ứng."
+  },
+  {
+    "t": 13,
+    "r": 2,
+    "name": "Không tạo đề độc lập",
+    "input": "quản trị viên\nThao tác: Tạo đề thiếu certificateId",
+    "expected": "Bị từ chối, không xuất hiện đề độc lập ngoài mô hình chứng chỉ hiện tại."
+  },
+  {
+    "t": 13,
+    "r": 3,
+    "name": "Câu trùng và lịch sai",
+    "input": "quản trị viên\nThao tác: Gắn cùng questionId hai lần, đặt đóng trước mở",
+    "expected": "Từ chối, không lưu đề mâu thuẫn."
+  },
+  {
+    "t": 13,
+    "r": 4,
+    "name": "Biên cấu hình đề",
+    "input": "quản trị viên\nThao tác: durationMinutes 0,1,300,301, passingScorePercent 0,1,100,101, maxAttempts 0,1",
+    "expected": "Chấp nhận đúng khoảng, API chặn giá trị sai."
+  },
+  {
+    "t": 13,
+    "r": 5,
+    "name": "Bắt đầu đề",
+    "input": "HV1, E1 published đang mở\nThao tác: Mở E1, bắt đầu, xem request/response",
+    "expected": "Tạo attempt của HV1, thời gian và bộ câu đúng, không lộ đáp án đúng trước nộp."
+  },
+  {
+    "t": 13,
+    "r": 6,
+    "name": "Đề chưa mở/đã đóng/draft",
+    "input": "Eearly,Elate,Edraft\nThao tác: HV1 gọi start trực tiếp từng đề",
+    "expected": "Bị từ chối dù biết ID, không tạo attempt trái điều kiện."
+  },
+  {
+    "t": 13,
+    "r": 7,
+    "name": "Start đồng thời",
+    "input": "HV1, E1 chưa có active attempt\nThao tác: Gửi hai POST start đồng thời từ web/mobile",
+    "expected": "Chỉ một active attempt cho cặp học viên/exam, trả cùng phiên hoặc lỗi có kiểm soát."
+  },
+  {
+    "t": 13,
+    "r": 8,
+    "name": "Giới hạn lượt làm",
+    "input": "E1 maxAttempts=1, HV1 đã có lượt kết thúc\nThao tác: Gọi start lần nữa, thử hai request đồng thời sát giới hạn",
+    "expected": "Không vượt số lượt cho phép, không tạo thêm lượt do race condition."
+  },
+  {
+    "t": 13,
+    "r": 9,
+    "name": "Nộp bài và tính điểm",
+    "input": "Đề 4 câu trắc nghiệm một đáp án, mỗi câu 1 điểm, trả lời đúng 3 câu, sai 1 câu.\nBấm Nộp bài.",
+    "expected": "Điểm bằng 75%, hiển thị đúng 3 câu đúng, 1 câu sai, kết quả được lưu."
+  },
+  {
+    "t": 13,
+    "r": 10,
+    "name": "Tính điểm theo trọng số",
+    "input": "Đề 2 câu có trọng số 1 và 3. Chỉ làm đúng câu trọng số 3.",
+    "expected": "Điểm = 3/(1+3) × 100 = 75%, không tính thành 50%."
+  },
+  {
+    "t": 13,
+    "r": 11,
+    "name": "Chọn đủ đáp án đúng",
+    "input": "Câu nhiều đáp án đúng A và C, chọn A, C.",
+    "expected": "Câu được tính đúng."
+  },
+  {
+    "t": 13,
+    "r": 12,
+    "name": "Chọn thiếu đáp án đúng",
+    "input": "Câu có đáp án đúng A và C, chỉ chọn A.",
+    "expected": "Câu không được tính đúng."
+  },
+  {
+    "t": 13,
+    "r": 13,
+    "name": "Chọn thừa đáp án",
+    "input": "Câu có đáp án đúng A và C, chọn A, C, D.",
+    "expected": "Câu không được tính đúng."
+  },
+  {
+    "t": 13,
+    "r": 14,
+    "name": "Bỏ trống câu khi nộp",
+    "input": "Đề có một câu chưa chọn đáp án, bấm Nộp bài.",
+    "expected": "Câu bỏ trống không được tính đúng, kết quả không cộng điểm cho câu đó."
+  },
+  {
+    "t": 13,
+    "r": 15,
+    "name": "Chấm câu trả lời ngắn",
+    "input": "Câu trả lời ngắn có đáp án và quy tắc đối sánh đã được xác định.\nNhập đáp án đúng rồi thử đáp án sai ở lượt khác.",
+    "expected": "Điểm khớp đáp án và quy tắc đã xác định. Nếu chưa có quy tắc chấm, ghi Bị chặn, không tự kết luận Đạt."
+  },
+  {
+    "t": 13,
+    "r": 16,
+    "name": "Chấm câu tình huống",
+    "input": "Câu tình huống có tiêu chí chấm đã được phê duyệt, nhập bài trả lời mẫu.",
+    "expected": "Đánh giá khớp tiêu chí chấm. Nếu chưa có tiêu chí hoặc chức năng chấm, ghi Bị chặn."
+  },
+  {
+    "t": 13,
+    "r": 17,
+    "name": "Nộp payload giả",
+    "input": "Attempt HV1\nThao tác: Gửi câu ngoài bản đề tại thời điểm bắt đầu, trùng questionId, option của câu khác và trường score giả",
+    "expected": "Câu/option sai bị từ chối, server tự tính điểm, không tin score do client gửi."
+  },
+  {
+    "t": 13,
+    "r": 18,
+    "name": "Nộp đồng thời/lặp",
+    "input": "Attempt đang làm\nThao tác: Gửi hai submit đồng thời, retry submit sau thành công",
+    "expected": "Chỉ chấm/ghi tiến độ một lần, request sau lỗi có kiểm soát, điểm không cộng đôi."
+  },
+  {
+    "t": 13,
+    "r": 19,
+    "name": "Người khác nộp/xem bài",
+    "input": "Attempt thuộc HV1, token HV2\nThao tác: HV2 submit và GET attempt bằng ID HV1",
+    "expected": "403/404, không lộ bản đề tại thời điểm bắt đầu, điểm hoặc sửa bài HV1."
+  },
+  {
+    "t": 13,
+    "r": 20,
+    "name": "Hết giờ và sửa đồng hồ máy",
+    "input": "Đề thời lượng 1 phút\nThao tác: Đợi hết giờ, chỉnh đồng hồ client, thử nộp trễ trực tiếp API",
+    "expected": "Thời hạn do server quyết định, không kéo dài bằng đồng hồ client, chính sách xử lý bài quá hạn phải được chốt và kiểm, không chỉ kiểm countdown UI."
+  },
+  {
+    "t": 13,
+    "r": 21,
+    "name": "Snapshot đề",
+    "input": "HV1 đã start E1\nThao tác: quản trị viên sửa câu/đáp án/điểm đạt, HV1 nộp",
+    "expected": "Bài đang làm được chấm theo bản đề tại thời điểm bắt đầu ban đầu, kết quả cũ không thay đổi."
+  },
+  {
+    "t": 13,
+    "r": 22,
+    "name": "Resume sau reload/background",
+    "input": "Attempt chưa hết giờ\nThao tác: Reload web, background/kill mobile rồi mở lại E1",
+    "expected": "Không tạo lượt trùng, thời gian còn lại đúng server, hành vi lưu câu chưa nộp đúng cam kết UI."
+  },
+  {
+    "t": 13,
+    "r": 23,
+    "name": "Mạng mất khi submit",
+    "input": "Attempt hợp lệ\nThao tác: Gửi rồi ngắt mạng, nối lại, kiểm trạng thái trước retry",
+    "expected": "Không tạo kết quả trùng, cho xem kết quả nếu server đã nhận, không mất khả năng phục hồi."
+  },
+  {
+    "t": 13,
+    "r": 24,
+    "name": "Xem lại kết quả",
+    "input": "HV1 đã nộp, nhiều câu hơn một trang\nThao tác: Mở result, phân trang, xem đáp án/lời giải/domain/topic",
+    "expected": "Dữ liệu khớp bản đề tại thời điểm bắt đầu, trang đúng, nút quay lại tới màn phù hợp."
+  },
+  {
+    "t": 13,
+    "r": 25,
+    "name": "Xuất bản nhiều đề thi",
+    "input": "Chọn 2 đề thi nháp hợp lệ, thực hiện Xuất bản hàng loạt.",
+    "expected": "Cả hai mục chuyển sang xuất bản, tải lại vẫn đúng trạng thái, mục không chọn không thay đổi."
+  },
+  {
+    "t": 13,
+    "r": 26,
+    "name": "Chuyển nhiều đề thi về nháp",
+    "input": "Chọn 2 đề thi đang xuất bản, chuyển hàng loạt về Nháp.",
+    "expected": "Hai mục chuyển về nháp, học viên không truy cập được nội dung không được phép, mục khác giữ nguyên."
+  },
+  {
+    "t": 13,
+    "r": 27,
+    "name": "Kiểm tra điều kiện làm đề",
+    "input": "HV1 còn lượt làm, mở một đề đã xuất bản và nằm trong thời gian cho phép.",
+    "expected": "Hiển thị được phép bắt đầu, bấm Bắt đầu mở được lượt làm."
+  },
+  {
+    "t": 13,
+    "r": 28,
+    "name": "Thông báo hết lượt làm đề",
+    "input": "HV1 đã dùng hết lượt của đề có giới hạn, mở lại đề.",
+    "expected": "Hiển thị không còn lượt, không tạo thêm lượt làm khi gửi lại yêu cầu."
+  },
+  {
+    "t": 14,
+    "r": 1,
+    "name": "Dashboard người mới",
+    "input": "học viên mới không có progress\nThao tác: Mở home/progress",
+    "expected": "Hiển thị 0 hoặc chưa thiết lập, không gán chứng chỉ đầu danh sách làm mục tiêu, không NaN/Infinity."
+  },
+  {
+    "t": 14,
+    "r": 2,
+    "name": "Đồng bộ tiến độ",
+    "input": "HV1 học lesson và nộp exam trên mobile\nThao tác: Mở web progress/home, so GET progress/me",
+    "expected": "Cùng dữ liệu sau refresh, completion và averageScore không bị đánh đồng."
+  },
+  {
+    "t": 14,
+    "r": 3,
+    "name": "Ghi tiến độ sai",
+    "input": "HV1\nThao tác: POST progress/me với resourceId sai,resourceType lạ,completion -1/101",
+    "expected": "Từ chối, không lưu tiến độ mồ côi hoặc phần trăm ngoài 0–100."
+  },
+  {
+    "t": 14,
+    "r": 4,
+    "name": "Không giả danh học viên",
+    "input": "HV1,HV2\nThao tác: HV1 POST progress kèm học viênId=HV2",
+    "expected": "Chỉ dùng danh tính token hoặc từ chối, tiến độ HV2 không đổi."
+  },
+  {
+    "t": 14,
+    "r": 5,
+    "name": "Hoàn thành và ghi lặp",
+    "input": "HV1 hoàn tất lesson\nThao tác: POST cùng trạng thái nhiều lần, tải tổng tiến độ",
+    "expected": "Không nhân đôi số hoàn thành, resource khác không đổi."
+  },
+  {
+    "t": 14,
+    "r": 6,
+    "name": "Mục tiêu ngày/tuần",
+    "input": "Fixture có hoạt động hôm nay và tuần trước\nThao tác: Mở journey/home",
+    "expected": "Từ vựng, phút học, bài thi tuần đúng kỳ, thanh không vượt 100% dù vượt chỉ tiêu."
+  },
+  {
+    "t": 14,
+    "r": 7,
+    "name": "Ranh giới ngày/tuần",
+    "input": "Clock test và múi giờ đã thống nhất\nThao tác: Tạo hoạt động sát 00:00 và đầu tuần, đổi thời gian test qua mốc",
+    "expected": "Hoạt động thuộc đúng kỳ, số cũ không mang sang sai, ghi rõ múi giờ trong bằng chứng."
+  },
+  {
+    "t": 14,
+    "r": 8,
+    "name": "Kết quả gần đây",
+    "input": "HV1 có graded,submitted,in_progress\nThao tác: Mở home và activities, bấm kết quả",
+    "expected": "Danh sách đúng trạng thái được hỗ trợ, route dùng attemptId, chưa chấm không hiển thị 0% giả."
+  },
+  {
+    "t": 14,
+    "r": 9,
+    "name": "Gợi ý cá nhân hóa",
+    "input": "HV1 mục tiêu C1,yếu topic T1, HV2 mục tiêu khác\nThao tác: GET recommendations và mở UI từng học viên",
+    "expected": "Gợi ý liên quan profile/goals/performance, không rò thông tin HV1 sang HV2."
+  },
+  {
+    "t": 14,
+    "r": 10,
+    "name": "AI không khả dụng",
+    "input": "Mock provider timeout/trả JSON sai, không dùng khóa thật\nThao tác: Gọi recommendations",
+    "expected": "Fallback hoặc lỗi có kiểm soát, dashboard vẫn dùng được, không hiển thị raw prompt/secret."
+  },
+  {
+    "t": 14,
+    "r": 11,
+    "name": "Gợi ý self/smart",
+    "input": "HV1 lần lượt có learningPathMode self,smart\nThao tác: Mở home hai nền tảng",
+    "expected": "Trạng thái hiển thị phù hợp mode, URL gợi ý giữ bộ lọc và mở route có thật."
+  },
+  {
+    "t": 14,
+    "r": 12,
+    "name": "Quyền đọc progress người khác",
+    "input": "HV1, nhân viên có/không reports:read\nThao tác: GET progress/học viêns/HV2 bằng mỗi token",
+    "expected": "HV1 và nhân viên thiếu quyền bị chặn, người đủ quyền xem đúng HV2."
+  },
+  {
+    "t": 14,
+    "r": 13,
+    "name": "Xem lịch học cá nhân",
+    "input": "HV1 có mục tiêu và hoạt động học, mở lịch học, đổi sang HV2.",
+    "expected": "Lịch hiển thị nội dung của đúng tài khoản, không giữ dữ liệu HV1 sau khi đổi tài khoản."
+  },
+  {
+    "t": 15,
+    "r": 1,
+    "name": "Số liệu dashboard",
+    "input": "Dataset QA biết số users/attempt/progress\nThao tác: Mở analytics/dashboard và UI quản trị, đối chiếu truy vấn DB chỉ đọc",
+    "expected": "Số liệu cùng định nghĩa, cùng kỳ, không cộng bản ghi soft-delete sai quy tắc."
+  },
+  {
+    "t": 15,
+    "r": 2,
+    "name": "Danh sách học viên",
+    "input": "HV1,HV2 khác domain/career/certificate\nThao tác: Mở students, tìm/lọc, mở chi tiết",
+    "expected": "Kết quả đúng người và mục tiêu, pagination đúng tổng."
+  },
+  {
+    "t": 15,
+    "r": 3,
+    "name": "Kết quả bài thi quản trị",
+    "input": "quản trị viên/nhân viên có exams:grade\nThao tác: Mở test-results, lọc, mở attempt cụ thể",
+    "expected": "Điểm, trạng thái, học viên và bản đề tại thời điểm bắt đầu khớp kết quả học viên."
+  },
+  {
+    "t": 15,
+    "r": 4,
+    "name": "Báo cáo theo lĩnh vực",
+    "input": "D1 có học viêns, D2 rỗng\nThao tác: Mở reports/domain/D1 và D2",
+    "expected": "D1 tính đúng từ fixture, D2 hiển thị 0/empty, không lỗi chia 0."
+  },
+  {
+    "t": 15,
+    "r": 5,
+    "name": "Tổng quan tiến độ",
+    "input": "Learners ở nhiều mức hoàn thành\nThao tác: Mở progress-overview, đối chiếu dữ liệu từng học viên",
+    "expected": "Completion, điểm trung bình, tổng học viên đúng định nghĩa, không trộn score và completion."
+  },
+  {
+    "t": 15,
+    "r": 6,
+    "name": "Xuất Excel",
+    "input": "Báo cáo có tiếng Việt và bộ lọc đang chọn\nThao tác: Xuất file, mở bằng Excel, so bảng UI",
+    "expected": "File đọc được, cột, Unicode, số và dữ liệu phù hợp phạm vi xuất được mô tả trên UI."
+  },
+  {
+    "t": 15,
+    "r": 7,
+    "name": "Quyền báo cáo",
+    "input": "Role thiếu reports:read/exams:grade\nThao tác: Mở URL trực tiếp và gọi API từng loại",
+    "expected": "Thiếu quyền tương ứng bị chặn, không tải dữ liệu rồi chỉ ẩn UI."
+  },
+  {
+    "t": 15,
+    "r": 8,
+    "name": "Báo cáo rỗng/lỗi API",
+    "input": "Dataset rỗng, giả lập 500\nThao tác: Mở báo cáo, retry",
+    "expected": "Empty/error rõ, không hiển thị số mẫu như dữ liệu thật, không cho xuất file sai im lặng."
+  },
+  {
+    "t": 16,
+    "r": 1,
+    "name": "Bật nhắc học",
+    "input": "HV1, thiết bị thật bản build có notifications\nThao tác: Bật nhắc với giờ sắp tới, cấp quyền, đợi tới giờ",
+    "expected": "Lưu giờ/enabled, thông báo đến đúng người và lịch, chạm mở đúng màn."
+  },
+  {
+    "t": 16,
+    "r": 2,
+    "name": "Tắt nhắc học",
+    "input": "HV1 đã lên lịch\nThao tác: Tắt trên mobile, lưu, mở web, đợi tới giờ cũ",
+    "expected": "enabled=false đồng bộ, lịch local cũ bị hủy, sửa hồ sơ không tự bật lại."
+  },
+  {
+    "t": 16,
+    "r": 3,
+    "name": "Đổi giờ nhắc",
+    "input": "Có lịch cũ\nThao tác: Đổi giờ hai lần, liệt kê lịch trên thiết bị",
+    "expected": "Chỉ lịch cuối còn hiệu lực, không tạo nhiều thông báo cùng ngày."
+  },
+  {
+    "t": 16,
+    "r": 4,
+    "name": "Từ chối quyền/Expo Go",
+    "input": "Thiết bị không cấp permission hoặc Expo Go\nThao tác: Bật nhắc, lưu hồ sơ",
+    "expected": "Không crash, không tuyên bố đã nhận push khi nền tảng không hỗ trợ, hồ sơ vẫn lưu được."
+  },
+  {
+    "t": 16,
+    "r": 5,
+    "name": "Token subscription hợp lệ và trùng",
+    "input": "HV1, token test\nThao tác: POST cùng token hai lần, DELETE, gọi DELETE lần nữa",
+    "expected": "Không nhân đôi subscription, unsubscribe đúng token, thao tác lặp không lỗi 500."
+  },
+  {
+    "t": 16,
+    "r": 6,
+    "name": "Token/platform sai",
+    "input": "HV1\nThao tác: Gửi token rỗng hoặc >4096 ký tự, platform desktop",
+    "expected": "API từ chối, không ghi subscription sai."
+  },
+  {
+    "t": 16,
+    "r": 7,
+    "name": "Đổi tài khoản trên cùng thiết bị",
+    "input": "HV1 đăng ký token, logout, HV2 login\nThao tác: Đăng ký token cho HV2, phát thông báo test cho HV1/HV2",
+    "expected": "Không gửi thông tin cá nhân HV1 cho HV2, quyền sở hữu token và lịch được xử lý đúng."
+  },
+  {
+    "t": 17,
+    "r": 1,
+    "name": "Hộp thông báo và quyền sở hữu",
+    "input": "HV1/HV2 có thông báo riêng\nThao tác: Đăng nhập HV1, xem pending, đánh dấu đọc, dùng HV1 thử đánh dấu thông báo của HV2",
+    "expected": "Chỉ đọc và sửa thông báo của mình, số chưa đọc cập nhật đúng, không lộ dữ liệu HV2."
+  },
+  {
+    "t": 17,
+    "r": 2,
+    "name": "Đánh dấu đọc lặp và ID lỗi",
+    "input": "Một thông báo chưa đọc của HV1\nThao tác: Đánh dấu hai lần, tải lại, thử ID sai định dạng và ID không tồn tại",
+    "expected": "Không tạo dữ liệu trùng, trạng thái ổn định, lỗi rõ, không 500."
+  },
+  {
+    "t": 18,
+    "r": 1,
+    "name": "Xác thực scheduler",
+    "input": "Môi trường QA riêng, khóa scheduler thử nghiệm\nThao tác: Gọi job thiếu khóa, khóa sai, khóa đúng, thử cấu hình thiếu khóa",
+    "expected": "Thiếu/sai khóa bị từ chối, cấu hình thiếu báo không khả dụng, chỉ khóa hợp lệ chạy job."
+  },
+  {
+    "t": 18,
+    "r": 2,
+    "name": "Đúng giờ, tắt nhắc và chống lặp",
+    "input": "HV1 bật nhắc, HV2 tắt nhắc, có thiết bị nhận push thử\nThao tác: Chạy job quanh giờ nhắc và ranh giới ngày, chạy lặp, đổi giờ/tắt nhắc rồi chạy lại",
+    "expected": "Gửi đúng đối tượng, thời điểm và múi giờ theo chính sách, không gửi cho người tắt nhắc, không gửi lặp ngoài chủ đích."
+  },
+  {
+    "t": 19,
+    "r": 1,
+    "name": "Điều hướng chính",
+    "input": "HV1 có dữ liệu\nThao tác: Đi Home→Bài học→Chứng chỉ→Tiến độ→Cá nhân, Back, mở deep link",
+    "expected": "Mọi màn đúng nội dung, tab chọn đúng, không route trắng hoặc vòng lặp redirect."
+  },
+  {
+    "t": 19,
+    "r": 2,
+    "name": "Menu dư và chức năng bị thiếu",
+    "input": "Web học viên làm chuẩn chức năng\nThao tác: So từng màn tương ứng mobile, kiểm tab và menu Cá nhân",
+    "expected": "Bài học/Chứng chỉ không lặp không cần thiết trong Cá nhân, chức năng học chính vẫn tiếp cận được."
+  },
+  {
+    "t": 19,
+    "r": 3,
+    "name": "Safe area và màn nhỏ",
+    "input": "Android có navigation bar, iPhone có notch\nThao tác: Mở màn chính/form/quiz, bật keyboard, xoay màn nếu hỗ trợ",
+    "expected": "Không che header/nút lưu, nội dung cuộn được, không tràn ngang ngoài vùng code/bảng."
+  },
+  {
+    "t": 19,
+    "r": 4,
+    "name": "Chữ dài và cỡ chữ lớn",
+    "input": "Tên 100 ký tự, title dài, font hệ thống 150–200%\nThao tác: Mở home,profile,list,quiz",
+    "expected": "Nội dung đọc được, không chồng chữ hoặc che nút, truncation có thể mở xem đầy đủ."
+  },
+  {
+    "t": 19,
+    "r": 5,
+    "name": "Trạng thái tải/rỗng/lỗi",
+    "input": "Mock slow,empty,500 cho từng màn chính\nThao tác: Mở màn, retry, đổi tab trong lúc tải",
+    "expected": "Không loading vô hạn, không render dữ liệu cũ của người khác, retry hoạt động."
+  },
+  {
+    "t": 19,
+    "r": 6,
+    "name": "Keyboard và accessibility web",
+    "input": "Chỉ bàn phím, screen reader\nThao tác: Tab qua login,form,bộ lọc,dialog,quiz, Enter/Escape",
+    "expected": "Có label/focus rõ, thứ tự hợp lý, dialog không làm mất focus, thông báo lỗi được nhận biết."
+  },
+  {
+    "t": 19,
+    "r": 7,
+    "name": "Accessibility mobile",
+    "input": "TalkBack/VoiceOver\nThao tác: Đọc tab,icon button,flashcard,radio đáp án,nút submit",
+    "expected": "Control có tên và trạng thái, thao tác thực hiện được không chỉ dựa vào màu."
+  },
+  {
+    "t": 19,
+    "r": 8,
+    "name": "API URL trên thiết bị",
+    "input": "Điện thoại cùng LAN, API test chạy\nThao tác: Mở app dùng EXPO_PUBLIC_API_URL, login và tải lesson",
+    "expected": "Thiết bị truy cập được host API, không dùng localhost điện thoại nhầm server, lỗi mạng nêu rõ."
+  },
+  {
+    "t": 19,
+    "r": 9,
+    "name": "Cache khi chuyển tài khoản",
+    "input": "HV1 có progress, HV2 chưa học\nThao tác: Logout HV1, login HV2, quay lại từng tab",
+    "expected": "Không lóe dữ liệu HV1, mỗi request lấy đúng session HV2."
+  },
+  {
+    "t": 20,
+    "r": 1,
+    "name": "Tách dữ liệu cá nhân giữa học viên",
+    "input": "HV1, HV2 và định danh bài làm, hồ sơ, tiến độ của HV2.\nThao tác: HV1 thay định danh trong các API cá nhân và bài làm thuộc HV2.",
+    "expected": "Không đọc hoặc sửa dữ liệu cá nhân của HV2 khi thiếu quyền. Chỉ kiểm các module đang có trong AppModule, không đưa subscription thanh toán vào phạm vi hiện hành."
+  },
+  {
+    "t": 20,
+    "r": 2,
+    "name": "JWT giả mạo",
+    "input": "Token hết hạn, sửa payload/signature,sai định dạng\nThao tác: Gọi mọi nhóm API bảo vệ bằng từng token",
+    "expected": "Không truy cập được, không lỗi 500, server không tin role từ payload chưa xác minh."
+  },
+  {
+    "t": 20,
+    "r": 3,
+    "name": "Lộ dữ liệu nhạy cảm",
+    "input": "quản trị viên và HV1, có lỗi test\nThao tác: Kiểm response auth/users/reports,console,server log và bundle client",
+    "expected": "Không chứa password/hash,refresh token ngoài kênh dự kiến,SMTP/DB/AI secrets hoặc dữ liệu học viên không được phép."
+  },
+  {
+    "t": 20,
+    "r": 4,
+    "name": "XSS nội dung học",
+    "input": "Fixture title/bio/lesson có script và HTML event handler\nThao tác: Lưu qua API test, mở admin/web học viên/mobile renderer",
+    "expected": "Không thực thi script không tin cậy, nội dung hiển thị an toàn, không đánh cắp phiên."
+  },
+  {
+    "t": 20,
+    "r": 5,
+    "name": "Injection và input lớn",
+    "input": "Search và ID chứa ký tự đặc biệt, JSON sai\nThao tác: Gửi chuỗi SQL-like vô hại,UUID sai,limit âm/khổng lồ,JSON hỏng",
+    "expected": "Không thực thi dữ liệu như truy vấn, lỗi 4xx có kiểm soát, không trả toàn bộ DB hoặc stack."
+  },
+  {
+    "t": 20,
+    "r": 6,
+    "name": "Endpoint public lộ draft/đáp án",
+    "input": "Có content draft và exam chưa làm\nThao tác: GET list/detail lesson,vocabulary,question,exam bằng guest và HV1",
+    "expected": "Chỉ trả dữ liệu được phép, không lộ isCorrect/answer trước thời điểm được phép."
+  },
+  {
+    "t": 20,
+    "r": 7,
+    "name": "Upload giả MIME",
+    "input": "File văn bản khai image/png\nThao tác: Upload qua multipart và base64 vào môi trường test",
+    "expected": "Không phục vụ nội dung thực thi như tài sản tin cậy, báo lỗi đọc ảnh hoặc xử lý an toàn."
+  },
+  {
+    "t": 20,
+    "r": 8,
+    "name": "Hạn chế thử sai đăng nhập liên tiếp",
+    "input": "Tài khoản QA, thử sai mật khẩu liên tiếp trong môi trường QA.",
+    "expected": "Đối chiếu giới hạn theo yêu cầu bảo mật được thống nhất, ghi Bị chặn nếu chưa xác định giới hạn, không tự coi là Đạt."
+  },
+  {
+    "t": 21,
+    "r": 1,
+    "name": "Build và typecheck",
+    "input": "Checkout và dependencies đúng lockfile, env test\nThao tác: Chạy typecheck packages/mobile/web và build API theo scripts hiện có",
+    "expected": "Lệnh exit 0, không coi typecheck là bằng chứng E2E."
+  },
+  {
+    "t": 21,
+    "r": 2,
+    "name": "Migration trên DB sạch",
+    "input": "Database test dùng riêng, có backup nếu cần\nThao tác: Apply migrations vào DB trống, seed test, chạy smoke",
+    "expected": "Schema tạo thành công, seed nhất quán, login/học/nộp bài hoạt động."
+  },
+  {
+    "t": 21,
+    "r": 3,
+    "name": "Migration nâng cấp",
+    "input": "Bản sao DB test phiên bản trước có dữ liệu\nThao tác: Backup, apply migration, kiểm số lượng và khóa ngoại",
+    "expected": "Không mất dữ liệu ngoài thay đổi được mô tả, schema mới tương thích API."
+  },
+  {
+    "t": 21,
+    "r": 4,
+    "name": "Hiệu năng danh sách",
+    "input": "10000 bản ghi test, tải 20 user đồng thời, môi trường ghi rõ\nThao tác: Đo list lesson/users/questions trang đầu/cuối và bộ lọc trong 10 phút",
+    "expected": "Báo p50/p95/error rate, mục tiêu đề xuất p95<2s và lỗi<1%, chỉ kết luận SLA khi được chốt."
+  },
+  {
+    "t": 21,
+    "r": 5,
+    "name": "Hiệu năng dashboard/report",
+    "input": "Dataset test lớn, query logging đã ẩn thông tin nhạy cảm\nThao tác: Đo thời gian và số query khi tăng học viên 100→1000",
+    "expected": "Không phát sinh N+1 tăng tuyến tính không cần thiết, lưu số đo, ngân sách query cần chốt trước nghiệm thu."
+  },
+  {
+    "t": 21,
+    "r": 6,
+    "name": "API/DB gián đoạn",
+    "input": "Môi trường test có quyền restart dịch vụ\nThao tác: Ngắt DB ngắn, gọi API, khôi phục, retry",
+    "expected": "Không lỗi treo vô hạn, phản hồi không lộ connection string, thao tác phục hồi không ghi trùng."
+  },
+  {
+    "t": 21,
+    "r": 7,
+    "name": "Restore dữ liệu",
+    "input": "Backup QA chứa HV1/attempt/progress, DB đích riêng\nThao tác: Restore, login và xem kết quả, đối chiếu record counts",
+    "expected": "Dữ liệu và quan hệ phục hồi đúng, ghi RPO/RTO đo được, không tự đặt đạt SLA."
+  },
+  {
+    "t": 21,
+    "r": 8,
+    "name": "Tương thích trình duyệt/thiết bị",
+    "input": "Chrome,Firefox,Safari, Android/iOS được hỗ trợ\nThao tác: Chạy smoke trên từng cấu hình, ghi phiên bản và kích thước màn",
+    "expected": "Không lỗi chặn luồng chính, vấn đề đặc thù được ghi riêng từng nền tảng."
+  },
+  {
+    "t": 22,
+    "r": 1,
+    "name": "Quản trị xuất bản đến học viên hoàn tất",
+    "input": "quản trị viên, học viên mới, fixture QA riêng\nThao tác: quản trị viên tạo lesson,question,exam thuộc C1 và liên kết T1, publish, học viên mới đăng ký/onboarding, học lesson trên mobile, làm exam trên web, quản trị viên xem report",
+    "expected": "Nội dung mới xuất hiện đúng người học, điểm và progress nhất quán, báo cáo phản ánh đúng hoạt động, không cần sửa DB thủ công để hoàn thành luồng."
+  },
+  {
+    "t": 22,
+    "r": 2,
+    "name": "Web-mobile cùng một hành trình",
+    "input": "HV1 mới chọn both,C1,D1\nThao tác: Web lưu mục tiêu và tắt nhắc, mobile sửa tên, học từ, web tiếp tục lesson, mobile nộp exam, web xem kết quả",
+    "expected": "Không mất mục tiêu/lĩnh vực hoặc bật nhắc trở lại, lịch sử từ,lesson,attempt và kết quả đúng một tài khoản."
+  },
+  {
+    "t": 22,
+    "r": 3,
+    "name": "Thu hồi quyền trong lúc thao tác",
+    "input": "giảng viên đang mở editor, quản trị viên quản lý role\nThao tác: quản trị viên thu quyền sửa nội dung, giảng viên gửi form cũ, login lại và thử URL trực tiếp",
+    "expected": "Server từ chối theo chính sách phiên/quyền, nội dung không bị ghi trái phép, UI phản ánh quyền mới."
+  },
+  {
+    "t": 22,
+    "r": 4,
+    "name": "Nội dung thay đổi trong lúc làm bài",
+    "input": "HV1 bắt đầu exam C1, quản trị viên mở builder\nThao tác: quản trị viên sửa đề, HV1 mất mạng rồi kết nối lại và nộp, xem học viên result và admin result",
+    "expected": "Cả hai kết quả cùng bản đề tại thời điểm bắt đầu, chỉ một lần chấm, không dùng đáp án mới để chấm lượt cũ."
+  },
+  {
+    "t": 22,
+    "r": 5,
+    "name": "Khóa người dùng khi đang học",
+    "input": "HV1 có phiên web/mobile và attempt, quản trị viên\nThao tác: quản trị viên suspend HV1, trên hai client thử lưu profile,start,submit, quản trị viên activate, HV1 login lại",
+    "expected": "Các request sau khóa bị chặn, dữ liệu trước khóa không hỏng, sau kích hoạt luồng phục hồi rõ, không tự tạo attempt/điểm trùng."
+  }
+]

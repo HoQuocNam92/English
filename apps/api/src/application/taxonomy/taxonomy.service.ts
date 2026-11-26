@@ -718,28 +718,34 @@ export class TaxonomyService {
 
   async createCertificate(dto: any) {
     this.assertProfessionalCertificate(dto.name)
-    const cert = await this.prisma.certificate.create({
-      data: {
-        code: dto.code,
-        name: dto.name,
-        provider: dto.provider,
-        description: dto.description,
-        category: dto.category || null,
-        examDurationMinutes: dto.examDurationMinutes == null ? null : Number(dto.examDurationMinutes),
-        examQuestionCount: dto.examQuestionCount == null ? null : Number(dto.examQuestionCount),
-        passingScaledScore: dto.passingScaledScore == null ? null : Number(dto.passingScaledScore),
-        examUrl: dto.examUrl || null,
-        isActive: dto.isActive ?? true,
-      },
-      include: {
-        domains: { include: { domain: true } },
-        _count: {
-          select: {
-            exams: true,
+    let cert
+    try {
+      cert = await this.prisma.certificate.create({
+        data: {
+          code: dto.code,
+          name: dto.name,
+          provider: dto.provider,
+          description: dto.description,
+          category: dto.category || null,
+          examDurationMinutes: dto.examDurationMinutes == null ? null : Number(dto.examDurationMinutes),
+          examQuestionCount: dto.examQuestionCount == null ? null : Number(dto.examQuestionCount),
+          passingScaledScore: dto.passingScaledScore == null ? null : Number(dto.passingScaledScore),
+          examUrl: dto.examUrl || null,
+          isActive: dto.isActive ?? true,
+        },
+        include: {
+          domains: { include: { domain: true } },
+          _count: {
+            select: {
+              exams: true,
+            },
           },
         },
-      },
-    })
+      })
+    } catch (error) {
+      if ((error as any)?.code === 'P2002') throw new ConflictException('Mã chứng chỉ đã được sử dụng. Vui lòng chỉnh sửa chứng chỉ hiện có hoặc chọn mã khác.')
+      throw error
+    }
     return { data: cert }
   }
 

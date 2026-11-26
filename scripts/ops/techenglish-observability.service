@@ -1,0 +1,16 @@
+[Unit]
+Description=TechEnglish observability stack
+After=docker.service network-online.target
+Requires=docker.service
+Wants=network-online.target
+[Service]
+Type=oneshot
+RemainAfterExit=true
+User=ubuntu
+WorkingDirectory=/home/ubuntu/techenglish-ops
+ExecStart=/usr/bin/docker compose -f compose.yml up -d
+ExecStop=/usr/bin/docker compose -f compose.yml stop -t 20
+TimeoutStartSec=10min
+TimeoutStopSec=2min
+[Install]
+WantedBy=multi-user.target

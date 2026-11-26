@@ -1,0 +1,10 @@
+[Unit]
+Description=Watch TechEnglish notification preferences and credentials
+[Path]
+PathChanged=/home/ubuntu/techenglish-ops/notifications.json
+PathChanged=/home/ubuntu/techenglish-ops/secrets/telegram-token
+PathChanged=/home/ubuntu/apps/English/apps/api/.env
+PathChanged=/home/ubuntu/apps/English/.env.compose
+Unit=techenglish-notifications.service
+[Install]
+WantedBy=multi-user.target

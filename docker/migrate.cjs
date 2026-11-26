@@ -22,6 +22,7 @@ async function main() {
       throw new Error('Nonempty database without Prisma history: manual review required.');
     }
     await client.query('ROLLBACK');
+    await require('./export-legacy-state.cjs')(client);
   } finally { await client.end(); }
   const schema = fresh ? 'docker/prisma/schema.prisma' : 'apps/api/prisma/schema.prisma';
   if (fresh) copyFileSync(path.join(root, 'apps/api/prisma/schema.prisma'), path.join(root, schema));

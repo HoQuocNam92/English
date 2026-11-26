@@ -4,7 +4,7 @@ import { PassportStrategy } from '@nestjs/passport'
 import { ExtractJwt, Strategy } from 'passport-jwt'
 import { ConfigService } from '@nestjs/config'
 import { PrismaService } from '../../infrastructure/database/prisma.service'
-import { MFA_SESSION_MS, privileged } from '../../application/auth/admin-mfa.service'
+import { privileged } from '../../application/auth/admin-mfa.service'
 
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy) {
@@ -51,7 +51,8 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     if (!session || session.userId !== user.id || session.revokedAt || session.expiresAt <= new Date()) throw new UnauthorizedException('Phiên đăng nhập đã hết hạn')
     if (privileged(roles)) {
       const at = session.mfaVerifiedAt?.getTime()
-      mfaVerified = Boolean(at && payload.mfaAt === at && Date.now() - at < MFA_SESSION_MS)
+      // MFA belongs to this live session; logout, revocation and expiry invalidate it.
+      mfaVerified = Boolean(at && payload.mfaAt === at)
     }
     return { sub: user.id, email: user.email, roles, permissions, sid: payload.sid, mfaVerified }
   }

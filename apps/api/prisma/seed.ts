@@ -102,6 +102,8 @@ async function main() {
 
 
 
+    ...['read', 'create', 'update', 'delete'].map(action => ({ code: `lessons:${action}`, name: `Lessons ${action}`, resource: 'lessons', action, description: 'Quản lý bài học' })),
+    { code: 'exams:delete', name: 'Delete Exams', resource: 'exams', action: 'delete', description: 'Xóa bài kiểm tra' },
     { code: 'vocabulary:read', name: 'Read Vocabulary', resource: 'vocabulary', action: 'read', description: 'Xem từ vựng' },
     { code: 'vocabulary:manage', name: 'Manage Vocabulary', resource: 'vocabulary', action: 'manage', description: 'Tạo, sửa, xoá từ vựng' },
     { code: 'questions:read', name: 'Read Questions', resource: 'questions', action: 'read', description: 'Xem ngân hàng câu hỏi' },
@@ -132,7 +134,7 @@ async function main() {
     }
   }
   await rolePerm('admin', Object.keys(permissions))
-  await rolePerm('teacher', ['vocabulary:read','vocabulary:manage','questions:read','questions:manage','exams:read','exams:create','exams:publish','exams:grade','reports:read'])
+  await rolePerm('teacher', ['lessons:read','lessons:create','lessons:update','lessons:delete','vocabulary:read','vocabulary:manage','questions:read','questions:manage','exams:read','exams:create','exams:publish','exams:grade','exams:delete','reports:read'])
   await rolePerm('learner', ['vocabulary:read','exams:read','questions:read'])
   await rolePerm('content_editor', ['vocabulary:read','vocabulary:manage'])
   await rolePerm('content_reviewer', ['vocabulary:read','questions:read'])
@@ -254,7 +256,7 @@ async function main() {
 
   const lessonSeed = [
     {
-      slug: 'it-terminology-foundations', title: 'Thuật ngữ IT nền tảng', type: 'terminology' as const,
+      slug: 'it-terminology-foundations', title: 'IT Terminology Foundations', type: 'terminology' as const,
       summary: 'Làm quen với các thuật ngữ cốt lõi thường gặp trong phát triển phần mềm và vận hành hệ thống.',
       domain: 'SOFTWARE_ENG', level: LevelCode.beginner, minutes: 25,
       concepts: ['requirement', 'deployment', 'repository', 'database'], certificates: [] as string[],
@@ -265,7 +267,7 @@ async function main() {
       ],
     },
     {
-      slug: 'reading-cloud-architecture-document', title: 'Đọc hiểu tài liệu kiến trúc Cloud', type: 'technical_reading' as const,
+      slug: 'reading-cloud-architecture-document', title: 'Reading Cloud Architecture Documents', type: 'technical_reading' as const,
       summary: 'Luyện đọc tài liệu kỹ thuật mô tả một hệ thống web có tính sẵn sàng cao trên AWS.',
       domain: 'CLOUD', level: LevelCode.intermediate, minutes: 35,
       concepts: ['high availability', 'fault tolerance', 'availability zone'], certificates: ['AWS-SAA'],
@@ -276,7 +278,7 @@ async function main() {
       ],
     },
     {
-      slug: 'reading-rest-api-documentation', title: 'Đọc tài liệu REST API', type: 'api_documentation' as const,
+      slug: 'reading-rest-api-documentation', title: 'Reading REST API Documentation', type: 'api_documentation' as const,
       summary: 'Hiểu endpoint, phương thức HTTP, mã trạng thái, xác thực và mẫu request/response trong tài liệu API.',
       domain: 'SOFTWARE_ENG', level: LevelCode.intermediate, minutes: 40,
       concepts: ['endpoint', 'authentication', 'request', 'response'], certificates: ['AWS-DVA'],
@@ -287,7 +289,7 @@ async function main() {
       ],
     },
     {
-      slug: 'system-design-scalable-service', title: 'System Design: Dịch vụ có khả năng mở rộng', type: 'system_design' as const,
+      slug: 'system-design-scalable-service', title: 'System Design: Building a Scalable Service', type: 'system_design' as const,
       summary: 'Phân tích bằng tiếng Anh các thành phần và đánh đổi khi thiết kế một dịch vụ web có khả năng mở rộng.',
       domain: 'SOFTWARE_ENG', level: LevelCode.advanced, minutes: 50,
       concepts: ['scalability', 'load balancing', 'cache', 'trade-off'], certificates: [],
@@ -298,7 +300,7 @@ async function main() {
       ],
     },
     {
-      slug: 'ba-payment-requirement-case-study', title: 'Tình huống BA: Làm rõ yêu cầu thanh toán', type: 'case_study' as const,
+      slug: 'ba-payment-requirement-case-study', title: 'BA Case Study: Clarifying Payment Requirements', type: 'case_study' as const,
       summary: 'Thực hành xử lý tình huống thực tế của Business Analyst khi yêu cầu nghiệp vụ còn mơ hồ.',
       domain: 'SOFTWARE_ENG', level: LevelCode.intermediate, minutes: 45,
       concepts: ['stakeholder', 'acceptance criteria', 'edge case', 'scope'], certificates: [],
@@ -309,7 +311,7 @@ async function main() {
       ],
     },
     {
-      slug: 'aws-saa-high-availability-review', title: 'Ôn tập AWS SAA: High Availability', type: 'certification_review' as const,
+      slug: 'aws-saa-high-availability-review', title: 'AWS SAA Review: High Availability', type: 'certification_review' as const,
       summary: 'Tổng hợp khái niệm và cách đọc câu hỏi tình huống về tính sẵn sàng cao cho mục tiêu AWS SAA.',
       domain: 'CLOUD', level: LevelCode.intermediate, minutes: 55,
       concepts: ['Multi-AZ', 'Auto Scaling', 'Elastic Load Balancing', 'RTO', 'RPO'], certificates: ['AWS-SAA'],
@@ -628,14 +630,14 @@ async function main() {
         for (const eq of exam.questions) {
           const q = eq.question;
           maxScore += q.points * eq.weight;
-          
+
           const isCorrect = Math.random() > 0.3;
           const earnedPoints = isCorrect ? (q.points * eq.weight) : 0;
           totalScore += earnedPoints;
-          
+
           const correctOptions = q.options.filter(o => o.isCorrect);
           const incorrectOptions = q.options.filter(o => !o.isCorrect);
-          
+
           let selectedOptionId;
           if (isCorrect && correctOptions.length > 0) {
             selectedOptionId = correctOptions[0].id;

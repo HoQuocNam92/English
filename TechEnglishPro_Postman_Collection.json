@@ -1,0 +1,1238 @@
+{
+  "info": {
+    "name": "TechEnglish Pro - API Test Collection",
+    "_postman_id": "techenglish-pro-2026",
+    "description": "Postman collection kiem thu he thong TechEnglish Pro theo tung nhom chuc nang.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "baseUrl",       "value": "https://api.techenglish.click/api/v1", "type": "string" },
+    { "key": "webUrl",        "value": "https://api.techenglish.click/api/v1", "type": "string" },
+    { "key": "tokenHV1",      "value": "", "type": "string" },
+    { "key": "tokenHV2",      "value": "", "type": "string" },
+    { "key": "tokenAdmin",    "value": "", "type": "string" },
+    { "key": "tokenLecturer", "value": "", "type": "string" },
+    { "key": "refreshToken",  "value": "", "type": "string" },
+    { "key": "HV1_ID",        "value": "", "type": "string" },
+    { "key": "HV2_ID",        "value": "", "type": "string" },
+    { "key": "C1_ID",         "value": "", "type": "string" },
+    { "key": "D1_ID",         "value": "", "type": "string" },
+    { "key": "V1_ID",         "value": "", "type": "string" },
+    { "key": "E1_ID",         "value": "", "type": "string" },
+    { "key": "LESSON_ID",     "value": "", "type": "string" },
+    { "key": "LESSON_ID2",    "value": "", "type": "string" },
+    { "key": "QUESTION_ID",   "value": "", "type": "string" },
+    { "key": "QUESTION_ID2",  "value": "", "type": "string" },
+    { "key": "ATTEMPT_ID",    "value": "", "type": "string" },
+    { "key": "ROLE_ID",       "value": "", "type": "string" },
+    { "key": "GROUP_ID",      "value": "", "type": "string" },
+    { "key": "LEVEL_ID",      "value": "", "type": "string" },
+    { "key": "T1_ID",         "value": "", "type": "string" },
+    { "key": "NOTIF_ID",      "value": "", "type": "string" },
+    { "key": "PERM_ID",       "value": "", "type": "string" },
+    { "key": "ASSESSMENT_ID", "value": "", "type": "string" },
+    { "key": "LECTURER_ID",   "value": "", "type": "string" },
+    { "key": "SCHEDULER_KEY", "value": "", "type": "string" }
+  ],
+  "item": [
+
+    {
+      "name": "5.2.1 - Dang ky",
+      "item": [
+        {
+          "name": "TC1 - Dang ky thanh cong",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{baseUrl}}/auth/register", "host": ["{{baseUrl}}"], "path": ["auth","register"] },
+            "body": { "mode": "raw", "raw": "{\n  \"displayName\": \"Nguyen An\",\n  \"email\": \"an.qa@gmail.com\",\n  \"password\": \"Abcd@1234\"\n}" }
+          }
+        },
+        {
+          "name": "TC2 - Dang ky trung email",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{baseUrl}}/auth/register", "host": ["{{baseUrl}}"], "path": ["auth","register"] },
+            "body": { "mode": "raw", "raw": "{\n  \"displayName\": \"Nguyen An\",\n  \"email\": \"an.qa@gmail.com\",\n  \"password\": \"Abcd@1234\"\n}" }
+          }
+        },
+        {
+          "name": "TC3 - Dang ky email trung khac chu hoa",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{baseUrl}}/auth/register", "host": ["{{baseUrl}}"], "path": ["auth","register"] },
+            "body": { "mode": "raw", "raw": "{\n  \"displayName\": \"Nguyen An\",\n  \"email\": \"AN.QA@gmail.com\",\n  \"password\": \"Abcd@1234\"\n}" }
+          }
+        },
+        {
+          "name": "TC4 - Mat khau qua ngan (5 ky tu)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{baseUrl}}/auth/register", "host": ["{{baseUrl}}"], "path": ["auth","register"] },
+            "body": { "mode": "raw", "raw": "{\n  \"displayName\": \"Nguoi Dung Moi\",\n  \"email\": \"new1.qa@gmail.com\",\n  \"password\": \"Abc12\"\n}" }
+          }
+        },
+        {
+          "name": "TC5 - Mat khau gioi han toi thieu (6 ky tu)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{baseUrl}}/auth/register", "host": ["{{baseUrl}}"], "path": ["auth","register"] },
+            "body": { "mode": "raw", "raw": "{\n  \"displayName\": \"Nguoi Dung Moi\",\n  \"email\": \"new2.qa@gmail.com\",\n  \"password\": \"Abc123\"\n}" }
+          }
+        },
+        {
+          "name": "TC6 - Mat khau gioi han toi da (72 ky tu)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{baseUrl}}/auth/register", "host": ["{{baseUrl}}"], "path": ["auth","register"] },
+            "body": { "mode": "raw", "raw": "{\n  \"displayName\": \"Nguoi Dung Moi\",\n  \"email\": \"new3.qa@gmail.com\",\n  \"password\": \"Abcdefghijklmnopqrstuvwxyz1234567890!@#$%^&*()Abcdefghijklmnopqrstu\"\n}" }
+          }
+        },
+        {
+          "name": "TC7 - Mat khau vuot gioi han (73 ky tu)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{baseUrl}}/auth/register", "host": ["{{baseUrl}}"], "path": ["auth","register"] },
+            "body": { "mode": "raw", "raw": "{\n  \"displayName\": \"Nguoi Dung Moi\",\n  \"email\": \"new4.qa@gmail.com\",\n  \"password\": \"Abcdefghijklmnopqrstuvwxyz1234567890!@#$%^&*()Abcdefghijklmnopqrstuv\"\n}" }
+          }
+        },
+        {
+          "name": "TC8 - Dang ky de trong thong tin",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{baseUrl}}/auth/register", "host": ["{{baseUrl}}"], "path": ["auth","register"] },
+            "body": { "mode": "raw", "raw": "{\n  \"displayName\": \"\",\n  \"email\": \"\",\n  \"password\": \"\"\n}" }
+          }
+        },
+        {
+          "name": "TC9 - Dang ky sai dinh dang email",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{baseUrl}}/auth/register", "host": ["{{baseUrl}}"], "path": ["auth","register"] },
+            "body": { "mode": "raw", "raw": "{\n  \"displayName\": \"Nguyen An\",\n  \"email\": \"nguyenvana\",\n  \"password\": \"Abcd@1234\"\n}" }
+          }
+        },
+        {
+          "name": "TC10 - Ho ten qua ngan (1 ky tu)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{baseUrl}}/auth/register", "host": ["{{baseUrl}}"], "path": ["auth","register"] },
+            "body": { "mode": "raw", "raw": "{\n  \"displayName\": \"A\",\n  \"email\": \"new5.qa@gmail.com\",\n  \"password\": \"Abcd@1234\"\n}" }
+          }
+        },
+        {
+          "name": "TC11 - Ho ten vuot gioi han (101 ky tu)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{baseUrl}}/auth/register", "host": ["{{baseUrl}}"], "path": ["auth","register"] },
+            "body": { "mode": "raw", "raw": "{\n  \"displayName\": \"Abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrs\",\n  \"email\": \"new6.qa@gmail.com\",\n  \"password\": \"Abcd@1234\"\n}" }
+          }
+        },
+        {
+          "name": "TC12 - Ho ten chi gom khoang trang",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{baseUrl}}/auth/register", "host": ["{{baseUrl}}"], "path": ["auth","register"] },
+            "body": { "mode": "raw", "raw": "{\n  \"displayName\": \"   \",\n  \"email\": \"new7.qa@gmail.com\",\n  \"password\": \"Abcd@1234\"\n}" }
+          }
+        },
+        {
+          "name": "TC13 - Dang ky email ngoai Gmail",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{baseUrl}}/auth/register", "host": ["{{baseUrl}}"], "path": ["auth","register"] },
+            "body": { "mode": "raw", "raw": "{\n  \"displayName\": \"Hoc Vien Thu Nghiem\",\n  \"email\": \"hocvien@yahoo.com\",\n  \"password\": \"Abcd@1234\"\n}" }
+          }
+        },
+        {
+          "name": "TC14 - Dang ky email gia duoi Gmail",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{baseUrl}}/auth/register", "host": ["{{baseUrl}}"], "path": ["auth","register"] },
+            "body": { "mode": "raw", "raw": "{\n  \"displayName\": \"Hoc Vien Thu Nghiem\",\n  \"email\": \"hocvien@gmail.com.tenkhac\",\n  \"password\": \"Abcd@1234\"\n}" }
+          }
+        },
+        {
+          "name": "TC15 - Gmail co chu hoa va khoang trang ngoai",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{baseUrl}}/auth/register", "host": ["{{baseUrl}}"], "path": ["auth","register"] },
+            "body": { "mode": "raw", "raw": "{\n  \"displayName\": \"Nguoi Dung Moi\",\n  \"email\": \" hocvien@GMAIL.COM \",\n  \"password\": \"Abcd@1234\"\n}" }
+          }
+        }
+      ]
+    },
+
+    {
+      "name": "5.2.2 - Dang nhap va Quan ly phien",
+      "item": [
+        {
+          "name": "TC1 - Hoc vien dang nhap thanh cong",
+          "event": [{ "listen": "test", "script": { "exec": ["var r=pm.response.json(); if(r.accessToken) pm.collectionVariables.set('tokenHV1',r.accessToken); if(r.refreshToken) pm.collectionVariables.set('refreshToken',r.refreshToken);"], "type": "text/javascript" } }],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{baseUrl}}/auth/login", "host": ["{{baseUrl}}"], "path": ["auth","login"] },
+            "body": { "mode": "raw", "raw": "{\n  \"email\": \"hv1.qa@gmail.com\",\n  \"password\": \"Abcd@1234\"\n}" }
+          }
+        },
+        {
+          "name": "TC2 - Quan tri vien dang nhap thanh cong",
+          "event": [{ "listen": "test", "script": { "exec": ["var r=pm.response.json(); if(r.accessToken) pm.collectionVariables.set('tokenAdmin',r.accessToken);"], "type": "text/javascript" } }],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{baseUrl}}/auth/login", "host": ["{{baseUrl}}"], "path": ["auth","login"] },
+            "body": { "mode": "raw", "raw": "{\n  \"email\": \"admin.qa@gmail.com\",\n  \"password\": \"Admin@1234\"\n}" }
+          }
+        },
+        {
+          "name": "TC3 - Giang vien dang nhap thanh cong",
+          "event": [{ "listen": "test", "script": { "exec": ["var r=pm.response.json(); if(r.accessToken) pm.collectionVariables.set('tokenLecturer',r.accessToken);"], "type": "text/javascript" } }],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{baseUrl}}/auth/login", "host": ["{{baseUrl}}"], "path": ["auth","login"] },
+            "body": { "mode": "raw", "raw": "{\n  \"email\": \"lecturer.qa@gmail.com\",\n  \"password\": \"Lecturer@1234\"\n}" }
+          }
+        },
+        {
+          "name": "TC4 - Dang nhap sai mat khau",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{baseUrl}}/auth/login", "host": ["{{baseUrl}}"], "path": ["auth","login"] },
+            "body": { "mode": "raw", "raw": "{\n  \"email\": \"hv1.qa@gmail.com\",\n  \"password\": \"Sai@1234\"\n}" }
+          }
+        },
+        {
+          "name": "TC5 - Dang nhap email chua ton tai",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{baseUrl}}/auth/login", "host": ["{{baseUrl}}"], "path": ["auth","login"] },
+            "body": { "mode": "raw", "raw": "{\n  \"email\": \"khongtontai.qa@gmail.com\",\n  \"password\": \"Abcd@1234\"\n}" }
+          }
+        },
+        {
+          "name": "TC6 - Dang nhap tai khoan bi khoa",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{baseUrl}}/auth/login", "host": ["{{baseUrl}}"], "path": ["auth","login"] },
+            "body": { "mode": "raw", "raw": "{\n  \"email\": \"locked.qa@gmail.com\",\n  \"password\": \"Abcd@1234\"\n}" }
+          }
+        },
+        {
+          "name": "TC9 - Refresh phien (token hop le)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{baseUrl}}/auth/refresh", "host": ["{{baseUrl}}"], "path": ["auth","refresh"] },
+            "body": { "mode": "raw", "raw": "{\n  \"refreshToken\": \"{{refreshToken}}\"\n}" }
+          }
+        },
+        {
+          "name": "TC11 - Refresh token sai/het han",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{baseUrl}}/auth/refresh", "host": ["{{baseUrl}}"], "path": ["auth","refresh"] },
+            "body": { "mode": "raw", "raw": "{\n  \"refreshToken\": \"invalid.fake.token\"\n}" }
+          }
+        },
+        {
+          "name": "TC12 - Dang xuat",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }, { "key": "Authorization", "value": "Bearer {{tokenHV1}}" }],
+            "url": { "raw": "{{baseUrl}}/auth/logout", "host": ["{{baseUrl}}"], "path": ["auth","logout"] },
+            "body": { "mode": "raw", "raw": "{\n  \"refreshToken\": \"{{refreshToken}}\"\n}" }
+          }
+        },
+        {
+          "name": "TC - Get current user (me)",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{tokenHV1}}" }],
+            "url": { "raw": "{{baseUrl}}/auth/me", "host": ["{{baseUrl}}"], "path": ["auth","me"] }
+          }
+        }
+      ]
+    },
+
+    {
+      "name": "5.2.3 - Khoi phuc va Doi mat khau",
+      "item": [
+        {
+          "name": "TC1 - Yeu cau link reset mat khau",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{baseUrl}}/auth/forgot-password", "host": ["{{baseUrl}}"], "path": ["auth","forgot-password"] },
+            "body": { "mode": "raw", "raw": "{\n  \"email\": \"hv1.qa@gmail.com\"\n}" }
+          }
+        },
+        {
+          "name": "TC2 - Link reset sai (token thay doi)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{baseUrl}}/auth/reset-password", "host": ["{{baseUrl}}"], "path": ["auth","reset-password"] },
+            "body": { "mode": "raw", "raw": "{\n  \"token\": \"0000000000000000000000000000000000000000000000000000000000000000\",\n  \"newPassword\": \"NewPass@1234\"\n}" }
+          }
+        },
+        {
+          "name": "TC3 - Link reset het han",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{baseUrl}}/auth/reset-password", "host": ["{{baseUrl}}"], "path": ["auth","reset-password"] },
+            "body": { "mode": "raw", "raw": "{\n  \"token\": \"ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff\",\n  \"newPassword\": \"NewPass@1234\"\n}" }
+          }
+        },
+        {
+          "name": "TC5 - Doi mat khau thanh cong",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }, { "key": "Authorization", "value": "Bearer {{tokenHV1}}" }],
+            "url": { "raw": "{{baseUrl}}/auth/change-password", "host": ["{{baseUrl}}"], "path": ["auth","change-password"] },
+            "body": { "mode": "raw", "raw": "{\n  \"currentPassword\": \"Abcd@1234\",\n  \"newPassword\": \"New@1234\"\n}" }
+          }
+        },
+        {
+          "name": "TC6 - Doi mat khau khi sai mat khau cu",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }, { "key": "Authorization", "value": "Bearer {{tokenHV1}}" }],
+            "url": { "raw": "{{baseUrl}}/auth/change-password", "host": ["{{baseUrl}}"], "path": ["auth","change-password"] },
+            "body": { "mode": "raw", "raw": "{\n  \"currentPassword\": \"Sai@1234\",\n  \"newPassword\": \"New@1234\"\n}" }
+          }
+        }
+      ]
+    },
+
+    {
+      "name": "5.2.4 - Vai tro va Phan quyen",
+      "item": [
+        {
+          "name": "TC1 - Chua xac thuc - truy cap route bao ve (401)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": { "raw": "{{baseUrl}}/users", "host": ["{{baseUrl}}"], "path": ["users"] }
+          }
+        },
+        {
+          "name": "TC2 - Learner goi API quan tri (403)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }, { "key": "Authorization", "value": "Bearer {{tokenHV1}}" }],
+            "url": { "raw": "{{baseUrl}}/users", "host": ["{{baseUrl}}"], "path": ["users"] },
+            "body": { "mode": "raw", "raw": "{\n  \"displayName\": \"Hack User\",\n  \"email\": \"hack@gmail.com\",\n  \"password\": \"Hack@1234\"\n}" }
+          }
+        },
+        {
+          "name": "TC4 - Tao vai tro moi",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }, { "key": "Authorization", "value": "Bearer {{tokenAdmin}}" }],
+            "url": { "raw": "{{baseUrl}}/roles", "host": ["{{baseUrl}}"], "path": ["roles"] },
+            "body": { "mode": "raw", "raw": "{\n  \"name\": \"Giang vien QA\",\n  \"permissions\": [\"lessons:read\"]\n}" }
+          }
+        },
+        {
+          "name": "TC5 - Sua vai tro",
+          "request": {
+            "method": "PATCH",
+            "header": [{ "key": "Content-Type", "value": "application/json" }, { "key": "Authorization", "value": "Bearer {{tokenAdmin}}" }],
+            "url": { "raw": "{{baseUrl}}/roles/{{ROLE_ID}}", "host": ["{{baseUrl}}"], "path": ["roles","{{ROLE_ID}}"] },
+            "body": { "mode": "raw", "raw": "{\n  \"name\": \"Giang vien QA v2\"\n}" }
+          }
+        },
+        {
+          "name": "TC6 - Xoa vai tro chua su dung",
+          "request": {
+            "method": "DELETE",
+            "header": [{ "key": "Authorization", "value": "Bearer {{tokenAdmin}}" }],
+            "url": { "raw": "{{baseUrl}}/roles/{{ROLE_ID}}", "host": ["{{baseUrl}}"], "path": ["roles","{{ROLE_ID}}"] }
+          }
+        },
+        {
+          "name": "TC9 - Tu nang quyen (tu gan admin) - bi tu choi",
+          "request": {
+            "method": "PATCH",
+            "header": [{ "key": "Content-Type", "value": "application/json" }, { "key": "Authorization", "value": "Bearer {{tokenHV1}}" }],
+            "url": { "raw": "{{baseUrl}}/users/me", "host": ["{{baseUrl}}"], "path": ["users","me"] },
+            "body": { "mode": "raw", "raw": "{\n  \"isAdmin\": true,\n  \"roleIds\": [\"admin-role-id\"]\n}" }
+          }
+        },
+        {
+          "name": "TC12 - Tao quyen thu nghiem",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }, { "key": "Authorization", "value": "Bearer {{tokenAdmin}}" }],
+            "url": { "raw": "{{baseUrl}}/permissions", "host": ["{{baseUrl}}"], "path": ["permissions"] },
+            "body": { "mode": "raw", "raw": "{\n  \"code\": \"qa:test\",\n  \"displayName\": \"QA Test Permission\"\n}" }
+          }
+        }
+      ]
+    },
+
+    {
+      "name": "5.2.5 - Nguoi dung va Nhom hoc vien",
+      "item": [
+        {
+          "name": "TC1 - Them hoc vien",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }, { "key": "Authorization", "value": "Bearer {{tokenAdmin}}" }],
+            "url": { "raw": "{{baseUrl}}/users", "host": ["{{baseUrl}}"], "path": ["users"] },
+            "body": { "mode": "raw", "raw": "{\n  \"displayName\": \"Nguyen Binh\",\n  \"email\": \"binh.qa@gmail.com\",\n  \"password\": \"Binh@1234\"\n}" }
+          }
+        },
+        {
+          "name": "TC2 - Sua nguoi dung",
+          "request": {
+            "method": "PATCH",
+            "header": [{ "key": "Content-Type", "value": "application/json" }, { "key": "Authorization", "value": "Bearer {{tokenAdmin}}" }],
+            "url": { "raw": "{{baseUrl}}/users/{{HV1_ID}}", "host": ["{{baseUrl}}"], "path": ["users","{{HV1_ID}}"] },
+            "body": { "mode": "raw", "raw": "{\n  \"displayName\": \"Nguyen Binh An\"\n}" }
+          }
+        },
+        {
+          "name": "TC3 - Tim kiem va phan trang nguoi dung",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{tokenAdmin}}" }],
+            "url": { "raw": "{{baseUrl}}/users?search=nguyen&status=active&page=1&limit=10", "host": ["{{baseUrl}}"], "path": ["users"], "query": [{"key":"search","value":"nguyen"},{"key":"status","value":"active"},{"key":"page","value":"1"},{"key":"limit","value":"10"}] }
+          }
+        },
+        {
+          "name": "TC4 - Khoa nguoi dung",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }, { "key": "Authorization", "value": "Bearer {{tokenAdmin}}" }],
+            "url": { "raw": "{{baseUrl}}/users/{{HV1_ID}}/suspend", "host": ["{{baseUrl}}"], "path": ["users","{{HV1_ID}}","suspend"] },
+            "body": { "mode": "raw", "raw": "{\n  \"reason\": \"Vi pham quy dinh su dung\"\n}" }
+          }
+        },
+        {
+          "name": "TC5 - Mo khoa nguoi dung",
+          "request": {
+            "method": "PATCH",
+            "header": [{ "key": "Content-Type", "value": "application/json" }, { "key": "Authorization", "value": "Bearer {{tokenAdmin}}" }],
+            "url": { "raw": "{{baseUrl}}/users/{{HV1_ID}}/activate", "host": ["{{baseUrl}}"], "path": ["users","{{HV1_ID}}","activate"] },
+            "body": { "mode": "raw", "raw": "{}" }
+          }
+        },
+        {
+          "name": "TC6 - Soft-delete nguoi dung",
+          "request": {
+            "method": "DELETE",
+            "header": [{ "key": "Authorization", "value": "Bearer {{tokenAdmin}}" }],
+            "url": { "raw": "{{baseUrl}}/users/{{HV1_ID}}", "host": ["{{baseUrl}}"], "path": ["users","{{HV1_ID}}"] }
+          }
+        },
+        {
+          "name": "TC8 - Tao nhom hoc vien",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }, { "key": "Authorization", "value": "Bearer {{tokenAdmin}}" }],
+            "url": { "raw": "{{baseUrl}}/learner-groups", "host": ["{{baseUrl}}"], "path": ["learner-groups"] },
+            "body": { "mode": "raw", "raw": "{\n  \"name\": \"Cloud QA\",\n  \"managerId\": \"{{LECTURER_ID}}\"\n}" }
+          }
+        },
+        {
+          "name": "TC9 - Sua nhom hoc vien",
+          "request": {
+            "method": "PATCH",
+            "header": [{ "key": "Content-Type", "value": "application/json" }, { "key": "Authorization", "value": "Bearer {{tokenAdmin}}" }],
+            "url": { "raw": "{{baseUrl}}/learner-groups/{{GROUP_ID}}", "host": ["{{baseUrl}}"], "path": ["learner-groups","{{GROUP_ID}}"] },
+            "body": { "mode": "raw", "raw": "{\n  \"name\": \"Cloud QA 02\"\n}" }
+          }
+        },
+        {
+          "name": "TC10 - Them thanh vien vao nhom",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }, { "key": "Authorization", "value": "Bearer {{tokenAdmin}}" }],
+            "url": { "raw": "{{baseUrl}}/learner-groups/{{GROUP_ID}}/members", "host": ["{{baseUrl}}"], "path": ["learner-groups","{{GROUP_ID}}","members"] },
+            "body": { "mode": "raw", "raw": "{\n  \"userIds\": [\"{{HV1_ID}}\"]\n}" }
+          }
+        },
+        {
+          "name": "TC11 - Xoa thanh vien khoi nhom",
+          "request": {
+            "method": "DELETE",
+            "header": [{ "key": "Authorization", "value": "Bearer {{tokenAdmin}}" }],
+            "url": { "raw": "{{baseUrl}}/learner-groups/{{GROUP_ID}}/members/{{HV1_ID}}", "host": ["{{baseUrl}}"], "path": ["learner-groups","{{GROUP_ID}}","members","{{HV1_ID}}"] }
+          }
+        },
+        {
+          "name": "TC13 - Xoa nhom",
+          "request": {
+            "method": "DELETE",
+            "header": [{ "key": "Authorization", "value": "Bearer {{tokenAdmin}}" }],
+            "url": { "raw": "{{baseUrl}}/learner-groups/{{GROUP_ID}}", "host": ["{{baseUrl}}"], "path": ["learner-groups","{{GROUP_ID}}"] }
+          }
+        }
+      ]
+    },
+
+    {
+      "name": "5.2.6 - Onboarding va Ho so hoc tap",
+      "item": [
+        {
+          "name": "TC1 - Onboarding nguoi moi",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }, { "key": "Authorization", "value": "Bearer {{tokenHV1}}" }],
+            "url": { "raw": "{{baseUrl}}/learner-profiles/onboarding", "host": ["{{baseUrl}}"], "path": ["learner-profiles","onboarding"] },
+            "body": { "mode": "raw", "raw": "{\n  \"level\": \"intermediate\",\n  \"domains\": [\"{{D1_ID}}\"],\n  \"learningGoal\": \"vocabulary\",\n  \"plan\": {\n    \"wordsPerDay\": 10,\n    \"quizzesPerWeek\": 5,\n    \"minutesPerDay\": 30\n  }\n}" }
+          }
+        },
+        {
+          "name": "TC3 - Muc tieu tu vung",
+          "request": {
+            "method": "PATCH",
+            "header": [{ "key": "Content-Type", "value": "application/json" }, { "key": "Authorization", "value": "Bearer {{tokenHV1}}" }],
+            "url": { "raw": "{{baseUrl}}/learner-profiles/goals", "host": ["{{baseUrl}}"], "path": ["learner-profiles","goals"] },
+            "body": { "mode": "raw", "raw": "{\n  \"learningGoal\": \"vocabulary\",\n  \"domains\": [\"{{D1_ID}}\"],\n  \"level\": \"intermediate\"\n}" }
+          }
+        },
+        {
+          "name": "TC4 - Muc tieu chung chi",
+          "request": {
+            "method": "PATCH",
+            "header": [{ "key": "Content-Type", "value": "application/json" }, { "key": "Authorization", "value": "Bearer {{tokenHV1}}" }],
+            "url": { "raw": "{{baseUrl}}/learner-profiles/goals", "host": ["{{baseUrl}}"], "path": ["learner-profiles","goals"] },
+            "body": { "mode": "raw", "raw": "{\n  \"learningGoal\": \"certification\",\n  \"certificates\": [\"{{C1_ID}}\"],\n  \"domains\": [\"{{D1_ID}}\"]\n}" }
+          }
+        },
+        {
+          "name": "TC6 - Thieu truong muc tieu (400)",
+          "request": {
+            "method": "PATCH",
+            "header": [{ "key": "Content-Type", "value": "application/json" }, { "key": "Authorization", "value": "Bearer {{tokenHV1}}" }],
+            "url": { "raw": "{{baseUrl}}/learner-profiles/goals", "host": ["{{baseUrl}}"], "path": ["learner-profiles","goals"] },
+            "body": { "mode": "raw", "raw": "{\n  \"learningGoal\": \"certification\"\n}" }
+          }
+        },
+        {
+          "name": "TC10 - Cap nhat thong tin ca nhan",
+          "request": {
+            "method": "PATCH",
+            "header": [{ "key": "Content-Type", "value": "application/json" }, { "key": "Authorization", "value": "Bearer {{tokenHV1}}" }],
+            "url": { "raw": "{{baseUrl}}/users/me", "host": ["{{baseUrl}}"], "path": ["users","me"] },
+            "body": { "mode": "raw", "raw": "{\n  \"displayName\": \"Nguyen Hoc Vien\",\n  \"bio\": \"Hoc vien IT tai HCM\",\n  \"phoneNumber\": \"0901234567\"\n}" }
+          }
+        },
+        {
+          "name": "TC12 - Sua ho so nguoi khac (403)",
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Content-Type", "value": "application/json" }, { "key": "Authorization", "value": "Bearer {{tokenHV1}}" }],
+            "url": { "raw": "{{baseUrl}}/learner-profiles/{{HV2_ID}}/goals", "host": ["{{baseUrl}}"], "path": ["learner-profiles","{{HV2_ID}}","goals"] },
+            "body": { "mode": "raw", "raw": "{\n  \"learningGoal\": \"vocabulary\"\n}" }
+          }
+        }
+      ]
+    },
+
+    {
+      "name": "5.2.7 - Kiem tra trinh do (Placement Test)",
+      "item": [
+        {
+          "name": "TC1 - Lay de kiem tra trinh do",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{tokenHV1}}" }],
+            "url": { "raw": "{{baseUrl}}/placement-test", "host": ["{{baseUrl}}"], "path": ["placement-test"] }
+          }
+        },
+        {
+          "name": "TC3 - Nop bai xep trinh do duoi 40 phan tram",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }, { "key": "Authorization", "value": "Bearer {{tokenHV1}}" }],
+            "url": { "raw": "{{baseUrl}}/placement-test/{{ASSESSMENT_ID}}/submit", "host": ["{{baseUrl}}"], "path": ["placement-test","{{ASSESSMENT_ID}}","submit"] },
+            "body": { "mode": "raw", "raw": "{\n  \"answers\": [\n    { \"questionId\": \"q1\", \"selectedOptions\": [\"a\"] },\n    { \"questionId\": \"q2\", \"selectedOptions\": [\"wrong\"] },\n    { \"questionId\": \"q3\", \"selectedOptions\": [\"wrong\"] }\n  ]\n}" }
+          }
+        },
+        {
+          "name": "TC9 - Xem lai ket qua xep trinh do",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{tokenHV1}}" }],
+            "url": { "raw": "{{baseUrl}}/placement-test/result", "host": ["{{baseUrl}}"], "path": ["placement-test","result"] }
+          }
+        },
+        {
+          "name": "TC10 - Tao ke hoach hoc ca nhan",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }, { "key": "Authorization", "value": "Bearer {{tokenHV1}}" }],
+            "url": { "raw": "{{baseUrl}}/learning-plan", "host": ["{{baseUrl}}"], "path": ["learning-plan"] },
+            "body": { "mode": "raw", "raw": "{}" }
+          }
+        }
+      ]
+    },
+
+    {
+      "name": "5.2.8 - Danh muc va Chung chi",
+      "item": [
+        {
+          "name": "TC7 - Them chung chi",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }, { "key": "Authorization", "value": "Bearer {{tokenAdmin}}" }],
+            "url": { "raw": "{{baseUrl}}/certificates", "host": ["{{baseUrl}}"], "path": ["certificates"] },
+            "body": { "mode": "raw", "raw": "{\n  \"code\": \"CLOUD_QA\",\n  \"name\": \"Chung chi Cloud QA\",\n  \"description\": \"Chung chi thu nghiem QA\"\n}" }
+          }
+        },
+        {
+          "name": "TC10 - Lien ket noi dung C1 T1",
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Content-Type", "value": "application/json" }, { "key": "Authorization", "value": "Bearer {{tokenAdmin}}" }],
+            "url": { "raw": "{{baseUrl}}/certificates/{{C1_ID}}/topics/{{T1_ID}}/content-links", "host": ["{{baseUrl}}"], "path": ["certificates","{{C1_ID}}","topics","{{T1_ID}}","content-links"] },
+            "body": { "mode": "raw", "raw": "{\n  \"lessonIds\": [\"{{LESSON_ID}}\"],\n  \"vocabularyIds\": [\"{{V1_ID}}\"],\n  \"examIds\": [\"{{E1_ID}}\"]\n}" }
+          }
+        },
+        {
+          "name": "TC11 - Lien ket khong hop le (404)",
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Content-Type", "value": "application/json" }, { "key": "Authorization", "value": "Bearer {{tokenAdmin}}" }],
+            "url": { "raw": "{{baseUrl}}/certificates/{{C1_ID}}/topics/{{T1_ID}}/content-links", "host": ["{{baseUrl}}"], "path": ["certificates","{{C1_ID}}","topics","{{T1_ID}}","content-links"] },
+            "body": { "mode": "raw", "raw": "{\n  \"lessonIds\": [\"00000000-0000-0000-0000-000000000000\"]\n}" }
+          }
+        }
+      ]
+    },
+
+    {
+      "name": "5.2.9 - Quan ly va Hoc bai",
+      "item": [
+        {
+          "name": "TC1 - Tao bai tu vung",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }, { "key": "Authorization", "value": "Bearer {{tokenAdmin}}" }],
+            "url": { "raw": "{{baseUrl}}/lessons", "host": ["{{baseUrl}}"], "path": ["lessons"] },
+            "body": { "mode": "raw", "raw": "{\n  \"title\": \"Tu vung QA\",\n  \"type\": \"vocabulary\",\n  \"domainId\": \"{{D1_ID}}\",\n  \"levelId\": \"{{LEVEL_ID}}\",\n  \"estimatedMinutes\": 30,\n  \"status\": \"draft\"\n}" }
+          }
+        },
+        {
+          "name": "TC2 - Tao bai thuat ngu",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }, { "key": "Authorization", "value": "Bearer {{tokenAdmin}}" }],
+            "url": { "raw": "{{baseUrl}}/lessons", "host": ["{{baseUrl}}"], "path": ["lessons"] },
+            "body": { "mode": "raw", "raw": "{\n  \"title\": \"Thuat ngu QA\",\n  \"type\": \"terminology\",\n  \"domainId\": \"{{D1_ID}}\",\n  \"levelId\": \"{{LEVEL_ID}}\",\n  \"estimatedMinutes\": 30,\n  \"status\": \"draft\"\n}" }
+          }
+        },
+        {
+          "name": "TC9 - Bien thoi luong 0 phan (400)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }, { "key": "Authorization", "value": "Bearer {{tokenAdmin}}" }],
+            "url": { "raw": "{{baseUrl}}/lessons", "host": ["{{baseUrl}}"], "path": ["lessons"] },
+            "body": { "mode": "raw", "raw": "{\n  \"title\": \"Bai QA boundary\",\n  \"type\": \"vocabulary\",\n  \"domainId\": \"{{D1_ID}}\",\n  \"levelId\": \"{{LEVEL_ID}}\",\n  \"estimatedMinutes\": 0,\n  \"status\": \"draft\"\n}" }
+          }
+        },
+        {
+          "name": "TC10 - Publish bai hoc",
+          "request": {
+            "method": "PATCH",
+            "header": [{ "key": "Content-Type", "value": "application/json" }, { "key": "Authorization", "value": "Bearer {{tokenAdmin}}" }],
+            "url": { "raw": "{{baseUrl}}/lessons/{{LESSON_ID}}/status", "host": ["{{baseUrl}}"], "path": ["lessons","{{LESSON_ID}}","status"] },
+            "body": { "mode": "raw", "raw": "{\n  \"status\": \"published\"\n}" }
+          }
+        },
+        {
+          "name": "TC11 - Tim va loc catalog bai hoc",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{tokenHV1}}" }],
+            "url": { "raw": "{{baseUrl}}/lessons?domainId={{D1_ID}}&page=1&limit=10", "host": ["{{baseUrl}}"], "path": ["lessons"], "query": [{"key":"domainId","value":"{{D1_ID}}"},{"key":"page","value":"1"},{"key":"limit","value":"10"}] }
+          }
+        },
+        {
+          "name": "TC15 - Ghi nhan hoan thanh bai hoc",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }, { "key": "Authorization", "value": "Bearer {{tokenHV1}}" }],
+            "url": { "raw": "{{baseUrl}}/progress", "host": ["{{baseUrl}}"], "path": ["progress"] },
+            "body": { "mode": "raw", "raw": "{\n  \"resourceId\": \"{{LESSON_ID}}\",\n  \"resourceType\": \"lesson\",\n  \"completion\": 100\n}" }
+          }
+        },
+        {
+          "name": "TC18 - Bulk publish bai hoc",
+          "request": {
+            "method": "PATCH",
+            "header": [{ "key": "Content-Type", "value": "application/json" }, { "key": "Authorization", "value": "Bearer {{tokenAdmin}}" }],
+            "url": { "raw": "{{baseUrl}}/lessons/bulk-status", "host": ["{{baseUrl}}"], "path": ["lessons","bulk-status"] },
+            "body": { "mode": "raw", "raw": "{\n  \"ids\": [\"{{LESSON_ID}}\", \"{{LESSON_ID2}}\"],\n  \"status\": \"published\"\n}" }
+          }
+        }
+      ]
+    },
+
+    {
+      "name": "5.2.11 - Tu vung va On tap",
+      "item": [
+        {
+          "name": "TC1 - Them tu vung",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }, { "key": "Authorization", "value": "Bearer {{tokenAdmin}}" }],
+            "url": { "raw": "{{baseUrl}}/vocabulary", "host": ["{{baseUrl}}"], "path": ["vocabulary"] },
+            "body": { "mode": "raw", "raw": "{\n  \"word\": \"autoscaling-qa\",\n  \"definitionEn\": \"Automatic scaling of resources\",\n  \"definitionVi\": \"Mo rong tai nguyen tu dong\",\n  \"domainId\": \"{{D1_ID}}\",\n  \"levelId\": \"{{LEVEL_ID}}\",\n  \"status\": \"published\"\n}" }
+          }
+        },
+        {
+          "name": "TC2 - Sua tu vung",
+          "request": {
+            "method": "PATCH",
+            "header": [{ "key": "Content-Type", "value": "application/json" }, { "key": "Authorization", "value": "Bearer {{tokenAdmin}}" }],
+            "url": { "raw": "{{baseUrl}}/vocabulary/{{V1_ID}}", "host": ["{{baseUrl}}"], "path": ["vocabulary","{{V1_ID}}"] },
+            "body": { "mode": "raw", "raw": "{\n  \"definitionVi\": \"Tu dong mo rong tai nguyen dam may\"\n}" }
+          }
+        },
+        {
+          "name": "TC3 - Xoa tu vung",
+          "request": {
+            "method": "DELETE",
+            "header": [{ "key": "Authorization", "value": "Bearer {{tokenAdmin}}" }],
+            "url": { "raw": "{{baseUrl}}/vocabulary/{{V1_ID}}", "host": ["{{baseUrl}}"], "path": ["vocabulary","{{V1_ID}}"] }
+          }
+        },
+        {
+          "name": "TC5 - Hoc tu theo bo loc",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }, { "key": "Authorization", "value": "Bearer {{tokenHV1}}" }],
+            "url": { "raw": "{{baseUrl}}/vocab-study/session", "host": ["{{baseUrl}}"], "path": ["vocab-study","session"] },
+            "body": { "mode": "raw", "raw": "{\n  \"domainId\": \"{{D1_ID}}\",\n  \"levelId\": \"{{LEVEL_ID}}\"\n}" }
+          }
+        },
+        {
+          "name": "TC6 - Danh gia tu muc De",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }, { "key": "Authorization", "value": "Bearer {{tokenHV1}}" }],
+            "url": { "raw": "{{baseUrl}}/vocab-study/{{V1_ID}}/rate", "host": ["{{baseUrl}}"], "path": ["vocab-study","{{V1_ID}}","rate"] },
+            "body": { "mode": "raw", "raw": "{\n  \"rating\": \"easy\"\n}" }
+          }
+        },
+        {
+          "name": "TC7 - Danh gia tu muc Trung binh",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }, { "key": "Authorization", "value": "Bearer {{tokenHV1}}" }],
+            "url": { "raw": "{{baseUrl}}/vocab-study/{{V1_ID}}/rate", "host": ["{{baseUrl}}"], "path": ["vocab-study","{{V1_ID}}","rate"] },
+            "body": { "mode": "raw", "raw": "{\n  \"rating\": \"medium\"\n}" }
+          }
+        },
+        {
+          "name": "TC8 - Danh gia tu muc Kho",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }, { "key": "Authorization", "value": "Bearer {{tokenHV1}}" }],
+            "url": { "raw": "{{baseUrl}}/vocab-study/{{V1_ID}}/rate", "host": ["{{baseUrl}}"], "path": ["vocab-study","{{V1_ID}}","rate"] },
+            "body": { "mode": "raw", "raw": "{\n  \"rating\": \"hard\"\n}" }
+          }
+        },
+        {
+          "name": "TC9 - Danh gia tu Da thuoc",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }, { "key": "Authorization", "value": "Bearer {{tokenHV1}}" }],
+            "url": { "raw": "{{baseUrl}}/vocab-study/{{V1_ID}}/rate", "host": ["{{baseUrl}}"], "path": ["vocab-study","{{V1_ID}}","rate"] },
+            "body": { "mode": "raw", "raw": "{\n  \"rating\": \"mastered\"\n}" }
+          }
+        },
+        {
+          "name": "TC15 - On tu den han",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{tokenHV1}}" }],
+            "url": { "raw": "{{baseUrl}}/vocab-study/review-session", "host": ["{{baseUrl}}"], "path": ["vocab-study","review-session"] }
+          }
+        }
+      ]
+    },
+
+    {
+      "name": "5.2.12 - Dich va Phat am",
+      "item": [
+        {
+          "name": "TC1 - Dich tu trong tu dien",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }, { "key": "Authorization", "value": "Bearer {{tokenHV1}}" }],
+            "url": { "raw": "{{baseUrl}}/translation/translate", "host": ["{{baseUrl}}"], "path": ["translation","translate"] },
+            "body": { "mode": "raw", "raw": "{\n  \"text\": \"autoscaling\",\n  \"sourceLang\": \"en\",\n  \"targetLang\": \"vi\"\n}" }
+          }
+        },
+        {
+          "name": "TC3 - Du lieu khong hop le - text rong (400)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }, { "key": "Authorization", "value": "Bearer {{tokenHV1}}" }],
+            "url": { "raw": "{{baseUrl}}/translation/translate", "host": ["{{baseUrl}}"], "path": ["translation","translate"] },
+            "body": { "mode": "raw", "raw": "{\n  \"text\": \"\",\n  \"sourceLang\": \"en\",\n  \"targetLang\": \"vi\"\n}" }
+          }
+        },
+        {
+          "name": "TC5 - Phat am thuc te",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }, { "key": "Authorization", "value": "Bearer {{tokenHV1}}" }],
+            "url": { "raw": "{{baseUrl}}/translation/tts", "host": ["{{baseUrl}}"], "path": ["translation","tts"] },
+            "body": { "mode": "raw", "raw": "{\n  \"text\": \"autoscaling\",\n  \"lang\": \"en\"\n}" }
+          }
+        }
+      ]
+    },
+
+    {
+      "name": "5.2.13 - Ngan hang va Import cau hoi",
+      "item": [
+        {
+          "name": "TC1 - Tao cau hoi mot dap an (single_choice)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }, { "key": "Authorization", "value": "Bearer {{tokenAdmin}}" }],
+            "url": { "raw": "{{baseUrl}}/questions", "host": ["{{baseUrl}}"], "path": ["questions"] },
+            "body": { "mode": "raw", "raw": "{\n  \"content\": \"What is autoscaling? (QA)\",\n  \"type\": \"single_choice\",\n  \"skill\": \"vocabulary\",\n  \"domainId\": \"{{D1_ID}}\",\n  \"levelId\": \"{{LEVEL_ID}}\",\n  \"difficulty\": 50,\n  \"points\": 1,\n  \"options\": [\n    { \"key\": \"a\", \"text\": \"Auto scaling of resources\", \"isCorrect\": true },\n    { \"key\": \"b\", \"text\": \"Manual scaling\", \"isCorrect\": false },\n    { \"key\": \"c\", \"text\": \"Static resources\", \"isCorrect\": false }\n  ]\n}" }
+          }
+        },
+        {
+          "name": "TC2 - Tao cau hoi nhieu dap an (multiple_choice)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }, { "key": "Authorization", "value": "Bearer {{tokenAdmin}}" }],
+            "url": { "raw": "{{baseUrl}}/questions", "host": ["{{baseUrl}}"], "path": ["questions"] },
+            "body": { "mode": "raw", "raw": "{\n  \"content\": \"Which are cloud services? (QA)\",\n  \"type\": \"multiple_choice\",\n  \"skill\": \"technical_understanding\",\n  \"domainId\": \"{{D1_ID}}\",\n  \"levelId\": \"{{LEVEL_ID}}\",\n  \"difficulty\": 60,\n  \"points\": 2,\n  \"options\": [\n    { \"key\": \"a\", \"text\": \"EC2\", \"isCorrect\": true },\n    { \"key\": \"b\", \"text\": \"S3\", \"isCorrect\": true },\n    { \"key\": \"c\", \"text\": \"Calculator\", \"isCorrect\": false }\n  ]\n}" }
+          }
+        },
+        {
+          "name": "TC3 - Tao cau hoi dung sai (true_false)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }, { "key": "Authorization", "value": "Bearer {{tokenAdmin}}" }],
+            "url": { "raw": "{{baseUrl}}/questions", "host": ["{{baseUrl}}"], "path": ["questions"] },
+            "body": { "mode": "raw", "raw": "{\n  \"content\": \"Is Docker a containerization platform? (QA)\",\n  \"type\": \"true_false\",\n  \"skill\": \"technical_understanding\",\n  \"domainId\": \"{{D1_ID}}\",\n  \"levelId\": \"{{LEVEL_ID}}\",\n  \"difficulty\": 30,\n  \"points\": 1,\n  \"options\": [\n    { \"key\": \"true\", \"text\": \"True\", \"isCorrect\": true },\n    { \"key\": \"false\", \"text\": \"False\", \"isCorrect\": false }\n  ]\n}" }
+          }
+        },
+        {
+          "name": "TC7 - Validate - khong co dap an dung (400)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }, { "key": "Authorization", "value": "Bearer {{tokenAdmin}}" }],
+            "url": { "raw": "{{baseUrl}}/questions", "host": ["{{baseUrl}}"], "path": ["questions"] },
+            "body": { "mode": "raw", "raw": "{\n  \"content\": \"Invalid question no correct answer (QA)\",\n  \"type\": \"single_choice\",\n  \"skill\": \"vocabulary\",\n  \"domainId\": \"{{D1_ID}}\",\n  \"levelId\": \"{{LEVEL_ID}}\",\n  \"difficulty\": 50,\n  \"points\": 1,\n  \"options\": [\n    { \"key\": \"a\", \"text\": \"Option A\", \"isCorrect\": false },\n    { \"key\": \"b\", \"text\": \"Option B\", \"isCorrect\": false }\n  ]\n}" }
+          }
+        },
+        {
+          "name": "TC15 - Phan trang va tim cau hoi",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{tokenAdmin}}" }],
+            "url": { "raw": "{{baseUrl}}/questions?search=QA&page=1&limit=10", "host": ["{{baseUrl}}"], "path": ["questions"], "query": [{"key":"search","value":"QA"},{"key":"page","value":"1"},{"key":"limit","value":"10"}] }
+          }
+        }
+      ]
+    },
+
+    {
+      "name": "5.2.14 - Soan de va Lam bai",
+      "item": [
+        {
+          "name": "TC1 - Tao de thi",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }, { "key": "Authorization", "value": "Bearer {{tokenAdmin}}" }],
+            "url": { "raw": "{{baseUrl}}/exams", "host": ["{{baseUrl}}"], "path": ["exams"] },
+            "body": { "mode": "raw", "raw": "{\n  \"title\": \"Mock Exam QA\",\n  \"type\": \"mock_exam\",\n  \"certificateId\": \"{{C1_ID}}\",\n  \"durationMinutes\": 60,\n  \"passingScorePercent\": 70,\n  \"maxAttempts\": 3,\n  \"questionIds\": [\"{{QUESTION_ID}}\"]\n}" }
+          }
+        },
+        {
+          "name": "TC4 - Bien cau hinh - durationMinutes 0 (400)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }, { "key": "Authorization", "value": "Bearer {{tokenAdmin}}" }],
+            "url": { "raw": "{{baseUrl}}/exams", "host": ["{{baseUrl}}"], "path": ["exams"] },
+            "body": { "mode": "raw", "raw": "{\n  \"title\": \"Invalid Exam QA\",\n  \"type\": \"mock_exam\",\n  \"certificateId\": \"{{C1_ID}}\",\n  \"durationMinutes\": 0,\n  \"passingScorePercent\": 70,\n  \"maxAttempts\": 1\n}" }
+          }
+        },
+        {
+          "name": "TC5 - Bat dau lam de",
+          "event": [{ "listen": "test", "script": { "exec": ["var r=pm.response.json(); if(r.id) pm.collectionVariables.set('ATTEMPT_ID',r.id);"], "type": "text/javascript" } }],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }, { "key": "Authorization", "value": "Bearer {{tokenHV1}}" }],
+            "url": { "raw": "{{baseUrl}}/exams/{{E1_ID}}/attempts/start", "host": ["{{baseUrl}}"], "path": ["exams","{{E1_ID}}","attempts","start"] },
+            "body": { "mode": "raw", "raw": "{}" }
+          }
+        },
+        {
+          "name": "TC9 - Nop bai va tinh diem",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }, { "key": "Authorization", "value": "Bearer {{tokenHV1}}" }],
+            "url": { "raw": "{{baseUrl}}/exam-attempts/{{ATTEMPT_ID}}/submit", "host": ["{{baseUrl}}"], "path": ["exam-attempts","{{ATTEMPT_ID}}","submit"] },
+            "body": { "mode": "raw", "raw": "{\n  \"answers\": [\n    { \"questionId\": \"{{QUESTION_ID}}\", \"selectedOptions\": [\"a\"] }\n  ]\n}" }
+          }
+        },
+        {
+          "name": "TC17 - Nop payload gia (cau ngoai ban do) (400)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }, { "key": "Authorization", "value": "Bearer {{tokenHV1}}" }],
+            "url": { "raw": "{{baseUrl}}/exam-attempts/{{ATTEMPT_ID}}/submit", "host": ["{{baseUrl}}"], "path": ["exam-attempts","{{ATTEMPT_ID}}","submit"] },
+            "body": { "mode": "raw", "raw": "{\n  \"answers\": [\n    { \"questionId\": \"00000000-0000-0000-0000-000000000000\", \"selectedOptions\": [\"a\"], \"score\": 9999 }\n  ]\n}" }
+          }
+        },
+        {
+          "name": "TC19 - Nguoi khac nop/xem bai (403)",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{tokenHV2}}" }],
+            "url": { "raw": "{{baseUrl}}/exam-attempts/{{ATTEMPT_ID}}", "host": ["{{baseUrl}}"], "path": ["exam-attempts","{{ATTEMPT_ID}}"] }
+          }
+        },
+        {
+          "name": "TC24 - Xem lai ket qua",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{tokenHV1}}" }],
+            "url": { "raw": "{{baseUrl}}/exam-attempts/{{ATTEMPT_ID}}/result", "host": ["{{baseUrl}}"], "path": ["exam-attempts","{{ATTEMPT_ID}}","result"] }
+          }
+        }
+      ]
+    },
+
+    {
+      "name": "5.2.15 - Tien do, Dashboard va Goi y",
+      "item": [
+        {
+          "name": "TC1 - Dashboard nguoi moi",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{tokenHV1}}" }],
+            "url": { "raw": "{{baseUrl}}/progress/me", "host": ["{{baseUrl}}"], "path": ["progress","me"] }
+          }
+        },
+        {
+          "name": "TC3 - Ghi tien do sai (400)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }, { "key": "Authorization", "value": "Bearer {{tokenHV1}}" }],
+            "url": { "raw": "{{baseUrl}}/progress", "host": ["{{baseUrl}}"], "path": ["progress"] },
+            "body": { "mode": "raw", "raw": "{\n  \"resourceId\": \"invalid-id\",\n  \"resourceType\": \"unknown_type\",\n  \"completion\": -1\n}" }
+          }
+        },
+        {
+          "name": "TC9 - Goi y ca nhan hoa",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{tokenHV1}}" }],
+            "url": { "raw": "{{baseUrl}}/recommendations", "host": ["{{baseUrl}}"], "path": ["recommendations"] }
+          }
+        },
+        {
+          "name": "TC12 - Quyen doc progress nguoi khac (403)",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{tokenHV1}}" }],
+            "url": { "raw": "{{baseUrl}}/progress/users/{{HV2_ID}}", "host": ["{{baseUrl}}"], "path": ["progress","users","{{HV2_ID}}"] }
+          }
+        }
+      ]
+    },
+
+    {
+      "name": "5.2.16 - Quan tri ket qua va Bao cao",
+      "item": [
+        {
+          "name": "TC1 - So lieu dashboard quan tri",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{tokenAdmin}}" }],
+            "url": { "raw": "{{baseUrl}}/analytics/dashboard", "host": ["{{baseUrl}}"], "path": ["analytics","dashboard"] }
+          }
+        },
+        {
+          "name": "TC2 - Danh sach hoc vien",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{tokenAdmin}}" }],
+            "url": { "raw": "{{baseUrl}}/analytics/students?page=1&limit=10", "host": ["{{baseUrl}}"], "path": ["analytics","students"], "query": [{"key":"page","value":"1"},{"key":"limit","value":"10"}] }
+          }
+        },
+        {
+          "name": "TC3 - Ket qua bai thi quan tri",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{tokenAdmin}}" }],
+            "url": { "raw": "{{baseUrl}}/test-results?page=1&limit=10", "host": ["{{baseUrl}}"], "path": ["test-results"], "query": [{"key":"page","value":"1"},{"key":"limit","value":"10"}] }
+          }
+        },
+        {
+          "name": "TC4 - Bao cao theo linh vuc D1",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{tokenAdmin}}" }],
+            "url": { "raw": "{{baseUrl}}/reports/domain/{{D1_ID}}", "host": ["{{baseUrl}}"], "path": ["reports","domain","{{D1_ID}}"] }
+          }
+        },
+        {
+          "name": "TC7 - Quyen bao cao - thieu reports:read (403)",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{tokenHV1}}" }],
+            "url": { "raw": "{{baseUrl}}/analytics/dashboard", "host": ["{{baseUrl}}"], "path": ["analytics","dashboard"] }
+          }
+        }
+      ]
+    },
+
+    {
+      "name": "5.2.17 - Nhac hoc va Thong bao Push",
+      "item": [
+        {
+          "name": "TC1 - Bat nhac hoc",
+          "request": {
+            "method": "PATCH",
+            "header": [{ "key": "Content-Type", "value": "application/json" }, { "key": "Authorization", "value": "Bearer {{tokenHV1}}" }],
+            "url": { "raw": "{{baseUrl}}/users/me/reminder", "host": ["{{baseUrl}}"], "path": ["users","me","reminder"] },
+            "body": { "mode": "raw", "raw": "{\n  \"enabled\": true,\n  \"time\": \"08:00\"\n}" }
+          }
+        },
+        {
+          "name": "TC2 - Tat nhac hoc",
+          "request": {
+            "method": "PATCH",
+            "header": [{ "key": "Content-Type", "value": "application/json" }, { "key": "Authorization", "value": "Bearer {{tokenHV1}}" }],
+            "url": { "raw": "{{baseUrl}}/users/me/reminder", "host": ["{{baseUrl}}"], "path": ["users","me","reminder"] },
+            "body": { "mode": "raw", "raw": "{\n  \"enabled\": false\n}" }
+          }
+        },
+        {
+          "name": "TC5 - Dang ky token push",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }, { "key": "Authorization", "value": "Bearer {{tokenHV1}}" }],
+            "url": { "raw": "{{baseUrl}}/learning-notifications/subscribe", "host": ["{{baseUrl}}"], "path": ["learning-notifications","subscribe"] },
+            "body": { "mode": "raw", "raw": "{\n  \"token\": \"ExponentPushToken[test-token-qa]\",\n  \"platform\": \"android\"\n}" }
+          }
+        },
+        {
+          "name": "TC6 - Token/platform sai (400)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }, { "key": "Authorization", "value": "Bearer {{tokenHV1}}" }],
+            "url": { "raw": "{{baseUrl}}/learning-notifications/subscribe", "host": ["{{baseUrl}}"], "path": ["learning-notifications","subscribe"] },
+            "body": { "mode": "raw", "raw": "{\n  \"token\": \"\",\n  \"platform\": \"desktop\"\n}" }
+          }
+        }
+      ]
+    },
+
+    {
+      "name": "5.2.18 - Thong bao (Inbox)",
+      "item": [
+        {
+          "name": "TC1 - Lay danh sach thong bao HV1",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{tokenHV1}}" }],
+            "url": { "raw": "{{baseUrl}}/notifications?status=unread", "host": ["{{baseUrl}}"], "path": ["notifications"], "query": [{"key":"status","value":"unread"}] }
+          }
+        },
+        {
+          "name": "TC1 - Danh dau doc thong bao",
+          "request": {
+            "method": "PATCH",
+            "header": [{ "key": "Content-Type", "value": "application/json" }, { "key": "Authorization", "value": "Bearer {{tokenHV1}}" }],
+            "url": { "raw": "{{baseUrl}}/notifications/{{NOTIF_ID}}/read", "host": ["{{baseUrl}}"], "path": ["notifications","{{NOTIF_ID}}","read"] },
+            "body": { "mode": "raw", "raw": "{}" }
+          }
+        }
+      ]
+    },
+
+    {
+      "name": "5.2.19 - Job Nhac hoc (Scheduler)",
+      "item": [
+        {
+          "name": "TC1 - Xac thuc scheduler - khoa hop le",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }, { "key": "x-scheduler-key", "value": "{{SCHEDULER_KEY}}" }],
+            "url": { "raw": "{{baseUrl}}/reminder-job/send", "host": ["{{baseUrl}}"], "path": ["reminder-job","send"] },
+            "body": { "mode": "raw", "raw": "{}" }
+          }
+        },
+        {
+          "name": "TC1 - Xac thuc scheduler - khoa sai (401)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }, { "key": "x-scheduler-key", "value": "wrong-key" }],
+            "url": { "raw": "{{baseUrl}}/reminder-job/send", "host": ["{{baseUrl}}"], "path": ["reminder-job","send"] },
+            "body": { "mode": "raw", "raw": "{}" }
+          }
+        }
+      ]
+    },
+
+    {
+      "name": "5.2.21 - Bao mat va Toan ven du lieu",
+      "item": [
+        {
+          "name": "TC2 - JWT gia mao - token het han (401)",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJmYWtlLWlkIiwicm9sZSI6ImFkbWluIn0.fake-signature" }],
+            "url": { "raw": "{{baseUrl}}/users", "host": ["{{baseUrl}}"], "path": ["users"] }
+          }
+        },
+        {
+          "name": "TC5 - Injection - SQL-like trong search",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{tokenHV1}}" }],
+            "url": { "raw": "{{baseUrl}}/lessons?search=' OR 1=1--", "host": ["{{baseUrl}}"], "path": ["lessons"], "query": [{"key":"search","value":"' OR 1=1--"}] }
+          }
+        },
+        {
+          "name": "TC5 - UUID sai dinh dang (400)",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{tokenHV1}}" }],
+            "url": { "raw": "{{baseUrl}}/lessons/not-a-valid-uuid", "host": ["{{baseUrl}}"], "path": ["lessons","not-a-valid-uuid"] }
+          }
+        },
+        {
+          "name": "TC5 - Limit am/khong hop le (400)",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{tokenAdmin}}" }],
+            "url": { "raw": "{{baseUrl}}/users?limit=-1&page=0", "host": ["{{baseUrl}}"], "path": ["users"], "query": [{"key":"limit","value":"-1"},{"key":"page","value":"0"}] }
+          }
+        }
+      ]
+    },
+
+    {
+      "name": "5.2.22 - Van hanh va Phi chuc nang",
+      "item": [
+        {
+          "name": "TC1 - Health check",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": { "raw": "{{baseUrl}}/health", "host": ["{{baseUrl}}"], "path": ["health"] }
+          }
+        },
+        {
+          "name": "Swagger Docs",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": { "raw": "https://api.techenglish.click/api/docs-json", "host": ["https://api.techenglish.click"], "path": ["api","docs-json"] }
+          }
+        }
+      ]
+    },
+
+    {
+      "name": "5.2.23 - Luong xuyen suot toan he thong",
+      "item": [
+        {
+          "name": "FLOW1 - Step1: Admin dang nhap",
+          "event": [{ "listen": "test", "script": { "exec": ["var r=pm.response.json(); if(r.accessToken) pm.collectionVariables.set('tokenAdmin',r.accessToken);"], "type": "text/javascript" } }],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{baseUrl}}/auth/login", "host": ["{{baseUrl}}"], "path": ["auth","login"] },
+            "body": { "mode": "raw", "raw": "{\n  \"email\": \"admin.qa@gmail.com\",\n  \"password\": \"Admin@1234\"\n}" }
+          }
+        },
+        {
+          "name": "FLOW1 - Step2: Admin publish bai hoc",
+          "request": {
+            "method": "PATCH",
+            "header": [{ "key": "Content-Type", "value": "application/json" }, { "key": "Authorization", "value": "Bearer {{tokenAdmin}}" }],
+            "url": { "raw": "{{baseUrl}}/lessons/{{LESSON_ID}}/status", "host": ["{{baseUrl}}"], "path": ["lessons","{{LESSON_ID}}","status"] },
+            "body": { "mode": "raw", "raw": "{\n  \"status\": \"published\"\n}" }
+          }
+        },
+        {
+          "name": "FLOW1 - Step3: Hoc vien dang ky",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{baseUrl}}/auth/register", "host": ["{{baseUrl}}"], "path": ["auth","register"] },
+            "body": { "mode": "raw", "raw": "{\n  \"displayName\": \"Hoc Vien Flow Test\",\n  \"email\": \"flowtest.qa@gmail.com\",\n  \"password\": \"Flow@1234\"\n}" }
+          }
+        },
+        {
+          "name": "FLOW1 - Step4: Hoc vien onboarding",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }, { "key": "Authorization", "value": "Bearer {{tokenHV1}}" }],
+            "url": { "raw": "{{baseUrl}}/learner-profiles/onboarding", "host": ["{{baseUrl}}"], "path": ["learner-profiles","onboarding"] },
+            "body": { "mode": "raw", "raw": "{\n  \"level\": \"intermediate\",\n  \"domains\": [\"{{D1_ID}}\"],\n  \"learningGoal\": \"certification\",\n  \"certificates\": [\"{{C1_ID}}\"]\n}" }
+          }
+        },
+        {
+          "name": "FLOW1 - Step5: Hoc vien hoan thanh bai hoc",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }, { "key": "Authorization", "value": "Bearer {{tokenHV1}}" }],
+            "url": { "raw": "{{baseUrl}}/progress", "host": ["{{baseUrl}}"], "path": ["progress"] },
+            "body": { "mode": "raw", "raw": "{\n  \"resourceId\": \"{{LESSON_ID}}\",\n  \"resourceType\": \"lesson\",\n  \"completion\": 100\n}" }
+          }
+        },
+        {
+          "name": "FLOW1 - Step6: Hoc vien nop de thi",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }, { "key": "Authorization", "value": "Bearer {{tokenHV1}}" }],
+            "url": { "raw": "{{baseUrl}}/exam-attempts/{{ATTEMPT_ID}}/submit", "host": ["{{baseUrl}}"], "path": ["exam-attempts","{{ATTEMPT_ID}}","submit"] },
+            "body": { "mode": "raw", "raw": "{\n  \"answers\": [\n    { \"questionId\": \"{{QUESTION_ID}}\", \"selectedOptions\": [\"a\"] }\n  ]\n}" }
+          }
+        },
+        {
+          "name": "FLOW1 - Step7: Admin xem bao cao",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{tokenAdmin}}" }],
+            "url": { "raw": "{{baseUrl}}/analytics/dashboard", "host": ["{{baseUrl}}"], "path": ["analytics","dashboard"] }
+          }
+        }
+      ]
+    }
+
+  ]
+}

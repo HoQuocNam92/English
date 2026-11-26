@@ -1,0 +1,29 @@
+{{ define "techenglish.subject" }}[TechEnglish] {{ if eq .CommonLabels.test "true" }}Kiểm tra email{{ else if eq .Status "resolved" }}Đã phục hồi{{ else }}Cần kiểm tra{{ end }} — {{ if .CommonAnnotations.summary }}{{ .CommonAnnotations.summary }}{{ else }}Thông báo hệ thống{{ end }}{{ end }}
+{{ define "techenglish.email" }}
+<!DOCTYPE html><html lang="vi"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1"></head>
+<body style="margin:0;padding:0;background:#f1f5f9;font-family:Arial,Helvetica,sans-serif;color:#0f172a;">
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#f1f5f9;"><tr><td align="center" style="padding:32px 12px;">
+<table role="presentation" width="600" cellpadding="0" cellspacing="0" style="width:100%;max-width:600px;background:#ffffff;border:1px solid #e2e8f0;border-radius:16px;overflow:hidden;">
+<tr><td style="padding:24px 28px;background:#312e81;color:#ffffff;"><div style="font-size:12px;letter-spacing:2px;font-weight:bold;color:#c7d2fe;">TECHENGLISH PRO</div><div style="font-size:23px;font-weight:bold;margin-top:8px;">Thông báo vận hành</div><div style="font-size:14px;color:#e0e7ff;margin-top:8px;">Giám sát VPS · Dịch vụ · Sao lưu S3</div></td></tr>
+<tr><td style="padding:24px 28px 8px;">
+{{ if eq .CommonLabels.test "true" }}<div style="padding:14px 16px;border-radius:10px;background:#eff6ff;color:#1d4ed8;font-size:15px;font-weight:bold;">THƯ KIỂM TRA — Hệ thống không gặp sự cố</div>
+{{ else if eq .Status "resolved" }}<div style="padding:14px 16px;border-radius:10px;background:#ecfdf5;color:#047857;font-size:15px;font-weight:bold;">ĐÃ PHỤC HỒI — Cảnh báo đã kết thúc</div>
+{{ else }}<div style="padding:14px 16px;border-radius:10px;background:#fff1f2;color:#be123c;font-size:15px;font-weight:bold;">CẦN KIỂM TRA — Cảnh báo đang hoạt động</div>{{ end }}
+<p style="font-size:14px;line-height:23px;color:#475569;margin:16px 0;">{{ if eq .CommonLabels.test "true" }}Email này giúp bạn kiểm tra mẫu thông báo và khả năng gửi thư. Bạn không cần xử lý sự cố nào.{{ else if eq .Status "resolved" }}Điều kiện gây cảnh báo không còn được ghi nhận. Bạn có thể mở dashboard để xem diễn biến và xác nhận dịch vụ hoạt động ổn định.{{ else }}Hệ thống phát hiện điều kiện bất thường kéo dài đủ ngưỡng cảnh báo. Hãy xem thông tin bên dưới và mở dashboard để kiểm tra.{{ end }}</p>
+</td></tr>
+{{ range .Alerts }}
+<tr><td style="padding:8px 28px 16px;"><table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="border:1px solid #e2e8f0;border-radius:12px;"><tr><td style="padding:20px;">
+<div style="font-size:18px;font-weight:bold;line-height:26px;">{{ .Annotations.summary }}</div>
+<p style="font-size:14px;line-height:23px;color:#475569;margin:12px 0 18px;">{{ .Annotations.description }}</p>
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="font-size:13px;line-height:22px;">
+<tr><td width="38%" style="padding:5px 0;color:#64748b;">Trạng thái</td><td style="padding:5px 0;font-weight:bold;">{{ if eq .Labels.test "true" }}Kiểm tra gửi thư{{ else if eq .Status "resolved" }}Đã phục hồi{{ else }}Đang cảnh báo{{ end }}</td></tr>
+<tr><td style="padding:5px 0;color:#64748b;">Mức độ</td><td style="padding:5px 0;">{{ if eq .Labels.severity "critical" }}Nghiêm trọng{{ else if eq .Labels.severity "warning" }}Cần chú ý{{ else }}Thông tin{{ end }}</td></tr>
+{{ if .Labels.service }}<tr><td style="padding:5px 0;color:#64748b;">Dịch vụ</td><td style="padding:5px 0;">{{ .Labels.service }}</td></tr>{{ end }}
+<tr><td style="padding:5px 0;color:#64748b;">Bắt đầu (UTC+7)</td><td style="padding:5px 0;">{{ .StartsAt | tz "Asia/Bangkok" | date "15:04:05 · 02/01/2006" }}</td></tr>
+{{ if eq .Status "resolved" }}<tr><td style="padding:5px 0;color:#64748b;">Kết thúc (UTC+7)</td><td style="padding:5px 0;">{{ .EndsAt | tz "Asia/Bangkok" | date "15:04:05 · 02/01/2006" }}</td></tr>{{ end }}
+<tr><td style="padding:5px 0;color:#64748b;">Mã cảnh báo</td><td style="padding:5px 0;color:#475569;word-break:break-word;">{{ .Labels.alertname }}</td></tr>
+</table></td></tr></table></td></tr>{{ end }}
+<tr><td align="center" style="padding:8px 28px 24px;"><a href="https://techenglish.click/monitoring/d/techenglish-vps" style="display:inline-block;background:#4f46e5;color:#ffffff;text-decoration:none;border-radius:8px;padding:14px 24px;font-size:14px;font-weight:bold;">Mở dashboard giám sát</a><p style="font-size:12px;color:#64748b;line-height:20px;margin:14px 0 0;">Nếu nút không mở được: <a href="https://techenglish.click/monitoring/" style="color:#4f46e5;">techenglish.click/monitoring/</a></p></td></tr>
+<tr><td style="padding:18px 28px;background:#f8fafc;border-top:1px solid #e2e8f0;color:#64748b;font-size:12px;line-height:20px;">Thông báo tự động từ TechEnglish. Hệ thống gửi thư khi cảnh báo xuất hiện hoặc được giải quyết; thư nhắc có thể được gửi nếu sự cố còn kéo dài.</td></tr>
+</table></td></tr></table></body></html>
+{{ end }}

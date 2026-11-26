@@ -130,7 +130,7 @@ async function main() {
         const types = ['terminology', 'reading', 'documentation', 'case'];
         for (const [index, type] of types.entries()) {
           const slug = `${stamp}-${module.domain.toLowerCase()}-${module.level}-${type}`;
-          const title = `${String(index + 1).padStart(2, '0')}. ${['Thuật ngữ', 'Đọc hiểu', 'Đọc tài liệu', 'Tình huống'][index]}: ${module.title} (${names[module.level]})`;
+          const title = `${String(index + 1).padStart(2, '0')}. ${['Terminology', 'Reading Comprehension', 'Technical Documentation', 'Case Study'][index]}: ${module.title} (${{beginner:'Beginner',intermediate:'Intermediate',advanced:'Advanced',professional:'Professional'}[module.level]})`;
           let lesson = await tx.lesson.findUnique({ where: { slug } });
           if (!lesson) { lesson = await tx.lesson.create({ data: { slug, title, summary: `Bài ${index + 1}/4 thuộc chuỗi ${module.title}. Có nội dung tiếng Anh, giải thích tiếng Việt và hướng dẫn bước tiếp theo.`, type: type === 'terminology' ? 'terminology' : type === 'case' ? 'case_study' : 'technical_reading', domainId: domain.id, levelId: level.id, estimatedMinutes: [20, 25, 20, 25][index], status: 'published', publishedAt: new Date(), createdById: author.id, keyConcepts: module.words.map(row => row[0]), sections: { create: sectionsFor(module, type) } } }); stats.createdLessons++; }
           await tx.lessonVocabulary.deleteMany({ where: { lessonId: lesson.id, vocabularyId: { notIn: vocabularyIds } } });

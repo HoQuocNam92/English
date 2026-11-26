@@ -1,0 +1,91 @@
+name: techenglish-observability
+x-logs: &logs
+  driver: json-file
+  options:
+    max-size: "10m"
+    max-file: "3"
+services:
+  prometheus:
+    image: prom/prometheus:v3.15.1
+    restart: unless-stopped
+    command: [--config.file=/etc/prometheus/prometheus.yml, --storage.tsdb.path=/prometheus, --storage.tsdb.retention.time=15d, --storage.tsdb.retention.size=1GB]
+    volumes: [./prometheus.yml:/etc/prometheus/prometheus.yml:ro, ./alerts.yml:/etc/prometheus/alerts.yml:ro, prometheus:/prometheus]
+    ports: ["127.0.0.1:9090:9090"]
+    extra_hosts: ["host.docker.internal:host-gateway"]
+    mem_limit: 512m
+    logging: *logs
+  alertmanager:
+    image: prom/alertmanager:v0.34.2
+    restart: unless-stopped
+    command: [--config.file=/etc/alertmanager/alertmanager.yml, --storage.path=/alertmanager]
+    volumes: [./alertmanager:/etc/alertmanager:ro, ./secrets/telegram-token-runtime:/run/secrets/telegram-token:ro, ./secrets/smtp-password:/run/secrets/smtp-password:ro, alertmanager:/alertmanager]
+    ports: ["127.0.0.1:9093:9093"]
+    mem_limit: 128m
+    logging: *logs
+  node-exporter:
+    image: prom/node-exporter:v1.12.1
+    restart: unless-stopped
+    pid: host
+    command: [--path.rootfs=/host, --collector.textfile.directory=/textfile, '--collector.filesystem.mount-points-exclude=^/(dev|proc|sys|var/lib/docker/.+|run/credentials/.+)($$|/)']
+    volumes: ["/:/host:ro,rslave", ./generated:/textfile:ro]
+    mem_limit: 128m
+    logging: *logs
+  blackbox:
+    image: prom/blackbox-exporter:v0.29.1
+    restart: unless-stopped
+    command: [--config.file=/etc/blackbox/blackbox.yml]
+    volumes: [./blackbox.yml:/etc/blackbox/blackbox.yml:ro]
+    mem_limit: 128m
+    logging: *logs
+  loki:
+    image: grafana/loki:3.7.9
+    restart: unless-stopped
+    command: [-config.file=/etc/loki/config.yml]
+    volumes: [./loki.yml:/etc/loki/config.yml:ro, loki:/loki]
+    ports: ["127.0.0.1:3101:3100"]
+    mem_limit: 512m
+    logging: *logs
+  alloy:
+    image: grafana/alloy:v1.21.3
+    restart: unless-stopped
+    user: "0:0"
+    command: [run, --storage.path=/var/lib/alloy, --server.http.listen-addr=0.0.0.0:12345, /etc/alloy/config.alloy]
+    volumes:
+      - ./config.alloy:/etc/alloy/config.alloy:ro
+      - ./generated:/discovery:ro
+      - ./state:/var/log/techenglish-ops:ro
+      - /var/lib/docker/containers:/var/lib/docker/containers:ro
+      - /var/log/nginx:/var/log/nginx:ro
+      - alloy:/var/lib/alloy
+    depends_on: [loki]
+    mem_limit: 256m
+    logging: *logs
+  grafana:
+    image: grafana/grafana:13.3.0
+    restart: unless-stopped
+    user: "472:472"
+    environment:
+      GF_SERVER_ROOT_URL: https://techenglish.click/monitoring/
+      GF_SERVER_SERVE_FROM_SUB_PATH: "true"
+      GF_SECURITY_ADMIN_USER: admin
+      GF_SECURITY_ADMIN_PASSWORD__FILE: /run/secrets/grafana-admin-password
+      GF_SECURITY_COOKIE_SECURE: "true"
+      GF_USERS_ALLOW_SIGN_UP: "false"
+      GF_AUTH_ANONYMOUS_ENABLED: "false"
+      GF_ANALYTICS_REPORTING_ENABLED: "false"
+      GF_ANALYTICS_CHECK_FOR_UPDATES: "false"
+    volumes:
+      - grafana:/var/lib/grafana
+      - ./secrets/grafana-admin-password:/run/secrets/grafana-admin-password:ro
+      - ./provisioning:/etc/grafana/provisioning:ro
+      - ./dashboards:/var/lib/grafana/dashboards:ro
+    ports: ["127.0.0.1:3100:3000"]
+    depends_on: [prometheus,loki,alertmanager]
+    mem_limit: 512m
+    logging: *logs
+volumes:
+  prometheus: {}
+  alertmanager: {}
+  loki: {}
+  alloy: {}
+  grafana: {}

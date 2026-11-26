@@ -2,7 +2,7 @@ import { CallHandler, ConflictException, ExecutionContext, Injectable, NestInter
 import { from, lastValueFrom, Observable } from 'rxjs'
 import { PrismaService } from '../database/prisma.service'
 import { auditContext } from './audit-context'
-import { eventBase, eventDefinition, safeId, safeValues, saveEvent, snapshot } from './audit-events'
+import { eventBase, eventDefinition, routineAuditEvents, safeId, safeValues, saveEvent, snapshot } from './audit-events'
 
 @Injectable()
 export class AuditInterceptor implements NestInterceptor {
@@ -11,7 +11,7 @@ export class AuditInterceptor implements NestInterceptor {
     const request = context.switchToHttp().getRequest()
     const response = context.switchToHttp().getResponse()
     const definition = eventDefinition(request)
-    if (!definition) return next.handle()
+    if (!definition || routineAuditEvents.includes(definition.eventKey)) return next.handle()
     // OAuth's session is created by its guard and the controller owns a redirect response.
     // Record its verified guard result in the finish observer, without failing an already-sent redirect.
     if (String(request.route?.path).endsWith('/auth/google/callback')) return next.handle()
@@ -44,7 +44,7 @@ export class AuditInterceptor implements NestInterceptor {
         data.oldValues = { status: request.body?.status === 'published' ? 'draft' : request.body?.status === 'draft' ? 'published' : request.body?.isActive === true ? 'inactive' : 'active', count: result.updatedCount }
         data.newValues = { status: request.body?.status ?? (request.body?.isActive ? 'active' : 'inactive'), count: result.updatedCount }
       }
-      // Non-mutating security reads are recorded, but never ordinary catalog reads.
+      // Only meaningful business/security operations reach this writer.
       await saveEvent(db, data)
       if (['auth.password_change', 'auth.password_reset', 'user.suspend', 'user.delete'].includes(definition.eventKey)) {
         const count = request.auditRevokedCount

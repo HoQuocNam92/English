@@ -4,7 +4,7 @@ import { Type } from 'class-transformer'
 import { PrismaService } from '../infrastructure/database/prisma.service'
 import { JwtAuthGuard } from '../infrastructure/auth/jwt-auth.guard'
 import { CurrentUser, JwtPayload } from './decorators/current-user.decorator'
-import { safeValues } from '../infrastructure/audit/audit-events'
+import { routineAuditEvents, safeValues } from '../infrastructure/audit/audit-events'
 
 export class AuditQueryDto {
   @IsOptional() @Type(() => Number) @IsInt() @Min(1) @Max(10000) page = 1
@@ -54,10 +54,12 @@ export class AuditLogController {
       ...(eventKey ? {eventKey} : {}), ...(targetType ? {targetType} : {}), ...(severity ? {severity} : {}), ...(ip ? {ipAddress:ip} : {}),
       ...(from || to ? {createdAt:{...(from ? {gte:new Date(from)} : {}),...(to ? {lte:new Date(to)} : {})}} : {}),
     }
+    // Keep historical routine events intact, but omit successful background reads by default.
+    if (!eventKey) where.AND = [{ OR: [{eventKey:null}, {outcome:null}, {NOT:{ eventKey: { in: routineAuditEvents }, outcome: 'success' }}] }]
     if (cursor) {
       const anchor = await this.prisma.auditLog.findUnique({where:{id:cursor},select:{id:true,createdAt:true}})
       if (!anchor) throw new BadRequestException('Con trỏ phân trang không còn hợp lệ')
-      where.AND = [{OR:[{createdAt:{[sort === 'desc' ? 'lt' : 'gt']:anchor.createdAt}},{createdAt:anchor.createdAt,id:{[sort === 'desc' ? 'lt' : 'gt']:anchor.id}}]}]
+      where.AND = [...(where.AND ?? []), {OR:[{createdAt:{[sort === 'desc' ? 'lt' : 'gt']:anchor.createdAt}},{createdAt:anchor.createdAt,id:{[sort === 'desc' ? 'lt' : 'gt']:anchor.id}}]}]
     }
     const [data,total] = await this.prisma.$transaction([
       this.prisma.auditLog.findMany({where,select:summary,orderBy:[{createdAt:sort},{id:sort}],skip:cursor ? 0 : (page-1)*limit,take:limit}),

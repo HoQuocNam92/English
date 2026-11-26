@@ -1,0 +1,10 @@
+/home/ubuntu/techenglish-ops/state/jobs.log {
+  daily
+  rotate 7
+  size 5M
+  compress
+  missingok
+  notifempty
+  create 0600 ubuntu ubuntu
+  su ubuntu ubuntu
+}

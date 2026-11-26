@@ -1,0 +1,26 @@
+rule_files: [/tests/alerts.yml]
+evaluation_interval: 1m
+tests:
+  - interval: 1m
+    input_series:
+      - series: 'techenglish_container_healthy{service="api",instance="node-exporter:9100",job="node"}'
+        values: '0x3 1x5'
+    alert_rule_test:
+      - eval_time: 3m
+        alertname: ContainerUnhealthy
+        exp_alerts:
+          - exp_labels: {service: api, instance: 'node-exporter:9100', job: node, severity: critical}
+            exp_annotations: {summary: 'Application container is unhealthy', description: 'The API, web, or database container is stopped or unhealthy.'}
+      - eval_time: 6m
+        alertname: ContainerUnhealthy
+        exp_alerts: []
+  - interval: 1m
+    input_series:
+      - series: 'techenglish_backup_last_run_success{instance="node-exporter:9100",job="node"}'
+        values: '0x6'
+    alert_rule_test:
+      - eval_time: 3m
+        alertname: BackupFailed
+        exp_alerts:
+          - exp_labels: {instance: 'node-exporter:9100', job: node, severity: critical}
+            exp_annotations: {summary: 'The automated database backup failed', description: 'Inspect the TechEnglish backup service and available disk space.'}

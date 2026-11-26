@@ -21,7 +21,7 @@ test('teacher can access group routes without account administration permissions
   assert.throws(() => guard.canActivate(context(['learner'])), ForbiddenException)
 })
 
-test('teacher list is scoped to owner, while administrative list is unrestricted', async () => {
+test('optional owner filter remains supported; default group list is unrestricted', async () => {
   const queries: any[] = []
   const service = new LearnerGroupService({ learnerGroup: { findMany: async (query: any) => { queries.push(query); return [] } } } as any)
   await service.list('teacher-1')
@@ -29,7 +29,7 @@ test('teacher list is scoped to owner, while administrative list is unrestricted
   assert.deepEqual(queries.map(query => query.where), [{ ownerId: 'teacher-1' }, {}])
 })
 
-test('foreign group blocks every teacher mutation before changing data', async () => {
+test('explicit owner filter rejects foreign group mutations before changing data', async () => {
   const service = new LearnerGroupService({ learnerGroup: { findUnique: async (query: any) => {
     assert.equal(query.where.ownerId, 'teacher-1')
     return null

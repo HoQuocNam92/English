@@ -1,0 +1,14 @@
+global:
+  resolve_timeout: 5m
+route:
+  receiver: telegram-pending
+  group_by: [alertname, instance, service]
+  group_wait: 30s
+  group_interval: 5m
+  repeat_interval: 6h
+receivers:
+  - name: telegram-pending
+inhibit_rules:
+  - source_matchers: ['severity="critical"']
+    target_matchers: ['severity="warning"']
+    equal: [alertname, instance, service]

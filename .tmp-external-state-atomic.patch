@@ -1,0 +1,49 @@
+diff --git a/apps/api/prisma/migrations/20261109000000_external_file_state/migration.sql b/apps/api/prisma/migrations/20261109000000_external_file_state/migration.sql
+index e700045..1e79e49 100644
+--- a/apps/api/prisma/migrations/20261109000000_external_file_state/migration.sql
++++ b/apps/api/prisma/migrations/20261109000000_external_file_state/migration.sql
+@@ -1,3 +1,5 @@
++BEGIN;
++LOCK TABLE admin_mfa, audit_logs, audit_alerts, study_time_sessions IN ACCESS EXCLUSIVE MODE;
+ -- Existing data must first be exported and fsynced by docker/export-legacy-state.cjs.
+ DO $$
+ DECLARE name text; actual bigint; marker text; expected bigint;
+@@ -19,3 +21,5 @@ DROP TABLE audit_logs;
+ DROP TABLE admin_mfa;
+ DROP TABLE study_time_sessions;
+ DROP FUNCTION IF EXISTS protect_audit_history();
++
++COMMIT;
+diff --git a/docker/deploy-vps.sh b/docker/deploy-vps.sh
+index 7c12a42..bc5147d 100644
+--- a/docker/deploy-vps.sh
++++ b/docker/deploy-vps.sh
+@@ -54,7 +54,11 @@ if [[ "$("${compose[@]}" exec -T --interactive=false db psql -U techenglish -d t
+   test -s "$backup.file-state.json"
+ fi
+ "${compose[@]}" stop api < /dev/null
+-"${compose[@]}" run --rm --no-deps -T migrate < /dev/null
++if ! "${compose[@]}" run --rm --no-deps -T migrate < /dev/null; then
++  echo 'Migration failed; restarting the previously running API container.' >&2
++  "${compose[@]}" start api < /dev/null
++  exit 1
++fi
+ "${compose[@]}" up -d --no-build --no-deps --wait api web < /dev/null
+ for service in api web; do
+   container_id=$("${compose[@]}" ps -q "$service" < /dev/null)
+diff --git a/docker/prisma/migrations/20261109000000_external_file_state/migration.sql b/docker/prisma/migrations/20261109000000_external_file_state/migration.sql
+index e700045..1e79e49 100644
+--- a/docker/prisma/migrations/20261109000000_external_file_state/migration.sql
++++ b/docker/prisma/migrations/20261109000000_external_file_state/migration.sql
+@@ -1,3 +1,5 @@
++BEGIN;
++LOCK TABLE admin_mfa, audit_logs, audit_alerts, study_time_sessions IN ACCESS EXCLUSIVE MODE;
+ -- Existing data must first be exported and fsynced by docker/export-legacy-state.cjs.
+ DO $$
+ DECLARE name text; actual bigint; marker text; expected bigint;
+@@ -19,3 +21,5 @@ DROP TABLE audit_logs;
+ DROP TABLE admin_mfa;
+ DROP TABLE study_time_sessions;
+ DROP FUNCTION IF EXISTS protect_audit_history();
++
++COMMIT;

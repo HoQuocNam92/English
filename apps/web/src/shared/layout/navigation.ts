@@ -139,11 +139,11 @@ export const teacherNavigation: NavigationGroup[] = [
   { group: 'Tổng quan', items: [{ label: 'Tổng quan', href: '/admin/dashboard', icon: 'dashboard' }] },
   { group: 'Giảng dạy', items: [
     { label: 'Nội dung học tập', href: '/admin/learning-content', icon: 'library_books' },
-    { label: 'Quản lý bài học', href: '/admin/lessons', icon: 'auto_stories' },
+    { ...combinedNavigation.flatMap(group => group.items).find(item => item.href === '/admin/lessons')! },
     { label: 'Ngân hàng câu hỏi', href: '/admin/questions', icon: 'help' },
     { label: 'Bài kiểm tra chứng chỉ', href: '/admin/tests', icon: 'quiz' },
   ] },
-  { group: 'Học viên phụ trách', items: [
+  { group: 'Học viên', items: [
     { label: 'Kết quả bài thi', href: '/admin/test-results', icon: 'fact_check' },
     { label: 'Phân nhóm học viên', href: '/admin/learner-groups', icon: 'groups' },
     { label: 'Tiến độ học tập', href: '/admin/progress', icon: 'trending_up' },

@@ -34,7 +34,7 @@ export default function FlashcardPracticePage({ params }: { params: Promise<{ id
   const [words, setWords] = useState<any[]>([]);
   const [currentIdx, setCurrentIdx] = useState(0);
   const [isFlipped, setIsFlipped] = useState(false);
-  const [onlyNew, setOnlyNew] = useState(false);
+  const [onlyNew, setOnlyNew] = useState(lessonId === 'all' && !sourceLessonId && !reviewOnly);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [isFinished, setIsFinished] = useState(false);

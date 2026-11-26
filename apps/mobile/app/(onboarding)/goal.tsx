@@ -10,11 +10,12 @@ import { MaterialIcons } from '../../src/shared/ui/AppIcon';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { colors, spacing } from '@techenglish/design-tokens';
 
-type Goal = 'certification' | 'vocabulary';
+type Goal = 'certification' | 'vocabulary' | 'both';
 
 const OPTIONS: Array<{ id: Goal; title: string; description: string; icon: keyof typeof MaterialIcons.glyphMap }> = [
-  { id: 'certification', title: 'Luyện chứng chỉ CNTT', description: 'Học theo Chuyên ngành, Chủ đề, từ vựng và bài luyện tập của chứng chỉ.', icon: 'workspace-premium' },
-  { id: 'vocabulary', title: 'Luyện từ vựng CNTT', description: 'Tập trung từ vựng theo chuyên ngành.', icon: 'translate' },
+  { id: 'vocabulary', title: 'Học từ vựng CNTT', description: 'Tập trung từ vựng theo Cloud, Security, DevOps và các chuyên ngành khác.', icon: 'translate' },
+  { id: 'certification', title: 'Luyện chứng chỉ', description: 'Học theo domain, topic và làm quiz đúng cấu trúc chứng chỉ.', icon: 'workspace-premium' },
+  { id: 'both', title: 'Cả hai', description: 'Kết hợp từ vựng CNTT với lộ trình luyện chứng chỉ mục tiêu.', icon: 'route' },
 ];
 
 export default function OnboardingGoalScreen() {
@@ -30,7 +31,7 @@ export default function OnboardingGoalScreen() {
       ['onboarding_certificate_code', ''],
       ['onboarding_certificate_id', ''],
     ]);
-    router.push(selected === 'certification' ? '/(onboarding)/certificate' as any : '/(onboarding)/it-field' as any);
+    router.push(selected === 'both' ? '/(onboarding)/level' as any : selected === 'vocabulary' ? '/(onboarding)/it-field' as any : '/(onboarding)/certificate' as any);
   };
 
   return <View style={styles.container}>
@@ -38,8 +39,8 @@ export default function OnboardingGoalScreen() {
     <View style={[styles.header, { paddingTop: insets.top + 12 }]}><Text style={styles.brand}>TechEnglish</Text><Text style={styles.step}>Bước 1/4</Text></View>
     <View style={styles.progress}><View style={[styles.progressFill, { width: '25%' }]} /></View>
     <ScrollView contentContainerStyle={styles.content}>
-      <Text style={styles.title}>Bạn muốn học theo hướng nào?<RequiredMark /></Text>
-      <Text style={styles.subtitle}>Chọn một mục tiêu chính. Bạn có thể thay đổi sau trong hồ sơ.</Text>
+      <Text style={styles.title}>Bạn học để làm gì?<RequiredMark /></Text>
+      <Text style={styles.subtitle}>Chọn mục tiêu phù hợp nhất. Bạn vẫn có thể thay đổi sau trong hồ sơ.</Text>
       {OPTIONS.map(item => {
         const active = selected === item.id;
         return <TouchableOpacity key={item.id} style={[styles.card, active && styles.cardActive]} onPress={() => setSelected(item.id)} activeOpacity={0.8}>

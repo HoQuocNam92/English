@@ -1,0 +1,1149 @@
+diff --git a/.github/workflows/ci.yml b/.github/workflows/ci.yml
+index 5f915fc..780dcad 100644
+--- a/.github/workflows/ci.yml
++++ b/.github/workflows/ci.yml
+@@ -20,6 +20,7 @@ jobs:
+       NEXT_PUBLIC_API_URL: http://localhost:8080/api/v1
+       EXPO_PUBLIC_API_URL: http://localhost:8080/api/v1
+       DATABASE_URL: postgresql://techenglish:ci-password@localhost:5432/techenglish
++      TECHENGLISH_STATE_DIR: /tmp/techenglish-ci-state
+     services:
+       postgres:
+         image: postgres:16-alpine
+@@ -59,6 +60,8 @@ jobs:
+       - run: pnpm --filter web test
+       - run: pnpm --filter mobile test
+       - run: pnpm --filter @techenglish/api test
++      - run: node --test -r ts-node/register src/infrastructure/database/file-state.spec.ts
++        working-directory: apps/api
+       - run: pnpm --filter @techenglish/api test:agenda
+       - run: pnpm --filter @techenglish/api test:learning-path
+       - run: node --test apps/api/prisma/seed-software-curriculum.test.cjs
+diff --git a/.gitignore b/.gitignore
+index 32e1cc4..79849e9 100644
+--- a/.gitignore
++++ b/.gitignore
+@@ -31,5 +31,6 @@ GoogleService-Info.plist
+ # Local review scratch files and generated data backups
+ /.tmp-*/
+ *.tsbuildinfo
++.runtime-state/
+ /docs/data-audit/backups/
+ /docs/data-audit/content-snapshot.json
+diff --git a/Dockerfile b/Dockerfile
+index da2c125..7a19d75 100644
+--- a/Dockerfile
++++ b/Dockerfile
+@@ -12,6 +12,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends python3 libespe
+ RUN python3 apps/api/scripts/pronounce.py "availability zone" > /tmp/pronunciation.wav && test -s /tmp/pronunciation.wav && rm /tmp/pronunciation.wav
+ RUN pnpm --filter @techenglish/api build
+ RUN cp apps/api/prisma/schema.prisma docker/prisma/schema.prisma && chown -R node:node docker/prisma
++RUN mkdir -p /var/lib/techenglish-state && chown node:node /var/lib/techenglish-state && chmod 700 /var/lib/techenglish-state
+ ENV NODE_ENV=production HOST=0.0.0.0 PORT=8080
+ WORKDIR /app/apps/api
+ USER node
+diff --git a/apps/api/prisma/migrations/20261109000000_external_file_state/migration.sql b/apps/api/prisma/migrations/20261109000000_external_file_state/migration.sql
+new file mode 100644
+index 0000000..e700045
+--- /dev/null
++++ b/apps/api/prisma/migrations/20261109000000_external_file_state/migration.sql
+@@ -0,0 +1,21 @@
++-- Existing data must first be exported and fsynced by docker/export-legacy-state.cjs.
++DO $$
++DECLARE name text; actual bigint; marker text; expected bigint;
++BEGIN
++  FOREACH name IN ARRAY ARRAY['admin_mfa','audit_logs','audit_alerts','study_time_sessions'] LOOP
++    EXECUTE format('SELECT count(*) FROM %I', name) INTO actual;
++    SELECT obj_description(('public.' || name)::regclass) INTO marker;
++    IF actual > 0 THEN
++      IF marker IS NULL OR marker !~ '^external-file-state:[0-9]+:[0-9a-f]{64}$' THEN
++        RAISE EXCEPTION 'Export % to persistent files before removing the table', name;
++      END IF;
++      expected := split_part(marker, ':', 2)::bigint;
++      IF actual <> expected THEN RAISE EXCEPTION 'Legacy table % changed after export; stop API and repeat migration', name; END IF;
++    END IF;
++  END LOOP;
++END $$;
++DROP TABLE audit_alerts;
++DROP TABLE audit_logs;
++DROP TABLE admin_mfa;
++DROP TABLE study_time_sessions;
++DROP FUNCTION IF EXISTS protect_audit_history();
+diff --git a/apps/api/prisma/schema.prisma b/apps/api/prisma/schema.prisma
+index d81ae16..4d905d6 100644
+--- a/apps/api/prisma/schema.prisma
++++ b/apps/api/prisma/schema.prisma
+@@ -159,7 +159,6 @@ model User {
+ 
+   // Content & learning
+   placementAssessments PlacementAssessment[]
+-  studyTimeSessions StudyTimeSession[]
+   learnerProfile    LearnerProfile?
+   createdExams      Exam[]               @relation("ExamCreatedBy")
+   createdLessons    Lesson[]             @relation("LessonCreatedBy")
+@@ -294,64 +293,9 @@ model RefreshToken {
+ }
+ 
+ /// MFA state is independent of profile responses. Secrets are encrypted; recovery codes are hashed.
+-model AdminMfa {
+-  userId String @id @map("user_id") @db.Uuid
+-  secretEncrypted String @map("secret_encrypted")
+-  enabledAt DateTime? @map("enabled_at") @db.Timestamptz(6)
+-  pendingExpiresAt DateTime @map("pending_expires_at") @db.Timestamptz(6)
+-  lastStep Int @default(-1) @map("last_step")
+-  recoveryHashes String[] @default([]) @map("recovery_hashes")
+-  failedAttempts Int @default(0) @map("failed_attempts")
+-  lockedUntil DateTime? @map("locked_until") @db.Timestamptz(6)
+-  @@map("admin_mfa")
+-}
+ 
+ /// Append-only through the application API; no request/response bodies or credentials.
+-model AuditLog {
+-  id String @id @default(uuid()) @db.Uuid
+-  actorId String? @map("actor_id") @db.Uuid
+-  actorEmail String? @map("actor_email") @db.VarChar(254)
+-  method String @db.VarChar(10)
+-  action String? @db.VarChar(30)
+-  route String @db.VarChar(300)
+-  targetIds String[] @default([]) @map("target_ids")
+-  statusCode Int @map("status_code")
+-  ipAddress String? @map("ip_address") @db.VarChar(64)
+-  eventKey String? @map("event_key") @db.VarChar(100)
+-  targetType String? @map("target_type") @db.VarChar(40)
+-  outcome String? @db.VarChar(20)
+-  severity String @default("info") @db.VarChar(10)
+-  requestId String? @map("request_id") @db.Uuid
+-  userAgent String? @map("user_agent") @db.VarChar(500)
+-  failureReason String? @map("failure_reason") @db.VarChar(100)
+-  oldValues Json? @map("old_values")
+-  newValues Json? @map("new_values")
+-  requestedCount Int? @map("requested_count")
+-  updatedCount Int? @map("updated_count")
+-  skippedCount Int? @map("skipped_count")
+-  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+-  @@index([createdAt, id])
+-  @@index([actorId, createdAt])
+-  @@index([eventKey, createdAt])
+-  @@index([outcome, createdAt])
+-  @@index([severity, createdAt])
+-  @@index([targetType, createdAt])
+-  @@index([ipAddress, createdAt])
+-  @@index([requestId])
+-  @@index([targetIds], type: Gin, map: "audit_logs_target_ids_gin_idx")
+-  @@map("audit_logs")
+-}
+ 
+-model AuditAlert {
+-  id String @id @default(uuid()) @db.Uuid
+-  dedupeKey String @unique @map("dedupe_key") @db.VarChar(150)
+-  kind String @db.VarChar(50)
+-  severity String @db.VarChar(10)
+-  eventId String @map("event_id") @db.Uuid
+-  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+-  @@index([createdAt, id])
+-  @@map("audit_alerts")
+-}
+ 
+ /// Single-use password reset links. otp_hash retains its legacy name and stores a SHA-256 token hash.
+ model PasswordResetToken {
+@@ -1057,12 +1001,3 @@ model LearningNotification {
+ }
+ 
+ // Measured foreground learning time; cumulative heartbeats are idempotent.
+-model StudyTimeSession {
+-  id String @id
+-  learnerId String @map("learner_id") @db.Uuid
+-  seconds Int @default(0)
+-  startedAt DateTime @default(now()) @map("started_at") @db.Timestamptz(6)
+-  learner User @relation(fields: [learnerId], references: [id], onDelete: Cascade, onUpdate: NoAction)
+-  @@index([learnerId, startedAt])
+-  @@map("study_time_sessions")
+-}
+diff --git a/apps/api/src/application/auth/admin-security.integration.spec.ts b/apps/api/src/application/auth/admin-security.integration.spec.ts
+index 4b43011..b1346d4 100644
+--- a/apps/api/src/application/auth/admin-security.integration.spec.ts
++++ b/apps/api/src/application/auth/admin-security.integration.spec.ts
+@@ -1,7 +1,7 @@
+ import 'reflect-metadata'
+ import { test } from 'node:test'
+ import { strict as assert } from 'node:assert'
+-import { PrismaClient } from '@prisma/client'
++import { PrismaService } from '../../infrastructure/database/prisma.service'
+ import { randomUUID } from 'node:crypto'
+ import { JwtService } from '@nestjs/jwt'
+ import { AdminMfaService } from './admin-mfa.service'
+@@ -9,7 +9,7 @@ import { totp } from './totp'
+ import { AuditLogController } from '../../presentation/audit-log.controller'
+ 
+ test('PostgreSQL commits MFA failures, allows only one concurrent recovery, and persists audit records', { skip: process.env.ADMIN_SECURITY_QA !== '1' }, async () => {
+-  const db = new PrismaClient()
++  const db = new PrismaService()
+   const id = randomUUID(), sid = randomUUID(), otherSid = randomUUID(), logId = randomUUID()
+   const user = { sub: id, email: `security-qa-${id}@example.invalid`, roles: ['admin'], permissions: [], sid, mfaVerified: false }
+   const service = new AdminMfaService(db as any, { get: () => 'integration-security-encryption-key-only' } as any, new JwtService({ secret: 'integration-signing-key-only' }))
+diff --git a/apps/api/src/application/learner-profile/learner-profile.service.ts b/apps/api/src/application/learner-profile/learner-profile.service.ts
+index 1b6a4a7..094fee1 100644
+--- a/apps/api/src/application/learner-profile/learner-profile.service.ts
++++ b/apps/api/src/application/learner-profile/learner-profile.service.ts
+@@ -208,11 +208,11 @@ export class LearnerProfilesService {
+     await this.assertLearner(userId)
+     if (typeof sessionId !== 'string' || !/^[a-zA-Z0-9-]{10,100}$/.test(sessionId) || !Number.isInteger(seconds) || seconds < 0 || seconds > 86400) throw new BadRequestException('Phiên học không hợp lệ')
+     // Cumulative heartbeats are idempotent and capped by elapsed server time.
+-    await this.prisma.$executeRaw`
+-      INSERT INTO study_time_sessions (id, learner_id, seconds) VALUES (${sessionId}, ${userId}::uuid, 0)
+-      ON CONFLICT (id) DO UPDATE SET seconds = GREATEST(study_time_sessions.seconds, LEAST(${seconds}, GREATEST(0, FLOOR(EXTRACT(EPOCH FROM (CURRENT_TIMESTAMP - study_time_sessions.started_at)))::int)))
+-      WHERE study_time_sessions.learner_id = ${userId}::uuid
+-    `
++    await this.prisma.$transaction(async tx => {
++      const current = await tx.studyTimeSession.findUnique({ where: { id: sessionId } })
++      if (!current) await tx.studyTimeSession.create({ data: { id: sessionId, learnerId: userId, seconds: 0, startedAt: new Date() } })
++      else if (current.learnerId === userId) await tx.studyTimeSession.update({ where: { id: sessionId }, data: { seconds: Math.max(current.seconds, Math.min(seconds, Math.max(0, Math.floor((Date.now() - current.startedAt.getTime()) / 1000)))) } })
++    })
+     return { saved: true }
+   }
+ 
+@@ -240,11 +240,8 @@ export class LearnerProfilesService {
+       this.prisma.examAttempt.count({ where: { learnerId: userId, submittedAt: { gte: startYear } } }),
+     ])
+     const period = vietnamPeriods(now)
+-    const measured = await this.prisma.$queryRaw<{ seconds: number }[]>`
+-      SELECT COALESCE(SUM(seconds), 0)::int AS seconds FROM study_time_sessions
+-      WHERE learner_id = ${userId}::uuid AND started_at >= ${period.today} AND started_at < ${period.tomorrow}
+-    `
+-    const studyMinutesToday = Math.floor((measured[0]?.seconds ?? 0) / 60)
++    const measured = await this.prisma.studyTimeSession.findMany({ where: { learnerId: userId, startedAt: { gte: period.today, lt: period.tomorrow } } })
++    const studyMinutesToday = Math.floor(measured.reduce((sum: number, row: any) => sum + row.seconds, 0) / 60)
+     const weeklyExamTarget = profile.weeklyExamTarget
+     const monthlyExamTarget = weeklyExamTarget * 4
+     const yearlyExamTarget = weeklyExamTarget * 52
+diff --git a/apps/api/src/application/learner-profile/study-time.spec.ts b/apps/api/src/application/learner-profile/study-time.spec.ts
+index 5b874f5..0c298a3 100644
+--- a/apps/api/src/application/learner-profile/study-time.spec.ts
++++ b/apps/api/src/application/learner-profile/study-time.spec.ts
+@@ -6,7 +6,7 @@ function database(seconds: number) {
+     user: { findFirst: async () => ({ id: 'learner' }) },
+     learnerProfile: { findUnique: async () => ({ onboardingCompleted: true, domains: [{}], certGoals: [], dailyVocabularyTarget: 10, weeklyExamTarget: 2, dailyStudyTargetMinutes: 30 }) },
+     vocabularyProgress: { count: async () => 20 }, examAttempt: { count: async () => 0 },
+-    $queryRaw: async () => [{ seconds }],
++    studyTimeSession: { findMany: async () => [{ seconds }] },
+   }
+ }
+ test('twenty studied words do not become twenty minutes; only measured seconds count', async () => {
+@@ -18,7 +18,7 @@ test('twenty studied words do not become twenty minutes; only measured seconds c
+ })
+ test('invalid heartbeat input cannot write time', async () => {
+   let writes = 0
+-  const service = new LearnerProfilesService({ ...database(0), $executeRaw: async () => { writes++ } } as any)
++  const service = new LearnerProfilesService({ ...database(0), $transaction: async (run: any) => run({ studyTimeSession: { findUnique: async () => null, create: async () => { writes++ } } }) } as any)
+   for (const seconds of [-1, 1.5, 86401, NaN]) await assert.rejects(() => service.trackStudyTime('learner', 'valid-session-123', seconds))
+   await assert.rejects(() => service.trackStudyTime('learner', '', 60))
+   assert.equal(writes, 0)
+diff --git a/apps/api/src/infrastructure/audit/audit-context.ts b/apps/api/src/infrastructure/audit/audit-context.ts
+index b00cd37..17fe3d9 100644
+--- a/apps/api/src/infrastructure/audit/audit-context.ts
++++ b/apps/api/src/infrastructure/audit/audit-context.ts
+@@ -1,5 +1,5 @@
+ import { AsyncLocalStorage } from 'node:async_hooks'
+ import type { Prisma } from '@prisma/client'
+ 
+-export type AuditScope = { request: any; transaction?: Prisma.TransactionClient }
++export type AuditScope = { request: any; transaction?: Prisma.TransactionClient & { adminMfa: any; auditLog: any; auditAlert: any; studyTimeSession: any } }
+ export const auditContext = new AsyncLocalStorage<AuditScope>()
+diff --git a/apps/api/src/infrastructure/audit/business-audit.integration.spec.ts b/apps/api/src/infrastructure/audit/business-audit.integration.spec.ts
+index 76cde10..b8865aa 100644
+--- a/apps/api/src/infrastructure/audit/business-audit.integration.spec.ts
++++ b/apps/api/src/infrastructure/audit/business-audit.integration.spec.ts
+@@ -28,7 +28,7 @@ test('real PostgreSQL couples business changes to append-only logs and protects
+     assert.ok(!JSON.stringify(event).includes('MUST_NOT_LOG'))
+     await assert.rejects(db.auditLog.update({where:{id:event.id},data:{outcome:'failure'}}),/append-only/)
+     await assert.rejects(db.auditLog.delete({where:{id:event.id}}),/append-only/)
+-    await assert.rejects(db.$executeRawUnsafe('TRUNCATE audit_logs'),/append-only/)
++    await assert.rejects(db.$executeRawUnsafe('TRUNCATE audit_logs'),/does not exist/)
+     // Invalid request UUID makes audit insertion fail AFTER business deletion; both must roll back.
+     const broken:any=request('/roles/:id/users/:userId','DELETE',{id:roleId,userId:targetId});broken.auditRequestId='invalid'
+     await assert.rejects(execute(broken,()=>roles.revokeRoleFromUser(targetId,roleId,actorId)))
+diff --git a/apps/api/src/infrastructure/database/file-state.spec.ts b/apps/api/src/infrastructure/database/file-state.spec.ts
+new file mode 100644
+index 0000000..723a16a
+--- /dev/null
++++ b/apps/api/src/infrastructure/database/file-state.spec.ts
+@@ -0,0 +1,38 @@
++import { test } from 'node:test'
++import { strict as assert } from 'node:assert'
++import * as fs from 'node:fs'
++import * as os from 'node:os'
++import * as path from 'node:path'
++import { FileState } from './file-state'
++
++test('file journal recovers committed changes, discards aborted changes and preserves dates after restart', async () => {
++  const previous = process.env.TECHENGLISH_STATE_DIR
++  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'techenglish-file-test-'))
++  process.env.TECHENGLISH_STATE_DIR = dir
++  let transactionStatus = 'committed'
++  const tx = { $queryRawUnsafe: async (sql: string) => sql.includes('pg_xact_status') ? [{ status: transactionStatus }] : [{ xid: '123' }] }
++  const transaction = async (invoke: any) => invoke(tx)
++  const original = { adminMfa: [], auditLog: [], auditAlert: [], studyTimeSession: [] }
++  try {
++    fs.writeFileSync(path.join(dir, 'state.json'), JSON.stringify(original))
++    const saved = { ...original, adminMfa: [{ userId: 'admin', enabledAt: '2026-11-09T00:00:00.000Z' }] }
++    fs.writeFileSync(path.join(dir, 'pending.json'), JSON.stringify({ xid: '100', state: saved }))
++    const files = new FileState(transaction)
++    const record = await files.model('adminMfa').findUnique({ where: { userId: 'admin' } })
++    assert.ok(record.enabledAt instanceof Date)
++    assert.equal(fs.existsSync(path.join(dir, 'pending.json')), false)
++    transactionStatus = 'aborted'
++    fs.writeFileSync(path.join(dir, 'pending.json'), JSON.stringify({ xid: '101', state: original }))
++    assert.equal(await new FileState(transaction).model('adminMfa').count(), 1)
++    await assert.rejects(files.run(async () => { await files.model('adminMfa').delete({ where: { userId: 'admin' } }); throw new Error('rollback') }), /rollback/)
++    assert.equal(await new FileState(transaction).model('adminMfa').count(), 1)
++    await assert.rejects(files.model('auditLog').deleteMany(), /append-only/)
++    fs.writeFileSync(path.join(dir, 'state.json'), 'broken JSON')
++    await assert.rejects(files.model('adminMfa').findMany(), /JSON/)
++  } finally {
++    if (previous === undefined) delete process.env.TECHENGLISH_STATE_DIR
++    else process.env.TECHENGLISH_STATE_DIR = previous
++    for (const file of fs.readdirSync(dir)) fs.unlinkSync(path.join(dir, file))
++    fs.rmdirSync(dir)
++  }
++})
+diff --git a/apps/api/src/infrastructure/database/file-state.ts b/apps/api/src/infrastructure/database/file-state.ts
+new file mode 100644
+index 0000000..55872e7
+--- /dev/null
++++ b/apps/api/src/infrastructure/database/file-state.ts
+@@ -0,0 +1,139 @@
++import { AsyncLocalStorage } from 'node:async_hooks'
++import { randomUUID } from 'node:crypto'
++import * as fs from 'node:fs'
++import * as path from 'node:path'
++
++export const FILE_MODELS = ['adminMfa', 'auditLog', 'auditAlert', 'studyTimeSession'] as const
++type State = Record<typeof FILE_MODELS[number], any[]>
++type Scope = { tx: any; state: State; dirty: boolean }
++const empty = (): State => ({ adminMfa: [], auditLog: [], auditAlert: [], studyTimeSession: [] })
++const revive = (key: string, value: any) => typeof value === 'string' && /(At|Until)$/.test(key) && /^\d{4}-\d\d-\d\dT/.test(value) ? new Date(value) : value
++const copy = (value: any) => JSON.parse(JSON.stringify(value), revive)
++function match(row: any, where: any = {}): boolean {
++  return Object.entries(where).every(([key, value]: [string, any]) => {
++    if (key === 'AND') return (Array.isArray(value) ? value : [value]).every(v => match(row, v))
++    if (key === 'OR') return value.some((v: any) => match(row, v))
++    if (key === 'NOT') return !(Array.isArray(value) ? value : [value]).some(v => match(row, v))
++    const actual = row[key] ?? null
++    if (value instanceof Date) return Number(actual) === Number(value)
++    if (value === null || typeof value !== 'object') return actual === value
++    return Object.entries(value).every(([op, expected]: [string, any]) => {
++      if (op === 'mode') return true
++      if (op === 'equals') return actual === expected
++      if (op === 'in') return expected.includes(actual)
++      if (op === 'not') return actual !== expected
++      if (op === 'contains') return String(actual ?? '').toLowerCase().includes(String(expected).toLowerCase())
++      if (op === 'has') return Array.isArray(actual) && actual.includes(expected)
++      if (op === 'gt') return actual > expected
++      if (op === 'gte') return actual >= expected
++      if (op === 'lt') return actual < expected
++      if (op === 'lte') return actual <= expected
++      throw new Error('Unsupported file filter: ' + op)
++    })
++  })
++}
++export class FileTask {
++  constructor(private execute: () => Promise<any>) {}
++  then(resolve: any, reject: any) { return this.execute().then(resolve, reject) }
++  catch(reject: any) { return this.execute().catch(reject) }
++  finally(callback: any) { return this.execute().finally(callback) }
++}
++
++/** PostgreSQL serializes writers; a durable transaction-id journal recovers the
++ * JSON commit after a crash between the database commit and the file rename. */
++export class FileState {
++  readonly directory = path.resolve(process.env.TECHENGLISH_STATE_DIR || path.join(process.cwd(), '.runtime-state'))
++  private context = new AsyncLocalStorage<Scope>()
++  constructor(private transaction: any) {}
++  get current() { return this.context.getStore() }
++  private file(name: string) { return path.join(this.directory, name) }
++  private read(name: string): any {
++    return fs.existsSync(this.file(name)) ? JSON.parse(fs.readFileSync(this.file(name), 'utf8'), revive) : null
++  }
++  private write(name: string, data: any) {
++    fs.mkdirSync(this.directory, { recursive: true, mode: 0o700 })
++    const tmp = this.file(name + '.' + randomUUID() + '.tmp')
++    const fd = fs.openSync(tmp, 'wx', 0o600)
++    try { fs.writeFileSync(fd, JSON.stringify(data)); fs.fsyncSync(fd) } finally { fs.closeSync(fd) }
++    fs.renameSync(tmp, this.file(name))
++    if (process.platform !== 'win32') { const dir = fs.openSync(this.directory, 'r'); try { fs.fsyncSync(dir) } finally { fs.closeSync(dir) } }
++  }
++  private async recover(tx: any) {
++    const pending = this.read('pending.json')
++    if (!pending) return
++    const rows = await tx.$queryRawUnsafe('SELECT pg_xact_status($1::xid8) AS status', pending.xid)
++    if (rows[0]?.status === 'committed') this.write('state.json', pending.state)
++    else if (rows[0]?.status !== 'aborted') throw new Error('Cannot resolve pending file-state transaction')
++    fs.unlinkSync(this.file('pending.json'))
++  }
++  async run(invoke: (tx: any) => Promise<any>, options?: any): Promise<any> {
++    if (this.current) return invoke(this.current.tx)
++    const result = await this.transaction(async (tx: any) => {
++      await tx.$queryRawUnsafe('SELECT pg_advisory_xact_lock(724309184)::text AS locked')
++      await this.recover(tx)
++      const scope: Scope = { tx, state: this.read('state.json') ?? empty(), dirty: false }
++      return this.context.run(scope, async () => {
++        const result = await invoke(tx)
++        if (scope.dirty) {
++          const rows = await tx.$queryRawUnsafe('SELECT pg_current_xact_id()::text AS xid')
++          this.write('pending.json', { xid: rows[0].xid, state: scope.state })
++        }
++        return result
++      })
++    }, { timeout: 30000, maxWait: 10000, ...options })
++    // Finalize under the same shared lock. A concurrent reader can recover first.
++    await this.transaction(async (tx: any) => {
++      await tx.$queryRawUnsafe('SELECT pg_advisory_xact_lock(724309184)::text AS locked')
++      await this.recover(tx)
++    }, { timeout: 30000, maxWait: 10000 })
++    return result
++  }
++  model(name: typeof FILE_MODELS[number]): any {
++    return new Proxy({}, { get: (_, operation: string) => (args: any = {}) => new FileTask(() => this.run(async () => {
++      const scope = this.current!, rows = scope.state[name]
++      const selected = () => {
++        let result = rows.filter(row => match(row, args.where))
++        for (const order of [...(Array.isArray(args.orderBy) ? args.orderBy : args.orderBy ? [args.orderBy] : [])].reverse()) {
++          const [key, dir] = Object.entries(order)[0]
++          result.sort((a, b) => (a[key] > b[key] ? 1 : a[key] < b[key] ? -1 : 0) * (dir === 'desc' ? -1 : 1))
++        }
++        return result
++      }
++      const project = (row: any) => row == null ? null : copy(args.select ? Object.fromEntries(Object.keys(args.select).filter(key => args.select[key]).map(key => [key, row[key] ?? null])) : row)
++      if (operation === 'count') return selected().length
++      if (operation === 'findMany') return selected().slice(args.skip ?? 0, args.take == null ? undefined : (args.skip ?? 0) + args.take).map(project)
++      if (['findUnique', 'findFirst', 'findUniqueOrThrow', 'findFirstOrThrow'].includes(operation)) {
++        const row = selected()[0]
++        if (!row && operation.endsWith('OrThrow')) throw new Error('File record not found')
++        return project(row)
++      }
++      if (name === 'auditLog' && !['create', 'createMany'].includes(operation)) throw new Error('Audit history is append-only')
++      scope.dirty = true
++      const create = (data: any) => {
++        const now = new Date()
++        const row = name === 'adminMfa'
++          ? { enabledAt: null, lastStep: -1, recoveryHashes: [], failedAttempts: 0, lockedUntil: null, ...copy(data) }
++          : { id: randomUUID(), createdAt: now, ...(name === 'studyTimeSession' ? { seconds: 0, startedAt: now } : {}), ...(name === 'auditLog' ? { actorId:null, actorEmail:null, action:null, eventKey:null, outcome:null, targetIds:[], severity:'info', oldValues:null, newValues:null, requestId:null } : {}), ...copy(data) }
++        if (name === 'auditLog' && row.requestId && !/^[0-9a-f-]{36}$/i.test(row.requestId)) throw new Error('Invalid audit request UUID')
++        const key = name === 'adminMfa' ? 'userId' : 'id'
++        if (rows.some(item => item[key] === row[key] || (name === 'auditAlert' && item.dedupeKey === row.dedupeKey))) throw new Error('Duplicate file record')
++        rows.push(row); return project(row)
++      }
++      if (operation === 'create') return create(args.data)
++      if (operation === 'createMany') { for (const data of args.data) create(data); return { count: args.data.length } }
++      if (operation === 'upsert') { const row = selected()[0]; if (!row) return create(args.create); Object.assign(row, copy(args.update)); return project(row) }
++      if (operation === 'update' || operation === 'updateMany') {
++        const found = selected(); if (operation === 'update' && !found.length) throw new Error('File record not found')
++        for (const row of operation === 'update' ? found.slice(0, 1) : found) Object.assign(row, copy(args.data))
++        return operation === 'update' ? project(found[0]) : { count: found.length }
++      }
++      if (operation === 'delete' || operation === 'deleteMany') {
++        const found = selected(); if (operation === 'delete' && !found.length) throw new Error('File record not found')
++        const removed = operation === 'delete' ? found.slice(0, 1) : found
++        scope.state[name] = rows.filter(row => !removed.includes(row))
++        return operation === 'delete' ? project(found[0]) : { count: removed.length }
++      }
++      throw new Error('Unsupported file operation: ' + operation)
++    })) })
++  }
++}
+diff --git a/apps/api/src/infrastructure/database/prisma.service.ts b/apps/api/src/infrastructure/database/prisma.service.ts
+index 551c8f3..2e4ff93 100644
+--- a/apps/api/src/infrastructure/database/prisma.service.ts
++++ b/apps/api/src/infrastructure/database/prisma.service.ts
+@@ -1,21 +1,37 @@
+ import { Injectable, OnModuleInit, OnModuleDestroy } from '@nestjs/common'
+ import { PrismaClient } from '@prisma/client'
+ import { auditContext } from '../audit/audit-context'
++import { FileState, FileTask, FILE_MODELS } from './file-state'
+ 
+ @Injectable()
+ export class PrismaService extends PrismaClient implements OnModuleInit, OnModuleDestroy {
++  get adminMfa(): any { throw new Error("File delegate is not initialized") }
++  get auditLog(): any { throw new Error("File delegate is not initialized") }
++  get auditAlert(): any { throw new Error("File delegate is not initialized") }
++  get studyTimeSession(): any { throw new Error("File delegate is not initialized") }
++  declare $transaction: any
+   constructor() {
+     super()
+-    // Only requests explicitly wrapped by the audit interceptor participate.
+-    // Existing services keep their Prisma API; nested transactions join the outer unit of work.
+-    return new Proxy(this, {
++    const original = super.$transaction.bind(this)
++    const files = new FileState(original)
++    const models = Object.fromEntries(FILE_MODELS.map(name => [name, files.model(name)]))
++    const wrap = (target: any): any => new Proxy(target, {
+       get: (target, property, receiver) => {
+-        const tx = auditContext.getStore()?.transaction
+-        if (tx && property === '$transaction') return (run: any) => typeof run === 'function' ? run(tx) : Promise.all(run)
+-        if (tx && typeof property === 'string' && /^[a-z]/.test(property) && property in tx && typeof (tx as any)[property] === 'object') return (tx as any)[property]
++        if (typeof property === 'string' && property in models) return models[property]
++        if (property === '$transaction') return (run: any, options?: any) => {
++          const active = files.current?.tx ?? auditContext.getStore()?.transaction
++          if (active) return typeof run === 'function' ? run(wrap(active)) : Promise.all(run)
++          if (Array.isArray(run) && !run.some(item => item instanceof FileTask)) return original(run, options)
++          return files.run(tx => typeof run === 'function' ? run(wrap(tx)) : Promise.all(run), options)
++        }
++        const tx = files.current?.tx ?? auditContext.getStore()?.transaction
++        if (tx && typeof property === 'string' && /^[a-z]/.test(property) && property in tx && typeof tx[property] === 'object') return tx[property]
+         return Reflect.get(target, property, receiver)
+       },
+     })
++    // Only requests explicitly wrapped by the audit interceptor participate.
++    // Existing services keep their Prisma API; nested transactions join the outer unit of work.
++    return wrap(this)
+   }
+   async onModuleInit() {
+     await this.$connect()
+diff --git a/compose.postgres.yml b/compose.postgres.yml
+index 5ba905d..7880d98 100644
+--- a/compose.postgres.yml
++++ b/compose.postgres.yml
+@@ -11,6 +11,7 @@ services:
+     - path: apps/api/.env
+       required: false
+     environment:
++      TECHENGLISH_STATE_DIR: /var/lib/techenglish-state
+       NODE_ENV: production
+       LEARNING_REMINDER_JOB_KEY: ${LEARNING_REMINDER_JOB_KEY:-}
+       DATABASE_URL: ${DATABASE_URL:?Set the existing PostgreSQL connection URL}
+@@ -26,6 +27,8 @@ services:
+       CORS_ORIGIN: ${CORS_ORIGIN:-http://localhost:3000}
+     ports:
+     - ${API_PORT:-8080}:8080
++    volumes:
++    - file_state:/var/lib/techenglish-state
+     healthcheck:
+       test:
+       - CMD
+@@ -80,3 +83,6 @@ services:
+     depends_on:
+       api:
+         condition: service_healthy
++
++volumes:
++  file_state:
+diff --git a/docker-compose.yml b/docker-compose.yml
+index d4e8f3c..d09ca3e 100644
+--- a/docker-compose.yml
++++ b/docker-compose.yml
+@@ -21,8 +21,11 @@ services:
+       context: .
+       target: api
+     environment:
++      TECHENGLISH_STATE_DIR: /var/lib/techenglish-state
+       DATABASE_URL: postgresql://techenglish:${POSTGRES_PASSWORD}@db:5432/techenglish?schema=public
+     command: ["node", "/app/docker/migrate.cjs"]
++    volumes:
++      - file_state:/var/lib/techenglish-state
+     depends_on:
+       db:
+         condition: service_healthy
+@@ -38,6 +41,7 @@ services:
+       - path: apps/api/.env
+         required: false
+     environment:
++      TECHENGLISH_STATE_DIR: /var/lib/techenglish-state
+       NODE_ENV: production
+       LEARNING_REMINDER_JOB_KEY: ${LEARNING_REMINDER_JOB_KEY:-}
+       DATABASE_URL: postgresql://techenglish:${POSTGRES_PASSWORD}@db:5432/techenglish?schema=public
+@@ -53,6 +57,8 @@ services:
+       CORS_ORIGIN: ${CORS_ORIGIN:-http://localhost:3000}
+     ports:
+       - "${API_PORT:-8080}:8080"
++    volumes:
++      - file_state:/var/lib/techenglish-state
+     depends_on:
+       migrate:
+         condition: service_completed_successfully
+@@ -104,3 +110,4 @@ services:
+ 
+ volumes:
+   postgres_data:
++  file_state:
+diff --git a/docker/checkpoint-file-state.cjs b/docker/checkpoint-file-state.cjs
+new file mode 100644
+index 0000000..a3184ff
+--- /dev/null
++++ b/docker/checkpoint-file-state.cjs
+@@ -0,0 +1,26 @@
++const fs = require('node:fs');
++const path = require('node:path');
++const { createRequire } = require('node:module');
++const api = createRequire(path.resolve(__dirname, '../apps/api/package.json'));
++const { Client } = api('pg');
++(async () => {
++  const client = new Client({ connectionString: process.env.DATABASE_URL });
++  await client.connect();
++  try {
++    await client.query('BEGIN');
++    await client.query('SELECT pg_advisory_xact_lock(724309184)');
++    const directory = process.env.TECHENGLISH_STATE_DIR;
++    if (!directory) throw new Error('TECHENGLISH_STATE_DIR is required');
++    const statePath = path.join(directory, 'state.json'), journal = path.join(directory, 'pending.json');
++    let state = fs.existsSync(statePath) ? JSON.parse(fs.readFileSync(statePath, 'utf8')) : { adminMfa: [], auditLog: [], auditAlert: [], studyTimeSession: [] };
++    if (fs.existsSync(journal)) {
++      const pending = JSON.parse(fs.readFileSync(journal, 'utf8'));
++      const status = (await client.query('SELECT pg_xact_status($1::xid8) AS status', [pending.xid])).rows[0].status;
++      if (status === 'committed') state = pending.state;
++      else if (status !== 'aborted') throw new Error('Unresolved file-state journal');
++    }
++    for (const name of ['adminMfa','auditLog','auditAlert','studyTimeSession']) if (!Array.isArray(state[name])) throw new Error('Invalid state collection');
++    process.stdout.write(JSON.stringify(state));
++    await client.query('COMMIT');
++  } finally { await client.end(); }
++})().catch(() => { console.error('File state checkpoint failed'); process.exitCode = 1; });
+diff --git a/docker/deploy-vps.sh b/docker/deploy-vps.sh
+index 09c2431..7c12a42 100644
+--- a/docker/deploy-vps.sh
++++ b/docker/deploy-vps.sh
+@@ -49,6 +49,11 @@ mkdir -p "$HOME/techenglish-backups"
+ backup="$HOME/techenglish-backups/$(date -u +%Y%m%dT%H%M%SZ)-$sha.dump"
+ "${compose[@]}" exec -T --interactive=false db pg_dump -U techenglish -d techenglish -Fc < /dev/null > "$backup"
+ test -s "$backup"
++if [[ "$("${compose[@]}" exec -T --interactive=false db psql -U techenglish -d techenglish -Atc "SELECT to_regclass('public.admin_mfa') IS NULL" < /dev/null)" == t ]]; then
++  "${compose[@]}" exec -T --interactive=false api node /app/docker/checkpoint-file-state.cjs < /dev/null > "$backup.file-state.json"
++  test -s "$backup.file-state.json"
++fi
++"${compose[@]}" stop api < /dev/null
+ "${compose[@]}" run --rm --no-deps -T migrate < /dev/null
+ "${compose[@]}" up -d --no-build --no-deps --wait api web < /dev/null
+ for service in api web; do
+diff --git a/docker/export-legacy-state.cjs b/docker/export-legacy-state.cjs
+new file mode 100644
+index 0000000..9d79094
+--- /dev/null
++++ b/docker/export-legacy-state.cjs
+@@ -0,0 +1,32 @@
++const fs = require('node:fs');
++const path = require('node:path');
++const { createHash, randomUUID } = require('node:crypto');
++const models = { adminMfa: 'admin_mfa', auditLog: 'audit_logs', auditAlert: 'audit_alerts', studyTimeSession: 'study_time_sessions' };
++module.exports = async function exportLegacyState(client) {
++  const existing = (await client.query("SELECT tablename FROM pg_tables WHERE schemaname='public'")).rows.map(row => row.tablename);
++  if (!Object.values(models).some(table => existing.includes(table))) return;
++  const directory = process.env.TECHENGLISH_STATE_DIR;
++  if (!directory) throw new Error('TECHENGLISH_STATE_DIR is required to preserve the four legacy tables before migration');
++  fs.mkdirSync(directory, { recursive: true, mode: 0o700 });
++  const target = path.join(directory, 'state.json');
++  if (fs.existsSync(target)) {
++    const applied = await client.query("SELECT 1 FROM _prisma_migrations WHERE migration_name='20261109000000_external_file_state' AND finished_at IS NOT NULL");
++    if (applied.rowCount) return;
++  }
++  await client.query('BEGIN');
++  try {
++    const state = {};
++    for (const [model, table] of Object.entries(models)) {
++      state[model] = existing.includes(table) ? (await client.query(`SELECT * FROM "${table}"`)).rows.map(row => Object.fromEntries(Object.entries(row).map(([key, value]) => [key.replace(/_([a-z])/g, (_, letter) => letter.toUpperCase()), value]))) : [];
++    }
++    const data = JSON.stringify(state), hash = createHash('sha256').update(data).digest('hex');
++    const temporary = target + '.' + randomUUID() + '.tmp';
++    const fd = fs.openSync(temporary, 'wx', 0o600);
++    try { fs.writeFileSync(fd, data); fs.fsyncSync(fd); } finally { fs.closeSync(fd); }
++    fs.renameSync(temporary, target);
++    if (process.platform !== 'win32') { const dir = fs.openSync(directory, 'r'); try { fs.fsyncSync(dir); } finally { fs.closeSync(dir); } }
++    for (const [model, table] of Object.entries(models)) if (existing.includes(table)) await client.query(`COMMENT ON TABLE "${table}" IS 'external-file-state:${state[model].length}:${hash}'`);
++    await client.query('COMMIT');
++    console.log('Legacy file state preserved:', Object.fromEntries(Object.entries(state).map(([name, rows]) => [name, rows.length])), 'SHA256:', hash);
++  } catch (error) { await client.query('ROLLBACK'); throw error; }
++};
+diff --git a/docker/migrate.cjs b/docker/migrate.cjs
+index 737c588..e1678d9 100644
+--- a/docker/migrate.cjs
++++ b/docker/migrate.cjs
+@@ -22,6 +22,7 @@ async function main() {
+       throw new Error('Nonempty database without Prisma history: manual review required.');
+     }
+     await client.query('ROLLBACK');
++    await require('./export-legacy-state.cjs')(client);
+   } finally { await client.end(); }
+   const schema = fresh ? 'docker/prisma/schema.prisma' : 'apps/api/prisma/schema.prisma';
+   if (fresh) copyFileSync(path.join(root, 'apps/api/prisma/schema.prisma'), path.join(root, schema));
+diff --git a/docker/prisma/migrations/20261109000000_external_file_state/migration.sql b/docker/prisma/migrations/20261109000000_external_file_state/migration.sql
+new file mode 100644
+index 0000000..e700045
+--- /dev/null
++++ b/docker/prisma/migrations/20261109000000_external_file_state/migration.sql
+@@ -0,0 +1,21 @@
++-- Existing data must first be exported and fsynced by docker/export-legacy-state.cjs.
++DO $$
++DECLARE name text; actual bigint; marker text; expected bigint;
++BEGIN
++  FOREACH name IN ARRAY ARRAY['admin_mfa','audit_logs','audit_alerts','study_time_sessions'] LOOP
++    EXECUTE format('SELECT count(*) FROM %I', name) INTO actual;
++    SELECT obj_description(('public.' || name)::regclass) INTO marker;
++    IF actual > 0 THEN
++      IF marker IS NULL OR marker !~ '^external-file-state:[0-9]+:[0-9a-f]{64}$' THEN
++        RAISE EXCEPTION 'Export % to persistent files before removing the table', name;
++      END IF;
++      expected := split_part(marker, ':', 2)::bigint;
++      IF actual <> expected THEN RAISE EXCEPTION 'Legacy table % changed after export; stop API and repeat migration', name; END IF;
++    END IF;
++  END LOOP;
++END $$;
++DROP TABLE audit_alerts;
++DROP TABLE audit_logs;
++DROP TABLE admin_mfa;
++DROP TABLE study_time_sessions;
++DROP FUNCTION IF EXISTS protect_audit_history();
+diff --git a/docs/file-state-storage.md b/docs/file-state-storage.md
+new file mode 100644
+index 0000000..12337bd
+--- /dev/null
++++ b/docs/file-state-storage.md
+@@ -0,0 +1,30 @@
++# File storage for operational state
++
++PostgreSQL retains 43 public tables, including `_prisma_migrations`.
++MFA enrollment, audit events, audit alerts and measured study-time sessions are
++stored as four collections in `state.json` under `TECHENGLISH_STATE_DIR`.
++Compose mounts the persistent `file_state` volume at `/var/lib/techenglish-state`
++in both the migration and API containers. Do not remove this volume.
++
++The directory is private and files use mode 0600. MFA secrets remain encrypted
++and recovery codes remain hashed. The server's existing encryption key must be
++retained when restoring the files to a new host.
++
++File operations use a PostgreSQL advisory transaction lock, and updates write
++an fsynced journal containing the PostgreSQL transaction ID before committing.
++After commit, the journal is atomically renamed into the current state. Recovery
++checks PostgreSQL's transaction outcome: committed changes are applied and
++aborted changes are discarded. Corrupt files or unresolved transactions fail
++closed rather than replacing data with an empty file.
++
++The deployment stops the old API before exporting the legacy four tables.
++The exporter writes the complete data to the persistent volume before migration.
++The migration rejects populated tables without a verified export marker and row
++count. Historical migration SQL is retained; existing histories are not rewritten.
++Fresh installs finish with the same 43-table schema.
++
++A SQL dump now backs up PostgreSQL only. A complete backup must also include a
++checkpointed `state.json` from the API volume. Restore both the SQL and the state
++file, retain the encryption key, and start the API only after both are present.
++Do not restore a raw `pending.json` into another database: transaction IDs belong
++to the original PostgreSQL cluster. Use the checkpoint export script instead.
+diff --git a/scripts/ops/backup_s3.py b/scripts/ops/backup_s3.py
+new file mode 100644
+index 0000000..b7e5855
+--- /dev/null
++++ b/scripts/ops/backup_s3.py
+@@ -0,0 +1,87 @@
++#!/usr/bin/env python3
++"""S3 backup uploads and isolated restore tests using the EC2 instance role."""
++import argparse,base64,datetime as dt,fcntl,gzip,hashlib,json,os,pathlib,re,shutil,subprocess,tempfile,time
++import ops
++os.umask(0o077)
++CONFIG=ops.BASE/'backup-config.json'
++def config():
++ c=json.loads(CONFIG.read_text())
++ if not re.fullmatch(r'[a-z0-9][a-z0-9.-]{1,61}[a-z0-9]',c['bucket']):raise ValueError('Invalid bucket')
++ if not re.fullmatch(r'[A-Za-z0-9_/-]+',c['prefix']) or '..' in c['prefix'].split('/'):raise ValueError('Invalid prefix')
++ if not re.fullmatch(r'\d{12}',c['expected_bucket_owner']):raise ValueError('Invalid bucket owner')
++ return c
++
++def aws(c,operation,*args,missing=False):
++ command=['aws','--no-cli-pager','--region',c['region'],'s3api',operation,'--bucket',c['bucket'],'--expected-bucket-owner',c['expected_bucket_owner'],*map(str,args)]
++ r=subprocess.run(command,capture_output=True,text=True,timeout=300)
++ if r.returncode:
++  if missing and any(x in r.stderr for x in ('(404)','(NoSuchKey)','(NotFound)')):return None
++  code=re.search(r'\(([A-Za-z0-9]+)\)',r.stderr)
++  raise RuntimeError('S3 '+operation+' failed: '+(code.group(1)if code else 'request rejected'))
++ return json.loads(r.stdout or '{}')
++
++def put(c,key,path,immutable=True):
++ digest=ops.sha(path);checksum=base64.b64encode(bytes.fromhex(digest)).decode()
++ if immutable:
++  old=aws(c,'head-object','--key',key,'--checksum-mode','ENABLED',missing=True)
++  if old:
++   if old.get('Metadata',{}).get('sha256')!=digest or old.get('ContentLength')!=path.stat().st_size:raise RuntimeError('Existing S3 object does not match this snapshot')
++   return
++ args=['--key',key,'--body',path,'--server-side-encryption','AES256','--checksum-algorithm','SHA256','--checksum-sha256',checksum,'--metadata',json.dumps({'sha256':digest,'application':'techenglish'})]
++ if immutable:args+=['--if-none-match','*']
++ aws(c,'put-object',*args)
++ head=aws(c,'head-object','--key',key,'--checksum-mode','ENABLED')
++ if head.get('ChecksumSHA256')!=checksum or head.get('ContentLength')!=path.stat().st_size:raise RuntimeError('S3 checksum verification failed')
++ if head.get('ServerSideEncryption')!='AES256':raise RuntimeError('Unexpected object encryption')
++
++def upload():
++ c=config()
++ with (ops.STATE/'s3-upload.lock').open('w')as lock:
++  fcntl.flock(lock,fcntl.LOCK_EX);started=time.time()
++  try:
++   snapshot=ops.latest();folder=pathlib.Path(snapshot['directory']);stamp=snapshot['snapshot']
++   for name,meta in snapshot['manifest']['files'].items():
++    if name not in ('database.dump','database.sql.gz','app-state.json') or ops.sha(folder/name)!=meta['sha256']:raise RuntimeError('Local snapshot checksum mismatch')
++   prefix=c['prefix'].strip('/')+'/'+stamp
++   for name in list(snapshot['manifest']['files'])+['manifest.json','SHA256SUMS']:put(c,prefix+'/'+name,folder/name)
++   pointer={'format':1,'snapshot':stamp,'manifest_sha256':ops.sha(folder/'manifest.json'),'completed_timestamp':time.time()}
++   with tempfile.TemporaryDirectory()as temporary:
++    path=pathlib.Path(temporary)/'latest.json';path.write_text(json.dumps(pointer));put(c,c['prefix'].strip('/')+'/latest.json',path,False)
++   result={'last_run_success':1,'last_success':time.time(),'snapshot':stamp,'bucket':c['bucket'],'prefix':c['prefix'],'duration_seconds':time.time()-started,'objects_verified':len(snapshot['manifest']['files'])+2,'last_snapshot_timestamp':snapshot['manifest']['created_timestamp']}
++   ops.atomic(ops.STATE/'s3.json',result)
++   print(json.dumps({'ok':True,'snapshot':stamp,'destination':'s3://'+c['bucket']+'/'+prefix+'/','objects_verified':len(snapshot['manifest']['files'])+2,'encryption':'AES256'}))
++  except Exception:
++   state=ops.load(ops.STATE/'s3.json',{});state['last_run_success']=0;state['last_failure']=time.time();ops.atomic(ops.STATE/'s3.json',state);raise
++
++def verify():
++ c=config();started=time.time()
++ try:
++  with tempfile.TemporaryDirectory(prefix='techenglish-s3-restore-')as temporary:
++   folder=pathlib.Path(temporary);root=c['prefix'].strip('/')
++   aws(c,'get-object','--key',root+'/latest.json',folder/'latest.json')
++   pointer=json.loads((folder/'latest.json').read_text());stamp=pointer['snapshot']
++   if not re.fullmatch(r'\d{8}T\d{6}Z',stamp):raise ValueError('Invalid remote snapshot')
++   prefix=root+'/'+stamp
++   for name in ('manifest.json','database.dump','database.sql.gz'):aws(c,'get-object','--key',prefix+'/'+name,folder/name)
++   if ops.sha(folder/'manifest.json')!=pointer['manifest_sha256']:raise RuntimeError('Remote manifest checksum mismatch')
++   manifest=json.loads((folder/'manifest.json').read_text())
++   if 'app-state.json' in manifest['files']:
++    aws(c,'get-object','--key',prefix+'/app-state.json',folder/'app-state.json')
++    if ops.sha(folder/'app-state.json')!=manifest['files']['app-state.json']['sha256']:raise RuntimeError('File state checksum mismatch')
++    state=json.loads((folder/'app-state.json').read_text())
++    if not all(isinstance(state.get(name),list)for name in ('adminMfa','auditLog','auditAlert','studyTimeSession')):raise RuntimeError('Invalid file-state backup')
++   for name in ('database.dump','database.sql.gz'):
++    if ops.sha(folder/name)!=manifest['files'][name]['sha256']:raise RuntimeError('Downloaded backup checksum mismatch')
++   with gzip.open(folder/'database.sql.gz','rb')as source,(folder/'database.sql').open('wb')as target:shutil.copyfileobj(source,target)
++   if ops.sha(folder/'database.sql')!=manifest['sql_plain_sha256']:raise RuntimeError('Downloaded SQL checksum mismatch')
++   ops.verify(folder/'database.dump',folder/'database.sql')
++   result={'last_run_success':1,'last_success':time.time(),'snapshot':stamp,'bucket':c['bucket'],'duration_seconds':time.time()-started}
++   ops.atomic(ops.STATE/'s3-restore.json',result)
++   print(json.dumps({'ok':True,'remote_restore_verified':True,'snapshot':stamp,'dump_and_sql_verified':True}))
++ except Exception:
++  state=ops.load(ops.STATE/'s3-restore.json',{});state['last_run_success']=0;state['last_failure']=time.time();ops.atomic(ops.STATE/'s3-restore.json',state);raise
++
++if __name__=='__main__':
++ parser=argparse.ArgumentParser();parser.add_argument('command',choices=('upload','verify'));args=parser.parse_args()
++ try:upload()if args.command=='upload' else verify()
++ except Exception as error:print(json.dumps({'ok':False,'operation':args.command,'error_type':type(error).__name__,'message':str(error)if isinstance(error,(RuntimeError,ValueError))else 'Operation failed'}));raise SystemExit(1)
+diff --git a/scripts/ops/ops.py b/scripts/ops/ops.py
+new file mode 100644
+index 0000000..a2c1fa9
+--- /dev/null
++++ b/scripts/ops/ops.py
+@@ -0,0 +1,234 @@
++#!/usr/bin/env python3
++"""TechEnglish VPS operations. Database contents never leave the configured backup paths."""
++import argparse, datetime as dt, gzip, hashlib, json, os, pathlib, re, shutil, subprocess, sys, tempfile, time, uuid
++BASE = pathlib.Path(__file__).resolve().parent.parent
++STATE, GEN = BASE/'state', BASE/'generated'
++BACKUPS = pathlib.Path.home()/'techenglish-backups'/'automated'
++SERVICES = ('api', 'web', 'db')
++for directory in (STATE, GEN, BACKUPS):
++    directory.mkdir(parents=True, exist_ok=True)
++os.chmod(STATE, 0o700)
++os.chmod(BACKUPS, 0o700)
++
++def run(args, **kwargs):
++    return subprocess.run(args, check=True, timeout=kwargs.pop('timeout',120), **kwargs)
++def output(args):
++    return run(args, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True).stdout.strip()
++def atomic(path, value, mode=0o600):
++    temporary = path.with_name(path.name+'.tmp-'+uuid.uuid4().hex)
++    temporary.write_text(json.dumps(value,ensure_ascii=False,sort_keys=True)+'\n' if not isinstance(value,str) else value)
++    temporary.chmod(mode)
++    temporary.replace(path)
++def load(path, default):
++    return json.loads(path.read_text()) if path.exists() else default
++
++def db_container():
++    ids=output(['docker','ps','-q','--filter','label=com.docker.compose.project=techenglish','--filter','label=com.docker.compose.service=db']).splitlines()
++    if len(ids)!=1: raise RuntimeError('Expected one running application database')
++    return ids[0]
++def sql(db, query, database='techenglish'):
++    return output(['docker','exec',db,'psql','-X','-U','techenglish','-d',database,'-v','ON_ERROR_STOP=1','-Atc',query])
++def sha(path):
++    h=hashlib.sha256()
++    with path.open('rb') as stream:
++        for chunk in iter(lambda:stream.read(1024*1024),b''): h.update(chunk)
++    return h.hexdigest()
++def copy_to_db(db,dump):
++    remote='/tmp/techenglish-ops-'+uuid.uuid4().hex+'.dump'
++    run(['docker','cp',str(dump),db+':'+remote],stdout=subprocess.DEVNULL,stderr=subprocess.PIPE)
++    return remote
++
++def backup():
++    import fcntl
++    with (STATE/'backup.lock').open('w') as lock:
++        fcntl.flock(lock,fcntl.LOCK_EX|fcntl.LOCK_NB)
++        started=time.time(); stamp=dt.datetime.now(dt.timezone.utc).strftime('%Y%m%dT%H%M%SZ')
++        target=BACKUPS/'daily'/stamp; temp=BACKUPS/('.partial-'+uuid.uuid4().hex)
++        temp.mkdir(mode=0o700); db=db_container(); remote=None
++        try:
++            with (temp/'database.dump').open('wb') as stream:
++                run(['docker','exec',db,'pg_dump','-U','techenglish','-d','techenglish','-Fc','--no-owner','--no-acl'],stdout=stream,stderr=subprocess.PIPE,timeout=900)
++            remote=copy_to_db(db,temp/'database.dump')
++            run(['docker','exec',db,'pg_restore','--list',remote],stdout=subprocess.DEVNULL,stderr=subprocess.PIPE)
++            plain_hash=hashlib.sha256()
++            with tempfile.TemporaryFile() as errors:
++                process=subprocess.Popen(['docker','exec',db,'pg_restore','--no-owner','--no-acl','-f','-',remote],stdout=subprocess.PIPE,stderr=errors)
++                with (temp/'database.sql.gz').open('wb') as raw:
++                    with gzip.GzipFile(fileobj=raw,mode='wb',mtime=0) as compressed:
++                        for chunk in iter(lambda:process.stdout.read(1024*1024),b''):
++                            compressed.write(chunk); plain_hash.update(chunk)
++                if process.wait(timeout=900)!=0: raise RuntimeError('SQL export failed')
++            extras=[]
++            if sql(db,"SELECT to_regclass('public.admin_mfa') IS NULL;")=='t':
++                api_ids=output(['docker','ps','-q','--filter','label=com.docker.compose.project=techenglish','--filter','label=com.docker.compose.service=api']).splitlines()
++                if len(api_ids)!=1: raise RuntimeError('Expected one API for file-state checkpoint')
++                with (temp/'app-state.json').open('wb') as stream:
++                    run(['docker','exec',api_ids[0],'node','/app/docker/checkpoint-file-state.cjs'],stdout=stream,stderr=subprocess.PIPE)
++                state=json.loads((temp/'app-state.json').read_text())
++                if not all(isinstance(state.get(name),list) for name in ('adminMfa','auditLog','auditAlert','studyTimeSession')): raise RuntimeError('Invalid file-state checkpoint')
++                extras=['app-state.json']
++            manifest={'format':1,'database':'techenglish','created_at':stamp,'created_timestamp':started,
++                      'postgres_version':sql(db,'SHOW server_version;'),
++                      'files':{name:{'sha256':sha(temp/name),'bytes':(temp/name).stat().st_size} for name in ['database.dump','database.sql.gz']+extras},
++                      'sql_plain_sha256':plain_hash.hexdigest()}
++            atomic(temp/'manifest.json',manifest)
++            atomic(temp/'SHA256SUMS',''.join(f"{data['sha256']}  {name}\n" for name,data in manifest['files'].items()))
++            for f in temp.iterdir(): f.chmod(0o600)
++            target.parent.mkdir(exist_ok=True); temp.rename(target)
++            now=dt.datetime.now(dt.timezone.utc)
++            for kind,keep in (('daily',14),('weekly',8),('monthly',6)):
++                folder=BACKUPS/kind;folder.mkdir(exist_ok=True)
++                if (kind=='weekly' and now.weekday()==6) or (kind=='monthly' and now.day==1):
++                    linked=folder/stamp;linked.mkdir(mode=0o700)
++                    for file in target.iterdir(): os.link(file,linked/file.name)
++                snapshots=sorted(p for p in folder.iterdir() if p.is_dir() and re.fullmatch(r'\d{8}T\d{6}Z',p.name))
++                for stale in snapshots[:-keep]:
++                    if stale.resolve().parent!=folder.resolve(): raise RuntimeError('Retention path rejected')
++                    allowed={'database.dump','database.sql.gz','manifest.json','SHA256SUMS'}
++                    actual={f.name for f in stale.iterdir()}
++                    if actual not in (allowed,allowed|{'app-state.json'}): continue
++                    allowed=actual
++                    for name in allowed: (stale/name).unlink()
++                    stale.rmdir()
++            atomic(STATE/'backup.json',{'last_run_success':1,'last_success':time.time(),'duration_seconds':time.time()-started,'latest':stamp,'bytes':sum(f.stat().st_size for f in target.iterdir())})
++            print(json.dumps({'ok':True,'snapshot':stamp,'duration_seconds':round(time.time()-started,2)}))
++        except Exception:
++            state=load(STATE/'backup.json',{});state['last_run_success']=0;state['last_failure']=time.time();atomic(STATE/'backup.json',state)
++            raise
++        finally:
++            if remote: run(['docker','exec',db,'rm','-f','--',remote],stdout=subprocess.DEVNULL,stderr=subprocess.PIPE)
++
++def latest():
++    state=load(STATE/'backup.json',{})
++    stamp=state.get('latest','')
++    if not re.fullmatch(r'\d{8}T\d{6}Z',stamp): raise RuntimeError('No successful snapshot')
++    path=BACKUPS/'daily'/stamp
++    manifest=load(path/'manifest.json',{})
++    return {'snapshot':stamp,'directory':str(path),'manifest':manifest}
++
++def table_counts(db,database):
++    query="SELECT string_agg(format('SELECT %L, count(*)::bigint FROM %I.%I', tablename, schemaname, tablename),' UNION ALL ' ORDER BY tablename) FROM pg_tables WHERE schemaname='public';"
++    statement=sql(db,query,database)
++    return sql(db,statement,database).splitlines()
++
++def verify(dump=None,plain=None):
++    started=time.time();db=db_container();remote=None;created=[]
++    snapshot=latest() if dump is None else None
++    dump=pathlib.Path(dump) if dump else pathlib.Path(snapshot['directory'])/'database.dump'
++    plain=pathlib.Path(plain) if plain else pathlib.Path(snapshot['directory'])/'database.sql.gz'
++    if snapshot:
++        for name,data in snapshot['manifest']['files'].items():
++            if sha(pathlib.Path(snapshot['directory'])/name)!=data['sha256']: raise RuntimeError('Backup checksum mismatch')
++    suffix=uuid.uuid4().hex[:12];names=['techenglish_verify_dump_'+suffix,'techenglish_verify_sql_'+suffix]
++    try:
++        remote=copy_to_db(db,dump)
++        for name in names:
++            if not re.fullmatch(r'techenglish_verify_(dump|sql)_[0-9a-f]{12}',name) or name=='techenglish': raise RuntimeError('Unsafe temporary database name')
++            sql(db,'CREATE DATABASE "'+name+'";', 'postgres');created.append(name)
++        run(['docker','exec',db,'pg_restore','-U','techenglish','--no-owner','--no-acl','--exit-on-error','-d',names[0],remote],stdout=subprocess.DEVNULL,stderr=subprocess.PIPE,timeout=900)
++        with tempfile.TemporaryDirectory(prefix='techenglish-restore-') as temporary:
++            source=plain
++            if plain.suffix=='.gz':
++                source=pathlib.Path(temporary)/'database.sql'
++                with gzip.open(plain,'rb') as input_stream,source.open('wb') as out: shutil.copyfileobj(input_stream,out)
++                if sha(source)!=snapshot['manifest']['sql_plain_sha256']: raise RuntimeError('Plain SQL checksum mismatch')
++            with source.open('rb') as stream:
++                run(['docker','exec','-i',db,'psql','-X','-U','techenglish','-d',names[1],'-v','ON_ERROR_STOP=1'],stdin=stream,stdout=subprocess.DEVNULL,stderr=subprocess.PIPE,timeout=900)
++        first,second=table_counts(db,names[0]),table_counts(db,names[1])
++        if not first or first!=second: raise RuntimeError('Restored snapshots disagree')
++        result={'ok':True,'last_run_success':1,'last_success':time.time(),'duration_seconds':time.time()-started,'table_count':len(first),'dump_and_sql_match':True,'table_counts':first}
++        atomic(STATE/'restore.json',result)
++        print(json.dumps({k:v for k,v in result.items() if k!='table_counts'}))
++    except Exception:
++        state=load(STATE/'restore.json',{});state['last_run_success']=0;state['last_failure']=time.time();atomic(STATE/'restore.json',state);raise
++    finally:
++        for name in created:
++            if re.fullmatch(r'techenglish_verify_(dump|sql)_[0-9a-f]{12}',name): sql(db,'DROP DATABASE "'+name+'";', 'postgres')
++        if remote: run(['docker','exec',db,'rm','-f','--',remote],stdout=subprocess.DEVNULL,stderr=subprocess.PIPE)
++
++def collect():
++    lines=['# TechEnglish host collector. Generated atomically.']
++    def metric(name,value,labels=None):
++        suffix='{'+','.join(k+'='+json.dumps(str(v)) for k,v in labels.items())+'}' if labels else ''
++        lines.append(name+suffix+' '+str(float(value)))
++    ids=output(['docker','ps','-aq','--filter','label=com.docker.compose.project=techenglish']).splitlines()
++    containers=json.loads(output(['docker','inspect',*ids])) if ids else []
++    targets=[];seen=set()
++    for c in containers:
++        service=c['Config'].get('Labels',{}).get('com.docker.compose.service')
++        if service not in SERVICES:continue
++        seen.add(service);labels={'service':service};state=c['State'];running=state.get('Running',False)
++        metric('techenglish_container_up',int(running),labels)
++        metric('techenglish_container_healthy',int(running and state.get('Health',{}).get('Status')=='healthy'),labels)
++        metric('techenglish_container_restarts_total',c['RestartCount'],labels)
++        if c.get('LogPath'):targets.append({'targets':['localhost'],'labels':{'__path__':c['LogPath'],'job':'docker','service':service,'environment':'production'}})
++    for service in set(SERVICES)-seen:
++        metric('techenglish_container_up',0,{'service':service});metric('techenglish_container_healthy',0,{'service':service})
++    atomic(GEN/'docker-targets.json',targets,0o644)
++    stats=output(['docker','stats','--no-stream','--format','{{json .}}',*[c['Id'] for c in containers if c['Config'].get('Labels',{}).get('com.docker.compose.service') in SERVICES]]) if seen else ''
++    def byte_value(value):
++        match=re.fullmatch(r'([0-9.]+)\s*([A-Za-z]+)',value.strip())
++        if not match: return 0
++        units={'B':1,'kB':1000,'MB':1000000,'GB':1000000000,'KiB':1024,'MiB':1048576,'GiB':1073741824}
++        return float(match.group(1))*units.get(match.group(2),1)
++    for row in stats.splitlines():
++        item=json.loads(row);service=next((c['Config']['Labels']['com.docker.compose.service'] for c in containers if c['Name'].lstrip('/')==item['Name']),None)
++        if not service:continue
++        metric('techenglish_container_cpu_percent',float(item['CPUPerc'].rstrip('%')),{'service':service})
++        metric('techenglish_container_memory_percent',float(item['MemPerc'].rstrip('%')),{'service':service})
++        memory=item['MemUsage'].split(' / '); network=item['NetIO'].split(' / ')
++        metric('techenglish_container_memory_bytes',byte_value(memory[0]),{'service':service})
++        metric('techenglish_container_memory_limit_bytes',byte_value(memory[1]),{'service':service})
++        metric('techenglish_container_network_receive_bytes_total',byte_value(network[0]),{'service':service})
++        metric('techenglish_container_network_transmit_bytes_total',byte_value(network[1]),{'service':service})
++        metric('techenglish_container_pids',item['PIDs'],{'service':service})
++    try:
++        db=db_container();values=sql(db,"SELECT pg_database_size(current_database()),numbackends,xact_commit,xact_rollback,deadlocks FROM pg_stat_database WHERE datname=current_database();").split('|')
++        for name,value in zip(('database_size_bytes','database_connections','database_commits_total','database_rollbacks_total','database_deadlocks_total'),values):metric('techenglish_'+name,value)
++        extra=sql(db,"SELECT (SELECT setting::int FROM pg_settings WHERE name='max_connections'),count(*) FILTER (WHERE state='active'),count(*) FILTER (WHERE state='active' AND wait_event_type='Lock'),count(*) FILTER (WHERE state='active' AND now()-query_start>interval '1 second'),coalesce(max(extract(epoch FROM now()-query_start)) FILTER (WHERE state='active' AND pid<>pg_backend_pid()),0) FROM pg_stat_activity WHERE datname=current_database();").split('|')
++        for name,value in zip(('database_max_connections','database_active_queries','database_lock_waiting_queries','database_slow_active_queries','database_longest_active_query_seconds'),extra):metric('techenglish_'+name,value)
++        metric('techenglish_database_up',1)
++    except Exception:metric('techenglish_database_up',0)
++    try:
++        import urllib.request, urllib.parse
++        queries={
++            'api_requests_per_second':'sum(rate({job="http-performance"} | json | service="api.techenglish.click" | __error__="" [5m]))',
++            'api_server_errors_per_second':'sum(rate({job="http-performance"} | json | service="api.techenglish.click" | status >= 500 | __error__="" [5m]))',
++            'api_latency_p95_seconds':'quantile_over_time(0.95, {job="http-performance"} | json | service="api.techenglish.click" | unwrap duration | __error__="" [5m]) by (service)',
++        }
++        for name,query in queries.items():
++            url='http://127.0.0.1:3101/loki/api/v1/query?'+urllib.parse.urlencode({'query':query})
++            with urllib.request.urlopen(url,timeout=5) as response:data=json.load(response)
++            values=[float(item['value'][1]) for item in data['data']['result']]
++            metric('techenglish_'+name,sum(values) if name!='api_latency_p95_seconds' else max(values,default=0))
++        metric('techenglish_api_performance_collection_up',1)
++    except Exception:metric('techenglish_api_performance_collection_up',0)
++    for kind in ('backup','restore','s3','s3-restore'):
++        state=load(STATE/(kind+'.json'),{})
++        prefix='techenglish_'+kind.replace('-','_')
++        metric(prefix+'_last_success_timestamp_seconds',state.get('last_success',0))
++        metric(prefix+'_last_run_success',state.get('last_run_success',0))
++        if 'last_snapshot_timestamp' in state:metric(prefix+'_snapshot_timestamp_seconds',state['last_snapshot_timestamp'])
++        if 'duration_seconds' in state:metric(prefix+'_duration_seconds',state['duration_seconds'])
++        if 'bytes' in state:metric(prefix+'_size_bytes',state['bytes'])
++    metric('techenglish_ops_collection_timestamp_seconds',time.time())
++    atomic(GEN/'techenglish.prom','\n'.join(lines)+'\n',0o644)
++    print(json.dumps({'ok':True,'container_services':sorted(seen)}))
++
++def confirm(stamp,digest):
++    if not re.fullmatch(r'\d{8}T\d{6}Z',stamp) or not re.fullmatch(r'[a-fA-F0-9]{64}',digest):raise ValueError('Invalid confirmation')
++    manifest=load(BACKUPS/'daily'/stamp/'manifest.json',{})
++    if manifest.get('files',{}).get('database.dump',{}).get('sha256','').lower()!=digest.lower():raise ValueError('Confirmation checksum does not match')
++    atomic(STATE/'pc-sync.json',{'last_success':time.time(),'last_run_success':1,'snapshot':stamp})
++    print(json.dumps({'ok':True,'snapshot':stamp}))
++
++if __name__=='__main__':
++    parser=argparse.ArgumentParser();parser.add_argument('command',choices=('backup','verify','collect','latest','confirm'));parser.add_argument('--dump');parser.add_argument('--sql');parser.add_argument('--snapshot');parser.add_argument('--sha256');args=parser.parse_args()
++    try:
++        if args.command=='backup':backup()
++        elif args.command=='verify':verify(args.dump,args.sql)
++        elif args.command=='collect':collect()
++        elif args.command=='latest':print(json.dumps(latest()))
++        else:confirm(args.snapshot,args.sha256)
++    except Exception as error:
++        print(json.dumps({'ok':False,'error_type':type(error).__name__,'operation':args.command}),file=sys.stderr);sys.exit(1)
+diff --git a/scripts/ops/sync-backup.ps1 b/scripts/ops/sync-backup.ps1
+new file mode 100644
+index 0000000..311bd49
+--- /dev/null
++++ b/scripts/ops/sync-backup.ps1
+@@ -0,0 +1,82 @@
++param([string]$Destination='D:\TechEnglish_Backups')
++$ErrorActionPreference='Stop'
++$TaskState=Join-Path $Destination '_state'
++$ProfileRoot=[Environment]::GetFolderPath('UserProfile')
++$Ssh=Join-Path $env:WINDIR 'System32\OpenSSH\ssh.exe'
++$Scp=Join-Path $env:WINDIR 'System32\OpenSSH\scp.exe'
++$SshOptions=@('-F',(Join-Path $ProfileRoot '.ssh\config'),'-o','BatchMode=yes','-o','ConnectTimeout=15','-o','StrictHostKeyChecking=yes','-o',('UserKnownHostsFile='+(Join-Path $ProfileRoot '.ssh\known_hosts')))
++$Ops='/home/ubuntu/techenglish-ops/bin/ops.py'
++$CredentialFile='D:\English\artifacts\ops-20261103\telegram.env'
++New-Item -ItemType Directory -Force $Destination,$TaskState | Out-Null
++$root=[IO.Path]::GetFullPath($Destination).TrimEnd('\')
++if($root -ne 'D:\TechEnglish_Backups'){throw 'Unexpected backup root'}
++function Safe-Path([string]$path){$full=[IO.Path]::GetFullPath($path);if(-not $full.StartsWith($root+'\',[StringComparison]::OrdinalIgnoreCase)){throw 'Path outside backup folder'};return $full}
++function Read-State([string]$path){
++ $value=@{failures=0;lastAlert=0;lastSuccess=0};try{if(Test-Path -LiteralPath $path){$parsed=Get-Content -Raw -LiteralPath $path|ConvertFrom-Json;foreach($item in $parsed.PSObject.Properties){$value[$item.Name]=$item.Value}}}catch{};return $value
++}
++function Notify([string]$message){
++ try{
++  $values=@{};foreach($line in Get-Content -LiteralPath $CredentialFile){if($line -match '^\s*(TELEGRAM_BOT_TOKEN|TELEGRAM_CHAT_ID)\s*=\s*(.*?)\s*$'){$values[$matches[1]]=$matches[2].Trim('"',"'")}}
++  $token=$values['TELEGRAM_BOT_TOKEN'];$chat=$values['TELEGRAM_CHAT_ID']
++  if($token -notmatch '^\d+:[A-Za-z0-9_-]{20,}$' -or $chat -notmatch '^-?\d+$'){return}
++  $body=@{chat_id=$chat;text=$message}|ConvertTo-Json -Compress
++  $null=Invoke-RestMethod -Method Post -Uri ('https://api.telegram.org/bot'+$token+'/sendMessage') -Body $body -ContentType 'application/json; charset=utf-8' -TimeoutSec 15
++ }catch{}
++}
++$lock=$null
++try{
++ $lock=[IO.File]::Open((Join-Path $TaskState 'sync.lock'),[IO.FileMode]::OpenOrCreate,[IO.FileAccess]::ReadWrite,[IO.FileShare]::None)
++ $statusPath=Join-Path $TaskState 'status.json'
++ $status=(Read-State $statusPath)
++ $raw=& $Ssh @SshOptions techenglish ('python3 '+$Ops+' latest')
++ if($LASTEXITCODE -ne 0){throw 'VPS backup metadata could not be read'}
++ $meta=($raw -join "`n")|ConvertFrom-Json
++ $stamp=[string]$meta.snapshot
++ if($stamp -notmatch '^\d{8}T\d{6}Z$'){throw 'Invalid snapshot name'}
++ $remote='/home/ubuntu/techenglish-backups/automated/daily/'+$stamp
++ if($meta.directory -ne $remote){throw 'Invalid remote backup path'}
++ $target=Safe-Path (Join-Path $root $stamp)
++ $dumpName='TechEnglish_'+$stamp+'.dump';$sqlName='TechEnglish_'+$stamp+'.sql'
++ $dump=Join-Path $target $dumpName;$sql=Join-Path $target $sqlName
++ $valid=(Test-Path -LiteralPath $dump) -and (Test-Path -LiteralPath $sql)
++ if($valid -and ($meta.manifest.files.PSObject.Properties.Name -contains 'app-state.json')){$stateFile=Join-Path $target 'app-state.json';$valid=(Test-Path -LiteralPath $stateFile) -and ((Get-FileHash -LiteralPath $stateFile -Algorithm SHA256).Hash -eq $meta.manifest.files.'app-state.json'.sha256)}
++ if($valid){$valid=((Get-FileHash -LiteralPath $dump -Algorithm SHA256).Hash -eq $meta.manifest.files.'database.dump'.sha256) -and ((Get-FileHash -LiteralPath $sql -Algorithm SHA256).Hash -eq $meta.manifest.sql_plain_sha256)}
++ if(-not $valid){
++  if(Test-Path -LiteralPath $target){throw 'Existing snapshot is incomplete or checksum failed; retained for inspection'}
++  $partial=Safe-Path (Join-Path $root ('_partial-'+[Guid]::NewGuid().ToString('N')))
++  New-Item -ItemType Directory -Path $partial | Out-Null
++  & $Scp @SshOptions ('techenglish:'+ $remote+'/database.dump') ('techenglish:'+ $remote+'/database.sql.gz') ('techenglish:'+ $remote+'/manifest.json') ($partial+'\')
++  if($LASTEXITCODE -ne 0){throw 'Backup download failed'}
++  if((Get-FileHash -LiteralPath (Join-Path $partial 'database.dump') -Algorithm SHA256).Hash -ne $meta.manifest.files.'database.dump'.sha256){throw 'Dump checksum mismatch'}
++  if((Get-FileHash -LiteralPath (Join-Path $partial 'database.sql.gz') -Algorithm SHA256).Hash -ne $meta.manifest.files.'database.sql.gz'.sha256){throw 'Compressed SQL checksum mismatch'}
++  $source=[IO.File]::OpenRead((Join-Path $partial 'database.sql.gz'))
++  try{$gzip=[IO.Compression.GZipStream]::new($source,[IO.Compression.CompressionMode]::Decompress);try{$out=[IO.File]::Create((Join-Path $partial $sqlName));try{$gzip.CopyTo($out)}finally{$out.Dispose()}}finally{$gzip.Dispose()}}finally{$source.Dispose()}
++  if((Get-FileHash -LiteralPath (Join-Path $partial $sqlName) -Algorithm SHA256).Hash -ne $meta.manifest.sql_plain_sha256){throw 'Plain SQL checksum mismatch'}
++  if ($meta.manifest.files.PSObject.Properties.Name -contains 'app-state.json') {
++   & $Scp @SshOptions ('techenglish:'+ $remote+'/app-state.json') (Join-Path $partial 'app-state.json')
++   if($LASTEXITCODE -ne 0){throw 'File state download failed'}
++   if((Get-FileHash -LiteralPath (Join-Path $partial 'app-state.json') -Algorithm SHA256).Hash -ne $meta.manifest.files.'app-state.json'.sha256){throw 'File state checksum mismatch'}
++  }
++  Move-Item -LiteralPath (Join-Path $partial 'database.dump') -Destination (Join-Path $partial $dumpName)
++  $compressed=Safe-Path (Join-Path $partial 'database.sql.gz');Remove-Item -LiteralPath $compressed
++  Move-Item -LiteralPath $partial -Destination $target
++ }
++ $digest=[string]$meta.manifest.files.'database.dump'.sha256
++ if($digest -notmatch '^[a-fA-F0-9]{64}$'){throw 'Invalid digest'}
++ $null=& $Ssh @SshOptions techenglish ('python3 '+$Ops+' confirm --snapshot '+$stamp+' --sha256 '+$digest)
++ if($LASTEXITCODE -ne 0){throw 'VPS did not confirm the verified PC copy'}
++ foreach($url in @('https://techenglish.click/login','https://api.techenglish.click/api/docs-json')){$r=Invoke-WebRequest -Uri $url -TimeoutSec 15;if($r.StatusCode -ne 200){throw 'A public endpoint is unavailable'}}
++ if($status.failures -ge 3){Notify 'TechEnglish: kết nối VPS, HTTPS và đồng bộ backup trên PC đã hoạt động trở lại.'}
++ $status.failures=0;$status.lastSuccess=[DateTimeOffset]::UtcNow.ToUnixTimeSeconds();$status.snapshot=$stamp
++ $status|ConvertTo-Json|Set-Content -Encoding utf8 -LiteralPath $statusPath
++ @{ok=$true;snapshot=$stamp;directory=$target;checked=[DateTimeOffset]::UtcNow.ToString('o')}|ConvertTo-Json -Compress|Add-Content -Encoding utf8 -LiteralPath (Join-Path $TaskState 'sync.log')
++ Write-Output ('Verified dump and SQL: '+$target)
++}catch{
++ if($null -eq $lock){exit 0}
++ $statusPath=Join-Path $TaskState 'status.json';$s=(Read-State $statusPath)
++ $s.failures=[int]$s.failures+1;$now=[DateTimeOffset]::UtcNow.ToUnixTimeSeconds()
++ if($s.failures -ge 3 -and ($now-[long]$s.lastAlert) -gt 7200){Notify 'TechEnglish: PC không thể kiểm tra HTTPS hoặc đồng bộ backup từ VPS sau nhiều lần thử. Kiểm tra kết nối và lịch backup.';$s.lastAlert=$now}
++ $s|ConvertTo-Json|Set-Content -Encoding utf8 -LiteralPath $statusPath
++ @{ok=$false;errorType=$_.Exception.GetType().Name;time=[DateTimeOffset]::UtcNow.ToString('o')}|ConvertTo-Json -Compress|Add-Content -Encoding utf8 -LiteralPath (Join-Path $TaskState 'sync.log')
++ Write-Error 'Backup sync or endpoint check failed; details are recorded locally without credentials.';exit 1
++}finally{if($null -ne $lock){$lock.Dispose()}}

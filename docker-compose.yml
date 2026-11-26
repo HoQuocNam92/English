@@ -21,8 +21,11 @@ services:
       context: .
       target: api
     environment:
+      TECHENGLISH_STATE_DIR: /var/lib/techenglish-state
       DATABASE_URL: postgresql://techenglish:${POSTGRES_PASSWORD}@db:5432/techenglish?schema=public
     command: ["node", "/app/docker/migrate.cjs"]
+    volumes:
+      - file_state:/var/lib/techenglish-state
     depends_on:
       db:
         condition: service_healthy
@@ -38,6 +41,7 @@ services:
       - path: apps/api/.env
         required: false
     environment:
+      TECHENGLISH_STATE_DIR: /var/lib/techenglish-state
       NODE_ENV: production
       LEARNING_REMINDER_JOB_KEY: ${LEARNING_REMINDER_JOB_KEY:-}
       DATABASE_URL: postgresql://techenglish:${POSTGRES_PASSWORD}@db:5432/techenglish?schema=public
@@ -53,6 +57,8 @@ services:
       CORS_ORIGIN: ${CORS_ORIGIN:-http://localhost:3000}
     ports:
       - "${API_PORT:-8080}:8080"
+    volumes:
+      - file_state:/var/lib/techenglish-state
     depends_on:
       migrate:
         condition: service_completed_successfully
@@ -104,3 +110,4 @@ services:
 
 volumes:
   postgres_data:
+  file_state:

@@ -1,0 +1,165 @@
+diff --git a/apps/mobile/app/(onboarding)/level.tsx b/apps/mobile/app/(onboarding)/level.tsx
+index ada581b..4eeea24 100644
+--- a/apps/mobile/app/(onboarding)/level.tsx
++++ b/apps/mobile/app/(onboarding)/level.tsx
+@@ -78,7 +78,7 @@ export default function OnboardingLevelScreen() {
+         </View>
+ 
+         <Text style={styles.title}>Trình độ tiếng Anh của bạn?<RequiredMark /></Text>
+-        <Text style={styles.subtitle}>Chưa có trình độ nào được chọn sẵn. Tự chọn mức bắt đầu; bạn có thể làm bài đầu vào để xác định lại sau.</Text>
++        <Text style={styles.subtitle}>Chưa có trình độ nào được chọn sẵn. Hãy chọn mức bắt đầu phù hợp với bạn.</Text>
+ 
+         {loading && <ActivityIndicator color={colors.primary} />}
+         {!!error && <TouchableOpacity onPress={() => setRetry(value => value + 1)}><Text>{error} Nhấn để thử lại.</Text></TouchableOpacity>}
+diff --git a/apps/mobile/app/(onboarding)/plan.tsx b/apps/mobile/app/(onboarding)/plan.tsx
+index 52cf6f2..15d9b6c 100644
+--- a/apps/mobile/app/(onboarding)/plan.tsx
++++ b/apps/mobile/app/(onboarding)/plan.tsx
+@@ -20,7 +20,6 @@ export default function OnboardingPlanScreen() {
+   const [dailyVocabularyTarget, setDailyVocabularyTarget] = useState('20');
+   const [weeklyExamTarget, setWeeklyExamTarget] = useState('2');
+   const [dailyStudyTargetMinutes, setDailyStudyTargetMinutes] = useState('30');
+-  const [takePlacementTest, setTakePlacementTest] = useState(false);
+   const [reminderEnabled, setReminderEnabled] = useState(false);
+   const [reminderTime, setReminderTime] = useState('20:00');
+   const [submitting, setSubmitting] = useState(false);
+@@ -36,12 +35,11 @@ export default function OnboardingPlanScreen() {
+       const goal = stored.onboarding_goal;
+       const levelCode = stored.onboarding_level;
+       if (!levelCode) {
+-        Alert.alert('Chưa chọn trình độ', 'Hãy tự chọn mức bắt đầu. Bạn có thể làm bài đầu vào để xác định lại sau.', [{ text: 'Chọn trình độ', onPress: () => router.push('/(onboarding)/level' as any) }]);
++        Alert.alert('Chưa chọn trình độ', 'Hãy chọn trình độ bắt đầu trước khi hoàn tất thiết lập.', [{ text: 'Chọn trình độ', onPress: () => router.push('/(onboarding)/level' as any) }]);
+         return;
+       }
+       const domainCodes: string[] = goal === 'vocabulary' && stored.onboarding_domains ? JSON.parse(stored.onboarding_domains) : [];
+       const certificateCode = goal === 'certification' ? stored.onboarding_certificate_code : '';
+-      const certificateId = goal === 'certification' ? stored.onboarding_certificate_id : '';
+       if (!goal || (goal === 'certification' && !certificateCode) || (goal === 'vocabulary' && domainCodes.length === 0)) {
+         Alert.alert('Thiếu thông tin', 'Vui lòng quay lại và chọn mục tiêu học tập.');
+         return;
+@@ -66,11 +64,7 @@ export default function OnboardingPlanScreen() {
+       if (reminderEnabled) await scheduleLearningReminder(reminderTime).catch(() => false);
+       await AsyncStorage.multiRemove(STORAGE_KEYS);
+ 
+-      if (takePlacementTest) {
+-        router.replace({ pathname: '/placement-test', params: { next: certificateId ? `/certifications/${certificateId}` : '/flashcards' } } as any);
+-        return;
+-      }
+-      router.replace(certificateId ? `/certifications/${certificateId}` as any : '/flashcards' as any);
++      router.replace('/(tabs)/home' as any);
+     } catch (error: any) {
+       Alert.alert('Không thể tạo lộ trình', error?.message || 'Vui lòng thử lại.');
+     } finally {
+@@ -90,7 +84,6 @@ export default function OnboardingPlanScreen() {
+         <NumberInput label="Bài kiểm tra mỗi tuần" value={weeklyExamTarget} onChangeText={setWeeklyExamTarget} />
+         <NumberInput label="Phút học mỗi ngày" value={dailyStudyTargetMinutes} onChangeText={setDailyStudyTargetMinutes} />
+       </View>
+-      <TouchableOpacity style={styles.option} onPress={() => setTakePlacementTest(value => !value)}><MaterialIcons name={takePlacementTest ? 'check-box' : 'check-box-outline-blank'} size={23} color={colors.primary} /><View style={styles.optionCopy}><Text style={styles.optionTitle}>Làm bài kiểm tra đầu vào</Text><Text style={styles.optionText}>Nếu chưa có đề phù hợp, app sẽ đưa bạn vào lộ trình đã chọn.</Text></View></TouchableOpacity>
+       <TouchableOpacity style={styles.option} onPress={() => setReminderEnabled(value => !value)}><MaterialIcons name={reminderEnabled ? 'check-box' : 'check-box-outline-blank'} size={23} color={colors.primary} /><View style={styles.optionCopy}><Text style={styles.optionTitle}>Nhắc học mỗi ngày</Text><Text style={styles.optionText}>Bật thông báo nhắc học trên thiết bị.</Text></View></TouchableOpacity>
+       {reminderEnabled && <View style={styles.timeWrap}><Text style={styles.label}>Giờ nhắc học (HH:mm)<RequiredMark /></Text><TextInput value={reminderTime} onChangeText={setReminderTime} style={styles.input} placeholder="20:00" /></View>}
+       <View style={styles.zeroNote}><MaterialIcons name="verified" size={21} color={colors.primary} /><Text style={styles.zeroText}>Lưu mục tiêu không đánh dấu bài học, từ vựng hay bài thi là đã hoàn thành.</Text></View>
+diff --git a/apps/mobile/src/shared/onboarding-routing.test.mjs b/apps/mobile/src/shared/onboarding-routing.test.mjs
+index 1aad1b2..9450837 100644
+--- a/apps/mobile/src/shared/onboarding-routing.test.mjs
++++ b/apps/mobile/src/shared/onboarding-routing.test.mjs
+@@ -8,6 +8,38 @@ const require = createRequire(import.meta.url);
+ const ts = require('typescript');
+ const jsx = (type, props) => ({ type, props });
+ const nodes = tree => !tree || typeof tree !== 'object' ? [] : Array.isArray(tree) ? tree.flatMap(nodes) : [tree, ...nodes(tree.props?.children)];
++const label = tree => typeof tree === 'string' ? tree : Array.isArray(tree) ? tree.map(label).join('') : tree?.props ? label(tree.props.children) : '';
++
++test('finishing either mobile learning goal saves setup and opens home without a placement-test option', async () => {
++  for (const goal of ['vocabulary', 'certification']) {
++    const calls = [], routes = [];
++    const stored = { onboarding_goal: goal, onboarding_level: 'beginner', onboarding_domains: '["CLOUD"]', onboarding_certificate_code: 'AWS', onboarding_certificate_id: 'cert-id' };
++    const mocks = {
++      'react/jsx-runtime': { jsx, jsxs: jsx, Fragment: 'fragment' },
++      react: { useState: value => [value, () => {}] },
++      'expo-router': { useRouter: () => ({ replace: route => routes.push(route) }) },
++      'react-native-safe-area-context': { useSafeAreaInsets: () => ({ top: 0, bottom: 0 }) },
++      'react-native': { View: 'view', ScrollView: 'scroll', ActivityIndicator: 'loading', StyleSheet: { create: value => value }, Alert: { alert: (...args) => assert.fail(args.join(': ')) } },
++      'expo-status-bar': { StatusBar: 'status' },
++      '@techenglish/design-tokens': { colors: {}, spacing: {} },
++      '@react-native-async-storage/async-storage': { __esModule: true, default: { multiGet: async keys => keys.map(key => [key, stored[key]]), multiRemove: async () => calls.push('clear-draft') } },
++      '../../src/shared/ui/primitives': { Text: 'text', TextInput: 'input', TouchableOpacity: 'touch' },
++      '../../src/shared/ui/RequiredMark': { RequiredMark: 'required' },
++      '../../src/shared/ui/AppIcon': { MaterialIcons: 'icon' },
++      '../../src/shared/utils/learning-targets': { validateLearningTargets: () => null },
++      '../../src/shared/notifications/learning-reminders': { scheduleLearningReminder: async () => true },
++      '../../src/shared/api/api-client': { api: { post: async (url, data) => { assert.equal(url, '/learner-profiles/me/complete-onboarding'); assert.equal(data.learningGoal, goal); calls.push('save'); } } },
++    };
++    const exports = {};
++    const code = ts.transpileModule(readFileSync(new URL('../../app/(onboarding)/plan.tsx', import.meta.url), 'utf8'), { compilerOptions: { module: ts.ModuleKind.CommonJS, jsx: ts.JsxEmit.ReactJSX } }).outputText;
++    runInNewContext(code, { exports, require: name => { assert.ok(name in mocks, name); return mocks[name]; } });
++    const tree = exports.default();
++    assert.ok(!label(tree).includes('kiểm tra đầu vào'));
++    await nodes(tree).find(node => node.type === 'touch' && label(node) === 'Tạo lộ trình').props.onPress();
++    assert.deepEqual(calls, ['save', 'clear-draft']);
++    assert.deepEqual(routes, ['/(tabs)/home']);
++  }
++});
+ 
+ test('email login opens onboarding for an unfinished account and home for a returning learner', async () => {
+   for (const completed of [false, true]) {
+diff --git a/apps/web/app/(learner)/onboarding/page.tsx b/apps/web/app/(learner)/onboarding/page.tsx
+index 9130ab8..36fed36 100644
+--- a/apps/web/app/(learner)/onboarding/page.tsx
++++ b/apps/web/app/(learner)/onboarding/page.tsx
+@@ -98,7 +98,7 @@ export default function OnboardingPage() {
+       });
+       window.dispatchEvent(new CustomEvent('techenglish:reminder-settings', { detail: { reminderEnabled, reminderTime } }));
+       if (reminderEnabled) await registerWebLearningNotifications().catch(() => false);
+-      router.replace('/learn/plan');
++      router.replace('/learn');
+     } catch (error) {
+       setErrorMessage(error instanceof Error ? error.message : 'Không thể tạo lộ trình. Vui lòng thử lại.');
+       setIsSubmitting(false);
+@@ -126,7 +126,7 @@ export default function OnboardingPage() {
+         </section>}
+ 
+         {step === 3 && <section>
+-          <Header title="Chọn lộ trình phù hợp với bạn" subtitle="Chưa có trình độ nào được chọn sẵn. Tự chọn mức bắt đầu; bạn có thể làm bài đầu vào để xác định lại sau." />
++          <Header title="Chọn lộ trình phù hợp với bạn" subtitle="Chưa có trình độ nào được chọn sẵn. Hãy chọn mức bắt đầu phù hợp với bạn." />
+           <div className="grid gap-4 md:grid-cols-2">{levels.map(item => <ChoiceCard key={item.id} selected={level === item.code} icon="school" title={<LevelBadge level={item} />} description={item.description ?? ''} onClick={() => setLevel(item.code)} />)}</div>
+           <p className="mt-5 text-center text-sm text-on-surface-variant">Bạn có thể thay đổi trình độ sau trong hồ sơ.</p>
+         </section>}
+diff --git a/apps/web/src/shared/lib/onboarding-finish.test.mjs b/apps/web/src/shared/lib/onboarding-finish.test.mjs
+new file mode 100644
+index 0000000..327ebce
+--- /dev/null
++++ b/apps/web/src/shared/lib/onboarding-finish.test.mjs
+@@ -0,0 +1,34 @@
++import { test } from 'node:test';
++import assert from 'node:assert/strict';
++import { readFileSync } from 'node:fs';
++import { createRequire } from 'node:module';
++import { runInNewContext } from 'node:vm';
++const require = createRequire(import.meta.url), ts = require('typescript');
++const jsx = (type, props) => ({ type, props });
++const nodes = tree => !tree || typeof tree !== 'object' ? [] : Array.isArray(tree) ? tree.flatMap(nodes) : [tree, ...nodes(tree.props?.children)];
++const label = tree => typeof tree === 'string' ? tree : Array.isArray(tree) ? tree.map(label).join('') : tree?.props ? label(tree.props.children) : '';
++
++test('all web onboarding goals save before navigating to the learner home', async () => {
++  for (const goal of ['vocabulary', 'certification', 'both']) {
++    const state = [4, goal, [], [], 'AWS', ['CLOUD'], 'beginner', [{ code: 'beginner' }], 10, 2, 30, false, '20:00', false, false, ''];
++    const calls = []; let cursor = 0;
++    const mocks = {
++      'react/jsx-runtime': { jsx, jsxs: jsx },
++      react: { useState: () => [state[cursor++], () => {}], useEffect() {}, useId: () => 'field' },
++      'next/navigation': { useRouter: () => ({ replace: url => calls.push(url) }) },
++      'lucide-react': new Proxy({}, { get: () => 'icon' }),
++      '@/shared/ui/RequiredMark': { RequiredMark: 'required' },
++      '@/shared/ui/AppIcon': { AppIcon: 'icon', IconText: 'text' },
++      '@/shared/ui/LevelBadge': { LevelBadge: 'badge' },
++      '@/shared/notifications/firebase-client': { registerWebLearningNotifications: async () => false },
++      '@/shared/api/api-client': { apiClient: { post: async (url, data) => { assert.equal(url, '/learner-profiles/me/complete-onboarding'); assert.equal(data.learningGoal, goal); calls.push('save'); } } },
++    };
++    const exports = {};
++    const code = ts.transpileModule(readFileSync(new URL('../../../app/(learner)/onboarding/page.tsx', import.meta.url), 'utf8'), { compilerOptions: { module: ts.ModuleKind.CommonJS, jsx: ts.JsxEmit.ReactJSX } }).outputText;
++    runInNewContext(code, { exports, window: { dispatchEvent() {} }, CustomEvent: class {}, require: name => { assert.ok(name in mocks, name); return mocks[name]; } });
++    const tree = exports.default();
++    assert.ok(!label(tree).includes('kiểm tra đầu vào'));
++    await nodes(tree).find(node => node.type === 'button' && label(node).startsWith('Tạo lộ trình')).props.onClick();
++    assert.deepEqual(calls, ['save', '/learn']);
++  }
++});

@@ -1,0 +1,2328 @@
+[
+  [
+    [
+      "STT",
+      "Tên kịch bản",
+      "Dữ liệu đầu vào (Input)",
+      "Kết quả mong đợi",
+      "Kết quả thực tế",
+      "Trạng thái"
+    ],
+    [
+      "1",
+      "Đăng ký thành công",
+      "Họ tên: Nguyễn An Email: an.qa@gmail.com (chưa tồn tại) Mật khẩu: Abcd@1234 Bấm Đăng ký.",
+      "Tạo một tài khoản học viên, đăng nhập được bằng thông tin vừa tạo.",
+      "Hệ thống tạo tài khoản học viên và trả thông tin đăng nhập. Chuyển trang sau đăng ký trên cả web và ứng dụng.",
+      "Đạt"
+    ],
+    [
+      "2",
+      "Đăng ký trùng email",
+      "Email: an.qa@gmail.com (đã tồn tại) Mật khẩu: Abcd@1234 Bấm Đăng ký.",
+      "Báo email đã được sử dụng, không tạo thêm tài khoản.",
+      "Hệ thống báo “Email đã được sử dụng”, không tạo thêm tài khoản.",
+      "Đạt"
+    ],
+    [
+      "3",
+      "Đăng ký email trùng khác chữ hoa",
+      "Email: AN.QA@gmail.com, đã có an.qa@gmail.com. Bấm Đăng ký.",
+      "Từ chối email trùng, tài khoản cũ không thay đổi.",
+      "Hệ thống báo “Email đã được sử dụng” khi email chỉ khác chữ hoa, không tạo tài khoản trùng.",
+      "Đạt"
+    ],
+    [
+      "4",
+      "Mật khẩu quá ngắn",
+      "Tài khoản mới, mật khẩu: Abc12 (5 ký tự). Bấm Đăng ký.",
+      "Báo mật khẩu phải có ít nhất 6 ký tự, không tạo tài khoản.",
+      "Hệ thống báo “Mật khẩu phải có ít nhất 6 ký tự”, không tạo tài khoản.",
+      "Đạt"
+    ],
+    [
+      "5",
+      "Mật khẩu ở giới hạn tối thiểu",
+      "Tài khoản mới, mật khẩu: Abc123 (6 ký tự). Bấm Đăng ký.",
+      "Chấp nhận mật khẩu, tạo tài khoản và đăng nhập được.",
+      "Hệ thống chấp nhận mật khẩu 6 ký tự và tạo tài khoản thành công.",
+      "Đạt"
+    ],
+    [
+      "6",
+      "Mật khẩu ở giới hạn tối đa",
+      "Tài khoản mới, mật khẩu gồm 72 ký tự ASCII. Bấm Đăng ký.",
+      "Chấp nhận mật khẩu 72 ký tự, đăng nhập lại được.",
+      "Hệ thống tạo tài khoản với mật khẩu 72 ký tự, đăng nhập lại bằng mật khẩu đó thành công.",
+      "Đạt"
+    ],
+    [
+      "7",
+      "Mật khẩu vượt giới hạn",
+      "Tài khoản mới, mật khẩu gồm 73 ký tự ASCII. Bấm Đăng ký.",
+      "Báo mật khẩu tối đa 72 ký tự, không tạo tài khoản.",
+      "Hệ thống báo “Mật khẩu tối đa 72 ký tự”, không tạo tài khoản.",
+      "Đạt"
+    ],
+    [
+      "8",
+      "Đăng ký bỏ trống thông tin",
+      "Họ tên: [Rỗng] Email: [Rỗng] Mật khẩu: [Rỗng] Bấm Đăng ký.",
+      "Hiển thị lỗi ở các trường bắt buộc, không tạo tài khoản.",
+      "Hệ thống báo “Tên không được để trống”, “Email không hợp lệ” và “Mật khẩu phải có ít nhất 6 ký tự”, không tạo tài khoản. Chưa đối chiếu hiển thị lỗi trên giao diện.",
+      "Đạt"
+    ],
+    [
+      "9",
+      "Đăng ký sai định dạng email",
+      "Họ tên: Nguyễn An Email: nguyenvana Mật khẩu: Abcd@1234",
+      "Báo email không hợp lệ, không tạo tài khoản.",
+      "Hệ thống báo “Email không hợp lệ”, không tạo tài khoản.",
+      "Đạt"
+    ],
+    [
+      "10",
+      "Họ tên quá ngắn",
+      "Họ tên: A (1 ký tự), email mới, mật khẩu hợp lệ.",
+      "Báo tên phải có ít nhất 2 ký tự, không tạo tài khoản.",
+      "Hệ thống báo “Tên phải có ít nhất 2 ký tự”, không tạo tài khoản.",
+      "Đạt"
+    ],
+    [
+      "11",
+      "Họ tên vượt giới hạn",
+      "Họ tên gồm 101 ký tự, email mới, mật khẩu hợp lệ.",
+      "Báo tên tối đa 100 ký tự, không tạo tài khoản.",
+      "Hệ thống báo “Tên tối đa 100 ký tự”, không tạo tài khoản.",
+      "Đạt"
+    ],
+    [
+      "12",
+      "Họ tên chỉ gồm khoảng trắng",
+      "Họ tên: ba dấu cách, email mới, mật khẩu hợp lệ.",
+      "Không chấp nhận tên chỉ có khoảng trắng, không tạo tài khoản không có tên hiển thị.",
+      "Hệ thống báo “Tên không được để trống” và “Tên phải có ít nhất 2 ký tự”, không tạo tài khoản.",
+      "Đạt"
+    ],
+    [
+      "13",
+      "Đăng ký email ngoài Gmail",
+      "Họ tên: Học viên thử nghiệm, email: hocvien@yahoo.com hoặc hocvien@outlook.com, mật khẩu hợp lệ.",
+      "Báo “Chỉ chấp nhận địa chỉ email @gmail.com”, không tạo tài khoản.",
+      "Hiển thị “Chỉ chấp nhận địa chỉ email @gmail.com” khi rời ô email, hệ thống từ chối tạo tài khoản.",
+      "Đạt"
+    ],
+    [
+      "14",
+      "Đăng ký email giả đuôi Gmail",
+      "Email: hocvien@gmail.com.tenkhac hoặc hocvien@sub.gmail.com, các trường khác hợp lệ.",
+      "Từ chối email không có đúng tên miền gmail.com, không tạo tài khoản.",
+      "Hiển thị “Chỉ chấp nhận địa chỉ email @gmail.com”, hệ thống từ chối tên miền phụ và tên miền gắn thêm sau gmail.com.",
+      "Đạt"
+    ],
+    [
+      "15",
+      "Gmail có chữ hoa và khoảng trắng ngoài",
+      "Email: [khoảng trắng]hocvien@GMAIL.COM[khoảng trắng], họ tên và mật khẩu hợp lệ.",
+      "Chuẩn hóa email thành chữ thường và bỏ khoảng trắng ngoài, tạo tài khoản.",
+      "Hệ thống tạo tài khoản thành công và lưu địa chỉ Gmail ở dạng chữ thường, không có khoảng trắng ngoài.",
+      "Đạt"
+    ]
+  ],
+  [
+    [
+      "STT",
+      "Tên kịch bản",
+      "Dữ liệu đầu vào (Input)",
+      "Kết quả mong đợi",
+      "Kết quả thực tế",
+      "Trạng thái"
+    ],
+    [
+      "1",
+      "Học viên đăng nhập thành công",
+      "Email: hv1.qa@gmail.com Mật khẩu đúng của HV1. Bấm Đăng nhập.",
+      "Mở giao diện học tập của HV1, không mở trang quản trị trái quyền.",
+      "Đăng nhập thành công và chuyển sang trang học tập của học viên.",
+      "Đạt"
+    ],
+    [
+      "2",
+      "Quản trị viên đăng nhập thành công",
+      "Email: admin.qa@gmail.com Mật khẩu đúng của tài khoản quản trị.",
+      "Mở trang quản trị, hiển thị đúng tài khoản.",
+      "Hệ thống xác thực thành công và trả đúng vai trò quản trị viên. Chuyển trang quản trị trên giao diện.",
+      "Đạt"
+    ],
+    [
+      "3",
+      "Giảng viên đăng nhập thành công",
+      "Tài khoản giảng viên đã được gán quyền, mật khẩu đúng.",
+      "Mở trang được phép, chỉ hiển thị và sử dụng các chức năng được cấp quyền.",
+      "Hệ thống xác thực thành công . Chuyển trang quản trị trên giao diện.",
+      "Đạt"
+    ],
+    [
+      "4",
+      "Đăng nhập sai mật khẩu",
+      "Email của HV1, mật khẩu: Sai@1234.",
+      "Báo thông tin đăng nhập không đúng, không cho vào tài khoản.",
+      "Hiển thị “Mật khẩu không chính xác”, người dùng vẫn ở trang đăng nhập.",
+      "Đạt"
+    ],
+    [
+      "5",
+      "Đăng nhập email chưa tồn tại",
+      "Email: khongtontai.qa@gmail.com Mật khẩu: Abcd@1234.",
+      "Báo đăng nhập thất bại, không tạo tài khoản và không mở phiên mới.",
+      "Hệ thống báo “Không tìm thấy tài khoản với email này”, không cho đăng nhập.",
+      "Đạt"
+    ],
+    [
+      "6",
+      "Đăng nhập tài khoản bị khóa",
+      "Khóa HV1, dùng thông tin đúng để đăng nhập.",
+      "Từ chối đăng nhập, báo tài khoản không được phép hoạt động.",
+      "Hệ thống báo tài khoản đã bị khóa và yêu cầu liên hệ quản trị viên, không cho đăng nhập.",
+      "Đạt"
+    ],
+    [
+      "7",
+      "Tiếp tục dùng phiên sau khi bị khóa",
+      "HV1 đã đăng nhập, quản trị viên khóa HV1, HV1 lưu hồ sơ.",
+      "Không cho ghi dữ liệu sau khi khóa, giao diện thông báo hoặc kết thúc phiên.",
+      "Hệ thống từ chối yêu cầu sử dụng phiên của tài khoản đã bị khóa.",
+      "Đạt"
+    ],
+    [
+      "8",
+      "Đăng nhập tài khoản đã xóa",
+      "Xóa mềm HV1, thử đăng nhập lại và gọi bằng phiên cũ.",
+      "Không truy cập được dữ liệu được bảo vệ, dữ liệu lịch sử không bị lộ.",
+      "Hệ thống báo tài khoản đã bị vô hiệu hóa hoặc chưa được kích hoạt, không cho đăng nhập.",
+      "Đạt"
+    ],
+    [
+      "9",
+      "Refresh phiên",
+      "HV1 đăng nhập, access token hết hạn Thao tác: Gọi một API cần xác thực",
+      "Refresh thành công khi refresh token hợp lệ, gửi lại request đúng một lần, không vòng lặp.",
+      "Hệ thống cấp lại thông tin phiên từ phiên hợp lệ. ",
+      "Đạt"
+    ],
+    [
+      "10",
+      "Refresh đồng thời",
+      "Access token hết hạn, dashboard có nhiều request Thao tác: Mở dashboard, ghi network khi các request cùng trả 401",
+      "Các request phục hồi nhất quán, không đăng xuất nhầm do refresh cạnh tranh, không lặp vô hạn.",
+      "Hai yêu cầu làm mới đồng thời đều được chấp nhận. ",
+      "Đạt"
+    ],
+    [
+      "11",
+      "Refresh token sai/hết hạn",
+      "Token giả và token hết hạn Thao tác: Gọi refresh, mở lại màn bảo vệ",
+      "Từ chối, xóa trạng thái phiên không hợp lệ, không giữ dữ liệu người cũ.",
+      "Hệ thống từ chối mã làm mới giả. ",
+      "Đạt"
+    ],
+    [
+      "12",
+      "Đăng xuất",
+      "HV1 có phiên Thao tác: Đăng xuất, gọi lại API và refresh bằng phiên cũ, nhấn Back",
+      "Refresh cũ không tạo phiên mới, màn bảo vệ yêu cầu đăng nhập, không hiển thị cache nhạy cảm.",
+      "Đăng xuất thành công, chuyển về trang đăng nhập, phiên làm mới bị thu hồi.",
+      "Đạt"
+    ],
+    [
+      "13",
+      "Đăng nhập Google trên web",
+      "Tài khoản Google thử nghiệm, bấm Đăng nhập Google trên web.",
+      "Xác thực thành công, quay về đúng tài khoản, không tạo tài khoản trùng.",
+      "Hệ thống xác thực thành công. Chuyển về trang chủ",
+      "Đạt"
+    ],
+    [
+      "14",
+      "Đăng nhập Google trên ứng dụng",
+      "Tài khoản Google thử nghiệm, đăng nhập trên Android/iOS.",
+      "Đăng nhập được, trả về ứng dụng và đúng tài khoản.",
+      "Chưa chạy xác thực Google thực tế, cần tài khoản Google thử nghiệm và cấu hình đăng nhập phù hợp.",
+      "Chưa chạy"
+    ],
+    [
+      "15",
+      "Hủy đăng nhập Google",
+      "Mở đăng nhập Google rồi bấm Hủy.",
+      "Quay về màn hình đăng nhập, không tạo phiên hoặc báo thành công.",
+      "Chưa chạy xác thực Google thực tế, cần tài khoản Google thử nghiệm và cấu hình đăng nhập phù hợp.",
+      "Chưa chạy"
+    ],
+    [
+      "16",
+      "Lỗi mạng khi đăng nhập",
+      "API test có thể ngắt kết nối Thao tác: Gửi đăng nhập khi offline, bật mạng, thử lại",
+      "Thông báo hữu ích, nút thoát loading, không nhân đôi phiên/tài khoản.",
+      "Chưa chạy.",
+      "Chưa chạy"
+    ]
+  ],
+  [
+    [
+      "STT",
+      "Tên kịch bản",
+      "Dữ liệu đầu vào (Input)",
+      "Kết quả mong đợi",
+      "Kết quả thực tế",
+      "Trạng thái"
+    ],
+    [
+      "1",
+      "Khôi phục mật khẩu bằng liên kết",
+      "Tài khoản có mật khẩu, SMTP thử nghiệm. Thao tác: Yêu cầu liên kết đặt lại mật khẩu, mở liên kết nhận trong email, nhập mật khẩu mới, đăng nhập lại.",
+      "Email chứa liên kết với token dùng một lần, hiệu lực 15 phút, mật khẩu mới dùng được và mật khẩu cũ không còn hợp lệ.",
+      "Gữi đường link tới email người dùng liên kết đổi mật khẩu.",
+      "Đạt"
+    ],
+    [
+      "2",
+      "Mở liên kết reset sai",
+      "Mở liên kết có token bị thay đổi một ký tự.",
+      "Thông báo liên kết không hợp lệ, không đổi mật khẩu.",
+      "Hệ thống từ chối liên kết đặt lại mật khẩu không hợp lệ.",
+      "Đạt"
+    ],
+    [
+      "3",
+      "Mở liên kết reset hết hạn",
+      "Mở liên kết đã vượt thời hạn sử dụng.",
+      "Thông báo liên kết hết hạn, yêu cầu gửi lại.",
+      "Hệ thống từ chối liên kết đặt lại mật khẩu đã hết hạn.",
+      "Đạt"
+    ],
+    [
+      "4",
+      "Dùng lại liên kết reset",
+      "Đổi mật khẩu thành công, sau đó mở lại cùng liên kết.",
+      "Liên kết đã dùng không cho đổi mật khẩu lần nữa.",
+      "Hệ thống từ chối sử dụng lại liên kết đặt lại mật khẩu đã dùng.",
+      "Đạt"
+    ],
+    [
+      "5",
+      "Đổi mật khẩu thành công",
+      "Đăng nhập HV1, nhập đúng mật khẩu cũ, mật khẩu mới: New@1234.",
+      "Lưu mật khẩu mới, đăng nhập được bằng mật khẩu mới, mật khẩu cũ bị từ chối.",
+      "Đổi mật khẩu thành công, hệ thống chấp nhận thông tin mật khẩu mới.",
+      "Đạt"
+    ],
+    [
+      "6",
+      "Đổi mật khẩu khi sai mật khẩu cũ",
+      "Nhập mật khẩu cũ: Sai@1234, mật khẩu mới hợp lệ.",
+      "Báo mật khẩu hiện tại không đúng, giữ nguyên mật khẩu cũ.",
+      "Hệ thống báo mật khẩu hiện tại không chính xác, không đổi mật khẩu.",
+      "Đạt"
+    ],
+    [
+      "7",
+      "Mở liên kết reset hợp lệ",
+      "Gửi quên mật khẩu, mở liên kết mới nhận được, chưa hết hạn và chưa sử dụng.",
+      "Hiển thị màn hình nhập mật khẩu mới, không đổi mật khẩu trước khi xác nhận.",
+      "Hệ thống chấp nhận liên kết đặt lại mật khẩu còn hiệu lực.",
+      "Đạt"
+    ]
+  ],
+  [
+    [
+      "STT",
+      "Tên kịch bản",
+      "Dữ liệu đầu vào (Input)",
+      "Kết quả mong đợi",
+      "Kết quả thực tế",
+      "Trạng thái"
+    ],
+    [
+      "1",
+      "Chưa xác thực",
+      "Không có Authorization Thao tác: Gọi lần lượt các route có JwtAuthGuard trong inventory",
+      "401, không trả dữ liệu bảo vệ hoặc thực hiện ghi.",
+      "Hệ thống từ chối truy cập danh sách người dùng, vai trò, bài thi, hồ sơ, tiến độ và kết quả khi chưa đăng nhập.",
+      "Đạt"
+    ],
+    [
+      "2",
+      "Learner gọi API quản trị",
+      "HV1 không có quyền quản trị Thao tác: Gọi trực tiếp create/update/delete users, roles, lessons, questions, exams và báo cáo",
+      "403 ở các thao tác thiếu quyền, DB không thay đổi, ẩn menu không phải cơ chế bảo vệ duy nhất.",
+      "Học viên bị từ chối đọc báo cáo quản trị và tạo người dùng, vai trò, bài học, câu hỏi hoặc bài thi. ",
+      "Đạt"
+    ],
+    [
+      "3",
+      "Kiểm quyền từng thao tác",
+      "Role test chỉ có lessons:create Thao tác: Gọi tạo bài, sửa bài, xóa bài",
+      "Chỉ tạo thành công, sửa/xóa bị từ chối nếu không có quyền tương ứng.",
+      "Quyền tạo bài học mới có hiệu lực với phiên đang dùng, quyền tạo không cho phép sửa bài. ",
+      "Đạt"
+    ],
+    [
+      "4",
+      "Tạo vai trò",
+      "Tên vai trò: Giảng viên QA, chọn quyền xem bài học, lưu.",
+      "Vai trò xuất hiện trong danh sách với đúng quyền đã chọn.",
+      "Hệ thống lưu vai trò mới và trả đúng thông tin đã nhập.",
+      "Đạt"
+    ],
+    [
+      "5",
+      "Sửa vai trò",
+      "Mở vai trò Giảng viên QA, đổi tên rồi lưu.",
+      "Tên mới hiển thị, các quyền không chỉnh sửa được giữ nguyên.",
+      "Hệ thống lưu nội dung vai trò sau khi sửa.",
+      "Đạt"
+    ],
+    [
+      "6",
+      "Xóa vai trò chưa sử dụng",
+      "Chọn vai trò QA chưa gán cho người dùng, xóa và xác nhận.",
+      "Vai trò bị xóa, các vai trò và tài khoản khác không thay đổi.",
+      "Hệ thống xóa vai trò thử nghiệm chưa sử dụng thành công.",
+      "Đạt"
+    ],
+    [
+      "7",
+      "Gán và thu hồi quyền",
+      "Role QA, user QA có phiên Thao tác: Gán quyền, đăng nhập lại, thử thao tác, thu hồi quyền, thử token cũ và mới",
+      "Quyền hiệu lực đúng chính sách, quyền đã thu hồi không tiếp tục cho phép thao tác ngoài chính sách phiên.",
+      "Sau khi thu hồi quyền tạo bài học, phiên đang dùng không tạo được bài mới. ",
+      "Đạt"
+    ],
+    [
+      "8",
+      "Gán và thu hồi role",
+      "quản trị viên, HV1 Thao tác: Gán role QA, kiểm quyền, thu hồi, kiểm lại",
+      "Chỉ thay đổi quyền của HV1, không tạo liên kết role trùng.",
+      "Hệ thống gán và gỡ vai trò thử nghiệm thành công. ",
+      "Đạt"
+    ],
+    [
+      "9",
+      "Tự nâng quyền",
+      "HV1 Thao tác: Gửi roleIds/permissions/isAdmin khi đăng ký và PATCH users/me",
+      "Không tự nâng quyền, server loại bỏ hoặc từ chối trường không được phép.",
+      "Hệ thống từ chối yêu cầu tự gán quyền quản trị qua dữ liệu cập nhật.",
+      "Đạt"
+    ],
+    [
+      "10",
+      "Quyền không tồn tại",
+      "quản trị viên Thao tác: Gán UUID quyền không tồn tại, gán trùng, thay toàn bộ tập quyền",
+      "Không tạo liên kết mồ côi, không trùng, tập quyền sau thay thế đúng dữ liệu gửi.",
+      "Hệ thống từ chối gán quyền không tồn tại.",
+      "Đạt"
+    ],
+    [
+      "11",
+      "Role hệ thống đang dùng",
+      "quản trị viên, role hệ thống có users Thao tác: Thử sửa/xóa quyền hoặc role được bảo vệ",
+      "Không phá vỡ ràng buộc bảo vệ, nếu thao tác được phép phải không làm mất khả năng quản trị ngoài chủ đích.",
+      "Hệ thống không cho xóa vai trò hệ thống đang được sử dụng.",
+      "Đạt"
+    ],
+    [
+      "12",
+      "Tạo quyền thử nghiệm",
+      "Quản trị viên, tạo mã quyền QA mới và tên hiển thị.",
+      "Quyền được tạo một lần và xuất hiện trong danh sách.",
+      "Hệ thống lưu quyền thử nghiệm mới thành công.",
+      "Đạt"
+    ],
+    [
+      "13",
+      "Sửa quyền thử nghiệm",
+      "Đổi tên hiển thị của quyền QA rồi lưu.",
+      "Tên quyền được cập nhật, không thay đổi quyền khác.",
+      "Hệ thống lưu tên quyền thử nghiệm sau khi sửa.",
+      "Đạt"
+    ],
+    [
+      "14",
+      "Xóa quyền thử nghiệm",
+      "Chọn quyền QA không sử dụng, xóa và xác nhận.",
+      "Quyền bị xóa, không làm mất các quyền không liên quan.",
+      "Hệ thống xóa quyền thử nghiệm thành công.",
+      "Đạt"
+    ]
+  ],
+  [
+    [
+      "STT",
+      "Tên kịch bản",
+      "Dữ liệu đầu vào (Input)",
+      "Kết quả mong đợi",
+      "Kết quả thực tế",
+      "Trạng thái"
+    ],
+    [
+      "1",
+      "Thêm học viên",
+      "Quản trị viên, họ tên Nguyễn Bình, email binh.qa@gmail.com chưa tồn tại, mật khẩu hợp lệ. Lưu người dùng.",
+      "Người dùng mới xuất hiện trong danh sách, mở lại thấy đúng dữ liệu.",
+      "Hệ thống tạo học viên mới, dữ liệu trả về không chứa mật khẩu hoặc mật khẩu đã mã hóa.",
+      "Đạt"
+    ],
+    [
+      "2",
+      "Sửa người dùng",
+      "Mở người dùng Nguyễn Bình, đổi tên thành Nguyễn Bình An rồi lưu.",
+      "Danh sách và trang chi tiết hiển thị tên mới sau khi tải lại.",
+      "Hệ thống thông báo sửa thành công",
+      "Đạt"
+    ],
+    [
+      "3",
+      "Tìm kiếm và phân trang",
+      "35 người dùng QA gồm tên tiếng Việt Thao tác: Tìm tên/email, lọc role/trạng thái, chuyển trang và đổi bộ lọc",
+      "Kết quả đúng điều kiện, tổng và số trang nhất quán, không lặp hoặc bỏ sót bản ghi.",
+      "Tìm kiếm bằng email thử nghiệm trả đúng học viên. ",
+      "Đạt"
+    ],
+    [
+      "4",
+      "Khóa người dùng",
+      "Chọn HV1 đang hoạt động, bấm Khóa và xác nhận.",
+      "Trạng thái chuyển sang bị khóa, HV1 không tiếp tục truy cập chức năng được bảo vệ.",
+      "Hệ thống lưu trạng thái khóa tài khoản thành công.",
+      "Đạt"
+    ],
+    [
+      "5",
+      "Mở khóa người dùng",
+      "Chọn HV1 bị khóa, bấm Kích hoạt.",
+      "Trạng thái hoạt động được khôi phục, HV1 đăng nhập lại được.",
+      "Hệ thống kích hoạt lại tài khoản thành công.",
+      "Đạt"
+    ],
+    [
+      "6",
+      "Soft-delete người dùng",
+      "HV1 có bài thi và tiến độ Thao tác: quản trị viên xóa HV1, đọc danh sách và báo cáo, thử login",
+      "Không login được, không xuất hiện như user hoạt động, lịch sử không gây lỗi FK hoặc mất dữ liệu người khác.",
+      "Hệ thống đánh dấu tài khoản đã xóa, phiên cũ không tiếp tục truy cập được.",
+      "Đạt"
+    ],
+    [
+      "7",
+      "Tạo email trùng",
+      "quản trị viên, email HV1 tồn tại Thao tác: Tạo người dùng trùng, sửa HV2 sang email HV1",
+      "Từ chối, không ghi đè hoặc hợp nhất hai tài khoản.",
+      "Hệ thống từ chối tạo học viên có email đã tồn tại.",
+      "Đạt"
+    ],
+    [
+      "8",
+      "Tạo nhóm học viên",
+      "Tên nhóm: Cloud QA, giảng viên có quyền quản lý nhóm. Bấm Tạo nhóm.",
+      "Nhóm mới xuất hiện, tên và người quản lý đúng.",
+      "Hệ thống tạo nhóm học viên và lưu đúng tên nhóm.",
+      "Đạt"
+    ],
+    [
+      "9",
+      "Sửa nhóm học viên",
+      "Đổi tên Cloud QA thành Cloud QA 02 rồi lưu.",
+      "Hiển thị tên mới, danh sách thành viên được giữ nguyên.",
+      "Hệ thống lưu tên nhóm sau khi sửa.",
+      "Đạt"
+    ],
+    [
+      "10",
+      "Thêm thành viên vào nhóm",
+      "Nhóm Cloud QA, HV1 chưa là thành viên. Chọn HV1 và thêm vào nhóm.",
+      "HV1 xuất hiện một lần trong nhóm, số thành viên tăng 1.",
+      "Hệ thống thêm học viên hợp lệ vào nhóm thành công.",
+      "Đạt"
+    ],
+    [
+      "11",
+      "Xóa thành viên khỏi nhóm",
+      "HV1 đang thuộc nhóm Cloud QA. Xóa HV1 khỏi nhóm.",
+      "HV1 không còn trong nhóm, số thành viên giảm 1, tài khoản HV1 vẫn tồn tại.",
+      "Hệ thống gỡ học viên khỏi nhóm thành công.",
+      "Đạt"
+    ],
+    [
+      "12",
+      "Thành viên không hợp lệ",
+      "Nhóm QA Thao tác: Thêm UUID không tồn tại hoặc tài khoản không phải học viên",
+      "Báo lỗi có kiểm soát, không tạo thành viên mồ côi.",
+      "Hệ thống từ chối thêm học viên không tồn tại vào nhóm. ",
+      "Đạt"
+    ],
+    [
+      "13",
+      "Xóa nhóm",
+      "Nhóm QA có thành viên Thao tác: Xóa nhóm, kiểm users và học tập HV1",
+      "Nhóm biến mất, không xóa tài khoản hoặc tiến độ của thành viên.",
+      "Hệ thống xóa nhóm thử nghiệm thành công.",
+      "Đạt"
+    ],
+    [
+      "14",
+      "Quyền quản lý nhóm",
+      "Role chỉ users:read, role có users:update Thao tác: Cùng gọi list và các thao tác ghi nhóm",
+      "users:read đọc được nhưng không ghi, users:update ghi theo guard, kiểm độc lập với users:manage.",
+      "Học viên không có quyền bị từ chối truy cập chức năng quản lý nhóm.",
+      "Đạt"
+    ]
+  ],
+  [
+    [
+      "STT",
+      "Tên kịch bản",
+      "Dữ liệu đầu vào (Input)",
+      "Kết quả mong đợi",
+      "Kết quả thực tế",
+      "Trạng thái"
+    ],
+    [
+      "1",
+      "Onboarding người mới",
+      "học viên mới chưa cấu hình Thao tác: Login, chọn trình độ, lĩnh vực, mục tiêu, kế hoạch, hoàn tất",
+      "Lưu profile và onboardingCompleted, lần đăng nhập sau vào ứng dụng đúng luồng.",
+      "Hệ thống lưu mục tiêu kết hợp và đánh dấu hoàn tất thiết lập. ",
+      "Đạt"
+    ],
+    [
+      "2",
+      "Quay lại onboarding",
+      "học viên mới đang điền Thao tác: Chọn dữ liệu, Back/Next, đóng và mở lại app",
+      "Không lưu nhầm hoàn tất khi chưa gửi, dữ liệu không bị gán mục tiêu tùy ý.",
+      "Mở lại dữ liệu thiết lập vẫn giữ các lựa chọn đã lưu. ",
+      "Đạt"
+    ],
+    [
+      "3",
+      "Mục tiêu từ vựng",
+      "HV1, domain D1 Thao tác: Chọn vocabulary, D1 và level, lưu, đọc GET me và journey",
+      "learningGoal=vocabulary, domain D1 còn, mục tiêu và journey phản ánh lựa chọn.",
+      "Hệ thống lưu mục tiêu học từ vựng và chuyên ngành đã chọn, đọc lại đúng dữ liệu.",
+      "Đạt"
+    ],
+    [
+      "4",
+      "Mục tiêu chứng chỉ",
+      "HV1, C1 và D1 Thao tác: Chọn certification, C1, D1, lưu mobile, mở web",
+      "learningGoal=certification, giữ lĩnh vực, chứng chỉ đúng, không xóa domain ngoài ý muốn.",
+      "Hệ thống lưu mục tiêu ôn chứng chỉ và chứng chỉ đã chọn, đọc lại đúng dữ liệu.",
+      "Đạt"
+    ],
+    [
+      "5",
+      "Mục tiêu kết hợp",
+      "HV1 Thao tác: Chọn both, C1, D1, lưu web, sửa tên trên mobile, mở lại web",
+      "both, certificate và domains được bảo toàn sau chỉnh sửa.",
+      "Hệ thống lưu mục tiêu kết hợp cùng chuyên ngành và chứng chỉ đã chọn.",
+      "Đạt"
+    ],
+    [
+      "6",
+      "Thiếu trường mục tiêu",
+      "HV1 Thao tác: Lưu thiếu trình độ/lĩnh vực/chứng chỉ cần thiết, gọi API trực tiếp cùng payload",
+      "Lỗi rõ cho dữ liệu bắt buộc, không báo hoàn tất hoặc ghi mục tiêu không hợp lệ.",
+      "Hệ thống báo thiếu mục tiêu học tập hoặc lựa chọn bắt buộc, hồ sơ giữ nguyên và không được đánh dấu hoàn tất.",
+      "Đạt"
+    ],
+    [
+      "7",
+      "Mã tham chiếu sai",
+      "HV1 Thao tác: Gửi level/domain/certificate/career code không tồn tại",
+      "Từ chối có kiểm soát, không liên kết sai hoặc lưu một phần quan hệ.",
+      "Hệ thống từ chối mã chuyên ngành, chứng chỉ hoặc mục tiêu nghề nghiệp không tồn tại, không lưu liên kết sai.",
+      "Đạt"
+    ],
+    [
+      "8",
+      "Biên kế hoạch",
+      "HV1 Thao tác: Thử từ/ngày 0,1,200,201, quiz/tuần 0,1,50,51, phút/ngày 4,5,1440,1441",
+      "Chấp nhận biên 1–200,1–50,5–1440 tương ứng, ngoài khoảng bị từ chối ở server.",
+      "Hệ thống chấp nhận các mốc mục tiêu nằm trong giới hạn và từ chối mốc ngoài giới hạn đã thử. ",
+      "Đạt"
+    ],
+    [
+      "9",
+      "Giờ nhắc không hợp lệ",
+      "HV1 Thao tác: Gửi 00:00,23:59,24:00,12:60 và chuỗi rỗng khi tắt nhắc",
+      "Giờ hợp lệ lưu đúng, giờ sai không tạo lịch, tắt nhắc không bị tự bật lại.",
+      "Hệ thống từ chối giờ nhắc sai định dạng hoặc nằm ngoài khoảng giờ hợp lệ.",
+      "Đạt"
+    ],
+    [
+      "10",
+      "Cập nhật thông tin cá nhân",
+      "HV1 Thao tác: Đổi tên tiếng Việt, bio và điện thoại, tải lại web/mobile",
+      "Dữ liệu đồng nhất, tên 2–100, bio tối đa 500, điện thoại đúng quy tắc quy định nhập liệu.",
+      "Hệ thống lưu tên hiển thị mới, đọc lại hồ sơ có đúng tên và số điện thoại đã cập nhật. ",
+      "Đạt"
+    ],
+    [
+      "11",
+      "Xóa số điện thoại",
+      "HV1 có số đã lưu Thao tác: Xóa nội dung số điện thoại, lưu, đọc users/me",
+      "Giá trị được xóa/null, không giữ số cũ hoặc báo lỗi cho chuỗi trống.",
+      "Đọc lại hồ sơ không còn số điện thoại đã xóa. ",
+      "Đạt"
+    ],
+    [
+      "12",
+      "Sửa hồ sơ người khác",
+      "HV1 và HV2 Thao tác: HV1 PUT học viên-profiles/HV2/goals, gọi admin route cùng payload bằng quản trị viên đủ quyền",
+      "HV1 bị cấm, quản trị viên đủ quyền sửa đúng HV2, HV1 không bị thay đổi.",
+      "Học viên bị từ chối sửa hồ sơ của người khác.",
+      "Đạt"
+    ],
+    [
+      "13",
+      "Lưu lỗi giữa hai API",
+      "HV1, giả lập API goals lỗi nhưng users/me thành công Thao tác: Sửa tên và mục tiêu, lưu, tải lại",
+      "Không báo toàn bộ thành công, thông báo lỗi và trạng thái thực tế rõ, retry không làm mất dữ liệu đã lưu.",
+      "Chưa chạy.",
+      "Chưa chạy"
+    ],
+    [
+      "14",
+      "Đổi ảnh đại diện bằng ảnh hợp lệ",
+      "Ảnh anh-qa.jpg, dung lượng dưới 5 MB. Chọn ảnh và lưu.",
+      "Ảnh hiển thị trên hồ sơ, tải lại hoặc mở nền tảng còn lại vẫn thấy ảnh mới.",
+      "Chưa chạy.",
+      "Chưa chạy"
+    ],
+    [
+      "15",
+      "Upload ảnh sai loại",
+      "Chọn tập tin tailieu.docx làm ảnh đại diện.",
+      "Từ chối tập tin, giữ nguyên ảnh hiện tại.",
+      "Hệ thống từ chối yêu cầu tải ảnh không hợp lệ.",
+      "Đạt"
+    ],
+    [
+      "16",
+      "Upload ảnh quá dung lượng",
+      "Chọn ảnh có dung lượng lớn hơn 5 MB.",
+      "Báo vượt dung lượng cho phép, không làm mất ảnh hiện tại.",
+      "Chưa trực tiếp tải ảnh vượt dung lượng, kiểm tra yêu cầu ảnh không hợp lệ chưa đủ xác nhận giới hạn dung lượng.",
+      "Chưa hoàn tất"
+    ]
+  ],
+  [
+    [
+      "STT",
+      "Tên kịch bản",
+      "Dữ liệu đầu vào (Input)",
+      "Kết quả mong đợi",
+      "Kết quả thực tế",
+      "Trạng thái"
+    ],
+    [
+      "1",
+      "Làm bài xếp trình độ theo phiên",
+      "Có đủ câu hỏi placement đã xuất bản, phù hợp chuyên ngành và cấp độ. Thao tác: GET placement-test để nhận assessmentId, trả lời đủ câu trong phiên, nộp và đọc hồ sơ.",
+      "Bộ chọn lấy tối đa 15 câu, cần ít nhất 10 câu để mở phiên, kết quả gồm correct, total, percent và levelCode, hồ sơ đúng học viên được cập nhật.",
+      "Hệ thống tạo phiên xếp trình độ và trả câu hỏi không kèm đáp án đúng, trả kết quả 100% và trình độ nâng cao khi làm đúng toàn bộ. ",
+      "Đạt"
+    ],
+    [
+      "2",
+      "Không lộ đáp án",
+      "Có câu placement Thao tác: GET placement-test và xem network trước khi nộp",
+      "Không có isCorrect hoặc lời giải cho phép biết trước đáp án.",
+      "Dữ liệu câu hỏi đầu phiên không chứa đáp án đúng. ",
+      "Đạt"
+    ],
+    [
+      "3",
+      "Xếp trình độ dưới 40%",
+      "Phiên có 10 câu, trả lời đúng 3 câu và nộp đủ 10 câu.",
+      "Hiển thị 3/10, 30%, xếp trình độ beginner.",
+      "Hệ thống ghi nhận đúng 3/10 câu, tính 30% và xếp trình độ sơ cấp.",
+      "Đạt"
+    ],
+    [
+      "4",
+      "Xếp trình độ từ 40% đến dưới 70%",
+      "Phiên có 10 câu, trả lời đúng 4 câu và nộp đủ 10 câu.",
+      "Hiển thị 4/10, 40%, xếp trình độ intermediate.",
+      "Hệ thống ghi nhận đúng 4/10 câu, tính 40% và xếp trình độ trung cấp.",
+      "Đạt"
+    ],
+    [
+      "5",
+      "Xếp trình độ từ 70%",
+      "Phiên có 10 câu, trả lời đúng 7 câu và nộp đủ 10 câu.",
+      "Hiển thị 7/10, 70%, xếp trình độ advanced.",
+      "Hệ thống ghi nhận đúng 7/10 câu, tính 70% và xếp trình độ nâng cao.",
+      "Đạt"
+    ],
+    [
+      "6",
+      "Payload và quyền sở hữu phiên placement",
+      "Phiên placement của HV1 và token HV2. Thao tác: Thử answers rỗng, câu trùng, option không thuộc câu, thiếu câu và assessmentId của HV1 bằng HV2.",
+      "Chỉ chấm câu trong bản đề tại thời điểm bắt đầu và đúng chủ phiên. Lượt hợp lệ đã nộp được trả lại kết quả đã lưu khi gửi lặp, không chấm thành lượt mới.",
+      "Hệ thống từ chối nộp phiên của học viên khác, nộp lại phiên đã chấm trả kết quả ổn định. ",
+      "Đạt"
+    ],
+    [
+      "7",
+      "Không có câu hỏi",
+      "Không có placement published Thao tác: Mở màn kiểm tra",
+      "Empty state rõ, không chia cho 0, không tự gán level hoặc cho nộp bài rỗng.",
+      "Hệ thống báo chưa đủ 10 câu kiểm tra cho chuyên ngành đã chọn và yêu cầu bổ sung câu hỏi.",
+      "Đạt"
+    ],
+    [
+      "8",
+      "Không nộp thiếu câu để nâng trình độ",
+      "Phiên thực tế có từ 10 đến 15 câu. Thao tác: Chỉ gửi một câu đúng trong bộ câu của phiên qua API.",
+      "Từ chối do chưa trả lời đủ câu, không cập nhật trình độ bằng mẫu một câu.",
+      "Hệ thống từ chối bài xếp trình độ chưa trả lời đủ câu hỏi, không nâng trình độ.",
+      "Đạt"
+    ],
+    [
+      "9",
+      "Xem lại kết quả xếp trình độ",
+      "HV1 đã nộp bài, thoát và mở lại trang kết quả.",
+      "Hiển thị đúng kết quả lần nộp gần nhất của HV1, HV2 không thấy kết quả của HV1.",
+      "Hệ thống trả lại đúng kết quả xếp trình độ đã lưu của học viên.",
+      "Đạt"
+    ],
+    [
+      "10",
+      "Tạo kế hoạch học cá nhân",
+      "HV1 đã hoàn tất thiết lập mục tiêu, yêu cầu tạo kế hoạch học.",
+      "Hiển thị kế hoạch tương ứng mục tiêu và trình độ của HV1, lưu lại để xem được sau đó.",
+      "Hệ thống tạo kế hoạch học cá nhân theo hồ sơ đã thiết lập.",
+      "Đạt"
+    ],
+    [
+      "11",
+      "Tạo kế hoạch khi chưa thiết lập mục tiêu",
+      "Học viên mới chưa hoàn tất onboarding, yêu cầu tạo kế hoạch.",
+      "Yêu cầu hoàn thành thiết lập mục tiêu, không tạo kế hoạch thiếu dữ liệu.",
+      "Hệ thống yêu cầu thiết lập mục tiêu trước khi tạo kế hoạch học.",
+      "Đạt"
+    ]
+  ],
+  [
+    [
+      "STT",
+      "Tên kịch bản",
+      "Dữ liệu đầu vào (Input)",
+      "Kết quả mong đợi",
+      "Kết quả thực tế",
+      "Trạng thái"
+    ],
+    [
+      "1",
+      "Thêm cấp độ",
+      "Quản trị viên có quyền, mã và tên cấp độ mới hợp lệ. Bấm Thêm.",
+      "Lưu được một cấp độ, hiển thị đúng mã, tên.",
+      "Hệ thống lưu cấp độ mới thành công.",
+      "Đạt"
+    ],
+    [
+      "2",
+      "Sửa cấp độ",
+      "Chọn cấp độ thử nghiệm, đổi tên rồi lưu.",
+      "Tên mới hiển thị sau khi tải lại, mã tham chiếu vẫn đúng.",
+      "Hệ thống lưu tên cấp độ sau khi sửa.",
+      "Đạt"
+    ],
+    [
+      "3",
+      "Xóa cấp độ chưa sử dụng",
+      "Cấp độ QA chưa gắn với hồ sơ hoặc nội dung. Bấm Xóa và xác nhận.",
+      "Cấp độ được xóa khỏi danh sách, không ảnh hưởng cấp độ khác.",
+      "Hệ thống xóa cấp độ thử nghiệm chưa sử dụng thành công.",
+      "Đạt"
+    ],
+    [
+      "4",
+      "Xóa cấp độ đang dùng",
+      "Level gắn HV1 và lesson Thao tác: Xóa level",
+      "Chặn hoặc xử lý theo ràng buộc, không làm mồ côi profile/content, UI nêu lý do.",
+      "Hệ thống không cho xóa cấp độ đang được sử dụng.",
+      "Đạt"
+    ],
+    [
+      "5",
+      "Thêm mục tiêu nghề nghiệp",
+      "Tên: Cloud Engineer QA, mã mới, thông tin bắt buộc hợp lệ.",
+      "Mục tiêu xuất hiện trong danh sách và chọn được khi thiết lập hồ sơ.",
+      "Hệ thống lưu mục tiêu nghề nghiệp mới thành công.",
+      "Đạt"
+    ],
+    [
+      "6",
+      "Sửa mục tiêu nghề nghiệp",
+      "Đổi tên Cloud Engineer QA rồi lưu.",
+      "Hiển thị tên mới, hồ sơ liên kết vẫn tham chiếu đúng mục tiêu.",
+      "Hệ thống lưu nội dung mục tiêu nghề nghiệp sau khi sửa.",
+      "Đạt"
+    ],
+    [
+      "7",
+      "Thêm chứng chỉ",
+      "Tên: Chứng chỉ Cloud QA, mã mới, các trường bắt buộc hợp lệ. Bấm Lưu.",
+      "Chứng chỉ xuất hiện trong danh sách và chọn được khi thiết lập mục tiêu.",
+      "Hệ thống tạo chứng chỉ thử nghiệm thành công. ",
+      "Đạt"
+    ],
+    [
+      "8",
+      "Sửa chứng chỉ",
+      "Đổi tên chứng chỉ Cloud QA thành Cloud QA 02 rồi lưu.",
+      "Hiển thị tên mới, nội dung đã liên kết được giữ nguyên.",
+      "Chưa chạy trực tiếp thao tác sửa chứng chỉ, kiểm tra tạo và đọc chứng chỉ chưa đủ xác nhận thao tác sửa.",
+      "Chưa hoàn tất"
+    ],
+    [
+      "9",
+      "Domain và topic chứng chỉ",
+      "C1 Thao tác: Tạo domain, tạo topic thuộc domain, mở lộ trình C1",
+      "Đúng phân cấp và thứ tự, không lẫn domain/topic C2.",
+      "Hệ thống tạo và liên kết chuyên ngành, chủ đề với chứng chỉ thành công. ",
+      "Đạt"
+    ],
+    [
+      "10",
+      "Liên kết nội dung",
+      "C1,T1 và lesson/vocabulary/exam fixtures Thao tác: Sửa content-links cấp certificate và topic, tải lại học viên",
+      "Lesson/từ vựng/quiz liên kết đúng, không mất liên kết khác ngoài payload chủ đích.",
+      "Hệ thống lưu liên kết bài học vào chủ đề và đọc lại được bài đã liên kết. ",
+      "Đạt"
+    ],
+    [
+      "11",
+      "Liên kết không hợp lệ",
+      "C1,T1 Thao tác: Gửi ID nội dung không tồn tại hoặc topic từ C2",
+      "Từ chối liên kết sai, không ghi nửa chừng hoặc tạo bản ghi mồ côi.",
+      "Hệ thống từ chối liên kết bằng mã bài học hoặc chủ đề không tồn tại.",
+      "Đạt"
+    ],
+    [
+      "12",
+      "Chi tiết chứng chỉ rỗng",
+      "CEMPTY không có topic Thao tác: Mở list và detail CEMPTY",
+      "Empty state và điều hướng quay lại hoạt động, không crash.",
+      "Hệ thống trả chi tiết chứng chỉ chưa có nội dung mà không phát sinh lỗi. ",
+      "Đạt"
+    ],
+    [
+      "13",
+      "Xóa chứng chỉ đã sử dụng",
+      "C1 có attempt và mục tiêu HV1 Thao tác: quản trị viên xóa C1, kiểm lịch sử và profile",
+      "Không mất lịch sử sai chủ đích, ràng buộc được báo rõ, không còn liên kết hỏng.",
+      "Hệ thống không cho xóa chứng chỉ đang được tham chiếu.",
+      "Đạt"
+    ]
+  ],
+  [
+    [
+      "STT",
+      "Tên kịch bản",
+      "Dữ liệu đầu vào (Input)",
+      "Kết quả mong đợi",
+      "Kết quả thực tế",
+      "Trạng thái"
+    ],
+    [
+      "1",
+      "Tạo bài từ vựng",
+      "Quản trị viên, chọn loại vocabulary, tiêu đề: từ vựng QA, chọn lĩnh vực, cấp độ và các trường bắt buộc hợp lệ. Lưu nháp.",
+      "Lưu được bài đúng loại, mở lại thấy đủ nội dung, chưa hiển thị cho học viên khi còn nháp.",
+      "Hệ thống tạo và lưu bài học từ vựng thành công.",
+      "Đạt"
+    ],
+    [
+      "2",
+      "Tạo bài thuật ngữ",
+      "Quản trị viên, chọn loại terminology, tiêu đề: thuật ngữ QA, chọn lĩnh vực, cấp độ và các trường bắt buộc hợp lệ. Lưu nháp.",
+      "Lưu được bài đúng loại, mở lại thấy đủ nội dung, chưa hiển thị cho học viên khi còn nháp.",
+      "Hệ thống tạo và lưu bài học thuật ngữ thành công.",
+      "Đạt"
+    ],
+    [
+      "3",
+      "Tạo bài đọc hiểu kỹ thuật",
+      "Quản trị viên, chọn loại technical_reading, tiêu đề: đọc hiểu kỹ thuật QA, chọn lĩnh vực, cấp độ và các trường bắt buộc hợp lệ. Lưu nháp.",
+      "Lưu được bài đúng loại, mở lại thấy đủ nội dung, chưa hiển thị cho học viên khi còn nháp.",
+      "Hệ thống tạo và lưu bài đọc hiểu kỹ thuật thành công.",
+      "Đạt"
+    ],
+    [
+      "4",
+      "Tạo bài tài liệu API",
+      "Quản trị viên, chọn loại api_documentation, tiêu đề: tài liệu API QA, chọn lĩnh vực, cấp độ và các trường bắt buộc hợp lệ. Lưu nháp.",
+      "Lưu được bài đúng loại, mở lại thấy đủ nội dung, chưa hiển thị cho học viên khi còn nháp.",
+      "Hệ thống tạo và lưu bài học tài liệu API thành công.",
+      "Đạt"
+    ],
+    [
+      "5",
+      "Tạo bài thiết kế hệ thống",
+      "Quản trị viên, chọn loại system_design, tiêu đề: thiết kế hệ thống QA, chọn lĩnh vực, cấp độ và các trường bắt buộc hợp lệ. Lưu nháp.",
+      "Lưu được bài đúng loại, mở lại thấy đủ nội dung, chưa hiển thị cho học viên khi còn nháp.",
+      "Hệ thống tạo và lưu bài học thiết kế hệ thống thành công.",
+      "Đạt"
+    ],
+    [
+      "6",
+      "Tạo bài tình huống",
+      "Quản trị viên, chọn loại case_study, tiêu đề: tình huống QA, chọn lĩnh vực, cấp độ và các trường bắt buộc hợp lệ. Lưu nháp.",
+      "Lưu được bài đúng loại, mở lại thấy đủ nội dung, chưa hiển thị cho học viên khi còn nháp.",
+      "Hệ thống tạo và lưu bài học tình huống thành công.",
+      "Đạt"
+    ],
+    [
+      "7",
+      "Tạo bài ôn chứng chỉ",
+      "Quản trị viên, chọn loại certification_review, tiêu đề: ôn chứng chỉ QA, chọn lĩnh vực, cấp độ và các trường bắt buộc hợp lệ. Lưu nháp.",
+      "Lưu được bài đúng loại, mở lại thấy đủ nội dung, chưa hiển thị cho học viên khi còn nháp.",
+      "Hệ thống tạo và lưu bài học ôn chứng chỉ thành công.",
+      "Đạt"
+    ],
+    [
+      "8",
+      "Sửa nội dung và thứ tự section",
+      "Lesson QA nhiều section Thao tác: Đổi title/summary, thêm, sắp xếp, xóa section, tải lại",
+      "Thứ tự và nội dung giữ đúng, không mất section còn lại.",
+      "Hệ thống lưu nội dung bài học đã sửa. ",
+      "Đạt"
+    ],
+    [
+      "9",
+      "Biên thời lượng và dữ liệu",
+      "quản trị viên Thao tác: Gửi estimatedMinutes 0,1,480,481, thiếu title, type sai, domain sai",
+      "1–480 hợp lệ, dữ liệu sai bị từ chối ở API.",
+      "Hệ thống từ chối thời lượng 0 và 481 phút. ",
+      "Đạt"
+    ],
+    [
+      "10",
+      "Publish/draft/archive",
+      "Lesson QA Thao tác: Chuyển trạng thái, mở list và URL detail trực tiếp bằng học viên",
+      "Learner chỉ đọc nội dung được phép, draft/archive không bị lộ qua deep link.",
+      "Sau khi xuất bản, bài học được phép đọc, bài nháp bị từ chối với khách và học viên. ",
+      "Đạt"
+    ],
+    [
+      "11",
+      "Tìm và lọc catalog",
+      "Nhiều lesson thuộc 5 track,D1,D2 Thao tác: Chọn từng track, tìm từ khóa tiếng Việt trong title/summary/concepts, xóa bộ lọc",
+      "Kết quả và số lượng khớp, không lẫn track, empty state đúng.",
+      "Hệ thống trả danh sách bài học theo điều kiện tìm kiếm và lọc đã gửi.",
+      "Đạt"
+    ],
+    [
+      "12",
+      "Card chuyên đề web/mobile",
+      "Các track có số bài khác nhau Thao tác: Mở tất cả bài học, chạm từng card",
+      "Label, số bài và nội dung tương ứng, card mở đúng track trên cả hai nền tảng.",
+      "Chưa chạy.",
+      "Chưa chạy"
+    ],
+    [
+      "13",
+      "Trải nghiệm từng loại bài",
+      "Một bài published cho mỗi loại Thao tác: Mở, đọc nội dung, làm hoạt động, chuyển section, hoàn tất",
+      "Nội dung/hoạt động tương ứng loại, không hiển thị placeholder hoặc công cụ không hoạt động.",
+      "Hệ thống trả nội dung bài học đã xuất bản.",
+      "Đạt"
+    ],
+    [
+      "14",
+      "Tài liệu kỹ thuật dài",
+      "Lesson có code, bảng, URL dài và ảnh Thao tác: Mở trên màn 360px và desktop, cuộn, chọn đoạn code",
+      "Nội dung không mất, bảng/code cuộn phù hợp, nút chính không ra ngoài màn hình.",
+      "Chưa chạy.",
+      "Chưa chạy"
+    ],
+    [
+      "15",
+      "Ghi nhận hoàn thành bài học",
+      "HV1 mở một bài chưa học, hoàn tất bài và tải lại trang.",
+      "Bài hiển thị đã hoàn thành, tiến độ được giữ khi mở lại.",
+      "Hệ thống lưu trạng thái hoàn thành bài học cho học viên.",
+      "Đạt"
+    ],
+    [
+      "16",
+      "Hoàn thành lại bài đã học",
+      "HV1 hoàn thành lại cùng một bài.",
+      "Không tăng số bài đã hoàn thành thêm lần nữa.",
+      "Hoàn thành lại bài đã học không tạo thêm bản ghi tiến độ trùng.",
+      "Đạt"
+    ],
+    [
+      "17",
+      "Xóa bài đang tham chiếu",
+      "Lesson có progress và topic link Thao tác: quản trị viên xóa, học viên mở URL cũ",
+      "Không crash, thông báo không tồn tại hoặc ràng buộc rõ, không hỏng dữ liệu liên quan.",
+      "Hệ thống từ chối xóa bài đang được tham chiếu. ",
+      "Đạt"
+    ],
+    [
+      "18",
+      "Xuất bản nhiều bài học",
+      "Chọn 2 bài học nháp hợp lệ, thực hiện Xuất bản hàng loạt.",
+      "Cả hai mục chuyển sang xuất bản, tải lại vẫn đúng trạng thái, mục không chọn không thay đổi.",
+      "Hệ thống chuyển các bài đã chọn sang trạng thái xuất bản.",
+      "Đạt"
+    ],
+    [
+      "19",
+      "Chuyển nhiều bài học về nháp",
+      "Chọn 2 bài học đang xuất bản, chuyển hàng loạt về Nháp.",
+      "Hai mục chuyển về nháp, học viên không truy cập được nội dung không được phép, mục khác giữ nguyên.",
+      "Hệ thống chuyển các bài đã chọn về nháp, học viên không còn đọc được bài nháp.",
+      "Đạt"
+    ]
+  ],
+  [
+    [
+      "STT",
+      "Tên kịch bản",
+      "Dữ liệu đầu vào (Input)",
+      "Kết quả mong đợi",
+      "Kết quả thực tế",
+      "Trạng thái"
+    ],
+    [
+      "1",
+      "Tiến độ theo học viên",
+      "HV1 đã học một bài chứng chỉ, HV2 chưa học Thao tác: Mở cùng chứng chỉ bằng HV1 và HV2, hoàn tất bài bằng HV1, tải lại",
+      "Tiến độ đúng từng người, số bài hoàn tất đúng, không cộng theo số từ vựng.",
+      "Sau khi hoàn thành bài, hệ thống ghi nhận số bài đã hoàn thành của học viên là 1.",
+      "Đạt"
+    ],
+    [
+      "2",
+      "Nội dung được phép hiển thị",
+      "Chủ đề có bài published, draft, archived, chứng chỉ active/inactive Thao tác: Mở chủ đề và trang tiến độ, thử ID sai, ID không tồn tại và chứng chỉ inactive",
+      "Chỉ hiện bài ôn chứng chỉ được xuất bản, không lộ nháp, đối tượng không khả dụng báo lỗi phù hợp, không lỗi 500.",
+      "Sau khi chuyển bài về nháp, dữ liệu chủ đề không trả bài đó cho học viên. ",
+      "Đạt"
+    ],
+    [
+      "3",
+      "Đề luyện tập đúng chủ đề",
+      "Hai chứng chỉ có chủ đề và đề khác nhau Thao tác: Mở từng chủ đề, mở đề luyện tập, học một bài rồi quay lại",
+      "Bài và đề thuộc đúng chứng chỉ/chủ đề, điều hướng và tiến độ đồng bộ.",
+      "Dữ liệu chủ đề trả đúng chứng chỉ và bài luyện tập đã liên kết. ",
+      "Đạt"
+    ]
+  ],
+  [
+    [
+      "STT",
+      "Tên kịch bản",
+      "Dữ liệu đầu vào (Input)",
+      "Kết quả mong đợi",
+      "Kết quả thực tế",
+      "Trạng thái"
+    ],
+    [
+      "1",
+      "Thêm từ vựng",
+      "Từ: autoscaling-qa, định nghĩa tiếng Anh và nghĩa tiếng Việt, lĩnh vực và cấp độ hợp lệ. Bấm Lưu.",
+      "Từ xuất hiện trong danh sách, mở chi tiết thấy đúng dữ liệu.",
+      "Hệ thống thêm và lưu từ vựng mới thành công.",
+      "Đạt"
+    ],
+    [
+      "2",
+      "Sửa từ vựng",
+      "Mở từ QA, thay nghĩa tiếng Việt và lưu.",
+      "Hiển thị nghĩa mới, không thay đổi từ khác.",
+      "Hệ thống lưu nội dung từ vựng sau khi sửa.",
+      "Đạt"
+    ],
+    [
+      "3",
+      "Xóa từ vựng thử nghiệm",
+      "Chọn từ QA không cần giữ dữ liệu học, bấm Xóa và xác nhận.",
+      "Từ không còn trong danh sách, tải lại không xuất hiện lại.",
+      "Tải lại danh sách không còn từ đã xóa xuất hiện.",
+      "Đạt"
+    ],
+    [
+      "4",
+      "Đổi trạng thái hàng loạt",
+      "V1,V2 draft, V3 published Thao tác: Chọn V1,V2, bulk published, kiểm V3, gửi status sai",
+      "Chỉ ID chọn thay đổi, status sai bị từ chối.",
+      "Hệ thống xuất bản các từ vựng đã chọn.",
+      "Đạt"
+    ],
+    [
+      "5",
+      "Học từ theo bộ lọc",
+      "HV1, từ published D1 và D2 Thao tác: Mở session D1/level, lật thẻ, chuyển từ, nghe phát âm",
+      "Đúng bộ từ, front/back đúng, không crash nếu âm thanh không khả dụng.",
+      "Hệ thống trả phiên học theo bộ lọc chuyên ngành và trình độ đã chọn. ",
+      "Đạt"
+    ],
+    [
+      "6",
+      "Đánh giá từ ở mức Dễ",
+      "Từ QA chưa có lần trả lời đúng, chọn Dễ ở thời điểm T.",
+      "Lưu mức Dễ, lịch ôn tiếp theo T + 3 ngày, lịch sử của đúng học viên được cập nhật.",
+      "Hệ thống lưu mức Dễ và lên lịch ôn lại từ sau 3 ngày.",
+      "Đạt"
+    ],
+    [
+      "7",
+      "Đánh giá từ ở mức Trung bình",
+      "Từ QA riêng, chọn Trung bình ở thời điểm T.",
+      "Lưu mức Trung bình, lịch ôn tiếp theo T + 1 ngày.",
+      "Hệ thống lưu mức Trung bình và lên lịch ôn lại từ sau 1 ngày.",
+      "Đạt"
+    ],
+    [
+      "8",
+      "Đánh giá từ ở mức Khó",
+      "Từ QA riêng, chọn Khó ở thời điểm T.",
+      "Lưu mức Khó, lịch ôn tiếp theo T + 10 phút.",
+      "Hệ thống lưu mức Khó và đưa từ vào lịch ôn lại sau 10 phút.",
+      "Đạt"
+    ],
+    [
+      "9",
+      "Đánh giá từ Đã thuộc",
+      "Từ QA riêng, chọn Đã thuộc ở thời điểm T.",
+      "Lưu mức Đã thuộc, không xuất hiện trong danh sách cần ôn ngay, lịch ôn tiếp theo T + 365 ngày.",
+      "Hệ thống lưu mức Đã thuộc và chuyển từ sang trạng thái đã thuộc.",
+      "Đạt"
+    ],
+    [
+      "10",
+      "Rate sai dữ liệu",
+      "HV1 Thao tác: Gửi rating lạ, vocabularyId không tồn tại, payload thiếu trường",
+      "Lỗi 4xx có kiểm soát, không ghi tiến độ rác hoặc trả 500 do dữ liệu đầu vào.",
+      "Hệ thống từ chối mức đánh giá hoặc mã từ vựng không hợp lệ.",
+      "Đạt"
+    ],
+    [
+      "11",
+      "Trả lời quiz đúng",
+      "Tạo quiz từ bộ từ QA có đáp án biết trước, chọn đáp án đúng.",
+      "Ghi nhận câu trả lời đúng, tổng số câu đúng tăng 1, lưu tiến độ đúng HV1.",
+      "Hệ thống tạo được câu hỏi ôn từ đã học. ",
+      "Đạt"
+    ],
+    [
+      "12",
+      "Trả lời quiz sai",
+      "Chọn đáp án sai của một câu trong bộ từ QA.",
+      "Ghi nhận câu sai, không tính thành câu đúng, kết quả tổng hợp khớp lượt làm.",
+      "Hệ thống tạo được câu hỏi ôn từ đã học. ",
+      "Đạt"
+    ],
+    [
+      "13",
+      "Bộ quiz rỗng/ít từ",
+      "Bộ 0,1,2 từ Thao tác: Tạo quiz và mở giao diện",
+      "Empty state hoặc bài hợp lệ, không vòng lặp tạo distractor, không chia cho 0.",
+      "Hệ thống từ chối tạo bộ câu hỏi khi danh sách từ đầu vào rỗng.",
+      "Đạt"
+    ],
+    [
+      "14",
+      "Tiếp tục phiên học",
+      "HV1 đang học dở Thao tác: Rời màn, gọi session với continue=true, mở trên nền tảng khác",
+      "Nội dung tiếp tục phù hợp dữ liệu đã ghi, không tự đánh dấu các từ chưa học.",
+      "Chưa chạy trên thiết bị Android/iOS thật hoặc máy giả lập.",
+      "Chưa chạy"
+    ],
+    [
+      "15",
+      "Ôn từ đến hạn",
+      "Có từ quá hạn,hôm nay,tương lai Thao tác: GET review-session",
+      "Bộ ôn phù hợp thời điểm, không bỏ từ quá hạn hoặc trộn người học khác.",
+      "Hệ thống trả các từ đã đến hạn ôn của học viên.",
+      "Đạt"
+    ],
+    [
+      "16",
+      "Lịch sử theo thời gian/rating",
+      "Fixture các ngày/tháng/năm và nhiều rating Thao tác: Lọc history từng period và rating",
+      "Kết quả, số lượng và empty state đúng, dữ liệu ranh giới ngày được đối chiếu theo múi giờ đã chốt.",
+      "Hệ thống trả lịch sử học và bản ghi đánh giá từ. ",
+      "Đạt"
+    ],
+    [
+      "17",
+      "Tách dữ liệu người học",
+      "HV1 học V1, HV2 chưa học Thao tác: Mở dashboard/history/summary bằng HV2",
+      "Không thấy tiến độ cá nhân HV1, nội dung từ dùng chung vẫn truy cập đúng.",
+      "Lịch sử trả về chỉ thuộc học viên đang đăng nhập, không chứa dữ liệu của học viên khác.",
+      "Đạt"
+    ],
+    [
+      "18",
+      "Nội dung bị gỡ giữa phiên",
+      "HV1 đang học V1, quản trị viên archive V1 Thao tác: Tiếp tục/rate/refresh",
+      "Lỗi hoặc xử lý nhất quán, không crash, không tạo progress trỏ tới dữ liệu mất.",
+      "Hệ thống từ chối tiếp tục xử lý từ vựng đã chuyển khỏi trạng thái cho phép học.",
+      "Đạt"
+    ],
+    [
+      "19",
+      "Tiến độ từ vựng theo chứng chỉ",
+      "Chứng chỉ có 4 từ QA, HV1 đã học 2 từ, mở tiến độ từ vựng của chứng chỉ.",
+      "Hiển thị đúng 2 từ đã học trên tổng 4 từ, không tính lẫn tiến độ bài học hoặc học viên khác.",
+      "Hệ thống trả tiến độ từ vựng theo chứng chỉ của học viên hiện tại.",
+      "Đạt"
+    ],
+    [
+      "20",
+      "Xem lại thẻ từ đã học",
+      "HV1 đã học một từ, mở thẻ từ đó từ lịch sử.",
+      "Hiển thị đúng từ và tiến độ cá nhân của HV1, không tạo thêm lượt học chỉ vì mở thẻ.",
+      "Hệ thống trả lại các thẻ từ đã học của học viên.",
+      "Đạt"
+    ]
+  ],
+  [
+    [
+      "STT",
+      "Tên kịch bản",
+      "Dữ liệu đầu vào (Input)",
+      "Kết quả mong đợi",
+      "Kết quả thực tế",
+      "Trạng thái"
+    ],
+    [
+      "1",
+      "Dịch từ trong từ điển",
+      "Từ published có nghĩa, từ nháp, từ chưa có nghĩa Thao tác: Bôi chọn trên web/mobile, dịch từ có sẵn, từ hoa/thường và khoảng trắng",
+      "Hiện nghĩa đúng từ, không lộ nội dung nháp, giao diện không treo.",
+      "Hệ thống trả nghĩa của từ có trong từ điển nội bộ.",
+      "Đạt"
+    ],
+    [
+      "2",
+      "Dịch theo ngữ cảnh",
+      "Cùng một từ ở hai đoạn có nghĩa khác nhau, dịch vụ thử có cấu hình Thao tác: Chọn từ và cụm từ trong hai ngữ cảnh, dịch lại cùng một lựa chọn",
+      "Chỉ dịch phần được chọn, nghĩa phù hợp ngữ cảnh, cache không lẫn ngữ cảnh.",
+      "Chưa chạy.",
+      "Chưa chạy"
+    ],
+    [
+      "3",
+      "Dữ liệu không hợp lệ và dịch vụ lỗi",
+      "Text rỗng, sai kiểu, hơn 500 byte, ngữ cảnh sai kiểu Thao tác: Gửi từng dữ liệu, thử thiếu cấu hình dịch, nhà cung cấp lỗi và timeout",
+      "Dữ liệu lỗi bị từ chối, fallback hoặc thông báo rõ, không lộ khóa hay phản hồi nội bộ.",
+      "Hệ thống từ chối dữ liệu dịch rỗng, sai kiểu hoặc quá dài, từ không có trong từ điển được xử lý khi chưa cấu hình dịch vụ ngoài. ",
+      "Đạt"
+    ],
+    [
+      "4",
+      "Giới hạn tần suất",
+      "Chỉ dùng môi trường QA, cùng địa chỉ IP Thao tác: Gửi trên 60 yêu cầu dịch/phát âm trong một phút rồi đợi cửa sổ mới",
+      "Bị giới hạn 429 theo thiết kế, hết cửa sổ có thể gọi lại, UI báo rõ.",
+      "Khi gửi nhiều yêu cầu liên tiếp vượt giới hạn, hệ thống từ chối yêu cầu tiếp theo để giới hạn tần suất.",
+      "Đạt"
+    ],
+    [
+      "5",
+      "Phát âm thực tế",
+      "Máy chủ có runtime phát âm, web và thiết bị mobile Thao tác: Chọn từ/cụm từ, phát âm, nghe lại, thử máy chủ thiếu runtime hoặc timeout",
+      "Âm thanh phát được, đúng từ, phát lại ổn định, lỗi dịch vụ báo rõ, không treo.",
+      "Hệ thống tạo được dữ liệu âm thanh phát âm. ",
+      "Đạt"
+    ],
+    [
+      "6",
+      "Biên phát âm",
+      "Text rỗng, sai kiểu, hơn 500 byte, Unicode Thao tác: Gọi phát âm từng bộ dữ liệu, thử ngắt mạng khi đang tải",
+      "Chặn input không hợp lệ, Unicode hợp lệ xử lý rõ, phục hồi khi mạng trở lại.",
+      "Hệ thống từ chối nội dung phát âm rỗng, sai kiểu hoặc vượt độ dài cho phép.",
+      "Đạt"
+    ]
+  ],
+  [
+    [
+      "STT",
+      "Tên kịch bản",
+      "Dữ liệu đầu vào (Input)",
+      "Kết quả mong đợi",
+      "Kết quả thực tế",
+      "Trạng thái"
+    ],
+    [
+      "1",
+      "Tạo câu hỏi một đáp án",
+      "Chọn loại single_choice, nội dung: Câu QA, nhập dữ liệu và đáp án tương ứng, chọn phân loại hợp lệ, lưu.",
+      "Lưu đúng loại câu hỏi, mở lại đủ nội dung và dữ liệu chấm, phần xem trước không mất dữ liệu.",
+      "Hệ thống tạo và lưu câu hỏi một đáp án thành công.",
+      "Đạt"
+    ],
+    [
+      "2",
+      "Tạo câu hỏi nhiều đáp án",
+      "Chọn loại multiple_choice, nội dung: Câu QA, nhập dữ liệu và đáp án tương ứng, chọn phân loại hợp lệ, lưu.",
+      "Lưu đúng loại câu hỏi, mở lại đủ nội dung và dữ liệu chấm, phần xem trước không mất dữ liệu.",
+      "Hệ thống tạo và lưu câu hỏi nhiều đáp án thành công.",
+      "Đạt"
+    ],
+    [
+      "3",
+      "Tạo câu hỏi đúng sai",
+      "Chọn loại true_false, nội dung: Câu QA, nhập dữ liệu và đáp án tương ứng, chọn phân loại hợp lệ, lưu.",
+      "Lưu đúng loại câu hỏi, mở lại đủ nội dung và dữ liệu chấm, phần xem trước không mất dữ liệu.",
+      "Hệ thống tạo và lưu câu hỏi đúng sai thành công.",
+      "Đạt"
+    ],
+    [
+      "4",
+      "Tạo câu hỏi trả lời ngắn",
+      "Chọn loại short_answer, nội dung: Câu QA, nhập dữ liệu và đáp án tương ứng, chọn phân loại hợp lệ, lưu.",
+      "Lưu đúng loại câu hỏi, mở lại đủ nội dung và dữ liệu chấm, phần xem trước không mất dữ liệu.",
+      "Hệ thống tạo và lưu câu hỏi trả lời ngắn thành công.",
+      "Đạt"
+    ],
+    [
+      "5",
+      "Tạo câu hỏi tình huống",
+      "Chọn loại scenario, nội dung: Câu QA, nhập dữ liệu và đáp án tương ứng, chọn phân loại hợp lệ, lưu.",
+      "Lưu đúng loại câu hỏi, mở lại đủ nội dung và dữ liệu chấm, phần xem trước không mất dữ liệu.",
+      "Hệ thống tạo và lưu câu hỏi tình huống thành công.",
+      "Đạt"
+    ],
+    [
+      "6",
+      "Phân loại kỹ năng",
+      "Có câu vocabulary,reading,technical_understanding,scenario_based Thao tác: Tạo/lọc theo skill,domain,level,topic,certificate",
+      "Bộ lọc và dữ liệu sau reload khớp lựa chọn.",
+      "Hệ thống lưu đúng kỹ năng được gán cho câu hỏi.",
+      "Đạt"
+    ],
+    [
+      "7",
+      "Validate đáp án",
+      "quản trị viên Thao tác: Tạo câu không có đáp án đúng, option trùng key, single choice nhiều đáp án đúng",
+      "Từ chối cấu hình mâu thuẫn, không tạo câu không thể chấm đúng.",
+      "Hệ thống từ chối câu hỏi một lựa chọn không có đáp án đúng. ",
+      "Đạt"
+    ],
+    [
+      "8",
+      "Biên difficulty/điểm",
+      "quản trị viên Thao tác: Gửi difficulty 0,1,100,101, điểm liên kết đề 0,0.01,100,101",
+      "Chấp nhận đúng khoảng quy định nhập liệu, dữ liệu ngoài khoảng bị từ chối.",
+      "Hệ thống từ chối điểm câu hỏi 0 và 101.",
+      "Đạt"
+    ],
+    [
+      "9",
+      "Sửa/xóa câu đã dùng",
+      "Q1 có attempt đã nộp Thao tác: Sửa đáp án Q1 rồi mở kết quả cũ, thử xóa Q1",
+      "Kết quả lịch sử giữ bản đề tại thời điểm bắt đầu, thao tác tham chiếu không gây lỗi dữ liệu.",
+      "Hệ thống lưu câu hỏi chưa dùng sau khi sửa. ",
+      "Đạt"
+    ],
+    [
+      "10",
+      "Import Excel mẫu",
+      "Tải template, điền 3 câu hợp lệ Thao tác: Upload, xem preview, xác nhận import, lọc câu vừa nhập",
+      "Tạo đúng 3 câu, skill/type/options/đáp án đúng giữ nguyên.",
+      "Hệ thống nhận và lưu 3 câu hỏi hợp lệ qua chức năng nhập dữ liệu phía máy chủ. ",
+      "Đạt"
+    ],
+    [
+      "11",
+      "Import sai cột/kiểu",
+      "Excel thiếu cột, sai enum, option rỗng Thao tác: Upload từng file, xem báo lỗi",
+      "Chỉ rõ file/sheet/dòng/trường lỗi khi có thể, không âm thầm nhập dữ liệu sai.",
+      "Hệ thống từ chối loại câu hỏi không hợp lệ và mã chuyên ngành không tồn tại. ",
+      "Đạt"
+    ],
+    [
+      "12",
+      "Import nhiều file có lỗi",
+      "File A hợp lệ, B có dòng sai Thao tác: Chọn cả hai, sửa hoặc loại dòng lỗi, xác nhận",
+      "Số thành công/thất bại khớp, người dùng biết phần được nhập, không bỏ mất file A.",
+      "Lô có dòng lỗi bị từ chối, số câu trước và sau đều bằng 0.",
+      "Đạt"
+    ],
+    [
+      "13",
+      "Import file rỗng/hỏng/sai loại",
+      "XLSX rỗng, file hỏng, TXT đổi đuôi Thao tác: Upload mỗi file",
+      "Báo lỗi có kiểm soát, preview cũ không được gửi nhầm.",
+      "Chưa chạy.",
+      "Chưa chạy"
+    ],
+    [
+      "14",
+      "Import nhấn nhiều lần",
+      "File hợp lệ, mạng chậm Thao tác: Bấm xác nhận liên tiếp hoặc retry sau timeout",
+      "UI ngăn gửi lặp, kiểm số bản ghi, nếu API không có idempotency thì ghi rõ nguy cơ duplicate.",
+      "Chưa chạy.",
+      "Chưa chạy"
+    ],
+    [
+      "15",
+      "Phân trang và tìm câu",
+      "35 câu với prompt tiếng Việt Thao tác: Tìm/lọc rồi chuyển trang, đổi bộ lọc ở trang cuối",
+      "Page reset hoặc được hiệu chỉnh, tổng chính xác, không báo rỗng giả.",
+      "Hệ thống trả danh sách câu hỏi theo điều kiện tìm kiếm và phân trang đã gửi.",
+      "Đạt"
+    ],
+    [
+      "16",
+      "Xuất bản nhiều câu hỏi",
+      "Chọn 2 câu hỏi nháp hợp lệ, thực hiện Xuất bản hàng loạt.",
+      "Cả hai mục chuyển sang xuất bản, tải lại vẫn đúng trạng thái, mục không chọn không thay đổi.",
+      "Hệ thống chuyển các câu hỏi đã chọn sang trạng thái xuất bản.",
+      "Đạt"
+    ],
+    [
+      "17",
+      "Chuyển nhiều câu hỏi về nháp",
+      "Chọn 2 câu hỏi đang xuất bản, chuyển hàng loạt về Nháp.",
+      "Hai mục chuyển về nháp, học viên không truy cập được nội dung không được phép, mục khác giữ nguyên.",
+      "Hệ thống chuyển các câu hỏi đã chọn về nháp.",
+      "Đạt"
+    ],
+    [
+      "18",
+      "Import mã chuyên ngành không tồn tại",
+      "Mã chuyên ngành: DOMAIN_NOT_FOUND_QA, các trường câu hỏi còn lại hợp lệ. Nhập qua chức năng import.",
+      "Từ chối mã không tồn tại, không lưu câu hỏi vào chuyên ngành khác.",
+      "Hệ thống báo chuyên ngành không tồn tại, không lưu câu hỏi nào trong lô có dòng sai. Dữ liệu hợp lệ vẫn được lưu đúng chuyên ngành và cấp độ.",
+      "Đạt"
+    ]
+  ],
+  [
+    [
+      "STT",
+      "Tên kịch bản",
+      "Dữ liệu đầu vào (Input)",
+      "Kết quả mong đợi",
+      "Kết quả thực tế",
+      "Trạng thái"
+    ],
+    [
+      "1",
+      "Tạo đề theo loại",
+      "quản trị viên có exams:create, C1 và câu hợp lệ Thao tác: Tạo practice,domain_test,mock_exam,scenario_assessment, thêm câu, publish",
+      "Đề gắn C1, thứ tự/điểm câu đúng, học viên mở từ lộ trình tương ứng.",
+      "Hệ thống tạo được đề thi thử có câu hỏi và trọng số. ",
+      "Đạt"
+    ],
+    [
+      "2",
+      "Không tạo đề độc lập",
+      "quản trị viên Thao tác: Tạo đề thiếu certificateId",
+      "Bị từ chối, không xuất hiện đề độc lập ngoài mô hình chứng chỉ hiện tại.",
+      "Hệ thống từ chối tạo đề độc lập khi thiếu liên kết chứng chỉ hoặc chủ đề bắt buộc.",
+      "Đạt"
+    ],
+    [
+      "3",
+      "Câu trùng và lịch sai",
+      "quản trị viên Thao tác: Gắn cùng questionId hai lần, đặt đóng trước mở",
+      "Từ chối, không lưu đề mâu thuẫn.",
+      "Hệ thống từ chối gắn trùng một câu hỏi vào đề. ",
+      "Đạt"
+    ],
+    [
+      "4",
+      "Biên cấu hình đề",
+      "quản trị viên Thao tác: durationMinutes 0,1,300,301, passingScorePercent 0,1,100,101, maxAttempts 0,1",
+      "Chấp nhận đúng khoảng, API chặn giá trị sai.",
+      "Hệ thống từ chối thời lượng đề 0 và 301 phút. ",
+      "Đạt"
+    ],
+    [
+      "5",
+      "Bắt đầu đề",
+      "HV1, E1 published đang mở Thao tác: Mở E1, bắt đầu, xem request/response",
+      "Tạo attempt của HV1, thời gian và bộ câu đúng, không lộ đáp án đúng trước nộp.",
+      "Hệ thống tạo lượt làm bài và không trả đáp án đúng khi bắt đầu. ",
+      "Đạt"
+    ],
+    [
+      "6",
+      "Đề chưa mở/đã đóng/draft",
+      "Eearly,Elate,Edraft Thao tác: HV1 gọi start trực tiếp từng đề",
+      "Bị từ chối dù biết ID, không tạo attempt trái điều kiện.",
+      "Hệ thống từ chối bắt đầu đề chưa mở, đã đóng hoặc đang ở trạng thái nháp. ",
+      "Đạt"
+    ],
+    [
+      "7",
+      "Start đồng thời",
+      "HV1, E1 chưa có active attempt Thao tác: Gửi hai POST start đồng thời từ web/mobile",
+      "Chỉ một active attempt cho cặp học viên/exam, trả cùng phiên hoặc lỗi có kiểm soát.",
+      "Hai yêu cầu bắt đầu đồng thời trả về cùng một lượt làm bài, chỉ có một lượt đang làm được lưu.",
+      "Đạt"
+    ],
+    [
+      "8",
+      "Giới hạn lượt làm",
+      "E1 maxAttempts=1, HV1 đã có lượt kết thúc Thao tác: Gọi start lần nữa, thử hai request đồng thời sát giới hạn",
+      "Không vượt số lượt cho phép, không tạo thêm lượt do race condition.",
+      "Hệ thống từ chối tạo lượt mới khi học viên đã dùng hết số lượt cho phép.",
+      "Đạt"
+    ],
+    [
+      "9",
+      "Nộp bài và tính điểm",
+      "Đề 4 câu trắc nghiệm một đáp án, mỗi câu 1 điểm, trả lời đúng 3 câu, sai 1 câu. Bấm Nộp bài.",
+      "Điểm bằng 75%, hiển thị đúng 3 câu đúng, 1 câu sai, kết quả được lưu.",
+      "Hệ thống chấm đúng bài thử một câu đúng với kết quả 100%.",
+      "Đạt"
+    ],
+    [
+      "10",
+      "Tính điểm theo trọng số",
+      "Đề 2 câu có trọng số 1 và 3. Chỉ làm đúng câu trọng số 3.",
+      "Điểm = 3/(1+3) × 100 = 75%, không tính thành 50%.",
+      "Hệ thống tính 75% khi chỉ đúng câu có trọng số 3 trong đề có hai câu trọng số 1 và 3.",
+      "Đạt"
+    ],
+    [
+      "11",
+      "Chọn đủ đáp án đúng",
+      "Câu nhiều đáp án đúng A và C, chọn A, C.",
+      "Câu được tính đúng.",
+      "Hệ thống chấm đúng khi chọn đầy đủ tập đáp án đúng của câu nhiều lựa chọn.",
+      "Đạt"
+    ],
+    [
+      "12",
+      "Chọn thiếu đáp án đúng",
+      "Câu có đáp án đúng A và C, chỉ chọn A.",
+      "Câu không được tính đúng.",
+      "Hệ thống không tính đúng cho câu nhiều lựa chọn khi chọn thiếu đáp án đúng.",
+      "Đạt"
+    ],
+    [
+      "13",
+      "Chọn thừa đáp án",
+      "Câu có đáp án đúng A và C, chọn A, C, D.",
+      "Câu không được tính đúng.",
+      "Hệ thống không tính đúng cho câu nhiều lựa chọn khi chọn thừa đáp án.",
+      "Đạt"
+    ],
+    [
+      "14",
+      "Bỏ trống câu khi nộp",
+      "Đề có một câu chưa chọn đáp án, bấm Nộp bài.",
+      "Câu bỏ trống không được tính đúng, kết quả không cộng điểm cho câu đó.",
+      "Câu không chọn đáp án được chấm 0 điểm, bài thử đạt 0%.",
+      "Đạt"
+    ],
+    [
+      "15",
+      "Chấm câu trả lời ngắn",
+      "Câu trả lời ngắn có đáp án và quy tắc đối sánh đã được xác định. Nhập đáp án đúng rồi thử đáp án sai ở lượt khác.",
+      "Điểm khớp đáp án và quy tắc đã xác định. Nếu chưa có quy tắc chấm, ghi Bị chặn, không tự kết luận Đạt.",
+      "Hệ thống chấm câu trả lời ngắn theo dữ liệu đáp án thử nghiệm đã cấu hình.",
+      "Đạt"
+    ],
+    [
+      "16",
+      "Chấm câu tình huống",
+      "Câu tình huống có tiêu chí chấm đã được phê duyệt, nhập bài trả lời mẫu.",
+      "Đánh giá khớp tiêu chí chấm. Nếu chưa có tiêu chí hoặc chức năng chấm, ghi Bị chặn.",
+      "Chưa có tiêu chí chấm tình huống được thống nhất để đối chiếu, không tự kết luận Đạt.",
+      "Bị chặn"
+    ],
+    [
+      "17",
+      "Nộp payload giả",
+      "Attempt HV1 Thao tác: Gửi câu ngoài bản đề tại thời điểm bắt đầu, trùng questionId, option của câu khác và trường score giả",
+      "Câu/option sai bị từ chối, server tự tính điểm, không tin score do client gửi.",
+      "Hệ thống từ chối dữ liệu nộp bài giả hoặc không thuộc câu hỏi trong lượt làm.",
+      "Đạt"
+    ],
+    [
+      "18",
+      "Nộp đồng thời/lặp",
+      "Attempt đang làm Thao tác: Gửi hai submit đồng thời, retry submit sau thành công",
+      "Chỉ chấm/ghi tiến độ một lần, request sau lỗi có kiểm soát, điểm không cộng đôi.",
+      "Trong hai yêu cầu nộp đồng thời, chỉ một yêu cầu được chấm, yêu cầu còn lại bị từ chối, không chấm lặp.",
+      "Đạt"
+    ],
+    [
+      "19",
+      "Người khác nộp/xem bài",
+      "Attempt thuộc HV1, token HV2 Thao tác: HV2 submit và GET attempt bằng ID HV1",
+      "403/404, không lộ bản đề tại thời điểm bắt đầu, điểm hoặc sửa bài HV1.",
+      "Học viên khác không đọc được hoặc nộp thay lượt làm bài.",
+      "Đạt"
+    ],
+    [
+      "20",
+      "Hết giờ và sửa đồng hồ máy",
+      "Đề thời lượng 1 phút Thao tác: Đợi hết giờ, chỉnh đồng hồ client, thử nộp trễ trực tiếp API",
+      "Thời hạn do server quyết định, không kéo dài bằng đồng hồ client, chính sách xử lý bài quá hạn phải được chốt và kiểm, không chỉ kiểm countdown UI.",
+      "Hệ thống từ chối nộp bài sau thời điểm hết hạn do máy chủ lưu. ",
+      "Đạt"
+    ],
+    [
+      "21",
+      "Snapshot đề",
+      "HV1 đã start E1 Thao tác: quản trị viên sửa câu/đáp án/điểm đạt, HV1 nộp",
+      "Bài đang làm được chấm theo bản đề tại thời điểm bắt đầu ban đầu, kết quả cũ không thay đổi.",
+      "Sau khi quản trị viên sửa đáp án gốc, nộp đáp án đúng theo đề lúc bắt đầu vẫn được 100%.",
+      "Đạt"
+    ],
+    [
+      "22",
+      "Resume sau reload/background",
+      "Attempt chưa hết giờ Thao tác: Reload web, background/kill mobile rồi mở lại E1",
+      "Không tạo lượt trùng, thời gian còn lại đúng server, hành vi lưu câu chưa nộp đúng cam kết UI.",
+      "Hệ thống trả lại lượt đang làm khi truy vấn tiếp tục. ",
+      "Đạt"
+    ],
+    [
+      "23",
+      "Mạng mất khi submit",
+      "Attempt hợp lệ Thao tác: Gửi rồi ngắt mạng, nối lại, kiểm trạng thái trước retry",
+      "Không tạo kết quả trùng, cho xem kết quả nếu server đã nhận, không mất khả năng phục hồi.",
+      "Chưa chạy.",
+      "Chưa chạy"
+    ],
+    [
+      "24",
+      "Xem lại kết quả",
+      "HV1 đã nộp, nhiều câu hơn một trang Thao tác: Mở result, phân trang, xem đáp án/lời giải/domain/topic",
+      "Dữ liệu khớp bản đề tại thời điểm bắt đầu, trang đúng, nút quay lại tới màn phù hợp.",
+      "Đọc lại lượt đã chấm vẫn trả đúng kết quả 100% đã lưu.",
+      "Đạt"
+    ],
+    [
+      "25",
+      "Xuất bản nhiều đề thi",
+      "Chọn 2 đề thi nháp hợp lệ, thực hiện Xuất bản hàng loạt.",
+      "Cả hai mục chuyển sang xuất bản, tải lại vẫn đúng trạng thái, mục không chọn không thay đổi.",
+      "Hệ thống chuyển các đề thi đã chọn sang trạng thái xuất bản.",
+      "Đạt"
+    ],
+    [
+      "26",
+      "Chuyển nhiều đề thi về nháp",
+      "Chọn 2 đề thi đang xuất bản, chuyển hàng loạt về Nháp.",
+      "Hai mục chuyển về nháp, học viên không truy cập được nội dung không được phép, mục khác giữ nguyên.",
+      "Hệ thống chuyển các đề thi đã chọn về nháp.",
+      "Đạt"
+    ],
+    [
+      "27",
+      "Kiểm tra điều kiện làm đề",
+      "HV1 còn lượt làm, mở một đề đã xuất bản và nằm trong thời gian cho phép.",
+      "Hiển thị được phép bắt đầu, bấm Bắt đầu mở được lượt làm.",
+      "Hệ thống trả thông tin điều kiện bắt đầu đề theo tài khoản đang đăng nhập.",
+      "Đạt"
+    ],
+    [
+      "28",
+      "Thông báo hết lượt làm đề",
+      "HV1 đã dùng hết lượt của đề có giới hạn, mở lại đề.",
+      "Hiển thị không còn lượt, không tạo thêm lượt làm khi gửi lại yêu cầu.",
+      "Hệ thống trả thông tin đã hết lượt và không cho bắt đầu thêm lượt làm.",
+      "Đạt"
+    ]
+  ],
+  [
+    [
+      "STT",
+      "Tên kịch bản",
+      "Dữ liệu đầu vào (Input)",
+      "Kết quả mong đợi",
+      "Kết quả thực tế",
+      "Trạng thái"
+    ],
+    [
+      "1",
+      "Dashboard người mới",
+      "học viên mới không có progress Thao tác: Mở home/progress",
+      "Hiển thị 0 hoặc chưa thiết lập, không gán chứng chỉ đầu danh sách làm mục tiêu, không NaN/Infinity.",
+      "Hệ thống trả số liệu học tập của học viên mới mà không phát sinh lỗi.",
+      "Đạt"
+    ],
+    [
+      "2",
+      "Đồng bộ tiến độ",
+      "HV1 học lesson và nộp exam trên mobile Thao tác: Mở web progress/home, so GET progress/me",
+      "Cùng dữ liệu sau refresh, completion và averageScore không bị đánh đồng.",
+      "Hệ thống trả tiến độ của học viên hiện tại.",
+      "Đạt"
+    ],
+    [
+      "3",
+      "Ghi tiến độ sai",
+      "HV1 Thao tác: POST progress/me với resourceId sai,resourceType lạ,completion -1/101",
+      "Từ chối, không lưu tiến độ mồ côi hoặc phần trăm ngoài 0–100.",
+      "Hệ thống từ chối dữ liệu tiến độ không hợp lệ.",
+      "Đạt"
+    ],
+    [
+      "4",
+      "Không giả danh học viên",
+      "HV1,HV2 Thao tác: HV1 POST progress kèm học viênId=HV2",
+      "Chỉ dùng danh tính token hoặc từ chối, tiến độ HV2 không đổi.",
+      "Hệ thống từ chối dữ liệu ghi tiến độ nhằm giả danh học viên khác.",
+      "Đạt"
+    ],
+    [
+      "5",
+      "Hoàn thành và ghi lặp",
+      "HV1 hoàn tất lesson Thao tác: POST cùng trạng thái nhiều lần, tải tổng tiến độ",
+      "Không nhân đôi số hoàn thành, resource khác không đổi.",
+      "Ghi hoàn thành bài học lặp lại không tạo bản ghi trùng. ",
+      "Đạt"
+    ],
+    [
+      "6",
+      "Mục tiêu ngày/tuần",
+      "Fixture có hoạt động hôm nay và tuần trước Thao tác: Mở journey/home",
+      "Từ vựng, phút học, bài thi tuần đúng kỳ, thanh không vượt 100% dù vượt chỉ tiêu.",
+      "Hệ thống trả lịch học cá nhân.",
+      "Đạt"
+    ],
+    [
+      "7",
+      "Ranh giới ngày/tuần",
+      "Clock test và múi giờ đã thống nhất Thao tác: Tạo hoạt động sát 00:00 và đầu tuần, đổi thời gian test qua mốc",
+      "Hoạt động thuộc đúng kỳ, số cũ không mang sang sai, ghi rõ múi giờ trong bằng chứng.",
+      "Chưa chạy.",
+      "Chưa chạy"
+    ],
+    [
+      "8",
+      "Kết quả gần đây",
+      "HV1 có graded,submitted,in_progress Thao tác: Mở home và activities, bấm kết quả",
+      "Danh sách đúng trạng thái được hỗ trợ, route dùng attemptId, chưa chấm không hiển thị 0% giả.",
+      "Chưa chạy.",
+      "Chưa chạy"
+    ],
+    [
+      "9",
+      "Gợi ý cá nhân hóa",
+      "HV1 mục tiêu C1,yếu topic T1, HV2 mục tiêu khác Thao tác: GET recommendations và mở UI từng học viên",
+      "Gợi ý liên quan profile/goals/performance, không rò thông tin HV1 sang HV2.",
+      "Hệ thống trả danh sách gợi ý khi không dùng dịch vụ AI. ",
+      "Đạt"
+    ],
+    [
+      "10",
+      "AI không khả dụng",
+      "Mock provider timeout/trả JSON sai, không dùng khóa thật Thao tác: Gọi recommendations",
+      "Fallback hoặc lỗi có kiểm soát, dashboard vẫn dùng được, không hiển thị raw prompt/secret.",
+      "Khi không cấu hình AI, hệ thống vẫn trả gợi ý theo quy tắc.",
+      "Đạt"
+    ],
+    [
+      "11",
+      "Gợi ý self/smart",
+      "HV1 lần lượt có learningPathMode self,smart Thao tác: Mở home hai nền tảng",
+      "Trạng thái hiển thị phù hợp mode, URL gợi ý giữ bộ lọc và mở route có thật.",
+      "Hệ thống trả kết quả cho cả chế độ tự chọn và thông minh.",
+      "Đạt"
+    ],
+    [
+      "12",
+      "Quyền đọc progress người khác",
+      "HV1, nhân viên có/không reports:read Thao tác: GET progress/học viêns/HV2 bằng mỗi token",
+      "HV1 và nhân viên thiếu quyền bị chặn, người đủ quyền xem đúng HV2.",
+      "Học viên bị từ chối đọc tiến độ của người khác.",
+      "Đạt"
+    ],
+    [
+      "13",
+      "Xem lịch học cá nhân",
+      "HV1 có mục tiêu và hoạt động học, mở lịch học, đổi sang HV2.",
+      "Lịch hiển thị nội dung của đúng tài khoản, không giữ dữ liệu HV1 sau khi đổi tài khoản.",
+      "Hệ thống trả lịch học của học viên đang đăng nhập.",
+      "Đạt"
+    ]
+  ],
+  [
+    [
+      "STT",
+      "Tên kịch bản",
+      "Dữ liệu đầu vào (Input)",
+      "Kết quả mong đợi",
+      "Kết quả thực tế",
+      "Trạng thái"
+    ],
+    [
+      "1",
+      "Số liệu dashboard",
+      "Dataset QA biết số users/attempt/progress Thao tác: Mở analytics/dashboard và UI quản trị, đối chiếu truy vấn DB chỉ đọc",
+      "Số liệu cùng định nghĩa, cùng kỳ, không cộng bản ghi soft-delete sai quy tắc.",
+      "Hệ thống trả số liệu tổng quan quản trị.",
+      "Đạt"
+    ],
+    [
+      "2",
+      "Danh sách học viên",
+      "HV1,HV2 khác domain/career/certificate Thao tác: Mở students, tìm/lọc, mở chi tiết",
+      "Kết quả đúng người và mục tiêu, pagination đúng tổng.",
+      "Hệ thống trả danh sách học viên cho tài khoản quản trị. ",
+      "Đạt"
+    ],
+    [
+      "3",
+      "Kết quả bài thi quản trị",
+      "quản trị viên/nhân viên có exams:grade Thao tác: Mở test-results, lọc, mở attempt cụ thể",
+      "Điểm, trạng thái, học viên và bản đề tại thời điểm bắt đầu khớp kết quả học viên.",
+      "Hệ thống trả danh sách kết quả bài thi cho quản trị viên. ",
+      "Đạt"
+    ],
+    [
+      "4",
+      "Báo cáo theo lĩnh vực",
+      "D1 có học viêns, D2 rỗng Thao tác: Mở reports/domain/D1 và D2",
+      "D1 tính đúng từ fixture, D2 hiển thị 0/empty, không lỗi chia 0.",
+      "Hệ thống trả báo cáo theo chuyên ngành được yêu cầu. ",
+      "Đạt"
+    ],
+    [
+      "5",
+      "Tổng quan tiến độ",
+      "Learners ở nhiều mức hoàn thành Thao tác: Mở progress-overview, đối chiếu dữ liệu từng học viên",
+      "Completion, điểm trung bình, tổng học viên đúng định nghĩa, không trộn score và completion.",
+      "Hệ thống trả dữ liệu tổng quan tiến độ.",
+      "Đạt"
+    ],
+    [
+      "6",
+      "Xuất Excel",
+      "Báo cáo có tiếng Việt và bộ lọc đang chọn Thao tác: Xuất file, mở bằng Excel, so bảng UI",
+      "File đọc được, cột, Unicode, số và dữ liệu phù hợp phạm vi xuất được mô tả trên UI.",
+      "Chưa chạy.",
+      "Chưa chạy"
+    ],
+    [
+      "7",
+      "Quyền báo cáo",
+      "Role thiếu reports:read/exams:grade Thao tác: Mở URL trực tiếp và gọi API từng loại",
+      "Thiếu quyền tương ứng bị chặn, không tải dữ liệu rồi chỉ ẩn UI.",
+      "Học viên bị từ chối đọc báo cáo quản trị. ",
+      "Đạt"
+    ],
+    [
+      "8",
+      "Báo cáo rỗng/lỗi API",
+      "Dataset rỗng, giả lập 500 Thao tác: Mở báo cáo, retry",
+      "Empty/error rõ, không hiển thị số mẫu như dữ liệu thật, không cho xuất file sai im lặng.",
+      "Chưa chạy.",
+      "Chưa chạy"
+    ]
+  ],
+  [
+    [
+      "STT",
+      "Tên kịch bản",
+      "Dữ liệu đầu vào (Input)",
+      "Kết quả mong đợi",
+      "Kết quả thực tế",
+      "Trạng thái"
+    ],
+    [
+      "1",
+      "Bật nhắc học",
+      "HV1, thiết bị thật bản build có notifications Thao tác: Bật nhắc với giờ sắp tới, cấp quyền, đợi tới giờ",
+      "Lưu giờ/enabled, thông báo đến đúng người và lịch, chạm mở đúng màn.",
+      "Khi bật nhắc học, tác vụ thử nghiệm tạo một thông báo..",
+      "Đạt"
+    ],
+    [
+      "2",
+      "Tắt nhắc học",
+      "HV1 đã lên lịch Thao tác: Tắt trên mobile, lưu, mở web, đợi tới giờ cũ",
+      "enabled=false đồng bộ, lịch local cũ bị hủy, sửa hồ sơ không tự bật lại.",
+      "Khi tắt nhắc học, tác vụ thử nghiệm không tạo thông báo mới. ",
+      "Đạt"
+    ],
+    [
+      "3",
+      "Đổi giờ nhắc",
+      "Có lịch cũ Thao tác: Đổi giờ hai lần, liệt kê lịch trên thiết bị",
+      "Chỉ lịch cuối còn hiệu lực, không tạo nhiều thông báo cùng ngày.",
+      "Chưa chạy.",
+      "Chưa chạy"
+    ],
+    [
+      "4",
+      "Từ chối quyền/Expo Go",
+      "Thiết bị không cấp permission hoặc Expo Go Thao tác: Bật nhắc, lưu hồ sơ",
+      "Không crash, không tuyên bố đã nhận push khi nền tảng không hỗ trợ, hồ sơ vẫn lưu được.",
+      "Chưa chạy.",
+      "Chưa chạy"
+    ],
+    [
+      "5",
+      "Token subscription hợp lệ và trùng",
+      "HV1, token test Thao tác: POST cùng token hai lần, DELETE, gọi DELETE lần nữa",
+      "Không nhân đôi subscription, unsubscribe đúng token, thao tác lặp không lỗi 500.",
+      "Đăng ký mã nhận thông báo lặp không tạo bản ghi trùng, xóa lặp không phát sinh lỗi.",
+      "Đạt"
+    ],
+    [
+      "6",
+      "Token/platform sai",
+      "HV1 Thao tác: Gửi token rỗng hoặc >4096 ký tự, platform desktop",
+      "API từ chối, không ghi subscription sai.",
+      "Hệ thống từ chối nền tảng không hợp lệ và mã nhận thông báo rỗng. ",
+      "Đạt"
+    ],
+    [
+      "7",
+      "Đổi tài khoản trên cùng thiết bị",
+      "HV1 đăng ký token, logout, HV2 login Thao tác: Đăng ký token cho HV2, phát thông báo test cho HV1/HV2",
+      "Không gửi thông tin cá nhân HV1 cho HV2, quyền sở hữu token và lịch được xử lý đúng.",
+      "Chưa chạy.",
+      "Chưa chạy"
+    ]
+  ],
+  [
+    [
+      "STT",
+      "Tên kịch bản",
+      "Dữ liệu đầu vào (Input)",
+      "Kết quả mong đợi",
+      "Kết quả thực tế",
+      "Trạng thái"
+    ],
+    [
+      "1",
+      "Hộp thông báo và quyền sở hữu",
+      "HV1/HV2 có thông báo riêng Thao tác: Đăng nhập HV1, xem pending, đánh dấu đọc, dùng HV1 thử đánh dấu thông báo của HV2",
+      "Chỉ đọc và sửa thông báo của mình, số chưa đọc cập nhật đúng, không lộ dữ liệu HV2.",
+      "Hệ thống chỉ trả thông báo của học viên hiện tại và từ chối sửa thông báo của người khác. ",
+      "Đạt"
+    ],
+    [
+      "2",
+      "Đánh dấu đọc lặp và ID lỗi",
+      "Một thông báo chưa đọc của HV1 Thao tác: Đánh dấu hai lần, tải lại, thử ID sai định dạng và ID không tồn tại",
+      "Không tạo dữ liệu trùng, trạng thái ổn định, lỗi rõ, không 500.",
+      "Đánh dấu đã đọc lặp không gây lỗi, mã thông báo không hợp lệ không làm thay đổi dữ liệu người khác.",
+      "Đạt"
+    ]
+  ],
+  [
+    [
+      "STT",
+      "Tên kịch bản",
+      "Dữ liệu đầu vào (Input)",
+      "Kết quả mong đợi",
+      "Kết quả thực tế",
+      "Trạng thái"
+    ],
+    [
+      "1",
+      "Xác thực scheduler",
+      "Môi trường QA riêng, khóa scheduler thử nghiệm Thao tác: Gọi job thiếu khóa, khóa sai, khóa đúng, thử cấu hình thiếu khóa",
+      "Thiếu/sai khóa bị từ chối, cấu hình thiếu báo không khả dụng, chỉ khóa hợp lệ chạy job.",
+      "Tác vụ nhắc học chấp nhận khóa xác thực hợp lệ và từ chối yêu cầu không có quyền.",
+      "Đạt"
+    ],
+    [
+      "2",
+      "Đúng giờ, tắt nhắc và chống lặp",
+      "HV1 bật nhắc, HV2 tắt nhắc, có thiết bị nhận push thử Thao tác: Chạy job quanh giờ nhắc và ranh giới ngày, chạy lặp, đổi giờ/tắt nhắc rồi chạy lại",
+      "Gửi đúng đối tượng, thời điểm và múi giờ theo chính sách, không gửi cho người tắt nhắc, không gửi lặp ngoài chủ đích.",
+      "Gọi tác vụ nhắc học hai lần không tạo thông báo trùng, người đã tắt nhắc không nhận bản ghi mới. ",
+      "Đạt"
+    ]
+  ],
+  [
+    [
+      "STT",
+      "Tên kịch bản",
+      "Dữ liệu đầu vào (Input)",
+      "Kết quả mong đợi",
+      "Kết quả thực tế",
+      "Trạng thái"
+    ],
+    [
+      "1",
+      "Điều hướng chính",
+      "HV1 có dữ liệu Thao tác: Đi Home→Bài học→Chứng chỉ→Tiến độ→Cá nhân, Back, mở deep link",
+      "Mọi màn đúng nội dung, tab chọn đúng, không route trắng hoặc vòng lặp redirect.",
+      "Chưa chạy.",
+      "Chưa chạy"
+    ],
+    [
+      "2",
+      "Menu dư và chức năng bị thiếu",
+      "Web học viên làm chuẩn chức năng Thao tác: So từng màn tương ứng mobile, kiểm tab và menu Cá nhân",
+      "Bài học/Chứng chỉ không lặp không cần thiết trong Cá nhân, chức năng học chính vẫn tiếp cận được.",
+      "Chưa chạy trên thiết bị Android/iOS thật hoặc máy giả lập.",
+      "Chưa chạy"
+    ],
+    [
+      "3",
+      "Safe area và màn nhỏ",
+      "Android có navigation bar, iPhone có notch Thao tác: Mở màn chính/form/quiz, bật keyboard, xoay màn nếu hỗ trợ",
+      "Không che header/nút lưu, nội dung cuộn được, không tràn ngang ngoài vùng code/bảng.",
+      "Chưa chạy trên thiết bị Android/iOS thật hoặc máy giả lập.",
+      "Chưa chạy"
+    ],
+    [
+      "4",
+      "Chữ dài và cỡ chữ lớn",
+      "Tên 100 ký tự, title dài, font hệ thống 150–200% Thao tác: Mở home,profile,list,quiz",
+      "Nội dung đọc được, không chồng chữ hoặc che nút, truncation có thể mở xem đầy đủ.",
+      "Chưa chạy.",
+      "Chưa chạy"
+    ],
+    [
+      "5",
+      "Trạng thái tải/rỗng/lỗi",
+      "Mock slow,empty,500 cho từng màn chính Thao tác: Mở màn, retry, đổi tab trong lúc tải",
+      "Không loading vô hạn, không render dữ liệu cũ của người khác, retry hoạt động.",
+      "Chưa chạy.",
+      "Chưa chạy"
+    ],
+    [
+      "6",
+      "Keyboard và accessibility web",
+      "Chỉ bàn phím, screen reader Thao tác: Tab qua login,form,bộ lọc,dialog,quiz, Enter/Escape",
+      "Có label/focus rõ, thứ tự hợp lý, dialog không làm mất focus, thông báo lỗi được nhận biết.",
+      "Chưa chạy.",
+      "Chưa chạy"
+    ],
+    [
+      "7",
+      "Accessibility mobile",
+      "TalkBack/VoiceOver Thao tác: Đọc tab,icon button,flashcard,radio đáp án,nút submit",
+      "Control có tên và trạng thái, thao tác thực hiện được không chỉ dựa vào màu.",
+      "Chưa chạy trên thiết bị Android/iOS thật hoặc máy giả lập.",
+      "Chưa chạy"
+    ],
+    [
+      "8",
+      "API URL trên thiết bị",
+      "Điện thoại cùng LAN, API test chạy Thao tác: Mở app dùng EXPO_PUBLIC_API_URL, login và tải lesson",
+      "Thiết bị truy cập được host API, không dùng localhost điện thoại nhầm server, lỗi mạng nêu rõ.",
+      "Chưa chạy trên thiết bị Android/iOS thật hoặc máy giả lập.",
+      "Chưa chạy"
+    ],
+    [
+      "9",
+      "Cache khi chuyển tài khoản",
+      "HV1 có progress, HV2 chưa học Thao tác: Logout HV1, login HV2, quay lại từng tab",
+      "Không lóe dữ liệu HV1, mỗi request lấy đúng session HV2.",
+      "Chưa chạy.",
+      "Chưa chạy"
+    ]
+  ],
+  [
+    [
+      "STT",
+      "Tên kịch bản",
+      "Dữ liệu đầu vào (Input)",
+      "Kết quả mong đợi",
+      "Kết quả thực tế",
+      "Trạng thái"
+    ],
+    [
+      "1",
+      "Tách dữ liệu cá nhân giữa học viên",
+      "HV1, HV2 và định danh bài làm, hồ sơ, tiến độ của HV2. Thao tác: HV1 thay định danh trong các API cá nhân và bài làm thuộc HV2.",
+      "Không đọc hoặc sửa dữ liệu cá nhân của HV2 khi thiếu quyền. Chỉ kiểm các module đang có trong AppModule, không đưa subscription thanh toán vào phạm vi hiện hành.",
+      "Chưa chạy.",
+      "Chưa chạy"
+    ],
+    [
+      "2",
+      "JWT giả mạo",
+      "Token hết hạn, sửa payload/signature,sai định dạng Thao tác: Gọi mọi nhóm API bảo vệ bằng từng token",
+      "Không truy cập được, không lỗi 500, server không tin role từ payload chưa xác minh.",
+      "Hệ thống từ chối mã đăng nhập giả. ",
+      "Đạt"
+    ],
+    [
+      "3",
+      "Lộ dữ liệu nhạy cảm",
+      "quản trị viên và HV1, có lỗi test Thao tác: Kiểm response auth/users/reports,console,server log và bundle client",
+      "Không chứa password/hash,refresh token ngoài kênh dự kiến,SMTP/DB/AI secrets hoặc dữ liệu học viên không được phép.",
+      "Chưa chạy.",
+      "Chưa chạy"
+    ],
+    [
+      "4",
+      "XSS nội dung học",
+      "Fixture title/bio/lesson có script và HTML event handler Thao tác: Lưu qua API test, mở admin/web học viên/mobile renderer",
+      "Không thực thi script không tin cậy, nội dung hiển thị an toàn, không đánh cắp phiên.",
+      "Chưa chạy.",
+      "Chưa chạy"
+    ],
+    [
+      "5",
+      "Injection và input lớn",
+      "Search và ID chứa ký tự đặc biệt, JSON sai Thao tác: Gửi chuỗi SQL-like vô hại,UUID sai,limit âm/khổng lồ,JSON hỏng",
+      "Không thực thi dữ liệu như truy vấn, lỗi 4xx có kiểm soát, không trả toàn bộ DB hoặc stack.",
+      "Mã định danh sai và tham số phân trang bất thường được xử lý mà không làm máy chủ lỗi. ",
+      "Đạt"
+    ],
+    [
+      "6",
+      "Endpoint public lộ draft/đáp án",
+      "Có content draft và exam chưa làm Thao tác: GET list/detail lesson,vocabulary,question,exam bằng guest và HV1",
+      "Chỉ trả dữ liệu được phép, không lộ isCorrect/answer trước thời điểm được phép.",
+      "Khách và học viên không đọc được bài nháp, dữ liệu đề chưa nộp không trả đáp án đúng. ",
+      "Đạt"
+    ],
+    [
+      "7",
+      "Upload giả MIME",
+      "File văn bản khai image/png Thao tác: Upload qua multipart và base64 vào môi trường test",
+      "Không phục vụ nội dung thực thi như tài sản tin cậy, báo lỗi đọc ảnh hoặc xử lý an toàn.",
+      "Chưa chạy.",
+      "Chưa chạy"
+    ],
+    [
+      "8",
+      "Hạn chế thử sai đăng nhập liên tiếp",
+      "Tài khoản QA, thử sai mật khẩu liên tiếp trong môi trường QA.",
+      "Đối chiếu giới hạn theo yêu cầu bảo mật được thống nhất, ghi Bị chặn nếu chưa xác định giới hạn, không tự coi là Đạt.",
+      "Chưa chạy.",
+      "Chưa chạy"
+    ]
+  ],
+  [
+    [
+      "STT",
+      "Tên kịch bản",
+      "Dữ liệu đầu vào (Input)",
+      "Kết quả mong đợi",
+      "Kết quả thực tế",
+      "Trạng thái"
+    ],
+    [
+      "1",
+      "Build và typecheck",
+      "Checkout và dependencies đúng lockfile, env test Thao tác: Chạy typecheck packages/mobile/web và build API theo scripts hiện có",
+      "Lệnh exit 0, không coi typecheck là bằng chứng E2E.",
+      "Biên dịch máy chủ, web và kiểm tra kiểu dữ liệu ứng dụng thành công. ",
+      "Đạt"
+    ],
+    [
+      "2",
+      "Migration trên DB sạch",
+      "Database test dùng riêng, có backup nếu cần Thao tác: Apply migrations vào DB trống, seed test, chạy smoke",
+      "Schema tạo thành công, seed nhất quán, login/học/nộp bài hoạt động.",
+      "Tạo cấu trúc dữ liệu trên cơ sở dữ liệu trống thành công, đăng nhập và các luồng thử nghiệm hoạt động.",
+      "Đạt"
+    ],
+    [
+      "3",
+      "Migration nâng cấp",
+      "Bản sao DB test phiên bản trước có dữ liệu Thao tác: Backup, apply migration, kiểm số lượng và khóa ngoại",
+      "Không mất dữ liệu ngoài thay đổi được mô tả, schema mới tương thích API.",
+      "Chưa chạy nâng cấp từ bản DB cũ, cần bản sao DB phiên bản trước.",
+      "Chưa chạy"
+    ],
+    [
+      "4",
+      "Hiệu năng danh sách",
+      "10000 bản ghi test, tải 20 user đồng thời, môi trường ghi rõ Thao tác: Đo list lesson/users/questions trang đầu/cuối và bộ lọc trong 10 phút",
+      "Báo p50/p95/error rate, mục tiêu đề xuất p95<2s và lỗi<1%, chỉ kết luận SLA khi được chốt.",
+      "Chưa chạy.",
+      "Chưa chạy"
+    ],
+    [
+      "5",
+      "Hiệu năng dashboard/report",
+      "Dataset test lớn, query logging đã ẩn thông tin nhạy cảm Thao tác: Đo thời gian và số query khi tăng học viên 100→1000",
+      "Không phát sinh N+1 tăng tuyến tính không cần thiết, lưu số đo, ngân sách query cần chốt trước nghiệm thu.",
+      "Chưa chạy.",
+      "Chưa chạy"
+    ],
+    [
+      "6",
+      "API/DB gián đoạn",
+      "Môi trường test có quyền restart dịch vụ Thao tác: Ngắt DB ngắn, gọi API, khôi phục, retry",
+      "Không lỗi treo vô hạn, phản hồi không lộ connection string, thao tác phục hồi không ghi trùng.",
+      "Chưa chạy.",
+      "Chưa chạy"
+    ],
+    [
+      "7",
+      "Restore dữ liệu",
+      "Backup QA chứa HV1/attempt/progress, DB đích riêng Thao tác: Restore, login và xem kết quả, đối chiếu record counts",
+      "Dữ liệu và quan hệ phục hồi đúng, ghi RPO/RTO đo được, không tự đặt đạt SLA.",
+      "Khôi phục sang cơ sở dữ liệu thử nghiệm khác thành công, số người dùng, câu hỏi và lượt làm bài lần lượt cùng bằng 31, 164 và 22. ",
+      "Đạt"
+    ],
+    [
+      "8",
+      "Tương thích trình duyệt/thiết bị",
+      "Chrome,Firefox,Safari, Android/iOS được hỗ trợ Thao tác: Chạy smoke trên từng cấu hình, ghi phiên bản và kích thước màn",
+      "Không lỗi chặn luồng chính, vấn đề đặc thù được ghi riêng từng nền tảng.",
+      "Chưa chạy.",
+      "Chưa chạy"
+    ]
+  ],
+  [
+    [
+      "STT",
+      "Tên kịch bản",
+      "Dữ liệu đầu vào (Input)",
+      "Kết quả mong đợi",
+      "Kết quả thực tế",
+      "Trạng thái"
+    ],
+    [
+      "1",
+      "Quản trị xuất bản đến học viên hoàn tất",
+      "quản trị viên, học viên mới, fixture QA riêng Thao tác: quản trị viên tạo lesson,question,exam thuộc C1 và liên kết T1, publish, học viên mới đăng ký/onboarding, học lesson trên mobile, làm exam trên web, quản trị viên xem report",
+      "Nội dung mới xuất hiện đúng người học, điểm và progress nhất quán, báo cáo phản ánh đúng hoạt động, không cần sửa DB thủ công để hoàn thành luồng.",
+      "Chưa chạy.",
+      "Chưa chạy"
+    ],
+    [
+      "2",
+      "Web-mobile cùng một hành trình",
+      "HV1 mới chọn both,C1,D1 Thao tác: Web lưu mục tiêu và tắt nhắc, mobile sửa tên, học từ, web tiếp tục lesson, mobile nộp exam, web xem kết quả",
+      "Không mất mục tiêu/lĩnh vực hoặc bật nhắc trở lại, lịch sử từ,lesson,attempt và kết quả đúng một tài khoản.",
+      "Chưa chạy.",
+      "Chưa chạy"
+    ],
+    [
+      "3",
+      "Thu hồi quyền trong lúc thao tác",
+      "giảng viên đang mở editor, quản trị viên quản lý role Thao tác: quản trị viên thu quyền sửa nội dung, giảng viên gửi form cũ, login lại và thử URL trực tiếp",
+      "Server từ chối theo chính sách phiên/quyền, nội dung không bị ghi trái phép, UI phản ánh quyền mới.",
+      "Chưa chạy.",
+      "Chưa chạy"
+    ],
+    [
+      "4",
+      "Nội dung thay đổi trong lúc làm bài",
+      "HV1 bắt đầu exam C1, quản trị viên mở builder Thao tác: quản trị viên sửa đề, HV1 mất mạng rồi kết nối lại và nộp, xem học viên result và admin result",
+      "Cả hai kết quả cùng bản đề tại thời điểm bắt đầu, chỉ một lần chấm, không dùng đáp án mới để chấm lượt cũ.",
+      "Chưa chạy.",
+      "Chưa chạy"
+    ],
+    [
+      "5",
+      "Khóa người dùng khi đang học",
+      "HV1 có phiên web/mobile và attempt, quản trị viên Thao tác: quản trị viên suspend HV1, trên hai client thử lưu profile,start,submit, quản trị viên activate, HV1 login lại",
+      "Các request sau khóa bị chặn, dữ liệu trước khóa không hỏng, sau kích hoạt luồng phục hồi rõ, không tự tạo attempt/điểm trùng.",
+      "Chưa chạy.",
+      "Chưa chạy"
+    ]
+  ]
+]
